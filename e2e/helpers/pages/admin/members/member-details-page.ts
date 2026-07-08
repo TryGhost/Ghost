@@ -16,8 +16,11 @@ class SettingsSection extends BasePage {
     constructor(page: Page) {
         super(page);
         // The gear-icon trigger uses the same testid in both implementations
-        // (Ember `member.hbs:44`, React `member-actions-menu.tsx`).
-        this.memberActionsButton = page.getByTestId('member-actions');
+        // (Ember `member.hbs:44`, React `member-actions-menu.tsx`). Both
+        // subtrees exist in the DOM when the flag is on (Ember shell is
+        // `hidden`, React is visible), so `.filter({visible: true})` picks
+        // the visible one instead of strict-mode-violating on two matches.
+        this.memberActionsButton = page.getByTestId('member-actions').filter({visible: true});
 
         // Dropdown items: Ember renders plain <button>s; React (Radix)
         // renders role=menuitem inside a portal. The `.or()` union resolves
@@ -30,8 +33,10 @@ class SettingsSection extends BasePage {
         this.deleteButton = page.getByRole('menuitem', {name: 'Delete member'}).or(page.getByRole('button', {name: 'Delete member'}));
         // `confirm-delete-member` / `cancel-delete-member` exist in both
         // (Ember `delete-member.hbs:39,49`, React `member-delete-modal.tsx`).
-        this.confirmDeleteButton = page.getByTestId('confirm-delete-member');
-        this.cancelDeleteButton = page.getByTestId('cancel-delete-member');
+        // `getByTestId` doesn't filter to visible — do that explicitly to
+        // avoid picking up a hidden dual-tree copy when the flag is on.
+        this.confirmDeleteButton = page.getByTestId('confirm-delete-member').filter({visible: true});
+        this.cancelDeleteButton = page.getByTestId('cancel-delete-member').filter({visible: true});
     }
 }
 
@@ -96,14 +101,17 @@ export class MemberDetailsPage extends AdminPage {
         this.noteInput = page.getByRole('textbox', {name: 'Note'});
         this.labelsInput = page.getByText('Labels').locator('+ div');
         this.labels = this.labelsInput.getByRole('listitem');
-        this.newsletterSubscriptionToggles = page.getByTestId('member-subscription-toggle');
+        this.newsletterSubscriptionToggles = page.getByTestId('member-subscription-toggle').filter({visible: true});
 
         this.saveButton = page.getByRole('button', {name: 'Save'});
         this.savedButton = page.getByRole('button', {name: 'Saved'});
         this.retryButton = page.getByRole('button', {name: 'Retry'});
-        this.membersBackLink = page.locator('[data-test-link="members-back"]');
+        // `data-test-link` is a CSS attribute selector — no visibility filter
+        // is applied automatically. Both implementations render this attribute
+        // when the flag is on, so pin to the visible one.
+        this.membersBackLink = page.locator('[data-test-link="members-back"]').filter({visible: true});
         this.copyLinkButton = page.getByRole('button', {name: 'Copy link'});
-        this.magicLinkInput = page.getByTestId('member-signin-url').last();
+        this.magicLinkInput = page.getByTestId('member-signin-url').filter({visible: true});
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
         this.settingsSection = new SettingsSection(page);
 

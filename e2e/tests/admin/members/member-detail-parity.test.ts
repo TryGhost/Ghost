@@ -44,9 +44,14 @@ for (const {implementation, memberDetailsReact} of [
         test.use({labs: {memberDetailsReact}});
 
         let memberFactory: MemberFactory;
+        let memberDetailsPage: MemberDetailsPage;
 
         test.beforeEach(async ({page}) => {
             memberFactory = createMemberFactory(page.request);
+            // The page object handles the dual-mode filtering (Ember and
+            // React both render on the same URL; `.filter({visible: true})`
+            // picks the tree that's actually shown).
+            memberDetailsPage = new MemberDetailsPage(page);
         });
 
         test('renders the member name on the detail screen', async ({page}) => {
@@ -80,7 +85,6 @@ for (const {implementation, memberDetailsReact} of [
 
         test('back link returns to the members list', async ({page}) => {
             const member = await memberFactory.create({name: 'Grace Hopper', email: 'grace-back-parity@ghost.org'});
-            const memberDetailsPage = new MemberDetailsPage(page);
 
             await page.goto(memberPath(member.id));
 
@@ -98,16 +102,15 @@ for (const {implementation, memberDetailsReact} of [
 
             await page.goto(memberPath(member.id));
 
-            await page.getByTestId('member-actions').click();
-            // Ember renders the menu item as a plain <button>; React's Radix
-            // dropdown renders it as role='menuitem'. The `.or()` union
-            // resolves against whichever the DOM has.
-            await page.getByRole('button', {name: 'Impersonate'})
-                .or(page.getByRole('menuitem', {name: 'Impersonate'}))
-                .click();
+            await memberDetailsPage.settingsSection.memberActionsButton.click();
+            // The page-object `impersonateButton` union covers Ember's plain
+            // <button> and React's Radix `role='menuitem'`.
+            await memberDetailsPage.settingsSection.impersonateButton.click();
 
-            const url = await page.getByTestId('member-signin-url').last().inputValue();
-            expect(url).toMatch(/^https?:\/\/.+/);
+            // Ember fetches the URL asynchronously after the modal opens; use
+            // `toHaveValue` so Playwright auto-waits for the value to fill
+            // instead of reading a snapshot of the empty initial state.
+            await expect(memberDetailsPage.magicLinkInput).toHaveValue(/^https?:\/\/.+/);
         });
 
         test('sign out of all devices opens a confirmation and closes on confirm', async ({page}) => {
@@ -115,10 +118,8 @@ for (const {implementation, memberDetailsReact} of [
 
             await page.goto(memberPath(member.id));
 
-            await page.getByTestId('member-actions').click();
-            await page.getByRole('button', {name: 'Sign out of all devices'})
-                .or(page.getByRole('menuitem', {name: 'Sign out of all devices'}))
-                .click();
+            await memberDetailsPage.settingsSection.memberActionsButton.click();
+            await memberDetailsPage.settingsSection.signOutOfAllDevices.click();
 
             // Both use the same accessible confirm label.
             await page.getByRole('button', {name: 'Sign out', exact: true}).click();
@@ -135,11 +136,9 @@ for (const {implementation, memberDetailsReact} of [
 
             await page.goto(memberPath(member.id));
 
-            await page.getByTestId('member-actions').click();
-            await page.getByRole('button', {name: 'Delete member'})
-                .or(page.getByRole('menuitem', {name: 'Delete member'}))
-                .click();
-            await page.getByTestId('confirm-delete-member').click();
+            await memberDetailsPage.settingsSection.memberActionsButton.click();
+            await memberDetailsPage.settingsSection.deleteButton.click();
+            await memberDetailsPage.settingsSection.confirmDeleteButton.click();
 
             await expect(page).toHaveURL(/#\/members$/);
 
