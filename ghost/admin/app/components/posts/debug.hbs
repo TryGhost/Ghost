@@ -68,14 +68,13 @@
                 <tr>
                     <div class="gh-list-data gh-email-debug-col-member">
                         {{#if failure.member.id}}
-                            {{! Member detail is React-owned (Phase 8 cutover); link out via a plain anchor to the React hash URL instead of the removed Ember `member` route. }}
-                            <a href="#/members/{{failure.member.id}}" class="gh-email-debug-member">
+                            <LinkTo @route="member" @model={{failure.member.id}} class="gh-email-debug-member">
                                 <GhMemberAvatar @member={{failure.member.record}} @containerClass="w9 h9 mr3 flex-shrink-0" />
                                 <div>
                                     <h3 class="ma0 pa0 gh-members-list-name" title={{failure.recipient.name}}>{{failure.recipient.name}}</h3>
                                     <p class="ma0 pa0 middarkgrey f8 gh-members-list-email" title={{failure.recipient.email}}>{{failure.recipient.email}}</p>
                                 </div>
-                            </a>
+                            </LinkTo>
                         {{else}}
                             <div class="gh-email-debug-member">
                                 <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-red">
@@ -126,14 +125,13 @@
                 <tr>
                     <div class="gh-list-data gh-email-debug-col-member">
                         {{#if failure.member.id}}
-                            {{! Member detail is React-owned (Phase 8 cutover); link out via a plain anchor to the React hash URL instead of the removed Ember `member` route. }}
-                            <a href="#/members/{{failure.member.id}}" class="gh-email-debug-member">
+                            <LinkTo @route="member" @model={{failure.member.id}} class="gh-email-debug-member">
                                 <GhMemberAvatar @member={{failure.member.record}} @containerClass="w9 h9 mr3 flex-shrink-0" />
                                 <div>
                                     <h3 class="ma0 pa0 gh-members-list-name" title={{failure.recipient.name}}>{{failure.recipient.name}}</h3>
                                     <p class="ma0 pa0 middarkgrey f8 gh-members-list-email" title={{failure.recipient.email}}>{{failure.recipient.email}}</p>
                                 </div>
-                            </a>
+                            </LinkTo>
                         {{else}}
                             <div class="gh-email-debug-member">
                                 <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-blue">

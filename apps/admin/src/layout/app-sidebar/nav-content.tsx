@@ -16,10 +16,11 @@ import { useIsActiveLink } from "./use-is-active-link";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
-// `member` and `member.new` were Ember routes retired in the Phase 8 cutover;
-// only `members-activity` stays on Ember, so it's the only legacy route the
-// sidebar still needs to highlight.
-const LEGACY_MEMBERS_ACTIVE_ROUTES = ['members-activity'];
+// `member` and `member.new` are Ember routes that may or may not be active
+// depending on the `memberDetailsReact` Labs flag — the sidebar highlights
+// them regardless so the Members nav item stays lit on /members/:id under
+// either implementation. `members-activity` is always Ember.
+const LEGACY_MEMBERS_ACTIVE_ROUTES = ['member', 'member.new', 'members-activity'];
 
 function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
     return (

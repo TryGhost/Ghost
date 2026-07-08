@@ -58,10 +58,14 @@ Router.map(function () {
     });
 
     // Member detail (`/members/:member_id`) and create (`/members/new`) are
-    // now owned by React (Phase 8 cutover) — leave them to the `react-fallback`
-    // catch-all below so Ember doesn't ALSO render its own copy into the
-    // hidden `#ember-app` container (duplicate testids/roles trip e2e strict
-    // mode). `/members-activity` stays here — it's still Ember-owned.
+    // dual-owned by the runtime `memberDetailsReact` Labs flag: React's
+    // `MemberDetailGate` decides at render time whether to mount the React
+    // screen or delegate back to Ember via `EmberFallback`. These Ember
+    // routes MUST stay declared so Ember can actually render the fallback
+    // when the flag is off. They come before the `react-fallback` catch-all
+    // so the specific match wins.
+    this.route('member.new', {path: '/members/new'});
+    this.route('member', {path: '/members/:member_id'});
     this.route('members-activity');
 
     this.route('react-fallback', {path: '/*path'});

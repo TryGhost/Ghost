@@ -14,6 +14,7 @@ import MyProfileRedirect from "./my-profile-redirect";
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 import { EmberListWithGiftLinks } from "./gift-link-modal-host";
+import { MemberDetailGate } from "./member-detail-gate";
 import { MembersRoute } from "./members-route";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 
@@ -71,8 +72,12 @@ const membersRoute: RouteObject = {
             // 'new'` and skips the fetch in create mode. Safe because real
             // member ids are 24-char hex ObjectIds and can't collide with the
             // literal "new".
+            //
+            // `MemberDetailGate` swaps in the Ember screen at render time
+            // when the `memberDetailsReact` Labs flag is off. See
+            // `member-detail-gate.tsx` for the flag-gated render.
             path: ":member_id",
-            lazy: lazyComponent(() => import("@tryghost/posts/member-detail"))
+            Component: MemberDetailGate
         }
     ]
 };
