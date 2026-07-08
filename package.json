@@ -80,6 +80,7 @@
     "test:release": "node --test 'scripts/test/*.js'"
   },
   "devDependencies": {
+    "@eslint/compat": "2.1.0",
     "@eslint/js": "catalog:",
     "@playwright/test": "catalog:",
     "@secretlint/secretlint-rule-pattern": "13.0.2",

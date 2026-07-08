@@ -6,9 +6,11 @@ import svgr from 'vite-plugin-svgr';
 import {defineConfig, esmExternalRequirePlugin, loadEnv} from 'vite';
 import {resolve, dirname} from 'path';
 import {fileURLToPath} from 'url';
+import {createRequire} from 'node:module';
 import {sentryVitePlugin} from '@sentry/vite-plugin';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
 
 const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
@@ -74,7 +76,7 @@ export default (function viteConfig({mode}) {
             alias: {
                 // required to prevent double-bundling of yjs due to cjs/esm mismatch
                 // (see https://github.com/facebook/lexical/issues/2153)
-                yjs: resolve('../../node_modules/yjs/src/index.js')
+                yjs: require.resolve('yjs/src/index.js')
             }
         },
         optimizeDeps: {

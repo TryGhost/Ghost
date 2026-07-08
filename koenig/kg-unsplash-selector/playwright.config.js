@@ -10,7 +10,7 @@ dns.setDefaultResultOrder('verbatim');
 
 export const E2E_PORT = 5173;
 export default defineConfig({
-    outputDir: path.resolve(__dirname, '..', '..', 'playwright-report'),
+    outputDir: path.resolve(__dirname, 'test-results'),
     testDir: './test/acceptance',
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,
@@ -47,7 +47,7 @@ export default defineConfig({
 
     /* Run local dev server before starting the tests */
     webServer: {
-        command: `VITE_APP_TESTING=true yarn dev`,
+        command: `VITE_APP_TESTING=true pnpm dev`,
         url: `http://localhost:${E2E_PORT}`,
         reuseExistingServer: !process.env.CI,
         timeout: 10000

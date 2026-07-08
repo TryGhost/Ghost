@@ -8,9 +8,16 @@ const __dirname = path.dirname(__filename);
 // disable the reordering behavior. Vite will then print the address as localhost https://vitejs.dev/config/server-options.html#server-host
 dns.setDefaultResultOrder('verbatim');
 
+// PLAYWRIGHT_FORCE_ASYNC_LOADER=1 is set in the test:acceptance script:
+// Node 22.15+'s synchronous module hooks (module.registerHooks), which
+// Playwright prefers when available, cannot handle CJS require() of ESM-only
+// packages (jsdom 29's html-encoding-sniffer → @exodus/bytes chain fails with
+// "request for X is not in cache"). The async loader path handles it fine.
+// Fixed in Node 24.x — drop the flag when the workspace moves off Node 22.
+
 export const E2E_PORT = 5174;
 export default defineConfig({
-    outputDir: path.resolve(__dirname, '..', '..', 'playwright-report'),
+    outputDir: path.resolve(__dirname, 'test-results'),
     testDir: './test/e2e',
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,
@@ -55,7 +62,7 @@ export default defineConfig({
 
     /* Run local dev server before starting the tests */
     webServer: {
-        command: `yarn dev:test`,
+        command: `pnpm dev:test`,
         url: `http://localhost:${E2E_PORT}`,
         reuseExistingServer: !process.env.CI,
         timeout: 10000

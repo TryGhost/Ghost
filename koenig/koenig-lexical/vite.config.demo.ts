@@ -3,8 +3,10 @@ import svgr from 'vite-plugin-svgr';
 import {defineConfig} from 'vite';
 import {resolve, dirname} from 'path';
 import {fileURLToPath} from 'url';
+import {createRequire} from 'node:module';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
 
 // https://vitejs.dev/config/
 export default (function viteDemoConfig() {
@@ -21,7 +23,7 @@ export default (function viteDemoConfig() {
             alias: {
                 // required to prevent double-bundling of yjs due to cjs/esm mismatch
                 // (see https://github.com/facebook/lexical/issues/2153)
-                yjs: resolve('../../node_modules/yjs/src/index.js')
+                yjs: require.resolve('yjs/src/index.js')
             }
         },
         optimizeDeps: {

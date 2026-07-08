@@ -20,14 +20,13 @@
     "dev": "VITE_APP_DEV=true vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "prepare": "yarn build",
     "pretest": "tsc -p tsconfig.test.json",
     "lint": "eslint",
-    "test": "yarn test:unit && yarn test:acceptance",
-    "test:unit": "yarn nx build && vitest run",
+    "test": "pnpm test:unit && pnpm test:acceptance",
+    "test:unit": "pnpm nx build && vitest run",
     "test:acceptance": "playwright test",
-    "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 yarn test:acceptance --headed",
-    "test:acceptance:full": "ALL_BROWSERS=1 yarn test:acceptance"
+    "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 pnpm test:acceptance --headed",
+    "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance"
   },
   "peerDependencies": {
     "react": "^18.2.0",
