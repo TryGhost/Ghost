@@ -24,8 +24,9 @@
  *        node publish-koenig-packages.js --package <name> [--dry-run]
  *
  * The --package form is the escape hatch for urgent out-of-band publishes
- * (publish-koenig-package.yml workflow_dispatch): it publishes the named
- * package from the current checkout unconditionally, no change detection.
+ * (ci.yml workflow_dispatch with the koenig_package input): it publishes the
+ * named package from the current checkout unconditionally, no change
+ * detection.
  */
 
 const fs = require('node:fs');

@@ -11,6 +11,21 @@ on:
       - '[0-9]+.x' # Matches any major version branch, e.g. 5.x, 23.x
     tags:
       - 'v[0-9]*' # Version tags trigger release publishing (npm, GitHub Release, Docker)
+  # Out-of-band publish of a single koenig/* package. Lives in this workflow
+  # (rather than its own file) because npm trusted publishing allows one
+  # workflow per package, and the release lane below already claims ci.yml.
+  # Dispatch runs skip the entire CI graph and only run publish_koenig_packages.
+  workflow_dispatch:
+    inputs:
+      koenig_package:
+        description: 'Koenig package to publish out-of-band (e.g. @tryghost/kg-default-nodes)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run (build and pack, skip the actual publish)'
+        required: false
+        type: boolean
+        default: false
 
 env:
   FORCE_COLOR: 1
@@ -25,9 +40,12 @@ env:
 
 concurrency:
   # Tag pushes get a unique uninterruptible group so a release CI run always
-  # finishes; branch / PR pushes keep cancel-on-newer behavior.
-  group: ${{ startsWith(github.ref, 'refs/tags/') && format('release-{0}', github.ref) || github.head_ref || github.ref }}
-  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+  # finishes; branch / PR pushes keep cancel-on-newer behavior. Koenig publish
+  # dispatches get a per-run group so they can't cancel (or be cancelled by) a
+  # regular CI run on the same ref; actual publishes are serialized by the
+  # job-level publish-koenig-packages group instead.
+  group: ${{ github.event_name == 'workflow_dispatch' && format('koenig-publish-{0}', github.run_id) || (startsWith(github.ref, 'refs/tags/') && format('release-{0}', github.ref) || github.head_ref || github.ref) }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') && github.event_name != 'workflow_dispatch' }}
 
 # Default least-privilege token for all jobs; jobs that need more declare
 # their own permissions block, which overrides this default.
@@ -39,6 +57,10 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # workflow_dispatch is the out-of-band koenig publish lane: every other
+    # job descends from this one, so skipping it collapses the run to just
+    # publish_koenig_packages (which doesn't need setup outputs).
+    if: github.event_name != 'workflow_dispatch'
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
       IS_TAG: ${{ startsWith(github.ref, 'refs/tags/v') }}
@@ -1721,7 +1743,7 @@ jobs:
         build_public_apps,
         publish_public_apps
       ]
-    if: always()
+    if: always() && github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-slim
     steps:
       - name: Output needs
@@ -1981,8 +2003,14 @@ jobs:
         run: npm publish ghost-*.tgz --access public
 
   # --------------------------------------------------------------------------- #
-  # Publish changed koenig/* packages to npm. Gated on publish_ghost so npm
-  # only ever sees package versions whose content shipped in a released Ghost.
+  # Publish koenig/* packages to npm. Two lanes share this job so both publish
+  # under ci.yml — npm trusted publishing allows one workflow per package:
+  #   - release lane (tag push): publishes every package changed since the
+  #     previous release. Gated on publish_ghost so npm only ever sees package
+  #     versions whose content shipped in a released Ghost.
+  #   - dispatch lane (workflow_dispatch): out-of-band publish of the single
+  #     package named in the koenig_package input, for urgent npm-consumer
+  #     fixes that can't wait for the next Ghost release.
   # Ghost itself never installs these from npm (dev/CI use workspace links,
   # the production archive embeds them as component tarballs) — publishing is
   # for external consumers only. See .github/scripts/publish-koenig-packages.js
@@ -1991,13 +2019,24 @@ jobs:
     needs: [publish_ghost]
     name: Publish Koenig packages to npm
     runs-on: ubuntu-latest
-    # Stable tags only (no '-' = no prerelease): the publish script computes
-    # stable next-patch versions from npm, so running on an rc tag would
-    # publish rc-tested content as a stable external release.
+    # Release lane: stable tags only (no '-' = no prerelease): the publish
+    # script computes stable next-patch versions from npm, so running on an rc
+    # tag would publish rc-tested content as a stable external release.
+    # Dispatch lane: publish_ghost is skipped, so the needs gate is replaced
+    # with !cancelled() and publish_ghost success is required explicitly on
+    # the release side.
     if: |
-      startsWith(github.ref, 'refs/tags/v')
-      && !contains(github.ref_name, '-')
+      !cancelled()
       && github.repository == 'TryGhost/Ghost'
+      && (
+        (
+          github.event_name == 'push'
+          && startsWith(github.ref, 'refs/tags/v')
+          && !contains(github.ref_name, '-')
+          && needs.publish_ghost.result == 'success'
+        )
+        || github.event_name == 'workflow_dispatch'
+      )
     # Serialize runs so two tags cut close together can't both compute the
     # same next-patch number and collide on npm.
     concurrency:
@@ -2033,7 +2072,16 @@ jobs:
         run: npm install -g npm@11
 
       - name: Publish changed packages
+        if: github.event_name != 'workflow_dispatch'
         run: node .github/scripts/publish-koenig-packages.js "$GITHUB_REF_NAME"
+
+      - name: Publish single package
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          # Passed via env rather than interpolated into the script: dispatch
+          # inputs are untrusted shell data even on a manual workflow.
+          PACKAGE: ${{ inputs.koenig_package }}
+        run: node .github/scripts/publish-koenig-packages.js --package "$PACKAGE" ${{ inputs.dry_run && '--dry-run' || '' }}
 
   # --------------------------------------------------------------------------- #
   # Trigger docker-library-ghost auto-update — runs after the npm package is
