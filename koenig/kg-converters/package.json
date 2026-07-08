@@ -1,0 +1,46 @@
+{
+  "name": "@tryghost/kg-converters",
+  "version": "1.2.3",
+  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-converters",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/esm/index.d.ts",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput",
+    "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "pretest": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json && tsc -p tsconfig.test.json",
+    "test:unit": "NODE_ENV=testing c8 --all --src src/ --check-coverage --reporter text --reporter cobertura mocha --require tsx './test/**/*.test.ts'",
+    "test": "pnpm test:unit",
+    "posttest": "pnpm lint",
+    "lint": "eslint . --cache"
+  },
+  "files": [
+    "build"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.4",
+    "@types/mocha": "10.0.10",
+    "@types/node": "24.13.2",
+    "c8": "11.0.0",
+    "mocha": "11.7.6",
+    "sinon": "22.0.0",
+    "tsx": "4.23.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.62.1"
+  },
+  "dependencies": {
+    "lodash": "4.18.1"
+  }
+}

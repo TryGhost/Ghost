@@ -1,0 +1,68 @@
+# Koenig Lexical Html Renderer
+
+Renders a lexical editor state string to a HTML string.
+
+This library differs from Lexical's own [lexical-html](https://github.com/facebook/lexical/tree/main/packages/lexical-html) package in a few ways:
+
+1. it's output target is not an editor but rendered web pages or emails which means the handling of nodes (especially custom DecoratorNodes) will differ to the node's built-in editor-focused rendering
+2. render output will vary based on supplied options and targets, e.g. when rendering for email the output may use `<table>` elements in place of modern HTML structure
+3. it's primary usage environment is server-side
+
+## Install
+
+`npm install @tryghost/kg-lexical-html-renderer --save`
+
+or
+
+`npm install @tryghost/kg-lexical-html-renderer`
+
+
+## Usage
+
+Basic usage:
+
+```js
+const {LexicalHTMLRenderer} = require('@tryghost/kg-lexical-html-renderer');
+const renderer = new LexicalHTMLRenderer();
+
+const lexicalState = '{...}';
+const html = await renderer.render(lexicalState);
+```
+
+Options can be passed in as the second argument to `.render()`.
+
+```js
+const html = await renderer.render(lexicalState, {target: 'email'});
+```
+
+| Option   | Values |
+| -------- | ------ |
+| `target` | `'html'` (default), `'email'` |
+
+## Develop
+
+This is a mono repository, managed with [lerna](https://lernajs.io/).
+
+Follow the instructions for the top-level repo.
+1. `git clone` this repo & `cd` into it as usual
+2. Run `pnpm install` from the Ghost monorepo root.
+
+
+## Test
+
+- `pnpm lint` run just eslint
+- `pnpm test` run lint and tests
+
+
+## Running in Ghost Admin
+In order to run local changes, perform the following:
+This package is part of the Ghost monorepo workspace — `ghost/core` resolves
+it via `workspace:` automatically, so local changes are picked up with no
+linking. Run `pnpm dev` in this package for a rebuild-on-change watcher.
+
+`kg-default-nodes` must also be linked when linking this package as they are codependencies.
+
+
+# Copyright & License
+
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
