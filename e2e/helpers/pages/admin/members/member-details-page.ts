@@ -13,30 +13,52 @@ class SettingsSection extends BasePage {
     readonly confirmDeleteButton: Locator;
     readonly cancelDeleteButton: Locator;
 
-    constructor(page: Page, root: Locator) {
+    constructor(page: Page) {
         super(page);
-        // The gear-icon trigger lives inside the React root — scope it there
-        // so it doesn't ambiguously match any legacy admin element with the
-        // same testid.
-        this.memberActionsButton = root.getByTestId('member-actions');
+        // The gear-icon trigger uses the same testid in both implementations
+        // (Ember `member.hbs:44`, React `member-actions-menu.tsx`).
+        this.memberActionsButton = page.getByTestId('member-actions');
 
-        // DropdownMenuItem / DialogContent are rendered by Radix into PORTALS
-        // at the document root — outside the `member-detail` scope. Search
-        // them page-wide, but stay specific enough not to collide with Ember's
-        // hidden shell:
-        //   - menu items also fall back through `button` role because the
-        //     legacy Ember admin rendered plain `<button>`s in its dropdown.
+        // Dropdown items: Ember renders plain <button>s; React (Radix)
+        // renders role=menuitem inside a portal. The `.or()` union resolves
+        // to whichever the DOM has visible at the time.
         this.impersonateButton = page.getByRole('menuitem', {name: 'Impersonate'}).or(page.getByRole('button', {name: 'Impersonate'}));
         this.signOutOfAllDevices = page.getByRole('menuitem', {name: 'Sign out of all devices'}).or(page.getByRole('button', {name: 'Sign out of all devices'}));
         this.disableCommentingButton = page.getByRole('menuitem', {name: 'Disable commenting'}).or(page.getByRole('button', {name: 'Disable commenting'}));
         this.enableCommentingButton = page.getByRole('menuitem', {name: 'Enable commenting'}).or(page.getByRole('button', {name: 'Enable commenting'}));
 
         this.deleteButton = page.getByRole('menuitem', {name: 'Delete member'}).or(page.getByRole('button', {name: 'Delete member'}));
+        // `confirm-delete-member` / `cancel-delete-member` exist in both
+        // (Ember `delete-member.hbs:39,49`, React `member-delete-modal.tsx`).
         this.confirmDeleteButton = page.getByTestId('confirm-delete-member');
         this.cancelDeleteButton = page.getByTestId('cancel-delete-member');
     }
 }
 
+/**
+ * Page object for `/ghost/#/members/:member_id`.
+ *
+ * The route is dual-owned by the `memberDetailsReact` Labs flag: React and
+ * Ember versions of the screen coexist and one is chosen at render time.
+ * This page object works against BOTH implementations without branching.
+ *
+ * Key mechanism: when the flag is on, React renders and Ember's shell is
+ * hidden via `[hidden]` on the wrapping div (`ember-root.tsx`). When off,
+ * `MemberDetailGate` returns `<EmberFallback />` which is null, so no React
+ * member-detail elements exist. In both cases only ONE tree has VISIBLE
+ * member-detail elements — Playwright's `getByRole` and `getByLabel` skip
+ * hidden ancestors by default, so plain page-level locators resolve
+ * unambiguously without needing to scope to a React-only root.
+ *
+ * Locators that stay page-scoped:
+ *   - Form controls (`name`, `email`, `note`) — visible-only role match.
+ *   - Save / Saved / Retry buttons — same reasoning.
+ *   - Members back link — attribute exists in both templates; only one is
+ *     visible at a time.
+ *   - Modal contents (Copy link, magic link, confirm/cancel dialogs) — Radix
+ *     renders these in a portal outside any nested root, so page-wide is the
+ *     only place they can be found.
+ */
 export class MemberDetailsPage extends AdminPage {
     readonly nameInput: Locator;
     readonly emailInput: Locator;
@@ -69,39 +91,33 @@ export class MemberDetailsPage extends AdminPage {
         super(page);
         this.pageUrl = '/ghost/#/members/';
 
-        // Post-Phase 8 cutover, the URL `/members/:id` renders React. Scope
-        // *page-body* locators to the React root so Ember's hidden shell (which
-        // shares `data-test-link="members-back"` and a few other test hooks)
-        // can't ambiguously match. Anything rendered by Radix in a portal —
-        // menu items, modal contents — has to be searched page-wide instead.
-        const root = page.getByTestId('member-detail');
-
-        this.nameInput = root.getByRole('textbox', {name: 'Name'});
-        this.emailInput = root.getByRole('textbox', {name: 'Email'});
-        this.noteInput = root.getByRole('textbox', {name: 'Note'});
-        this.labelsInput = root.getByText('Labels').locator('+ div');
+        this.nameInput = page.getByRole('textbox', {name: 'Name'});
+        this.emailInput = page.getByRole('textbox', {name: 'Email'});
+        this.noteInput = page.getByRole('textbox', {name: 'Note'});
+        this.labelsInput = page.getByText('Labels').locator('+ div');
         this.labels = this.labelsInput.getByRole('listitem');
-        this.newsletterSubscriptionToggles = root.getByTestId('member-subscription-toggle');
+        this.newsletterSubscriptionToggles = page.getByTestId('member-subscription-toggle');
 
-        this.saveButton = root.getByRole('button', {name: 'Save'});
-        this.savedButton = root.getByRole('button', {name: 'Saved'});
-        this.retryButton = root.getByRole('button', {name: 'Retry'});
-        this.membersBackLink = root.locator('[data-test-link="members-back"]');
-
-        // Dialog contents render in a portal — must be searched page-wide.
+        this.saveButton = page.getByRole('button', {name: 'Save'});
+        this.savedButton = page.getByRole('button', {name: 'Saved'});
+        this.retryButton = page.getByRole('button', {name: 'Retry'});
+        this.membersBackLink = page.locator('[data-test-link="members-back"]');
         this.copyLinkButton = page.getByRole('button', {name: 'Copy link'});
         this.magicLinkInput = page.getByTestId('member-signin-url').last();
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
-        this.settingsSection = new SettingsSection(page, root);
+        this.settingsSection = new SettingsSection(page);
 
-        this.activityHeading = root.getByRole('heading', {name: 'Activity', level: 4});
+        this.activityHeading = page.getByRole('heading', {name: 'Activity', level: 4});
 
-        this.disableCommentingModal = page.getByTestId('disable-commenting-modal');
+        // Ember uses `data-test-modal="disable-commenting"`, React uses
+        // `data-testid="disable-commenting-modal"`. The `.or()` union covers
+        // both by falling back to the React testid via `getByTestId`.
+        this.disableCommentingModal = page.getByTestId('disable-commenting-modal').or(page.locator('[data-test-modal="disable-commenting"]'));
         this.disableCommentingConfirmButton = this.disableCommentingModal.getByRole('button', {name: 'Disable commenting'});
         this.disableCommentingCancelButton = this.disableCommentingModal.getByRole('button', {name: 'Cancel'});
         this.hideCommentsCheckbox = this.disableCommentingModal.getByText('Hide all previous comments');
-        this.commentingDisabledIndicator = root.getByText('Comments disabled');
-        this.enableCommentingLink = root.getByRole('button', {name: 'Enable', exact: true});
+        this.commentingDisabledIndicator = page.getByText('Comments disabled');
+        this.enableCommentingLink = page.getByRole('button', {name: 'Enable', exact: true});
     }
 
     async clickNewsletterSubscriptionToggle(index: number = 0) {
