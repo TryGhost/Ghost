@@ -1,4 +1,4 @@
-import {NOTE_MAX_LENGTH, buildMemberFieldEditPayload, getMemberEditableSlice, getMemberNewslettersUiEnabled, getMemberSuppressionInfo, getNoteCharactersLeft, isDraftInSyncWithServer, isValidMemberEmail, resolveSlugsToLabels, toggleMemberNewsletter} from './member-detail-edit';
+import {NOTE_MAX_LENGTH, buildMemberFieldEditPayload, getEmailErrorMessage, getMemberEditableSlice, getMemberNewslettersUiEnabled, getMemberSuppressionInfo, getNoteCharactersLeft, isDraftInSyncWithServer, isValidMemberEmail, resolveSlugsToLabels, toggleMemberNewsletter} from './member-detail-edit';
 import {describe, expect, it} from 'vitest';
 
 describe('getMemberEditableSlice', () => {
@@ -156,6 +156,32 @@ describe('isValidMemberEmail', () => {
         expect(isValidMemberEmail('a@b')).toBe(false);
         expect(isValidMemberEmail('a@b.')).toBe(false);
         expect(isValidMemberEmail('a b@example.com')).toBe(false);
+    });
+});
+
+describe('getEmailErrorMessage', () => {
+    it('returns null when the field has not been touched, regardless of value', () => {
+        // Core New-member bug: the initial render of the create screen would
+        // paint "Email is required." before the user typed anything. Gating
+        // on `touched` keeps the field neutral until the user interacts.
+        expect(getEmailErrorMessage('', false)).toBeNull();
+        expect(getEmailErrorMessage('not-an-email', false)).toBeNull();
+        expect(getEmailErrorMessage('ada@example.com', false)).toBeNull();
+    });
+
+    it('reports "Email is required." when touched and empty (or whitespace only)', () => {
+        expect(getEmailErrorMessage('', true)).toBe('Email is required.');
+        expect(getEmailErrorMessage('   ', true)).toBe('Email is required.');
+    });
+
+    it('reports "Invalid email." when touched and non-empty but malformed', () => {
+        expect(getEmailErrorMessage('not-an-email', true)).toBe('Invalid email.');
+        expect(getEmailErrorMessage('a@b', true)).toBe('Invalid email.');
+    });
+
+    it('returns null when touched and the value is a valid email', () => {
+        expect(getEmailErrorMessage('ada@example.com', true)).toBeNull();
+        expect(getEmailErrorMessage('  ada@example.com  ', true)).toBeNull();
     });
 });
 

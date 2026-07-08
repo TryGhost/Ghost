@@ -10,7 +10,7 @@ import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescripti
 import {DetailPage} from '@tryghost/shade/page-templates';
 import {Link, useConfirmUnload, useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {PageHeader} from '@tryghost/shade/patterns';
-import {buildMemberFieldEditPayload, getMemberEditableSlice, getMemberNewslettersUiEnabled, isDraftInSyncWithServer, isValidMemberEmail, normalizeDraftForComparison} from './member-detail-edit';
+import {buildMemberFieldEditPayload, getEmailErrorMessage, getMemberEditableSlice, getMemberNewslettersUiEnabled, isDraftInSyncWithServer, isValidMemberEmail, normalizeDraftForComparison} from './member-detail-edit';
 import {dequal} from 'dequal';
 import {deriveMemberDetailBackPath} from './member-detail-nav';
 import {formatMemberName} from '@tryghost/shade/app';
@@ -142,9 +142,16 @@ const MemberDetail: React.FC = () => {
     const serverSlice = isCreating ? getMemberEditableSlice({}) : (member ? getMemberEditableSlice(member) : undefined);
     const hasUnsavedChanges = !!draft && !!serverSlice && !dequal(normalizeDraftForComparison(draft), serverSlice);
     const emailValid = !!draft && isValidMemberEmail(draft.email);
-    const emailError = draft && !emailValid
-        ? (draft.email.trim() === '' ? 'Email is required.' : 'Invalid email.')
-        : null;
+    // `touched` is set on the email field's first blur. That keeps the New
+    // member screen from painting an "Email is required." error before the
+    // user has done anything, matching Ember's save-time-only validator
+    // (`ghost/admin/app/validators/member.js:15`). Reset below when the
+    // member id or create-mode flag changes so a fresh screen starts clean.
+    const [emailTouched, setEmailTouched] = React.useState(false);
+    React.useEffect(() => {
+        setEmailTouched(false);
+    }, [member?.id, isCreating]);
+    const emailError = draft ? getEmailErrorMessage(draft.email, emailTouched) : null;
 
     const onFieldChange = (patch: Partial<MemberEditableFields>) => {
         if (activeMutation.isError) {
@@ -309,6 +316,7 @@ const MemberDetail: React.FC = () => {
                                             draft={draft}
                                             emailError={emailError}
                                             onChange={onFieldChange}
+                                            onEmailBlur={() => setEmailTouched(true)}
                                         />
                                     </CardContent>
                                 </Card>

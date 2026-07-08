@@ -10,9 +10,10 @@ interface MemberDetailFormProps {
     emailError?: string | null;
     disabled?: boolean;
     onChange: (patch: Partial<MemberEditableFields>) => void;
+    onEmailBlur?: () => void;
 }
 
-const MemberDetailForm: React.FC<MemberDetailFormProps> = ({draft, emailError, disabled, onChange}) => {
+const MemberDetailForm: React.FC<MemberDetailFormProps> = ({draft, emailError, disabled, onChange, onEmailBlur}) => {
     // Soft limit: the note can be typed past 500 (Ember has no hard cap); the counter
     // just turns negative and red.
     const noteCharactersLeft = getNoteCharactersLeft(draft.note);
@@ -55,6 +56,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({draft, emailError, d
                         id='member-email'
                         type='email'
                         value={draft.email}
+                        onBlur={onEmailBlur}
                         onChange={e => onChange({email: e.target.value})}
                     />
                     {emailError && <p className='text-sm text-destructive'>{emailError}</p>}

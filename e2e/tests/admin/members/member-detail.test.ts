@@ -1046,4 +1046,35 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         expect(members[0].subscribed).toBe(true);
         expect(members[0].newsletters.length).toBeGreaterThan(0);
     });
+
+    test('new member: email field is not in an error state before the user interacts', async ({page}) => {
+        // Regression guard for the initial-render error paint: the New member
+        // screen used to render "Email is required." + aria-invalid on first
+        // paint (`isValidMemberEmail('')` fires immediately). That's a wrong-
+        // by-default state — the user hasn't touched the field yet, so the
+        // UI shouldn't shout at them. Ember's validator only runs on save
+        // (`ghost/admin/app/validators/member.js:15`); we now match that by
+        // gating the error message on a "touched" flag flipped on blur.
+        const memberDetailsPage = new MemberDetailsPage(page);
+        await page.goto(memberPath('new'));
+
+        await expect(page.getByTestId('member-detail-title')).toHaveText('New member');
+        await expect(memberDetailsPage.emailInput).toHaveAttribute('aria-invalid', 'false');
+        await expect(page.getByText('Email is required.')).toHaveCount(0);
+        await expect(page.getByText('Invalid email.')).toHaveCount(0);
+    });
+
+    test('new member: email error appears after blurring a malformed value', async ({page}) => {
+        // Complements the initial-state test above: once the user has actually
+        // engaged with the field, the error IS expected. `Tab` blurs the input
+        // (leaves focus) which is what flips the `emailTouched` state.
+        const memberDetailsPage = new MemberDetailsPage(page);
+        await page.goto(memberPath('new'));
+
+        await memberDetailsPage.emailInput.fill('not-an-email');
+        await memberDetailsPage.emailInput.blur();
+
+        await expect(memberDetailsPage.emailInput).toHaveAttribute('aria-invalid', 'true');
+        await expect(page.getByText('Invalid email.')).toBeVisible();
+    });
 });

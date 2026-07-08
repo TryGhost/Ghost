@@ -71,6 +71,26 @@ export function isValidMemberEmail(email: string): boolean {
     return MEMBER_EMAIL_REGEX.test(email.trim());
 }
 
+/**
+ * Message to render under the email field. Gated on `touched` so the empty
+ * initial state on the New member screen (or an email cleared briefly during
+ * a paste) doesn't render as an error the user hasn't provoked yet. Ember's
+ * validator runs on save-attempt for the same reason
+ * (`ghost/admin/app/validators/member.js:15`).
+ */
+export function getEmailErrorMessage(email: string, touched: boolean): string | null {
+    if (!touched) {
+        return null;
+    }
+    if (email.trim() === '') {
+        return 'Email is required.';
+    }
+    if (!isValidMemberEmail(email)) {
+        return 'Invalid email.';
+    }
+    return null;
+}
+
 export interface MemberSuppressionInfo {
     // Undefined for a `suppressed:true` member without a bounce/complaint history —
     // e.g. `email_disabled` was flipped directly. Ember still renders the banner in
