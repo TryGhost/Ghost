@@ -173,6 +173,11 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
 });
 
 test.describe('Ghost Admin - Disable Commenting Cache Invalidation', () => {
+    // Pin to Ember — this file lives under `members-legacy/` and interacts
+    // with the member detail screen via `MemberDetailsPage`. Guards against a
+    // future flag default flip silently routing us to the React screen.
+    test.use({labs: {memberDetailsReact: false}});
+
     let memberFactory: MemberFactory;
     let postFactory: PostFactory;
     let commentFactory: CommentFactory;

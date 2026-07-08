@@ -156,7 +156,8 @@ export class MemberDetailsPage extends AdminPage {
         this.emberMemberActions = page.locator('#ember-app').getByTestId('member-actions');
         this.reactMemberActions = page.getByTestId('member-detail').getByTestId('member-actions');
         this.logoutConfirmModal = page.locator('[data-test-modal="logout-member"]')
-            .or(page.getByTestId('logout-member-modal'));
+            .or(page.getByTestId('logout-member-modal'))
+            .filter({visible: true});
     }
 
     async clickNewsletterSubscriptionToggle(index: number = 0) {
