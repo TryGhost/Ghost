@@ -125,4 +125,21 @@ describe('GiftLinkModal', () => {
         });
         expect(mockEnsureGiftLink).toHaveBeenLastCalledWith({id: 'other-post-id', resource: 'posts'});
     });
+
+    it('ensures again when the open modal receives a different resource', async () => {
+        const {rerender} = render(
+            <GiftLinkModal postId='post-id' resource='posts' open onOpenChange={vi.fn()} />
+        );
+
+        await waitFor(() => {
+            expect(mockEnsureGiftLink).toHaveBeenCalledTimes(1);
+        });
+
+        rerender(<GiftLinkModal postId='post-id' resource='pages' open onOpenChange={vi.fn()} />);
+
+        await waitFor(() => {
+            expect(mockEnsureGiftLink).toHaveBeenCalledTimes(2);
+        });
+        expect(mockEnsureGiftLink).toHaveBeenLastCalledWith({id: 'post-id', resource: 'pages'});
+    });
 });

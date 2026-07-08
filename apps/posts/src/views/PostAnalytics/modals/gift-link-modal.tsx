@@ -37,6 +37,7 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
     const cancelResetRef = useRef<HTMLButtonElement>(null);
     const ensureGiftLinkRequestRef = useRef<{
         postId: string;
+        resource: GiftLinkResource;
         request: ReturnType<typeof ensureGiftLink>;
     } | null>(null);
 
@@ -55,9 +56,10 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
         }
 
         let ensureRequest = ensureGiftLinkRequestRef.current;
-        if (ensureRequest?.postId !== postId) {
+        if (ensureRequest?.postId !== postId || ensureRequest.resource !== resource) {
             ensureRequest = {
                 postId,
+                resource,
                 request: ensureGiftLink({id: postId, resource})
             };
             ensureGiftLinkRequestRef.current = ensureRequest;
