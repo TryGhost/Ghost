@@ -33,6 +33,7 @@ Object {
       "indexnow": true,
       "lexicalIndicators": true,
       "llmsTxt": true,
+      "memberDetailsReact": true,
       "members": true,
       "pictureImageFormats": true,
       "smarterCounts": true,
