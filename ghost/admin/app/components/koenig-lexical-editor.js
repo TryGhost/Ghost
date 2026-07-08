@@ -423,6 +423,43 @@ export default class KoenigLexicalEditor extends Component {
             return hasDirectKeys || hasConnectKeys;
         };
 
+        const fetchOffers = async () => {
+            try {
+                const offers = await this.fetchOffersTask.perform();
+                return offers.map(offer => ({id: offer.id, name: offer.name}));
+            } catch (e) {
+                // e.g. missing permissions — cards degrade to no offer options
+                return [];
+            }
+        };
+
+        // Current site-wide wall copy (with the rendered defaults), per wall
+        // type, so the paywall card can show what readers actually see.
+        // Sign-up walls and payment walls have separate site-wide copy.
+        const sitePaywallCopy = {
+            accentColor: this.settings.accentColor || null,
+            signup: {
+                heading: this.settings.paywallHeadingMembers || 'This post is for subscribers only',
+                description: this.settings.paywallSignupDescription || '',
+                buttonText: this.settings.paywallSignupButtonText || 'Subscribe now'
+            },
+            payment: {
+                heading: this.settings.paywallHeadingPaid || 'This post is for paying subscribers only',
+                tiersHeading: this.settings.paywallHeadingTiers || '',
+                description: this.settings.paywallDescription || '',
+                buttonText: this.settings.paywallButtonText || 'Subscribe now',
+                emailButtonText: this.settings.paywallEmailButtonText || '',
+                emailHeading: this.settings.paywallEmailHeading || '',
+                emailDescription: this.settings.paywallEmailDescription || ''
+            },
+            // an active campaign takes over every payment wall's offer — the
+            // card tells the author when their post's offer is being overridden
+            campaign: Boolean(this.settings.paywallCampaignMode && this.settings.paywallOfferCode),
+            // whether the publisher has set any site-wide copy (vs built-in
+            // defaults) — the card warns when a post's message replaces it
+            isCustomised: Boolean(this.settings.paywallHeadingMembers || this.settings.paywallHeadingPaid || this.settings.paywallHeadingTiers || this.settings.paywallDescription || this.settings.paywallButtonText || this.settings.paywallSignupDescription || this.settings.paywallSignupButtonText)
+        };
+
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
@@ -430,6 +467,10 @@ export default class KoenigLexicalEditor extends Component {
             fetchAutocompleteLinks,
             fetchEmbed,
             fetchLabels,
+            fetchOffers,
+            sitePaywallCopy,
+            // free-membership sites gate for members by default
+            defaultPaywallGate: this.settings.defaultContentVisibility === 'members' ? 'members' : 'paid',
             renderLabels: !this.session.user.isContributor,
             feature: {
                 transistor: this.settings.transistor

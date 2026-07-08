@@ -1,0 +1,42 @@
+{{#if this.showFullContentWarning}}
+    <div class="gh-box gh-box-alert mt3 mb3" data-test-paywall-notice="full-content-warning">
+        <div class="fw6">Free members will get the full paid post</div>
+        <div class="mt1">This post is for paid members, but there&rsquo;s no paywall in the content &mdash; the email sent to free members won&rsquo;t be cut off. Add a paywall in the editor to send them a preview instead.</div>
+    </div>
+{{/if}}
+
+{{#if this.showPreviewOpportunity}}
+    {{#let (members-count-fetcher query=(hash filter=this.freeCountFilter)) as |countFetcher|}}
+        <div class="gh-box gh-box-tip mt3 mb3" data-test-paywall-notice="preview-opportunity">
+            <div class="fw6">Send a preview to free members?</div>
+            <div class="mt1">
+                You&rsquo;ve added a paywall to this post, but your
+                {{#if countFetcher.count}}<strong>{{format-number countFetcher.count}}</strong>{{/if}}
+                free {{gh-pluralize countFetcher.count "subscriber" without-count=true}} aren&rsquo;t receiving this email. They&rsquo;d get a preview that ends at the paywall &mdash; a proven way to convert them to paid.
+            </div>
+            <button class="gh-btn gh-btn-outline mt2" type="button" {{on "click" this.includeFreeMembers}} data-test-button="include-free-members"><span>Include free members</span></button>
+        </div>
+    {{/let}}
+{{/if}}
+
+{{#if this.showSignupWallInfo}}
+    <div class="gh-box gh-box-green mt3 mb3" data-test-paywall-notice="signup-wall-info">
+        <div class="fw6">Everyone on your email list gets the full post</div>
+        <div class="mt1">The sign-up wall only shows to visitors on your site — email subscribers are already members.</div>
+    </div>
+{{/if}}
+
+{{#if this.showPreviewConfirmation}}
+    {{#let (members-count-fetcher query=(hash filter=this.freeCountFilter)) as |countFetcher|}}
+        <div class="gh-box gh-box-green mt3 mb3" data-test-paywall-notice="preview-confirmation">
+            <div class="fw6">
+                {{#if countFetcher.count}}
+                    Your {{format-number countFetcher.count}} free {{gh-pluralize countFetcher.count "subscriber" without-count=true}} get a preview
+                {{else}}
+                    Free members get a preview
+                {{/if}}
+            </div>
+            <div class="mt1">Their email ends at the paywall with an upgrade call-to-action; paid members receive the full post.</div>
+        </div>
+    {{/let}}
+{{/if}}

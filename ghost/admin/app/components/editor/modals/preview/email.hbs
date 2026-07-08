@@ -56,6 +56,11 @@
                                             {{on-key "Enter" (perform this.sendPreviewEmailTask)}}
                                         />
                                         <p class="description">You'll receive this as a {{@memberSegment}} member.</p>
+                                        {{#if (eq this.contentSource "sent")}}
+                                            <p class="description" data-test-email-content-source>Showing the email as it was sent &mdash; later edits to the post don&rsquo;t change sent emails.</p>
+                                        {{else if (eq this.contentSource "live-after-send")}}
+                                            <p class="description" data-test-email-content-source>Live preview &mdash; this post was already emailed; sent emails keep the version from the time of sending.</p>
+                                        {{/if}}
                                         <GhTaskButton
                                             @task={{this.sendPreviewEmailTask}}
                                             @buttonText="Send"

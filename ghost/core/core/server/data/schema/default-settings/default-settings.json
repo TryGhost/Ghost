@@ -372,6 +372,58 @@
         "blocked_email_domains": {
             "defaultValue": "[]",
             "type": "array"
+        },
+        "paywall_heading_members": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_heading_paid": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_heading_tiers": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_description": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_button_text": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_offer_code": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_signup_description": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_signup_button_text": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_email_button_text": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_email_heading": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_email_description": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_campaign_mode": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "portal": {

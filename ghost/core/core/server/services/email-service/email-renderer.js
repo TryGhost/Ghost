@@ -1359,14 +1359,96 @@ class EmailRenderer {
             feedbackButtonCellWidth,
 
             // Paywall
-            paywall: addPaywall ? {
-                signupUrl: signupUrl.href
-            } : null,
+            paywall: addPaywall ? await this.#getPaywallData(post, signupUrl) : null,
 
             year: new Date().getFullYear().toString()
         };
 
         return data;
+    }
+
+    /**
+     * Finds the first paywall card in the post's lexical document so custom
+     * CTA copy set on the card in the editor can drive the email paywall.
+     *
+     * @private
+     * @param {Post} post
+     * @returns {{heading?: string, description?: string, buttonText?: string} | null}
+     */
+    #getLexicalPaywallCard(post) {
+        try {
+            const lexical = JSON.parse(post.get('lexical') || '{}');
+            const stack = [...(lexical.root?.children || [])];
+            while (stack.length) {
+                const node = stack.shift();
+                if (node?.type === 'paywall') {
+                    return node;
+                }
+                if (Array.isArray(node?.children)) {
+                    stack.push(...node.children);
+                }
+            }
+        } catch (e) {
+            // invalid lexical document — treat as no card
+        }
+        return null;
+    }
+
+    /**
+     * Builds the paywall section data for a truncated (free-segment) email.
+     * Custom copy comes from the paywall card itself when set in the editor,
+     * then posts_meta (API-settable), then the default upgrade CTA.
+     *
+     * @private
+     * @param {Post} post
+     * @param {URL} signupUrl
+     */
+    async #getPaywallData(post, signupUrl) {
+        const card = this.#getLexicalPaywallCard(post);
+        const postsMeta = post.related('posts_meta');
+        const siteUrl = this.#urlUtils.urlFor('home', true);
+
+        // Offers resolve live at send time and only while active, so a
+        // retired promo can never be advertised. Precedence matches the web
+        // wall: a site offer in campaign mode takes over; otherwise the
+        // post's own offer wins over the steady-state site offer.
+        const resolveActiveOfferCode = async (query) => {
+            try {
+                const offer = await this.#models.Offer.findOne(query);
+                return offer?.get('active') ? (offer.get('code') ?? null) : null;
+            } catch (e) {
+                return null;
+            }
+        };
+
+        const siteOfferSetting = this.#settingsCache.get('paywall_offer_code');
+        const siteOfferCode = siteOfferSetting ? await resolveActiveOfferCode({code: siteOfferSetting}) : null;
+        const campaignActive = this.#settingsCache.get('paywall_campaign_mode') === true && siteOfferCode;
+
+        let offerCode = null;
+        if (campaignActive) {
+            offerCode = siteOfferCode;
+        } else {
+            offerCode = (card?.offerId ? await resolveActiveOfferCode({id: card.offerId}) : null) ||
+                postsMeta?.get('email_paywall_offer_code') ||
+                siteOfferCode;
+        }
+
+        // Same resolution order as the web wall: this post's card, then the
+        // site-wide paywall settings, then the built-in template copy —
+        // "blank fields use your site-wide message" must hold in email too
+        const siteHeadingKey = post.get('visibility') === 'tiers' ? 'paywall_heading_tiers' : 'paywall_heading_paid';
+
+        // Email readers are always existing members, so an email-specific
+        // variant of the message wins over the shared one at each level:
+        // card email > card > site email > site > built-in
+        return {
+            signupUrl: signupUrl.href,
+            heading: card?.emailHeading || card?.heading || postsMeta?.get('email_paywall_heading') || this.#settingsCache.get('paywall_email_heading') || this.#settingsCache.get(siteHeadingKey),
+            description: card?.emailDescription || card?.description || postsMeta?.get('email_paywall_description') || this.#settingsCache.get('paywall_email_description') || this.#settingsCache.get('paywall_description'),
+            buttonText: card?.emailButtonText || card?.buttonText || postsMeta?.get('email_paywall_button_text') || this.#settingsCache.get('paywall_email_button_text') || this.#settingsCache.get('paywall_button_text'),
+            offerUrl: offerCode ? new URL(offerCode, siteUrl).href : null
+        };
     }
 
     /**

@@ -172,6 +172,12 @@ export default class PublishOptions {
         return this.newsletters.length === 1;
     }
 
+    get postHasPaywall() {
+        // lexicalScratch carries unsaved edits — a fast publish can open this
+        // flow before autosave has flushed the paywall card into post.lexical
+        return ((this.post.lexicalScratch || this.post.lexical) || '').includes('"type":"paywall"');
+    }
+
     get recipientFilter() {
         if (this.selectedRecipientFilter === undefined) {
             return (this.post.newsletter && this.post.emailSegment) || this.defaultRecipientFilter;
@@ -200,6 +206,13 @@ export default class PublishOptions {
             }
 
             if (this.post.visibility === 'paid') {
+                // A paywall in the content means free members get a preview
+                // that ends at the paywall, so include them by default —
+                // sending the preview is the point of adding a paywall
+                if (this.postHasPaywall) {
+                    return 'status:free,status:-free';
+                }
+
                 return 'status:-free';
             }
 

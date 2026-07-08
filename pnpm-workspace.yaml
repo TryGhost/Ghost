@@ -219,3 +219,5 @@ minimumReleaseAgeExclude:
   - "knex-migrator"
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+patchedDependencies:
+  '@tryghost/admin-api-schema@4.7.5': patches/@tryghost__admin-api-schema@4.7.5.patch
