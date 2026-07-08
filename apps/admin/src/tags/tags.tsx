@@ -1,6 +1,6 @@
-import MainLayout from '@components/layout/main-layout';
 import React from 'react';
 import TagsList from './components/tags-list';
+import {Box, Container} from '@tryghost/shade/primitives';
 import {Button, DropdownMenuCheckboxItem, EmptyIndicator, LoadingIndicator, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {ListPage} from '@tryghost/shade/page-templates';
@@ -26,7 +26,8 @@ const Tags: React.FC = () => {
     });
 
     return (
-        <MainLayout>
+        <Box className='size-full'>
+            <Container className='relative flex h-full flex-col' size='page'>
             <ListPage data-testid="tags-page">
                 <ListPage.Header>
                     <PageHeader blurredBackground={false} sticky={false}>
@@ -108,7 +109,7 @@ const Tags: React.FC = () => {
                         </div>
                     ) : (
                         <TagsList
-                            fetchNextPage={fetchNextPage}
+                            fetchNextPage={() => void fetchNextPage()}
                             hasNextPage={hasNextPage}
                             isFetchingNextPage={isFetchingNextPage}
                             items={data?.tags ?? []}
@@ -117,7 +118,8 @@ const Tags: React.FC = () => {
                     )}
                 </ListPage.Body>
             </ListPage>
-        </MainLayout>
+            </Container>
+        </Box>
     );
 };
 

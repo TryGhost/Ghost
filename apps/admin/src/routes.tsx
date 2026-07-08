@@ -77,11 +77,13 @@ export const routes: RouteObject[] = [
         element: <ForceUpgradeGuard />,
         children: [
             {
-                // Override the tag detail route from the posts app to ensure we
-                // correctly delegate to Ember since we can't remove the blank screen in
-                // the posts app. The blank screen needs to be there to prevent the
-                // router error fallback from triggering when navigating from the tag
-                // list to a tag detail page.
+                path: "/tags",
+                lazy: lazyComponent(() => import("./tags/tags")),
+            },
+            {
+                // The tag detail route delegates to Ember. It must be declared
+                // so navigating from the tag list to a detail page doesn't trip
+                // the router error fallback before Ember takes over.
                 path: "/tags/:tagSlug",
                 Component: EmberFallback,
                 handle: emberFallbackHandle,
