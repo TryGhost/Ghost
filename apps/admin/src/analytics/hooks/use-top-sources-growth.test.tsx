@@ -173,7 +173,7 @@ describe('useTopSourcesGrowth', () => {
             expect(mockUseTopSourcesGrowthAPI).toHaveBeenCalledWith({
                 searchParams: expect.objectContaining({
                     order: orderBy
-                })
+                }) as Record<string, string>
             });
         });
     });
@@ -187,7 +187,7 @@ describe('useTopSourcesGrowth', () => {
             expect(mockUseTopSourcesGrowthAPI).toHaveBeenCalledWith({
                 searchParams: expect.objectContaining({
                     limit: limit.toString()
-                })
+                }) as Record<string, string>
             });
         });
     });

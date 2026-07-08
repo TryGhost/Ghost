@@ -117,7 +117,7 @@ export const generateParameterTests = (
                     expect.objectContaining({
                         searchParams: expect.objectContaining({
                             order: 'open_rate desc'
-                        })
+                        }) as Record<string, string>
                     })
                 );
             }
@@ -134,7 +134,7 @@ export const generateParameterTests = (
                     expect.objectContaining({
                         searchParams: expect.objectContaining({
                             newsletter_id: testId
-                        })
+                        }) as Record<string, string>
                     })
                 );
             }

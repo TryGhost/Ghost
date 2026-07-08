@@ -116,19 +116,4 @@ export default tseslint.config([
       ],
     },
   },
-  // Analytics test doubles (migrated from @tryghost/stats) build `any`-typed
-  // partial mocks of react-query results, moment, faker, etc. Relax only the
-  // type-aware no-unsafe-* family for these test files and their shared
-  // helpers — production code under src/** keeps full strictness.
-  // TODO(PLA-124): tighten the mock typings and remove this scoped override.
-  {
-    files: ['src/analytics/**/*.test.{ts,tsx}', 'test-utils/analytics/**/*.{ts,tsx}'],
-    rules: {
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-    },
-  },
 ])

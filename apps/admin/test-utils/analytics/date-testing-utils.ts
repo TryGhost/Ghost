@@ -94,22 +94,24 @@ export const DATE_TEST_SCENARIOS = {
     yearToDate: {range: -1, description: 'year to date'}
 } as const;
 
+// Mock external date functions. `vi.mock` is hoisted by vitest and must stay at
+// the top level of the module — importing this file registers the mock for the
+// test file that pulls it in.
+vi.mock('@tryghost/shade/app', async () => {
+    const actual = await vi.importActual<Record<string, unknown>>('@tryghost/shade/app');
+    return {
+        ...actual,
+        getRangeDates: vi.fn().mockImplementation(mockGetRangeDates()),
+        formatQueryDate: vi.fn().mockImplementation(mockFormatQueryDate())
+    };
+});
+
 /**
  * Setup date mocking for hook tests
  * This should be called in beforeEach for hooks that use date functions
  */
 export const setupDateMocking = () => {
     const mockDate = mockSystemDate();
-
-    // Mock external date functions
-    vi.mock('@tryghost/shade/app', async () => {
-        const actual = await vi.importActual<Record<string, unknown>>('@tryghost/shade/app');
-        return {
-            ...actual,
-            getRangeDates: vi.fn().mockImplementation(mockGetRangeDates()),
-            formatQueryDate: vi.fn().mockImplementation(mockFormatQueryDate())
-        };
-    });
 
     return {
         mockDate,
@@ -134,6 +136,6 @@ export const expectApiCallWithDateRange = (
             date_to: expectedDateTo,
             ...additionalParams
         },
-        enabled: expect.any(Boolean)
+        enabled: expect.any(Boolean) as boolean
     });
 };

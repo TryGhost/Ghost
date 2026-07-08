@@ -27,7 +27,7 @@ vi.mock('@tryghost/shade/app', async () => {
             }
             return {startDate, endDate, timezone: 'UTC'};
         }),
-        formatQueryDate: vi.fn(date => date.format('YYYY-MM-DD'))
+        formatQueryDate: vi.fn((date: moment.Moment) => date.format('YYYY-MM-DD'))
     };
 });
 

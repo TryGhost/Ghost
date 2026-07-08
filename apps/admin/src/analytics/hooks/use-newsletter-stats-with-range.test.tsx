@@ -89,8 +89,7 @@ describe('Newsletter Stats Hooks', () => {
             hasPreviousPage: false,
             isFetchingNextPage: false,
             isFetchingPreviousPage: false
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
+        } as unknown as ReturnType<typeof mockUseBrowseNewsletters>);
     });
 
     afterEach(function () {
@@ -265,8 +264,7 @@ describe('Newsletter Stats Hooks', () => {
                 data: undefined,
                 isLoading: false,
                 error: null
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterStats>);
 
             const {result} = renderHook(() => useNewsletterStatsWithRange(30, 'date desc', undefined, false), {wrapper});
 
@@ -285,7 +283,7 @@ describe('Newsletter Stats Hooks', () => {
 
             expect(result.current).toBeDefined();
             expect(mockUseNewsletterStats).toHaveBeenCalledWith({
-                searchParams: expect.any(Object),
+                searchParams: expect.any(Object) as Record<string, string>,
                 enabled: true
             });
         });
@@ -301,8 +299,7 @@ describe('Newsletter Stats Hooks', () => {
                 data: undefined,
                 isLoading: false,
                 error: null
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseSubscriberCount>);
 
             const {result} = renderHook(() => useSubscriberCountWithRange(30, undefined, false), {wrapper});
 
@@ -321,7 +318,7 @@ describe('Newsletter Stats Hooks', () => {
 
             expect(result.current).toBeDefined();
             expect(mockUseSubscriberCount).toHaveBeenCalledWith({
-                searchParams: expect.any(Object),
+                searchParams: expect.any(Object) as Record<string, string>,
                 enabled: true
             });
         });
@@ -389,8 +386,7 @@ describe('Newsletter Stats Hooks', () => {
                 data: undefined,
                 isLoading: false,
                 error: null
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterBasicStats>);
 
             const {result} = renderHook(() => useNewsletterBasicStatsWithRange(30, 'date desc', undefined, false), {wrapper});
 
@@ -480,8 +476,7 @@ describe('Newsletter Stats Hooks', () => {
                 data: undefined,
                 isLoading: false,
                 error: null
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterClickStats>);
 
             const {result} = renderHook(() => useNewsletterClickStatsWithRange('newsletter-123', [], false), {wrapper});
 
@@ -520,8 +515,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: null,
                 isError: false,
                 refetch: vi.fn()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterBasicStats>);
 
             mockUseNewsletterClickStats.mockReturnValue({
                 data: clickStatsData,
@@ -529,8 +523,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: null,
                 isError: false,
                 refetch: vi.fn()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterClickStats>);
 
             const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
 
@@ -559,8 +552,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: null,
                 isError: false,
                 refetch: vi.fn()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterBasicStats>);
 
             mockUseNewsletterClickStats.mockReturnValue({
                 data: {stats: []},
@@ -568,8 +560,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: null,
                 isError: false,
                 refetch: vi.fn()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterClickStats>);
 
             const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
 
@@ -590,8 +581,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: null,
                 isError: false,
                 refetch: vi.fn()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterBasicStats>);
 
             const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
 
@@ -607,8 +597,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: null,
                 isError: false,
                 refetch: vi.fn()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterBasicStats>);
 
             const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
 
@@ -624,8 +613,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: null,
                 isError: false,
                 refetch: vi.fn()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterBasicStats>);
 
             mockUseNewsletterClickStats.mockReturnValue({
                 data: null,
@@ -633,8 +621,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: null,
                 isError: false,
                 refetch: vi.fn()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterClickStats>);
 
             const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
 
@@ -653,8 +640,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: basicError,
                 isError: true,
                 refetch: vi.fn()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterBasicStats>);
 
             mockUseNewsletterClickStats.mockReturnValue({
                 data: null,
@@ -662,8 +648,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: clickError,
                 isError: true,
                 refetch: vi.fn()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterClickStats>);
 
             const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
 
@@ -685,8 +670,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: null,
                 isError: false,
                 refetch: vi.fn()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterBasicStats>);
 
             renderHook(() => useNewsletterStatsWithRangeSplit(30, 'date desc', 'newsletter-123', true), {wrapper});
 
@@ -708,8 +692,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: null,
                 isError: false,
                 refetch: basicRefetch
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterBasicStats>);
 
             mockUseNewsletterClickStats.mockReturnValue({
                 data: {stats: []},
@@ -717,8 +700,7 @@ describe('Newsletter Stats Hooks', () => {
                 error: null,
                 isError: false,
                 refetch: clickRefetch
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any);
+            } as unknown as ReturnType<typeof mockUseNewsletterClickStats>);
 
             const {result} = renderHook(() => useNewsletterStatsWithRangeSplit(), {wrapper});
 
