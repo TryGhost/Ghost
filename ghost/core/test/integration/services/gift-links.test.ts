@@ -2,16 +2,20 @@ import {afterAll, afterEach, beforeAll, describe, it} from 'vitest';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
-import errors from '@tryghost/errors';
-import {GiftLinksService, type RequestContext} from '../../../core/server/services/gift-links/service';
+import {GiftLinksService} from '../../../core/server/services/gift-links/service';
+import {recordGiftLinkAction, type RecordGiftLinkAction, type RequestContext} from '../../../core/server/services/gift-links/actions';
 import type {GiftLink} from '../../../core/server/services/gift-links/models';
 
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 
-const MISSING_POST_ID = '0123456789abcdef01234567';
 const CTX: RequestContext = {actor: {id: 'test-actor-id', type: 'user'}};
 
+// The HTTP suites own the request-level contract (e2e-api/admin: CRUD, permissions, 404s,
+// action history; e2e-frontend: ?gift access, redirects, analytics). This suite pins the
+// service-level behaviours that are invisible or non-deterministic through HTTP: revocation
+// of a replaced token, idempotent ensure, removeAll's cross-post scope, the DB-enforced
+// one-live-link invariant, and the best-effort action-recording composition init() wires up.
 describe('GiftLinksService (integration)', function () {
     let postId: string;
     let otherPostId: string;
@@ -26,10 +30,10 @@ describe('GiftLinksService (integration)', function () {
         await testUtils.setup('users:roles', 'posts')();
         postId = testUtils.DataGenerator.Content.posts[0].id;
         otherPostId = testUtils.DataGenerator.Content.posts[1].id;
-        service = new GiftLinksService({
-            knex: models.Base.knex,
-            Action: models.Action
-        });
+        // Mirror init()'s wiring: recordGiftLinkAction partially applied to models.Action.
+        const recordAction: RecordGiftLinkAction = ({context, verb, subject}) =>
+            recordGiftLinkAction({Action: models.Action, context, verb, subject});
+        service = new GiftLinksService({knex: models.Base.knex, recordAction});
     });
 
     afterEach(async function () {
@@ -39,165 +43,81 @@ describe('GiftLinksService (integration)', function () {
         await models.Base.knex('actions').where('resource_type', 'gift_link').del();
     });
 
-    describe('getPost', function () {
-        it('returns the post with no links when none exists', async function () {
-            assert.deepEqual(await liveLinks(postId), []);
-        });
+    it('ensure is idempotent: a repeat ensure returns the same live token', async function () {
+        const first = await service.ensure(CTX, postId);
+        const second = await service.ensure(CTX, postId);
 
-        it('throws NotFound for a post that does not exist', async function () {
-            await assert.rejects(
-                () => service.getPost(MISSING_POST_ID),
-                (err: unknown) => err instanceof errors.NotFoundError
-            );
-        });
+        assert.equal(second.giftLinks[0]?.token, first.giftLinks[0]?.token);
+        assert.equal((await liveLinks(postId)).length, 1);
     });
 
-    describe('ensure', function () {
-        it('mints a live link with a token when none exists', async function () {
-            const post = await service.ensure(CTX, postId);
+    it('create mints a link even when none existed', async function () {
+        const created = await service.create(CTX, postId);
 
-            assert.equal(post.giftLinks.length, 1, 'a link should be created');
-            assert.ok(post.giftLinks[0].token, 'token should be set');
-            assert.equal((await liveLinks(postId)).length, 1);
-        });
-
-        it('is idempotent: a repeat ensure returns the same live link', async function () {
-            const first = await service.ensure(CTX, postId);
-            const second = await service.ensure(CTX, postId);
-
-            assert.equal(first.giftLinks[0]?.token, second.giftLinks[0]?.token);
-            assert.equal((await liveLinks(postId)).length, 1);
-        });
-
-        it('throws NotFound for a post that does not exist', async function () {
-            await assert.rejects(
-                () => service.ensure(CTX, MISSING_POST_ID),
-                (err: unknown) => err instanceof errors.NotFoundError
-            );
-        });
-
-        it('keeps exactly one live link under concurrent calls', async function () {
-            const [a, b] = await Promise.all([
-                service.ensure(CTX, postId),
-                service.ensure(CTX, postId)
-            ]);
-
-            assert.ok(a.giftLinks[0] && b.giftLinks[0]);
-            assert.equal((await liveLinks(postId)).length, 1);
-        });
+        assert.ok(created.giftLinks[0]?.token);
+        assert.equal((await liveLinks(postId)).length, 1);
     });
 
-    describe('create', function () {
-        it('replaces the live link with a fresh token', async function () {
-            const original = await service.ensure(CTX, postId);
-            const created = await service.create(CTX, postId);
+    it('a replaced token stops resolving and validating', async function () {
+        const token = (await service.ensure(CTX, postId)).giftLinks[0]!.token;
+        assert.equal((await service.getPostByToken(token))?.id, postId);
+        assert.equal(await service.isValidTokenForPost(token, postId), true);
 
-            assert.notEqual(created.giftLinks[0]?.token, original.giftLinks[0]?.token);
-            const live = await liveLinks(postId);
-            assert.equal(live.length, 1);
-            assert.equal(live[0]?.token, created.giftLinks[0]?.token);
-        });
+        await service.create(CTX, postId);
 
-        it('mints a link even when none existed', async function () {
-            const created = await service.create(CTX, postId);
-            assert.equal((await liveLinks(postId)).length, 1);
-            assert.ok(created.giftLinks[0]?.token);
-        });
-
-        it('throws NotFound for a post that does not exist', async function () {
-            await assert.rejects(
-                () => service.create(CTX, MISSING_POST_ID),
-                (err: unknown) => err instanceof errors.NotFoundError
-            );
-        });
+        // The replaced token must lose access even though it stays in gift_links history.
+        assert.equal(await service.getPostByToken(token), null);
+        assert.equal(await service.isValidTokenForPost(token, postId), false);
     });
 
-    describe('getPostByToken', function () {
-        it('resolves a live token, and stops resolving once replaced', async function () {
-            const original = await service.ensure(CTX, postId);
-            const token = original.giftLinks[0]!.token;
+    it('removeAll drops every live link across posts and returns the count', async function () {
+        await service.ensure(CTX, postId);
+        await service.ensure(CTX, otherPostId);
 
-            const found = await service.getPostByToken(token);
-            assert.equal(found?.giftLinks[0]?.token, token);
+        const removed = await service.removeAll(CTX);
 
-            await service.create(CTX, postId);
-            assert.equal(await service.getPostByToken(token), null);
-        });
-
-        it('returns null for unknown and empty tokens', async function () {
-            assert.equal(await service.getPostByToken('nope'), null);
-            assert.equal(await service.getPostByToken(''), null);
-        });
+        assert.equal(removed, 2);
+        assert.deepEqual(await liveLinks(postId), []);
+        assert.deepEqual(await liveLinks(otherPostId), []);
     });
 
-    describe('isValidTokenForPost', function () {
-        it('is true only for a live token bound to the given post', async function () {
-            const post = await service.ensure(CTX, postId);
-            const token = post.giftLinks[0]!.token;
+    it('the database rejects a second live association for the same post', async function () {
+        await service.ensure(CTX, postId);
 
-            assert.equal(await service.isValidTokenForPost(token, postId), true);
-
-            // Defence in depth: a token for one post must not validate another.
-            assert.equal(await service.isValidTokenForPost(token, otherPostId), false);
-
-            // Once replaced, the old token no longer validates.
-            await service.create(CTX, postId);
-            assert.equal(await service.isValidTokenForPost(token, postId), false);
+        await models.Base.knex('gift_links').insert({
+            token: 'second-live-token', post_id: postId, created_at: new Date()
         });
-
-        it('is false for unknown and empty tokens', async function () {
-            assert.equal(await service.isValidTokenForPost('nope', postId), false);
-            assert.equal(await service.isValidTokenForPost('', postId), false);
-        });
+        await assert.rejects(
+            models.Base.knex('post_gift_links').insert({
+                post_id: postId, gift_link_token: 'second-live-token', created_at: new Date()
+            }),
+            // SQLite: "UNIQUE constraint failed"; MySQL: "Duplicate entry ... for key"
+            /unique|duplicate/i
+        );
     });
 
-    describe('removeAll', function () {
-        it('drops every live link across posts and returns the count', async function () {
-            await service.ensure(CTX, postId);
-            await service.ensure(CTX, otherPostId);
-
-            const removed = await service.removeAll(CTX);
-
-            assert.equal(removed, 2);
-            assert.deepEqual(await liveLinks(postId), []);
-            assert.deepEqual(await liveLinks(otherPostId), []);
-        });
-    });
-
-    describe('the <=1-live-link-per-post invariant (database-enforced)', function () {
-        it('rejects a second live association for the same post', async function () {
-            await service.ensure(CTX, postId);
-
-            await models.Base.knex('gift_links').insert({
-                token: 'second-live-token', post_id: postId, created_at: new Date()
-            });
-            await assert.rejects(
-                models.Base.knex('post_gift_links').insert({
-                    post_id: postId, gift_link_token: 'second-live-token', created_at: new Date()
-                }),
-                // SQLite: "UNIQUE constraint failed"; MySQL: "Duplicate entry ... for key"
-                /unique|duplicate/i
-            );
-        });
-    });
-
-    describe('action recording', function () {
-        it('does not fail the command when recording the action throws', async function () {
-            const failing = new GiftLinksService({
-                knex: models.Base.knex,
+    it('does not fail the command when recording the action throws', async function () {
+        // Compose the port exactly as init() does, over a recorder that always fails:
+        // the best-effort contract must hold through the wiring, not just in isolation.
+        const failing = new GiftLinksService({
+            knex: models.Base.knex,
+            recordAction: ({context, verb, subject}) => recordGiftLinkAction({
                 Action: {add: async () => {
                     throw new Error('action write failed');
-                }}
-            });
-
-            // recordAction() swallows the failure and logs it. Stub the logger
-            // so we can assert that path fired instead of spamming stdout.
-            const errorLog = sinon.stub(logging, 'error');
-
-            await assert.doesNotReject(() => failing.create(CTX, postId));
-
-            sinon.assert.calledOnce(errorLog);
-            assert.equal((await liveLinks(postId)).length, 1, 'the gift link is still created');
+                }},
+                context,
+                verb,
+                subject
+            })
         });
+
+        // recordGiftLinkAction swallows the failure and logs it. Stub the logger
+        // so we can assert that path fired instead of spamming stdout.
+        const errorLog = sinon.stub(logging, 'error');
+
+        await assert.doesNotReject(() => failing.create(CTX, postId));
+
+        sinon.assert.calledOnce(errorLog);
+        assert.equal((await liveLinks(postId)).length, 1, 'the gift link is still created');
     });
 });

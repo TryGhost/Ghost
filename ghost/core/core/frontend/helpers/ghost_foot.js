@@ -2,7 +2,7 @@
 // Usage: `{{ghost_foot}}`
 //
 // Outputs scripts and other assets at the bottom of a Ghost theme
-const {blogIcon, labs, settingsCache, urlUtils} = require('../services/proxy');
+const {blogIcon, settingsCache, urlUtils} = require('../services/proxy');
 const {SafeString, templates, hbs} = require('../services/handlebars');
 const _ = require('lodash');
 
@@ -32,7 +32,7 @@ module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
     // controller only on a verified gift render, so it shows on gift reads and
     // never on canonical URLs. Overridable: a theme can supply its own
     // `partials/gift-toast.hbs`.
-    if (labs.isSet('giftLinks') && options.data.root._giftLink) {
+    if (options.data.root._giftLink) {
         const data = createFrame(options.data);
         const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
 

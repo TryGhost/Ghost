@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const deferred = require('../../../../utils/deferred');
+const {deferred} = require('../../../../utils/deferred')
 const {assertExists} = require('../../../../utils/assertions');
 const _ = require('lodash');
 const sinon = require('sinon');

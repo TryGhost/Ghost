@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import type {InternalKeys} from '../internal-keys';
 // @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import type DomainEvents from '@tryghost/domain-events';
@@ -32,10 +33,10 @@ type AutomationsServiceOptions = {
 };
 
 export class AutomationsService {
-    #enqueuePollNow: undefined | (() => void);
+    #enqueuePollAt: undefined | ((date: Readonly<Date>) => Promise<void>);
 
     init({domainEvents, apiUrl, schedulerAdapter, internalKeys}: AutomationsServiceOptions): void {
-        const isInitialized = Boolean(this.#enqueuePollNow);
+        const isInitialized = Boolean(this.#enqueuePollAt);
         if (isInitialized) {
             return;
         }
@@ -78,7 +79,7 @@ export class AutomationsService {
 
         enqueuePollAt(new Date());
 
-        this.#enqueuePollNow = enqueuePollNow;
+        this.#enqueuePollAt = enqueuePollAt;
     }
 
     /**
@@ -86,7 +87,12 @@ export class AutomationsService {
      * key fails JWT verification when fired; this dispatches a fresh in-process
      * poll that re-schedules the next callback under the current key.
      */
-    rescheduleAll(): void {
-        this.#enqueuePollNow?.();
+    async rescheduleAll(): Promise<void> {
+        await this.#enqueuePollAt?.(new Date());
+    }
+
+    async __testOnlyEnqueuePollAt(date: Readonly<Date>): Promise<void> {
+        assert(this.#enqueuePollAt, 'Tests should not call this before initialization');
+        return await this.#enqueuePollAt(date);
     }
 }

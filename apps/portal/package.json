@@ -1,88 +1,88 @@
 {
-  "name": "@tryghost/portal",
-  "type": "module",
-  "version": "2.69.16",
-  "license": "MIT",
-  "repository": "https://github.com/TryGhost/Ghost",
-  "author": "Ghost Foundation",
-  "files": [
-    "umd/",
-    "LICENSE",
-    "README.md"
-  ],
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "scripts": {
-    "dev": "vite build --watch --mode development",
-    "build": "vite build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ci": "pnpm test --coverage",
-    "test:unit": "pnpm test:ci",
-    "lint:code": "eslint src test --cache",
-    "lint:types": "tsc --noEmit",
-    "lint": "pnpm lint:code && pnpm lint:types",
-    "preship": "pnpm lint",
-    "ship": "node ../../.github/scripts/release-apps.js",
-    "prepublishOnly": "pnpm build"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+    "name": "@tryghost/portal",
+    "type": "module",
+    "version": "2.69.16",
+    "license": "MIT",
+    "repository": "https://github.com/TryGhost/Ghost",
+    "author": "Ghost Foundation",
+    "files": [
+        "umd/",
+        "LICENSE",
+        "README.md"
     ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "@doist/react-interpolate": "2.2.2",
-    "@eslint/js": "catalog:",
-    "@sentry/react": "catalog:",
-    "@testing-library/jest-dom": "catalog:",
-    "@testing-library/react": "catalog:react17",
-    "@testing-library/user-event": "14.6.1",
-    "@tryghost/i18n": "workspace:*",
-    "@vitejs/plugin-react": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "concurrently": "catalog:",
-    "cross-fetch": "catalog:",
-    "dompurify": "catalog:",
-    "eslint": "catalog:",
-    "eslint-plugin-ghost": "catalog:",
-    "eslint-plugin-i18next": "6.1.5",
-    "eslint-plugin-react": "catalog:",
-    "globals": "catalog:",
-    "jsdom": "catalog:",
-    "react": "catalog:react17",
-    "react-dom": "catalog:react17",
-    "typescript-eslint": "catalog:",
-    "vite": "catalog:",
-    "vite-plugin-svgr": "catalog:",
-    "vitest": "catalog:"
-  },
-  "dependencies": {
-    "@tryghost/debug": "catalog:"
-  },
-  "nx": {
-    "targets": {
-      "dev": {
-        "continuous": true,
-        "executor": "nx:run-commands",
-        "options": {
-          "cwd": "apps/portal",
-          "command": "vite build --watch --mode development"
-        }
-      }
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
     },
-    "tags": [
-      "i18n",
-      "public-app"
-    ]
-  }
+    "scripts": {
+        "dev": "vite build --watch --mode development",
+        "build": "vite build",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:ci": "pnpm test --coverage",
+        "test:unit": "pnpm test:ci",
+        "lint:code": "eslint src test --cache",
+        "lint:types": "tsc --noEmit",
+        "lint": "pnpm lint:code && pnpm lint:types",
+        "preship": "pnpm lint",
+        "ship": "node ../../.github/scripts/release-apps.js",
+        "prepublishOnly": "pnpm build"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "devDependencies": {
+        "@doist/react-interpolate": "2.2.2",
+        "@eslint/js": "catalog:",
+        "@sentry/react": "catalog:",
+        "@testing-library/jest-dom": "catalog:",
+        "@testing-library/react": "catalog:react17",
+        "@testing-library/user-event": "14.6.1",
+        "@tryghost/i18n": "workspace:*",
+        "@vitejs/plugin-react": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
+        "concurrently": "catalog:",
+        "cross-fetch": "catalog:",
+        "dompurify": "catalog:",
+        "eslint": "catalog:",
+        "eslint-plugin-ghost": "catalog:",
+        "eslint-plugin-i18next": "6.1.5",
+        "eslint-plugin-react": "catalog:",
+        "globals": "catalog:",
+        "jsdom": "catalog:",
+        "react": "catalog:react17",
+        "react-dom": "catalog:react17",
+        "typescript-eslint": "catalog:",
+        "vite": "catalog:",
+        "vite-plugin-svgr": "catalog:",
+        "vitest": "catalog:"
+    },
+    "dependencies": {
+        "@tryghost/debug": "catalog:"
+    },
+    "nx": {
+        "targets": {
+            "dev": {
+                "continuous": true,
+                "executor": "nx:run-commands",
+                "options": {
+                    "cwd": "apps/portal",
+                    "command": "vite build --watch --mode development"
+                }
+            }
+        },
+        "tags": [
+            "i18n",
+            "public-app"
+        ]
+    }
 }

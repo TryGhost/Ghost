@@ -8,6 +8,9 @@ import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constant
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
+// `@svg-maps/world` is a CJS-only data package shaped `{__esModule, default}` with no ESM build; Rolldown returns the wrapper object, so interop-unwrap the default to get the actual map data (Rollup returns the data object unchanged).
+const worldMap = (World as {default?: typeof World}).default ?? World;
+
 countries.registerLocale(enLocale);
 const getCountryName = (label: string) => {
     return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en', {select: 'alias'}) || 'Unknown';
@@ -183,7 +186,7 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range, on
                     <div className='svg-map-container relative mx-auto w-full max-w-[740px] px-8 py-12 [&_.svg-map]:stroke-background'>
                         <SVGMap
                             locationClassName={getLocationClassName}
-                            map={World}
+                            map={worldMap}
                             onLocationClick={handleLocationClick}
                             onLocationMouseOut={handleLocationMouseOut}
                             onLocationMouseOver={handleLocationMouseOver}

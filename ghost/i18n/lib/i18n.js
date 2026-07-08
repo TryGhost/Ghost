@@ -1,7 +1,10 @@
 const path = require('path');
 const fs = require('fs');
 const debug = require('@tryghost/debug')('i18n');
-const {createI18n, generateResources, LOCALE_DATA, SUPPORTED_LOCALES} = require('./i18n-core');
+const {createI18n, createGenerateResources, LOCALE_DATA, SUPPORTED_LOCALES} = require('./i18n-core');
+const {requireLoader} = require('./require-loader');
+
+const generateResources = createGenerateResources(requireLoader);
 
 function generateThemeResources(lng, themeLocalesPath) {
     if (!themeLocalesPath) {
@@ -76,6 +79,7 @@ function generateThemeResources(lng, themeLocalesPath) {
 }
 
 const i18n = createI18n({
+    generateResources,
     generateThemeResources(lng, options) {
         debug(`generateThemeResources: ${lng}, ${options.themePath}`);
         return generateThemeResources(lng, options.themePath);

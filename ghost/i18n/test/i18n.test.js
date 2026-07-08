@@ -5,82 +5,99 @@ const fsExtra = require('fs-extra');
 const i18n = require('../');
 
 describe('i18n', function () {
-    describe('browser entry', function () {
-        const browserI18n = require('../index.browser');
+    describe('ESM/browser entries (per-namespace static registries)', function () {
+        // The real browser path: each public app imports '@tryghost/i18n/registry/<ns>',
+        // resolved here from the actual shipped registry entries (lib/registry/*.mjs).
+        // There is no root ESM entry and no CJS "browser" entry any more — apps must use
+        // the per-namespace subpaths. These import()s cover ESM locale resolution, the
+        // English fallback and the theme-stub behaviour public apps rely on.
+        let portalI18n;
+        let ghostI18n;
+
+        beforeAll(async function () {
+            portalI18n = (await import('../lib/registry/portal.mjs')).default;
+            ghostI18n = (await import('../lib/registry/ghost.mjs')).default;
+        });
 
         it('loads bundled public app translations without server-only helpers', function () {
-            const t = browserI18n('nl', 'portal').t;
+            const t = portalI18n('nl', 'portal').t;
 
             assert.equal(t('Name'), 'Naam');
         });
 
-        it('uses the default namespace and locale', function () {
-            const t = browserI18n().t;
+        it('uses the default locale', function () {
+            const t = portalI18n().t;
 
             assert.equal(t('Name'), 'Name');
         });
 
         it('uses single curly braces for browser interpolation', function () {
-            const portalT = browserI18n('en', 'portal').t;
-            const ghostT = browserI18n('en', 'ghost').t;
+            const portalT = portalI18n('en', 'portal').t;
+            const ghostT = ghostI18n('en', 'ghost').t;
 
             assert.equal(portalT('Welcome, {name}', {name: '<b>John O\'Nolan</b>'}), 'Welcome, <b>John O\'Nolan</b>');
             assert.equal(ghostT('Welcome, {name}', {name: 'John'}), 'Welcome, John');
         });
 
-        it('uses default export translations when available', function () {
-            const translationFile = require(path.join(`../locales/`, 'nl', 'portal.json'));
-            const originalName = translationFile.Name;
-            const originalDefault = translationFile.default;
-
-            translationFile.Name = undefined;
-            translationFile.default = {
-                Name: 'Naam'
-            };
-
-            try {
-                const t = browserI18n('nl', 'portal').t;
-                assert.equal(t('Name'), 'Naam');
-            } finally {
-                translationFile.Name = originalName;
-                if (originalDefault === undefined) {
-                    delete translationFile.default;
-                } else {
-                    translationFile.default = originalDefault;
-                }
-            }
-        });
-
-        it('ignores non-object default exports', function () {
-            const translationFile = require(path.join(`../locales/`, 'nl', 'portal.json'));
-            const originalDefault = translationFile.default;
-
-            translationFile.default = 'not an object';
-
-            try {
-                const t = browserI18n('nl', 'portal').t;
-                assert.equal(t('Name'), 'Naam');
-            } finally {
-                if (originalDefault === undefined) {
-                    delete translationFile.default;
-                } else {
-                    translationFile.default = originalDefault;
-                }
-            }
-        });
-
         it('falls back to English for missing bundled locales', function () {
-            const resources = browserI18n.generateResources(['xx'], 'portal');
-            const englishResources = browserI18n.generateResources(['en'], 'portal');
+            const resources = portalI18n.generateResources(['xx'], 'portal');
+            const englishResources = portalI18n.generateResources(['en'], 'portal');
 
             assert.deepEqual(resources.xx, englishResources.en);
         });
 
         it('uses empty theme resources in browser builds', function () {
-            const instance = browserI18n('en', 'theme');
+            const instance = portalI18n('en', 'theme');
 
             assert.deepEqual(instance.store.data.en.theme, {});
             assert.equal(instance.t('Read more'), 'Read more');
+        });
+    });
+
+    describe('CJS/ESM core parity', function () {
+        // lib/i18n-core.js (Node) and lib/i18n-core.mjs (browser) are deliberate
+        // twins: the browser path must be pure ESM (a CJS file leaks require()/
+        // module.exports into the UMD bundle and throws at load), while Ghost core
+        // require()s the package synchronously. This test guards against drift.
+        let cjsCore;
+        let esmCore;
+
+        beforeAll(async function () {
+            cjsCore = require('../lib/i18n-core');
+            esmCore = await import('../lib/i18n-core.mjs');
+        });
+
+        it('exposes identical locale data and supported locales', function () {
+            assert.deepEqual(esmCore.SUPPORTED_LOCALES, cjsCore.SUPPORTED_LOCALES);
+            assert.deepEqual(esmCore.LOCALE_DATA, cjsCore.LOCALE_DATA);
+        });
+
+        it('mergeDefaultExport behaves identically', function () {
+            const input = {Name: 'Direct', default: {Name: 'FromDefault', Extra: 'x'}};
+
+            assert.deepEqual(esmCore.mergeDefaultExport(input), cjsCore.mergeDefaultExport(input));
+        });
+
+        it('createGenerateResources produces identical output for the same loader', function () {
+            const loader = locale => (locale === 'en' ? {Name: 'English'} : {Name: locale});
+            const esmGen = esmCore.createGenerateResources(loader);
+            const cjsGen = cjsCore.createGenerateResources(loader);
+
+            assert.deepEqual(esmGen(['de', 'xx'], 'portal'), cjsGen(['de', 'xx'], 'portal'));
+        });
+
+        it('createI18n produces instances that translate identically', function () {
+            const generateResources = locales => locales.reduce((acc, l) => {
+                acc[l] = {portal: {Hello: l === 'nl' ? 'Hallo' : 'Hello'}};
+                return acc;
+            }, {});
+            const generateThemeResources = lng => ({[lng]: {theme: {}}});
+
+            const esm = esmCore.createI18n({generateResources, generateThemeResources})('nl', 'portal');
+            const cjs = cjsCore.createI18n({generateResources, generateThemeResources})('nl', 'portal');
+
+            assert.equal(esm.t('Hello'), 'Hallo');
+            assert.equal(esm.t('Hello'), cjs.t('Hello'));
         });
     });
 
@@ -103,6 +120,58 @@ describe('i18n', function () {
 
         const t = i18n('nl', 'portal').t;
         assert.equal(t('Name'), 'Naam');
+    });
+
+    it('generateResources (CJS require path) resolves locales and falls back to English', function () {
+        const resources = i18n.generateResources(['nl', 'xx'], 'portal');
+
+        assert.equal(resources.nl.portal.Name, 'Naam');
+        // 'xx' is not a bundled locale — the require loader falls back to English.
+        assert.equal(resources.xx.portal.Name, i18n.generateResources(['en'], 'portal').en.portal.Name);
+    });
+
+    describe('createGenerateResources', function () {
+        // Unit-tests the injectable-loader factory directly (the shape the static ESM
+        // registry uses), covering the English fallback + floor without a bundler.
+        const {createGenerateResources} = require('../lib/i18n-core');
+
+        it('uses the loaded resource when present', function () {
+            const gen = createGenerateResources((locale, ns) => ({[`${locale}.${ns}`]: 'hit'}));
+            const res = gen(['de'], 'ghost');
+
+            assert.equal(res.de.ghost['de.ghost'], 'hit');
+        });
+
+        it('falls back to English when a locale is missing (undefined)', function () {
+            const gen = createGenerateResources(locale => (locale === 'en' ? {Name: 'English'} : undefined));
+            const res = gen(['xx'], 'portal');
+
+            assert.equal(res.xx.portal.Name, 'English');
+        });
+
+        it('floors to an empty object when even English is missing', function () {
+            // Loader always returns undefined — the English floor must prevent
+            // mergeDefaultExport(undefined) from throwing.
+            const gen = createGenerateResources(() => undefined);
+
+            assert.doesNotThrow(() => gen(['xx'], 'portal'));
+            const res = gen(['xx'], 'portal');
+            assert.deepEqual(res.xx.portal, {});
+        });
+
+        it('merges an object default export onto the resource', function () {
+            const gen = createGenerateResources(() => ({Name: 'Direct', default: {Name: 'FromDefault'}}));
+            const res = gen(['de'], 'portal');
+
+            assert.equal(res.de.portal.Name, 'FromDefault');
+        });
+
+        it('ignores a non-object default export', function () {
+            const gen = createGenerateResources(() => ({Name: 'Direct', default: 'not-an-object'}));
+            const res = gen(['de'], 'portal');
+
+            assert.equal(res.de.portal.Name, 'Direct');
+        });
     });
 
     describe('Can use Portal resources', function () {

@@ -5,13 +5,15 @@
  *
  * Each app loads as a <script src> from a Ghost theme and ships as a UMD
  * (or IIFE) bundle in <app>/umd/<app>.min.js. This factory captures the
- * shape they all share (outDir, lib, optional i18n locale glob, baseline
- * plugins) and lets per-app divergence flow through `overrides`, which is
- * deep-merged via Vite's `mergeConfig`. Plugin arrays in `overrides` are
- * appended to the base plugins.
+ * shape they all share (outDir, lib, baseline plugins) and lets per-app
+ * divergence flow through `overrides`, which is deep-merged via Vite's
+ * `mergeConfig`. Plugin arrays in `overrides` are appended to the base plugins.
  *
  * Plugin imports are dynamic so an app can opt out (e.g. admin-toolbar
  * uses Preact and never installs `@vitejs/plugin-react`).
+ *
+ * i18n note: apps import their locales via `@tryghost/i18n/registry/<namespace>`,
+ * a static ESM registry any bundler can resolve.
  */
 import {resolve} from 'path';
 import {defineConfig, mergeConfig} from 'vitest/config';
@@ -27,7 +29,6 @@ import {defineConfig, mergeConfig} from 'vitest/config';
  * @param {string} [opts.libName] — global var name override (default: `packageName`)
  * @param {boolean} [opts.sourcemap=true]
  * @param {boolean} [opts.cssCodeSplit=true]
- * @param {string} [opts.i18nNamespace] — if set, wires `commonjsOptions` to glob `ghost/i18n/locales/*\/<ns>.json`
  * @param {import('vitest/config').UserConfig} [opts.overrides] — deep-merged onto the base config
  * @returns {import('vitest/config').UserConfig}
  */
@@ -42,7 +43,6 @@ export function publicAppViteConfig(opts) {
         libName,
         sourcemap = true,
         cssCodeSplit = true,
-        i18nNamespace,
         overrides = {}
     } = opts;
 
@@ -80,18 +80,7 @@ export function publicAppViteConfig(opts) {
                     formats: [libFormat],
                     name: libName ?? packageName,
                     fileName: () => `${outputFileName}.min.js`
-                },
-                ...(i18nNamespace && {
-                    commonjsOptions: {
-                        include: [/ghost/, /node_modules/],
-                        dynamicRequireRoot: '../../',
-                        // Single glob expands to all SUPPORTED_LOCALES; passing each
-                        // locale as an explicit path triggers a full repo-root
-                        // directory crawl per entry under vite 7's bundled
-                        // @rollup/plugin-commonjs, adding ~1s per locale to build time.
-                        dynamicRequireTargets: [`../../ghost/i18n/locales/*/${i18nNamespace}.json`]
-                    }
-                })
+                }
             },
             test: {
                 globals: true,

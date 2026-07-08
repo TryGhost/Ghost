@@ -6,7 +6,6 @@ export default publicAppViteConfig({
     packageRoot: import.meta.dirname,
     packageName: pkg.name,
     entry: 'src/index.jsx',
-    i18nNamespace: 'portal',
     cssCodeSplit: false,
     overrides: {
         define: {
@@ -14,13 +13,6 @@ export default publicAppViteConfig({
         },
         resolve: {
             dedupe: ['@tryghost/debug']
-        },
-        build: {
-            rollupOptions: {
-                output: {
-                    manualChunks: false
-                }
-            }
         },
         test: {
             setupFiles: './test/setup-tests.js',

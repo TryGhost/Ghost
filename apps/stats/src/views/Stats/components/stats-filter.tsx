@@ -9,7 +9,6 @@ import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
-import {useLabsFlag} from '@hooks/use-labs-flag';
 import {useTinybirdQuery, useWebAnalyticsEnabled} from '@tryghost/admin-x-framework';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
@@ -288,7 +287,6 @@ const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsCon
 
 function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
-    const giftLinksEnabled = useLabsFlag('giftLinks');
 
     // Track which filter field is currently being selected (lazy loading)
     const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
@@ -433,18 +431,6 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
             }
         ];
 
-        const giftLinkField: FilterFieldConfig = {
-            key: 'gift_link',
-            label: 'Gift link',
-            type: 'select',
-            icon: <LucideIcon.Gift className="size-4" />,
-            operators: supportedOperators,
-            defaultOperator: 'is',
-            hideOperatorSelect: true,
-            options: GIFT_LINK_OPTIONS,
-            searchable: false
-        };
-
         return [
             {
                 group: 'Basic',
@@ -517,7 +503,17 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
                         searchable: true,
                         selectedOptionsClassName: 'hidden'
                     },
-                    ...(giftLinksEnabled ? [giftLinkField] : [])
+                    {
+                        key: 'gift_link',
+                        label: 'Gift link',
+                        type: 'select',
+                        icon: <LucideIcon.Gift className="size-4" />,
+                        operators: supportedOperators,
+                        defaultOperator: 'is',
+                        hideOperatorSelect: true,
+                        options: GIFT_LINK_OPTIONS,
+                        searchable: false
+                    }
                 ]
             },
             {
@@ -525,7 +521,7 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
                 fields: utmFields
             }
         ];
-    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, postOptions, postLoading, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading, giftLinksEnabled]);
+    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, postOptions, postLoading, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading]);
 
     // Show clear button when there's at least one filter
     const hasFilters = filters.length > 0;

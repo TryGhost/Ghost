@@ -1,90 +1,90 @@
 {
-  "name": "@tryghost/sodo-search",
-  "type": "module",
-  "version": "1.8.31",
-  "license": "MIT",
-  "repository": "https://github.com/TryGhost/Ghost",
-  "author": "Ghost Foundation",
-  "files": [
-    "umd/",
-    "LICENSE",
-    "README.md"
-  ],
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "dependencies": {
-    "@tryghost/debug": "catalog:",
-    "@tryghost/i18n": "workspace:*",
-    "flexsearch": "0.8.212",
-    "react": "catalog:react17",
-    "react-dom": "catalog:react17"
-  },
-  "scripts": {
-    "dev": "vite build --watch --mode development",
-    "build": "vite build",
-    "test": "vitest run",
-    "lint": "eslint src test --cache",
-    "preship": "pnpm lint",
-    "ship": "node ../../.github/scripts/release-apps.js",
-    "prepublishOnly": "pnpm build"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+    "name": "@tryghost/sodo-search",
+    "type": "module",
+    "version": "1.8.31",
+    "license": "MIT",
+    "repository": "https://github.com/TryGhost/Ghost",
+    "author": "Ghost Foundation",
+    "files": [
+        "umd/",
+        "LICENSE",
+        "README.md"
     ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "jest": {
-    "coverageReporters": [
-      "cobertura",
-      "text-summary",
-      "html"
-    ]
-  },
-  "devDependencies": {
-    "@eslint/js": "catalog:",
-    "@testing-library/jest-dom": "catalog:",
-    "@testing-library/react": "catalog:react17",
-    "@vitejs/plugin-react": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "autoprefixer": "10.5.2",
-    "concurrently": "catalog:",
-    "cross-fetch": "catalog:",
-    "eslint": "catalog:",
-    "eslint-plugin-ghost": "catalog:",
-    "eslint-plugin-react": "catalog:",
-    "globals": "catalog:",
-    "jsdom": "catalog:",
-    "nock": "14.0.16",
-    "postcss": "catalog:",
-    "postcss-import": "16.1.1",
-    "tailwindcss": "catalog:tailwind3",
-    "vite": "catalog:",
-    "vite-plugin-svgr": "catalog:",
-    "vitest": "catalog:"
-  },
-  "nx": {
-    "targets": {
-      "dev": {
-        "continuous": true,
-        "executor": "nx:run-commands",
-        "options": {
-          "cwd": "apps/sodo-search",
-          "command": "vite build --watch --mode development"
-        }
-      }
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
     },
-    "tags": [
-      "i18n",
-      "public-app"
-    ]
-  }
+    "dependencies": {
+        "@tryghost/debug": "catalog:",
+        "@tryghost/i18n": "workspace:*",
+        "flexsearch": "0.8.212",
+        "react": "catalog:react17",
+        "react-dom": "catalog:react17"
+    },
+    "scripts": {
+        "dev": "vite build --watch --mode development",
+        "build": "vite build",
+        "test": "vitest run",
+        "lint": "eslint src test --cache",
+        "preship": "pnpm lint",
+        "ship": "node ../../.github/scripts/release-apps.js",
+        "prepublishOnly": "pnpm build"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "jest": {
+        "coverageReporters": [
+            "cobertura",
+            "text-summary",
+            "html"
+        ]
+    },
+    "devDependencies": {
+        "@eslint/js": "catalog:",
+        "@testing-library/jest-dom": "catalog:",
+        "@testing-library/react": "catalog:react17",
+        "@vitejs/plugin-react": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
+        "autoprefixer": "10.5.2",
+        "concurrently": "catalog:",
+        "cross-fetch": "catalog:",
+        "eslint": "catalog:",
+        "eslint-plugin-ghost": "catalog:",
+        "eslint-plugin-react": "catalog:",
+        "globals": "catalog:",
+        "jsdom": "catalog:",
+        "nock": "14.0.16",
+        "postcss": "catalog:",
+        "postcss-import": "16.1.1",
+        "tailwindcss": "catalog:tailwind3",
+        "vite": "catalog:",
+        "vite-plugin-svgr": "catalog:",
+        "vitest": "catalog:"
+    },
+    "nx": {
+        "targets": {
+            "dev": {
+                "continuous": true,
+                "executor": "nx:run-commands",
+                "options": {
+                    "cwd": "apps/sodo-search",
+                    "command": "vite build --watch --mode development"
+                }
+            }
+        },
+        "tags": [
+            "i18n",
+            "public-app"
+        ]
+    }
 }

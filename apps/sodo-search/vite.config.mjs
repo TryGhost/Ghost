@@ -6,7 +6,6 @@ export default publicAppViteConfig({
     packageRoot: import.meta.dirname,
     packageName: pkg.name,
     entry: 'src/index.jsx',
-    i18nNamespace: 'search',
     sourcemap: false,
     cssCodeSplit: false,
     overrides: {

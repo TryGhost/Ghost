@@ -30,11 +30,11 @@ function setGiftTemplateFlag(res: EntryResponse, token: string): void {
 }
 
 /**
- * Whether this request is an attempt to use a gift link: the feature is enabled
- * and a `?gift` param is present (in any form).
+ * Whether this request is an attempt to use a gift link: a `?gift` param is
+ * present (in any form).
  */
 export function isGiftRequest(req: Request): boolean {
-    return proxy.labs.isSet('giftLinks') && req.query.gift !== undefined;
+    return req.query.gift !== undefined;
 }
 
 /**
