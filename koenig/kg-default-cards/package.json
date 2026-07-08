@@ -35,25 +35,25 @@
     "access": "public"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.4",
+    "@eslint/js": "catalog:",
     "@types/mocha": "10.0.10",
-    "@types/node": "24.13.2",
+    "@types/node": "catalog:",
     "@types/should": "13.0.0",
     "@types/sinon": "21.0.1",
-    "c8": "11.0.0",
+    "c8": "catalog:",
     "jsdom": "catalog:",
     "mocha": "11.7.6",
     "should": "13.2.3",
     "simple-dom": "1.4.0",
-    "sinon": "22.0.0",
-    "tsx": "4.23.0",
-    "typescript": "5.9.3",
-    "typescript-eslint": "8.62.1"
+    "sinon": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "dependencies": {
     "@tryghost/kg-markdown-html-renderer": "workspace:~",
     "@tryghost/kg-utils": "workspace:~",
-    "@tryghost/string": "0.3.5",
+    "@tryghost/string": "catalog:",
     "@tryghost/url-utils": "5.2.7",
     "handlebars": "4.7.9",
     "juice": "12.1.1",

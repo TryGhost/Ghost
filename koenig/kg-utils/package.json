@@ -30,19 +30,19 @@
     "access": "public"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.4",
+    "@eslint/js": "catalog:",
     "@types/mocha": "10.0.10",
-    "@types/node": "24.13.2",
+    "@types/node": "catalog:",
     "@types/semver": "7.7.1",
     "@types/should": "13.0.0",
     "@types/sinon": "21.0.1",
-    "c8": "11.0.0",
+    "c8": "catalog:",
     "mocha": "11.7.6",
     "should": "13.2.3",
-    "sinon": "22.0.0",
-    "tsx": "4.23.0",
-    "typescript": "5.9.3",
-    "typescript-eslint": "8.62.1"
+    "sinon": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "dependencies": {
     "semver": "7.8.5"

@@ -34,20 +34,20 @@
     "access": "public"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.4",
+    "@eslint/js": "catalog:",
     "@types/jsdom": "28.0.3",
     "@types/mocha": "10.0.10",
     "@types/should": "13.0.0",
     "@types/sinon": "21.0.1",
-    "c8": "11.0.0",
-    "jsdom": "29.1.1",
+    "c8": "catalog:",
+    "jsdom": "catalog:",
     "mocha": "11.7.6",
     "prettier": "3.9.4",
     "should": "13.2.3",
-    "sinon": "22.0.0",
-    "tsx": "4.23.0",
-    "typescript": "5.9.3",
-    "typescript-eslint": "8.62.1"
+    "sinon": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",
@@ -59,7 +59,7 @@
     "@tryghost/kg-default-nodes": "workspace:~",
     "@tryghost/kg-default-transforms": "workspace:~",
     "@tryghost/kg-utils": "workspace:~",
-    "jsdom": "29.1.1",
+    "jsdom": "catalog:",
     "lexical": "0.13.1"
   }
 }

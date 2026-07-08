@@ -40,7 +40,7 @@
     "eslint-plugin-ghost": "3.5.0",
     "globals": "17.7.0",
     "tsx": "catalog:",
-    "typescript-eslint": "8.58.0",
+    "typescript-eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
