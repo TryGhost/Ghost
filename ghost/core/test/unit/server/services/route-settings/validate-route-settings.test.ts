@@ -102,7 +102,7 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
         it('throws when permalink is missing', function () {
             throwsValidation(() => parseRouteSettings({
                 collections: {'/': {permalink: ''}}
-            }), 'A leading slash is required.');
+            }), 'Please define a permalink route.');
         });
 
         it('throws when permalink key is absent', function () {
@@ -232,7 +232,7 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
                     template: 'food',
                     data: {featured: {type: 'browse'}}
                 }}
-            }));
+            }), 'resource is required.');
         });
 
         it('throws on read data entry without slug', function () {
@@ -241,7 +241,7 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
                     template: 'food',
                     data: {featured: {resource: 'posts', type: 'read'}}
                 }}
-            }));
+            }), 'slug is required for read data entries.');
         });
 
         it('accepts read data entry with slug', function () {
@@ -259,7 +259,7 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
                     template: 'food',
                     data: {featured: {resource: 'posts'}}
                 }}
-            }));
+            }), 'type is required.');
         });
 
         it('throws on longform data with invalid type', function () {
@@ -268,7 +268,7 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
                     template: 'food',
                     data: {featured: {resource: 'posts', type: 'edit'}}
                 }}
-            }));
+            }), 'edit not supported.');
         });
 
         it('throws on longform data with invalid resource', function () {
@@ -277,7 +277,7 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
                     template: 'food',
                     data: {featured: {resource: 'subscribers', type: 'browse'}}
                 }}
-            }));
+            }), 'subscribers not supported.');
         });
 
         it('throws on reserved key name in data', function () {
@@ -285,6 +285,15 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
                 routes: {'/food/': {
                     template: 'food',
                     data: {resource: {resource: 'posts', type: 'browse'}}
+                }}
+            }), 'Please wrap the data definition into a custom name.');
+        });
+
+        it('throws on unwrapped data with string values (reserved keys)', function () {
+            throwsValidation(() => parseRouteSettings({
+                routes: {'/food/': {
+                    template: 'food',
+                    data: {resource: 'posts', type: 'browse', filter: 'featured:true'}
                 }}
             }), 'Please wrap the data definition into a custom name.');
         });
