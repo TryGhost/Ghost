@@ -56,5 +56,17 @@
     "vite-plugin-dts": "5.0.3",
     "vite-plugin-svgr": "5.2.0",
     "vitest": "4.1.9"
+  },
+  "nx": {
+    "tags": [
+      "playwright"
+    ],
+    "targets": {
+      "test:acceptance": {
+        "dependsOn": [
+          "^build"
+        ]
+      }
+    }
   }
 }

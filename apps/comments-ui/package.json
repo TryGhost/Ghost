@@ -103,7 +103,8 @@
         },
         "tags": [
             "i18n",
-            "public-app"
+            "public-app",
+            "playwright"
         ]
     }
 }

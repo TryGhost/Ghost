@@ -113,6 +113,9 @@
                     "^build"
                 ]
             }
-        }
+        },
+        "tags": [
+            "playwright"
+        ]
     }
 }
