@@ -1,6 +1,7 @@
 import {getScrollParent} from '@tryghost/shade/utils';
 import {useEffect, useRef, useState} from 'react';
-import {useLocation} from '@tryghost/admin-x-framework';
+import {useLocation} from 'react-router';
+import type {RefObject} from 'react';
 
 const scrollPositions = new Map<string, number>();
 const SCROLL_RESTORATION_HISTORY_STATE_KEY = 'ghostVirtualListScrollPosition';
@@ -86,18 +87,23 @@ function setStoredScrollPosition(
 
 interface UseScrollRestorationOptions {
     /** Reference to the element whose scroll parent should be tracked */
-    parentRef: React.RefObject<HTMLElement>;
+    parentRef: RefObject<HTMLElement>;
     /** Whether scroll restoration is enabled (default: true) */
     enabled?: boolean;
     /** Whether data is currently loading. Restoration will be deferred until loading is false */
     isLoading?: boolean;
+    /**
+     * Resolve the scrollable element from `parentRef.current`. Defaults to
+     * walking up the DOM to the nearest scroll parent.
+     */
+    getScrollElement?: (element: HTMLElement | null) => HTMLElement | null;
 }
 
 /**
  * Hook to automatically save and restore scroll position when navigating.
  * Works with the infinite virtual scroll by using the same parentRef to find the scrollable container.
  * Includes retry logic to handle virtual scrolling measurement delays.
- * 
+ *
  * Usage:
  * ```tsx
  * const parentRef = useRef<HTMLDivElement>(null);
@@ -105,7 +111,7 @@ interface UseScrollRestorationOptions {
  * useInfiniteVirtualScroll({ parentRef, ... });
  * ```
  */
-export function useScrollRestoration({parentRef, enabled = true, isLoading = false}: UseScrollRestorationOptions) {
+export function useScrollRestoration({parentRef, enabled = true, isLoading = false, getScrollElement = getScrollParent}: UseScrollRestorationOptions) {
     const location = useLocation();
     const [scrollContainer, setScrollContainer] = useState<HTMLElement | null>(null);
     const previousPathRef = useRef<string | null>(null);
@@ -122,9 +128,9 @@ export function useScrollRestoration({parentRef, enabled = true, isLoading = fal
             return;
         }
 
-        const container = getScrollParent(parentRef.current);
+        const container = getScrollElement(parentRef.current);
         setScrollContainer(container);
-    }, [enabled, parentRef]);
+    }, [enabled, parentRef, getScrollElement]);
 
     // Save scroll position when user scrolls
     useEffect(() => {
@@ -256,10 +262,10 @@ export function useScrollRestoration({parentRef, enabled = true, isLoading = fal
 
                 restoreTimeoutIdsRef.current.add(timeoutId);
             };
-            
+
             const attemptRestore = () => {
                 attempts += 1;
-                
+
                 if (!scrollContainer) {
                     return;
                 }
