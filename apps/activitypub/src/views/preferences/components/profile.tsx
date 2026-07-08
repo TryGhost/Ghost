@@ -9,6 +9,7 @@ import {Account} from '@src/api/activitypub';
 import {Button, LoadingIndicator, Skeleton, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {H2} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {fixFirefoxTextSpacing} from '@src/utils/screenshot';
 import {imageUrlToDataUrl} from '@src/utils/image';
 import {toast} from 'sonner';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
@@ -285,7 +286,8 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                         logging: false,
                         useCORS: true,
                         allowTaint: true,
-                        imageTimeout: 0
+                        imageTimeout: 0,
+                        onclone: (_document, clonedElement) => fixFirefoxTextSpacing(clonedElement)
                     });
 
                     canvas.toBlob((blob) => {
