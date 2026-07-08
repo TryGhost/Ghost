@@ -146,6 +146,11 @@
       "playwright"
     ],
     "targets": {
+      "build:demo": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
       "dev:integrated": {
         "continuous": true,
         "dependsOn": [
