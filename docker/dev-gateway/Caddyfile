@@ -93,8 +93,9 @@
 		# Strip /ghost/assets/ prefix
 		uri strip_prefix /ghost/assets
 
-		# Koenig Lexical Editor (optional - for developing Lexical in separate Koenig repo)
-		# Requires EDITOR_URL=/ghost/assets/koenig-lexical/ when starting admin dev server
+		# Koenig Lexical Editor (optional - started by "pnpm dev:lexical" at the
+		# repo root, which runs the koenig/koenig-lexical dev:integrated target
+		# and sets EDITOR_URL so admin loads the editor from here)
 		# Falls back to Ghost backend (built package) via handle_errors if dev server isn't running
 		@lexical path /koenig-lexical/*
 		handle @lexical {

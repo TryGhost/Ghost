@@ -69,6 +69,18 @@ services:
       - ./ghost/core:/home/ghost/ghost/core
       - ./ghost/i18n:/home/ghost/ghost/i18n
       - ./ghost/parse-email-address:/home/ghost/ghost/parse-email-address
+      # Koenig packages in ghost/core's server-side graph — must match the
+      # package.json set installed by docker/ghost-dev/Dockerfile
+      - ./koenig/kg-card-factory:/home/ghost/koenig/kg-card-factory
+      - ./koenig/kg-clean-basic-html:/home/ghost/koenig/kg-clean-basic-html
+      - ./koenig/kg-converters:/home/ghost/koenig/kg-converters
+      - ./koenig/kg-default-cards:/home/ghost/koenig/kg-default-cards
+      - ./koenig/kg-default-nodes:/home/ghost/koenig/kg-default-nodes
+      - ./koenig/kg-default-transforms:/home/ghost/koenig/kg-default-transforms
+      - ./koenig/kg-html-to-lexical:/home/ghost/koenig/kg-html-to-lexical
+      - ./koenig/kg-lexical-html-renderer:/home/ghost/koenig/kg-lexical-html-renderer
+      - ./koenig/kg-markdown-html-renderer:/home/ghost/koenig/kg-markdown-html-renderer
+      - ./koenig/kg-utils:/home/ghost/koenig/kg-utils
       # Mount specific content subdirectories to preserve themes/adapters from source
       - ghost-dev-data:/home/ghost/ghost/core/content/data
       - ghost-dev-images:/home/ghost/ghost/core/content/images

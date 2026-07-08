@@ -22,6 +22,20 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 COPY ghost/parse-email-address/package.json ghost/parse-email-address/package.json
+# Koenig packages in ghost/core's server-side dependency graph (direct deps
+# plus kg-utils/kg-default-transforms, which they depend on). The editor UI
+# packages (koenig-lexical, kg-unsplash-selector, kg-simplemde) are admin
+# build-time deps and stay out of the server image.
+COPY koenig/kg-card-factory/package.json koenig/kg-card-factory/package.json
+COPY koenig/kg-clean-basic-html/package.json koenig/kg-clean-basic-html/package.json
+COPY koenig/kg-converters/package.json koenig/kg-converters/package.json
+COPY koenig/kg-default-cards/package.json koenig/kg-default-cards/package.json
+COPY koenig/kg-default-nodes/package.json koenig/kg-default-nodes/package.json
+COPY koenig/kg-default-transforms/package.json koenig/kg-default-transforms/package.json
+COPY koenig/kg-html-to-lexical/package.json koenig/kg-html-to-lexical/package.json
+COPY koenig/kg-lexical-html-renderer/package.json koenig/kg-lexical-html-renderer/package.json
+COPY koenig/kg-markdown-html-renderer/package.json koenig/kg-markdown-html-renderer/package.json
+COPY koenig/kg-utils/package.json koenig/kg-utils/package.json
 
 # Install dependencies
 # Note: Dependencies are installed at build time, but source code is mounted at runtime.

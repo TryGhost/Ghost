@@ -35,7 +35,7 @@
     "dev": "pnpm nx run ghost-monorepo:docker:dev",
     "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ pnpm dev",
+    "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ pnpm nx run ghost-monorepo:docker:dev:lexical",
     "dev:public": "pnpm nx run ghost-monorepo:docker:dev:public",
     "dev:full": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev:public",
     "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:docker:dev",
@@ -115,7 +115,22 @@
           "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --force-recreate --wait --quiet-pull"
         },
         "dependsOn": [
-          "docker:build"
+          "docker:build",
+          {
+            "target": "build",
+            "projects": [
+              "@tryghost/kg-card-factory",
+              "@tryghost/kg-clean-basic-html",
+              "@tryghost/kg-converters",
+              "@tryghost/kg-default-cards",
+              "@tryghost/kg-default-nodes",
+              "@tryghost/kg-default-transforms",
+              "@tryghost/kg-html-to-lexical",
+              "@tryghost/kg-lexical-html-renderer",
+              "@tryghost/kg-markdown-html-renderer",
+              "@tryghost/kg-utils"
+            ]
+          }
         ]
       },
       "docker:down": {
@@ -149,6 +164,35 @@
             "projects": [
               "@tryghost/admin",
               "@tryghost/portal"
+            ]
+          }
+        ]
+      },
+      "docker:dev:lexical": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} logs -f"
+        },
+        "dependsOn": [
+          "docker:up",
+          {
+            "target": "build:assets",
+            "projects": [
+              "ghost"
+            ]
+          },
+          {
+            "target": "dev",
+            "projects": [
+              "@tryghost/admin",
+              "@tryghost/portal"
+            ]
+          },
+          {
+            "target": "dev:integrated",
+            "projects": [
+              "@tryghost/koenig-lexical"
             ]
           }
         ]

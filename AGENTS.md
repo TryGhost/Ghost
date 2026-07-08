@@ -144,6 +144,10 @@ pnpm dev
 # Add optional public apps (comments-ui, sodo-search, signup-form, admin-toolbar)
 pnpm dev:public
 
+# Develop the Koenig editor against Ghost Admin (adds a koenig-lexical rebuild
+# watcher + preview server; Admin loads the editor from your local build)
+pnpm dev:lexical
+
 # With optional services (uses Docker Compose file composition)
 pnpm dev:analytics             # Include Tinybird analytics
 pnpm dev:storage               # Include MinIO S3-compatible object storage

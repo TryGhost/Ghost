@@ -20,6 +20,7 @@
   },
   "scripts": {
     "dev": "concurrently \"vite --host --force\" \"pnpm build --watch\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
+    "dev:integrated": "concurrently \"pnpm build --watch\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
     "dev:multiplayer": "concurrently \"vite\" \"pnpm multiplayer\"",
     "dev:test": "concurrently \"vite --port 5174\" \"pnpm multiplayer\"",
     "multiplayer": "HOST=localhost PORT=1234 npx y-websocket-server",
@@ -145,6 +146,12 @@
       "playwright"
     ],
     "targets": {
+      "dev:integrated": {
+        "continuous": true,
+        "dependsOn": [
+          "^build"
+        ]
+      },
       "test:acceptance": {
         "dependsOn": [
           "^build"
