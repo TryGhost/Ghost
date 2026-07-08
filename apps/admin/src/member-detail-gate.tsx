@@ -1,6 +1,6 @@
 import { EmberFallback } from "./ember-bridge";
 import { Suspense, lazy } from "react";
-import { useFeatureFlag } from "./hooks/use-feature-flag";
+import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
 
 /**
  * Runtime gate that decides which member-detail implementation to render:
@@ -16,14 +16,24 @@ import { useFeatureFlag } from "./hooks/use-feature-flag";
  * implementations without needing to rebuild the routes table (which is
  * static and evaluated once at module load — see `routes.tsx`).
  *
- * The choice is the SAME URL and SAME React Router mount; only the child
- * changes. The parity Playwright suite uses this to run the same assertions
- * against both implementations.
+ * IMPORTANT — while `useBrowseConfig()` is still loading we render `null`
+ * instead of defaulting to `<EmberFallback />`. Defaulting would cause a
+ * brief Ember-chrome flash on every cold hit of `/members/xxx` for admins
+ * with the flag ON: EmberFallback would un-hide `#ember-app`, Ember's
+ * `member` route would kick off an aborted transition, and then the gate
+ * would flip to React once config resolved. Holding for one paint is
+ * cheaper — the config query is normally warm from the admin shell boot.
  */
 const MemberDetailReact = lazy(() => import("@tryghost/posts/member-detail"));
 
 export function MemberDetailGate() {
-    const enabled = useFeatureFlag("memberDetailsReact");
+    const { data: config, isLoading } = useBrowseConfig();
+
+    if (isLoading || !config) {
+        return null;
+    }
+
+    const enabled = config.config.labs?.memberDetailsReact === true;
 
     if (!enabled) {
         return <EmberFallback />;

@@ -92,6 +92,23 @@ export class MemberDetailsPage extends AdminPage {
     readonly commentingDisabledIndicator: Locator;
     readonly enableCommentingLink: Locator;
 
+    // Cross-implementation title anchors, used by the parity file to assert
+    // the member name renders in a specific title element (not just anywhere
+    // on the page).
+    readonly emberScreenTitle: Locator;
+    readonly reactScreenTitle: Locator;
+    // Subtree-scoped `member-actions` locators used by the parity file to
+    // assert the sole-tree invariant: only one implementation renders the
+    // detail elements at a time.
+    readonly emberMemberActions: Locator;
+    readonly reactMemberActions: Locator;
+    // Cross-implementation logout-confirmation modal. Ember uses a plain
+    // `<div>` with `data-test-modal="logout-member"`; React uses
+    // `data-testid="logout-member-modal"` on Shade's AlertDialog. Scoping to
+    // this locator prevents the "Sign out" click from bleeding into the
+    // account-owner sidebar button.
+    readonly logoutConfirmModal: Locator;
+
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/members/';
@@ -120,12 +137,26 @@ export class MemberDetailsPage extends AdminPage {
         // Ember uses `data-test-modal="disable-commenting"`, React uses
         // `data-testid="disable-commenting-modal"`. The `.or()` union covers
         // both by falling back to the React testid via `getByTestId`.
-        this.disableCommentingModal = page.getByTestId('disable-commenting-modal').or(page.locator('[data-test-modal="disable-commenting"]'));
+        // `.filter({visible: true})` is consistent with the other dual-tree
+        // locators in this class — the union could technically resolve to
+        // two matches if both testids ever coexist under a broken abort.
+        this.disableCommentingModal = page.getByTestId('disable-commenting-modal').or(page.locator('[data-test-modal="disable-commenting"]')).filter({visible: true});
         this.disableCommentingConfirmButton = this.disableCommentingModal.getByRole('button', {name: 'Disable commenting'});
         this.disableCommentingCancelButton = this.disableCommentingModal.getByRole('button', {name: 'Cancel'});
         this.hideCommentsCheckbox = this.disableCommentingModal.getByText('Hide all previous comments');
         this.commentingDisabledIndicator = page.getByText('Comments disabled');
         this.enableCommentingLink = page.getByRole('button', {name: 'Enable', exact: true});
+
+        // Parity-file helpers — scope to the specific implementation's root
+        // so tests can assert "only one tree renders detail elements" and
+        // pin name assertions to the actual title element instead of any
+        // matching text on the page.
+        this.emberScreenTitle = page.locator('#ember-app [data-test-screen-title]');
+        this.reactScreenTitle = page.getByTestId('member-detail-title');
+        this.emberMemberActions = page.locator('#ember-app').getByTestId('member-actions');
+        this.reactMemberActions = page.getByTestId('member-detail').getByTestId('member-actions');
+        this.logoutConfirmModal = page.locator('[data-test-modal="logout-member"]')
+            .or(page.getByTestId('logout-member-modal'));
     }
 
     async clickNewsletterSubscriptionToggle(index: number = 0) {

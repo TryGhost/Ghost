@@ -59,10 +59,14 @@ for (const {implementation, memberDetailsReact} of [
 
             await page.goto(memberPath(member.id));
 
-            // Both implementations surface the name — Ember in the sidebar
-            // header, React in the breadcrumb page label. `.first()` handles
-            // the fact that Ember may show it in more than one place.
-            await expect(page.getByText('Ada Lovelace').first()).toBeVisible();
+            // Scoped to the primary title element in each implementation
+            // (Ember uses `data-test-screen-title`, React uses
+            // `data-testid="member-detail-title"`). Anchoring on the
+            // title-specific hook — instead of a loose `getByText().first()`
+            // — catches a regression where the name only surfaces in an
+            // aria-hidden or off-screen slot.
+            await expect(memberDetailsPage.emberScreenTitle.or(memberDetailsPage.reactScreenTitle))
+                .toContainText('Ada Lovelace');
         });
 
         test('editing the member name persists to the server', async ({page}) => {
@@ -121,8 +125,11 @@ for (const {implementation, memberDetailsReact} of [
             await memberDetailsPage.settingsSection.memberActionsButton.click();
             await memberDetailsPage.settingsSection.signOutOfAllDevices.click();
 
-            // Both use the same accessible confirm label.
-            await page.getByRole('button', {name: 'Sign out', exact: true}).click();
+            // Scope to the logout confirmation modal so the click doesn't
+            // bleed into the account-owner "Sign out" button in the admin
+            // sidebar dropdown.
+            await memberDetailsPage.logoutConfirmModal
+                .getByRole('button', {name: 'Sign out', exact: true}).click();
 
             // Confirm the sign-out button no longer accepts a click — the
             // dialog closed and the trigger button is back on the actions
@@ -145,6 +152,65 @@ for (const {implementation, memberDetailsReact} of [
             // Server side — the strongest invariant.
             const res = await page.request.get(`/ghost/api/admin/members/${member.id}/`);
             expect(res.status()).toBe(404);
+        });
+
+        test('creating a new member persists to the server and redirects to the detail', async ({page}) => {
+            // /members/new is a distinct URL under both routers — this test
+            // makes sure the create-mode contract holds regardless of which
+            // implementation runs it. Without it, an LLM regressing either
+            // side's create flow could ship unnoticed.
+            const email = `new-parity-${Date.now()}@ghost.org`;
+
+            await page.goto(memberPath('new'));
+
+            await page.getByRole('textbox', {name: 'Name'}).fill('New Parity Member');
+            await page.getByRole('textbox', {name: 'Email'}).fill(email);
+            await page.getByRole('button', {name: 'Save'}).click();
+
+            // Post-create, both implementations navigate to the new member's
+            // detail. Server side is authoritative — poll until the new
+            // member exists with the expected fields.
+            let createdId: string | undefined;
+            await expect.poll(async () => {
+                const res = await page.request.get(`/ghost/api/admin/members/?filter=${encodeURIComponent(`email:'${email}'`)}`);
+                const body = await res.json();
+                createdId = body?.members?.[0]?.id;
+                return body?.members?.[0]?.name;
+            }, {timeout: 10000}).toBe('New Parity Member');
+            // URL should have flipped off the `/new` sentinel to the real id.
+            await expect(page).toHaveURL(new RegExp(`#/members/${createdId}(\\?|$)`));
+        });
+
+        test('only one implementation renders member detail elements at a time', async ({page}) => {
+            // Load-bearing invariant for the parity guarantee: when the flag
+            // is on, Ember's `beforeModel` MUST abort so Ember's subtree
+            // doesn't paint into the hidden `#ember-app` container; when
+            // off, React's `MemberDetailGate` MUST render EmberFallback and
+            // therefore not mount its own detail tree.
+            //
+            // If a future refactor breaks either half of this contract,
+            // most tests would still pass — the visible tree is fine — but
+            // the parity file's cross-implementation assertions would
+            // silently start covering only one side. Pin the sole-tree
+            // invariant explicitly here so a regression trips a red test.
+            const member = await memberFactory.create({name: 'Sole Tree', email: 'sole-parity@ghost.org'});
+
+            await page.goto(memberPath(member.id));
+
+            // Wait for the shared trigger to exist so the shell has settled.
+            await expect(memberDetailsPage.settingsSection.memberActionsButton).toBeVisible();
+
+            const emberActionsCount = await memberDetailsPage.emberMemberActions.count();
+            const reactActionsCount = await memberDetailsPage.reactMemberActions.count();
+
+            // Straight-line assertions instead of a per-flag branch: the
+            // expected count per implementation is a pure function of the
+            // flag, so we compute it up front and let a regression on
+            // either side surface as a plain `toBe` failure.
+            const expectedEmberActions = memberDetailsReact ? 0 : 1;
+            const expectedReactActions = memberDetailsReact ? 1 : 0;
+            expect(emberActionsCount).toBe(expectedEmberActions);
+            expect(reactActionsCount).toBe(expectedReactActions);
         });
     });
 }
