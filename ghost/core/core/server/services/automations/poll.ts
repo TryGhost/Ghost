@@ -195,7 +195,9 @@ const processStep = async ({
                     member_uuid: member.get('uuid'),
                     member_email: member.get('email'),
                     member_name: member.get('name'),
-                    automation_action_revision_id: step.automation_action_revision_id
+                    automation_action_revision_id: step.automation_action_revision_id,
+                    // TODO(NY-1439) Don't always set this to false.
+                    track_opens: false
                 });
             } catch (err) {
                 logging.error({

@@ -1227,6 +1227,9 @@ module.exports = {
         email_subject: {type: 'string', maxlength: 300, nullable: true},
         email_lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         email_design_setting_id: {type: 'string', maxlength: 24, nullable: true, references: 'email_design_settings.id', setNullDelete: true},
+        email_sent_count: {type: 'integer', nullable: true, unsigned: true},
+        email_tracked_sent_count: {type: 'integer', nullable: true, unsigned: true},
+        email_opened_count: {type: 'integer', nullable: true, unsigned: true},
         '@@UNIQUE_CONSTRAINTS@@': [
             ['created_at', 'action_id']
         ]
@@ -1295,6 +1298,10 @@ module.exports = {
         member_uuid: {type: 'string', maxlength: 36, nullable: false},
         member_email: {type: 'string', maxlength: 191, nullable: false},
         member_name: {type: 'string', maxlength: 191, nullable: true},
+        mailgun_message_id: {type: 'string', maxlength: 1000, nullable: true},
+        delivered_at: {type: 'dateTime', nullable: true},
+        opened_at: {type: 'dateTime', nullable: true},
+        track_opens: {type: 'boolean', nullable: false, defaultTo: false},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
