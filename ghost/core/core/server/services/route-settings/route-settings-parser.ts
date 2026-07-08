@@ -95,21 +95,6 @@ function validationError(at: string, reason: string, help?: string): errors.Vali
         ...(help ? {help} : {})
     });
 }
-
-function pathWithSlashes() {
-    return z.string().superRefine((v, ctx) => {
-        if (!v.startsWith('/')) {
-            ctx.addIssue({code: 'custom', message: tpl(messages.validationError, {at: v, reason: 'A leading slash is required.'})});
-        }
-        if (!v.endsWith('/')) {
-            ctx.addIssue({code: 'custom', message: tpl(messages.validationError, {at: v, reason: 'A trailing slash is required.'})});
-        }
-        if (/\/:\w+/.test(v)) {
-            ctx.addIssue({code: 'custom', message: tpl(messages.validationError, {at: v, reason: 'Please use the following notation e.g. /{slug}/.'})});
-        }
-    });
-}
-
 // ---------------------------------------------------------------------------
 // Data schemas
 // ---------------------------------------------------------------------------
@@ -132,7 +117,7 @@ const DataShortFormSchema = z.string().superRefine((v, ctx) => {
 const DataReadEntrySchema = z.object({
     type: z.literal('read'),
     resource: z.enum(VALID_LONGFORM_RESOURCES),
-    slug: z.string().min(1, {message: 'slug is required for read data entries.'}),
+    slug: z.string({message: 'slug is required for read data entries.'}).min(1, {message: 'slug is required for read data entries.'}),
     redirect: z.boolean().optional(),
     include: z.string().optional(),
     visibility: z.string().optional(),
@@ -154,21 +139,76 @@ const DataBrowseEntrySchema = z.object({
 
 const DataLongFormEntrySchema = z.discriminatedUnion('type', [DataReadEntrySchema, DataBrowseEntrySchema]);
 
-const DataEntrySchema = z.union([DataShortFormSchema, DataLongFormEntrySchema]);
-
-const RouteDataSchema = z.union([
-    DataShortFormSchema,
-    z.record(z.string(), DataEntrySchema).superRefine((data, ctx) => {
-        for (const key of Object.keys(data)) {
-            if (RESERVED_DATA_KEYS.includes(key)) {
-                ctx.addIssue({code: 'custom', message: tpl(messages.badDataError), path: [key]});
-            }
-            if (key === 'author') {
-                ctx.addIssue({code: 'custom', message: tpl(messages.authorDeprecatedError), path: [key]});
-            }
+function parseDataEntry(key: string, value: unknown): DataEntry {
+    if (typeof value === 'string') {
+        const result = DataShortFormSchema.safeParse(value);
+        if (!result.success) {
+            throw toValidationError(result.error);
         }
-    })
-]);
+        return value as DataShortForm;
+    }
+
+    if (typeof value === 'object' && value !== null) {
+        const result = DataLongFormEntrySchema.safeParse(value);
+        if (!result.success) {
+            const issue = result.error.issues[0];
+            if (issue.message.includes('discriminator')) {
+                const typeVal = (value as Record<string, unknown>).type;
+                if (typeVal === undefined) {
+                    throw validationError(JSON.stringify(value), 'type is required.');
+                }
+                throw validationError(JSON.stringify(value), `${typeVal} not supported. Please use read, browse.`);
+            }
+            if (issue.path?.includes('resource')) {
+                const resVal = (value as Record<string, unknown>).resource;
+                if (resVal === undefined) {
+                    throw validationError(JSON.stringify(value), 'resource is required.');
+                }
+                throw validationError(JSON.stringify(value), `${resVal} not supported. Please use ${VALID_LONGFORM_RESOURCES.join(', ')}.`);
+            }
+            throw toValidationError(result.error);
+        }
+        return result.data;
+    }
+
+    throw validationError(key, 'Incorrect Format. Please use e.g. tag.recipes');
+}
+
+function parseRouteData(data: unknown): RouteData {
+    if (typeof data === 'string') {
+        const result = DataShortFormSchema.safeParse(data);
+        if (!result.success) {
+            throw toValidationError(result.error);
+        }
+        return data as DataShortForm;
+    }
+
+    if (typeof data !== 'object' || data === null) {
+        throw validationError(String(data), 'Incorrect Format. Please use e.g. tag.recipes');
+    }
+
+    const record = data as Record<string, unknown>;
+
+    for (const key of Object.keys(record)) {
+        if (RESERVED_DATA_KEYS.includes(key)) {
+            throw new errors.ValidationError({
+                message: tpl(messages.badDataError),
+                help: messages.badDataHelp
+            });
+        }
+        if (key === 'author') {
+            throw new errors.ValidationError({
+                message: tpl(messages.authorDeprecatedError)
+            });
+        }
+    }
+
+    const parsed: Record<string, DataEntry> = {};
+    for (const [key, value] of Object.entries(record)) {
+        parsed[key] = parseDataEntry(key, value);
+    }
+    return parsed;
+}
 
 // ---------------------------------------------------------------------------
 // Route schemas (raw YAML → domain model)
@@ -185,7 +225,7 @@ const TemplateField = z.union([z.string(), z.array(z.string())]).optional().defa
 const RouteObjectSchema = z.object({
     controller: z.literal('channel').optional(),
     template: TemplateField,
-    data: RouteDataSchema.optional(),
+    data: z.unknown().optional(),
     content_type: z.string().optional(),
     filter: z.string().optional(),
     order: z.string().optional(),
@@ -193,7 +233,7 @@ const RouteObjectSchema = z.object({
     rss: z.boolean().optional()
 }).transform((val): Omit<Route, 'path'> => {
     const templates = val.template;
-    const data = val.data as RouteData | undefined;
+    const data = val.data !== undefined ? parseRouteData(val.data) : undefined;
 
     if (val.controller === 'channel') {
         const route: Omit<ChannelRoute, 'path'> = {
@@ -237,16 +277,17 @@ const RouteObjectSchema = z.object({
 // ---------------------------------------------------------------------------
 
 const RawCollectionValueSchema = z.object({
-    permalink: z.string({message: 'Please define a permalink route.'}).pipe(pathWithSlashes()),
+    permalink: z.string({message: 'Please define a permalink route.'}).optional(),
     template: TemplateField,
-    data: RouteDataSchema.optional(),
+    data: z.unknown().optional(),
     filter: z.string().optional(),
     order: z.string().optional(),
     limit: z.union([z.number(), z.literal('all')]).optional(),
     rss: z.boolean().optional()
 }).transform((val): Omit<CollectionConfig, 'path'> => {
+    const data = val.data !== undefined ? parseRouteData(val.data) : undefined;
     const collection: Omit<CollectionConfig, 'path'> = {
-        permalink: val.permalink,
+        permalink: val.permalink ?? '',
         templates: val.template
     };
     if (val.filter !== undefined) {
@@ -261,36 +302,11 @@ const RawCollectionValueSchema = z.object({
     if (val.rss !== undefined) {
         collection.rss = val.rss;
     }
-    if (val.data !== undefined) {
-        collection.data = val.data as RouteData;
+    if (data !== undefined) {
+        collection.data = data;
     }
     return collection;
 });
-
-// ---------------------------------------------------------------------------
-// Taxonomy schema
-// ---------------------------------------------------------------------------
-
-const TaxonomyValueSchema = pathWithSlashes();
-
-const TaxonomiesSchema = z.record(z.string(), TaxonomyValueSchema)
-    .superRefine((obj, ctx) => {
-        for (const key of Object.keys(obj)) {
-            if (!['tag', 'author'].includes(key)) {
-                ctx.addIssue({code: 'custom', message: tpl(messages.validationError, {at: key, reason: 'Unknown taxonomy.'})});
-            }
-        }
-    })
-    .transform((obj): TaxonomyConfig => {
-        const result: TaxonomyConfig = {};
-        if (obj.tag) {
-            result.tag = obj.tag;
-        }
-        if (obj.author) {
-            result.author = obj.author;
-        }
-        return result;
-    });
 
 // ---------------------------------------------------------------------------
 // Top-level schema
@@ -308,10 +324,8 @@ const RouteSettingsSchema = z.object({
 
 function toValidationError(error: z.ZodError): errors.ValidationError {
     const issue = error.issues[0];
-    const isBadDataKey = issue.message === tpl(messages.badDataError);
     return new errors.ValidationError({
-        message: issue.message,
-        ...(isBadDataKey ? {help: messages.badDataHelp} : {})
+        message: issue.message
     });
 }
 
@@ -339,7 +353,7 @@ export function parseRouteSettings(raw: unknown): RouteSettings {
             }
 
             if (value === null || value === undefined) {
-                throw validationError(path, 'Please define a template.');
+                throw validationError(path, 'Please define a template.', 'e.g. /about/: about');
             }
 
             if (typeof value === 'string') {
@@ -354,7 +368,7 @@ export function parseRouteSettings(raw: unknown): RouteSettings {
 
             const route = routeResult.data;
             if (route.type === 'template' && (!route.templates || route.templates.length === 0) && !route.data && !(route as Omit<TemplateRoute, 'path'>).contentType) {
-                throw validationError(path, 'Please define a template.');
+                throw validationError(path, 'Please define a template.', 'e.g. /about/: about');
             }
 
             routes.push({...route, path} as Route);
@@ -373,17 +387,47 @@ export function parseRouteSettings(raw: unknown): RouteSettings {
             if (/\/:\w+/.test(path)) {
                 throw validationError(path, 'Please use the following notation e.g. /{slug}/.');
             }
+            if (!value.permalink) {
+                throw validationError(path, 'Please define a permalink route.', 'e.g. permalink: /{slug}/');
+            }
+            if (!value.permalink.startsWith('/')) {
+                throw validationError(value.permalink, 'A leading slash is required.');
+            }
+            if (!value.permalink.endsWith('/')) {
+                throw validationError(value.permalink, 'A trailing slash is required.');
+            }
+            if (/\/:\w+/.test(value.permalink)) {
+                throw validationError(value.permalink, 'Please use the following notation e.g. /{slug}/.');
+            }
             collections.push({...value, path});
         }
     }
 
-    let taxonomies: TaxonomyConfig = {};
-    if (rawTaxonomies && Object.keys(rawTaxonomies).length > 0) {
-        const taxResult = TaxonomiesSchema.safeParse(rawTaxonomies);
-        if (!taxResult.success) {
-            throw toValidationError(taxResult.error);
+    const taxonomies: TaxonomyConfig = {};
+    if (rawTaxonomies) {
+        for (const [key, value] of Object.entries(rawTaxonomies)) {
+            if (!['tag', 'author'].includes(key)) {
+                throw validationError(key, 'Unknown taxonomy.');
+            }
+            if (!value) {
+                throw validationError(key, 'Please define a taxonomy permalink route.', 'e.g. tag: /tag/{slug}/');
+            }
+            if (!value.startsWith('/')) {
+                throw validationError(value, 'A leading slash is required.');
+            }
+            if (!value.endsWith('/')) {
+                throw validationError(value, 'A trailing slash is required.');
+            }
+            if (/\/:\w+/.test(value)) {
+                throw validationError(value, 'Please use the following notation e.g. /{slug}/.');
+            }
+            if (key === 'tag') {
+                taxonomies.tag = value;
+            }
+            if (key === 'author') {
+                taxonomies.author = value;
+            }
         }
-        taxonomies = taxResult.data;
     }
 
     return {routes, collections, taxonomies};
