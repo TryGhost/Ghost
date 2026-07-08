@@ -90,6 +90,7 @@ export function shouldMakeClickable(attributionUrl: string, urlExists?: boolean)
  * @param siteUrl - The site's base URL
  * @param navigate - The navigation function for analytics routes
  * @param attributionType - The attribution type ('post', 'page', 'url', 'tag', 'author')
+ * @param absoluteUrl - Optional absolute frontend URL resolved on the server
  * @returns The appropriate click handler
  */
 export function getClickHandler(
@@ -97,7 +98,8 @@ export function getClickHandler(
     postId: string | null | undefined,
     siteUrl: string,
     navigate: (path: string, options?: {crossApp?: boolean}) => void,
-    attributionType?: string
+    attributionType?: string,
+    absoluteUrl?: string
 ) {
     return () => {
         // For posts with analytics, go to analytics page
@@ -106,7 +108,15 @@ export function getClickHandler(
             return;
         }
 
-        // For all other cases (pages, system pages), open frontend URL in new tab
+        // For all other cases (pages, system pages), open frontend URL in new tab.
+        // Prefer the server-resolved absolute URL when present so we use the
+        // authoritative permalink (respects routes.yaml) rather than reconstructing
+        // from the visitor-recorded pathname.
+        if (absoluteUrl) {
+            window.open(absoluteUrl, '_blank', 'noopener,noreferrer');
+            return;
+        }
+
         if (attributionUrl && siteUrl) {
             const frontendUrl = getFrontendUrl(attributionUrl, siteUrl);
             if (frontendUrl) {

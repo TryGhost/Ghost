@@ -19,6 +19,7 @@ interface UnifiedContentData {
     post_uuid?: string;
     post_id?: string;
     post_type?: string;
+    url?: string;
     url_exists?: boolean;
 }
 
@@ -54,9 +55,13 @@ const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, d
             }
             <DataListBody>
                 {data?.map((row: UnifiedContentData) => {
-                    // Only make posts clickable (not pages), since there's no analytics route for pages
-                    const isClickable = row.post_id && row.post_type === 'post';
-                    const clickHandler = isClickable ? getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type) : () => {};
+                    // Posts navigate to the internal analytics page; everything else (pages,
+                    // homepage, etc.) opens the live frontend URL in a new tab when we have
+                    // a server-resolved absolute URL.
+                    const isPostWithAnalytics = !!(row.post_id && row.post_type === 'post');
+                    const hasResolvedUrl = !!row.url;
+                    const isClickable = isPostWithAnalytics || hasResolvedUrl;
+                    const clickHandler = isClickable ? getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type, row.url) : () => {};
 
                     return (
                         <DataListRow
@@ -141,6 +146,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, audience, 
             post_uuid: item.post_uuid,
             post_id: item.post_id,
             post_type: item.post_type,
+            url: item.url,
             url_exists: item.url_exists
         }));
     }, [topContentData, totalVisitors]);
