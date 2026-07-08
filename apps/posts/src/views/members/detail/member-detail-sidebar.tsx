@@ -47,8 +47,8 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({member, draftN
 
     return (
         <aside className='flex w-full shrink-0 flex-col gap-6 lg:w-80' data-testid='member-detail-sidebar'>
-            <div className='flex items-center gap-3'>
-                <Avatar className='size-12 min-w-12' email={email || undefined} name={name || undefined} src={member?.avatar_image} />
+            <div className='flex items-center gap-3 py-4'>
+                <Avatar className='size-12 min-w-12 [&_span]:text-lg' email={email || undefined} name={name || undefined} src={member?.avatar_image} />
                 <div className='min-w-0'>
                     <h2 className='truncate text-lg font-semibold'>{identityName}</h2>
                     {name && email && (

@@ -274,7 +274,7 @@ const MemberDetail: React.FC = () => {
                                             member={member}
                                         />
                                     )}
-                                    <Button disabled={saveDisabled} variant={saveVariant} onClick={onSave}>
+                                    <Button className='min-w-16' disabled={saveDisabled} variant={saveVariant} onClick={onSave}>
                                         {saveLabel}
                                     </Button>
                                 </PageHeader.ActionGroup>
