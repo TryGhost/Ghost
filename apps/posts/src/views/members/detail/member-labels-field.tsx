@@ -64,6 +64,9 @@ const MemberLabelsField: React.FC<MemberLabelsFieldProps> = ({labels, disabled, 
                 isCreating={picker.isCreating}
                 labels={picker.labels}
                 optionSource={picker.optionSource}
+                // The 'Labels' Label above already contextualizes this field —
+                // 'Search labels...' inside the input would be visually noisy.
+                placeholder=''
                 resolvedSelectedLabels={picker.resolvedSelectedLabels}
                 selectedSlugs={selectedSlugs}
                 onCreate={handleCreate}
