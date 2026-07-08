@@ -18,17 +18,11 @@ async function waitForWelcomeEmailReceivedEvent(request: APIRequestContext, memb
     }, {timeout: 10000}).toBe(true);
 }
 
-// SKIPPED: the underlying signup-via-Portal fixture is currently flaky
-// against the dev stack (Portal iframe never attaches). The React
-// member-detail activity feed itself is covered by:
-//   e2e/tests/admin/members/member-detail.test.ts
-//     — "shows an activity feed with the recent event and a View all link"
-//     — "activity feed shows empty state when the member has no events"
-//     — "activity feed hides in create mode"
-// which mock the events endpoint deterministically. This spec is retained
-// (skipped) because it's the only end-to-end welcome-email → feed
-// integration; unskip when the Portal signup helper is stable.
-test.describe.skip('Ghost Admin - Member Activity Events', () => {
+test.describe('Ghost Admin - Member Activity Events', () => {
+    // Pins to Ember (the flag-off implementation). The React equivalents are
+    // covered by mocked-feed tests in `e2e/tests/admin/members/member-detail.test.ts`.
+    test.use({labs: {memberDetailsReact: false}});
+
     let emailClient: EmailClient;
 
     test.beforeEach(async () => {
