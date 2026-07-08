@@ -112,7 +112,10 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
 
         await page.goto(memberPath(member.id));
         await labelsField.getByRole('combobox').click();
-        await page.getByPlaceholder('Search labels...').fill('Beta');
+        // The Labels field is contextualized by its <Label> so the placeholder
+        // was intentionally removed. Type into the now-focused search input
+        // via keyboard rather than anchoring on placeholder text.
+        await page.keyboard.type('Beta');
         await page.getByText('Create "Beta"').click();
         await memberDetailsPage.save();
 
