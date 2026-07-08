@@ -5,6 +5,7 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class MembersRoute extends MembersManagementRoute {
+    @service feature;
     @service modals;
     @service router;
     @service('unsaved-changes') unsavedChanges;
@@ -33,6 +34,17 @@ export default class MembersRoute extends MembersManagementRoute {
         // shell keeps rendering the page.
         const memberId = transition.to?.params?.member_id;
         if (memberId === 'import') {
+            transition.abort();
+            return;
+        }
+
+        // When the `memberDetailsReact` Labs flag is on, React's
+        // `MemberDetailGate` owns this URL and Ember must NOT render its own
+        // subtree. Aborting the transition keeps `#ember-app` empty so
+        // `data-testid` and `data-test-link` attributes exist only in the
+        // React tree — no dual-DOM strict-mode violations in the tests, and
+        // no wasted Ember queryRecord fetch.
+        if (this.feature.memberDetailsReact) {
             transition.abort();
         }
     }
