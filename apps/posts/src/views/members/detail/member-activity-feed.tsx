@@ -2,6 +2,7 @@ import React from 'react';
 import moment from 'moment-timezone';
 import {Card, CardContent, EmptyIndicator, Skeleton} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {isSafeHref} from './is-safe-href';
 import {parseMemberEvent} from './member-event';
 import {useMemberActivityFeed} from '@tryghost/admin-x-framework/api/members';
 import type {MemberActivityEvent} from '@tryghost/admin-x-framework/api/members';
@@ -54,20 +55,6 @@ const EventIcon: React.FC<{iconName: string}> = ({iconName}) => {
     default: return <LucideIcon.Activity {...iconProps} />;
     }
 };
-
-/**
- * Only http(s), site-relative (`/...`), and internal hash (`#/...`) URLs are
- * safe to drop into an anchor `href`. Anything else — most importantly
- * `javascript:` — is rejected so a crafted attribution URL from the events
- * endpoint can't turn into click-to-execute in the admin. React does NOT
- * sanitize `href` for us.
- */
-function isSafeHref(url: string | undefined): url is string {
-    if (!url) {
-        return false;
-    }
-    return /^(https?:\/\/|\/|#\/)/i.test(url);
-}
 
 /**
  * "View all member activity →" link. Points at Ember's members-activity

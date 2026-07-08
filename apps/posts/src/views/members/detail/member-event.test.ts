@@ -130,6 +130,18 @@ describe('parseMemberEvent — action text', () => {
         expect(parsed.action).toBe('received automated email: Hi there');
         expect(parsed.actionTitle).toBe('received automated email: Hi there');
     });
+
+    it('automated_email_sent_event with missing/empty subject → subject-less copy (no "null" leak)', () => {
+        // Regression guard for the "received automated email: null" bug —
+        // `trimString` returns null when subject is missing or empty, and a
+        // template literal used to interpolate the literal string "null".
+        const missing = parseMemberEvent(ev('automated_email_sent_event', {automatedEmail: {source: 'automation_action_revision'}}), defaultCtx);
+        expect(missing.action).toBe('received automated email');
+        expect(missing.actionTitle).toBe('received automated email');
+        const blank = parseMemberEvent(ev('automated_email_sent_event', {automatedEmail: {source: 'automation_action_revision', subject: '   '}}), defaultCtx);
+        expect(blank.action).toBe('received automated email');
+        expect(blank.actionTitle).toBe('received automated email');
+    });
 });
 
 describe('parseMemberEvent — object / url / route', () => {

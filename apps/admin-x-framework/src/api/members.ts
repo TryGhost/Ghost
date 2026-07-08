@@ -625,10 +625,16 @@ const useMemberActivityFeedQuery = createInfiniteQuery<MemberActivityFeedInfinit
         const {pages} = originalData as InfiniteData<MemberActivityFeedResponseType>;
         const events = pages.flatMap(page => page.events);
         const lastPage = pages[pages.length - 1];
+        // Use the actual page limit echoed back in the server-side pagination
+        // meta so callers that override the default (e.g. `useMemberActivityFeed`
+        // passes `limit: '5'` for the sidebar preview) don't get a premature
+        // `isEnd=true` on a full page of results.
+        const paginationLimit = lastPage?.meta?.pagination?.limit;
+        const effectiveLimit = typeof paginationLimit === 'number' ? paginationLimit : Number(MEMBER_ACTIVITY_LIMIT);
         return {
             events,
             meta: lastPage?.meta,
-            isEnd: (lastPage?.events.length ?? 0) < Number(MEMBER_ACTIVITY_LIMIT)
+            isEnd: (lastPage?.events.length ?? 0) < effectiveLimit
         };
     }
 });

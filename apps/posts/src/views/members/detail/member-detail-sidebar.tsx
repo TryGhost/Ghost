@@ -4,6 +4,7 @@ import {Avatar} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {formatMemberLocation, getMemberReferrerSource} from './member-detail-format';
+import {isSafeHref} from './is-safe-href';
 
 // Matches the members list (`members-list-item.tsx`), which also renders member
 // dates in UTC. Site-timezone formatting is a follow-up for the cutover.
@@ -93,9 +94,19 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({member, draftN
                                 </MetaRow>
                             ) : null;
                         })()}
-                        {member.attribution?.url && member.attribution?.title && (
+                        {member.attribution?.title && (
                             <MetaRow icon={<LucideIcon.FileText size={16} />}>
-                                Page — <a className='truncate text-foreground hover:underline' href={member.attribution.url} rel='noopener noreferrer' target='_blank' title={member.attribution.title}>{member.attribution.title}</a>
+                                {/* Attribution URLs originate from external
+                                    signup traffic (Referer header, UTM params),
+                                    so validate the scheme before dropping it
+                                    into an anchor `href`. Same rule set as the
+                                    activity feed. Falls back to plain text
+                                    when the URL is missing or unsafe. */}
+                                Page — {isSafeHref(member.attribution.url) ? (
+                                    <a className='truncate text-foreground hover:underline' href={member.attribution.url} rel='noopener noreferrer' target='_blank' title={member.attribution.title}>{member.attribution.title}</a>
+                                ) : (
+                                    <span className='truncate text-foreground' title={member.attribution.title}>{member.attribution.title}</span>
+                                )}
                             </MetaRow>
                         )}
                     </div>

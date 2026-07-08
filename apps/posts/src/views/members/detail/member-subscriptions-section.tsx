@@ -40,7 +40,10 @@ const PriceBlock: React.FC<{sub: MemberSubscription; kind: SubscriptionKind}> = 
     );
 };
 
-const formatDate = (value?: string | null) => (value ? moment(new Date(value)).format('D MMM YYYY') : '');
+// UTC to match the sidebar (`member-detail-sidebar.tsx`) — otherwise a subscription
+// "Created — 24 Jul 2026" line rendered in a different local timezone from the
+// "Created —" line above it, on the same screen.
+const formatDate = (value?: string | null) => (value ? moment.utc(value).format('D MMM YYYY') : '');
 
 const SubscriptionDetails: React.FC<{sub: MemberSubscription}> = ({sub}) => {
     const created = formatDate(sub.start_date);

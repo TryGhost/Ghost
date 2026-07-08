@@ -40,7 +40,7 @@ for (const {implementation, memberDetailsReact} of [
     {implementation: 'Ember', memberDetailsReact: false},
     {implementation: 'React', memberDetailsReact: true}
 ] as const) {
-    test.describe(`Member detail parity — ${implementation}`, () => {
+    test.describe(`Ghost Admin - Member Detail Parity (${implementation})`, () => {
         test.use({labs: {memberDetailsReact}});
 
         let memberFactory: MemberFactory;
@@ -375,10 +375,13 @@ for (const {implementation, memberDetailsReact} of [
             await expect(page.getByRole('heading', {name: 'Engagement'})).toBeVisible();
 
             // Each stat label must be visible AND the corresponding value must
-            // appear inside the section. Scope to the Engagement heading's
-            // parent so a coincidentally-matching `12` elsewhere on the page
-            // (e.g. a member count) can't satisfy the assertion.
-            const engagement = page.getByRole('heading', {name: 'Engagement'}).locator('..');
+            // appear inside the section. Scope by testid — both implementations
+            // mark the Engagement wrapper with `data-testid="member-detail-engagement"`
+            // (Ember: `ghost/admin/app/components/gh-member-details.hbs`;
+            // React: `member-detail-sidebar.tsx`) — so an accidentally-matching
+            // "12" elsewhere on the page (e.g. a member count) can't satisfy
+            // the assertion.
+            const engagement = page.getByTestId('member-detail-engagement');
             await expect(engagement.getByText('Emails received')).toBeVisible();
             await expect(engagement.getByText('12', {exact: true})).toBeVisible();
             await expect(engagement.getByText('Emails opened')).toBeVisible();

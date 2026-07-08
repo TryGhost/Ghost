@@ -207,7 +207,10 @@ function getAction(event: RawMemberEvent, hasMultipleNewsletters: boolean): stri
             return `received welcome email (${emailType})`;
         }
         const subject = trimString(auto.subject);
-        return `received automated email: ${subject}`;
+        // `trimString` returns null on an empty/missing subject; interpolating
+        // that yields "received automated email: null". Fall back to the
+        // subjectless copy so the feed row reads cleanly.
+        return subject ? `received automated email: ${subject}` : 'received automated email';
     }
     if (event.type === 'email_delivered_event') {
         return 'received email';
@@ -272,7 +275,7 @@ function getActionTitle(event: RawMemberEvent, hasMultipleNewsletters: boolean):
         const auto = event.data.automatedEmail as {source?: string; subject?: string} | undefined;
         if (auto?.source === 'automation_action_revision') {
             const subject = trimString(auto.subject);
-            return `received automated email: ${subject}`;
+            return subject ? `received automated email: ${subject}` : 'received automated email';
         }
     }
     return getAction(event, hasMultipleNewsletters);
