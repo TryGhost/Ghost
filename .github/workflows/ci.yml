@@ -14,7 +14,8 @@ on:
   # Out-of-band publish of a single koenig/* package. Lives in this workflow
   # (rather than its own file) because npm trusted publishing allows one
   # workflow per package, and the release lane below already claims ci.yml.
-  # Dispatch runs skip the entire CI graph and only run publish_koenig_packages.
+  # Dispatch runs skip the entire CI graph and only run publish_koenig_packages,
+  # and only from main or a v* tag — dispatches on other refs skip the publish.
   workflow_dispatch:
     inputs:
       koenig_package:
@@ -86,9 +87,15 @@ jobs:
 
       - name: Output GitHub context
         if: env.RUNNER_DEBUG == '1'
+        # Passed via env rather than interpolated into the script: the event
+        # payload can contain user-controlled text (PR titles, dispatch inputs)
+        # and must not be evaluated as shell.
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_EVENT_JSON: ${{ toJson(github.event) }}
         run: |
-          echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
-          echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
+          echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
+          echo "GITHUB_CONTEXT: $GITHUB_EVENT_JSON"
 
       - name: Set SHAs for Nx Commands
         if: env.IS_TAG != 'true'
@@ -2024,7 +2031,9 @@ jobs:
     # tag would publish rc-tested content as a stable external release.
     # Dispatch lane: publish_ghost is skipped, so the needs gate is replaced
     # with !cancelled() and publish_ghost success is required explicitly on
-    # the release side.
+    # the release side. Restricted to main and release tags so a dispatch on
+    # an arbitrary branch can't mint an OIDC token and publish unreviewed
+    # content.
     if: |
       !cancelled()
       && github.repository == 'TryGhost/Ghost'
@@ -2035,7 +2044,10 @@ jobs:
           && !contains(github.ref_name, '-')
           && needs.publish_ghost.result == 'success'
         )
-        || github.event_name == 'workflow_dispatch'
+        || (
+          github.event_name == 'workflow_dispatch'
+          && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        )
       )
     # Serialize runs so two tags cut close together can't both compute the
     # same next-patch number and collide on npm.
