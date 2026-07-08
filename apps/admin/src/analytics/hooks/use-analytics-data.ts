@@ -2,28 +2,35 @@ import {type Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/conf
 import {type Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {type StatsConfig, useTinybirdToken} from '@tryghost/admin-x-framework';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {useMemo} from 'react';
+
+export interface AnalyticsSite {
+    url?: string;
+    icon?: string;
+    title?: string;
+}
 
 export interface AnalyticsFrameworkData {
-    data: Config | undefined;
-    site: {
-        url?: string;
-        icon?: string;
-        title?: string;
-    };
+    config: Config | undefined;
+    site: AnalyticsSite;
     statsConfig: StatsConfig | undefined;
-    tinybirdToken: string | undefined;
     isLoading: boolean;
     settings: Setting[];
 }
 
 /**
- * Reads the framework-owned data the analytics views need (config/site/settings
- * and the Tinybird token) straight from the shell's FrameworkProvider. These are
- * react-query hooks, so calls across views share one cache entry — nothing is
- * re-fetched per consumer, and the data no longer lives in AnalyticsProvider.
+ * Reads the framework-owned data the analytics views need (config/site/settings)
+ * straight from the shell's FrameworkProvider. These are react-query hooks, so
+ * calls across views share one cache entry — nothing is re-fetched per consumer,
+ * and the data no longer lives in AnalyticsProvider.
  *
- * Throws on request error so the surrounding route error boundary can render a
- * failure state (matching the previous GlobalDataProvider behaviour).
+ * The Tinybird token is deliberately not returned — `useTinybirdQuery` resolves
+ * its own. It is still requested here so its loading and error states gate the
+ * views the way GlobalDataProvider used to.
+ *
+ * Throws on request error. `apps/admin` mounts no `errorElement`, so this
+ * surfaces through React Router's default error boundary; the standalone
+ * StatsErrorBoundary that used to catch it is gone along with the standalone app.
  */
 export const useAnalyticsData = (): AnalyticsFrameworkData => {
     const settings = useBrowseSettings();
@@ -47,19 +54,23 @@ export const useAnalyticsData = (): AnalyticsFrameworkData => {
     const isTinybirdLoading = hasStatsConfig ? tinybirdTokenQuery.isLoading : false;
     const isLoading = isGhostLoading || isTinybirdLoading;
 
+    // Stable identity: there are ~10 independent call sites, so a fresh object
+    // literal per render would be a footgun for anything using it as a dep.
+    const siteData = site.data?.site;
+    const analyticsSite = useMemo(() => ({
+        url: siteData?.url,
+        icon: siteData?.icon,
+        title: siteData?.title
+    }), [siteData]);
+
     if (error) {
         throw error instanceof Error ? error : new Error('Failed to load analytics framework data');
     }
 
     return {
-        data: configData,
-        site: {
-            url: site.data?.site.url,
-            icon: site.data?.site.icon,
-            title: site.data?.site.title
-        },
+        config: configData,
+        site: analyticsSite,
         statsConfig: configData?.stats,
-        tinybirdToken: tinybirdTokenQuery.token,
         isLoading,
         settings: settings.data?.settings || []
     };

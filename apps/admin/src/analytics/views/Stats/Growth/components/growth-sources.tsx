@@ -94,7 +94,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     sortBy: externalSortBy,
     setSortBy: externalSetSortBy
 }) => {
-    const {data: globalData} = useAnalyticsData();
+    const {site} = useAnalyticsData();
     const {data: mrrHistoryResponse} = useMrrHistory();
     const {appSettings} = useAppContext();
 
@@ -110,7 +110,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     const {data: referrersData, isLoading} = useTopSourcesGrowth(range, backendOrderBy, limit);
 
     // Get site URL for favicon processing
-    const siteUrl = globalData?.url as string | undefined;
+    const siteUrl = site.url;
     const defaultSourceIconUrl = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
 
     // Get currency symbol from MRR history (same logic as Posts app)

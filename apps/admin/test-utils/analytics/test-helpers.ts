@@ -35,10 +35,9 @@ export const defaultMockData = {
     analyticsData: {
         isLoading: false,
         settings: [],
-        data: undefined,
+        config: undefined,
         statsConfig: undefined,
-        site: {},
-        tinybirdToken: undefined
+        site: {}
     }
 };
 

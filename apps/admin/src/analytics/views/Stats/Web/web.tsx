@@ -21,7 +21,7 @@ import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 
 const Web: React.FC = () => {
     const {range} = useAnalytics();
-    const {statsConfig, isLoading: isConfigLoading, data} = useAnalyticsData();
+    const {statsConfig, isLoading: isConfigLoading, site} = useAnalyticsData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
     const webAnalyticsEnabled = appSettings?.analytics?.webAnalytics === true;
@@ -38,8 +38,8 @@ const Web: React.FC = () => {
     }, [analyticsFilters]);
 
     // Get site URL and icon for domain comparison and Direct traffic favicon
-    const siteUrl = data?.url as string | undefined;
-    const siteIcon = data?.icon as string | undefined;
+    const siteUrl = site.url;
+    const siteIcon = site.icon;
 
     // Scroll to top of the scrollable container
     const scrollToTop = useCallback(() => {
