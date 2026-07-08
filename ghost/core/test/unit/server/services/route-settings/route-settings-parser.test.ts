@@ -76,7 +76,25 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
                 });
 
                 assert.deepEqual(result.routes, [
-                    {type: 'channel', path: '/featured/', templates: ['featured'], filter: 'featured:true', rss: true}
+                    {type: 'channel', path: '/featured/', templates: ['featured'], filter: 'featured:true'}
+                ]);
+            });
+
+            it('leaves rss unset on channel route when not specified', function () {
+                const result = parseRouteSettings({
+                    routes: {'/featured/': {controller: 'channel', filter: 'featured:true'}}
+                });
+
+                assert.equal(Object.prototype.hasOwnProperty.call(result.routes[0], 'rss'), false);
+            });
+
+            it('respects explicit rss: true on channel route', function () {
+                const result = parseRouteSettings({
+                    routes: {'/featured/': {controller: 'channel', filter: 'featured:true', rss: true}}
+                });
+
+                assert.deepEqual(result.routes, [
+                    {type: 'channel', path: '/featured/', templates: [], filter: 'featured:true', rss: true}
                 ]);
             });
 
@@ -329,7 +347,18 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             assert.ok(yaml.includes('filter: featured:true'));
         });
 
-        it('does not emit rss when true (default)', function () {
+        it('does not emit rss when unset (default)', function () {
+            const settings: RouteSettings = {
+                routes: [{type: 'channel', path: '/ch/', templates: [], filter: 'f'}],
+                collections: [],
+                taxonomies: {}
+            };
+            const yaml = serializeRouteSettings(settings);
+
+            assert.ok(!yaml.includes('rss:'));
+        });
+
+        it('emits rss when explicitly true', function () {
             const settings: RouteSettings = {
                 routes: [{type: 'channel', path: '/ch/', templates: [], filter: 'f', rss: true}],
                 collections: [],
@@ -337,7 +366,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             };
             const yaml = serializeRouteSettings(settings);
 
-            assert.ok(!yaml.includes('rss:'));
+            assert.ok(yaml.includes('rss: true'));
         });
 
         it('emits rss when false', function () {
