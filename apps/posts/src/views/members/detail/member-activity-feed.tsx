@@ -184,7 +184,7 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({memberId, hasMul
 
     return (
         <section className='flex flex-col gap-3' data-testid='member-activity-feed'>
-            <h4 className='text-lg font-semibold'>Activity</h4>
+            <h4 className='text-base font-semibold'>Activity</h4>
             <Card>
                 <CardContent className='pt-6'>
                     {isLoading ? (

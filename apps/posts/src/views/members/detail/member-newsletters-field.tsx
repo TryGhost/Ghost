@@ -59,7 +59,7 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
     // so an empty-newsletters state can hide it cleanly (returning null above).
     return (
         <section aria-labelledby='member-newsletters-heading' className='flex flex-col gap-3' data-testid='member-newsletters-field'>
-            <h3 className='text-xs font-semibold tracking-wide text-muted-foreground uppercase' id='member-newsletters-heading'>Newsletters</h3>
+            <h3 className='text-base font-semibold' id='member-newsletters-heading'>Newsletters</h3>
             <Card>
                 <CardContent className='p-6'>
                     {suppression ? (

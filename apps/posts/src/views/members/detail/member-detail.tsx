@@ -212,7 +212,7 @@ const MemberDetail: React.FC = () => {
 
     // Save button state (Save / Saving / Saved / Retry), mirroring the Ember task button.
     let saveLabel: React.ReactNode = 'Save';
-    let saveVariant: ButtonProps['variant'] = 'outline';
+    let saveVariant: ButtonProps['variant'] = 'default';
     let saveDisabled = true;
     if (activeMutation.isLoading) {
         saveLabel = <><LoadingIndicator size='sm' /><span className='sr-only'>Saving</span></>;
@@ -298,7 +298,7 @@ const MemberDetail: React.FC = () => {
                     )}
 
                     {showEditor && draft && (
-                        <div className='flex flex-1 flex-col gap-8 lg:flex-row lg:items-start'>
+                        <div className='flex flex-1 flex-col gap-8 lg:flex-row lg:items-start lg:gap-12'>
                             <MemberDetailSidebar draftEmail={draft.email} draftName={draft.name} engagementEnabled={engagementEnabled} member={member} />
                             <div className='flex min-w-0 flex-1 flex-col gap-8'>
                                 {/* First card: name, email, labels, note — no external header. */}
@@ -333,7 +333,7 @@ const MemberDetail: React.FC = () => {
                                     && ((member.subscriptions?.length ?? 0) > 0
                                         || (canAddComp && (member.tiers?.length ?? 0) === 0)) && (
                                     <section aria-labelledby='member-subscriptions-heading' className='flex flex-col gap-3'>
-                                        <h3 className='text-xs font-semibold tracking-wide text-muted-foreground uppercase' id='member-subscriptions-heading'>Subscriptions</h3>
+                                        <h3 className='text-base font-semibold' id='member-subscriptions-heading'>Subscriptions</h3>
                                         <MemberSubscriptionsSection canAddComp={canAddComp} member={member} paidMembersEnabled={paidMembersEnabled} />
                                     </section>
                                 )}

@@ -75,8 +75,8 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({member, allowLeave
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button aria-label='Actions' data-testid='member-actions' size='icon' variant='outline'>
-                        <LucideIcon.Settings size={16} />
+                    <Button aria-label='Actions' className='size-(--control-height)' data-testid='member-actions' size='icon' variant='outline'>
+                        <LucideIcon.Ellipsis size={16} />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align='end'>

@@ -46,7 +46,7 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({member, draftN
     const isNewMember = !member;
 
     return (
-        <aside className='flex w-full shrink-0 flex-col gap-6 lg:w-72' data-testid='member-detail-sidebar'>
+        <aside className='flex w-full shrink-0 flex-col gap-6 lg:w-80' data-testid='member-detail-sidebar'>
             <div className='flex items-center gap-3'>
                 <Avatar className='size-12 min-w-12' email={email || undefined} name={name || undefined} src={member?.avatar_image} />
                 <div className='min-w-0'>
@@ -80,29 +80,29 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({member, draftN
                         )}
                     </div>
 
-                    <div className='flex flex-col gap-2 text-sm'>
-                        <h3 className='text-xs font-semibold tracking-wide text-muted-foreground uppercase'>Signup info</h3>
+                    <div className='mt-4 flex flex-col gap-3 text-sm'>
+                        <h3 className='border-b border-border pb-2 text-base font-semibold'>Signup info</h3>
                         <MetaRow icon={<LucideIcon.UserPlus size={16} />}>
-                            Created — {formatDate(member.created_at)}
+                            Created — <span className='text-foreground'>{formatDate(member.created_at)}</span>
                         </MetaRow>
                         {(() => {
                             const referrerSource = getMemberReferrerSource(member.attribution);
                             return referrerSource ? (
                                 <MetaRow icon={<LucideIcon.Globe size={16} />}>
-                                    Source — <span title={referrerSource}>{referrerSource}</span>
+                                    Source — <span className='text-foreground' title={referrerSource}>{referrerSource}</span>
                                 </MetaRow>
                             ) : null;
                         })()}
                         {member.attribution?.url && member.attribution?.title && (
                             <MetaRow icon={<LucideIcon.FileText size={16} />}>
-                                Page — <a className='truncate hover:underline' href={member.attribution.url} rel='noopener noreferrer' target='_blank' title={member.attribution.title}>{member.attribution.title}</a>
+                                Page — <a className='truncate text-foreground hover:underline' href={member.attribution.url} rel='noopener noreferrer' target='_blank' title={member.attribution.title}>{member.attribution.title}</a>
                             </MetaRow>
                         )}
                     </div>
 
                     {engagementEnabled && (
-                        <section className='flex flex-col gap-3 text-sm' data-testid='member-detail-engagement'>
-                            <h4 className='text-xs font-semibold tracking-wide text-muted-foreground uppercase'>Engagement</h4>
+                        <section className='mt-4 flex flex-col gap-3 text-sm' data-testid='member-detail-engagement'>
+                            <h4 className='border-b border-border pb-2 text-base font-semibold'>Engagement</h4>
                             {/* `?? 0` matches Ember Data's serializer, which
                                 defaults `emailCount` to `0`
                                 (`ghost/admin/app/models/member.js:20`). A
