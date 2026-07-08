@@ -136,6 +136,26 @@ export function getMemberSuppressionInfo(
  * common case (sites with emails enabled see no flash) at the cost of a possible
  * flash-out on disabled sites when the setting finishes loading.
  */
+/**
+ * Newsletters that Ember auto-subscribes a new member to on save. Ports
+ * `gh-member-settings-form.js:233-241`: keep only newsletters that opt in
+ * via `subscribe_on_signup` AND are visible to member-tier subscribers
+ * (`visibility: 'members'`). The result feeds the create-screen draft so
+ * the toggles render as CHECKED — matching what the admin would see if
+ * they'd opened the Ember screen — and the same list is included in the
+ * POST payload so the server never has to fall back to its own default.
+ */
+export function getDefaultNewsletterIdsForNewMember(
+    newsletters: Array<{id: string; subscribe_on_signup?: boolean; visibility?: string | null}> | undefined | null
+): string[] {
+    if (!newsletters) {
+        return [];
+    }
+    return newsletters
+        .filter(nl => nl.subscribe_on_signup === true && nl.visibility === 'members')
+        .map(nl => nl.id);
+}
+
 export function getMemberNewslettersUiEnabled(editorDefaultEmailRecipients: string | null | undefined): boolean {
     return editorDefaultEmailRecipients !== 'disabled';
 }

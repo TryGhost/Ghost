@@ -1,4 +1,4 @@
-import {NOTE_MAX_LENGTH, buildMemberFieldEditPayload, getEmailErrorMessage, getMemberEditableSlice, getMemberNewslettersUiEnabled, getMemberSuppressionInfo, getNoteCharactersLeft, isDraftInSyncWithServer, isValidMemberEmail, resolveSlugsToLabels, toggleMemberNewsletter} from './member-detail-edit';
+import {NOTE_MAX_LENGTH, buildMemberFieldEditPayload, getDefaultNewsletterIdsForNewMember, getEmailErrorMessage, getMemberEditableSlice, getMemberNewslettersUiEnabled, getMemberSuppressionInfo, getNoteCharactersLeft, isDraftInSyncWithServer, isValidMemberEmail, resolveSlugsToLabels, toggleMemberNewsletter} from './member-detail-edit';
 import {describe, expect, it} from 'vitest';
 
 describe('getMemberEditableSlice', () => {
@@ -156,6 +156,41 @@ describe('isValidMemberEmail', () => {
         expect(isValidMemberEmail('a@b')).toBe(false);
         expect(isValidMemberEmail('a@b.')).toBe(false);
         expect(isValidMemberEmail('a b@example.com')).toBe(false);
+    });
+});
+
+describe('getDefaultNewsletterIdsForNewMember', () => {
+    // Ported from Ember's rule (`gh-member-settings-form.js:236-237`):
+    // `subscribe_on_signup: true` AND `visibility: 'members'`. A drift on
+    // either condition would silently either over-subscribe (privacy risk if
+    // a paid newsletter leaks to a free member) or under-subscribe (marketing
+    // regression if a signup-default newsletter is skipped).
+    it('includes only subscribe_on_signup + visibility:members newsletters', () => {
+        const newsletters = [
+            {id: 'a', subscribe_on_signup: true, visibility: 'members'},   // ✓
+            {id: 'b', subscribe_on_signup: true, visibility: 'paid'},      // ✗ paid-only
+            {id: 'c', subscribe_on_signup: false, visibility: 'members'},  // ✗ opt-in only
+            {id: 'd', subscribe_on_signup: true, visibility: null},         // ✗ visibility not 'members'
+            {id: 'e', subscribe_on_signup: true, visibility: 'members'}    // ✓
+        ];
+        expect(getDefaultNewsletterIdsForNewMember(newsletters)).toEqual(['a', 'e']);
+    });
+
+    it('returns [] for undefined / null / empty inputs (loading states)', () => {
+        expect(getDefaultNewsletterIdsForNewMember(undefined)).toEqual([]);
+        expect(getDefaultNewsletterIdsForNewMember(null)).toEqual([]);
+        expect(getDefaultNewsletterIdsForNewMember([])).toEqual([]);
+    });
+
+    it('preserves input order (no re-sort)', () => {
+        // Downstream consumers may rely on original ordering (e.g. a
+        // "primary newsletter first" rule); avoid injecting an implicit sort
+        // that would silently reorder the resulting UI toggles.
+        const newsletters = [
+            {id: 'z', subscribe_on_signup: true, visibility: 'members'},
+            {id: 'a', subscribe_on_signup: true, visibility: 'members'}
+        ];
+        expect(getDefaultNewsletterIdsForNewMember(newsletters)).toEqual(['z', 'a']);
     });
 });
 

@@ -188,6 +188,75 @@ for (const {implementation, memberDetailsReact} of [
             // both implementations light up the same set of sections.
             test.use({stripeEnabled: true});
 
+            test('newsletters section renders a toggle list on New member', async ({page}) => {
+                // Ember shows the newsletter preferences on /members/new so
+                // an admin creating a member can choose which lists to
+                // subscribe them to at creation time
+                // (`gh-member-settings-form.hbs:74-80`). The React screen
+                // previously gated the whole section on `!isCreating && member`
+                // — a UX regression that silently forced every new member to
+                // the "server default" without the admin even seeing it.
+                //
+                // "Newsletters" is a substring of "Subscribed to newsletters",
+                // which some Ember screens use as sub-copy, so anchor on the
+                // exact section heading. React renders `<h3>Newsletters</h3>`;
+                // Ember renders the same via `Member::NewsletterPreference`'s
+                // internal heading.
+                await page.goto(memberPath('new'));
+
+                await expect(page.getByRole('heading', {name: 'Newsletters', exact: true})).toBeVisible();
+                // Both implementations mark the toggle element with
+                // `data-testid="member-subscription-toggle"` (Ember:
+                // `newsletter-preference.hbs:19`; React:
+                // `member-newsletters-field.tsx`). The Ghost dev database
+                // seeds a default newsletter, so at least one toggle must
+                // render inside the section.
+                await expect(page.getByTestId('member-subscription-toggle').first()).toBeVisible();
+            });
+
+            test('newsletter toggles are checked by default on New member (Ember-default rule)', async ({page}) => {
+                // Ember pre-selects newsletters with `subscribe_on_signup:true`
+                // AND `visibility:members` on create
+                // (`gh-member-settings-form.js:233-241`) so the toggles render
+                // as CHECKED and the admin can visually confirm what the new
+                // member will land subscribed to. The React screen previously
+                // rendered them unchecked (the draft's `newsletters` started
+                // empty) which is a UX parity gap — even though the server
+                // fills in a similar default when the POST omits newsletters,
+                // the admin has no visual signal in React until the record
+                // is saved and refetched.
+                //
+                // Server semantics vs. UI parity: this test is the UI-side
+                // invariant. The API-side is already covered by the server's
+                // own default-subscribe path.
+                await page.goto(memberPath('new'));
+
+                // At least the first toggle in the dev DB seed (all
+                // newsletters ship with subscribe_on_signup=true +
+                // visibility=members) must render as checked. `aria-checked`
+                // is the standard for both native checkboxes and Radix
+                // switches — Ember's `<input type=checkbox>` sets the DOM
+                // property, and Radix mirrors it into the aria attribute.
+                const firstToggle = page.getByTestId('member-subscription-toggle').first();
+                await expect(firstToggle).toBeVisible();
+
+                // Native checkboxes expose state via `.checked`; Radix
+                // switches expose it via `aria-checked="true"`. Read the
+                // wrapping label/switch's aria-checked (Radix) OR fall back
+                // to the native checked property (Ember).
+                //
+                // Playwright's `toBeChecked()` reads both native `.checked`
+                // and `aria-checked`, but only works on interactive
+                // elements. The `<span data-testid="member-subscription-toggle">`
+                // isn't the interactive control in Ember (that's the sibling
+                // `<input>`). Assert the closest interactive ancestor's
+                // checked state through a filter.
+                const interactive = firstToggle.locator('..').getByRole('checkbox')
+                    .or(firstToggle.locator('..').getByRole('switch'))
+                    .or(firstToggle);
+                await expect(interactive.first()).toBeChecked();
+            });
+
             test('activity section shows an empty state on New member', async ({page}) => {
                 // Ember renders the Activity heading + a distinct empty-state
                 // block on /members/new (`activity-feed.hbs:1-7` +

@@ -164,6 +164,12 @@ export type NewMember = {
     note?: string | null;
     // Matched/created by name on the server, same as the edit payload.
     labels?: Array<{name: string; slug?: string}>;
+    // Explicit initial subscription set. When omitted, the server falls back
+    // to `subscribe_on_signup:true + visibility:members` newsletters
+    // (`member-repository.js:460-464`). The Ember admin sends the same set
+    // explicitly so the outcome doesn't drift if the server-side default
+    // ever changes; the React admin now matches.
+    newsletters?: Array<{id: string}>;
 };
 
 export const useAddMember = createMutation<MembersResponseType, NewMember>({

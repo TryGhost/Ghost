@@ -10,7 +10,7 @@ import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescripti
 import {DetailPage} from '@tryghost/shade/page-templates';
 import {Link, useConfirmUnload, useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {PageHeader} from '@tryghost/shade/patterns';
-import {buildMemberFieldEditPayload, getEmailErrorMessage, getMemberEditableSlice, getMemberNewslettersUiEnabled, isDraftInSyncWithServer, isValidMemberEmail, normalizeDraftForComparison} from './member-detail-edit';
+import {buildMemberFieldEditPayload, getDefaultNewsletterIdsForNewMember, getEmailErrorMessage, getMemberEditableSlice, getMemberNewslettersUiEnabled, isDraftInSyncWithServer, isValidMemberEmail, normalizeDraftForComparison} from './member-detail-edit';
 import {dequal} from 'dequal';
 import {deriveMemberDetailBackPath} from './member-detail-nav';
 import {formatMemberName} from '@tryghost/shade/app';
@@ -91,9 +91,13 @@ const MemberDetail: React.FC = () => {
     // We surface `newslettersResolved` too — the feed uses it to defer parsing
     // until the answer is known, avoiding a label churn from generic
     // "subscribed to newsletter" → specific "subscribed to Weekly".
+    // Newsletters are fetched on BOTH create and edit modes: on create so we
+    // can seed the draft with Ember's default subscriptions
+    // (`subscribe_on_signup:true + visibility:members`, matching
+    // `gh-member-settings-form.js:233-241`); on edit so the activity feed can
+    // decide whether to render newsletter labels.
     const {data: newslettersData} = useBrowseNewsletters({
-        searchParams: {filter: 'status:active', limit: '50'},
-        enabled: !isCreating
+        searchParams: {filter: 'status:active', limit: '50'}
     });
     const newslettersResolved = newslettersData !== undefined;
     const hasMultipleNewsletters = (newslettersData?.newsletters?.length ?? 0) > 1;
@@ -103,12 +107,16 @@ const MemberDetail: React.FC = () => {
     const [draft, setDraft] = React.useState<MemberEditableFields | undefined>(undefined);
     const draftMemberIdRef = React.useRef<string | undefined>(undefined);
     const lastServerSliceRef = React.useRef<MemberEditableFields | undefined>(undefined);
+    // One-shot flag: have we seeded create-mode newsletter defaults yet? Reset
+    // when re-entering create mode (draftMemberIdRef flips off CREATE_ID).
+    const newsletterDefaultsSeededRef = React.useRef(false);
     // Lets the post-create redirect through the unsaved-changes blocker.
     const bypassGuardRef = React.useRef(false);
     React.useEffect(() => {
         if (isCreating) {
             if (draftMemberIdRef.current !== CREATE_ID) {
                 draftMemberIdRef.current = CREATE_ID;
+                newsletterDefaultsSeededRef.current = false;
                 const empty = getMemberEditableSlice({});
                 lastServerSliceRef.current = empty;
                 setDraft(empty);
@@ -137,6 +145,33 @@ const MemberDetail: React.FC = () => {
     React.useEffect(() => {
         bypassGuardRef.current = false;
     }, [memberId]);
+
+    // Seed the create-mode draft with the Ember default newsletter set the
+    // first time the newsletters query resolves. Runs at most once per
+    // create-screen visit (`newsletterDefaultsSeededRef` is reset when
+    // create mode is re-entered) so a user who deselects a default doesn't
+    // have it re-checked by a background refetch. The seeded IDs also
+    // become the "server slice" baseline, which keeps the Save button
+    // disabled until the user actually changes something — the pre-checked
+    // toggles don't read as unsaved changes.
+    React.useEffect(() => {
+        if (!isCreating || newsletterDefaultsSeededRef.current || !newslettersData?.newsletters) {
+            return;
+        }
+        newsletterDefaultsSeededRef.current = true;
+        const defaults = getDefaultNewsletterIdsForNewMember(newslettersData.newsletters);
+        if (defaults.length === 0) {
+            return;
+        }
+        setDraft((prev) => {
+            if (!prev) {
+                return prev;
+            }
+            const next = {...prev, newsletters: [...defaults].sort()};
+            lastServerSliceRef.current = next;
+            return next;
+        });
+    }, [isCreating, newslettersData]);
 
     // Create compares against an empty baseline; edit against the loaded member.
     const serverSlice = isCreating ? getMemberEditableSlice({}) : (member ? getMemberEditableSlice(member) : undefined);
@@ -170,7 +205,14 @@ const MemberDetail: React.FC = () => {
                 email: draft.email.trim(),
                 name: draft.name.trim() || undefined,
                 note: draft.note.trim() || undefined,
-                labels: draft.labels.length ? draft.labels : undefined
+                labels: draft.labels.length ? draft.labels : undefined,
+                // Match Ember: send the visibly-selected newsletters as the
+                // create payload so the outcome doesn't rely on the server's
+                // fallback (`member-repository.js:460-464`). When the user
+                // deselected everything, send `[]` explicitly to record the
+                // intent — omitting the key would silently re-subscribe them
+                // to the server default set.
+                newsletters: draft.newsletters.map(id => ({id}))
             }, {
                 onSuccess: (response) => {
                     const created = response.members?.[0];
@@ -322,12 +364,15 @@ const MemberDetail: React.FC = () => {
                                 </Card>
 
                                 {/* Newsletters section owns its external heading + card so an empty
-                                    newsletter list hides the whole thing (returns null). */}
-                                {newslettersUiEnabled && !isCreating && member && (
+                                    newsletter list hides the whole thing (returns null). Renders
+                                    on /members/new too so an admin can pick the initial
+                                    subscription set at creation — matches Ember's
+                                    `gh-member-settings-form.hbs:74-80`. */}
+                                {newslettersUiEnabled && (isCreating || member) && (
                                     <MemberNewslettersField
                                         disabled={activeMutation.isLoading}
-                                        emailSuppression={member.email_suppression}
-                                        memberId={member.id}
+                                        emailSuppression={member?.email_suppression}
+                                        memberId={member?.id}
                                         subscribedIds={draft.newsletters}
                                         onChange={nextIds => onFieldChange({newsletters: nextIds})}
                                     />

@@ -9,8 +9,12 @@ import {useRemoveMemberEmailSuppression} from '@tryghost/admin-x-framework/api/m
 import type {Member} from '@tryghost/admin-x-framework/api/members';
 
 interface MemberNewslettersFieldProps {
-    memberId: string;
-    emailSuppression: Member['email_suppression'];
+    // Optional so the create screen (/members/new) can render the toggles
+    // without a saved member yet — matches Ember, which shows the newsletter
+    // preferences on new members (`gh-member-settings-form.hbs:74-80`).
+    // Suppression logic is skipped when the member doesn't exist.
+    memberId?: string;
+    emailSuppression?: Member['email_suppression'];
     subscribedIds: string[];
     disabled?: boolean;
     onChange: (subscribedIds: string[]) => void;
@@ -23,7 +27,9 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
     disabled,
     onChange
 }) => {
-    const suppression = getMemberSuppressionInfo(emailSuppression);
+    // A new member can't be suppressed yet — skip the suppression branch
+    // entirely by treating a missing memberId as "not suppressed".
+    const suppression = memberId ? getMemberSuppressionInfo(emailSuppression) : null;
     const removeSuppression = useRemoveMemberEmailSuppression();
 
     // Ember only shows active newsletters; archived ones are managed elsewhere and
@@ -49,6 +55,11 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
     }
 
     const onReEnable = () => {
+        // Guarded by `suppression` above — a new member can't have a
+        // suppression record, so `memberId` is always defined when this runs.
+        if (!memberId) {
+            return;
+        }
         removeSuppression.mutate({id: memberId}, {
             onSuccess: () => toast.success('Email re-enabled successfully'),
             onError: () => toast.error('Failed to re-enable email. Please try again.')

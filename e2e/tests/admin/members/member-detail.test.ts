@@ -1031,9 +1031,11 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         await page.goto(memberPath('new'));
         await expect(page.getByTestId('member-detail-title')).toHaveText('New member');
         await expect(memberDetailsPage.saveButton).toBeDisabled();
-        // Newsletter toggles hide in create mode — showing them would silently
-        // discard user choices because we don't send newsletters on create.
-        await expect(page.getByTestId('member-newsletters-field')).toHaveCount(0);
+        // Newsletter toggles now render on /members/new (parity fix — see
+        // `member-detail-parity.test.ts`). Pin the section as visible so a
+        // future regression that re-hides it would fail here rather than
+        // silently pass this create-mode test.
+        await expect(page.getByTestId('member-newsletters-field')).toBeVisible();
 
         await memberDetailsPage.nameInput.fill('Grace Hopper');
         await memberDetailsPage.emailInput.fill('grace-new@ghost.org');
@@ -1044,10 +1046,11 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         await expect(memberDetailsPage.emailInput).toHaveValue('grace-new@ghost.org');
         await expect(page).not.toHaveURL(/preview\/new$/);
 
-        // Ember parity: the new member is auto-subscribed to default newsletters.
-        // Ember achieves this by the model defaulting subscribed:true; we rely on
-        // the server default (subscribed !== false && !newsletters), so pin the
-        // outcome so a future server change can't silently regress it.
+        // Ember parity: the new member is auto-subscribed to default
+        // newsletters. React now sends the explicit newsletter set in the
+        // POST payload rather than relying on the server fallback — pin the
+        // outcome so a change to either the UI seeding or the server
+        // fallback fails here.
         const search = await page.request.get('/ghost/api/admin/members/?filter=email%3Agrace-new%40ghost.org&include=newsletters');
         const {members} = await search.json();
         expect(members[0].subscribed).toBe(true);
