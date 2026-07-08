@@ -208,9 +208,13 @@ No new test job (the old plan's `job_koenig_tests` is obsolete). Instead:
   current directory glob `--projects 'apps/*'` — packages opt in by tagging
   themselves, so the matrix isn't coupled to workspace layout. Check
   `job_apps_acceptance-tests` covers koenig's needs: Playwright browser
-  install/cache exists there. (MS core fonts turned out to be unnecessary —
-  the visual-regression assertions they supported no longer exist in the
-  suite; no `toHaveScreenshot`/`toMatchSnapshot` usages remain.) Keep the
+  install/cache exists there, but the koenig-lexical leg additionally needs
+  MS core fonts (caret-position assertions depend on Arial's line-wrap
+  metrics, so the fonts matter even though no `toHaveScreenshot`/
+  `toMatchSnapshot` visual assertions remain) and
+  `playwright install-deps firefox` for the system codecs (libavcodec) the
+  firefox video card tests need to decode their H.264 fixtures; install
+  both conditionally on that matrix leg. Keep the
   playwright-report artifact upload, resolving each project's root via
   `nx show project` since suites live in both `apps/*` and `koenig/*`.
 - **Path filters:** confirm the `shared`/`e2e`/`any-code` path filters in
