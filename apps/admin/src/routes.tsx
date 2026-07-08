@@ -7,7 +7,7 @@ import { FeatureFlagsProvider, routes as activityPubRoutes } from "@tryghost/act
 import { PostsAppContextProvider, routes as postRoutes } from "@tryghost/posts/api";
 
 // Stats (aka analytics)
-import { GlobalDataProvider, routes as statsRoutes } from "@tryghost/stats/api";
+import { AnalyticsProvider, analyticsRouteChildren } from "./analytics/api";
 import MyProfileRedirect from "./my-profile-redirect";
 
 // Ember
@@ -97,14 +97,19 @@ export const routes: RouteObject[] = [
                 children: postRoutes[0].children!.filter((route) => route.path !== "*"),
             },
             {
+                // Analytics routes folded directly into the shell table. The
+                // AnalyticsProvider is attached to this route node (via its
+                // element) rather than a separate wrapper subtree; OnboardingRedirect
+                // still gates entry.
+                path: "analytics",
                 element: (
                     <OnboardingRedirect>
-                        <GlobalDataProvider>
+                        <AnalyticsProvider>
                             <Outlet />
-                        </GlobalDataProvider>
+                        </AnalyticsProvider>
                     </OnboardingRedirect>
                 ),
-                children: statsRoutes,
+                children: analyticsRouteChildren,
             },
             {
                 path: "setup/onboarding",

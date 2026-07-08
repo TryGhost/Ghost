@@ -200,8 +200,7 @@
               "@tryghost/admin-x-framework",
               "@tryghost/admin-x-settings",
               "@tryghost/activitypub",
-              "@tryghost/posts",
-              "@tryghost/stats"
+              "@tryghost/posts"
             ],
             "target": "build"
           }
@@ -220,8 +219,7 @@
               "@tryghost/admin-x-framework",
               "@tryghost/admin-x-settings",
               "@tryghost/activitypub",
-              "@tryghost/posts",
-              "@tryghost/stats"
+              "@tryghost/posts"
             ],
             "target": "build"
           }
