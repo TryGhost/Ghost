@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 import {selectCustomColor, selectTitledColor} from '../../utils/color-select-helper';

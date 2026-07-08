@@ -44,11 +44,12 @@ export default [
             ...ghostPlugin.configs.browser.rules,
 
             // match eslint-config-react-app behavior
-            'no-unused-vars': ['warn', {args: 'none', caughtErrors: 'none', ignoreRestSiblings: true}],
+            'no-unused-vars': ['error', {args: 'none', caughtErrors: 'none', ignoreRestSiblings: true}],
 
             // react-hooks
             'react-hooks/rules-of-hooks': 'error',
-            'react-hooks/exhaustive-deps': 'warn',
+            // pre-existing violations carry inline disables; new code must comply
+            'react-hooks/exhaustive-deps': 'error',
 
             // sort multiple import lines into alphabetical groups
             'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
@@ -71,9 +72,9 @@ export default [
             'react/no-array-index-key': 'error',
 
             'tailwindcss/classnames-order': ['error', {config: tailwindConfigPath}],
-            'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: tailwindConfigPath}],
-            'tailwindcss/enforces-shorthand': ['warn', {config: tailwindConfigPath}],
-            'tailwindcss/migration-from-tailwind-2': ['warn', {config: tailwindConfigPath}],
+            'tailwindcss/enforces-negative-arbitrary-values': ['error', {config: tailwindConfigPath}],
+            'tailwindcss/enforces-shorthand': ['error', {config: tailwindConfigPath}],
+            'tailwindcss/migration-from-tailwind-2': ['error', {config: tailwindConfigPath}],
             'tailwindcss/no-arbitrary-value': 'off',
             'tailwindcss/no-custom-classname': 'off',
             'tailwindcss/no-contradicting-classname': ['error', {config: tailwindConfigPath}]

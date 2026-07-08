@@ -24,6 +24,10 @@ export default defineConfig([
     files: ['src/**/*.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-declaration-merging': 'off',
+      // empty interfaces are used throughout the node type declarations
+      // (declaration merging with lexical's types); this lint target wasn't
+      // wired into CI in the Koenig repo, so the pattern predates the rule
+      '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   },

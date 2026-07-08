@@ -4,22 +4,22 @@
 
 ### Unit Tests
 ```bash
-yarn test:unit          # Run unit tests once
-yarn test:unit:watch    # Run unit tests in watch mode
+pnpm test:unit          # Run unit tests once
+pnpm test:unit:watch    # Run unit tests in watch mode
 ```
 
-### E2E Tests (Playwright)
+### Acceptance Tests (Playwright)
 ```bash
-yarn test:e2e           # Run E2E tests (headless, list reporter)
-yarn test:e2e:quiet     # Run E2E tests (minimal output, failures only)
-yarn test:e2e:headed    # Run E2E tests with browser UI visible
-yarn test:e2e:report    # Run E2E tests with HTML report
-yarn test:slowmo        # Run E2E tests with slow motion + UI
+pnpm test:acceptance           # Run Playwright tests (headless, list reporter)
+pnpm test:acceptance:quiet     # Minimal output, failures only
+pnpm test:acceptance:headed    # Run with browser UI visible
+pnpm test:acceptance:report    # Run with HTML report
+pnpm test:slowmo               # Slow motion + UI
 ```
 
 ### All Tests
 ```bash
-yarn test               # Run unit + E2E tests, then lint
+pnpm test               # Run unit + acceptance tests, then lint
 ```
 
 ## AI-Friendly Testing
@@ -27,7 +27,7 @@ yarn test               # Run unit + E2E tests, then lint
 The test runner has been configured to work well with AI agents:
 
 - **Default behavior**: Headless mode with list reporter (no browser UI, no web pages)
-- **Quiet mode**: Use `yarn test:e2e:quiet` for minimal output (only shows failures)
+- **Quiet mode**: Use `pnpm test:acceptance:quiet` for minimal output (only shows failures)
 - **Clean exit**: Tests complete without hanging processes or opening browsers
 - **Clear output**: List reporter provides clear pass/fail information
 
@@ -35,9 +35,9 @@ The test runner has been configured to work well with AI agents:
 
 For debugging and development:
 
-- Use `yarn test:e2e:headed` to see the browser UI
-- Use `yarn test:e2e:report` to generate an HTML report
-- Use `yarn test:slowmo` for slow-motion debugging
+- Use `pnpm test:acceptance:headed` to see the browser UI
+- Use `pnpm test:acceptance:report` to generate an HTML report
+- Use `pnpm test:slowmo` for slow-motion debugging
 
 ## Environment Variables
 
@@ -48,11 +48,11 @@ For debugging and development:
 ## Test Structure
 
 - `test/unit/` - Unit tests (Vitest)
-- `test/e2e/` - End-to-end tests (Playwright)
+- `test/e2e/` - Acceptance tests (Playwright, `test:acceptance` target)
 - `test/utils/` - Shared test utilities
 
 ## Development Workflow
 
-1. Run unit tests during development: `yarn test:unit:watch`
-2. Run E2E tests before committing: `yarn test:e2e`
-3. Use headed mode for debugging: `yarn test:e2e:headed`
+1. Run unit tests during development: `pnpm test:unit:watch`
+2. Run acceptance tests before committing: `pnpm test:acceptance`
+3. Use headed mode for debugging: `pnpm test:acceptance:headed`

@@ -14,7 +14,7 @@ This library differs from Lexical's own [lexical-html](https://github.com/facebo
 
 or
 
-`yarn add @tryghost/kg-lexical-html-renderer`
+`npm install @tryghost/kg-lexical-html-renderer`
 
 
 ## Usage
@@ -45,19 +45,20 @@ This is a mono repository, managed with [lerna](https://lernajs.io/).
 
 Follow the instructions for the top-level repo.
 1. `git clone` this repo & `cd` into it as usual
-2. Run `yarn` to install top-level dependencies.
+2. Run `pnpm install` from the Ghost monorepo root.
 
 
 ## Test
 
-- `yarn lint` run just eslint
-- `yarn test` run lint and tests
+- `pnpm lint` run just eslint
+- `pnpm test` run lint and tests
 
 
 ## Running in Ghost Admin
 In order to run local changes, perform the following:
-1. Run `yarn link` within `kg-lexical-html-renderer`
-2. Run `yarn link @tryghost/kg-lexical-html-renderer` within `ghost/core`
+This package is part of the Ghost monorepo workspace — `ghost/core` resolves
+it via `workspace:` automatically, so local changes are picked up with no
+linking. Run `pnpm dev` in this package for a rebuild-on-change watcher.
 
 `kg-default-nodes` must also be linked when linking this package as they are codependencies.
 

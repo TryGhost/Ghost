@@ -8,7 +8,7 @@ Convert HTML strings into Lexical editor state objects
 
 or
 
-`yarn add @tryghost/kg-html-to-lexical`
+`npm install @tryghost/kg-html-to-lexical`
 
 ## Usage
 
@@ -19,14 +19,14 @@ This is a monorepo package.
 
 Follow the instructions for the top-level repo.
 1. `git clone` this repo & `cd` into it as usual
-2. Run `yarn` to install top-level dependencies.
+2. Run `pnpm install` from the Ghost monorepo root.
 
 
 
 ## Test
 
-- `yarn lint` run just eslint
-- `yarn test` run lint and tests
+- `pnpm lint` run just eslint
+- `pnpm test` run lint and tests
 
 
 

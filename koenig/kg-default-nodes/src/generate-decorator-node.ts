@@ -5,6 +5,7 @@ import {buildDefaultVisibility, isVisibilityRestricted, migrateOldVisibilityForm
 import type {LexicalEditor} from 'lexical';
 import type {Visibility} from './utils/visibility.js';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- render fns take their own node subtype; `unknown` would reject them (parameter contravariance)
 type RenderFn<TOutput extends ExportDOMOutput = ExportDOMOutput> = (node: any, options: ExportDOMOptions) => TOutput;
 type VersionedRenderFn<TOutput extends ExportDOMOutput = ExportDOMOutput> = Record<string | number, RenderFn<TOutput>>;
 type WidenLiteral<T> =

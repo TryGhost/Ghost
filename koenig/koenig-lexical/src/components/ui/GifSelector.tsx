@@ -199,6 +199,8 @@ const GifSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLoad
         moveToNextHorizontalGif('left');
     }
 
+    // not memoized, so the keydown useEffect above re-subscribes every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     function handleGifHighlight(event) {
         switch (event.key) {
         case 'Tab':

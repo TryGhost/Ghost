@@ -10,21 +10,18 @@ The editor can be run in two modes:
 
 ### Standalone mode
 
-Run `yarn dev` to start the editor in standalone mode for development on http://localhost:5173. This command generates a demo site from the `index.html` file, which renders the demo app in `demo/demo.jsx`.
+Run `pnpm dev` to start the editor in standalone mode for development on http://localhost:5173. This command generates a demo site from the `index.html` file, which renders the demo app in `demo/demo.jsx`.
 
 ### Integrated mode
 
-In order to run the editor inside Ghost Admin, follow the 3 steps below:
+All Koenig packages are part of the Ghost monorepo workspace, so no linking is
+needed — Ghost Admin builds against your local editor automatically.
 
-1. Link Koenig server-side dependencies inside Ghost
-   - Run `yarn link` inside `Koenig/packages/kg-default-nodes` and `Koenig/packages/kg-lexical-html-renderer`
-   - Paste the output at the root of the Ghost monorepo:
-     - `yarn link @tryghost/kg-default-nodes`
-     - `yarn link @tryghost/kg-lexical-html-renderer`
-
-2. Start Ghost in dev mode: inside the Ghost monorepo, run `yarn dev --lexical`.
-
-3. Start the editor in dev mode: inside the Koenig monorepo, run `yarn dev`.
+1. Start Ghost in dev mode from the monorepo root: `pnpm dev`.
+2. In another terminal, rebuild the editor on change:
+   `pnpm --filter @tryghost/koenig-lexical dev`
+   (or use `pnpm dev:lexical` from the root to point Admin's EDITOR_URL at the
+   built editor assets).
 
 Now, if you navigate to Ghost Admin at http://localhost:2368/ghost and open a post, it will use your local version of the editor. Changes to the editor will be reflected inside Ghost Admin after a few seconds - the time for the editor to get rebuilt.
 
@@ -80,21 +77,21 @@ All imported files are processed/optimised via SVGO (see `svgo.config.js` for op
 
 We use [Vitest](https://vitest.dev) for unit tests and [Playwright](https://playwright.dev) for e2e testing.
 
-- `yarn test` runs all tests and exits
-- `yarn test:unit` runs unit tests
-- `yarn test:unit:watch` runs unit tests and starts a test watcher that re-runs tests on file changes
-- `yarn test:unit:watch --ui` runs unit tests and opens a browser UI for exploring and re-running tests
-- `yarn test:e2e` runs e2e tests
-- `yarn test:e2e --headed` runs tests in browser so you can watch the tests execute
-- `yarn test:slowmo` same as `yarn test:e2e --headed` but adds 100ms delay between instructions to make it easier to see what's happening (note that some tests may fail or timeout due to the added delays)
-- `yarn test:e2e --ui` opens a [browser UI](https://playwright.dev/docs/test-ui-mode) in watch mode for exploring and re-running tests
-- `yarn test:e2e --ui --headed` same as `yarn test:e2e --ui` but also runs tests in browser so you can watch the tests execute
+- `pnpm test` runs all tests and exits
+- `pnpm test:unit` runs unit tests
+- `pnpm test:unit:watch` runs unit tests and starts a test watcher that re-runs tests on file changes
+- `pnpm test:unit:watch --ui` runs unit tests and opens a browser UI for exploring and re-running tests
+- `pnpm test:e2e` runs e2e tests
+- `pnpm test:e2e --headed` runs tests in browser so you can watch the tests execute
+- `pnpm test:slowmo` same as `pnpm test:e2e --headed` but adds 100ms delay between instructions to make it easier to see what's happening (note that some tests may fail or timeout due to the added delays)
+- `pnpm test:e2e --ui` opens a [browser UI](https://playwright.dev/docs/test-ui-mode) in watch mode for exploring and re-running tests
+- `pnpm test:e2e --ui --headed` same as `pnpm test:e2e --ui` but also runs tests in browser so you can watch the tests execute
 
 Before tests are started we build a version of the demo app that is used for the unit tests.
 
 When developing it can be useful to limit unit tests to specific keywords (taken from `describe` or `it/test` names). That's possible using the `-t` param and works with any of the above test commands, e.g.:
 
-- `yarn test:unit:watch -t "buildCardMenu"`
+- `pnpm test:unit:watch -t "buildCardMenu"`
 
 ### How to debug e2e tests on CI
 

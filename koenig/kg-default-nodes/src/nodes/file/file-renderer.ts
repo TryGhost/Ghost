@@ -72,10 +72,10 @@ function emailTemplate(node: FileNodeData, document: Document, options: RenderOp
                             </td>
                             <td width="80" valign="middle" class="kg-file-thumbnail">
                                 ${href
-        ? `<a href="${escapeHtml(href)}" style="display: block; top: 0; right: 0; bottom: 0; left: 0;">
+            ? `<a href="${escapeHtml(href)}" style="display: block; top: 0; right: 0; bottom: 0; left: 0;">
                                     <img src="https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png" style="${escapeHtml(iconCls)}">
                                 </a>`
-        : `<img src="https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png" style="${escapeHtml(iconCls)}">`}
+            : `<img src="https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png" style="${escapeHtml(iconCls)}">`}
                             </td>
                         </tr>
                     </table>

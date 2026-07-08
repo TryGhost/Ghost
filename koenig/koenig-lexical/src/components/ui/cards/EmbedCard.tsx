@@ -112,6 +112,9 @@ function EmbedIframe({dataTestId, html}) {
             resizeObserver.disconnect();
             mutationObserver.disconnect();
         };
+        // mutationObserver is recreated every render; the cleanup only needs
+        // the instance from the mount render
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
