@@ -5,12 +5,18 @@ import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
-// After the Phase 8 cutover, `/members/:member_id` is the React route. The
-// same helper covers the create sentinel `new` since the route is a single
-// dynamic segment (`:member_id`) that the component branches on.
+// `/members/:member_id` is dual-owned by the `memberDetailsReact` Labs flag.
+// This file covers React-specific behaviour (retry state, unsaved-guard flow,
+// activity-feed create-mode short-circuit, new testids) and pins the flag on
+// so every test in it exercises the React implementation. Cross-implementation
+// contract lives in `member-detail-parity.test.ts`, which runs the same
+// assertions with the flag on AND off.
 const memberPath = (memberId: string) => `/ghost/#/members/${memberId}`;
 
 test.describe('Ghost Admin - Member Detail (React)', () => {
+    // Pin every test in this describe to the React implementation.
+    test.use({labs: {memberDetailsReact: true}});
+
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {

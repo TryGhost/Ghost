@@ -30,7 +30,7 @@ function ensureOutDir() {
 }
 
 test.describe('Ghost Admin - Member Detail (React) - visual', () => {
-    test.use({stripeEnabled: true, viewport: {width: 1440, height: 900}});
+    test.use({stripeEnabled: true, viewport: {width: 1440, height: 900}, labs: {memberDetailsReact: true}});
 
     let memberFactory: MemberFactory;
 
