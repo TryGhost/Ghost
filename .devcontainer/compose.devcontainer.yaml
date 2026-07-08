@@ -2,10 +2,18 @@ services:
   mysql:
     # Smaller InnoDB buffer pool than the baseline compose.dev.yaml (1G).
     # Lets the dev stack stay within a 2-core / 8 GB Codespace's budget
-    # after Ghost + 6 Vite dev servers are running. 256 MB is plenty for
-    # dev data volumes.
+    # after Ghost + the default Admin/Portal dev watchers are running.
+    # 256 MB is plenty for dev data volumes.
     command: --innodb-buffer-pool-size=256M --innodb-log-buffer-size=64M --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
-    mem_limit: 512m
+    # mem_limit is a hard cgroup ceiling, separate from the buffer pool size
+    # above. Measured via `docker stats` under real usage: actual RSS sits
+    # around 440-460MiB, so the previous 512m cap left MySQL pinned at
+    # 85-90% of its ceiling continuously (real, not just at boot) -- more
+    # memory-management overhead on every query than the buffer pool size
+    # alone would suggest. 1g (matching host-hybrid's unconstrained default)
+    # gives real headroom above the actual working set, still a small slice
+    # even on the 2-core/8GB minimum tier.
+    mem_limit: 1g
     restart: unless-stopped
 
   redis:
@@ -19,8 +27,28 @@ services:
     # The original ./ghost:/home/ghost/ghost mount from compose.dev.yaml is
     # preserved via merge semantics so nodemon hot-reload still works for anyone
     # running the backend the original way.
+    #
+    # pnpm-store is a separate named volume, NOT under /workspaces/Ghost, so
+    # it survives the bind mount above (which fully shadows anything baked
+    # into the image at that path with the host's — node_modules-less — repo
+    # checkout). onCreateCommand/postCreateCommand still have to run a real
+    # `pnpm install` every time since the source is live-mounted, but with
+    # the store already warm it's linking already-fetched content instead of
+    # re-downloading and recompiling native deps (better-sqlite3, sharp, etc.)
+    # from scratch.
     volumes:
       - ./:/workspaces/Ghost:cached
+      - pnpm-store:/pnpm-store
+    environment:
+      npm_config_store_dir: /pnpm-store
+    # Prefer the prebuilt image (docker/ghost-dev/Dockerfile, published by
+    # .github/workflows/devcontainer-build.yml) over a local build. cache_from
+    # makes a local `docker compose build` (e.g. after a Dockerfile edit)
+    # reuse those layers too, rather than starting from zero.
+    image: ghcr.io/tryghost/ghost-devcontainer:latest
+    build:
+      cache_from:
+        - ghcr.io/tryghost/ghost-devcontainer:latest
     # Override the default `pnpm dev` command. VS Code controls startup and the
     # user runs backend/frontend dev servers as tasks (see .vscode/tasks.json).
     command: ["sleep", "infinity"]
@@ -38,15 +66,15 @@ services:
   ghost-dev-gateway:
     # Point Caddy at the dev servers running inside the ghost-dev container
     # instead of host.docker.internal (which is the default for the hybrid
-    # host/container dev setup).
+    # host/container dev setup). Public apps (Portal, Comments UI, Signup
+    # Form, Sodo Search, Announcement Bar, Admin Toolbar) have no entry here
+    # — Caddy serves their umd/ build output directly via file_server, so
+    # there's no dev-server host:port to point at.
     environment:
       GHOST_BACKEND: ghost-dev:2368
       ADMIN_DEV_SERVER: ghost-dev:5174
       ADMIN_LIVE_RELOAD_SERVER: ghost-dev:4200
-      PORTAL_DEV_SERVER: ghost-dev:4175
-      COMMENTS_DEV_SERVER: ghost-dev:7173
-      SIGNUP_DEV_SERVER: ghost-dev:6174
-      SEARCH_DEV_SERVER: ghost-dev:4178
-      ANNOUNCEMENT_DEV_SERVER: ghost-dev:4177
-      ADMIN_TOOLBAR_DEV_SERVER: ghost-dev:4176
       LEXICAL_DEV_SERVER: ghost-dev:4173
+
+volumes:
+  pnpm-store:

@@ -23,12 +23,27 @@
     // dev containers where the host is the developer's own machine, but do
     // NOT replicate this pattern in shared build agents, CI runners, or
     // environments where untrusted code runs in the container.
+    // sshd enables `gh codespace ssh`/`logs` for direct diagnosis (top,
+    // free, docker stats) instead of only being able to probe over HTTP.
+    // Same trust boundary as docker-outside-of-docker below — standard for
+    // a Codespace/local dev container where the host is your own machine.
     "features": {
-        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+        "ghcr.io/devcontainers/features/sshd:1": {}
     },
 
-    // Codespaces prebuild step — runs once when the image is built.
-    // Primes the pnpm store so first-open is fast.
+    // Runs on the host/Codespaces VM before the container is built or pulled.
+    // Warms the local image cache with the prebuilt ghost-dev image
+    // (.github/workflows/devcontainer-build.yml) so ghost-dev's cache_from
+    // (see compose.devcontainer.yaml) has something to reuse layers from,
+    // whether this container gets pulled directly or rebuilt locally.
+    // Best-effort: don't fail creation if the registry is unreachable.
+    "initializeCommand": "docker pull ghcr.io/tryghost/ghost-devcontainer:latest || true",
+
+    // Runs once the workspace mount is ready, after the container is created.
+    // Note: no Codespaces prebuild is configured for this repo, so this runs
+    // live on every creation rather than being baked into a snapshot ahead of
+    // time — same as postCreateCommand below.
     "onCreateCommand": "corepack enable && corepack prepare --activate && cd /workspaces/Ghost && pnpm install --prefer-offline || true",
 
     // Runs after the workspace mount is ready on every container create.
@@ -40,6 +55,10 @@
     // The script guards against double-starting if the stack is already up.
     "postAttachCommand": "bash .devcontainer/start-dev-stack.sh",
 
+    // Portal, Comments UI, Signup Form, Sodo Search, Announcement Bar, and
+    // Admin Toolbar are NOT listed here — since the Caddy file_server switch
+    // (#28970) they build to disk (`vite build --watch`) instead of running
+    // a dev server, so there's no port to forward for them.
     "forwardPorts": [
         2368,
         3306,
@@ -48,11 +67,6 @@
         8025,
         5174,
         4200,
-        4175,
-        7173,
-        6174,
-        4178,
-        4177,
         4173
     ],
     "portsAttributes": {
@@ -63,12 +77,7 @@
         "8025": {"label": "Mailpit Web"},
         "5174": {"label": "Admin (Vite)"},
         "4200": {"label": "Ember live-reload"},
-        "4175": {"label": "Portal"},
-        "7173": {"label": "Comments UI"},
-        "6174": {"label": "Signup Form"},
-        "4178": {"label": "Sodo Search"},
-        "4177": {"label": "Announcement Bar"},
-        "4173": {"label": "Koenig Lexical"}
+        "4173": {"label": "Koenig Lexical (optional)"}
     },
 
     "customizations": {

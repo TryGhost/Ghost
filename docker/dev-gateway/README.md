@@ -4,8 +4,9 @@ This directory contains the Caddy reverse proxy configuration for the Ghost deve
 ## Purpose
 The Caddy reverse proxy container:
 1. **Routes Ghost requests** to the Ghost container backend
-2. **Proxies asset requests** to local dev servers running on the host
-3. **Enables hot-reload** for frontend development without rebuilding Ghost
+2. **Proxies asset requests** to local dev servers running on the host (Admin, Lexical)
+3. **Serves public app assets** (Portal, Comments UI, Signup Form, Sodo Search, Announcement Bar, Admin Toolbar) directly from their `umd/` build output via `file_server` — no dev server involved
+4. **Enables hot-reload** for frontend development without rebuilding Ghost
 
 ## Configuration
 ### Environment Variables
@@ -14,11 +15,6 @@ Caddy uses environment variables (set in `compose.dev.yaml`) to configure proxy 
 - `GHOST_BACKEND` - Ghost container hostname (e.g., `ghost-dev:2368`)
 - `ADMIN_DEV_SERVER` - React admin dev server (e.g., `host.docker.internal:5174`)
 - `ADMIN_LIVE_RELOAD_SERVER` - Ember live reload WebSocket (e.g., `host.docker.internal:4200`)
-- `PORTAL_DEV_SERVER` - Portal dev server (e.g., `host.docker.internal:4175`)
-- `COMMENTS_DEV_SERVER` - Comments UI (e.g., `host.docker.internal:7173`)
-- `SIGNUP_DEV_SERVER` - Signup form (e.g., `host.docker.internal:6174`)
-- `SEARCH_DEV_SERVER` - Sodo search (e.g., `host.docker.internal:4178`)
-- `ANNOUNCEMENT_DEV_SERVER` - Announcement bar (e.g., `host.docker.internal:4177`)
 - `LEXICAL_DEV_SERVER` - *Optional:* Local Koenig Lexical editor dev server (e.g., `host.docker.internal:4173`)
   - For developing Lexical in the separate [Koenig repository](https://github.com/TryGhost/Koenig)
   - Requires `EDITOR_URL=/ghost/assets/koenig-lexical/` when starting admin dev server
@@ -43,15 +39,11 @@ The Caddyfile defines these routing rules:
 | `/.well-known/webfinger`             | ActivityPub server (port 8080)      | *Optional:* WebFinger for federation                                   |
 | `/.well-known/nodeinfo`              | ActivityPub server (port 8080)      | *Optional:* NodeInfo for federation                                    |
 | `/ghost/assets/koenig-lexical/*`     | Lexical dev server (port 4173)      | *Optional:* Koenig Lexical editor (falls back to Ghost if not running) |
-| `/ghost/assets/portal/*`             | Portal dev server (port 4175)       | Membership UI                                                          |
-| `/ghost/assets/comments-ui/*`        | Comments dev server (port 7173)     | Comments widget                                                        |
-| `/ghost/assets/signup-form/*`        | Signup dev server (port 6174)       | Signup form widget                                                     |
-| `/ghost/assets/sodo-search/*`        | Search dev server (port 4178)       | Search widget (JS + CSS)                                               |
-| `/ghost/assets/announcement-bar/*`   | Announcement dev server (port 4177) | Announcement widget                                                    |
+| `/ghost/assets/{portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/*` | `apps/<name>/umd` (file_server) | Public app widgets — served from disk, rebuilt on change by each app's `vite build --watch` |
 | `/ghost/assets/*`                    | Admin dev server (port 5174)        | Other admin assets — rewritten to `/__admin-dev__/assets/*`            |
 | `/__admin-dev__/*`                   | Admin dev server (port 5174)        | Vite internals (HMR, modules, refresh runtime, dev-only assets)        |
 | `/ghost`, `/ghost/`                  | Admin dev server (port 5174)        | Admin HTML entry — rewritten to `/__admin-dev__/`                      |
 | `/ghost/*` (deep links)              | Ghost backend                       | Express middleware redirects deep links to `/ghost/#/<path>`           |
 | Everything else                      | Ghost backend                       | Main Ghost application                                                 |
 
-**Note:** All port numbers listed are the host ports where dev servers run by default.
+**Note:** Port numbers listed for Admin and Lexical are the host ports where those dev servers run by default. Public apps have no dev-server port — Caddy reads their build output straight off disk.

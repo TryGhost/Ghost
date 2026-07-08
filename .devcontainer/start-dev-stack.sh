@@ -13,6 +13,38 @@ fi
 
 echo "Starting Ghost dev stack..."
 
+# Ghost's own `url` config (default http://localhost:2368) is what session
+# CSRF checks compare the browser's Origin header against (see
+# cookieCsrfProtection in ghost/core/core/server/services/auth/session/
+# session-service.js). Codespaces serves everything through a forwarded
+# https://<name>-2368.<domain> origin instead, so without this every
+# authenticated admin request fails that origin check and bounces back to
+# login. `url` is a top-level nconf key, so a bare `url` env var overrides
+# it (see ghost/core/core/shared/config/loader.js's nconf.env() call).
+# Local (non-Codespaces) VS Code Dev Containers forward to genuine
+# localhost, so this only applies inside Codespaces itself.
+if [ -n "${CODESPACES:-}" ] && [ -n "${CODESPACE_NAME:-}" ]; then
+    export url="https://${CODESPACE_NAME}-2368.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}"
+    echo "Codespaces detected: setting Ghost url=$url so admin session origin checks match the forwarded tunnel" >> /tmp/ghost-backend.log
+
+    # Once url above is HTTPS, Ghost's url-redirects middleware
+    # (getAdminRedirectUrl in ghost/core/core/server/web/shared/middleware/
+    # url-redirects.js) 301s any request it sees as insecure (protocol
+    # mismatch) to that HTTPS url. Real browser traffic is fine — Caddy sets
+    # X-Forwarded-Proto: https, so Express's req.secure is true. But
+    # apps/admin's own vite dev server bootstraps itself by fetching
+    # GHOST_URL + ghost/api/admin/site/ directly (vite-backend-proxy.ts),
+    # bypassing Caddy entirely by default (http://localhost:2368) — Express
+    # sees that as insecure, 301s it to the public tunnel URL, and since
+    # that's an external, GitHub-auth-gated address, Vite's plain fetch()
+    # can't complete the login flow and crashes on the HTML it gets back
+    # instead of JSON. Routing GHOST_URL through the gateway container
+    # instead keeps the request on the internal Docker network (still gets
+    # X-Forwarded-Proto: https from Caddy, so no redirect) while never
+    # touching the external, auth-gated tunnel at all.
+    export GHOST_URL="http://ghost-dev-gateway:80/"
+fi
+
 # Append to log files (don't truncate) so previous crash tails survive a
 # restart and the user can still tail them for context.
 { echo "=== $(date -Is) starting backend ==="; } >> /tmp/ghost-backend.log
@@ -20,8 +52,12 @@ nohup pnpm --filter ghost dev >> /tmp/ghost-backend.log 2>&1 &
 disown
 
 { echo "=== $(date -Is) starting frontends ==="; } >> /tmp/ghost-frontends.log
+# Matches root `pnpm dev`'s default fan-out (Admin + Portal only) — most
+# devcontainer sessions never touch the public UMD apps, and those watchers
+# are the heaviest processes in the stack. To also start them, run e.g.:
+#   pnpm nx run-many -t dev --projects=@tryghost/comments-ui,@tryghost/signup-form,@tryghost/sodo-search,@tryghost/announcement-bar,@tryghost/admin-toolbar
 nohup pnpm nx run-many -t dev \
-    --projects=@tryghost/admin,@tryghost/portal,@tryghost/comments-ui,@tryghost/signup-form,@tryghost/sodo-search,@tryghost/announcement-bar \
+    --projects=@tryghost/admin,@tryghost/portal \
     >> /tmp/ghost-frontends.log 2>&1 &
 disown
 
@@ -33,4 +69,8 @@ Ghost dev stack starting in the background.
   Gateway:      http://localhost:2368/
 
 Give it ~30-60s, then open http://localhost:2368/ghost/ for admin.
+
+Only Admin + Portal dev watchers start by default. To add the public UMD
+apps (Comments, Signup Form, Sodo Search, Announcement Bar, Admin Toolbar):
+  pnpm nx run-many -t dev --projects=@tryghost/comments-ui,@tryghost/signup-form,@tryghost/sodo-search,@tryghost/announcement-bar,@tryghost/admin-toolbar
 MSG
