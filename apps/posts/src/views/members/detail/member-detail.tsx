@@ -333,13 +333,15 @@ const MemberDetail: React.FC = () => {
                                     />
                                 )}
 
-                                {/* Subscriptions: external "SUBSCRIPTIONS" label + own card. The
-                                    section renders when there are subs to show — and the section
-                                    itself may additionally render the "Add complimentary" affordance
-                                    (empty state or footer) when eligible. */}
-                                {member && !isCreating && paidMembersEnabled
-                                    && ((member.subscriptions?.length ?? 0) > 0
-                                        || (canAddComp && (member.tiers?.length ?? 0) === 0)) && (
+                                {/* Subscriptions: external "SUBSCRIPTIONS" label + own card. Matches
+                                    Ember's `gh-member-settings-form.hbs:82`, which always renders
+                                    the section under `{{#if paidMembersEnabled}}` — including on
+                                    the New member screen, where the empty-state card shows a
+                                    "No subscriptions" indicator until the member is created. The
+                                    child component early-returns when there's nothing to show
+                                    (no subs, no add-comp affordance available), matching Ember's
+                                    `{{#unless this.tiers}}` branch. */}
+                                {paidMembersEnabled && (
                                     <section aria-labelledby='member-subscriptions-heading' className='flex flex-col gap-3'>
                                         <h3 className='text-base font-semibold' id='member-subscriptions-heading'>Subscriptions</h3>
                                         <MemberSubscriptionsSection canAddComp={canAddComp} member={member} paidMembersEnabled={paidMembersEnabled} />

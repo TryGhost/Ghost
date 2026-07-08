@@ -3,7 +3,7 @@ import MemberSubscriptionActions from './member-subscription-actions';
 import MemberSubscriptionCompActions from './member-subscription-comp-actions';
 import React from 'react';
 import moment from 'moment-timezone';
-import {Badge, Button, Card, CardContent} from '@tryghost/shade/components';
+import {Badge, Button, Card, CardContent, EmptyIndicator} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {classifyMemberSubscription, formatSubscriptionInterval, getSubscriptionPriceLabel, getSubscriptionStatusLabel, getSubscriptionValidityLabel, groupSubscriptionsByTier} from './member-subscription';
 import {getSymbol} from '@tryghost/admin-x-framework';
@@ -114,7 +114,11 @@ const SubscriptionRow: React.FC<{member: Member; sub: MemberSubscription; showDi
 };
 
 interface MemberSubscriptionsSectionProps {
-    member: Member;
+    // Optional so the create screen (/members/new) can render the empty state
+    // without a saved member yet — matches Ember, which renders the section
+    // + "No subscriptions" empty box on the New member screen when
+    // `paidMembersEnabled` (`gh-member-settings-form.hbs:82-92`).
+    member?: Member;
     paidMembersEnabled: boolean;
     // True when there is at least one active paid tier the member could be
     // granted a comp on. Caller (`member-detail.tsx`) fetches tiers and computes.
@@ -136,19 +140,15 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
     if (!paidMembersEnabled) {
         return null;
     }
-    const subscriptions = member.subscriptions ?? [];
+    const subscriptions = member?.subscriptions ?? [];
     const groups = groupSubscriptionsByTier(subscriptions);
     const hasSubscriptions = groups.length > 0;
 
     // Ember's `isAddComplimentaryAllowed`: paidMembersEnabled + not new + no tiers
-    // yet + at least one active paid tier exists. The caller already checks the
-    // first two; we complete the check here with the member's current tier state.
-    const isAddCompAllowed = canAddComp && (member.tiers?.length ?? 0) === 0;
-
-    // Nothing to show — no rows, no way to add.
-    if (!hasSubscriptions && !isAddCompAllowed) {
-        return null;
-    }
+    // yet + at least one active paid tier exists. On the create screen there's
+    // no saved `member` yet, so Ember's `isNew` short-circuit is naturally
+    // mirrored here by the `!!member` guard — no add-comp affordance until save.
+    const isAddCompAllowed = !!member && canAddComp && (member.tiers?.length ?? 0) === 0;
 
     // The Add-complimentary button appears in TWO places, matching Ember exactly
     // (`gh-member-settings-form.hbs:82-111,279-293`):
@@ -200,8 +200,15 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
                             </>
                         )
                         : (
-                            <div className='flex flex-col items-center gap-3 py-6 text-center'>
-                                <p className='text-sm text-muted-foreground'>No subscriptions</p>
+                            // EmptyIndicator (Shade) is the canonical "no
+                            // items yet" box — mirrors Ember's
+                            // `gh-members-no-subs` block (icon + heading)
+                            // with the design-system's own icon/heading
+                            // treatment.
+                            <div className='flex flex-col items-center gap-3 py-4'>
+                                <EmptyIndicator title='No subscriptions'>
+                                    <LucideIcon.CreditCard />
+                                </EmptyIndicator>
                                 {addCompButton}
                             </div>
                         )}

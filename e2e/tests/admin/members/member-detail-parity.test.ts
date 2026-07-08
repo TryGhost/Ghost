@@ -181,6 +181,33 @@ for (const {implementation, memberDetailsReact} of [
             await expect(page).toHaveURL(new RegExp(`#/members/${createdId}(\\?|$)`));
         });
 
+        test.describe('New member screen (create mode)', () => {
+            // Ember gates the Subscriptions section on `paidMembersEnabled`
+            // (`gh-member-settings-form.hbs:82`). With stripe off there's no
+            // section to compare against on the Ember side; enable stripe so
+            // both implementations light up the same set of sections.
+            test.use({stripeEnabled: true});
+
+            test('subscriptions section shows a "No subscriptions" empty state on New member', async ({page}) => {
+                // Regression guard for the Ember → React parity gap where the
+                // React /members/new screen hid Subscriptions entirely. Ember
+                // has always rendered the heading + `<h4>No subscriptions</h4>`
+                // empty state on create (`gh-member-settings-form.hbs:82-92`),
+                // so a passing test on Ember + failing on React would mean the
+                // React implementation is silently missing a piece Ember users
+                // rely on.
+                await page.goto(memberPath('new'));
+
+                // Anchor on accessible role — Ember renders `<h4>` and React
+                // uses Shade's `EmptyIndicator` which renders `<h3>`. Both
+                // match `role='heading'`. `exact: true` disambiguates from
+                // "No subscriptions", whose accessible name contains
+                // "Subscriptions" as a substring.
+                await expect(page.getByRole('heading', {name: 'Subscriptions', exact: true})).toBeVisible();
+                await expect(page.getByRole('heading', {name: 'No subscriptions', exact: true})).toBeVisible();
+            });
+        });
+
         test('only one implementation renders member detail elements at a time', async ({page}) => {
             // Load-bearing invariant for the parity guarantee: when the flag
             // is on, Ember's `beforeModel` MUST abort so Ember's subtree
