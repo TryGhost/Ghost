@@ -1057,6 +1057,39 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         expect(members[0].newsletters.length).toBeGreaterThan(0);
     });
 
+    test('new member: seeded newsletter defaults do not trigger the unsaved-changes blocker', async ({page}) => {
+        // Regression guard: the create-mode dirty check used to compare the
+        // draft against a fresh empty slice (`getMemberEditableSlice({})`),
+        // NOT against the ref that the seeding effect updates. As soon as
+        // the newsletters query resolved and the effect seeded the defaults
+        // into `draft.newsletters`, `hasUnsavedChanges` flipped to true —
+        // which armed `useConfirmUnload` (browser beforeunload prompt) and
+        // `useBlocker` (in-app Discard-changes AlertDialog) on an untouched
+        // form. The fix routes the create-mode `serverSlice` through
+        // `lastServerSliceRef.current`, which the seeding effect keeps in
+        // sync with the seeded draft.
+        //
+        // Ember-only because Ember has its own confirm-unsaved-changes
+        // route mixin that traps regardless (a new record is dirty by
+        // default). This test pins React's cleaner behaviour without
+        // trying to force Ember to match it.
+        const memberDetailsPage = new MemberDetailsPage(page);
+        await page.goto(memberPath('new'));
+
+        // Wait for the newsletters query to resolve → toggles render →
+        // seeding effect must have run.
+        await expect(page.getByTestId('member-subscription-toggle').first()).toBeVisible();
+
+        // Attempt in-app nav via the Members breadcrumb. Under the old
+        // bug, the AlertDialog "Discard unsaved changes?" would open and
+        // trap the transition; under the fix, the URL flips to /members
+        // and no dialog appears.
+        await memberDetailsPage.membersBackLink.click();
+
+        await expect(page).toHaveURL(/#\/members(\?|$)/);
+        await expect(page.getByRole('alertdialog', {name: 'Discard unsaved changes?'})).toHaveCount(0);
+    });
+
     test('new member: email field is not in an error state before the user interacts', async ({page}) => {
         // Regression guard for the initial-render error paint: the New member
         // screen used to render "Email is required." + aria-invalid on first

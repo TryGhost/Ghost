@@ -173,8 +173,16 @@ const MemberDetail: React.FC = () => {
         });
     }, [isCreating, newslettersData]);
 
-    // Create compares against an empty baseline; edit against the loaded member.
-    const serverSlice = isCreating ? getMemberEditableSlice({}) : (member ? getMemberEditableSlice(member) : undefined);
+    // In create mode the baseline is whatever the seeding effect has decided
+    // (`lastServerSliceRef.current` = empty initial draft OR draft + default
+    // newsletters once the newsletters query resolves). Using a fresh
+    // `getMemberEditableSlice({})` here would treat the seeded defaults as
+    // "unsaved changes" and trigger the beforeunload/nav-blocker on an
+    // untouched form. In edit mode we still compare against the live server
+    // value so a background refetch resurfaces external changes.
+    const serverSlice = isCreating
+        ? lastServerSliceRef.current
+        : (member ? getMemberEditableSlice(member) : undefined);
     const hasUnsavedChanges = !!draft && !!serverSlice && !dequal(normalizeDraftForComparison(draft), serverSlice);
     const emailValid = !!draft && isValidMemberEmail(draft.email);
     // `touched` is set on the email field's first blur. That keeps the New
@@ -206,13 +214,18 @@ const MemberDetail: React.FC = () => {
                 name: draft.name.trim() || undefined,
                 note: draft.note.trim() || undefined,
                 labels: draft.labels.length ? draft.labels : undefined,
-                // Match Ember: send the visibly-selected newsletters as the
-                // create payload so the outcome doesn't rely on the server's
-                // fallback (`member-repository.js:460-464`). When the user
-                // deselected everything, send `[]` explicitly to record the
-                // intent — omitting the key would silently re-subscribe them
-                // to the server default set.
-                newsletters: draft.newsletters.map(id => ({id}))
+                // Send the visibly-selected newsletter set ONLY once the
+                // seeding effect has run. If the user manages to hit Save
+                // before the newsletters query resolves, we don't have
+                // a reliable "what would Ember show?" snapshot, so we omit
+                // the key entirely and let the server apply its own default
+                // (`member-repository.js:460-464`) — same effective outcome
+                // as Ember's Ember-data unpopulated hasMany. An empty
+                // seeded list (user deselected everything) is still sent
+                // explicitly so the intent isn't lost to the server default.
+                newsletters: newsletterDefaultsSeededRef.current
+                    ? draft.newsletters.map(id => ({id}))
+                    : undefined
             }, {
                 onSuccess: (response) => {
                     const created = response.members?.[0];

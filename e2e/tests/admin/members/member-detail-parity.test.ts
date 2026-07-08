@@ -231,30 +231,34 @@ for (const {implementation, memberDetailsReact} of [
                 // own default-subscribe path.
                 await page.goto(memberPath('new'));
 
-                // At least the first toggle in the dev DB seed (all
-                // newsletters ship with subscribe_on_signup=true +
-                // visibility=members) must render as checked. `aria-checked`
-                // is the standard for both native checkboxes and Radix
-                // switches — Ember's `<input type=checkbox>` sets the DOM
-                // property, and Radix mirrors it into the aria attribute.
-                const firstToggle = page.getByTestId('member-subscription-toggle').first();
-                await expect(firstToggle).toBeVisible();
-
-                // Native checkboxes expose state via `.checked`; Radix
-                // switches expose it via `aria-checked="true"`. Read the
-                // wrapping label/switch's aria-checked (Radix) OR fall back
-                // to the native checked property (Ember).
+                // Assert EVERY toggle is pre-checked — asserting only the
+                // first would false-pass if a later default were missed by
+                // the seeding rule. The dev DB seeds all its newsletters
+                // with subscribe_on_signup=true + visibility=members, so
+                // the full set must be checked on New member.
                 //
-                // Playwright's `toBeChecked()` reads both native `.checked`
-                // and `aria-checked`, but only works on interactive
-                // elements. The `<span data-testid="member-subscription-toggle">`
-                // isn't the interactive control in Ember (that's the sibling
-                // `<input>`). Assert the closest interactive ancestor's
-                // checked state through a filter.
-                const interactive = firstToggle.locator('..').getByRole('checkbox')
-                    .or(firstToggle.locator('..').getByRole('switch'))
-                    .or(firstToggle);
-                await expect(interactive.first()).toBeChecked();
+                // Native checkboxes expose state via `.checked`; Radix
+                // switches expose it via `aria-checked="true"`. Both are
+                // interactive roles — locate them inside the section by
+                // role and assert every one is checked.
+                //
+                // Anchor scope on the Newsletters section so that we don't
+                // accidentally pick up unrelated form controls elsewhere
+                // on the page.
+                await expect(page.getByTestId('member-subscription-toggle').first()).toBeVisible();
+                const toggles = page.getByTestId('member-subscription-toggle')
+                    .locator('..')
+                    .getByRole('checkbox')
+                    .or(
+                        page.getByTestId('member-subscription-toggle')
+                            .locator('..')
+                            .getByRole('switch')
+                    );
+                const count = await toggles.count();
+                expect(count).toBeGreaterThan(0);
+                for (let i = 0; i < count; i++) {
+                    await expect(toggles.nth(i)).toBeChecked();
+                }
             });
 
             test('activity section shows an empty state on New member', async ({page}) => {
