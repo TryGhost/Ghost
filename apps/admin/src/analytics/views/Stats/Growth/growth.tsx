@@ -225,7 +225,7 @@ const Growth: React.FC = () => {
                                     range={range}
                                     setSortBy={(newSortBy: SourcesOrder) => setSortBy(newSortBy)}
                                     showViewAll={true}
-                                    sortBy={sortBy as SourcesOrder}
+                                    sortBy={sortBy}
                                 />
                                 :
                                 <TableBody>

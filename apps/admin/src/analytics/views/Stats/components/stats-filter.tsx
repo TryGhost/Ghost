@@ -195,7 +195,12 @@ const useTinybirdFilterOptions = (
         return items
             .filter(item => (definition.filterItem ? definition.filterItem(item) : true))
             .map((item) => {
-                const rawValue = String((item[definition.valueKey] ?? '') as string | number);
+                const rawItemValue = item[definition.valueKey];
+                // Filter values come from untyped API rows, so only stringify
+                // primitives — anything else would stringify to [object Object].
+                const rawValue = typeof rawItemValue === 'string' || typeof rawItemValue === 'number' || typeof rawItemValue === 'boolean'
+                    ? String(rawItemValue)
+                    : '';
                 const visits = Number(item.visits) || 0;
                 const {value, label} = definition.transformValue
                     ? definition.transformValue(rawValue)

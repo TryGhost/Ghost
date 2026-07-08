@@ -19,13 +19,6 @@ import {useFilterParams} from '@/analytics/hooks/use-filter-params';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
 import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 
-interface SourcesData {
-    source?: string | number;
-    visits?: number;
-    [key: string]: unknown;
-    percentage?: number;
-}
-
 const Web: React.FC = () => {
     const {range} = useAnalytics();
     const {statsConfig, isLoading: isConfigLoading, data} = useAnalyticsData();
@@ -196,7 +189,7 @@ const Web: React.FC = () => {
                         totalVisitors={totalVisitors}
                     />
                     <SourcesCard
-                        data={sourcesData as SourcesData[] | null}
+                        data={sourcesData}
                         defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
                         isLoading={isSourcesLoading}
                         range={range}

@@ -174,7 +174,7 @@ function aggregateByWeek<T extends {date: string}>(data: T[], fieldName: keyof T
                 ...data[index - 1],
                 date: currentWeek.format('YYYY-MM-DD'),
                 [fieldName]: calculateAggregatedValue(weekTotal, weekCount, lastValue, aggregationType)
-            } as T);
+            });
 
             currentWeek = itemDate.startOf('week');
             weekTotal = Number(item[fieldName]);
@@ -187,7 +187,7 @@ function aggregateByWeek<T extends {date: string}>(data: T[], fieldName: keyof T
                 ...item,
                 date: currentWeek.format('YYYY-MM-DD'),
                 [fieldName]: calculateAggregatedValue(weekTotal, weekCount, lastValue, aggregationType)
-            } as T);
+            });
         }
     });
 
@@ -219,13 +219,13 @@ function aggregateByMonth<T extends {date: string}>(data: T[], fieldName: keyof 
                 monthlyData.push({
                     ...lastItem,
                     [fieldName]: lastValue
-                } as T);
+                });
             } else {
                 monthlyData.push({
                     ...data[index - 1],
                     date: currentMonth.format('YYYY-MM-DD'),
                     [fieldName]: calculateAggregatedValue(monthTotal, monthCount, lastValue, aggregationType)
-                } as T);
+                });
             }
 
             currentMonth = itemDate.startOf('month');
@@ -240,13 +240,13 @@ function aggregateByMonth<T extends {date: string}>(data: T[], fieldName: keyof 
                 monthlyData.push({
                     ...lastItem,
                     [fieldName]: lastValue
-                } as T);
+                });
             } else {
                 monthlyData.push({
                     ...item,
                     date: currentMonth.format('YYYY-MM-DD'),
                     [fieldName]: calculateAggregatedValue(monthTotal, monthCount, lastValue, aggregationType)
-                } as T);
+                });
             }
         }
     });

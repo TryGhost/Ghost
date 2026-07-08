@@ -15,4 +15,4 @@ class ResizeObserverMock {
     disconnect() {}
 }
 
-global.ResizeObserver = global.ResizeObserver ?? (ResizeObserverMock as unknown as typeof ResizeObserver);
+global.ResizeObserver = global.ResizeObserver ?? (ResizeObserverMock);

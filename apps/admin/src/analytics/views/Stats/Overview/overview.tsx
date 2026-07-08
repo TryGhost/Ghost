@@ -102,7 +102,7 @@ const Overview: React.FC = () => {
     });
 
     const visitorsChartData = useMemo(() => {
-        return sanitizeChartData<WebKpiDataItem>(visitorsData as WebKpiDataItem[] || [], range, 'visits' as keyof WebKpiDataItem, 'sum')?.map((item: WebKpiDataItem) => {
+        return sanitizeChartData<WebKpiDataItem>(visitorsData as WebKpiDataItem[] || [], range, 'visits', 'sum')?.map((item: WebKpiDataItem) => {
             const value = Number(item.visits);
             const safeValue = isNaN(value) ? 0 : value;
             return {

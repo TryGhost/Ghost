@@ -4,7 +4,6 @@ import {mockApiHook, mockLoading, mockNull, mockSuccess} from '@tryghost/admin-x
 import {renderHook, waitFor} from '@testing-library/react';
 import {useLatestPostStats} from '@/analytics/hooks/use-latest-post-stats';
 import type {PostStatsResponseType} from '@tryghost/admin-x-framework/api/stats';
-import type {PostsResponseType} from '@tryghost/admin-x-framework/api/posts';
 
 // Mock external dependencies
 vi.mock('@tryghost/admin-x-framework/api/posts', () => ({
@@ -59,7 +58,7 @@ describe('useLatestPostStats', () => {
     });
 
     it('fetches latest post with correct parameters', () => {
-        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]});
 
         mockSuccess(mockUsePostStats, mockStatsData as PostStatsResponseType);
 
@@ -76,7 +75,7 @@ describe('useLatestPostStats', () => {
     });
 
     it('does not fetch stats when no post is available', () => {
-        mockSuccess(mockUseBrowsePosts, {posts: []} as PostsResponseType);
+        mockSuccess(mockUseBrowsePosts, {posts: []});
 
         renderHook(() => useLatestPostStats());
 
@@ -86,7 +85,7 @@ describe('useLatestPostStats', () => {
     });
 
     it('fetches stats when post is available', () => {
-        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]});
 
         mockSuccess(mockUsePostStats, mockStatsData as PostStatsResponseType);
 
@@ -98,7 +97,7 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns combined post and stats data', async () => {
-        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]});
 
         mockSuccess(mockUsePostStats, mockStatsData as PostStatsResponseType);
 
@@ -140,7 +139,7 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns post with default stats when stats are not available', async () => {
-        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]});
 
         mockNull(mockUsePostStats);
 
@@ -182,9 +181,9 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns post with default stats when stats array is empty', async () => {
-        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]});
 
-        mockSuccess(mockUsePostStats, {stats: []} as PostStatsResponseType);
+        mockSuccess(mockUsePostStats, {stats: []});
 
         const {result} = renderHook(() => useLatestPostStats());
 
@@ -197,7 +196,7 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns null when no post is available', () => {
-        mockSuccess(mockUseBrowsePosts, {posts: []} as PostsResponseType);
+        mockSuccess(mockUseBrowsePosts, {posts: []});
 
         mockNull(mockUsePostStats);
 
@@ -226,7 +225,7 @@ describe('useLatestPostStats', () => {
             url: ''
         };
 
-        mockSuccess(mockUseBrowsePosts, {posts: [minimalPost]} as PostsResponseType);
+        mockSuccess(mockUseBrowsePosts, {posts: [minimalPost]});
 
         mockSuccess(mockUsePostStats, mockStatsData as PostStatsResponseType);
 
@@ -271,7 +270,7 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns correct loading state when stats are loading', () => {
-        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]});
 
         mockLoading(mockUsePostStats);
 
@@ -281,7 +280,7 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns false loading when posts loaded but no post ID (stats not fetched)', () => {
-        mockSuccess(mockUseBrowsePosts, {posts: []} as PostsResponseType);
+        mockSuccess(mockUseBrowsePosts, {posts: []});
 
         mockNull(mockUsePostStats);
 
@@ -291,7 +290,7 @@ describe('useLatestPostStats', () => {
     });
 
     it('handles stats loading when both posts and stats are loading', () => {
-        mockApiHook(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType, true);
+        mockApiHook(mockUseBrowsePosts, {posts: [mockPost]}, true);
 
         mockLoading(mockUsePostStats);
 
@@ -302,7 +301,7 @@ describe('useLatestPostStats', () => {
 
     it('memoizes result correctly', () => {
         // Setup initial state
-        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]});
 
         mockSuccess(mockUsePostStats, mockStatsData as PostStatsResponseType);
 
