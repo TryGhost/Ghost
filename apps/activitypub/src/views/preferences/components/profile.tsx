@@ -422,7 +422,12 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                     className='fixed top-0 left-[-9999px] z-[-1] flex w-fit justify-center overflow-hidden rounded-2xl bg-gray-50'
                     style={{
                         width: cardFormat === 'square' ? '518px' : '412px',
-                        fontFamily: 'system-ui'
+                        // html2canvas draws text via canvas fillText, and Firefox on
+                        // macOS resolves generic aliases like `system-ui` to a different
+                        // face in canvas than in DOM layout, so words render wider and
+                        // swallow the spaces between them. Concrete family names resolve
+                        // identically in both, keeping the copied image's text intact.
+                        fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif"
                     }}
                 >
                     <ProfileCard
