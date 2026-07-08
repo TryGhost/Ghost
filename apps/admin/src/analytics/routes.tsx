@@ -1,7 +1,5 @@
 import {type RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
 
-export const APP_ROUTE_PREFIX = '/';
-
 // The child routes under `/analytics`. The shell (apps/admin/src/routes.tsx)
 // mounts these directly under an `analytics` route node that supplies the
 // AnalyticsProvider — so these fragments live in the shell's route table
