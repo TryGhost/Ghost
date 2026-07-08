@@ -249,6 +249,7 @@ const Overview: React.FC = () => {
                     key={postId}
                     open={isGiftLinkOpen}
                     postId={postId}
+                    source='gift-link-card'
                     onOpenChange={setIsGiftLinkOpen}
                 />
             )}

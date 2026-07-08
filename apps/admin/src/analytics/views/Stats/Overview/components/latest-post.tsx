@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, Skeleton} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {PostShareModal} from '@tryghost/shade/posts-stats';
 
 import {type Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
 import {getPostDestination} from '@/analytics/utils/url-helpers';
-import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
+import {trackEvent, useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 
 // Import the interface from the hook
@@ -40,6 +40,13 @@ const LatestPost: React.FC<LatestPostProps> = ({
         webAnalytics = false,
         membersTrackSources = false
     } = appSettings?.analytics || {};
+
+    // The stats-overview share modal never offers gift links today.
+    useEffect(() => {
+        if (isShareOpen) {
+            trackEvent('Share Modal Opened', {giftLinkShown: false, source: 'stats-overview'});
+        }
+    }, [isShareOpen]);
 
     // Get site title from settings or site data
     const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
