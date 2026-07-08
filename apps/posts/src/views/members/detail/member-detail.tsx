@@ -349,21 +349,17 @@ const MemberDetail: React.FC = () => {
                                 )}
 
                                 {/* Recent activity feed — Ember `activity-feed.hbs` shows the top
-                                    5 events; the "View all" link routes the admin to Ember's
-                                    paginated `/members-activity` page (still Ember post-cutover
-                                    per the plan). Hidden in create mode: `activity-feed.hbs:2`
-                                    short-circuits when the member is `isNew`. */}
-                                {member && !isCreating && newslettersResolved && (
-                                    // `newslettersResolved` avoids a row-label
-                                    // churn: if we rendered before the
-                                    // newsletters query finished, a
-                                    // newsletter_event would flash "subscribed
-                                    // to newsletter" then flip to "subscribed
-                                    // to Weekly" once the fetch returned.
+                                    5 events for a saved member, and switches to a "no events yet"
+                                    empty state when `@member.isNew` (`activity-feed.hbs:2`).
+                                    We mirror the same section wrapper for both states so the
+                                    section header is consistent. `newslettersResolved` avoids a
+                                    row-label churn when the newsletters query hasn't returned
+                                    yet — irrelevant in create mode, so gate it on `!isCreating`. */}
+                                {(isCreating || (member && newslettersResolved)) && (
                                     <MemberActivityFeed
                                         hasMultipleNewsletters={hasMultipleNewsletters}
                                         hasMultipleTiers={hasMultipleTiers}
-                                        memberId={member.id}
+                                        memberId={member?.id}
                                         paidMembersEnabled={paidMembersEnabled}
                                     />
                                 )}

@@ -1009,12 +1009,19 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         await expect(page.getByTestId('member-activity-view-all')).toBeVisible();
     });
 
-    test('activity feed hides in create mode', async ({page}) => {
+    test('activity feed renders an empty state in create mode', async ({page}) => {
         await page.goto(memberPath('new'));
 
-        // Ember `activity-feed.hbs:2` short-circuits when the member is new; the
-        // React equivalent hides the section entirely, not just the rows.
-        await expect(page.getByTestId('member-activity-feed')).toHaveCount(0);
+        // Ember `activity-feed.hbs:2-7` swaps the feed for
+        // `Member::ActivityFeedEmpty` when the member is new; React does the
+        // same via `EmptyIndicator`. Section must be visible with the "no
+        // events yet" copy — see the parity file for the cross-implementation
+        // assertion. This test additionally pins the React-side "View all"
+        // link is absent, which the parity file can't assert against Ember
+        // (Ember only renders the link when there are events).
+        await expect(page.getByTestId('member-activity-feed')).toBeVisible();
+        await expect(page.getByText('All events related to this member will be shown here.')).toBeVisible();
+        await expect(page.getByTestId('member-activity-view-all')).toHaveCount(0);
     });
 
     test('creates a new member and redirects to their detail', async ({page}) => {

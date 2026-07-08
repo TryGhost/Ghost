@@ -188,6 +188,25 @@ for (const {implementation, memberDetailsReact} of [
             // both implementations light up the same set of sections.
             test.use({stripeEnabled: true});
 
+            test('activity section shows an empty state on New member', async ({page}) => {
+                // Ember renders the Activity heading + a distinct empty-state
+                // block on /members/new (`activity-feed.hbs:1-7` +
+                // `activity-feed-empty.hbs:5` — the copy is a load-bearing
+                // hint that the feed will populate after the first member
+                // event). React previously returned null on create; this
+                // parity assertion forces the two implementations to render
+                // the same visible surface.
+                //
+                // The copy alone is a strong-enough uniqueness anchor —
+                // Ember renders two 'Activity' headings on the create screen
+                // (one as the section header, one inside the empty-state
+                // box), which would strict-mode-violate `getByRole` without
+                // additional filtering.
+                await page.goto(memberPath('new'));
+
+                await expect(page.getByText('All events related to this member will be shown here.')).toBeVisible();
+            });
+
             test('subscriptions section shows a "No subscriptions" empty state on New member', async ({page}) => {
                 // Regression guard for the Ember → React parity gap where the
                 // React /members/new screen hid Subscriptions entirely. Ember

@@ -1,6 +1,6 @@
 import React from 'react';
 import moment from 'moment-timezone';
-import {Card, CardContent, Skeleton} from '@tryghost/shade/components';
+import {Card, CardContent, EmptyIndicator, Skeleton} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {parseMemberEvent} from './member-event';
 import {useMemberActivityFeed} from '@tryghost/admin-x-framework/api/members';
@@ -8,7 +8,11 @@ import type {MemberActivityEvent} from '@tryghost/admin-x-framework/api/members'
 import type {ParsedMemberEvent} from './member-event';
 
 interface MemberActivityFeedProps {
-    memberId: string;
+    // Optional so the create screen (/members/new) can render just the empty
+    // state without a member yet — matches Ember's `activity-feed.hbs:2`,
+    // which short-circuits to `Member::ActivityFeedEmpty` when `@member.isNew`
+    // (there's no member id to fetch events for).
+    memberId?: string;
     hasMultipleNewsletters: boolean;
     hasMultipleTiers: boolean;
     paidMembersEnabled: boolean;
@@ -81,6 +85,10 @@ const ViewAllLink: React.FC<{memberId: string}> = ({memberId}) => (
         View all member activity →
     </a>
 );
+
+// Copy pinned to Ember's `activity-feed-empty.hbs:5` so any future refactor of
+// the message stays in lockstep with what Ember users see.
+const NEW_MEMBER_ACTIVITY_COPY = 'All events related to this member will be shown here.';
 
 const capitalize = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
 
@@ -169,8 +177,10 @@ const ActivityRow: React.FC<{event: ParsedMemberEvent}> = ({event}) => {
 const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({memberId, hasMultipleNewsletters, hasMultipleTiers, paidMembersEnabled}) => {
     // Cap the inline feed to the same 5 events Ember shows in the sidebar
     // section (`activity-feed.hbs:9` — pageSize=5). Anything beyond that lives
-    // behind the "View all" link.
-    const {data, isLoading} = useMemberActivityFeed(memberId, {limit: '5'});
+    // behind the "View all" link. On the create screen there's no memberId
+    // to query against, so disable the fetch entirely — an unsaved member has
+    // no events by definition.
+    const {data, isLoading} = useMemberActivityFeed(memberId ?? '', {limit: '5', enabled: !!memberId});
     const rawEvents: MemberActivityEvent[] = data?.events ?? [];
     const events = rawEvents.map(rawEvent => parseMemberEvent(rawEvent, {
         hasMultipleNewsletters,
@@ -181,6 +191,25 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({memberId, hasMul
     // ever returns two events with the same id (or missing id), append the
     // slot index so React's diff still gets a stable per-row identity.
     const seen = new Set<string>();
+
+    // Create mode (`/members/new`) — no member id, no fetch, no "View all"
+    // link. Ember renders `Member::ActivityFeedEmpty` in this state
+    // (`activity-feed.hbs:2-7`); we render the same copy via Shade's
+    // `EmptyIndicator` so the parity assertion for that string holds.
+    if (!memberId) {
+        return (
+            <section className='flex flex-col gap-3' data-testid='member-activity-feed'>
+                <h4 className='text-base font-semibold'>Activity</h4>
+                <Card>
+                    <CardContent className='py-4'>
+                        <EmptyIndicator description={NEW_MEMBER_ACTIVITY_COPY} title='Activity'>
+                            <LucideIcon.Activity />
+                        </EmptyIndicator>
+                    </CardContent>
+                </Card>
+            </section>
+        );
+    }
 
     return (
         <section className='flex flex-col gap-3' data-testid='member-activity-feed'>
