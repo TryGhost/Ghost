@@ -1,11 +1,11 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
-import html2canvas from 'html2canvas-objectfit-fix';
+import html2canvas from 'html2canvas-pro';
 
 import {takeScreenshot} from '../../../src/utils/screenshot';
 
 // Mock html2canvas
-vi.mock('html2canvas-objectfit-fix');
+vi.mock('html2canvas-pro');
 
 // Mock DOM methods
 Object.defineProperty(window, 'URL', {

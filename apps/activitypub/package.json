@@ -94,7 +94,7 @@
         "@tryghost/shade": "workspace:*",
         "clsx": "catalog:",
         "dompurify": "catalog:",
-        "html2canvas-objectfit-fix": "1.2.0",
+        "html2canvas-pro": "2.2.1",
         "react": "catalog:",
         "react-dom": "catalog:",
         "react-hook-form": "7.80.0",

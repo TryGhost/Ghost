@@ -4,7 +4,7 @@ import APAvatar from '@src/components/global/ap-avatar';
 import DotsPattern from './dots-pattern';
 import ProfileCardShadow from '@assets/images/profile-card-shadow.png';
 import ProfileCardShadowSquare from '@assets/images/profile-card-shadow-square.png';
-import html2canvas from 'html2canvas-objectfit-fix';
+import html2canvas from 'html2canvas-pro';
 import {Account} from '@src/api/activitypub';
 import {Button, LoadingIndicator, Skeleton, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {H2} from '@tryghost/shade/primitives';
@@ -276,43 +276,41 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                 throw new Error('Clipboard API not supported in this browser');
             }
 
-            try {
-                // eslint-disable-next-line no-async-promise-executor
-                const blobPromise = new Promise<Blob>(async (resolve, reject) => {
-                    try {
-                        const canvas = await html2canvas(profileCardRef.current!, {
-                            backgroundColor: 'transparent',
-                            scale: 2,
-                            logging: false,
-                            useCORS: true,
-                            allowTaint: true,
-                            imageTimeout: 0
-                        });
+            // eslint-disable-next-line no-async-promise-executor
+            const blobPromise = new Promise<Blob>(async (resolve, reject) => {
+                try {
+                    const canvas = await html2canvas(profileCardRef.current!, {
+                        backgroundColor: 'transparent',
+                        scale: 2,
+                        logging: false,
+                        useCORS: true,
+                        allowTaint: true,
+                        imageTimeout: 0
+                    });
 
-                        canvas.toBlob((blob) => {
-                            if (blob) {
-                                resolve(blob);
-                            } else {
-                                reject(new Error('Failed to create blob'));
-                            }
-                        }, 'image/png');
-                    } catch (error) {
-                        reject(error);
-                    }
-                });
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            resolve(blob);
+                        } else {
+                            reject(new Error('Failed to create blob'));
+                        }
+                    }, 'image/png');
+                } catch (error) {
+                    reject(error);
+                }
+            });
 
-                const clipboardItem = new ClipboardItem({
-                    'image/png': blobPromise
-                });
+            const clipboardItem = new ClipboardItem({
+                'image/png': blobPromise
+            });
 
-                await navigator.clipboard.write([clipboardItem]);
-                toast.success('Image copied to clipboard');
-            } catch {
-                toast.error('Failed to copy image');
-            }
-            setIsProcessing(false);
-        } catch {
+            await navigator.clipboard.write([clipboardItem]);
+            toast.success('Image copied to clipboard');
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to copy profile card image:', error);
             toast.error('Failed to copy image');
+        } finally {
             setIsProcessing(false);
         }
     };

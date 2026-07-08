@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas-objectfit-fix';
+import html2canvas from 'html2canvas-pro';
 
 export interface ScreenshotOptions {
     filename?: string;
