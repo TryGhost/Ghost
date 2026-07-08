@@ -57,9 +57,25 @@ const MemberDetail: React.FC = () => {
     // the whole thing when set to `'disabled'`).
     const {data: settingsData} = useBrowseSettings({});
     const paidMembersEnabled = getSettingValue<boolean>(settingsData?.settings, 'paid_members_enabled') === true;
-    const newslettersUiEnabled = getMemberNewslettersUiEnabled(
-        getSettingValue<string>(settingsData?.settings, 'editor_default_email_recipients')
-    );
+    const editorDefaultRecipients = getSettingValue<string>(settingsData?.settings, 'editor_default_email_recipients');
+    const newslettersUiEnabled = getMemberNewslettersUiEnabled(editorDefaultRecipients);
+    // Ember-parity gate for the sidebar engagement stats (see
+    // `gh-member-details.hbs:84`): hidden when the site can't sign up new
+    // members OR the default email-recipients setting is `disabled`. If
+    // either is true the numbers are always zero and only add visual noise.
+    //
+    // Ember reads these through its settings service which is bootstrapped
+    // synchronously at app boot, so the gate is never `true` while values
+    // are missing. React's `useBrowseSettings` returns `undefined` on the
+    // first render — treating that as "engagement on" causes a brief flash
+    // on a cold `/members/:id` load for sites that should never show it.
+    // Wait until settings have actually resolved before allowing the
+    // section to render.
+    const settingsLoaded = settingsData !== undefined;
+    const membersSignupAccess = getSettingValue<string>(settingsData?.settings, 'members_signup_access');
+    const engagementEnabled = settingsLoaded
+        && membersSignupAccess !== 'none'
+        && editorDefaultRecipients !== 'disabled';
     // "Add complimentary" is only meaningful when the site has at least one active
     // paid tier for the comp to reference. Skip the query entirely if paid members
     // aren't enabled — nothing on this screen consumes it in that case.
@@ -283,7 +299,7 @@ const MemberDetail: React.FC = () => {
 
                     {showEditor && draft && (
                         <div className='flex flex-1 flex-col gap-8 lg:flex-row lg:items-start'>
-                            <MemberDetailSidebar draftEmail={draft.email} draftName={draft.name} member={member} />
+                            <MemberDetailSidebar draftEmail={draft.email} draftName={draft.name} engagementEnabled={engagementEnabled} member={member} />
                             <div className='flex min-w-0 flex-1 flex-col gap-8'>
                                 {/* First card: name, email, labels, note — no external header. */}
                                 <Card>

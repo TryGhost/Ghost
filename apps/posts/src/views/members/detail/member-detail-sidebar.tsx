@@ -24,9 +24,19 @@ interface MemberDetailSidebarProps {
     // sidebar title as the fields change).
     draftName?: string;
     draftEmail?: string;
+    // Ember-parity gate for the engagement stats section (see
+    // `gh-member-details.hbs:84`). Owned by the parent so all settings
+    // reads happen in one place.
+    engagementEnabled?: boolean;
 }
 
-const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({member, draftName, draftEmail}) => {
+// Matches Ember's `first-name` helper (`ghost/admin/app/helpers/first-name.js`):
+// splits on a single space, takes the first token. NO trim — a name that
+// somehow slipped through with a leading space should render the same empty
+// first-token Ember would, not a coincidentally-different truthy one.
+const getFirstName = (name: string) => name.split(' ')[0] || '';
+
+const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({member, draftName, draftEmail, engagementEnabled}) => {
     // Prefer the live draft over the saved member so a rename shows up in the
     // sidebar immediately. In create mode there's no saved member; fall back to
     // "New member" so the sidebar isn't a bare avatar during first-run typing.
@@ -89,6 +99,57 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({member, draftN
                             </MetaRow>
                         )}
                     </div>
+
+                    {engagementEnabled && (
+                        <section className='flex flex-col gap-3 text-sm' data-testid='member-detail-engagement'>
+                            <h4 className='text-xs font-semibold tracking-wide text-muted-foreground uppercase'>Engagement</h4>
+                            {/* `?? 0` matches Ember Data's serializer, which
+                                defaults `emailCount` to `0`
+                                (`ghost/admin/app/models/member.js:20`). A
+                                strict `=== 0` would diverge from Ember on
+                                a payload where the field is `undefined`. */}
+                            {(member.email_count ?? 0) === 0 ? (
+                                // Ember `gh-member-details.hbs:87-96`: same copy,
+                                // same curly apostrophe. Falls back to a generic
+                                // "this member" when no name is known.
+                                <p className='text-muted-foreground'>
+                                    {name
+                                        ? `We’ll show ${getFirstName(name)}’s email stats here once they receive their first newsletter.`
+                                        : 'We’ll show this member’s email stats here once they receive their first newsletter.'}
+                                </p>
+                            ) : (
+                                <div className='flex flex-col gap-4'>
+                                    <div className='flex flex-col gap-0.5'>
+                                        <p className='text-muted-foreground'>Emails received</p>
+                                        <p className='text-2xl font-semibold'>{member.email_count}</p>
+                                    </div>
+                                    <div className='flex flex-col gap-0.5'>
+                                        <p className='text-muted-foreground'>Emails opened</p>
+                                        {/* Ember Data defaults this to `0`
+                                            too (`ghost/admin/app/models/member.js:21`),
+                                            so mirror that here for parity. */}
+                                        <p className='text-2xl font-semibold'>{member.email_opened_count ?? 0}</p>
+                                    </div>
+                                    <div className='flex flex-col gap-0.5'>
+                                        <p className='text-muted-foreground'>Average open rate</p>
+                                        {member.email_open_rate === null || member.email_open_rate === undefined ? (
+                                            // Server sends `null` until the member has
+                                            // been sent 5 newsletters (Ember shows this
+                                            // exact string via
+                                            // `gh-member-details.hbs:112-114`).
+                                            <p className='text-muted-foreground'>
+                                                This metric is calculated once a member has received 5 newsletters.
+                                            </p>
+                                        ) : (
+                                            <p className='text-2xl font-semibold'>
+                                                {member.email_open_rate}<span className='text-base font-normal text-muted-foreground'>%</span>
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </section>
+                    )}
                 </>
             )}
         </aside>

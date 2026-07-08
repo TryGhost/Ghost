@@ -212,5 +212,117 @@ for (const {implementation, memberDetailsReact} of [
             expect(emberActionsCount).toBe(expectedEmberActions);
             expect(reactActionsCount).toBe(expectedReactActions);
         });
+
+        test('engagement section shows an empty state when the member has not received emails', async ({page}) => {
+            // Fresh members have `email_count: 0` on both implementations.
+            // Both should render the "Engagement" heading and the empty-state
+            // message that Ember produces via `gh-member-details.hbs:87-96`.
+            const member = await memberFactory.create({name: 'Ada Lovelace', email: 'engagement-empty-parity@ghost.org'});
+
+            await page.goto(memberPath(member.id));
+
+            await expect(page.getByRole('heading', {name: 'Engagement'})).toBeVisible();
+            // Ember uses `Ada`s email stats` (curly apostrophe); React must
+            // produce the same wording so a translator-facing regression
+            // trips the parity assertion.
+            await expect(page.getByText(/We[’']ll show Ada[’']s email stats here/)).toBeVisible();
+        });
+
+        test('engagement section shows email counts and open rate when the member has emails', async ({page}) => {
+            const member = await memberFactory.create({name: 'Stats Member', email: 'engagement-stats-parity@ghost.org'});
+
+            // Both implementations fetch the same `/members/:id` endpoint;
+            // inject non-zero engagement fields so the stats branch renders
+            // deterministically regardless of what the fixture DB happens to
+            // hold. `email_open_rate` is a percentage integer on the server
+            // (see `member.js`'s serializer).
+            const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+            await page.route(memberReadRegex, async (route) => {
+                if (route.request().method() !== 'GET') {
+                    return route.continue();
+                }
+                const response = await route.fetch();
+                const body = await response.json();
+                if (body?.members?.[0]) {
+                    body.members[0].email_count = 12;
+                    body.members[0].email_opened_count = 9;
+                    body.members[0].email_open_rate = 75;
+                }
+                return route.fulfill({response, body: JSON.stringify(body)});
+            });
+
+            await page.goto(memberPath(member.id));
+
+            await expect(page.getByRole('heading', {name: 'Engagement'})).toBeVisible();
+
+            // Each stat label must be visible AND the corresponding value must
+            // appear inside the section. Scope to the Engagement heading's
+            // parent so a coincidentally-matching `12` elsewhere on the page
+            // (e.g. a member count) can't satisfy the assertion.
+            const engagement = page.getByRole('heading', {name: 'Engagement'}).locator('..');
+            await expect(engagement.getByText('Emails received')).toBeVisible();
+            await expect(engagement.getByText('12', {exact: true})).toBeVisible();
+            await expect(engagement.getByText('Emails opened')).toBeVisible();
+            await expect(engagement.getByText('9', {exact: true})).toBeVisible();
+            await expect(engagement.getByText('Average open rate')).toBeVisible();
+            // Percent-formatted (`75%`). The `%` may live in a sibling span in
+            // Ember and inline in React — the union text `75%` catches both.
+            await expect(engagement.getByText(/75\s*%/)).toBeVisible();
+        });
+
+        test('engagement empty-state renders identically when email fields are absent from the payload', async ({page}) => {
+            // Ember Data defaults `emailCount` / `emailOpenedCount` to `0`
+            // (`ghost/admin/app/models/member.js:20-21`), so a payload that
+            // omits the fields still shows the empty state on Ember. React
+            // must mirror that via `?? 0` fallbacks — otherwise the two
+            // UIs diverge on the same server response.
+            const member = await memberFactory.create({name: 'Ada Lovelace', email: 'engagement-undef-parity@ghost.org'});
+
+            const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+            await page.route(memberReadRegex, async (route) => {
+                if (route.request().method() !== 'GET') {
+                    return route.continue();
+                }
+                const response = await route.fetch();
+                const body = await response.json();
+                if (body?.members?.[0]) {
+                    delete body.members[0].email_count;
+                    delete body.members[0].email_opened_count;
+                    delete body.members[0].email_open_rate;
+                }
+                return route.fulfill({response, body: JSON.stringify(body)});
+            });
+
+            await page.goto(memberPath(member.id));
+
+            await expect(page.getByRole('heading', {name: 'Engagement'})).toBeVisible();
+            await expect(page.getByText(/We[’']ll show Ada[’']s email stats here/)).toBeVisible();
+        });
+
+        test('open-rate placeholder appears when the rate is not yet calculated', async ({page}) => {
+            // Server sends `email_open_rate: null` until the member has been
+            // sent 5 newsletters (`gh-member-details.hbs:112-114`). Both UIs
+            // must render the placeholder string instead of a bare `%`.
+            const member = await memberFactory.create({name: 'Early Stats', email: 'engagement-null-parity@ghost.org'});
+
+            const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+            await page.route(memberReadRegex, async (route) => {
+                if (route.request().method() !== 'GET') {
+                    return route.continue();
+                }
+                const response = await route.fetch();
+                const body = await response.json();
+                if (body?.members?.[0]) {
+                    body.members[0].email_count = 3;
+                    body.members[0].email_opened_count = 2;
+                    body.members[0].email_open_rate = null;
+                }
+                return route.fulfill({response, body: JSON.stringify(body)});
+            });
+
+            await page.goto(memberPath(member.id));
+
+            await expect(page.getByText('This metric is calculated once a member has received 5 newsletters.')).toBeVisible();
+        });
     });
 }
