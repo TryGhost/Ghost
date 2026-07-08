@@ -89,6 +89,88 @@ describe('automations service', function () {
             sinon.assert.notCalled(schedulerAdapter.schedule);
         });
 
+        it('schedules an in-memory timer if date is in the future', async function () {
+            const clock = sinon.useFakeTimers(new Date('2026-01-01T00:00:00.000Z').getTime());
+            const future = new Date(Date.now() + 1000);
+
+            await automations.__testOnlyEnqueuePollAt(future);
+            await clock.tickAsync(999);
+
+            sinon.assert.notCalled(domainEvents.dispatch);
+
+            await clock.tickAsync(1);
+
+            sinon.assert.calledOnceWithExactly(
+                domainEvents.dispatch,
+                sinon.match.instanceOf(StartAutomationsPollEvent)
+            );
+        });
+
+        it('can schedule a timer for far in the future, avoiding setTimeout limits', async function () {
+            const clock = sinon.useFakeTimers(new Date('2026-01-01T00:00:00.000Z').getTime());
+            const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+            const future = new Date(Date.now() + thirtyDays);
+
+            await automations.__testOnlyEnqueuePollAt(future);
+
+            await clock.tickAsync(thirtyDays - 1);
+
+            sinon.assert.notCalled(domainEvents.dispatch);
+
+            await clock.tickAsync(1);
+
+            sinon.assert.calledOnceWithExactly(
+                domainEvents.dispatch,
+                sinon.match.instanceOf(StartAutomationsPollEvent)
+            );
+        });
+
+        it('cancels future in-memory timers if the date is sooner than the previous date', async function () {
+            const clock = sinon.useFakeTimers(new Date('2026-01-01T00:00:00.000Z').getTime());
+            const later = new Date(Date.now() + 10_000);
+            const sooner = new Date(Date.now() + 5000);
+
+            await automations.__testOnlyEnqueuePollAt(later);
+            await automations.__testOnlyEnqueuePollAt(sooner);
+            await clock.tickAsync(4999);
+
+            sinon.assert.notCalled(domainEvents.dispatch);
+
+            await clock.tickAsync(1);
+
+            sinon.assert.calledOnceWithExactly(
+                domainEvents.dispatch,
+                sinon.match.instanceOf(StartAutomationsPollEvent)
+            );
+
+            await clock.tickAsync(5000);
+
+            sinon.assert.calledOnce(domainEvents.dispatch);
+        });
+
+        it('doesn\'t cancel future in-memory timers if the date is later than a previous date', async function () {
+            const clock = sinon.useFakeTimers(new Date('2026-01-01T00:00:00.000Z').getTime());
+            const sooner = new Date(Date.now() + 5000);
+            const later = new Date(Date.now() + 10_000);
+
+            await automations.__testOnlyEnqueuePollAt(sooner);
+            await automations.__testOnlyEnqueuePollAt(later);
+            await clock.tickAsync(4999);
+
+            sinon.assert.notCalled(domainEvents.dispatch);
+
+            await clock.tickAsync(1);
+
+            sinon.assert.calledOnceWithExactly(
+                domainEvents.dispatch,
+                sinon.match.instanceOf(StartAutomationsPollEvent)
+            );
+
+            await clock.tickAsync(5000);
+
+            sinon.assert.calledOnce(domainEvents.dispatch);
+        });
+
         it('reaches out to the scheduler for dates in the future', async function () {
             const future = new Date(Date.now() + 10_000);
             await automations.__testOnlyEnqueuePollAt(future);
