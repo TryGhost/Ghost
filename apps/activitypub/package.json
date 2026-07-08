@@ -84,7 +84,10 @@
                     "test:acceptance"
                 ]
             }
-        }
+        },
+        "tags": [
+            "playwright"
+        ]
     },
     "dependencies": {
         "@hookform/resolvers": "5.4.0",

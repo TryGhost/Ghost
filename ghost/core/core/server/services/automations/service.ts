@@ -6,6 +6,7 @@ import {oneAtATime} from '../../../shared/one-at-a-time';
 import {poll} from './poll';
 import * as automationsApi from './automations-api';
 import {setImmediate as flushEventLoop} from 'node:timers/promises';
+import {SoonestTimer} from '../../lib/soonest-timer';
 
 const urlUtils = require('../../../shared/url-utils');
 const logging = require('@tryghost/logging');
@@ -43,6 +44,22 @@ export class AutomationsService {
 
         const enqueuePollNow = () => domainEvents.dispatch(StartAutomationsPollEvent.create());
 
+        const soonestTimer = new SoonestTimer(enqueuePollNow);
+
+        /**
+         * Enqueue an automations poll at a given time.
+         *
+         * If the poll is in the future, we schedule an in-memory timer *and*
+         * tell the scheduler.
+         *
+         * The in-memory timer can be more precise than the scheduler, and
+         * avoids reliance on an external service. The scheduler will wake up
+         * the server if it's stopped.
+         *
+         * (In an upcoming change (NY-1396), we plan to make the scheduler less
+         * precise to reduce load--that will make the in-memory timer more
+         * useful, but it's still useful now.)
+         */
         const enqueuePollAt = async (date: Readonly<Date>): Promise<void> => {
             const isRequestedDateInTheFuture = new Date() < date;
             if (!isRequestedDateInTheFuture) {
@@ -52,6 +69,8 @@ export class AutomationsService {
                 enqueuePollNow();
                 return;
             }
+
+            soonestTimer.scheduleAt(date);
 
             try {
                 const key = await internalKeys.get('ghost-scheduler');

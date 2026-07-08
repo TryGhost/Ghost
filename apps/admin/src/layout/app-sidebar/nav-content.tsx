@@ -66,7 +66,7 @@ function MembersNavItemContent({
                 <NavMenuItem.Label>Members</NavMenuItem.Label>
             </NavMenuItem.Link>
             {count !== null && count !== undefined && (
-                <SidebarMenuBadge>{(formatNumber as (value: number) => string)(count)}</SidebarMenuBadge>
+                <SidebarMenuBadge>{formatNumber(count)}</SidebarMenuBadge>
             )}
         </>
     );

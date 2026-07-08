@@ -36,6 +36,21 @@ Two categories of apps:
 - `admin-x-design-system` - Legacy design system (being phased out)
 - `shade` - New design system (shadcn/ui + Radix UI + react-hook-form + zod)
 
+### koenig/* - Ghost editor (Koenig) packages
+Merged from the former TryGhost/Koenig repo with full git history:
+
+- **koenig-lexical** - The Lexical-based rich text editor UI. Bundled into
+  Ghost Admin at build time (`ghost/admin` copies its UMD build into admin
+  assets; `apps/posts` and `apps/admin` import it directly)
+- **kg-*** - Editor support packages: server-side renderers and converters
+  consumed by `ghost/core` (kg-default-nodes, kg-lexical-html-renderer,
+  kg-html-to-lexical, ...) plus frontend helpers (kg-unsplash-selector)
+
+All Koenig packages resolve via `workspace:` — nothing in dev, CI, or the
+release archive installs them from npm. They are published to npm for
+external consumers only, automatically as part of the Ghost release lane
+(see `publish_koenig_packages` in ci.yml).
+
 ### e2e/ - End-to-end tests
 - Playwright-based E2E tests with Docker container isolation
 - See `e2e/CLAUDE.md` for detailed testing guidance
@@ -128,6 +143,10 @@ pnpm dev
 
 # Add optional public apps (comments-ui, sodo-search, signup-form, admin-toolbar)
 pnpm dev:public
+
+# Develop the Koenig editor against Ghost Admin (adds a koenig-lexical rebuild
+# watcher + preview server; Admin loads the editor from your local build)
+pnpm dev:lexical
 
 # With optional services (uses Docker Compose file composition)
 pnpm dev:analytics             # Include Tinybird analytics
