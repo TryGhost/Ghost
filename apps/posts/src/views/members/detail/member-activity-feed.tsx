@@ -74,7 +74,7 @@ function isSafeHref(url: string | undefined): url is string {
  */
 const ViewAllLink: React.FC<{memberId: string}> = ({memberId}) => (
     <a
-        className='block pt-3 text-sm font-medium text-primary hover:underline'
+        className='block pt-3 font-medium text-primary hover:underline'
         data-testid='member-activity-view-all'
         href={`#/members-activity?member=${memberId}`}
     >
@@ -186,7 +186,7 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({memberId, hasMul
         <section className='flex flex-col gap-3' data-testid='member-activity-feed'>
             <h4 className='text-base font-semibold'>Activity</h4>
             <Card>
-                <CardContent className='pt-6'>
+                <CardContent className='pt-3'>
                     {isLoading ? (
                         <div className='flex flex-col gap-3'>
                             <Skeleton className='h-10' />

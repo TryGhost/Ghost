@@ -50,7 +50,7 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({member, draftN
             <div className='flex items-center gap-3 py-4'>
                 <Avatar className='size-12 min-w-12 [&_span]:text-lg' email={email || undefined} name={name || undefined} src={member?.avatar_image} />
                 <div className='min-w-0'>
-                    <h2 className='truncate text-lg font-semibold'>{identityName}</h2>
+                    <h2 className='truncate text-xl font-semibold'>{identityName}</h2>
                     {name && email && (
                         <a className='block truncate text-muted-foreground hover:underline' href={`mailto:${email}`}>
                             {email}
