@@ -140,15 +140,35 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
     if (!paidMembersEnabled) {
         return null;
     }
-    const subscriptions = member?.subscriptions ?? [];
+
+    // Create mode: no saved member yet, no subscriptions to enumerate, no
+    // add-comp affordance (Ember's `isAddComplimentaryAllowed` short-circuits
+    // on `isNew`). Render the empty state only. Early-returning here also
+    // narrows `member` to `Member` for the rest of the function so the
+    // SubscriptionRow / MemberAddCompModal props type-check without a cast.
+    if (!member) {
+        return (
+            <Card data-testid='member-subscriptions'>
+                <CardContent className='pt-6'>
+                    <div className='flex flex-col items-center gap-3 py-4'>
+                        <EmptyIndicator title='No subscriptions'>
+                            <LucideIcon.CreditCard />
+                        </EmptyIndicator>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    const subscriptions = member.subscriptions ?? [];
     const groups = groupSubscriptionsByTier(subscriptions);
     const hasSubscriptions = groups.length > 0;
 
-    // Ember's `isAddComplimentaryAllowed`: paidMembersEnabled + not new + no tiers
-    // yet + at least one active paid tier exists. On the create screen there's
-    // no saved `member` yet, so Ember's `isNew` short-circuit is naturally
-    // mirrored here by the `!!member` guard — no add-comp affordance until save.
-    const isAddCompAllowed = !!member && canAddComp && (member.tiers?.length ?? 0) === 0;
+    // Ember's `isAddComplimentaryAllowed`: paidMembersEnabled + not new + no
+    // tiers yet + at least one active paid tier exists. The isNew and
+    // paidMembersEnabled halves are covered by the guards above; combine the
+    // remaining conditions here.
+    const isAddCompAllowed = canAddComp && (member.tiers?.length ?? 0) === 0;
 
     // The Add-complimentary button appears in TWO places, matching Ember exactly
     // (`gh-member-settings-form.hbs:82-111,279-293`):
