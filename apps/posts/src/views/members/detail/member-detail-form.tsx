@@ -11,9 +11,13 @@ interface MemberDetailFormProps {
     disabled?: boolean;
     onChange: (patch: Partial<MemberEditableFields>) => void;
     onEmailBlur?: () => void;
+    // Fired when the name field loses focus. Callers use it to sync a
+    // "committed identity" display state (e.g. the sidebar avatar) so it
+    // doesn't churn on every keystroke.
+    onNameBlur?: () => void;
 }
 
-const MemberDetailForm: React.FC<MemberDetailFormProps> = ({draft, emailError, disabled, onChange, onEmailBlur}) => {
+const MemberDetailForm: React.FC<MemberDetailFormProps> = ({draft, emailError, disabled, onChange, onEmailBlur, onNameBlur}) => {
     // Soft limit: the note can be typed past 500 (Ember has no hard cap); the counter
     // just turns negative and red.
     const noteCharactersLeft = getNoteCharactersLeft(draft.note);
@@ -44,6 +48,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({draft, emailError, d
                         disabled={disabled}
                         id='member-name'
                         value={draft.name}
+                        onBlur={onNameBlur}
                         onChange={e => onChange({name: e.target.value})}
                     />
                 </div>

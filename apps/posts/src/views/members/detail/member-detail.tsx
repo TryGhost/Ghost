@@ -196,6 +196,27 @@ const MemberDetail: React.FC = () => {
     }, [member?.id, isCreating]);
     const emailError = draft ? getEmailErrorMessage(draft.email, emailTouched) : null;
 
+    // The sidebar's identity block (avatar + heading) reads from a "committed"
+    // copy of name/email that only advances on blur, not per keystroke.
+    // Live-updating the avatar's gravatar/initials on every character felt
+    // noisy while typing. Initialized from the saved member (edit) or empty
+    // (create); synced on Save via the mutation success handler.
+    const [committedIdentity, setCommittedIdentity] = React.useState<{name: string; email: string}>({name: '', email: ''});
+    React.useEffect(() => {
+        if (isCreating) {
+            setCommittedIdentity({name: '', email: ''});
+            return;
+        }
+        if (member) {
+            setCommittedIdentity({name: member.name ?? '', email: member.email ?? ''});
+        }
+    }, [member?.id, member?.name, member?.email, isCreating]);
+    const commitIdentityFromDraft = () => {
+        if (draft) {
+            setCommittedIdentity({name: draft.name, email: draft.email});
+        }
+    };
+
     const onFieldChange = (patch: Partial<MemberEditableFields>) => {
         if (activeMutation.isError) {
             activeMutation.reset();
@@ -207,6 +228,10 @@ const MemberDetail: React.FC = () => {
         if (!draft || !hasUnsavedChanges || !emailValid || activeMutation.isLoading) {
             return;
         }
+        // Sync committed identity so the sidebar avatar shows what's actively
+        // being saved rather than the pre-blur value (in case the user hit
+        // Save without tabbing out of the name/email field first).
+        commitIdentityFromDraft();
 
         if (isCreating) {
             addMutation.mutate({
@@ -361,7 +386,7 @@ const MemberDetail: React.FC = () => {
 
                     {showEditor && draft && (
                         <div className='flex flex-1 flex-col gap-8 lg:flex-row lg:items-start lg:gap-12'>
-                            <MemberDetailSidebar draftEmail={draft.email} draftName={draft.name} engagementEnabled={engagementEnabled} member={member} />
+                            <MemberDetailSidebar draftEmail={committedIdentity.email} draftName={committedIdentity.name} engagementEnabled={engagementEnabled} member={member} />
                             <div className='flex min-w-0 flex-1 flex-col gap-8'>
                                 {/* First card: name, email, labels, note — no external header. */}
                                 <Card>
@@ -371,7 +396,11 @@ const MemberDetail: React.FC = () => {
                                             draft={draft}
                                             emailError={emailError}
                                             onChange={onFieldChange}
-                                            onEmailBlur={() => setEmailTouched(true)}
+                                            onEmailBlur={() => {
+                                                setEmailTouched(true);
+                                                commitIdentityFromDraft();
+                                            }}
+                                            onNameBlur={commitIdentityFromDraft}
                                         />
                                     </CardContent>
                                 </Card>
