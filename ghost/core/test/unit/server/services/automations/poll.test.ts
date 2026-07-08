@@ -353,7 +353,8 @@ describe('automations poll', function () {
             member_uuid: '00000000-0000-4000-8000-000000000001',
             member_email: 'member@example.com',
             member_name: 'Test Member',
-            automation_action_revision_id: 'revision-id'
+            automation_action_revision_id: 'revision-id',
+            track_opens: false
         });
         sinon.assert.callOrder(
             memberWelcomeEmailService.api.sendAutomationEmail,
