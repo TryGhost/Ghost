@@ -75,7 +75,7 @@ const SubscriptionRow: React.FC<{member: Member; sub: MemberSubscription; showDi
         <div className={cn('flex items-start justify-between gap-4 py-5 first:pt-0 last:pb-0', showDivider && 'border-t border-border')} data-testid='member-subscription'>
             <div className='flex min-w-0 flex-1 items-start gap-4'>
                 <PriceBlock kind={kind} sub={sub} />
-                <div className='min-w-0 flex-1'>
+                <div className='min-w-0 flex-1 pt-2'>
                     <div className='flex items-center gap-2'>
                         <span className='min-w-0 truncate font-semibold' data-testid='member-subscription-tier'>{sub.tier?.name ?? 'Subscription'}</span>
                         <Badge data-testid='member-subscription-status' variant={status === 'Canceled' ? 'secondary' : 'success'}>{status}</Badge>

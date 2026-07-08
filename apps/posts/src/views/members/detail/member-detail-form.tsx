@@ -40,7 +40,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({draft, emailError, d
         // `flex-1` inside it fills whatever's left after the character counter,
         // so the textarea's bottom border lines up with the labels field's
         // bottom border in the left column.
-        <div className='grid items-stretch gap-4 md:grid-cols-2' data-testid='member-detail-form'>
+        <div className='grid items-stretch gap-6 md:grid-cols-2' data-testid='member-detail-form'>
             <div className='flex flex-col gap-5'>
                 <div className='flex flex-col gap-1.5'>
                     <Label htmlFor='member-name'>Name</Label>
