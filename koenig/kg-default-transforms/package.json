@@ -30,15 +30,15 @@
     "access": "public"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.4",
+    "@eslint/js": "catalog:",
     "@lexical/headless": "0.13.1",
     "@lexical/link": "0.13.1",
-    "c8": "11.0.0",
+    "c8": "catalog:",
     "mocha": "11.7.6",
-    "sinon": "22.0.0",
-    "tsx": "4.23.0",
-    "typescript": "5.9.3",
-    "typescript-eslint": "8.62.1"
+    "sinon": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "dependencies": {
     "@lexical/list": "0.13.1",

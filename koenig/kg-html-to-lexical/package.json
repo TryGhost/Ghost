@@ -32,15 +32,15 @@
     "access": "public"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.4",
+    "@eslint/js": "catalog:",
     "@types/jsdom": "28.0.3",
     "@types/mocha": "10.0.10",
-    "c8": "11.0.0",
+    "c8": "catalog:",
     "mocha": "11.7.6",
-    "sinon": "22.0.0",
-    "tsx": "4.23.0",
-    "typescript": "5.9.3",
-    "typescript-eslint": "8.62.1"
+    "sinon": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",
@@ -51,7 +51,7 @@
     "@lexical/rich-text": "0.13.1",
     "@tryghost/kg-default-nodes": "workspace:~",
     "@tryghost/kg-default-transforms": "workspace:~",
-    "jsdom": "29.1.1",
+    "jsdom": "catalog:",
     "lexical": "0.13.1"
   }
 }
