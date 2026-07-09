@@ -207,6 +207,16 @@
         ]
       },
       "build": {
+        "inputs": [
+          {
+            "env": "GHOST_CDN_URL"
+          },
+          {
+            "env": "IS_SHIPPING"
+          },
+          "default",
+          "^default"
+        ],
         "outputs": [
           "{projectRoot}/dist",
           "{workspaceRoot}/ghost/core/core/built/admin"
