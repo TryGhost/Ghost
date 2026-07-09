@@ -363,6 +363,14 @@ export async function retryStep(...args: Parameters<AutomationsRepository['retry
     return await repository.retryStep(...args);
 }
 
+export async function getAutomatedEmailRecipientsByMailgunIds(...args: Parameters<AutomationsRepository['getAutomatedEmailRecipientsByMailgunIds']>) {
+    return await repository.getAutomatedEmailRecipientsByMailgunIds(...args);
+}
+
+export async function updateAutomatedEmailRecipientsTimestamps(...args: Parameters<AutomationsRepository['updateAutomatedEmailRecipientsTimestamps']>) {
+    return await repository.updateAutomatedEmailRecipientsTimestamps(...args);
+}
+
 export type RecordEmailSentOptions = Readonly<{
     automationActionRevisionId: string;
     mailgunMessageId?: string;

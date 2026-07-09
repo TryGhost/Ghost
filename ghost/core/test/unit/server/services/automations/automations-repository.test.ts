@@ -85,7 +85,16 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('email_subject');
         table.text('email_lexical');
         table.text('email_design_setting_id').references('id').inTable('email_design_settings');
+        table.integer('email_opened_count');
         table.unique(['created_at', 'action_id']);
+    });
+
+    await database.schema.createTable('automated_email_recipients', (table) => {
+        table.text('id').primary();
+        table.text('automation_action_revision_id').references('id').inTable('automation_action_revisions');
+        table.text('mailgun_message_id');
+        table.text('delivered_at');
+        table.text('opened_at');
     });
 
     await database.schema.createTable('automation_action_edges', (table) => {
@@ -654,6 +663,139 @@ describe('automations repository', function () {
                 .first();
 
             assert.equal(Number(totalActions?.count), 2);
+        });
+    });
+
+    describe('getAutomatedEmailRecipientsByMailgunIds', function () {
+        it('returns recipients matching Mailgun message IDs', async function () {
+            const revision = await knex('automation_action_revisions').select('id').first();
+            assert(revision);
+            const revisionId = revision.id;
+            await knex('automated_email_recipients').insert([{
+                id: 'recipient-1',
+                automation_action_revision_id: revisionId,
+                mailgun_message_id: 'message-1'
+            }, {
+                id: 'recipient-2',
+                automation_action_revision_id: null,
+                mailgun_message_id: 'message-2'
+            }, {
+                id: 'recipient-3',
+                automation_action_revision_id: revisionId,
+                mailgun_message_id: 'message-3'
+            }]);
+
+            const recipients = await repo.getAutomatedEmailRecipientsByMailgunIds(['message-1', 'message-2']);
+
+            assert.deepEqual(recipients.sort((a, b) => a.id.localeCompare(b.id)), [{
+                id: 'recipient-1',
+                automation_action_revision_id: revisionId,
+                mailgun_message_id: 'message-1'
+            }, {
+                id: 'recipient-2',
+                automation_action_revision_id: null,
+                mailgun_message_id: 'message-2'
+            }]);
+        });
+
+        it('returns no recipients for no Mailgun message IDs', async function () {
+            assert.deepEqual(await repo.getAutomatedEmailRecipientsByMailgunIds([]), []);
+        });
+    });
+
+    describe('updateAutomatedEmailRecipientsTimestamps', function () {
+        it('sets missing timestamps and increments opened counts once per newly opened recipient', async function () {
+            const revisions = await knex('automation_action_revisions')
+                .select('id')
+                .orderBy('id')
+                .limit(2);
+            const [revision1, revision2] = revisions;
+            assert(revision1);
+            assert(revision2);
+
+            await knex('automation_action_revisions')
+                .where('id', revision2.id)
+                .update({email_opened_count: 4});
+
+            const existingDeliveredAt = '2024-01-01 08:00:00';
+            const existingOpenedAt = '2024-01-01 09:00:00';
+            await knex('automated_email_recipients').insert([{
+                id: 'recipient-1',
+                automation_action_revision_id: revision1.id,
+                mailgun_message_id: 'message-1'
+            }, {
+                id: 'recipient-2',
+                automation_action_revision_id: revision1.id,
+                mailgun_message_id: 'message-2'
+            }, {
+                id: 'recipient-3',
+                automation_action_revision_id: revision2.id,
+                mailgun_message_id: 'message-3',
+                delivered_at: existingDeliveredAt,
+                opened_at: existingOpenedAt
+            }, {
+                id: 'recipient-4',
+                automation_action_revision_id: null,
+                mailgun_message_id: 'message-4'
+            }]);
+
+            const deliveredAt = '2024-01-01 10:00:00';
+            const openedAt = '2024-01-01 11:00:00';
+            const updates = {
+                delivered: new Map([
+                    ['recipient-1', deliveredAt],
+                    ['recipient-3', deliveredAt]
+                ]),
+                opened: new Map([
+                    ['recipient-1', openedAt],
+                    ['recipient-2', openedAt],
+                    ['recipient-3', openedAt],
+                    ['recipient-4', openedAt]
+                ])
+            };
+
+            await repo.updateAutomatedEmailRecipientsTimestamps(updates);
+
+            const recipients = await knex('automated_email_recipients')
+                .select('id', 'delivered_at', 'opened_at')
+                .orderBy('id');
+            assert.deepEqual(recipients, [{
+                id: 'recipient-1',
+                delivered_at: deliveredAt,
+                opened_at: openedAt
+            }, {
+                id: 'recipient-2',
+                delivered_at: null,
+                opened_at: openedAt
+            }, {
+                id: 'recipient-3',
+                delivered_at: existingDeliveredAt,
+                opened_at: existingOpenedAt
+            }, {
+                id: 'recipient-4',
+                delivered_at: null,
+                opened_at: openedAt
+            }]);
+
+            const openedCounts = await knex('automation_action_revisions')
+                .select('id', 'email_opened_count')
+                .whereIn('id', [revision1.id, revision2.id])
+                .orderBy('id');
+            assert.deepEqual(openedCounts, [{
+                id: revision1.id,
+                email_opened_count: 2
+            }, {
+                id: revision2.id,
+                email_opened_count: 4
+            }]);
+
+            await repo.updateAutomatedEmailRecipientsTimestamps(updates);
+
+            const openedCountsAfterRetry = await knex('automation_action_revisions')
+                .select('id', 'email_opened_count')
+                .whereIn('id', [revision1.id, revision2.id])
+                .orderBy('id');
+            assert.deepEqual(openedCountsAfterRetry, openedCounts);
         });
     });
 

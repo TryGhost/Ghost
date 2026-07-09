@@ -61,6 +61,17 @@ export interface EditAutomationData {
     edges: AutomationEdge[];
 }
 
+export type AutomatedEmailRecipient = {
+    id: string;
+    mailgun_message_id: string | null;
+    automation_action_revision_id: string | null;
+};
+
+export type AutomatedEmailRecipientTimestampUpdates = ReadonlyDeep<{
+    delivered: Map<string, string>;
+    opened: Map<string, string>;
+}>;
+
 type AutomationStepBase = {
     id: string;
     locked_by: string;
@@ -100,6 +111,8 @@ export interface AutomationsRepository {
     browse(): Promise<Page<AutomationSummary>>;
     getById(id: string): Promise<Automation | null>;
     edit(id: string, data: EditAutomationData): Promise<Automation | null>;
+    getAutomatedEmailRecipientsByMailgunIds(mailgunMessageIds: ReadonlyArray<string>): Promise<AutomatedEmailRecipient[]>;
+    updateAutomatedEmailRecipientsTimestamps(updates: AutomatedEmailRecipientTimestampUpdates): Promise<void>;
     trigger(options: {
         memberEmail: string;
         memberId: string;

@@ -746,7 +746,7 @@ const fixtures = {
             memberIds: DataGenerator.forKnex.members.map(member => member.id)
         };
 
-        return emailAnalyticsService.service.aggregateStats(toAggregate);
+        return emailAnalyticsService.newsletterProcessor.aggregateStats(toAggregate);
     },
 
     insertNewsletters: async function insertNewsletters() {

@@ -4,6 +4,31 @@ const config = require('../../../shared/config');
 
 class EmailAnalyticsServiceWrapper {
     #restoredSchedule = false;
+    #event;
+    #logName;
+    #mailgunTags;
+    #jobNames;
+    #eventSource;
+    #processEventBatch;
+    #flush;
+
+    constructor({
+        event,
+        logName,
+        mailgunTags,
+        jobNames,
+        eventSource,
+        processEventBatch,
+        flush
+    }) {
+        this.#event = event;
+        this.#logName = logName;
+        this.#mailgunTags = mailgunTags;
+        this.#jobNames = jobNames;
+        this.#eventSource = eventSource;
+        this.#processEventBatch = processEventBatch;
+        this.#flush = flush;
+    }
 
     init() {
         if (this.service) {
@@ -11,63 +36,27 @@ class EmailAnalyticsServiceWrapper {
         }
 
         const EmailAnalyticsService = require('./email-analytics-service');
-        const EmailEventStorage = require('../email-service/email-event-storage');
-        const EmailEventProcessor = require('../email-service/email-event-processor');
         const MailgunProvider = require('./email-analytics-provider-mailgun');
-        const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
-        const StartEmailAnalyticsJobEvent = require('./events/start-email-analytics-job-event');
         const domainEvents = require('@tryghost/domain-events');
         const settings = require('../../../shared/settings-cache');
-        const db = require('../../data/db');
         const queries = require('./lib/queries');
-        const membersService = require('../members');
-        const membersRepository = membersService.api.members;
-        const emailSuppressionList = require('../email-suppression-list');
-        const prometheusClient = require('../../../shared/prometheus-client');
-
-        const tags = ['bulk-email'];
-        if (config.get('bulkEmail:mailgun:tag')) {
-            tags.push(config.get('bulkEmail:mailgun:tag'));
-        }
-
-        this.eventStorage = new EmailEventStorage({
-            db,
-            membersRepository,
-            models: {
-                Email,
-                EmailRecipientFailure,
-                EmailSpamComplaintEvent
-            },
-            emailSuppressionList,
-            prometheusClient
-        });
-
-        // Since this is running in a worker thread, we cant dispatch directly
-        // So we post the events as a message to the job manager
-        const eventProcessor = new EmailEventProcessor({
-            domainEvents,
-            db,
-            eventStorage: this.eventStorage,
-            prometheusClient
-        });
 
         this.service = new EmailAnalyticsService({
-            config,
-            settings,
-            eventProcessor,
-            provider: new MailgunProvider({config, settings, tags}),
+            provider: new MailgunProvider({config, settings, tags: this.#mailgunTags}),
             queries,
-            domainEvents,
-            prometheusClient
+            jobNames: this.#jobNames,
+            eventSource: this.#eventSource,
+            processEventBatch: this.#processEventBatch,
+            flush: this.#flush
         });
 
         // Log the processing mode on initialization
         const batchProcessingEnabled = config.get('emailAnalytics:batchProcessing');
-        logging.info(`[EmailAnalytics] Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`);
+        logging.info(`[EmailAnalytics:${this.#logName}] Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`);
 
         // We currently cannot trigger a non-offloaded job from the job manager
         // So the email analytics jobs simply emits an event.
-        domainEvents.subscribe(StartEmailAnalyticsJobEvent, async () => {
+        domainEvents.subscribe(this.#event, async () => {
             await this.startFetch();
         });
     }
@@ -92,7 +81,7 @@ class EmailAnalyticsServiceWrapper {
         const batchMode = config.get('emailAnalytics:batchProcessing') ? 'BATCHED' : 'SEQUENTIAL';
 
         const logMessage = [
-            `[EmailAnalytics] Job complete: ${jobType}`,
+            `[EmailAnalytics:${this.#logName}] Job complete: ${jobType}`,
             `${eventCount} events in ${(totalDurationMs / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
             `Mode: ${batchMode}`,
             `Timings: API ${(apiPollingTimeMs / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTimeMs / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTimeMs / 1000).toFixed(1)}s (${aggregationPercent}%) [Email ${(emailAggregationTimeMs / 1000).toFixed(1)}s / Member ${(memberAggregationTimeMs / 1000).toFixed(1)}s]`,
@@ -106,10 +95,14 @@ class EmailAnalyticsServiceWrapper {
             const openThroughputEnabled = config.get('emailAnalytics:metrics:openThroughput:enabled');
             const openThroughputThreshold = config.get('emailAnalytics:metrics:openThroughput:threshold') || 0;
             if (openThroughputEnabled && eventCount >= openThroughputThreshold) {
-                metrics.metric('email-analytics-open-throughput', {
+                const metricName = this.#logName === 'newsletters'
+                    ? 'email-analytics-open-throughput'
+                    : `email-analytics-${this.#logName}-open-throughput`;
+                metrics.metric(metricName, {
                     value: throughput,
                     events: eventCount,
-                    duration: totalDurationMs
+                    duration: totalDurationMs,
+                    pipeline: this.#logName
                 });
             }
         }
@@ -124,7 +117,7 @@ class EmailAnalyticsServiceWrapper {
         //  - Ghost or Mailgun outages
         //  - Lack of actual email activity
         if (lagThreshold && lagMinutes > lagThreshold) {
-            logging.warn(`[EmailAnalytics] Opened events processing is ${lagMinutes.toFixed(1)} minutes behind (threshold: ${lagThreshold})`);
+            logging.warn(`[EmailAnalytics:${this.#logName}] Opened events processing is ${lagMinutes.toFixed(1)} minutes behind (threshold: ${lagThreshold})`);
         }
 
         const fetchStartDate = new Date();
@@ -177,7 +170,7 @@ class EmailAnalyticsServiceWrapper {
         }
 
         if (this.fetching) {
-            logging.info('Email analytics fetch already running, skipping');
+            logging.info(`[EmailAnalytics:${this.#logName}] Fetch already running, skipping`);
             return;
         }
         this.fetching = true;
@@ -212,12 +205,12 @@ class EmailAnalyticsServiceWrapper {
 
             // Log summary if no events were found across all jobs
             if (c1 + c2 + c3 + c4 === 0) {
-                logging.info('[EmailAnalytics] Job complete - No events');
+                logging.info(`[EmailAnalytics:${this.#logName}] Job complete - No events`);
             }
 
             this.fetching = false;
         } catch (e) {
-            logging.error(e, 'Error while fetching email analytics');
+            logging.error(e, `[EmailAnalytics:${this.#logName}] Error while fetching`);
 
             // Log again only the error, otherwise we lose the stack trace
             logging.error(e);
@@ -227,7 +220,7 @@ class EmailAnalyticsServiceWrapper {
 
     _restartFetch(reason) {
         this.fetching = false;
-        logging.info(`[EmailAnalytics] Restarting fetch due to ${reason}`);
+        logging.info(`[EmailAnalytics:${this.#logName}] Restarting fetch due to ${reason}`);
         this.startFetch();
     }
 }

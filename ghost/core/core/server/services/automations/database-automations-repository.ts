@@ -13,6 +13,8 @@ import type {
     AutomationSummary,
     AutomationStepTerminalStatus,
     AutomationStepToRun,
+    AutomatedEmailRecipient,
+    AutomatedEmailRecipientTimestampUpdates,
     AutomationsRepository,
     EditAutomationData,
     Page
@@ -183,6 +185,44 @@ export function createDatabaseAutomationsRepository({
             });
         },
 
+        async getAutomatedEmailRecipientsByMailgunIds(mailgunMessageIds: ReadonlyArray<string>): Promise<AutomatedEmailRecipient[]> {
+            if (mailgunMessageIds.length === 0) {
+                return [];
+            }
+
+            return await knex<AutomatedEmailRecipient>('automated_email_recipients')
+                .select('id', 'mailgun_message_id', 'automation_action_revision_id')
+                .whereIn('mailgun_message_id', mailgunMessageIds);
+        },
+
+        async updateAutomatedEmailRecipientsTimestamps(updates: AutomatedEmailRecipientTimestampUpdates): Promise<void> {
+            await knex.transaction(async (trx) => {
+                const recipientsToOpen = updates.opened.size === 0
+                    ? []
+                    : await trx<AutomatedEmailRecipient>('automated_email_recipients')
+                        .select('id', 'automation_action_revision_id')
+                        .whereIn('id', Array.from(updates.opened.keys()))
+                        .whereNull('opened_at')
+                        .orderBy('id')
+                        .forUpdate();
+
+                await updateAutomatedEmailRecipientTimestampColumn(trx, 'delivered_at', updates.delivered);
+                await updateAutomatedEmailRecipientTimestampColumn(trx, 'opened_at', updates.opened);
+
+                for (const recipient of recipientsToOpen) {
+                    if (!recipient.automation_action_revision_id) {
+                        continue;
+                    }
+
+                    await trx('automation_action_revisions')
+                        .where('id', recipient.automation_action_revision_id)
+                        .update({
+                            email_opened_count: trx.raw('COALESCE(??, 0) + ?', ['email_opened_count', 1])
+                        });
+                }
+            });
+        },
+
         async trigger(options: {
             memberEmail: string;
             memberId: string;
@@ -216,6 +256,32 @@ export function createDatabaseAutomationsRepository({
             return await knex.transaction(trx => retryStep(trx, step, retryAt));
         }
     };
+}
+
+async function updateAutomatedEmailRecipientTimestampColumn(
+    trx: Knex.Transaction,
+    columnName: 'delivered_at' | 'opened_at',
+    updates: ReadonlyMap<string, string>
+): Promise<void> {
+    if (updates.size === 0) {
+        return;
+    }
+
+    const ids = Array.from(updates.keys());
+    const caseClauses: string[] = [];
+    const caseBindings: string[] = [];
+
+    for (const [id, timestamp] of updates.entries()) {
+        caseClauses.push('WHEN ? THEN ?');
+        caseBindings.push(id, timestamp);
+    }
+
+    await trx.raw(`
+        UPDATE automated_email_recipients
+        SET ${columnName} = CASE id ${caseClauses.join(' ')} END
+        WHERE id IN (${ids.map(() => '?').join(',')})
+        AND ${columnName} IS NULL
+    `, [...caseBindings, ...ids]);
 }
 
 async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
