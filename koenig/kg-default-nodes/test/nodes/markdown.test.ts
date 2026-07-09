@@ -1,4 +1,4 @@
-import {dom, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, dom, html} from '../test-utils/index.js';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
@@ -39,29 +39,29 @@ describe('MarkdownNode', function () {
 
     it('matches node with $isImageNode', editorTest(function () {
         const markdownNode = $createMarkdownNode(dataset);
-        $isMarkdownNode(markdownNode).should.be.true();
+        expect($isMarkdownNode(markdownNode)).toBe(true);
     }));
 
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
 
-            markdownNode.markdown.should.equal('#HEADING\r\n- list\r\n- items');
+            expect(markdownNode.markdown).toBe('#HEADING\r\n- list\r\n- items');
         }));
 
         it('has setters for all properties', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
 
-            markdownNode.markdown.should.equal('#HEADING\r\n- list\r\n- items');
+            expect(markdownNode.markdown).toBe('#HEADING\r\n- list\r\n- items');
             markdownNode.markdown = '#HEADING 2\r\n- list\r\n- items';
-            markdownNode.markdown.should.equal('#HEADING 2\r\n- list\r\n- items');
+            expect(markdownNode.markdown).toBe('#HEADING 2\r\n- list\r\n- items');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
             const markdownNodeDataset = markdownNode.getDataset();
 
-            markdownNodeDataset.should.deepEqual({
+            expect(markdownNodeDataset).toEqual({
                 ...dataset
             });
         }));
@@ -71,15 +71,15 @@ describe('MarkdownNode', function () {
         it('returns true if markdown is empty', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
 
-            markdownNode.isEmpty().should.be.false();
+            expect(markdownNode.isEmpty()).toBe(false);
             markdownNode.markdown = '';
-            markdownNode.isEmpty().should.be.true();
+            expect(markdownNode.isEmpty()).toBe(true);
         }));
     });
 
     describe('getType', function () {
         it('returns the correct node type', editorTest(function () {
-            MarkdownNode.getType().should.equal('markdown');
+            expect(MarkdownNode.getType()).toBe('markdown');
         }));
     });
 
@@ -90,13 +90,13 @@ describe('MarkdownNode', function () {
             const clone = MarkdownNode.clone(markdownNode) as MarkdownNode;
             const cloneDataset = clone.getDataset();
 
-            cloneDataset.should.deepEqual({...markdownNodeDataset});
+            expect(cloneDataset).toEqual({...markdownNodeDataset});
         }));
     });
 
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
-            MarkdownNode.urlTransformMap.should.deepEqual({
+            expect(MarkdownNode.urlTransformMap).toEqual({
                 markdown: 'markdown'
             });
         }));
@@ -105,7 +105,7 @@ describe('MarkdownNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
-            markdownNode.hasEditMode().should.be.true();
+            expect(markdownNode.hasEditMode()).toBe(true);
         }));
     });
 
@@ -115,8 +115,8 @@ describe('MarkdownNode', function () {
             const result = markdownNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
-            result.type.should.equal('inner');
-            element.innerHTML.should.prettifyTo(html`
+            expect(result.type).toBe('inner');
+            assertPrettifiesTo(element.innerHTML, html`
                 <h1 id="heading">HEADING</h1>
                 <ul>
                 <li>list</li>
@@ -131,7 +131,7 @@ describe('MarkdownNode', function () {
             const markdownNode = $createMarkdownNode(dataset);
             const json = markdownNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'markdown',
                 version: 1,
                 markdown: '#HEADING\r\n- list\r\n- items'
@@ -163,7 +163,7 @@ describe('MarkdownNode', function () {
                     try {
                         const [markdownNode] = $getRoot().getChildren() as MarkdownNode[];
 
-                        markdownNode.markdown.should.equal('#HEADING\r\n- list\r\n- items');
+                        expect(markdownNode.markdown).toBe('#HEADING\r\n- list\r\n- items');
 
                         resolve();
                     } catch (e) {
@@ -177,11 +177,11 @@ describe('MarkdownNode', function () {
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
             const node = $createMarkdownNode();
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
 
             node.markdown = '#HEADING\r\n- list\r\n- items';
 
-            node.getTextContent().should.equal('#HEADING\r\n- list\r\n- items\n\n');
+            expect(node.getTextContent()).toBe('#HEADING\r\n- list\r\n- items\n\n');
         }));
     });
 });

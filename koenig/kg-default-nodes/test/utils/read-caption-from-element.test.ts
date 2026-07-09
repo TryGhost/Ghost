@@ -1,4 +1,3 @@
-import should from 'should';
 import {JSDOM} from 'jsdom';
 import {readCaptionFromElement} from '../../src/utils/read-caption-from-element.js';
 
@@ -14,6 +13,6 @@ describe('readCaptionFromElement', function () {
 
         const caption = readCaptionFromElement(document.querySelector('figure')!);
 
-        should(caption).equal('<p>First</p> / <p>Third</p>');
+        expect(caption).toBe('<p>First</p> / <p>Third</p>');
     });
 });

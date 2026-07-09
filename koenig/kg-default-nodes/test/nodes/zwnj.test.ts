@@ -1,4 +1,3 @@
-import '../test-utils/index.js';
 import {createHeadlessEditor} from '@lexical/headless';
 import {ZWNJNode, $createZWNJNode, $isZWNJNode} from '../../src/index.js';
 import type {LexicalEditor} from 'lexical';
@@ -28,6 +27,6 @@ describe('ZWNJNode', function () {
 
     it('matches node with $isZWNJNode', editorTest(function () {
         const zwnjNode = $createZWNJNode();
-        $isZWNJNode(zwnjNode).should.be.true();
+        expect($isZWNJNode(zwnjNode)).toBe(true);
     }));
 });

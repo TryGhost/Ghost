@@ -41,11 +41,8 @@
     "@eslint/js": "catalog:",
     "@types/jsdom": "catalog:",
     "@types/node": "catalog:",
-    "@types/sinon": "21.0.1",
     "@vitest/coverage-v8": "catalog:",
     "jsdom": "catalog:",
-    "should": "13.2.3",
-    "sinon": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"

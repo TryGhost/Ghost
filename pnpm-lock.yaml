@@ -3126,24 +3126,12 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.0
-      '@types/should':
-        specifier: 13.0.0
-        version: 13.0.0
-      '@types/sinon':
-        specifier: 21.0.1
-        version: 21.0.1
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
-      should:
-        specifier: 13.2.3
-        version: 13.2.3
       simple-dom:
         specifier: 1.4.0
         version: 1.4.0
-      sinon:
-        specifier: 'catalog:'
-        version: 22.0.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -3165,21 +3153,12 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.0
-      '@types/sinon':
-        specifier: 21.0.1
-        version: 21.0.1
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
-      should:
-        specifier: 13.2.3
-        version: 13.2.3
-      sinon:
-        specifier: 'catalog:'
-        version: 22.0.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -3205,9 +3184,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
-      sinon:
-        specifier: 'catalog:'
-        version: 22.0.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -3251,27 +3227,15 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.0
-      '@types/should':
-        specifier: 13.0.0
-        version: 13.0.0
-      '@types/sinon':
-        specifier: 21.0.1
-        version: 21.0.1
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
-      should:
-        specifier: 13.2.3
-        version: 13.2.3
       simple-dom:
         specifier: 1.4.0
         version: 1.4.0
-      sinon:
-        specifier: 'catalog:'
-        version: 22.0.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -3339,9 +3303,6 @@ importers:
       '@prettier/sync':
         specifier: 0.6.1
         version: 0.6.1(prettier@3.9.4)
-      '@types/chai':
-        specifier: 4.3.20
-        version: 4.3.20
       '@types/jsdom':
         specifier: 'catalog:'
         version: 28.0.3
@@ -3354,27 +3315,12 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.0
-      '@types/should':
-        specifier: 13.0.0
-        version: 13.0.0
-      '@types/sinon':
-        specifier: 21.0.1
-        version: 21.0.1
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
-      chai:
-        specifier: 'catalog:'
-        version: 4.5.0
       prettier:
         specifier: 3.9.4
         version: 3.9.4
-      should:
-        specifier: 13.2.3
-        version: 13.2.3
-      sinon:
-        specifier: 'catalog:'
-        version: 22.0.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -3415,9 +3361,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
-      sinon:
-        specifier: 'catalog:'
-        version: 22.0.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -3470,9 +3413,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
-      sinon:
-        specifier: 'catalog:'
-        version: 22.0.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -3525,24 +3465,12 @@ importers:
       '@types/jsdom':
         specifier: 'catalog:'
         version: 28.0.3
-      '@types/should':
-        specifier: 13.0.0
-        version: 13.0.0
-      '@types/sinon':
-        specifier: 21.0.1
-        version: 21.0.1
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
       prettier:
         specifier: 3.9.4
         version: 3.9.4
-      should:
-        specifier: 13.2.3
-        version: 13.2.3
-      sinon:
-        specifier: 'catalog:'
-        version: 22.0.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -3595,21 +3523,9 @@ importers:
       '@types/semver':
         specifier: 7.7.1
         version: 7.7.1
-      '@types/should':
-        specifier: 13.0.0
-        version: 13.0.0
-      '@types/sinon':
-        specifier: 21.0.1
-        version: 21.0.1
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
-      should:
-        specifier: 13.2.3
-        version: 13.2.3
-      sinon:
-        specifier: 'catalog:'
-        version: 22.0.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -3763,21 +3679,9 @@ importers:
       '@types/semver':
         specifier: 7.7.1
         version: 7.7.1
-      '@types/should':
-        specifier: 13.0.0
-        version: 13.0.0
-      '@types/sinon':
-        specifier: 21.0.1
-        version: 21.0.1
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
-      should:
-        specifier: 13.2.3
-        version: 13.2.3
-      sinon:
-        specifier: 'catalog:'
-        version: 22.0.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -10623,10 +10527,6 @@ packages:
 
   '@types/set-cookie-parser@2.4.10':
     resolution: {integrity: sha512-GGmQVGpQWUe5qglJozEjZV/5dyxbOOZ0LHe/lqyWssB88Y4svNfst0uqBVscdDeIKl5Jy5+aPSvy7mI9tYRguw==}
-
-  '@types/should@13.0.0':
-    resolution: {integrity: sha512-Mi6YZ2ABnnGGFMuiBDP0a8s1ZDCDNHqP97UH8TyDmCWuGGavpsFMfJnAMYaaqmDlSCOCNbVLHBrSDEOpx/oLhw==}
-    deprecated: This is a stub types definition for should.js (https://github.com/shouldjs/should.js). should.js provides its own type definitions, so you don't need @types/should installed!
 
   '@types/sinon@21.0.1':
     resolution: {integrity: sha512-5yoJSqLbjH8T9V2bksgRayuhpZy+723/z6wBOR+Soe4ZlXC0eW8Na71TeaZPUWDQvM7LYKa9UGFc6LRqxiR5fQ==}
@@ -21999,24 +21899,6 @@ packages:
   shellwords@0.1.1:
     resolution: {integrity: sha512-vFwSUfQvqybiICwZY5+DAWIPLKsWO31Q91JSKl3UYv+K5c2QRPzn0qzec6QPu1Qc9eHYItiP3NdJqNVqetYAww==}
 
-  should-equal@2.0.0:
-    resolution: {integrity: sha512-ZP36TMrK9euEuWQYBig9W55WPC7uo37qzAEmbjHz4gfyuXrEUgF8cUvQVO+w+d3OMfPvSRQJ22lSm8MQJ43LTA==}
-
-  should-format@3.0.3:
-    resolution: {integrity: sha512-hZ58adtulAk0gKtua7QxevgUaXTTXxIi8t41L3zo9AHvjXO1/7sdLECuHeIN2SRtYXpNkmhoUP2pdeWgricQ+Q==}
-
-  should-type-adaptors@1.1.0:
-    resolution: {integrity: sha512-JA4hdoLnN+kebEp2Vs8eBe9g7uy0zbRo+RMcU0EsNy+R+k049Ki+N5tT5Jagst2g7EAja+euFuoXFCa8vIklfA==}
-
-  should-type@1.4.0:
-    resolution: {integrity: sha512-MdAsTu3n25yDbIe1NeN69G4n6mUnJGtSJHygX3+oN0ZbO3DTiATnf7XnYJdGT42JCXurTb1JI0qOBR65shvhPQ==}
-
-  should-util@1.0.1:
-    resolution: {integrity: sha512-oXF8tfxx5cDk8r2kYqlkUJzZpDBqVY/II2WhvU0n9Y3XYvAYRmeaf1PvvIvTgPnv4KJ+ES5M0PyDq5Jp+Ygy2g==}
-
-  should@13.2.3:
-    resolution: {integrity: sha512-ggLesLtu2xp+ZxI+ysJTmNjh2U0TsC+rQ/pfED9bUZZ4DKefP27D+7YJVVTvKsmjLpIi9jAa7itwDGkDDmt1GQ==}
-
   side-channel-list@1.0.1:
     resolution: {integrity: sha512-mjn/0bi/oUURjc5Xl7IaWi/OJJJumuoJFQJfDDyO46+hBWsfaVM65TBHq2eoZBhzl9EchxOijpkbRC8SVBQU0w==}
     engines: {node: '>= 0.4'}
@@ -32149,10 +32031,6 @@ snapshots:
   '@types/set-cookie-parser@2.4.10':
     dependencies:
       '@types/node': 26.0.0
-
-  '@types/should@13.0.0':
-    dependencies:
-      should: 13.2.3
 
   '@types/sinon@21.0.1':
     dependencies:
@@ -48139,32 +48017,6 @@ snapshots:
   shell-quote@1.8.4: {}
 
   shellwords@0.1.1: {}
-
-  should-equal@2.0.0:
-    dependencies:
-      should-type: 1.4.0
-
-  should-format@3.0.3:
-    dependencies:
-      should-type: 1.4.0
-      should-type-adaptors: 1.1.0
-
-  should-type-adaptors@1.1.0:
-    dependencies:
-      should-type: 1.4.0
-      should-util: 1.0.1
-
-  should-type@1.4.0: {}
-
-  should-util@1.0.1: {}
-
-  should@13.2.3:
-    dependencies:
-      should-equal: 2.0.0
-      should-format: 3.0.3
-      should-type: 1.4.0
-      should-type-adaptors: 1.1.0
-      should-util: 1.0.1
 
   side-channel-list@1.0.1:
     dependencies:

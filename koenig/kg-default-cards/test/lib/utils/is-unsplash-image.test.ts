@@ -1,13 +1,11 @@
-import '../../utils/index.js';
-
 import isUnsplashImage from '../../../src/utils/is-unsplash-image.js';
 
 describe('Utils: isUnsplashImage', function () {
     it('returns true when url matches unsplash url', function () {
-        isUnsplashImage('https://images.unsplash.com/test').should.be.true();
+        expect(isUnsplashImage('https://images.unsplash.com/test')).toBe(true);
     });
 
     it('returns false when url does not match unsplash url', function () {
-        isUnsplashImage('https://images.example.com/test').should.be.false();
+        expect(isUnsplashImage('https://images.example.com/test')).toBe(false);
     });
 });
