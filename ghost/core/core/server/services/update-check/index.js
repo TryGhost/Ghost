@@ -2,7 +2,6 @@
 const api = require('../../api').endpoints;
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
-const jobsService = require('../jobs');
 
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
@@ -66,22 +65,23 @@ module.exports = async ({
     await updateChecker.check();
 };
 
-module.exports.scheduleRecurringJobs = () => {
+const jobQueue = require('../jobs/queue').default;
+const UpdateCheckJob = require('./jobs/update-check-job').default;
+
+// Boot calls this once (no service instance exists, so boot is its init).
+module.exports.init = () => {
+    jobQueue.handle(UpdateCheckJob, () => module.exports({rethrowErrors: true}));
+
+    if (process.env.NODE_ENV.startsWith('test')) {
+        return;
+    }
+
     // use a random seconds/minutes/hours value to avoid spikes to the update service API
     const s = Math.floor(Math.random() * 60); // 0-59
     const m = Math.floor(Math.random() * 60); // 0-59
     const h = Math.floor(Math.random() * 24); // 0-23
 
-    jobsService.addJob({
-        at: `${s} ${m} ${h} * * *`, // Every day
-        job: require('path').resolve(__dirname, 'run-update-check.js'),
-        name: 'update-check'
-    });
+    jobQueue.scheduleRecurring(new UpdateCheckJob(), {cron: `${s} ${m} ${h} * * *`}); // Every day
 };
 
-module.exports.scheduleBootJob = () => {
-    jobsService.addJob({
-        job: require('path').resolve(__dirname, 'run-update-check.js'),
-        name: 'update-check-boot'
-    });
-};
+module.exports.scheduleBootJob = () => jobQueue.dispatch(new UpdateCheckJob());

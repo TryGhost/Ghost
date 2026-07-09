@@ -68,9 +68,8 @@ describe('Resume interrupted sends', function () {
 
         // 4. Run the scanner. It will flip email -> pending and call scheduleEmail; the job
         //    that fires re-enters the normal emailJob -> sendBatches path.
-        const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
         await emailService.service.resumeInterruptedSends();
-        await completedPromise;
+        await jobManager.allSettled();
 
         // 5. Final state.
         await emailModel.refresh();
@@ -111,9 +110,8 @@ describe('Resume interrupted sends', function () {
         // logger so we can assert that guard fired instead of spamming stdout.
         const errorLog = sinon.stub(logging, 'error');
 
-        const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
         await emailService.service.resumeInterruptedSends();
-        await completedPromise;
+        await jobManager.allSettled();
 
         // The orphan batch causes sendBatches' partial-failure throw; emailJob catches and
         // marks the email failed. The orphan batch row is intentionally left in `submitting`

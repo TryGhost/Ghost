@@ -145,20 +145,15 @@ async function initCore({ghostServer, config, frontend}) {
         ghostServer.registerCleanupTask(async () => {
             await jobService.shutdown();
         });
+
+        // JobQueue — the class-based interface that services are migrating
+        // onto; runs alongside the legacy job service above.
+        const jobQueue = require('./server/services/jobs/queue').default;
+        ghostServer.registerCleanupTask(async () => {
+            await jobQueue.shutdown();
+        });
         debug('End: Job Service');
 
-        // Mentions Job Service allows mentions to be processed in the background
-        debug('Begin: Mentions Job Service');
-        const mentionsJobService = require('./server/services/mentions-jobs');
-
-        if (config.get('server:testmode')) {
-            mentionsJobService.initTestMode();
-        }
-
-        ghostServer.registerCleanupTask(async () => {
-            await mentionsJobService.shutdown();
-        });
-        debug('End: Mentions Job Service');
 
         ghostServer.registerCleanupTask(async () => {
             await urlService.shutdown();
@@ -404,6 +399,11 @@ async function initServices({ghostServer} = {}) {
         await postScheduling.rescheduleAll();
     }
 
+    // The import manager is request-driven rather than a service, so boot
+    // registers its job handler explicitly (every boot: each boot starts from
+    // an empty job registry).
+    require('./server/data/importer/import-manager').registerJobs();
+
     debug('End: Services');
 
     debug('End: initServices');
@@ -443,14 +443,14 @@ async function initBackgroundServices({config}) {
     await activitypub.init();
     // Load email analytics recurring jobs
     if (config.get('backgroundJobs:emailAnalytics')) {
-        const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
-        await emailAnalyticsJobs.scheduleRecurringJobs();
+        const emailAnalytics = require('./server/services/email-analytics');
+        await emailAnalytics.scheduleRecurringJobs();
     }
 
     const updateCheck = require('./server/services/update-check');
-    updateCheck.scheduleRecurringJobs();
+    updateCheck.init();
     if (config.get('updateCheck:forceUpdate')) {
-        updateCheck.scheduleBootJob();
+        await updateCheck.scheduleBootJob();
     }
 
     // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
@@ -562,6 +562,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
+
+        // Each boot owns the JobQueue's handler registry: services re-register
+        // as they init, so an in-process re-boot (tests) must start from a
+        // clean registry or every registration would collide with the last
+        // boot's.
+        require('./server/services/jobs/queue').default.reset();
+
         await initCore({ghostServer, config, frontend});
 
         // Instrument the knex instance and connection pool if prometheus is enabled

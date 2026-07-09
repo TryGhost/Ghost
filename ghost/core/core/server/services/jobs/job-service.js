@@ -54,5 +54,15 @@ const initTestMode = () => {
 
 const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents, config, events});
 
+// Migration bridge: callers that drain background work through this service
+// (tests, shutdown) must also drain the JobQueue that migrated jobs now run
+// on. Dies with this service once the migration completes.
+const managerAllSettled = jobManager.allSettled.bind(jobManager);
+jobManager.allSettled = async () => {
+    await managerAllSettled();
+    const jobQueue = require('./queue').default;
+    await jobQueue.allSettled();
+};
+
 module.exports = jobManager;
 module.exports.initTestMode = initTestMode;

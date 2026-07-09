@@ -6,6 +6,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const sinon = require('sinon');
 const MembersCSVImporter = require('../../../../../../core/server/services/members/importer/members-csv-importer');
+const jobQueue = require('../../../../../../core/server/services/jobs/queue').default;
 
 const csvPath = path.join(__dirname, '/fixtures/');
 
@@ -86,11 +87,12 @@ describe('MembersCSVImporter', function () {
             },
             sendEmail: sendEmailStub,
             isSet: sinon.stub(),
-            addJob: sinon.stub(),
             knex: knexStub,
             urlFor: sinon.stub(),
             context: {importer: true},
             stripeUtils: stripeUtilsStub,
+            getLabelModel: () => ({findOne: sinon.stub().resolves(null)}),
+            getVerificationTrigger: () => ({testImportThreshold: sinon.stub().resolves()}),
             ...deps
         });
     };
@@ -935,6 +937,57 @@ describe('MembersCSVImporter', function () {
             assert.equal(result.errors.length, 0);
             sinon.assert.calledOnce(stripeUtilsStub.archivePrice);
             sinon.assert.calledWith(stripeUtilsStub.archivePrice, newStripePriceId);
+        });
+    });
+
+    describe('background import job', function () {
+        it('dispatches a ProcessMemberImportJob for large/stripe imports', async function () {
+            const importer = buildMockImporterInstance();
+            const dispatch = sinon.stub(jobQueue, 'dispatch').resolves();
+            // force the async branch without a huge CSV
+            sinon.stub(importer, 'prepare').resolves({
+                batches: 501,
+                filePath: '/tmp/import.csv',
+                metadata: {hasStripeData: false}
+            });
+
+            const result = await importer.process({
+                pathToCSV: `${csvPath}/single-column-with-header.csv`,
+                headerMapping: defaultAllowedFields,
+                importLabel: {name: 'test import'},
+                user: {email: 'owner@example.com'},
+                LabelModel: {findOne: sinon.stub().resolves(null)},
+                verificationTrigger: {testImportThreshold: sinon.stub().resolves()}
+            });
+
+            assertExists(result.meta);
+            sinon.assert.calledOnce(dispatch);
+            const job = dispatch.firstCall.args[0];
+            assert.equal(job.data.filePath, '/tmp/import.csv');
+            assert.equal(job.data.emailRecipient, 'owner@example.com');
+            // Payload must be serialisable — no live service objects.
+            assert.deepEqual(Object.keys(job.data).sort(), ['emailRecipient', 'filePath', 'importLabel']);
+        });
+
+        it('runImportJob performs the import, emails the result and checks thresholds', async function () {
+            const verificationTrigger = {testImportThreshold: sinon.stub().resolves()};
+            const importer = buildMockImporterInstance({
+                getVerificationTrigger: () => verificationTrigger
+            });
+            sinon.stub(importer, 'perform').resolves({imported: 2, errors: []});
+            sinon.stub(importer, 'generateCompletionEmail').returns('email');
+            sinon.stub(importer, 'generateErrorCSV').returns('');
+            const sendErrorEmail = sinon.stub(importer, 'sendErrorEmail').resolves();
+
+            await importer.runImportJob({
+                filePath: '/tmp/import.csv',
+                emailRecipient: 'owner@example.com',
+                importLabel: {name: 'test import'}
+            });
+
+            sinon.assert.calledOnce(importer.perform);
+            sinon.assert.calledOnce(sendErrorEmail);
+            sinon.assert.calledOnce(verificationTrigger.testImportThreshold);
         });
     });
 });

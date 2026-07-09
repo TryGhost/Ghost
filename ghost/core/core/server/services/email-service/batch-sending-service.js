@@ -7,6 +7,8 @@ const messages = {
     emailError: 'An unexpected error occurred, please retry sending your newsletter.'
 };
 
+const SendEmailJob = require('./jobs/send-email-job').default;
+
 const MAX_SENDING_CONCURRENCY = 2;
 const SHUTDOWN_CODE = 'BULK_EMAIL_SHUTDOWN_IN_PROGRESS';
 
@@ -16,7 +18,7 @@ const SHUTDOWN_CODE = 'BULK_EMAIL_SHUTDOWN_IN_PROGRESS';
  * @typedef {import('./email-renderer')} EmailRenderer
  * @typedef {import('./domain-warming-service').DomainWarmingService} DomainWarmingService
  * @typedef {import('./email-renderer').MemberLike} MemberLike
- * @typedef {object} JobsService
+ * @typedef {object} JobQueue
  * @typedef {object} Email
  * @typedef {object} Newsletter
  * @typedef {object} Post
@@ -28,7 +30,7 @@ class BatchSendingService {
     #sendingService;
     #emailSegmenter;
     #domainWarmingService;
-    #jobsService;
+    #jobQueue;
     #models;
     #db;
     #sentry;
@@ -46,7 +48,7 @@ class BatchSendingService {
      * @param {Object} dependencies
      * @param {EmailRenderer} dependencies.emailRenderer
      * @param {SendingService} dependencies.sendingService
-     * @param {JobsService} dependencies.jobsService
+     * @param {JobQueue} dependencies.jobQueue
      * @param {EmailSegmenter} dependencies.emailSegmenter
      * @param {DomainWarmingService} dependencies.domainWarmingService
      * @param {object} dependencies.models
@@ -65,7 +67,7 @@ class BatchSendingService {
     constructor({
         emailRenderer,
         sendingService,
-        jobsService,
+        jobQueue,
         emailSegmenter,
         domainWarmingService,
         models,
@@ -79,7 +81,7 @@ class BatchSendingService {
     }) {
         this.#emailRenderer = emailRenderer;
         this.#sendingService = sendingService;
-        this.#jobsService = jobsService;
+        this.#jobQueue = jobQueue;
         this.#emailSegmenter = emailSegmenter;
         this.#domainWarmingService = domainWarmingService;
         this.#models = models;
@@ -112,6 +114,15 @@ class BatchSendingService {
         }
     }
 
+    /** Called on every boot: each boot starts from an empty job registry. */
+    registerJobs() {
+        if (this.#jobQueue) {
+            // Own pool: a queue full of long-running imports or inliner work
+            // must never delay a newsletter send.
+            this.#jobQueue.handle(SendEmailJob, job => this.emailJob(job.data), {concurrency: 2});
+        }
+    }
+
     #getBeforeRetryConfig(email) {
         if (email._retryCutOffTime) {
             return {...this.#BEFORE_RETRY_CONFIG, stopAfterDate: email._retryCutOffTime};
@@ -135,15 +146,10 @@ class BatchSendingService {
     /**
      * Schedules a background job that sends the email in the background if it is pending or failed.
      * @param {Email} email
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     scheduleEmail(email) {
-        return this.#jobsService.addJob({
-            name: 'batch-sending-service-job',
-            job: this.emailJob.bind(this),
-            data: {emailId: email.id},
-            offloaded: false
-        });
+        return this.#jobQueue.dispatch(new SendEmailJob({emailId: email.id}));
     }
 
     /**

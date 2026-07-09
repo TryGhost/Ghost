@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`Gift Reminders API flushReminders dispatches a flush event with a valid scheduler integration token 1: [headers] 1`] = `
+exports[`Gift Reminders API flushReminders dispatches a reminder flush job with a valid scheduler integration token 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",

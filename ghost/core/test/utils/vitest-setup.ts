@@ -122,7 +122,6 @@ beforeEach((context: {task: {name: string; suite?: unknown; file?: {filepath?: s
 
 afterEach(async () => {
     const domainEvents = require('@tryghost/domain-events');
-    const mentionsJobsService = require('../../core/server/services/mentions-jobs');
     const jobsService = require('../../core/server/services/jobs');
 
     const timeout = setTimeout(() => {
@@ -134,7 +133,6 @@ afterEach(async () => {
     }, 2000);
 
     await domainEvents.allSettled();
-    await mentionsJobsService.allSettled();
     await jobsService.allSettled();
     await domainEvents.allSettled();
 

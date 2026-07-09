@@ -1,5 +1,5 @@
-const domainEvents = require('@tryghost/domain-events');
-const StartGiftReminderFlushEvent = require('../../services/gifts/events/start-gift-reminder-flush-event');
+const jobQueue = require('../../services/jobs/queue').default;
+const SendGiftRemindersJob = require('../../services/gifts/jobs/send-gift-reminders-job').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -15,7 +15,7 @@ const controller = {
             method: 'flushReminders'
         },
         query() {
-            domainEvents.dispatch(StartGiftReminderFlushEvent.create());
+            return jobQueue.dispatch(new SendGiftRemindersJob());
         }
     }
 };

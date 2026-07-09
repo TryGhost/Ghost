@@ -1,8 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const domainEvents = require('@tryghost/domain-events');
+const jobQueue = require('../../../../core/server/services/jobs/queue').default;
 const giftRemindersController = require('../../../../core/server/api/endpoints/gift-reminders');
-const StartGiftReminderFlushEvent = require('../../../../core/server/services/gifts/events/start-gift-reminder-flush-event');
 
 describe('Gift Reminders controller', function () {
     afterEach(function () {
@@ -10,15 +9,13 @@ describe('Gift Reminders controller', function () {
     });
 
     describe('flushReminders', function () {
-        it('dispatches a StartGiftReminderFlushEvent', function () {
-            const dispatchStub = sinon.stub(domainEvents, 'dispatch');
+        it('dispatches a reminder flush job on the queue', function () {
+            const dispatch = sinon.stub(jobQueue, 'dispatch');
 
             const result = giftRemindersController.flushReminders.query({});
 
-            sinon.assert.calledOnceWithExactly(
-                dispatchStub,
-                sinon.match.instanceOf(StartGiftReminderFlushEvent)
-            );
+            sinon.assert.calledOnce(dispatch);
+            assert.equal(dispatch.firstCall.args[0].constructor.type, 'send-gift-reminders');
             assert.equal(result, undefined);
         });
     });

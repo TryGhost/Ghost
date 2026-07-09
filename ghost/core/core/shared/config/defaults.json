@@ -50,6 +50,9 @@
             "active": "FileStore",
             "FileStore": {},
             "S3RedirectsStore": {}
+        },
+        "jobqueue": {
+            "active": "InMemoryJobQueue"
         }
     },
     "storage": {

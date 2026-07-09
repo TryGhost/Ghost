@@ -1,9 +1,9 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const domainEvents = require('@tryghost/domain-events');
 const models = require('../../../core/server/models');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
-const StartGiftReminderFlushEvent = require('../../../core/server/services/gifts/events/start-gift-reminder-flush-event');
+const jobQueue = require('../../../core/server/services/jobs/queue').default;
 
 const {anyContentVersion, anyEtag, anyErrorId} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
@@ -35,7 +35,7 @@ describe('Gift Reminders API', function () {
         let dispatchStub;
 
         beforeEach(function () {
-            dispatchStub = sinon.stub(domainEvents, 'dispatch');
+            dispatchStub = sinon.stub(jobQueue, 'dispatch');
         });
 
         it('does not flush when request lacks a token', async function () {
@@ -81,7 +81,7 @@ describe('Gift Reminders API', function () {
             sinon.assert.notCalled(dispatchStub);
         });
 
-        it('dispatches a flush event with a valid scheduler integration token', async function () {
+        it('dispatches a reminder flush job with a valid scheduler integration token', async function () {
             await agent
                 .put(`gifts/flush_reminders/?token=${schedulerToken}`)
                 .expectStatus(204)
@@ -92,10 +92,8 @@ describe('Gift Reminders API', function () {
                     etag: anyEtag
                 });
 
-            sinon.assert.calledOnceWithExactly(
-                dispatchStub,
-                sinon.match.instanceOf(StartGiftReminderFlushEvent)
-            );
+            sinon.assert.calledOnce(dispatchStub);
+            assert.equal(dispatchStub.firstCall.args[0].constructor.type, 'send-gift-reminders');
         });
     });
 });

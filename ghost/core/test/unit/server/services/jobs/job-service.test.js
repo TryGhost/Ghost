@@ -18,6 +18,11 @@ describe('JobService', function () {
                     constructor(options) {
                         workerMessageHandler = options.workerMessageHandler;
                     }
+
+                    // The allSettled bridge binds this at module load
+                    allSettled() {
+                        return Promise.resolve();
+                    }
                 };
             }
 
@@ -120,6 +125,11 @@ describe('JobService model-event bridge wiring', function () {
                 return class JobManager {
                     constructor(options) {
                         workerMessageHandler = options.workerMessageHandler;
+                    }
+
+                    // The allSettled bridge binds this at module load
+                    allSettled() {
+                        return Promise.resolve();
                     }
                 };
             }

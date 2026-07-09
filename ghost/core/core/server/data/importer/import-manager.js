@@ -20,7 +20,8 @@ const RevueImporter = require('./importers/importer-revue');
 const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
 const {GhostMailer} = require('../../services/mail');
-const jobManager = require('../../services/jobs');
+const jobQueue = require('../../services/jobs/queue').default;
+const ImportContentJob = require('./jobs/import-content-job').default;
 const mediaStorage = require('../../adapters/storage').getStorage('media');
 const imageStorage = require('../../adapters/storage').getStorage('images');
 const fileStorage = require('../../adapters/storage').getStorage('files');
@@ -485,6 +486,19 @@ class ImportManager {
     }
 
     /**
+     * Boot calls this on every boot (each boot starts from an empty job
+     * registry), so the handler exists before any import is dispatched.
+     */
+    registerJobs() {
+        // Own pool: an import can run for hours and must not occupy the
+        // default queue's slots, starving the recurring jobs that share them.
+        jobQueue.handle(ImportContentJob, ({data}) => this.importFromFile(
+            {path: data.filePath, name: data.fileName},
+            Object.assign({}, data.importOptions, {runningInJob: true})
+        ), {concurrency: 1});
+    }
+
+    /**
      * Import From File
      * The main method of the ImportManager, call this to kick everything off!
      * @param {File} file
@@ -492,30 +506,42 @@ class ImportManager {
      * @returns {Promise<Object.<string, ImportResult>>}
      */
     async importFromFile(file, importOptions = {}) {
+        const env = config.get('env');
+        if (!env?.startsWith('testing') && !importOptions.runningInJob) {
+            // Validate in-request — an unreadable or malformed upload must
+            // error back to the caller, not to a background job whose only
+            // feedback channel is the completion email.
+            await this.loadFile(file);
+            await this.cleanUp();
+
+            // Persist the upload so the job payload is a plain, restart-safe path.
+            const filePath = await this.persistUploadedFile(file);
+            return jobQueue.dispatch(new ImportContentJob({
+                filePath,
+                fileName: file.name,
+                importOptions
+            }));
+        }
+
         let importData;
         if (importOptions.data) {
             importData = importOptions.data;
-        } else {
-            // Step 1: Handle converting the file to usable data
-            // Has to be completed outside of job to ensure file is processed before being deleted
+        } else if (!importOptions.runningInJob) {
+            // Request path: a load failure must error back to the caller.
             importData = await this.loadFile(file);
-        }
-
-        debug('importFromFile completed file load', importData);
-
-        const env = config.get('env');
-        if (!env?.startsWith('testing') && !importOptions.runningInJob) {
-            return jobManager.addJob({
-                job: () => this.importFromFile(file, Object.assign({}, importOptions, {
-                    runningInJob: true,
-                    data: importData
-                })),
-                offloaded: false
-            });
         }
 
         let importResult;
         try {
+            if (importData === undefined) {
+                // Job path: even the re-load can fail (truncated copy, deleted
+                // file), and the failure email + persisted-upload cleanup in
+                // the finally are the only feedback channel — so load inside.
+                importData = await this.loadFile(file);
+            }
+
+            debug('importFromFile completed file load', importData);
+
             // Step 2: Let the importers pre-process the data
             importData = await this.preProcess(importData);
 
@@ -532,8 +558,11 @@ class ImportManager {
             const errorDetails = err.errorDetails || [err];
             importResult = {data: {errors: errorDetails}};
         } finally {
-            // Step 5: Cleanup any files
+            // Step 5: Cleanup the extracted dir and, for a job, the persisted upload
             await this.cleanUp();
+            if (importOptions.runningInJob && file?.path) {
+                await fs.remove(file.path).catch(err => logging.warn(`Could not remove imported file ${file.path}: ${err.message}`));
+            }
 
             if (!env?.startsWith('testing')) {
                 // Step 6: Send email
@@ -550,6 +579,19 @@ class ImportManager {
                 });
             }
         }
+    }
+
+    /**
+     * Copy an uploaded import file to Ghost's data content path so a background
+     * job can load it independently of the request's temporary upload.
+     * @param {File} file
+     * @returns {Promise<string>} the persisted file path
+     */
+    async persistUploadedFile(file) {
+        const dataPath = config.getContentPath('data');
+        const destination = path.join(dataPath, `content-import-${crypto.randomUUID()}.zip`);
+        await fs.copy(file.path, destination);
+        return destination;
     }
 }
 

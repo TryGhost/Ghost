@@ -29,7 +29,6 @@ const redirectsUtils = require('./redirects');
 const configUtils = require('./config-utils');
 const urlServiceUtils = require('./url-service-utils');
 const mockManager = require('./e2e-framework-mock-manager');
-const mentionsJobsService = require('../../core/server/services/mentions-jobs');
 const jobsService = require('../../core/server/services/jobs');
 
 const boot = require('../../core/boot');
@@ -58,7 +57,6 @@ let totalBoots = 0;
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
-    await mentionsJobsService.allSettled();
     await jobsService.allSettled();
     await DomainEvents.allSettled();
 

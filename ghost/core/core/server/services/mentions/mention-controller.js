@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const ProcessWebmentionJob = require('./jobs/process-webmention-job').default;
 
 /**
  * @typedef {import('./mentions-api')} MentionsAPI
@@ -23,8 +24,9 @@ const logging = require('@tryghost/logging');
  */
 
 /**
- * @typedef {object} IJobService
- * @prop {(name: string, fn: Function) => void} addJob
+ * @typedef {object} IJobQueue
+ * @prop {(job: object) => void} dispatch
+ * @prop {(JobClass: Function, handler: (job: object) => Promise<void>) => void} handle
  */
 
 /**
@@ -36,8 +38,8 @@ module.exports = class MentionController {
     /** @type {import('./mentions-api')} */
     #api;
 
-    /** @type {IJobService} */
-    #jobService;
+    /** @type {IJobQueue} */
+    #jobQueue;
 
     /** @type {IMentionResourceService} */
     #mentionResourceService;
@@ -45,13 +47,34 @@ module.exports = class MentionController {
     /**
      * @param {object} deps
      * @param {import('./mentions-api')} deps.api
-     * @param {IJobService} deps.jobService
+     * @param {IJobQueue} deps.jobQueue
      * @param {IMentionResourceService} deps.mentionResourceService
      */
     async init(deps) {
         this.#api = deps.api;
-        this.#jobService = deps.jobService;
+        this.#jobQueue = deps.jobQueue;
         this.#mentionResourceService = deps.mentionResourceService;
+    }
+
+    /** Called on every boot: each boot starts from an empty job registry. */
+    registerJobs() {
+        if (this.#jobQueue) {
+            // Capped so a flood on the public endpoint cannot starve other job types.
+            this.#jobQueue.handle(ProcessWebmentionJob, job => this.#processWebmention(job.data), {concurrency: 2});
+        }
+    }
+
+    async #processWebmention(data) {
+        const {source, target, ...payload} = data;
+        try {
+            await this.#api.processWebmention({
+                source: new URL(source),
+                target: new URL(target),
+                payload
+            });
+        } catch (err) {
+            logging.error(err);
+        }
     }
 
     /**
@@ -122,17 +145,6 @@ module.exports = class MentionController {
      */
     async receive(frame) {
         logging.info('[Webmention] ' + JSON.stringify(frame.data));
-        this.#jobService.addJob('processWebmention', async () => {
-            const {source, target, ...payload} = frame.data;
-            try {
-                await this.#api.processWebmention({
-                    source: new URL(source),
-                    target: new URL(target),
-                    payload
-                });
-            } catch (err) {
-                logging.error(err);
-            }
-        });
+        await this.#jobQueue.dispatch(new ProcessWebmentionJob(frame.data));
     }
 };
