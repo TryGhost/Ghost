@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {parseCommentFilter, serializeCommentFilters} from '@src/views/comments/comment-filter-query';
-import type {FilterPredicate} from '@src/views/filters/filter-types';
+import type {FilterPredicate} from '@tryghost/admin-x-framework/filters';
 
 function stripIds(predicates: FilterPredicate[]) {
     return predicates.map(predicate => ({

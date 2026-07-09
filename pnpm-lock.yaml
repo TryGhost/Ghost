@@ -944,6 +944,9 @@ importers:
       '@tryghost/admin-x-design-system':
         specifier: workspace:*
         version: link:../admin-x-design-system
+      '@tryghost/nql-lang':
+        specifier: 'catalog:'
+        version: 0.6.6
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
@@ -962,6 +965,12 @@ importers:
       react-router:
         specifier: 'catalog:'
         version: 7.18.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      temporal-polyfill:
+        specifier: 0.3.2
+        version: 0.3.2
+      use-debounce:
+        specifier: 10.1.1
+        version: 10.1.1(react@18.3.1)
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'

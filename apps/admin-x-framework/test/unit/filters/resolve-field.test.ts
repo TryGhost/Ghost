@@ -1,6 +1,6 @@
-import {defineFields} from './filter-types';
+import {defineFields} from '../../../src/filters/filter-types';
 import {describe, expect, it} from 'vitest';
-import {resolveField} from './resolve-field';
+import {resolveField} from '../../../src/filters/resolve-field';
 
 const fields = defineFields({
     status: {

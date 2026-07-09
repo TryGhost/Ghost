@@ -1,8 +1,8 @@
 import {createLocalValueSource} from './create-local-value-source';
-import {getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {getActiveTiers, getArchivedTiers, useBrowseTiers} from '../api/tiers';
 import {useMemo} from 'react';
 import type {FilterOption, ValueSource} from '@tryghost/shade/patterns';
-import type {Tier} from '@tryghost/admin-x-framework/api/tiers';
+import type {Tier} from '../api/tiers';
 
 interface TierValueSource {
     valueSource: ValueSource<string>;

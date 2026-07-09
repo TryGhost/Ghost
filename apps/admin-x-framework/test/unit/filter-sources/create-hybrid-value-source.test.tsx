@@ -1,6 +1,6 @@
 import {FilterOption, ValueSourceState} from '@tryghost/shade/patterns';
-import {RemoteProbeState} from '@src/hooks/filter-sources/create-remote-value-source';
-import {createHybridValueSource} from '@src/hooks/filter-sources/create-hybrid-value-source';
+import {RemoteProbeState} from '../../../src/filter-sources/create-remote-value-source';
+import {createHybridValueSource} from '../../../src/filter-sources/create-hybrid-value-source';
 import {describe, expect, it} from 'vitest';
 import {renderHook, waitFor} from '@testing-library/react';
 import {useState} from 'react';

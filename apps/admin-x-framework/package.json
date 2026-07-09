@@ -46,6 +46,11 @@
             "import": "./dist/utils/nql.js",
             "require": "./dist/utils/nql.cjs"
         },
+        "./utils/get-site-timezone": {
+            "types": "./types/utils/get-site-timezone.d.ts",
+            "import": "./dist/utils/get-site-timezone.js",
+            "require": "./dist/utils/get-site-timezone.cjs"
+        },
         "./vite": {
             "types": "./types/vite.d.ts",
             "import": "./dist/vite.js",
@@ -65,6 +70,16 @@
             "types": "./types/virtual-list/index.d.ts",
             "import": "./dist/virtual-list/index.js",
             "require": "./dist/virtual-list/index.cjs"
+        },
+        "./filters": {
+            "types": "./types/filters/index.d.ts",
+            "import": "./dist/filters/index.js",
+            "require": "./dist/filters/index.cjs"
+        },
+        "./filter-sources": {
+            "types": "./types/filter-sources/index.d.ts",
+            "import": "./dist/filter-sources/index.js",
+            "require": "./dist/filter-sources/index.cjs"
         }
     },
     "sideEffects": false,
@@ -118,12 +133,15 @@
         "@tanstack/react-virtual": "3.14.5",
         "@tinybirdco/charts": "0.3.0",
         "@tryghost/admin-x-design-system": "workspace:*",
+        "@tryghost/nql-lang": "catalog:",
         "@tryghost/shade": "workspace:*",
         "bson-objectid": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",
         "react-hot-toast": "catalog:",
-        "react-router": "catalog:"
+        "react-router": "catalog:",
+        "temporal-polyfill": "0.3.2",
+        "use-debounce": "10.1.1"
     },
     "peerDependencies": {
         "react": "^18.2.0",

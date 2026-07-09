@@ -1,9 +1,9 @@
-import {defineFields} from './filter-types';
+import {defineFields} from '../../../src/filters/filter-types';
 import {describe, expect, it} from 'vitest';
-import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates} from './filter-query-core';
-import {numberCodec, scalarCodec} from './filter-codecs';
-import type {AstNode} from './filter-ast';
-import type {FilterPredicate} from './filter-types';
+import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates} from '../../../src/filters/filter-query-core';
+import {numberCodec, scalarCodec} from '../../../src/filters/filter-codecs';
+import type {AstNode} from '../../../src/filters/filter-ast';
+import type {FilterPredicate} from '../../../src/filters/filter-types';
 
 const fields = defineFields({
     status: {

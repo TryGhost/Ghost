@@ -14,7 +14,7 @@ import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
 import {checkStripeEnabled, getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {getSiteTimezone} from '@src/utils/get-site-timezone';
+import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './hooks/use-members-filter-state';
 import {useActiveMemberView, useMemberViews} from './hooks/use-member-views';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
