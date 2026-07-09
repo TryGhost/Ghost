@@ -51,9 +51,7 @@ class EmailAnalyticsServiceWrapper {
             config,
             settings,
             eventProcessor,
-            providers: [
-                new MailgunProvider({config, settings, labs})
-            ],
+            provider: new MailgunProvider({config, settings, labs}),
             queries,
             domainEvents,
             prometheusClient
