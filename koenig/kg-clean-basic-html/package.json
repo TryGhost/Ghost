@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@types/jsdom": "28.0.3",
+    "@types/jsdom": "catalog:",
     "@types/node": "catalog:",
     "@types/sinon": "21.0.1",
     "@vitest/coverage-v8": "catalog:",

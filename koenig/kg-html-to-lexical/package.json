@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@types/jsdom": "28.0.3",
+    "@types/jsdom": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "sinon": "catalog:",
     "typescript": "catalog:",

@@ -117,6 +117,9 @@ catalogs:
     '@types/jest':
       specifier: 29.5.14
       version: 29.5.14
+    '@types/jsdom':
+      specifier: 28.0.3
+      version: 28.0.3
     '@types/node':
       specifier: 22.20.0
       version: 22.20.0
@@ -3287,7 +3290,7 @@ importers:
         specifier: 'catalog:'
         version: 9.39.4
       '@types/jsdom':
-        specifier: 28.0.3
+        specifier: 'catalog:'
         version: 28.0.3
       '@types/node':
         specifier: 'catalog:'
@@ -3373,7 +3376,7 @@ importers:
         specifier: 'catalog:'
         version: 9.39.4
       '@types/jsdom':
-        specifier: 28.0.3
+        specifier: 'catalog:'
         version: 28.0.3
       '@types/node':
         specifier: 'catalog:'
@@ -3470,7 +3473,7 @@ importers:
         specifier: 4.3.20
         version: 4.3.20
       '@types/jsdom':
-        specifier: 28.0.3
+        specifier: 'catalog:'
         version: 28.0.3
       '@types/lodash':
         specifier: 4.17.24
@@ -3592,7 +3595,7 @@ importers:
         specifier: 'catalog:'
         version: 9.39.4
       '@types/jsdom':
-        specifier: 28.0.3
+        specifier: 'catalog:'
         version: 28.0.3
       '@vitest/coverage-v8':
         specifier: 'catalog:'
@@ -3650,7 +3653,7 @@ importers:
         specifier: 'catalog:'
         version: 9.39.4
       '@types/jsdom':
-        specifier: 28.0.3
+        specifier: 'catalog:'
         version: 28.0.3
       '@types/should':
         specifier: 13.0.0
