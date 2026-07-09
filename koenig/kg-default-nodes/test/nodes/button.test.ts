@@ -1,4 +1,4 @@
-import {createDocument, dom, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
@@ -41,39 +41,39 @@ describe('ButtonNode', function () {
 
     it('matches node with $isButtonNode', editorTest(function () {
         const buttonNode = $createButtonNode(dataset);
-        $isButtonNode(buttonNode).should.be.true();
+        expect($isButtonNode(buttonNode)).toBe(true);
     }));
 
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {
             const buttonNode = $createButtonNode(dataset);
 
-            buttonNode.buttonUrl.should.equal(dataset.buttonUrl);
-            buttonNode.buttonText.should.equal(dataset.buttonText);
-            buttonNode.alignment.should.equal(dataset.alignment);
+            expect(buttonNode.buttonUrl).toBe(dataset.buttonUrl);
+            expect(buttonNode.buttonText).toBe(dataset.buttonText);
+            expect(buttonNode.alignment).toBe(dataset.alignment);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const buttonNode = $createButtonNode();
 
-            buttonNode.buttonUrl.should.equal('');
+            expect(buttonNode.buttonUrl).toBe('');
             buttonNode.buttonUrl = 'http://someblog.com/somepost';
-            buttonNode.buttonUrl.should.equal('http://someblog.com/somepost');
+            expect(buttonNode.buttonUrl).toBe('http://someblog.com/somepost');
 
-            buttonNode.buttonText.should.equal('');
+            expect(buttonNode.buttonText).toBe('');
             buttonNode.buttonText = 'button text';
-            buttonNode.buttonText.should.equal('button text');
+            expect(buttonNode.buttonText).toBe('button text');
 
-            buttonNode.alignment.should.equal('center');
+            expect(buttonNode.alignment).toBe('center');
             buttonNode.alignment = 'left';
-            buttonNode.alignment.should.equal('left');
+            expect(buttonNode.alignment).toBe('left');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
             const buttonNode = $createButtonNode(dataset);
             const buttonNodeDataset = buttonNode.getDataset();
 
-            buttonNodeDataset.should.deepEqual({
+            expect(buttonNodeDataset).toEqual({
                 ...dataset
             });
         }));
@@ -81,7 +81,7 @@ describe('ButtonNode', function () {
 
     describe('getType', function () {
         it('returns the correct node type', editorTest(function () {
-            ButtonNode.getType().should.equal('button');
+            expect(ButtonNode.getType()).toBe('button');
         }));
     });
 
@@ -92,13 +92,13 @@ describe('ButtonNode', function () {
             const clone = ButtonNode.clone(buttonNode) as ButtonNode;
             const cloneDataset = clone.getDataset();
 
-            cloneDataset.should.deepEqual({...buttonNodeDataset});
+            expect(cloneDataset).toEqual({...buttonNodeDataset});
         }));
     });
 
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
-            ButtonNode.urlTransformMap.should.deepEqual({
+            expect(ButtonNode.urlTransformMap).toEqual({
                 buttonUrl: 'url'
             });
         }));
@@ -107,7 +107,7 @@ describe('ButtonNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const buttonNode = $createButtonNode(dataset);
-            buttonNode.hasEditMode().should.be.true();
+            expect(buttonNode.hasEditMode()).toBe(true);
         }));
     });
 
@@ -117,7 +117,7 @@ describe('ButtonNode', function () {
             const result = buttonNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
-            element.outerHTML.should.prettifyTo(html`<div class="kg-card kg-button-card kg-align-center"><a href="http://blog.com/post1" class="kg-btn kg-btn-accent">click me</a></div>`);
+            assertPrettifiesTo(element.outerHTML, html`<div class="kg-card kg-button-card kg-align-center"><a href="http://blog.com/post1" class="kg-btn kg-btn-accent">click me</a></div>`);
         }));
 
         it('renders for email target', editorTest(function () {
@@ -129,7 +129,7 @@ describe('ButtonNode', function () {
             const element = result.element as HTMLElement;
             const output = element.innerHTML;
 
-            output.should.prettifyTo(html`
+            assertPrettifiesTo(output, html`
                 <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
                     <tbody>
                         <tr>
@@ -156,7 +156,7 @@ describe('ButtonNode', function () {
             const buttonNode = $createButtonNode(dataset);
             const json = buttonNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'button',
                 version: 1,
                 buttonUrl: dataset.buttonUrl,
@@ -190,9 +190,9 @@ describe('ButtonNode', function () {
                     try {
                         const [buttonNode] = $getRoot().getChildren() as ButtonNode[];
 
-                        buttonNode.buttonUrl.should.equal(dataset.buttonUrl);
-                        buttonNode.buttonText.should.equal(dataset.buttonText);
-                        buttonNode.alignment.should.equal(dataset.alignment);
+                        expect(buttonNode.buttonUrl).toBe(dataset.buttonUrl);
+                        expect(buttonNode.buttonText).toBe(dataset.buttonText);
+                        expect(buttonNode.alignment).toBe(dataset.alignment);
 
                         resolve();
                     } catch (e) {
@@ -205,11 +205,11 @@ describe('ButtonNode', function () {
 
     describe('static properties', function () {
         it('getType', editorTest(function () {
-            ButtonNode.getType().should.equal('button');
+            expect(ButtonNode.getType()).toBe('button');
         }));
 
         it('urlTransformMap', editorTest(function () {
-            ButtonNode.urlTransformMap.should.deepEqual({
+            expect(ButtonNode.urlTransformMap).toEqual({
                 buttonUrl: 'url'
             });
         }));
@@ -221,10 +221,10 @@ describe('ButtonNode', function () {
                 <div class="kg-card kg-button-card kg-align-center"><a href="http://someblog.com/somepost" class="kg-btn kg-btn-accent">click me</a></div>
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ButtonNode[];
-            nodes.length.should.equal(1);
-            nodes[0].buttonUrl.should.equal('http://someblog.com/somepost');
-            nodes[0].buttonText.should.equal('click me');
-            nodes[0].alignment.should.equal('center');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].buttonUrl).toBe('http://someblog.com/somepost');
+            expect(nodes[0].buttonText).toBe('click me');
+            expect(nodes[0].alignment).toBe('center');
         }));
 
         it('preserves relative urls in content', editorTest(function () {
@@ -234,10 +234,10 @@ describe('ButtonNode', function () {
                 </div>
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ButtonNode[];
-            nodes.length.should.equal(1);
-            nodes[0].buttonUrl.should.equal('#/portal/signup');
-            nodes[0].buttonText.should.equal('Subscribe 1');
-            nodes[0].alignment.should.equal('center');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].buttonUrl).toBe('#/portal/signup');
+            expect(nodes[0].buttonText).toBe('Subscribe 1');
+            expect(nodes[0].alignment).toBe('center');
         }));
     });
 
@@ -248,7 +248,7 @@ describe('ButtonNode', function () {
             node.buttonUrl = 'http://someblog.com/somepost';
 
             // button nodes don't have text content
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
         }));
     });
 });

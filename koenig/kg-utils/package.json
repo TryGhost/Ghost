@@ -38,11 +38,7 @@
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
     "@types/semver": "7.7.1",
-    "@types/should": "13.0.0",
-    "@types/sinon": "21.0.1",
     "@vitest/coverage-v8": "catalog:",
-    "should": "13.2.3",
-    "sinon": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"

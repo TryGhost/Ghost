@@ -1,5 +1,3 @@
-import '../utils/index.js';
-
 import card from '../../src/cards/email.js';
 import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
 const serializer = new HTMLSerializer(voidMap);
@@ -14,8 +12,8 @@ describe('Email card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts))
-            .should.equal('<p>Plain html with no replacements</p>');
+        expect(serializer.serialize(card.render(opts)))
+            .toBe('<p>Plain html with no replacements</p>');
     });
 
     it('renders nothing if target is not email', function () {
@@ -27,8 +25,8 @@ describe('Email card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts))
-            .should.equal('');
+        expect(serializer.serialize(card.render(opts)))
+            .toBe('');
     });
 
     it('renders nothing with no payload.html', function () {
@@ -40,8 +38,8 @@ describe('Email card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts))
-            .should.equal('');
+        expect(serializer.serialize(card.render(opts)))
+            .toBe('');
     });
 
     it('wraps {foo} in %%', function () {
@@ -51,8 +49,8 @@ describe('Email card', function () {
             options: {target: 'email'}
         };
 
-        serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing %%{foo}%% in %%{bar}%%</p>');
+        expect(serializer.serialize(card.render(opts)))
+            .toBe('<p>Testing %%{foo}%% in %%{bar}%%</p>');
     });
 
     it('wraps {foo, "test"} in %%', function () {
@@ -62,8 +60,8 @@ describe('Email card', function () {
             options: {target: 'email'}
         };
 
-        serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing %%{foo, "replacement fallbacks"}%% in %%{bar, "email card"}%%</p>');
+        expect(serializer.serialize(card.render(opts)))
+            .toBe('<p>Testing %%{foo, "replacement fallbacks"}%% in %%{bar, "email card"}%%</p>');
     });
 
     it('wraps {foo,  "test"} (extra spaces)', function () {
@@ -73,8 +71,8 @@ describe('Email card', function () {
             options: {target: 'email'}
         };
 
-        serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing %%{foo,  "valid"}%%</p>');
+        expect(serializer.serialize(card.render(opts)))
+            .toBe('<p>Testing %%{foo,  "valid"}%%</p>');
     });
 
     it('wraps {foo "value"} (missing comma)', function () {
@@ -84,8 +82,8 @@ describe('Email card', function () {
             options: {target: 'email'}
         };
 
-        serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing %%{foo "valid"}%% in %%{bar}%%</p>');
+        expect(serializer.serialize(card.render(opts)))
+            .toBe('<p>Testing %%{foo "valid"}%% in %%{bar}%%</p>');
     });
 
     it('wraps {foo  "invalid"} (missing comma, extra spaces)', function () {
@@ -95,8 +93,8 @@ describe('Email card', function () {
             options: {target: 'email'}
         };
 
-        serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing %%{foo  "valid"}%% in %%{bar}%%</p>');
+        expect(serializer.serialize(card.render(opts)))
+            .toBe('<p>Testing %%{foo  "valid"}%% in %%{bar}%%</p>');
     });
 
     it('does not wrap {invalid } (invalid whitespace)', function () {
@@ -106,8 +104,8 @@ describe('Email card', function () {
             options: {target: 'email'}
         };
 
-        serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing {invalid } in %%{bar}%%</p>');
+        expect(serializer.serialize(card.render(opts)))
+            .toBe('<p>Testing {invalid } in %%{bar}%%</p>');
     });
 
     it('does not wrap { invalid} (invalid whitespace)', function () {
@@ -117,8 +115,8 @@ describe('Email card', function () {
             options: {target: 'email'}
         };
 
-        serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing { invalid} in %%{bar}%%</p>');
+        expect(serializer.serialize(card.render(opts)))
+            .toBe('<p>Testing { invalid} in %%{bar}%%</p>');
     });
 
     it('does not wrap {foo invalid} (missing quotes)', function () {
@@ -128,7 +126,7 @@ describe('Email card', function () {
             options: {target: 'email'}
         };
 
-        serializer.serialize(card.render(opts))
-            .should.equal('<p>Testing {foo invalid} in %%{bar}%%</p>');
+        expect(serializer.serialize(card.render(opts)))
+            .toBe('<p>Testing {foo invalid} in %%{bar}%%</p>');
     });
 });

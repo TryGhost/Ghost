@@ -40,13 +40,9 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/jsdom": "catalog:",
-    "@types/should": "13.0.0",
-    "@types/sinon": "21.0.1",
     "@vitest/coverage-v8": "catalog:",
     "jsdom": "catalog:",
     "prettier": "3.9.4",
-    "should": "13.2.3",
-    "sinon": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"

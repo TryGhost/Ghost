@@ -49,7 +49,7 @@ describe('PaywallNode', function () {
 
     it('matches node with $isPaywallNode', editorTest(function () {
         const paywallNode = $createPaywallNode(dataset);
-        $isPaywallNode(paywallNode).should.be.true();
+        expect($isPaywallNode(paywallNode)).toBe(true);
     }));
 
     describe('exportJSON', function () {
@@ -57,7 +57,7 @@ describe('PaywallNode', function () {
             const paywallNode = $createPaywallNode(dataset);
             const json = paywallNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'paywall',
                 version: 1
             });
@@ -84,7 +84,7 @@ describe('PaywallNode', function () {
                 editor.getEditorState().read(() => {
                     try {
                         const [paywallNode] = $getRoot().getChildren();
-                        paywallNode.should.be.instanceof(PaywallNode);
+                        expect(paywallNode).toBeInstanceOf(PaywallNode);
 
                         resolve();
                     } catch (e) {
@@ -100,8 +100,8 @@ describe('PaywallNode', function () {
             const paywallNode = $createPaywallNode(dataset);
             const {element, type} = paywallNode.exportDOM(editor, exportOptions);
 
-            type.should.equal('inner');
-            getHTMLElement(element).innerHTML.should.equal('<!--members-only-->');
+            expect(type).toBe('inner');
+            expect(getHTMLElement(element).innerHTML).toBe('<!--members-only-->');
         }));
     });
 
@@ -112,8 +112,8 @@ describe('PaywallNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document);
 
-            nodes.length.should.equal(1);
-            nodes[0].should.be.instanceof(PaywallNode);
+            expect(nodes.length).toBe(1);
+            expect(nodes[0]).toBeInstanceOf(PaywallNode);
         }));
     });
 
@@ -122,7 +122,7 @@ describe('PaywallNode', function () {
             const node = $createPaywallNode(dataset);
 
             // paywall nodes don't have text content
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
         }));
     });
 });

@@ -1,5 +1,3 @@
-import '../utils/index.js';
-
 import card from '../../src/cards/callout.js';
 import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
 const serializer = new HTMLSerializer(voidMap);
@@ -15,7 +13,7 @@ describe('Callout card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.equal('<div class="kg-card kg-callout-card kg-callout-card-"><div class="kg-callout-emoji">⚠️</div><div class="kg-callout-text">This is a callout</div></div>');
+            expect(serializer.serialize(card.render(opts))).toBe('<div class="kg-card kg-callout-card kg-callout-card-"><div class="kg-callout-emoji">⚠️</div><div class="kg-callout-text">This is a callout</div></div>');
         });
 
         it('renders the callout nodes without the emoji element', function () {
@@ -27,7 +25,7 @@ describe('Callout card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.equal('<div class="kg-card kg-callout-card kg-callout-card-"><div class="kg-callout-text">This is a callout</div></div>');
+            expect(serializer.serialize(card.render(opts))).toBe('<div class="kg-card kg-callout-card kg-callout-card-"><div class="kg-callout-text">This is a callout</div></div>');
         });
     });
 
@@ -44,7 +42,7 @@ describe('Callout card', function () {
     //                 target: 'email'
     //             }
     //         };
-    //         serializer.serialize(card.render(opts)).should.equal('');
+    //         expect(serializer.serialize(card.render(opts))).toBe('');
     //     });
     // });
 
@@ -57,7 +55,7 @@ describe('Callout card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.equal('');
+        expect(serializer.serialize(card.render(opts))).toBe('');
     });
 
     it('transforms callout urls absolute to relative', function () {
@@ -68,7 +66,7 @@ describe('Callout card', function () {
 
         const transformed = card.absoluteToRelative!(payload, {siteUrl: 'https://ghost.org'});
 
-        (transformed.calloutText as string).should.equal('<a href="/">Home</a>');
+        expect((transformed.calloutText as string)).toBe('<a href="/">Home</a>');
     });
 
     it('transforms callout urls relative to absolute', function () {
@@ -79,7 +77,7 @@ describe('Callout card', function () {
 
         const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'https://ghost.org'});
 
-        (transformed.calloutText as string).should.equal('<a href="https://ghost.org/#/portal/signup">Sign up</a>');
+        expect((transformed.calloutText as string)).toBe('<a href="https://ghost.org/#/portal/signup">Sign up</a>');
     });
 
     it('transforms callout urls to transform ready', function () {
@@ -90,6 +88,6 @@ describe('Callout card', function () {
 
         const transformed = card.toTransformReady!(payload, {siteUrl: 'https://ghost.org'});
 
-        (transformed.calloutText as string).should.equal('<a href="__GHOST_URL__/#/portal/signup">Sign up</a>');
+        expect((transformed.calloutText as string)).toBe('<a href="__GHOST_URL__/#/portal/signup">Sign up</a>');
     });
 });

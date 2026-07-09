@@ -1,7 +1,6 @@
-import 'should';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$getRoot, type LexicalEditor} from 'lexical';
-import {dom, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, dom, html} from '../test-utils/index.js';
 import {EmailNode, $createEmailNode, $isEmailNode} from '../../src/index.js';
 
 const editorNodes = [EmailNode];
@@ -39,29 +38,29 @@ describe('EmailNode', function () {
 
     it('matches node with $isEmailNode', editorTest(function () {
         const emailNode = $createEmailNode(dataset);
-        $isEmailNode(emailNode).should.be.true();
+        expect($isEmailNode(emailNode)).toBe(true);
     }));
 
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {
             const emailNode = $createEmailNode(dataset);
 
-            emailNode.html.should.equal(dataset.html);
+            expect(emailNode.html).toBe(dataset.html);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const emailNode = $createEmailNode();
 
-            emailNode.html.should.equal('');
+            expect(emailNode.html).toBe('');
             emailNode.html = '<p>Hello World</p>';
-            emailNode.html.should.equal('<p>Hello World</p>');
+            expect(emailNode.html).toBe('<p>Hello World</p>');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
             const emailNode = $createEmailNode(dataset);
             const emailNodeDataset = emailNode.getDataset();
 
-            emailNodeDataset.should.deepEqual({
+            expect(emailNodeDataset).toEqual({
                 ...dataset
             });
         }));
@@ -69,7 +68,7 @@ describe('EmailNode', function () {
 
     describe('getType', function () {
         it('returns the correct node type', editorTest(function () {
-            EmailNode.getType().should.equal('email');
+            expect(EmailNode.getType()).toBe('email');
         }));
     });
 
@@ -80,13 +79,13 @@ describe('EmailNode', function () {
             const clone = EmailNode.clone(emailNode) as EmailNode;
             const cloneDataset = clone.getDataset();
 
-            cloneDataset.should.deepEqual({...emailNodeDataset});
+            expect(cloneDataset).toEqual({...emailNodeDataset});
         }));
     });
 
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
-            EmailNode.urlTransformMap.should.deepEqual({
+            expect(EmailNode.urlTransformMap).toEqual({
                 html: 'html'
             });
         }));
@@ -95,7 +94,7 @@ describe('EmailNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const emailNode = $createEmailNode(dataset);
-            emailNode.hasEditMode().should.be.true();
+            expect(emailNode.hasEditMode()).toBe(true);
         }));
     });
 
@@ -104,7 +103,7 @@ describe('EmailNode', function () {
             const emailNode = $createEmailNode(dataset);
             const json = emailNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'email',
                 version: 1,
                 html: dataset.html
@@ -136,7 +135,7 @@ describe('EmailNode', function () {
                     try {
                         const [emailNode] = $getRoot().getChildren() as EmailNode[];
 
-                        emailNode.html.should.equal(dataset.html);
+                        expect(emailNode.html).toBe(dataset.html);
                         resolve();
                     } catch (e) {
                         reject(e);
@@ -160,7 +159,7 @@ describe('EmailNode', function () {
             const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
-            el.innerHTML.should.prettifyTo(html`
+            assertPrettifiesTo(el.innerHTML, html`
                 <p>Hello World</p>
             `);
         }));
@@ -172,7 +171,7 @@ describe('EmailNode', function () {
             const emailNode = $createEmailNode(payload);
             const {element} = emailNode.exportDOM(editor, exportOptions);
 
-            (element as HTMLElement).innerHTML.should.equal('');
+            expect((element as HTMLElement).innerHTML).toBe('');
         }));
     });
 
@@ -182,7 +181,7 @@ describe('EmailNode', function () {
             node.html = 'Testing';
 
             // email nodes don't have text content
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
         }));
     });
 });

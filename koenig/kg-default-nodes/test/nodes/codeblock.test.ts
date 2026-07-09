@@ -1,5 +1,4 @@
-import should from 'should';
-import {createDocument, dom, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
 import {CodeBlockNode, $createCodeBlockNode, $isCodeBlockNode} from '../../src/index.js';
@@ -49,7 +48,7 @@ describe('CodeBlockNode', function () {
 
     it('matches node with $isCodeBlockNode', editorTest(function () {
         const codeBlockNode = $createCodeBlockNode({language, code, caption});
-        $isCodeBlockNode(codeBlockNode).should.be.true();
+        expect($isCodeBlockNode(codeBlockNode)).toBe(true);
     }));
 
     describe('importJSON', function () {
@@ -80,9 +79,9 @@ describe('CodeBlockNode', function () {
                 editorState.read(() => {
                     try {
                         const codeBlockNode = $getRoot().getChildren()[0] as CodeBlockNode;
-                        should(codeBlockNode.code).equal(`<?php echo 'Hello World'; ?>`);
-                        should(codeBlockNode.language).equal('php');
-                        should(codeBlockNode.caption).equal('Your first PHP enabled page');
+                        expect(codeBlockNode.code).toBe(`<?php echo 'Hello World'; ?>`);
+                        expect(codeBlockNode.language).toBe('php');
+                        expect(codeBlockNode.caption).toBe('Your first PHP enabled page');
                         resolve();
                     } catch (e) {
                         reject(e);
@@ -106,7 +105,7 @@ describe('CodeBlockNode', function () {
 
                 const parsedExport = JSON.parse(JSON.stringify(editor.getEditorState()));
 
-                parsedExport.root.children.should.deepEqual([
+                expect(parsedExport.root.children).toEqual([
                     {
                         type: 'codeblock',
                         version: 1,
@@ -124,32 +123,32 @@ describe('CodeBlockNode', function () {
         it('has getters for all properties', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({language, code, caption});
 
-            codeBlockNode.code.should.equal('<script></script>');
-            codeBlockNode.language.should.equal('javascript');
-            codeBlockNode.caption.should.equal('A code block');
+            expect(codeBlockNode.code).toBe('<script></script>');
+            expect(codeBlockNode.language).toBe('javascript');
+            expect(codeBlockNode.caption).toBe('A code block');
         }));
 
         it('has setters for all properties', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({language: '', code: '', caption: ''});
 
-            codeBlockNode.language.should.equal('');
+            expect(codeBlockNode.language).toBe('');
             codeBlockNode.language = 'javascript';
-            codeBlockNode.language.should.equal('javascript');
+            expect(codeBlockNode.language).toBe('javascript');
 
-            codeBlockNode.code.should.equal('');
+            expect(codeBlockNode.code).toBe('');
             codeBlockNode.code = '<script></script>';
-            codeBlockNode.code.should.equal('<script></script>');
+            expect(codeBlockNode.code).toBe('<script></script>');
 
-            codeBlockNode.caption.should.equal('');
+            expect(codeBlockNode.caption).toBe('');
             codeBlockNode.caption = 'A code block';
-            codeBlockNode.caption.should.equal('A code block');
+            expect(codeBlockNode.caption).toBe('A code block');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({language, code, caption});
             const codeBlockNodeDataset = codeBlockNode.getDataset();
 
-            codeBlockNodeDataset.should.deepEqual({
+            expect(codeBlockNodeDataset).toEqual({
                 code: '<script></script>',
                 language: 'javascript',
                 caption: 'A code block'
@@ -161,15 +160,15 @@ describe('CodeBlockNode', function () {
         it('returns true if markdown is empty', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode(dataset);
 
-            codeBlockNode.isEmpty().should.be.false();
+            expect(codeBlockNode.isEmpty()).toBe(false);
             codeBlockNode.code = '';
-            codeBlockNode.isEmpty().should.be.true();
+            expect(codeBlockNode.isEmpty()).toBe(true);
         }));
     });
 
     describe('getType', function () {
         it('returns the correct node type', editorTest(function () {
-            CodeBlockNode.getType().should.equal('codeblock');
+            expect(CodeBlockNode.getType()).toBe('codeblock');
         }));
     });
 
@@ -180,13 +179,13 @@ describe('CodeBlockNode', function () {
             const clone = CodeBlockNode.clone(codeBlockNode) as CodeBlockNode;
             const cloneDataset = clone.getDataset();
 
-            cloneDataset.should.deepEqual({...codeBlockNodeDataset});
+            expect(cloneDataset).toEqual({...codeBlockNodeDataset});
         }));
     });
 
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
-            CodeBlockNode.urlTransformMap.should.deepEqual({
+            expect(CodeBlockNode.urlTransformMap).toEqual({
                 caption: 'html'
             });
         }));
@@ -195,7 +194,7 @@ describe('CodeBlockNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode(dataset);
-            codeBlockNode.hasEditMode().should.be.true();
+            expect(codeBlockNode.hasEditMode()).toBe(true);
         }));
     });
 
@@ -205,7 +204,7 @@ describe('CodeBlockNode', function () {
             const {element} = codeBlockNode.exportDOM(editor, exportOptions);
             const el = element as HTMLElement;
 
-            el.outerHTML.should.prettifyTo(html`
+            assertPrettifiesTo(el.outerHTML, html`
                 <pre><code>&lt;script&gt;&lt;/script&gt;</code></pre>
             `);
         }));
@@ -218,10 +217,10 @@ describe('CodeBlockNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].code.should.equal('Test code');
-            nodes[0].language.should.equal('');
-            nodes[0].caption.should.equal('');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].code).toBe('Test code');
+            expect(nodes[0].language).toBe('');
+            expect(nodes[0].caption).toBe('');
         }));
 
         it('parses PRE>CODE inside FIGURE with FIGCAPTION into code card', editorTest(function () {
@@ -230,10 +229,10 @@ describe('CodeBlockNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].code.should.equal('Test code');
-            nodes[0].caption.should.equal('Test caption');
-            nodes[0].language.should.equal('');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].code).toBe('Test code');
+            expect(nodes[0].caption).toBe('Test caption');
+            expect(nodes[0].language).toBe('');
         }));
 
         it('extracts language from pre class name for FIGURE>PRE>CODE', editorTest(function () {
@@ -242,10 +241,10 @@ describe('CodeBlockNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].code.should.equal('Test code');
-            nodes[0].caption.should.equal('Test caption');
-            nodes[0].language.should.equal('js');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].code).toBe('Test code');
+            expect(nodes[0].caption).toBe('Test caption');
+            expect(nodes[0].language).toBe('js');
         }));
 
         it('extracts language from code class name for FIGURE>PRE>CODE', editorTest(function () {
@@ -254,10 +253,10 @@ describe('CodeBlockNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].code.should.equal('Test code');
-            nodes[0].caption.should.equal('Test caption');
-            nodes[0].language.should.equal('js');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].code).toBe('Test code');
+            expect(nodes[0].caption).toBe('Test caption');
+            expect(nodes[0].language).toBe('js');
         }));
 
         it('correctly skips if there is no pre tag', editorTest(function () {
@@ -266,7 +265,7 @@ describe('CodeBlockNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document);
 
-            nodes.length.should.equal(0);
+            expect(nodes.length).toBe(0);
         }));
 
         it('parses PRE>CODE into code card', editorTest(function () {
@@ -275,10 +274,10 @@ describe('CodeBlockNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].code.should.equal('Test code');
-            nodes[0].language.should.equal('');
-            nodes[0].caption.should.equal('');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].code).toBe('Test code');
+            expect(nodes[0].language).toBe('');
+            expect(nodes[0].caption).toBe('');
         }));
 
         it('extracts language from pre class name for PRE>CODE', editorTest(function () {
@@ -287,10 +286,10 @@ describe('CodeBlockNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].code.should.equal('Test code');
-            nodes[0].language.should.equal('javascript');
-            nodes[0].caption.should.equal('');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].code).toBe('Test code');
+            expect(nodes[0].language).toBe('javascript');
+            expect(nodes[0].caption).toBe('');
         }));
 
         it('extracts language from code class name for PRE>CODE', editorTest(function () {
@@ -299,22 +298,22 @@ describe('CodeBlockNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document) as CodeBlockNode[];
 
-            nodes.length.should.equal(1);
-            nodes[0].code.should.equal('Test code');
-            nodes[0].language.should.equal('ruby');
-            nodes[0].caption.should.equal('');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].code).toBe('Test code');
+            expect(nodes[0].language).toBe('ruby');
+            expect(nodes[0].caption).toBe('');
         }));
     });
 
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
             const node = $createCodeBlockNode();
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
 
             node.code = '<script>const test = true;</script>';
             node.caption = 'Test caption';
 
-            node.getTextContent().should.equal('<script>const test = true;</script>\nTest caption\n\n');
+            expect(node.getTextContent()).toBe('<script>const test = true;</script>\nTest caption\n\n');
         }));
     });
 });

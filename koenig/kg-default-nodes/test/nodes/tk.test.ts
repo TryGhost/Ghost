@@ -28,17 +28,17 @@ describe('TKNode', function () {
 
     it('matches node with $isTKNode', editorTest(function () {
         const tkNode = $createTKNode('TK');
-        $isTKNode(tkNode).should.be.true();
+        expect($isTKNode(tkNode)).toBe(true);
     }));
 
     it('is a text entity', editorTest(function () {
         const tkNode = $createTKNode('TK');
-        (tkNode as TKNode).isTextEntity().should.be.true();
+        expect((tkNode as TKNode).isTextEntity()).toBe(true);
     }));
 
     it('can not insert text before', editorTest(function () {
         const tkNode = $createTKNode('TK');
-        (tkNode as TKNode).canInsertTextBefore().should.be.false();
+        expect((tkNode as TKNode).canInsertTextBefore()).toBe(false);
     }));
 
     describe('exportJSON', function () {
@@ -46,7 +46,7 @@ describe('TKNode', function () {
             const tkNode = $createTKNode('TK');
             const json = tkNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 detail: 0,
                 format: 0,
                 mode: 'normal',
@@ -97,7 +97,7 @@ describe('TKNode', function () {
                 editor.getEditorState().read(() => {
                     try {
                         const [tkNode] = $getRoot().getChildren();
-                        (tkNode as ElementNode).getChildren()[0].should.be.instanceof(TKNode);
+                        expect((tkNode as ElementNode).getChildren()[0]).toBeInstanceOf(TKNode);
 
                         resolve();
                     } catch (e) {
@@ -112,7 +112,7 @@ describe('TKNode', function () {
         const tkNode = $createTKNode('TK');
         const clonedNode = TKNode.clone(tkNode as TKNode);
 
-        clonedNode.should.not.equal(tkNode);
-        clonedNode.getTextContent().should.equal(tkNode.getTextContent());
+        expect(clonedNode).not.toBe(tkNode);
+        expect(clonedNode.getTextContent()).toBe(tkNode.getTextContent());
     }));
 });
