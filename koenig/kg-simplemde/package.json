@@ -9,7 +9,7 @@
     "javascript",
     "wysiwyg"
   ],
-  "homepage": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-simplemde",
+  "homepage": "https://github.com/TryGhost/Ghost/tree/main/koenig/kg-simplemde",
   "main": "./src/js/simplemde.js",
   "license": "MIT",
   "company": "Next Step Webs, Inc.",
@@ -18,7 +18,7 @@
     "url": "http://www.WesCossick.com"
   },
   "bugs": {
-    "url": "https://github.com/TryGhost/Koenig/issues"
+    "url": "https://github.com/TryGhost/Ghost/issues"
   },
   "publishConfig": {
     "access": "public"
@@ -39,7 +39,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/TryGhost/Koenig.git"
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-simplemde"
   },
   "dependencies": {
     "codemirror": "5.65.21",

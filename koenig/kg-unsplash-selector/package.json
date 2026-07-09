@@ -4,7 +4,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-unsplash-selector"
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-unsplash-selector"
   },
   "author": "Ghost Foundation",
   "files": [
