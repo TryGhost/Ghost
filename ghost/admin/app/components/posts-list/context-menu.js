@@ -112,7 +112,7 @@ export default class PostsContextMenu extends Component {
         }
         trackEvent('Posts Context Menu Opened', {
             giftLinkShown: this.canCopyGiftLink,
-            resource: this.type === 'page' ? 'pages' : 'posts',
+            postType: this.type,
             selection: this.selectionList.isSingle ? 'single' : 'multiple'
         });
     }

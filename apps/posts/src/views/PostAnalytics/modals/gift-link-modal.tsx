@@ -130,13 +130,13 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
             const response = await createGiftLink({id: postId, resource});
             setToken(response.gift_links[0]?.token);
             setResetState('idle');
-            trackEvent('Gift Link Reset', {postType, visibility});
+            trackEvent('Gift Link Reset', {postType, visibility, source});
         } catch (e) {
             handleError(e);
         } finally {
             setResetting(false);
         }
-    }, [resetting, createGiftLink, postId, resource, handleError, postType, visibility]);
+    }, [resetting, createGiftLink, postId, resource, handleError, postType, visibility, source]);
 
     const handleOpenChange = useCallback((isOpen: boolean) => {
         if (!isOpen) {
@@ -175,7 +175,7 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
                                 disabled={ensuring || !giftLinkUrl}
                                 icon='link'
                                 size='sm'
-                                onClick={() => trackEvent('Gift Link Copied', {postType, visibility})}
+                                onClick={() => trackEvent('Gift Link Copied', {postType, visibility, source})}
                             />
                         </ShareModal.CopyURLBox>
 
