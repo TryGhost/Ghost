@@ -1,8 +1,5 @@
+import {type AstNode, type FilterPredicate, type ParsedPredicate, dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, resolveField, serializePredicates, stampPredicates} from '@tryghost/admin-x-framework/filters';
 import {commentFields} from './comment-fields';
-import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
-import {resolveField} from '../filters/resolve-field';
-import type {AstNode} from '../filters/filter-ast';
-import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
 
 const TIMEZONE_SENSITIVE_COMMENT_FIELDS = getFieldKeysByType(commentFields, 'date');
 

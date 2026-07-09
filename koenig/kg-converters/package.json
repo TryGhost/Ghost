@@ -1,7 +1,11 @@
 {
   "name": "@tryghost/kg-converters",
   "version": "1.2.3",
-  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-converters",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-converters"
+  },
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "build/cjs/index.js",
@@ -9,6 +13,7 @@
   "types": "build/esm/index.d.ts",
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "types": "./build/esm/index.d.ts",
       "import": "./build/esm/index.js",
       "require": "./build/cjs/index.js"

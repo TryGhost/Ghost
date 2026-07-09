@@ -337,6 +337,9 @@ jobs:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
 
+      - name: Lint boundaries
+        run: pnpm nx run ghost-monorepo:lint:boundaries
+
       - uses: tryghost/actions/actions/slack-build@6fbe82c6461eee866b1995631d1fb30d6ce9515d # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:

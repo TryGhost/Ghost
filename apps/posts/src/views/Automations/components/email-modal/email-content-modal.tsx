@@ -93,6 +93,13 @@ export interface EmailContentModalProps {
     onSave: (data: {subject: string; lexical: string}) => void;
 }
 
+// Koenig popups (link input, emoji picker, card settings) handle Escape
+// themselves — the dialog shouldn't also act on it.
+const isKoenigPortalFocused = () => {
+    const activeElement = document.activeElement;
+    return activeElement instanceof HTMLElement && activeElement.closest('[data-kg-portal]') !== null;
+};
+
 const EmailContentModal: React.FC<EmailContentModalProps> = ({
     automationId,
     initialMode = 'edit',
@@ -213,6 +220,36 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
         };
     }, []);
 
+    const [dialogContentNode, setDialogContentNode] = useState<HTMLDivElement | null>(null);
+
+    // The dialog is non-modal so Radix's focus trap can't fight Koenig's
+    // body-level portals (link input, toolbar, emoji picker), which means
+    // nothing stops focus from reaching the admin UI behind the editor. Make
+    // everything else at body level inert while the editor is open —
+    // unfocusable, unclickable, and hidden from screen readers. Koenig
+    // portals and stacked dialogs mount after this runs, so they stay
+    // interactive.
+    useEffect(() => {
+        const dialogPortalWrapper = dialogContentNode?.closest('body > *');
+        if (!dialogPortalWrapper) {
+            return;
+        }
+
+        const madeInert: HTMLElement[] = [];
+        for (const el of document.body.children) {
+            if (el !== dialogPortalWrapper && el instanceof HTMLElement && !el.inert) {
+                el.inert = true;
+                madeInert.push(el);
+            }
+        }
+
+        return () => {
+            madeInert.forEach((el) => {
+                el.inert = false;
+            });
+        };
+    }, [dialogContentNode]);
+
     const handleModeChange = useCallback((nextMode: EmailModalMode) => {
         setMode(nextMode);
 
@@ -250,18 +287,34 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
 
     return (
         <>
-            <Dialog open onOpenChange={(next) => {
+            <Dialog modal={false} open onOpenChange={(next) => {
                 if (!next) {
                     attemptClose();
                 }
             }}>
                 <DialogContent
+                    ref={setDialogContentNode}
                     aria-describedby={undefined}
                     className='top-0 left-0 h-[100dvh] w-full max-w-full translate-0 grid-rows-[1fr] gap-0 rounded-none border-0 p-0 shadow-none outline-hidden sm:rounded-none dark:bg-[#151719]'
                     onEscapeKeyDown={(event) => {
+                        if (isKoenigPortalFocused()) {
+                            // prevent Radix dismissing the dialog but let the
+                            // event through so Koenig can close its popup
+                            event.preventDefault();
+                            return;
+                        }
+
                         event.preventDefault();
                         event.stopPropagation();
                         attemptClose();
+                    }}
+                    onInteractOutside={(event) => {
+                        // never auto-dismiss on pointer/focus outside — this is a
+                        // full-screen editor whose only exits are the Close button
+                        // and Escape. Without this, a non-modal dialog dismisses
+                        // when Tab lands focus on anything outside it (e.g. Radix's
+                        // focus-guard spans), which re-triggers attemptClose
+                        event.preventDefault();
                     }}
                 >
                     <DialogTitle className='sr-only'>Edit email</DialogTitle>

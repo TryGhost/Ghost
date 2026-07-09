@@ -26,6 +26,17 @@ export {useFeaturebase} from './hooks/use-featurebase';
 // Analytics utilities
 export {trackEvent, trackFilterApplications} from './utils/analytics';
 
+// Virtual list (infinite-scroll primitive)
+export {useInfiniteVirtualScroll, useVirtualListWindow, useScrollRestoration, LoadMoreButton} from './virtual-list';
+export type {
+    InfiniteQueryResultLike,
+    UseInfiniteVirtualScrollOptions,
+    VirtualScrollItem,
+    UseVirtualListWindowOptions,
+    UseVirtualListWindowResult,
+    LoadMoreButtonProps
+} from './virtual-list';
+
 // Currency utilities
 export {getSymbol} from './utils/currency';
 

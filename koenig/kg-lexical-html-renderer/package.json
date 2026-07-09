@@ -1,7 +1,11 @@
 {
   "name": "@tryghost/kg-lexical-html-renderer",
   "version": "1.4.3",
-  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-lexical-html-renderer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-lexical-html-renderer"
+  },
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "build/cjs/index.js",
@@ -9,6 +13,7 @@
   "types": "build/esm/index.d.ts",
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "types": "./build/esm/index.d.ts",
       "import": "./build/esm/index.js",
       "require": "./build/cjs/index.js"

@@ -1,7 +1,11 @@
 {
   "name": "@tryghost/kg-default-nodes",
   "version": "2.1.3",
-  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-default-nodes",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-default-nodes"
+  },
   "author": "Ghost Foundation",
   "license": "MIT",
   "engines": {
@@ -12,11 +16,13 @@
   "types": "build/esm/index.d.ts",
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "types": "./build/esm/index.d.ts",
       "import": "./build/esm/index.js",
       "require": "./build/cjs/index.js"
     },
     "./visibility": {
+      "source": "./src/visibility.ts",
       "types": "./build/esm/visibility.d.ts",
       "import": "./build/esm/visibility.js",
       "require": "./build/cjs/visibility.js"

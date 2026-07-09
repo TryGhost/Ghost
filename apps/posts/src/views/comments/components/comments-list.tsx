@@ -1,18 +1,15 @@
 import CommentContent from './comment-content';
 import CommentThreadSidebar from './comment-thread-sidebar';
-import LoadMoreButton from '@components/virtual-table/load-more-button';
 import {Avatar, Button, TooltipProvider} from '@tryghost/shade/components';
 import {Comment, useHideComment, useShowComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
 import {CommentMetrics, buildThreadLink} from './comment-metrics';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
+import {LoadMoreButton, useInfiniteVirtualScroll, useScrollRestoration, useVirtualListWindow} from '@tryghost/admin-x-framework/virtual-list';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {forwardRef, useEffect, useRef, useState} from 'react';
 import {useCommentsPinningEnabled} from '@src/hooks/use-comments-pinning-enabled';
-import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
-import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
-import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
 
 const SpacerRow = ({height}: { height: number }) => (
     <div aria-hidden="true" className="flex">

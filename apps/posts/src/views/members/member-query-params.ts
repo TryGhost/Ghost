@@ -1,7 +1,6 @@
 import moment from 'moment-timezone';
+import {type FilterPredicate, resolveField} from '@tryghost/admin-x-framework/filters';
 import {memberFields} from './member-fields';
-import {resolveField} from '../filters/resolve-field';
-import type {FilterPredicate} from '../filters/filter-types';
 import type {Member} from '@tryghost/admin-x-framework/api/members';
 
 const MAX_ACTIVE_COLUMNS = 2;

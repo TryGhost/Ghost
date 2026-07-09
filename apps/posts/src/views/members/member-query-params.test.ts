@@ -5,7 +5,7 @@ import {
     getMemberActiveColumns
 } from './member-query-params';
 import {describe, expect, it} from 'vitest';
-import type {FilterPredicate} from '../filters/filter-types';
+import type {FilterPredicate} from '@tryghost/admin-x-framework/filters';
 import type {Member, MemberSubscription} from '@tryghost/admin-x-framework/api/members';
 
 const sub = (overrides: Partial<MemberSubscription> = {}): MemberSubscription => ({

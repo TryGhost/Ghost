@@ -1,4 +1,4 @@
-import {escapeNqlString} from '../../filters/filter-normalization';
+import {escapeNqlString} from '@tryghost/admin-x-framework/filters';
 
 export function buildResourceFilter(baseFilter: string, search: string): string {
     if (!search) {
