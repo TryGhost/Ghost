@@ -98,7 +98,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
     };
 
     const handleSave = async () => {
-        if (isSaving || isLoading) {
+        if (isSaving || isLoading || loadError) {
             return;
         }
 
