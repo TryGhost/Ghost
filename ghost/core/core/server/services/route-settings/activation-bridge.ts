@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import errors from '@tryghost/errors';
 import type {
     RouteSettings,
     Route,
@@ -6,17 +7,32 @@ import type {
     TemplateRoute,
     CollectionConfig,
     RouteData,
+    DataShortForm,
     DataReadEntry,
     DataBrowseEntry
 } from './route-settings-parser';
 
-// Lazy-loaded to avoid importing frontend code at module load time
-let RESOURCE_CONFIG: {QUERY: Record<string, any>; TAXONOMIES: Record<string, any>};
+// Shape of a single entry in the frontend routing config's QUERY map.
+interface QueryResourceConfig {
+    controller: string;
+    type?: string;
+    resource: string;
+    resourceAlias?: string;
+    options?: Record<string, unknown>;
+}
 
-function getResourceConfig() {
+interface ResourceConfig {
+    QUERY: Record<string, QueryResourceConfig>;
+    TAXONOMIES: Record<string, unknown>;
+}
+
+// Lazy-loaded to avoid importing frontend code at module load time
+let RESOURCE_CONFIG: ResourceConfig;
+
+function getResourceConfig(): ResourceConfig {
     if (!RESOURCE_CONFIG) {
         // eslint-disable-next-line ghost/node/no-restricted-require -- intentional: the bridge is the single place that couples server → frontend config; removed in HKG-1898
-        const {QUERY, TAXONOMIES} = require('../../../frontend/services/routing/config');
+        const {QUERY, TAXONOMIES} = require('../../../frontend/services/routing/config') as ResourceConfig;
         RESOURCE_CONFIG = {QUERY, TAXONOMIES};
     }
     return RESOURCE_CONFIG;
@@ -27,10 +43,17 @@ interface ExpandedData {
     router: Record<string, any[]>;
 }
 
-function expandShortFormData(shortForm: string, resourceKey?: string): ExpandedData {
+function expandShortFormData(shortForm: DataShortForm, resourceKey?: string): ExpandedData {
     const config = getResourceConfig();
     const [key, slug] = shortForm.split('.');
     const queryConfig = config.QUERY[key];
+
+    // Unreachable for parsed input — parseRouteSettings restricts short-form
+    // resources to keys that always exist in QUERY. Guards the lookup so a
+    // future caller can't silently read properties off undefined.
+    if (!queryConfig) {
+        throw new errors.IncorrectUsageError({message: `Unknown route data resource: ${key}`});
+    }
 
     const data: ExpandedData = {
         query: {},
@@ -50,6 +73,12 @@ function expandShortFormData(shortForm: string, resourceKey?: string): ExpandedD
 function expandLongFormEntry(key: string, entry: DataReadEntry | DataBrowseEntry): ExpandedData {
     const config = getResourceConfig();
     const defaultResource = _.find(config.QUERY, {resource: entry.resource});
+
+    // Unreachable for parsed input — parseRouteSettings restricts long-form
+    // resources to values that always map to a QUERY entry.
+    if (!defaultResource) {
+        throw new errors.IncorrectUsageError({message: `Unknown route data resource: ${entry.resource}`});
+    }
 
     const data: ExpandedData = {
         query: {},
