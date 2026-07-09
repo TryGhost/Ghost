@@ -7,7 +7,7 @@ import {HTable} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade/utils';
 import {NewsletterRadialChart, NewsletterRadialChartData} from './components/newsletter-radial-chart';
 import {Post, useGlobalData} from '@src/providers/post-analytics-context';
-import {buildMembersUrl} from '../../members/member-route';
+import {buildMembersUrl} from '../members-url';
 import {getLinkById} from '@src/utils/link-helpers';
 import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';

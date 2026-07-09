@@ -5,7 +5,7 @@ import PostAnalyticsHeader from '../components/post-analytics-header';
 import React from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Separator, Skeleton, SkeletonTable} from '@tryghost/shade/components';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
-import {buildMembersUrl} from '../../members/member-route';
+import {buildMembersUrl} from '../members-url';
 import {useAppContext} from '@src/providers/posts-app-context';
 import {useGlobalData} from '@src/providers/post-analytics-context';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';

@@ -61,11 +61,11 @@ const membersRoute: RouteObject = {
     children: [
         {
             index: true,
-            lazy: lazyComponent(() => import("@tryghost/posts/members"))
+            lazy: lazyComponent(() => import("./members/members"))
         },
         {
             path: "import",
-            lazy: lazyComponent(() => import("@tryghost/posts/members"))
+            lazy: lazyComponent(() => import("./members/members"))
         }
     ]
 };

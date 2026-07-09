@@ -626,6 +626,9 @@ importers:
       moment-timezone:
         specifier: 0.5.45
         version: 0.5.45
+      papaparse:
+        specifier: 5.5.4
+        version: 5.5.4
       react:
         specifier: 'catalog:'
         version: 18.3.1
@@ -641,6 +644,9 @@ importers:
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      use-debounce:
+        specifier: 10.1.1
+        version: 10.1.1(react@18.3.1)
       validator:
         specifier: 'catalog:'
         version: 13.12.0
@@ -666,6 +672,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.0
+      '@types/papaparse':
+        specifier: 5.5.2
+        version: 5.5.2
       '@types/react':
         specifier: 'catalog:'
         version: 18.3.31
