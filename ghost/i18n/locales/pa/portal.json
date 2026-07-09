@@ -191,8 +191,6 @@
     "Save": "ਸੁਰੱਖਿਅਤ ਕਰੋ",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
-    "Send an email and say hi!": "ਇੱਕ ਈਮੇਲ ਭੇਜੋ ਅਤੇ ਹੈਲੋ ਕਹੋ!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "{senderEmail} ਨੂੰ ਇੱਕ ਈਮੇਲ ਭੇਜੋ ਅਤੇ ਹੈਲੋ ਕਹੋ। ਇਹ ਤੁਹਾਡੇ ਮੇਲ ਪ੍ਰਦਾਤਾ ਨੂੰ ਇਹ ਸੰਕੇਤ ਦੇਣ ਵਿੱਚ ਵੀ ਮਦਦ ਕਰ ਸਕਦਾ ਹੈ ਕਿ ਇਸ ਪਤੇ ਤੋਂ ਅਤੇ ਇਸ ਪਤੇ 'ਤੇ ਈਮੇਲਾਂ 'ਤੇ ਭਰੋਸਾ ਕੀਤਾ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ।",
     "Send the link below to share it with whoever you'd like.": "",
     "Sending login link...": "ਲੌਗਇਨ ਲਿੰਕ ਭੇਜਿਆ ਜਾ ਰਿਹਾ ਹੈ...",
     "Sending...": "ਭੇਜਿਆ ਜਾ ਰਿਹਾ ਹੈ...",
