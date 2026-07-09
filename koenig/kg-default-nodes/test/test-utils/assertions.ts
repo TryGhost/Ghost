@@ -1,9 +1,7 @@
+import assert from 'node:assert/strict';
 import should from 'should';
 import Prettier from '@prettier/sync';
-import * as chai from 'chai';
 import {minify} from 'html-minifier';
-
-const expect = chai.expect;
 
 (should as unknown as {Assertion: {add(name: string, fn: (this: should.Assertion, str: string) => void): void}}).Assertion.add('prettifyTo', function (this: should.Assertion, str: string) {
     const minifiedExpected = minify(str, {collapseWhitespace: true, collapseInlineTagWhitespace: true});
@@ -16,8 +14,8 @@ const expect = chai.expect;
     };
 
     const assertion = this as should.Assertion & {obj: unknown};
-    expect(assertion.obj).to.be.a('string');
+    assert.equal(typeof assertion.obj, 'string');
     const minified = minify(assertion.obj as string, {collapseWhitespace: true, collapseInlineTagWhitespace: true});
     const result = Prettier.format(minified, {parser: 'html'});
-    expect(result).to.equal(expectedStr);
+    assert.equal(result, expectedStr);
 });

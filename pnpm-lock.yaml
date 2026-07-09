@@ -3339,9 +3339,6 @@ importers:
       '@prettier/sync':
         specifier: 0.6.1
         version: 0.6.1(prettier@3.9.4)
-      '@types/chai':
-        specifier: 4.3.20
-        version: 4.3.20
       '@types/jsdom':
         specifier: 'catalog:'
         version: 28.0.3
@@ -3363,9 +3360,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.9(vitest@4.1.9)
-      chai:
-        specifier: 'catalog:'
-        version: 4.5.0
       prettier:
         specifier: 3.9.4
         version: 3.9.4
