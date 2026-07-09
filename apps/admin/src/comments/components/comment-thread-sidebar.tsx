@@ -98,7 +98,7 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
                     ) : (
                         <CommentThreadList
                             dislikesEnabled={dislikesEnabled}
-                            fetchNextPage={fetchNextPage}
+                            fetchNextPage={() => void fetchNextPage()}
                             hasNextPage={hasNextPage}
                             isFetchingNextPage={isFetchingNextPage}
                             replies={threadReplies}

@@ -1,4 +1,4 @@
-import {Filter} from '@tryghost/shade/patterns';
+import type {Filter} from '@tryghost/shade/patterns';
 
 // TODO: Remove this file after the comment filters migration has safely rolled out.
 const LEGACY_COMMENT_FILTER_FIELDS = ['status', 'created_at', 'body', 'post', 'author', 'reported'] as const;

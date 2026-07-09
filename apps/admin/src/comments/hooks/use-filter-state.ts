@@ -1,6 +1,6 @@
-import {Filter} from '@tryghost/shade/patterns';
-import {hasTimezoneSensitiveCommentFilter, parseCommentFilter, serializeCommentFilters} from '../comment-filter-query';
-import {parseLegacyCommentFilters, removeLegacyCommentFilterParams} from '../legacy-comment-filter-query';
+import type {Filter} from '@tryghost/shade/patterns';
+import {hasTimezoneSensitiveCommentFilter, parseCommentFilter, serializeCommentFilters} from '@/comments/comment-filter-query';
+import {parseLegacyCommentFilters, removeLegacyCommentFilterParams} from '@/comments/legacy-comment-filter-query';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 

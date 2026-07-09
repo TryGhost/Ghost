@@ -1,5 +1,5 @@
 import {Avatar, Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, LoadingIndicator, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {Comment, useBrowseCommentDislikes, useBrowseCommentLikes} from '@tryghost/admin-x-framework/api/comments';
+import {type Comment, useBrowseCommentDislikes, useBrowseCommentLikes} from '@tryghost/admin-x-framework/api/comments';
 import {LucideIcon, formatNumber, formatTimestamp} from '@tryghost/shade/utils';
 import {formatMemberName} from '@tryghost/shade/app';
 

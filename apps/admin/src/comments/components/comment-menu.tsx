@@ -1,8 +1,8 @@
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
-import {Comment, usePinComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
+import {type Comment, usePinComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
 import {DisableCommentingDialog} from './disable-commenting-dialog';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {useCommentsPinningEnabled} from '@src/hooks/use-comments-pinning-enabled';
+import {useCommentsPinningEnabled} from '@/comments/hooks/use-comments-pinning-enabled';
 import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
 import {useState} from 'react';
 

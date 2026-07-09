@@ -1,5 +1,5 @@
 import {Button} from '@tryghost/shade/components';
-import {Comment} from '@tryghost/admin-x-framework/api/comments';
+import {type Comment} from '@tryghost/admin-x-framework/api/comments';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {useEffect, useRef, useState} from 'react';
 
