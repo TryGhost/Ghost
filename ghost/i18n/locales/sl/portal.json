@@ -191,8 +191,6 @@
     "Save": "Shrani",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
-    "Send an email and say hi!": "Pošljite e-pošto in nas pozdravite!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "Pošljite e-pošto na {senderEmail} in nas pozdravite. To lahko tudi pomaga signalizirati vašemu ponudniku, da je e-pošta iz tega naslova zaupanja vredna.",
     "Send the link below to share it with whoever you'd like.": "",
     "Sending login link...": "Pošiljanje povezave za prijavo...",
     "Sending...": "Pošiljanje...",

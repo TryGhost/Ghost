@@ -191,8 +191,6 @@
     "Save": "Αποθήκευση",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "Εξοικονομήστε {amountOff} για τους επόμενους {durationInMonths} κύκλους χρέωσης. Στη συνέχεια {currency}{originalPrice}/{cadence}.",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "Εξοικονομήστε {amountOff} στον επόμενο κύκλο χρέωσής σας. Στη συνέχεια {currency}{originalPrice}/{cadence}.",
-    "Send an email and say hi!": "Στείλτε ένα email και πείτε γεια!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "Στείλτε ένα email στο {senderEmail} και πείτε γεια. Αυτό μπορεί επίσης να υποδείξει στον πάροχο email σας ότι τα emails προς και από αυτήν τη διεύθυνση θα πρέπει να θεωρούνται αξιόπιστα.",
     "Send the link below to share it with whoever you'd like.": "Στείλτε τον παρακάτω σύνδεσμο για να τον μοιραστείτε με όποιον θέλετε.",
     "Sending login link...": "Αποστολή συνδέσμου σύνδεσης...",
     "Sending...": "Αποστολή...",
