@@ -9,7 +9,7 @@ type FrameProps = {
 type TailwindFrameProps = FrameProps & {
     style: React.CSSProperties,
     title: string,
-    onResize: (iframeRoot: HTMLElement) => void
+    onResize?: (iframeRoot: HTMLElement) => void
 };
 
 /**
@@ -76,7 +76,7 @@ type PopupFrameProps = FrameProps & {
 };
 
 export const PopupFrame: React.FC<PopupFrameProps> = ({children, title}) => {
-    const style = {
+    const style: React.CSSProperties = {
         zIndex: '3999999',
         position: 'fixed',
         left: '0',
