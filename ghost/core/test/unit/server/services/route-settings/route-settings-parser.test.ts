@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {parseRouteSettings, serializeRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
+import {parseRouteSettings, parseRouteSettingsYaml, serializeRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
 import type {RouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
 
 describe('UNIT: services/route-settings/route-settings-parser', function () {
@@ -303,6 +303,50 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
                     }
                 });
             });
+        });
+    });
+
+    describe('parseRouteSettingsYaml', function () {
+        it('parses a YAML string into the domain model', function () {
+            const result = parseRouteSettingsYaml([
+                'routes:',
+                '  /about/: about',
+                'collections:',
+                '  /:',
+                '    permalink: /{slug}/',
+                '    template: index',
+                'taxonomies:',
+                '  tag: /tag/{slug}/'
+            ].join('\n'));
+
+            assert.deepEqual(result, {
+                routes: [{type: 'template', path: '/about/', templates: ['about']}],
+                collections: [{path: '/', permalink: '/{slug}/', templates: ['index']}],
+                taxonomies: {tag: '/tag/{slug}/'}
+            });
+        });
+
+        // Same error semantics as the legacy yaml-parser.js it replaces.
+        it('throws IncorrectUsageError with YAML_PARSER_ERROR code for invalid YAML', function () {
+            assert.throws(
+                () => parseRouteSettingsYaml('routes:\n\t- broken'),
+                (err: {errorType?: string; code?: string}) => {
+                    assert.equal(err.errorType, 'IncorrectUsageError');
+                    assert.equal(err.code, 'YAML_PARSER_ERROR');
+                    return true;
+                }
+            );
+        });
+
+        it('throws IncorrectUsageError when the YAML resolves to a plain string', function () {
+            assert.throws(
+                () => parseRouteSettingsYaml('just some text'),
+                (err: {errorType?: string; message?: string}) => {
+                    assert.equal(err.errorType, 'IncorrectUsageError');
+                    assert.match(String(err.message), /cannot be a plain string/);
+                    return true;
+                }
+            );
         });
     });
 

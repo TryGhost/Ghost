@@ -2,12 +2,17 @@ import yaml from 'js-yaml';
 import {z} from 'zod';
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
+import {errify} from '../../../shared/errify';
 
 const messages = {
     validationError: 'The following definition "{at}" is invalid: {reason}',
     badDataError: 'Please wrap the data definition into a custom name.',
     badDataHelp: 'Example:\n data:\n  my-tag:\n    resource: tags\n    ...\n',
-    authorDeprecatedError: 'Please choose a different name. We recommend not using author.'
+    authorDeprecatedError: 'Please choose a different name. We recommend not using author.',
+    yamlParseError: 'Could not parse provided YAML file: {context}.',
+    yamlParseHelp: 'Check provided file for typos and fix the named issues.',
+    yamlPlainStringError: 'YAML input cannot be a plain string. Check the format of your YAML file.',
+    yamlPlainStringHelp: 'https://ghost.org/docs/themes/routing/'
 };
 
 export type DataShortFormResource = 'tag' | 'page' | 'post' | 'author';
@@ -436,6 +441,39 @@ export function parseRouteSettings(raw: unknown): RouteSettings {
     }
 
     return {routes, collections, taxonomies};
+}
+
+/**
+ * Parses a raw `routes.yaml` string into the domain model. Owns the YAML
+ * decode step (previously the standalone yaml-parser.js) so callers have a
+ * single typed entry point — mirroring how custom-redirects' parser handles
+ * a config string end-to-end.
+ */
+export function parseRouteSettingsYaml(content: string): RouteSettings {
+    let parsed: unknown;
+    try {
+        parsed = yaml.load(content);
+    } catch (error) {
+        const cause = errify(error);
+        throw new errors.IncorrectUsageError({
+            message: tpl(messages.yamlParseError, {context: error instanceof yaml.YAMLException ? error.reason : undefined}),
+            code: 'YAML_PARSER_ERROR',
+            context: cause.message,
+            err: cause,
+            help: messages.yamlParseHelp
+        });
+    }
+
+    // A bare scalar (e.g. `just some text`) resolves to a string — almost
+    // always a malformed file rather than a valid routes definition.
+    if (typeof parsed === 'string') {
+        throw new errors.IncorrectUsageError({
+            message: messages.yamlPlainStringError,
+            help: messages.yamlPlainStringHelp
+        });
+    }
+
+    return parseRouteSettings(parsed);
 }
 
 export function serializeRouteSettings(settings: RouteSettings): string {
