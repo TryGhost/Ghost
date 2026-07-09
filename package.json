@@ -115,22 +115,7 @@
           "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --force-recreate --wait --quiet-pull"
         },
         "dependsOn": [
-          "docker:build",
-          {
-            "target": "build",
-            "projects": [
-              "@tryghost/kg-card-factory",
-              "@tryghost/kg-clean-basic-html",
-              "@tryghost/kg-converters",
-              "@tryghost/kg-default-cards",
-              "@tryghost/kg-default-nodes",
-              "@tryghost/kg-default-transforms",
-              "@tryghost/kg-html-to-lexical",
-              "@tryghost/kg-lexical-html-renderer",
-              "@tryghost/kg-markdown-html-renderer",
-              "@tryghost/kg-utils"
-            ]
-          }
+          "docker:build"
         ]
       },
       "docker:down": {
