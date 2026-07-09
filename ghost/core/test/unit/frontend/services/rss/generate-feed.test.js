@@ -88,6 +88,21 @@ describe('RSS: Generate Feed', function () {
             assert.match(xmlData, /<\/channel><\/rss>$/);
         });
 
+        it('defaults status to published on the URL lookup (the serializer strips it)', async function () {
+            const post = _.cloneDeep(posts[0]);
+            // RSS posts come out of the Content API serializer, which deletes
+            // `status` — everything it serves is published.
+            delete post.status;
+            data.posts = [post];
+
+            routerManagerGetUrlForResourceStub.returns('http://my-ghost-blog.com/' + post.slug + '/');
+
+            await generateFeed(baseUrl, data);
+
+            sinon.assert.calledWith(routerManagerGetUrlForResourceStub,
+                sinon.match({id: post.id, type: 'posts', status: 'published'}), {absolute: true});
+        });
+
         it('should get the item tags correct', async function () {
             data.posts = posts;
 
