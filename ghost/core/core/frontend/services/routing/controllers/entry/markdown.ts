@@ -13,7 +13,11 @@ function llmsEnabled(req: Request): boolean {
     return Boolean(llmsService && llmsService.isEnabled());
 }
 
-function isPublic(entry: Entry): boolean {
+/**
+ * Only public entries ever render as markdown; gated entries stay html (or
+ * 403 on an explicit `.md` URL).
+ */
+export function isPublic(entry: Entry): boolean {
     return entry.visibility === 'public';
 }
 
@@ -50,11 +54,13 @@ export function serveMdRequest(req: Request, res: Response, entry: Entry) {
 }
 
 /**
- * Whether the request negotiates markdown via the Accept header — only for a
- * public entry with the llms feature enabled, otherwise it renders as html.
+ * Whether the request negotiates markdown via the Accept header (and the llms
+ * feature is on) — request knowledge only, so it can be decided before the
+ * entry lookup. Whether markdown is actually served still depends on the
+ * entry: see `isPublic`.
  */
-export function isAcceptsRequest(req: Request, entry: Entry): boolean {
-    return isPublic(entry) && Boolean(getAcceptedMarkdownContentType(req)) && llmsEnabled(req);
+export function isAcceptsRequest(req: Request): boolean {
+    return Boolean(getAcceptedMarkdownContentType(req)) && llmsEnabled(req);
 }
 
 /**

@@ -28,16 +28,22 @@ describe('Front-end gift links', function () {
     let token: string;
     let pageToken: string;
     let membersToken: string;
+    let gatedBlocksToken: string;
+    let publicGatedBlocksToken: string;
     const slug = 'gift-me-this-paid-post';
     const otherSlug = 'another-paid-post';
     const pageSlug = 'gift-me-this-paid-page';
     const membersSlug = 'gift-me-this-members-post';
+    const gatedBlocksSlug = 'gift-me-this-gated-blocks-post';
+    const publicGatedBlocksSlug = 'gift-me-this-public-gated-blocks-post';
 
     beforeAll(async function () {
         const originalSettingsCacheGetFn = settingsCache.get;
         sinon.stub(settingsCache, 'get').callsFake(function (key: any, options: any) {
             if (key === 'labs') {
-                return {members: true};
+                // llmsTxt enables the markdown variants (`.md` URLs and Accept
+                // negotiation) so the suite can pin their gift-link behaviour.
+                return {members: true, llmsTxt: true};
             }
             if (key === 'active_theme') {
                 return 'members-test-theme';
@@ -95,13 +101,44 @@ describe('Front-end gift links', function () {
             published_at: moment().toDate(),
             lexical
         });
-        await testUtils.fixtures.insertPosts([paidPost, otherPaidPost, paidPage, membersPost]);
+        // A paid post with `kg-gated-block` comments, as the koenig renderer
+        // emits for cards with visibility settings. Block stripping keys off the
+        // reader's member state, so this pins the paid-member shim on gift reads.
+        const gatedBlocksPost = testUtils.DataGenerator.forKnex.createPost({
+            slug: gatedBlocksSlug,
+            visibility: 'paid',
+            status: 'published',
+            published_at: moment().toDate(),
+            lexical: testUtils.DataGenerator.markdownToLexical(
+                'Before paywall\n\n' +
+                '<!--kg-gated-block:begin nonMember:true memberSegment:"" -->\n\nAnonymous gated content\n\n<!--kg-gated-block:end-->\n\n' +
+                '<!--kg-gated-block:begin nonMember:false memberSegment:"status:-free" -->\n\nPaid-member gated content\n\n<!--kg-gated-block:end-->\n\n' +
+                '<!--members-only-->\n\nAfter paywall'
+            )
+        });
+        // A PUBLIC post with gated blocks and a live gift link (visibility can
+        // change after minting; nothing revokes the token). The markdown paths
+        // only serve public entries, so this is the fixture that could leak an
+        // unlocked variant through them.
+        const publicGatedBlocksPost = testUtils.DataGenerator.forKnex.createPost({
+            slug: publicGatedBlocksSlug,
+            visibility: 'public',
+            status: 'published',
+            published_at: moment().toDate(),
+            lexical: testUtils.DataGenerator.markdownToLexical(
+                'Public lead content\n\n' +
+                '<!--kg-gated-block:begin nonMember:false memberSegment:"status:-free" -->\n\nPaid-member gated content\n\n<!--kg-gated-block:end-->'
+            )
+        });
+        await testUtils.fixtures.insertPosts([paidPost, otherPaidPost, paidPage, membersPost, gatedBlocksPost, publicGatedBlocksPost]);
 
         // Mint a live gift link for the paid post, the paid page and the members post.
         const giftLinksService = require('../../core/server/services/gift-links');
         token = (await giftLinksService.service.ensure({actor: null}, paidPost.id)).giftLinks[0].token;
         pageToken = (await giftLinksService.service.ensure({actor: null}, paidPage.id)).giftLinks[0].token;
         membersToken = (await giftLinksService.service.ensure({actor: null}, membersPost.id)).giftLinks[0].token;
+        gatedBlocksToken = (await giftLinksService.service.ensure({actor: null}, gatedBlocksPost.id)).giftLinks[0].token;
+        publicGatedBlocksToken = (await giftLinksService.service.ensure({actor: null}, publicGatedBlocksPost.id)).giftLinks[0].token;
 
         request = supertest.agent(configUtils.config.get('url'));
     });
@@ -228,6 +265,82 @@ describe('Front-end gift links', function () {
             .expect(assertUnlocked);
 
         assert.match(res.text, /gh-test-member-state">anonymous</, '@member must stay anonymous on a gift view');
+    });
+
+    it('resolves kg-gated-block visibility as a paid member on a gift view', async function () {
+        // Gated blocks are stripped against the reading member, so a gift view
+        // only renders them correctly because of the paid-member shim: without
+        // it the anonymous-only block would leak in and the paid block drop out.
+        const res = await request
+            .get(`/${gatedBlocksSlug}/?gift=${gatedBlocksToken}`)
+            .expect(200)
+            .expect(assertUnlocked);
+
+        assert.match(res.text, /Paid-member gated content/, 'paid-segment block renders via the shim');
+        assert.doesNotMatch(res.text, /Anonymous gated content/, 'nonMember block must be stripped on a gift view');
+    });
+
+    it('resolves kg-gated-block visibility as anonymous on the canonical URL', async function () {
+        // The contrast case: without a gift token the same post renders the
+        // anonymous-only block and strips the paid one.
+        const res = await request
+            .get(`/${gatedBlocksSlug}/`)
+            .expect(200)
+            .expect(assertLocked);
+
+        assert.match(res.text, /Anonymous gated content/, 'nonMember block renders for an anonymous read');
+        assert.doesNotMatch(res.text, /Paid-member gated content/, 'paid-segment block must not render without access');
+    });
+
+    describe('markdown variants', function () {
+        // A gift view is html-only. The markdown paths (`.md` URLs and Accept
+        // negotiation) redirect gift requests to the clean URL instead of
+        // serving an unlocked variant — which would carry the llms path's
+        // public Cache-Control and none of the gift headers.
+        it('301s a .md request away from a gift view without unlocking it', async function () {
+            const res = await request
+                .get(`/${slug}.md?gift=${token}`)
+                .redirects(0)
+                .expect(301);
+
+            assert.equal(res.headers.location, `/${slug}.md`);
+            // The token-bearing redirect must not be cached.
+            assert.match(res.headers['cache-control'], /no-store/);
+        });
+
+        it('301s an Accept-negotiated markdown request away from a gift view', async function () {
+            const res = await request
+                .get(`/${publicGatedBlocksSlug}/?gift=${publicGatedBlocksToken}`)
+                .set('Accept', 'text/markdown')
+                .redirects(0)
+                .expect(301);
+
+            assert.equal(res.headers.location, `/${publicGatedBlocksSlug}/`);
+            assert.doesNotMatch(res.text || '', /Paid-member gated content/, 'the unlocked variant must never be served as markdown');
+        });
+
+        it('301s an Accept-negotiated markdown request away from a gift view on a gated entry too', async function () {
+            // The redirect is decided from the request alone, before the entry
+            // lookup — a markdown-negotiating client gets the canonical URL,
+            // never a gift view, whatever the entry's visibility.
+            const res = await request
+                .get(`/${slug}/?gift=${token}`)
+                .set('Accept', 'text/markdown')
+                .redirects(0)
+                .expect(301);
+
+            assert.equal(res.headers.location, `/${slug}/`);
+        });
+
+        it('serves the gated markdown variant on the clean .md URL', async function () {
+            const res = await request
+                .get(`/${publicGatedBlocksSlug}.md`)
+                .expect(200)
+                .expect('Content-Type', /text\/markdown/);
+
+            assert.match(res.text, /Public lead content/, 'public content renders as markdown');
+            assert.doesNotMatch(res.text, /Paid-member gated content/, 'gated blocks stay stripped for the anonymous markdown read');
+        });
     });
 
     describe('the gift_link analytics dimension', function () {
