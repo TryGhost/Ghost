@@ -5,8 +5,9 @@ const LabItem: React.FC<{
     title?: React.ReactNode;
     detail?: React.ReactNode;
     action?: React.ReactNode;
+    testId?: string;
 }> = ({
-    title, detail, action
+    title, detail, action, testId
 }) => {
     return (
         <ListItem
@@ -14,6 +15,7 @@ const LabItem: React.FC<{
             bgOnHover={false}
             detail={detail}
             paddingRight={false}
+            testId={testId}
             title={title} />
     );
 };

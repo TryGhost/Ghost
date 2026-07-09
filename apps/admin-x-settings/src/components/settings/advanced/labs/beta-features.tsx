@@ -1,6 +1,8 @@
 import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
+import YamlFileEditorModal from './yaml-file-editor-modal';
 import {Button, FileUpload, List, showToast} from '@tryghost/admin-x-design-system';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
@@ -19,6 +21,30 @@ const BetaFeatures: React.FC = () => {
     const [routesUploading, setRoutesUploading] = useState<boolean>(false);
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
     const isAutomationsEnabled = !!labs.automations;
+
+    const openRedirectsEditor = () => {
+        NiceModal.show(YamlFileEditorModal, {
+            title: 'Redirects',
+            hint: <>Configure redirects for old or moved content. See the <a className='text-green' href='https://ghost.org/tutorials/implementing-redirects/' rel='noopener noreferrer' target='_blank'>docs</a> for the file format.</>,
+            testId: 'modal-redirects-editor',
+            downloadPath: '/redirects/download/',
+            uploadFilename: 'redirects.yaml',
+            successMessage: 'Redirects updated',
+            onUpload: (file: File) => uploadRedirects(file)
+        });
+    };
+
+    const openRoutesEditor = () => {
+        NiceModal.show(YamlFileEditorModal, {
+            title: 'Routes',
+            hint: <>Configure dynamic routing by editing the routes.yaml file. See the <a className='text-green' href='https://ghost.org/docs/themes/routing/' rel='noopener noreferrer' target='_blank'>docs</a> for the file format.</>,
+            testId: 'modal-routes-editor',
+            downloadPath: '/settings/routes/yaml/',
+            uploadFilename: 'routes.yaml',
+            successMessage: 'Routes updated',
+            onUpload: (file: File) => uploadRoutes(file)
+        });
+    };
 
     return (
         <List titleSeparator={false}>
@@ -51,6 +77,7 @@ const BetaFeatures: React.FC = () => {
                 title='Additional payment methods' />
             <LabItem
                 action={<div className='flex flex-col items-end gap-1'>
+                    <Button color='grey' label='Edit' size='sm' onClick={openRedirectsEditor} />
                     <FileUpload
                         id='upload-redirects'
                         onUpload={async (file) => {
@@ -73,9 +100,11 @@ const BetaFeatures: React.FC = () => {
                     <Button color='green' label='Download current redirects' link onClick={() => downloadRedirects()} />
                 </div>}
                 detail={<>Configure redirects for old or moved content, <br /> more info in the <a className='text-green' href="https://ghost.org/tutorials/implementing-redirects/" rel="noopener noreferrer" target="_blank">docs</a></>}
+                testId='redirects'
                 title='Redirects' />
             <LabItem
                 action={<div className='flex flex-col items-end gap-1'>
+                    <Button color='grey' label='Edit' size='sm' onClick={openRoutesEditor} />
                     <FileUpload
                         id='upload-routes'
                         onUpload={async (file) => {
@@ -98,6 +127,7 @@ const BetaFeatures: React.FC = () => {
                     <Button color='green' label='Download current routes' link onClick={() => downloadRoutes()} />
                 </div>}
                 detail='Configure dynamic routing by modifying the routes.yaml file'
+                testId='routes'
                 title='Routes' />
         </List>
     );
