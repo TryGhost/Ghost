@@ -130,6 +130,17 @@ function getAutomationEmailSends() {
         .filter(emailToSend => emailToSend.tags?.includes('automation-email'));
 }
 
+async function getEmailSentCounts(actions) {
+    const actionIds = actions.map(action => action.id);
+    const rows = await db.knex('automation_action_revisions')
+        .select('action_id', 'email_sent_count')
+        .whereIn('action_id', actionIds);
+
+    const countsByActionId = new Map(rows.map(row => [row.action_id, row.email_sent_count]));
+
+    return actionIds.map(actionId => countsByActionId.get(actionId));
+}
+
 describe('Members Automations', function () {
     beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -161,6 +172,7 @@ describe('Members Automations', function () {
 
         const sendEmailActions = automation.actions.filter(action => action.type === 'send_email');
         assert.equal(sendEmailActions.length, 2);
+        assert.deepEqual(await getEmailSentCounts(sendEmailActions), [null, null]);
 
         const emailDesignSettingId = sendEmailActions[0].data.email_design_setting_id;
         assert(emailDesignSettingId, 'Expected send email action to have an email design setting');
@@ -224,6 +236,7 @@ describe('Members Automations', function () {
             to: email,
             subject: 'Follow up'
         });
+        assert.deepEqual(await getEmailSentCounts(sendEmailActions), [1, 1]);
     });
 
     it('does nothing when the automation is inactive', async function () {
