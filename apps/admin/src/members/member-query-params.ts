@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import {type FilterPredicate, resolveField} from '@tryghost/admin-x-framework/filters';
+import {type FilterPredicate, resolveField} from '@/shared/filters';
 import {memberFields} from './member-fields';
 import type {Member} from '@tryghost/admin-x-framework/api/members';
 

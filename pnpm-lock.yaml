@@ -66,6 +66,9 @@ catalogs:
     '@tanstack/react-query':
       specifier: 4.44.0
       version: 4.44.0
+    '@tanstack/react-virtual':
+      specifier: 3.14.5
+      version: 3.14.5
     '@testing-library/jest-dom':
       specifier: 6.9.1
       version: 6.9.1
@@ -273,6 +276,9 @@ catalogs:
     tailwindcss:
       specifier: 4.2.2
       version: 4.2.2
+    temporal-polyfill:
+      specifier: 0.3.2
+      version: 0.3.2
     tldts:
       specifier: ^7.4.4
       version: 7.4.4
@@ -590,6 +596,9 @@ importers:
       '@svg-maps/world':
         specifier: 2.0.0
         version: 2.0.0
+      '@tanstack/react-virtual':
+        specifier: 'catalog:'
+        version: 3.14.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/activitypub':
         specifier: workspace:*
         version: link:../activitypub
@@ -647,6 +656,9 @@ importers:
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      temporal-polyfill:
+        specifier: 'catalog:'
+        version: 0.3.2
       use-debounce:
         specifier: 10.1.1
         version: 10.1.1(react@18.3.1)
@@ -971,18 +983,12 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 4.44.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@tanstack/react-virtual':
-        specifier: 3.14.5
-        version: 3.14.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tinybirdco/charts':
         specifier: 0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/admin-x-design-system':
         specifier: workspace:*
         version: link:../admin-x-design-system
-      '@tryghost/nql-lang':
-        specifier: 'catalog:'
-        version: 0.6.6
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
@@ -1001,12 +1007,6 @@ importers:
       react-router:
         specifier: 'catalog:'
         version: 7.18.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      temporal-polyfill:
-        specifier: 0.3.2
-        version: 0.3.2
-      use-debounce:
-        specifier: 10.1.1
-        version: 10.1.1(react@18.3.1)
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'

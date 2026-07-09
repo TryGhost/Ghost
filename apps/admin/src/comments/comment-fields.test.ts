@@ -1,7 +1,7 @@
 import nql from '@tryghost/nql-lang';
 import {commentFields} from '@/comments/comment-fields';
 import {describe, expect, it} from 'vitest';
-import type {CodecContext, FilterPredicate} from '@tryghost/admin-x-framework/filters';
+import type {CodecContext, FilterPredicate} from '@/shared/filters';
 
 const createdAtContext: CodecContext = {
     key: 'created_at',

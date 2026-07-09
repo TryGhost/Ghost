@@ -7,7 +7,7 @@ import {CommentMenu} from './comment-menu';
 import {CommentMetrics} from './comment-metrics';
 import {buildThreadLink} from './thread-link';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
-import {LoadMoreButton, useInfiniteVirtualScroll, useScrollRestoration, useVirtualListWindow} from '@tryghost/admin-x-framework/virtual-list';
+import {LoadMoreButton, useInfiniteVirtualScroll, useScrollRestoration, useVirtualListWindow} from '@/shared/virtual-list';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {forwardRef, useEffect, useRef, useState} from 'react';
 import {useCommentsPinningEnabled} from '@/comments/hooks/use-comments-pinning-enabled';

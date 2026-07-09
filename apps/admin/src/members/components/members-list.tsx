@@ -1,5 +1,5 @@
 import MembersListItem from './members-list-item';
-import {LoadMoreButton, useInfiniteVirtualScroll, useScrollRestoration, useVirtualListWindow} from '@tryghost/admin-x-framework/virtual-list';
+import {LoadMoreButton, useInfiniteVirtualScroll, useScrollRestoration, useVirtualListWindow} from '@/shared/virtual-list';
 import {type Member} from '@tryghost/admin-x-framework/api/members';
 import {MembersTableColGroup, MembersTableHeader, PinnedMemberHeader} from './member-table-chrome';
 import {Table, TableBody, TableCell, TableRow} from '@tryghost/shade/components';

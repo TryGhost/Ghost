@@ -2,7 +2,7 @@ import React from 'react';
 import {type Filter, Filters} from '@tryghost/shade/patterns';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {useCommentFilterFields} from '@/comments/use-comment-filter-fields';
-import {useMemberValueSource, usePostResourceValueSource} from '@tryghost/admin-x-framework/filter-sources';
+import {useMemberValueSource, usePostResourceValueSource} from '@/shared/filter-sources';
 
 interface CommentsFiltersProps {
     filters: Filter[];
