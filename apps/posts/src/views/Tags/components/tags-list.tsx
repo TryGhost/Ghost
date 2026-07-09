@@ -1,10 +1,8 @@
-import LoadMoreButton from '@components/virtual-table/load-more-button';
 import {Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {LoadMoreButton, useInfiniteVirtualScroll, useVirtualListWindow} from '@tryghost/admin-x-framework/virtual-list';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {Tag} from '@tryghost/admin-x-framework/api/tags';
 import {forwardRef, useRef} from 'react';
-import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
-import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
 
 const SpacerRow = ({height}: { height: number }) => (
     <tr aria-hidden="true" className="flex lg:table-row">

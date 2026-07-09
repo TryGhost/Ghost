@@ -4,7 +4,7 @@ import {act, renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it} from 'vitest';
 import type {ReactNode} from 'react';
 
-import {useVirtualListWindow} from './virtual-list-window';
+import {useVirtualListWindow} from '../../../src/virtual-list/use-virtual-list-window';
 
 function createWrapper(initialEntry: string) {
     return function Wrapper({children}: {children: ReactNode}) {
@@ -16,7 +16,7 @@ function createWrapper(initialEntry: string) {
     };
 }
 
-describe('virtual-list-window', () => {
+describe('useVirtualListWindow', () => {
     beforeEach(() => {
         window.history.replaceState({}, '');
     });
@@ -92,6 +92,32 @@ describe('virtual-list-window', () => {
         });
 
         expect(result.current.visibleItemCount).toBe(2000);
+    });
+
+    it('unlocks a custom window size when provided', () => {
+        const {result} = renderHook(() => useVirtualListWindow(5000, {windowSize: 500}), {
+            wrapper: createWrapper('/members?filter=members')
+        });
+
+        expect(result.current.visibleItemCount).toBe(500);
+        expect(result.current.canLoadMore).toBe(true);
+
+        act(() => {
+            result.current.loadMore();
+        });
+
+        expect(result.current.visibleItemCount).toBe(1000);
+    });
+
+    it('shows every row in a single window when the window size exceeds the total', () => {
+        const {result} = renderHook(() => useVirtualListWindow(300, {windowSize: 500}), {
+            wrapper: createWrapper('/members?filter=members')
+        });
+
+        expect(result.current).toMatchObject({
+            canLoadMore: false,
+            visibleItemCount: 300
+        });
     });
 
     it('ignores invalid persisted unlocked counts', () => {

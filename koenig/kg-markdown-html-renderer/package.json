@@ -1,7 +1,11 @@
 {
   "name": "@tryghost/kg-markdown-html-renderer",
   "version": "7.2.3",
-  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-markdown-html-renderer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-markdown-html-renderer"
+  },
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "build/cjs/index.js",
