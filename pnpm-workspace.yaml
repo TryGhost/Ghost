@@ -87,6 +87,7 @@ catalog:
   concurrently: 10.0.3
   country-flag-icons: 1.6.20
   cross-fetch: 4.1.0
+  dependency-cruiser: ^18.0.0
   dequal: 2.0.3
   dompurify: 3.4.11
   dotenv: 17.4.2
