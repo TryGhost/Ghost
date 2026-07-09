@@ -37,7 +37,7 @@ const BetaFeatures: React.FC = () => {
     const openRoutesEditor = () => {
         NiceModal.show(YamlFileEditorModal, {
             title: 'Routes',
-            hint: <>Configure dynamic routing by editing the routes.yaml file. See the <a className='text-green' href='https://ghost.org/docs/themes/routing/' rel='noopener noreferrer' target='_blank'>docs</a> for the file format.</>,
+            hint: <>Configure dynamic routing by editing the routes.yaml file. See the <a className='text-green' href='https://docs.ghost.org/themes/routing/' rel='noopener noreferrer' target='_blank'>docs</a> for the file format.</>,
             testId: 'modal-routes-editor',
             downloadPath: '/settings/routes/yaml/',
             uploadFilename: 'routes.yaml',
