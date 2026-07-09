@@ -946,6 +946,9 @@ jobs:
         env:
           IS_SHIPPING: ${{ github.repository == 'TryGhost/Ghost' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag') && 'true' || '' }}
           VITE_SENTRY_AUTH_TOKEN: ${{ secrets.VITE_SENTRY_AUTH_TOKEN }}
+          # This step has intermittently segfaulted before Nx starts the
+          # target script. Keep Nx orchestration, but avoid its native PTY runner.
+          NX_NATIVE_COMMAND_RUNNER: "false"
         run: |
           # The Sentry plugin only warns when the token is missing, which
           # would silently skip the upload AND poison the Nx cache with a
