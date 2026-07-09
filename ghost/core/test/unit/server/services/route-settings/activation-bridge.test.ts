@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 import {describe, it} from 'vitest';
 import {expandRouteSettings} from '../../../../../core/server/services/route-settings/activation-bridge';
 import {parseRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
 import type {RouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
 
 const validate = require('../../../../../core/server/services/route-settings/validate');
+const parseYaml = require('../../../../../core/server/services/route-settings/yaml-parser');
 
 function empty(): RouteSettings {
     return {routes: [], collections: [], taxonomies: {}};
@@ -559,6 +563,37 @@ describe('activation-bridge', function () {
                 assert.equal(data.query.featured.options.limit, 3);
                 assert.equal(data.query.featured.options.slug, undefined);
             });
+        });
+    });
+
+    describe('hash continuity', function () {
+        // routes_hash is md5(JSON.stringify(...)) over the expanded settings —
+        // the bridge must keep producing the known default hash from
+        // route-settings.js so it survives the switch away from validate.js.
+        const DEFAULT_ROUTES_HASH = '3d180d52c663d173a6be791ef411ed01';
+
+        const defaultRoutesYaml = fs.readFileSync(
+            path.join(__dirname, '../../../../../core/server/services/route-settings/default-routes.yaml'),
+            'utf8'
+        );
+
+        function hash(expanded: object): string {
+            return crypto.createHash('md5')
+                .update(JSON.stringify(expanded), 'binary')
+                .digest('hex');
+        }
+
+        it('legacy validate.js produces the known default routes hash', function () {
+            const legacy = validate(parseYaml(defaultRoutesYaml));
+
+            assert.equal(hash(legacy), DEFAULT_ROUTES_HASH);
+        });
+
+        it('bridge output serializes to the same hash as validate.js for default routes', function () {
+            const domain = parseRouteSettings(parseYaml(defaultRoutesYaml));
+            const expanded = expandRouteSettings(domain);
+
+            assert.equal(hash(expanded), DEFAULT_ROUTES_HASH);
         });
     });
 });
