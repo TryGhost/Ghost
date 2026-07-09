@@ -41,22 +41,22 @@ describe('Utils: generateDecoratorNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     describe('exportDOM', function () {
         let NodeWithRender: GeneratedNodeClass;
         let $createNodeWithRender: (dataset?: Record<string, unknown>) => GeneratedNodeInstance;
 
-        before(function () {
+        beforeAll(function () {
             NodeWithRender = utils.generateDecoratorNode({
                 nodeType: 'render-test',
                 properties: [],
@@ -188,7 +188,7 @@ describe('Utils: generateDecoratorNode', function () {
         let NodeWithVisibility: GeneratedNodeClass;
         let $createNodeWithVisibility: (dataset?: Record<string, unknown>) => GeneratedNodeInstance;
 
-        before(function () {
+        beforeAll(function () {
             NodeWithVisibility = utils.generateDecoratorNode({
                 nodeType: 'visibility-test',
                 properties: [],

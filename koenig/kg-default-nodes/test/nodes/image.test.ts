@@ -17,16 +17,16 @@ describe('ImageNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -335,41 +335,43 @@ describe('ImageNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'image',
-                        ...dataset,
-                        cardWidth: 'wide'
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'image',
+                            ...dataset,
+                            cardWidth: 'wide'
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [imageNode] = $getRoot().getChildren() as ImageNode[];
+                editor.getEditorState().read(() => {
+                    try {
+                        const [imageNode] = $getRoot().getChildren() as ImageNode[];
 
-                    imageNode.src.should.equal('/content/images/2022/11/koenig-lexical.jpg');
-                    imageNode.width!.should.equal(3840);
-                    imageNode.height!.should.equal(2160);
-                    imageNode.title.should.equal('This is a title');
-                    imageNode.alt.should.equal('This is some alt text');
-                    imageNode.caption.should.equal('This is a <b>caption</b>');
-                    imageNode.cardWidth.should.equal('wide');
+                        imageNode.src.should.equal('/content/images/2022/11/koenig-lexical.jpg');
+                        imageNode.width!.should.equal(3840);
+                        imageNode.height!.should.equal(2160);
+                        imageNode.title.should.equal('This is a title');
+                        imageNode.alt.should.equal('This is some alt text');
+                        imageNode.caption.should.equal('This is a <b>caption</b>');
+                        imageNode.cardWidth.should.equal('wide');
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });

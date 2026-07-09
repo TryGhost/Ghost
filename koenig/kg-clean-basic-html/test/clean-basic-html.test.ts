@@ -9,7 +9,7 @@ import {cleanBasicHtml} from '../src/clean-basic-html.js';
 describe('cleanBasicHtml', function () {
     let options: {createDocument: (html: string) => Document};
 
-    before(function () {
+    beforeAll(function () {
         options = {
             createDocument(html: string) {
                 return (new JSDOM(html)).window.document;

@@ -24,16 +24,16 @@ describe('AudioNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -163,38 +163,40 @@ describe('AudioNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'audio',
-                        ...dataset
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'audio',
+                            ...dataset
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [audioNode] = $getRoot().getChildren() as AudioNode[];
+                editor.getEditorState().read(() => {
+                    try {
+                        const [audioNode] = $getRoot().getChildren() as AudioNode[];
 
-                    audioNode.src.should.equal(dataset.src);
-                    audioNode.title.should.equal(dataset.title);
-                    audioNode.duration.should.equal(dataset.duration);
-                    audioNode.mimeType.should.equal(dataset.mimeType);
-                    audioNode.thumbnailSrc.should.equal(dataset.thumbnailSrc);
+                        audioNode.src.should.equal(dataset.src);
+                        audioNode.title.should.equal(dataset.title);
+                        audioNode.duration.should.equal(dataset.duration);
+                        audioNode.mimeType.should.equal(dataset.mimeType);
+                        audioNode.thumbnailSrc.should.equal(dataset.thumbnailSrc);
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });

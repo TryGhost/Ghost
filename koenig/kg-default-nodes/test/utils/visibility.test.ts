@@ -221,7 +221,7 @@ describe('Utils: visibility', function () {
     describe('renderWithVisibility', function () {
         let document: Document;
 
-        before(function () {
+        beforeAll(function () {
             document = (new JSDOM()).window.document;
         });
 
