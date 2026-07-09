@@ -57,7 +57,8 @@ const PRIVATE_FEATURES = [
     'giftSubCustomization',
     'tagDetailsReact',
     'selfServeArchives',
-    'machinePayments'
+    'machinePayments',
+    'addons'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

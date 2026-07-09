@@ -188,6 +188,32 @@ const appRoutes: RouteObject[] = [
             requiresAccess: canAccessSettingsRoute
         } satisfies RouteHandle & AdminRouteHandle & AccessRouteHandle,
     },
+    {
+        // Add-on surfaces (labs: addons). Static segments rank above the
+        // :handle wildcard, so `marketplace` and `install` are reserved handles.
+        path: "apps",
+        lazy: lazyComponent(() => import("./addons/apps-list-route")),
+    },
+    {
+        path: "apps/marketplace",
+        lazy: lazyComponent(() => import("./addons/marketplace-route")),
+    },
+    {
+        path: "apps/marketplace/:handle",
+        lazy: lazyComponent(() => import("./addons/addon-detail-route")),
+    },
+    {
+        // Consent screen: #/apps/install?manifest=<url> — the link every install
+        // goes through, shareable from anywhere.
+        path: "apps/install",
+        lazy: lazyComponent(() => import("./addons/addon-install-route")),
+    },
+    {
+        // Add-on pages. The host owns the URL bar and passes the remainder to
+        // the sandbox as ghost.data.context.path.
+        path: "apps/:handle/*",
+        lazy: lazyComponent(() => import("./addons/addon-page-route")),
+    },
     {path: "/posts", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
     {path: "/pages", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
     // Ember-handled routes

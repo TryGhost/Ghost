@@ -7,6 +7,7 @@ import StatsLayout from '@/analytics/views/stats/layout/stats-layout';
 import StatsView from '@/analytics/views/stats/layout/stats-view';
 import TopPosts from './components/top-posts';
 import {ALL_AUDIENCES} from '@/shared/analytics/constants';
+import {AddonDashboardCards} from '@tryghost/addon-kit/host';
 import {type GhAreaChartDataItem} from '@tryghost/shade/patterns';
 import {H3} from '@tryghost/shade/primitives';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
@@ -19,6 +20,7 @@ import {useAnalytics} from '@/analytics/providers/analytics-context';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {useGrowthStats} from '@/analytics/hooks/use-growth-stats';
 import {useLatestPostStats} from '@/analytics/hooks/use-latest-post-stats';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 
@@ -74,6 +76,7 @@ const Overview: React.FC = () => {
     const {appSettings} = useAppContext();
     const {range} = useAnalytics();
     const {statsConfig, isLoading: isConfigLoading} = useAnalyticsData();
+    const addonsEnabled = useFeatureFlag('addons');
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
     const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
@@ -256,6 +259,7 @@ const Overview: React.FC = () => {
                         </div>
                     </HelpCard>
                 </div>
+                {addonsEnabled && <AddonDashboardCards context={{range}} />}
             </StatsView>
         </StatsLayout>
     );
