@@ -8,7 +8,9 @@ export const STATS_RANGES = {
     LAST_7_DAYS: {name: 'Last 7 days', value: 7},
     LAST_30_DAYS: {name: 'Last 30 days', value: 30 + 1},
     LAST_90_DAYS: {name: 'Last 90 days', value: 90 + 1},
-    YEAR_TO_DATE: {name: 'Year to date', value: 365 + 1},
+    // -1 is the year-to-date sentinel understood by shade's getRangeDates —
+    // it resolves to January 1st of the current year, not a trailing window
+    YEAR_TO_DATE: {name: 'Year to date', value: -1},
     LAST_12_MONTHS: {name: 'Last 12 months', value: 12 * (30 + 1)},
     ALL_TIME: {name: 'All time', value: 1000}
 } as const;

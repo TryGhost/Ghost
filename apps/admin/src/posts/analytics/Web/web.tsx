@@ -57,7 +57,11 @@ const Web: React.FC<postAnalyticsProps> = () => {
             return STATS_RANGES.ALL_TIME.value; // Fallback if no publication date
         }
         const calculatedRange = getRangeForStartDate(post.published_at);
-        if (range > calculatedRange) {
+        // Resolve the selected range to a concrete day count before clamping to
+        // the post's age — "Year to date" is the sentinel -1, not a day count
+        const {startDate: rangeStart, endDate: rangeEnd} = getRangeDates(range);
+        const rangeInDays = rangeEnd.diff(rangeStart, 'days') + 1;
+        if (rangeInDays > calculatedRange) {
             return calculatedRange;
         }
         return range;

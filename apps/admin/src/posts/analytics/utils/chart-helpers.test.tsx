@@ -12,7 +12,7 @@ describe('getPeriodText', () => {
     });
 
     it('should return empty string for unknown range', () => {
-        expect(getPeriodText(-1)).toBe('');
+        expect(getPeriodText(-99)).toBe('');
     });
 
     it('should handle edge case ranges correctly', () => {
