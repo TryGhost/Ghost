@@ -85,19 +85,12 @@ export interface RouteSettings {
     taxonomies: TaxonomyConfig;
 }
 
-// ---------------------------------------------------------------------------
-// Validation helpers
-// ---------------------------------------------------------------------------
-
 function validationError(at: string, reason: string, help?: string): errors.ValidationError {
     return new errors.ValidationError({
         message: tpl(messages.validationError, {at, reason}),
         ...(help ? {help} : {})
     });
 }
-// ---------------------------------------------------------------------------
-// Data schemas
-// ---------------------------------------------------------------------------
 
 const VALID_SHORTFORM_RESOURCES = ['tag', 'page', 'post', 'author'] as const;
 const VALID_LONGFORM_RESOURCES = ['tags', 'posts', 'pages', 'authors'] as const;
@@ -210,10 +203,6 @@ function parseRouteData(data: unknown): RouteData {
     return parsed;
 }
 
-// ---------------------------------------------------------------------------
-// Route schemas (raw YAML → domain model)
-// ---------------------------------------------------------------------------
-
 const TemplateField = z.union([z.string(), z.array(z.string())]).optional().default([])
     .transform(v => {
         if (!v || (Array.isArray(v) && v.length === 0)) {
@@ -269,13 +258,6 @@ const RouteObjectSchema = z.object({
     return route;
 });
 
-// No union here — string routes are handled in the parseRouteSettings loop
-// to avoid Zod v4 union masking inner error messages with "Invalid input".
-
-// ---------------------------------------------------------------------------
-// Collection schema
-// ---------------------------------------------------------------------------
-
 const RawCollectionValueSchema = z.object({
     permalink: z.string({message: 'Please define a permalink route.'}).optional(),
     template: TemplateField,
@@ -308,19 +290,11 @@ const RawCollectionValueSchema = z.object({
     return collection;
 });
 
-// ---------------------------------------------------------------------------
-// Top-level schema
-// ---------------------------------------------------------------------------
-
 const RouteSettingsSchema = z.object({
     routes: z.record(z.string(), z.unknown()).nullable().optional().default({}),
     collections: z.record(z.string(), RawCollectionValueSchema).nullable().optional().default({}),
     taxonomies: z.record(z.string(), z.string()).nullable().optional().default({})
 });
-
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
 
 function toValidationError(error: z.ZodError): errors.ValidationError {
     const issue = error.issues[0];
