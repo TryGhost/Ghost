@@ -12,11 +12,13 @@
   "types": "build/esm/index.d.ts",
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "types": "./build/esm/index.d.ts",
       "import": "./build/esm/index.js",
       "require": "./build/cjs/index.js"
     },
     "./visibility": {
+      "source": "./src/visibility.ts",
       "types": "./build/esm/visibility.d.ts",
       "import": "./build/esm/visibility.js",
       "require": "./build/cjs/visibility.js"

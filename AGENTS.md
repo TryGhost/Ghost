@@ -51,6 +51,30 @@ release archive installs them from npm. They are published to npm for
 external consumers only, automatically as part of the Ghost release lane
 (see `publish_koenig_packages` in ci.yml).
 
+**Zero-build dev via the `source` export condition.** The `kg-*` libraries
+consumed by `ghost/core` (and `ghost/parse-email-address`) declare a `source`
+condition in their `package.json` `exports` that points at the raw
+`src/*.ts`, listed *before* `types`/`import`/`require`:
+
+```jsonc
+".": {
+  "source": "./src/index.ts",     // dev/test: read raw TS
+  "types": "./build/esm/index.d.ts",
+  "import": "./build/esm/index.js",
+  "require": "./build/cjs/index.js" // prod/published: compiled JS
+}
+```
+
+`ghost/core`'s dev runner (`nodemon.json`: `node --conditions=source --import=tsx`)
+and its Vitest configs (`resolve.conditions: ['source', 'node']` +
+`--import tsx --conditions=source`) activate this condition, so a source change
+in a `kg-*` package is picked up with **no `tsc` rebuild**. Production and the
+published npm tarball run plain `node`, which ignores `source` and uses
+`build/` — and `src/` is excluded from each package's `files` array, so it is
+never shipped. When adding a new backend-consumed TS workspace package, copy
+this `exports` shape (see `ghost/parse-email-address`) so it works build-free
+in dev from day one; keep the `^build` graph for `tsc`/type-checking and prod.
+
 ### e2e/ - End-to-end tests
 - Playwright-based E2E tests with Docker container isolation
 - See `e2e/CLAUDE.md` for detailed testing guidance
