@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
-import {BaseEdge, EdgeLabelRenderer, EdgeProps, getSmoothStepPath} from '@xyflow/react';
+import {BaseEdge, EdgeLabelRenderer, getSmoothStepPath} from '@xyflow/react';
+import type {EdgeProps} from '@xyflow/react';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {Popover, PopoverContent, PopoverTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 

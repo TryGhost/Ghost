@@ -608,6 +608,12 @@ importers:
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
+      '@xyflow/react':
+        specifier: 12.11.1
+        version: 12.11.1(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      dequal:
+        specifier: 'catalog:'
+        version: 2.0.3
       i18n-iso-countries:
         specifier: 7.14.0
         version: 7.14.0
@@ -626,9 +632,18 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
+      react-router:
+        specifier: 'catalog:'
+        version: 7.18.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-svg-map:
         specifier: 2.2.0
         version: 2.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      sonner:
+        specifier: 'catalog:'
+        version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      validator:
+        specifier: 'catalog:'
+        version: 13.12.0
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -660,6 +675,9 @@ importers:
       '@types/react-svg-map':
         specifier: 2.1.4
         version: 2.1.4
+      '@types/validator':
+        specifier: 'catalog:'
+        version: 13.15.10
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 6.0.3(vite@8.1.3(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
@@ -51210,7 +51228,7 @@ snapshots:
       acorn-import-phases: 1.0.4(acorn@8.17.0)
       browserslist: 4.28.4
       chrome-trace-event: 1.0.4
-      enhanced-resolve: 5.24.0
+      enhanced-resolve: 5.24.1
       es-module-lexer: 2.1.0
       eslint-scope: 5.1.1
       events: 3.3.0
@@ -51251,7 +51269,7 @@ snapshots:
       acorn-import-phases: 1.0.4(acorn@8.17.0)
       browserslist: 4.28.4
       chrome-trace-event: 1.0.4
-      enhanced-resolve: 5.24.0
+      enhanced-resolve: 5.24.1
       es-module-lexer: 2.1.0
       eslint-scope: 5.1.1
       events: 3.3.0

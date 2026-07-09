@@ -2,8 +2,8 @@ import '@xyflow/react/dist/style.css';
 import React, {useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
-import {Handle, Node, NodeProps, Position} from '@xyflow/react';
-import {InsertActionAnchor} from '@tryghost/admin-x-framework/api/automations';
+import {Handle, Position} from '@xyflow/react';
+import type {Node, NodeProps} from '@xyflow/react';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
@@ -12,13 +12,8 @@ export const TRIGGER_CANVAS_ID = '__trigger__';
 export const TAIL_CANVAS_ID = '__tail__';
 
 // Canvas-local anchor: React Flow node IDs of the two nodes between which a step is being inserted.
-// Translated to the API's `InsertActionAnchor` by `toApiAnchor` before reaching the data helpers.
+// Translated to the API's `InsertActionAnchor` by `toApiAnchor` (in ./node-helpers) before reaching the data helpers.
 export type CanvasAnchor = {sourceId: string; targetId: string};
-
-export const toApiAnchor = ({sourceId, targetId}: CanvasAnchor): InsertActionAnchor => ({
-    previousActionId: sourceId === TRIGGER_CANVAS_ID ? undefined : sourceId,
-    nextActionId: targetId === TAIL_CANVAS_ID ? undefined : targetId
-});
 
 export type StepNodeDisplayData = {
   errorMessage?: string;
@@ -220,10 +215,4 @@ const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
     );
 };
 
-const nodeTypes = {
-    trigger: TriggerNode,
-    step: StepNode,
-    tail: TailNode
-};
-
-export {TriggerNode, StepNode, TailNode, nodeTypes};
+export {TriggerNode, StepNode, TailNode};

@@ -10,7 +10,7 @@ import {useEmailPreview} from './use-email-preview';
 import {useEmailSenderDetails} from './use-sender-details';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {usePreviewAutomationEmail} from '@tryghost/admin-x-framework/api/automations';
-import type {EmailModalMode} from '../types';
+import type {EmailModalMode} from '@/automations/components/types';
 
 interface EmailPreviewModalContentProps {
     title: string;
@@ -136,7 +136,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             lexical: initialLexical || ''
         },
         savingDelay: 500,
-        onSave: async (state) => {
+        onSave: (state) => {
             onSave({subject: state.subject, lexical: state.lexical});
         },
         onSaveError: handleError
@@ -159,7 +159,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             return;
         }
         hasEnteredInitialPreview.current = true;
-        enterPreview(formState);
+        void enterPreview(formState);
     }, [enterPreview, formState, initialMode]);
 
     const isDirty = saveState === 'unsaved';
@@ -211,7 +211,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
         const handleCMDS = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 's') {
                 e.preventDefault();
-                handleSaveClickRef.current();
+                void handleSaveClickRef.current();
             }
         };
         window.addEventListener('keydown', handleCMDS);
@@ -255,7 +255,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
 
         if (nextMode === 'preview') {
             setPreviewSubjectOverride(null);
-            enterPreview(formState);
+            void enterPreview(formState);
         } else {
             setShowTestDropdown(false);
             setPreviewSubjectOverride(null);
@@ -337,7 +337,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                                 <Button variant="outline" onClick={attemptClose}>Close</Button>
                                 <Button
                                     disabled={okProps.disabled}
-                                    onClick={handleSaveClick}
+                                    onClick={() => void handleSaveClick()}
                                 >
                                     {saveButtonLabel}
                                 </Button>

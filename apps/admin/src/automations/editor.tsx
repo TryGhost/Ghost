@@ -2,7 +2,8 @@ import AutomationCanvas, {EMAIL_STEP_QUERY_PARAM} from './components/canvas/auto
 import AutomationHeader from './components/automation-header';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
-import {AutomationDetail, AutomationStatus, useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
+import {useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationDetail, AutomationStatus} from '@tryghost/admin-x-framework/api/automations';
 import {dequal} from 'dequal';
 import {isEmptyEmailLexical} from './utils';
 import {toast} from 'sonner';
@@ -144,7 +145,7 @@ const AutomationEditor: React.FC = () => {
             break;
         default: {
             const _exhaustive: never = statusTransition;
-            throw new Error(`Unhandled status transition: ${_exhaustive}`);
+            throw new Error(`Unhandled status transition: ${String(_exhaustive)}`);
         }
         }
 
@@ -296,7 +297,7 @@ const AutomationEditor: React.FC = () => {
         break;
     default: {
         const _exhaustive: never = editState;
-        throw new Error(`Unhandled edit state: ${_exhaustive}`);
+        throw new Error(`Unhandled edit state: ${String(_exhaustive)}`);
     }
     }
 
@@ -362,7 +363,7 @@ const AutomationEditor: React.FC = () => {
             break;
         default: {
             const _exhaustive: never = draft.status;
-            throw new Error(`Unhandled status: ${_exhaustive}`);
+            throw new Error(`Unhandled status: ${String(_exhaustive)}`);
         }
         }
     };

@@ -1,4 +1,4 @@
-import {WELCOME_EMAIL_SLUGS} from '../utils/default-welcome-email-values';
+import {WELCOME_EMAIL_SLUGS} from '@/automations/utils/default-welcome-email-values';
 import {checkStripeEnabled, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseAutomations} from '@tryghost/admin-x-framework/api/automations';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';

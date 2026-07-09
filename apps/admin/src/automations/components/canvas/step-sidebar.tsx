@@ -1,9 +1,9 @@
 import '@xyflow/react/dist/style.css';
 import React, {useEffect, useRef, useState} from 'react';
-import {AutomationDetail, AutomationSendEmailAction, AutomationWaitAction} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationDetail, AutomationSendEmailAction, AutomationWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Button, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
-import {MemberTier, StepSidebarDetail} from '../types';
+import type {MemberTier, StepSidebarDetail} from '@/automations/components/types';
 import {TRIGGER_CANVAS_ID} from './nodes';
 import {formatWait} from './format-wait';
 
@@ -220,7 +220,7 @@ const StepSidebarBody: React.FC<{detail: StepSidebarDetail}> = ({detail}) => {
         return <SendEmailSidebarBody key={detail.action.id} action={detail.action} onDelete={detail.onDelete} onEditEmail={detail.onEditEmail} onUpdateSubject={detail.onUpdateSubject} />;
     default: {
         const _exhaustive: never = detail;
-        throw new Error(`Unknown sidebar type: ${_exhaustive}`);
+        throw new Error(`Unknown sidebar type: ${String(_exhaustive)}`);
     }
     }
 };
@@ -308,7 +308,7 @@ const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait, onUpd
         };
     default: {
         const _exhaustive: never = action;
-        throw new Error(`Unknown automation action type: ${_exhaustive}`);
+        throw new Error(`Unknown automation action type: ${String(_exhaustive)}`);
     }
     }
 };

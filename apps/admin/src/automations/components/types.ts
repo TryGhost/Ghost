@@ -1,4 +1,4 @@
-import {AutomationAction, AutomationSendEmailAction, AutomationWaitAction} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationAction, AutomationSendEmailAction, AutomationWaitAction} from '@tryghost/admin-x-framework/api/automations';
 
 export type EmailModalMode = 'edit' | 'preview';
 export type MemberTier = 'free' | 'paid';

@@ -18,7 +18,7 @@ const AutomationStatusBadge: React.FC<{status: Automation['status']}> = ({status
         );
     default: {
         const invalidStatus: never = status;
-        throw new Error(`Unhandled status: ${invalidStatus}`);
+        throw new Error(`Unhandled status: ${String(invalidStatus)}`);
     }
     }
 };

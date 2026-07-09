@@ -1,4 +1,4 @@
-import AutomationsList from '@src/views/Automations/components/automations-list';
+import AutomationsList from './automations-list';
 import React from 'react';
 import {MemoryRouter} from 'react-router';
 import {describe, expect, it} from 'vitest';

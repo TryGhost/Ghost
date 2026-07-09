@@ -1,4 +1,4 @@
-import {type RouteObject, Outlet, lazyComponent, redirect} from "@tryghost/admin-x-framework";
+import {type AdminRouteHandle, type RouteObject, Outlet, lazyComponent, redirect} from "@tryghost/admin-x-framework";
 
 // ActivityPub
 import { FeatureFlagsProvider, routes as activityPubRoutes } from "@tryghost/activitypub/api";
@@ -79,6 +79,17 @@ export const routes: RouteObject[] = [
             {
                 path: "/tags",
                 lazy: lazyComponent(() => import("./tags/tags")),
+            },
+            {
+                path: "/automations",
+                lazy: lazyComponent(() => import("./automations/automations")),
+            },
+            {
+                // The automation editor hides the admin sidebar for a focused,
+                // full-screen editing surface.
+                path: "/automations/:id",
+                handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
+                lazy: lazyComponent(() => import("./automations/editor")),
             },
             {
                 // The tag detail route delegates to Ember. It must be declared

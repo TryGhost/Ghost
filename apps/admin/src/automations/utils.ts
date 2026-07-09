@@ -1,10 +1,19 @@
+interface LexicalNode {
+    type?: string;
+    children?: LexicalNode[];
+}
+
+interface LexicalState {
+    root?: {children?: LexicalNode[]};
+}
+
 export const isEmptyEmailLexical = (lexical: string | null | undefined): boolean => {
     if (!lexical) {
         return true;
     }
 
     try {
-        const parsed = JSON.parse(lexical);
+        const parsed = JSON.parse(lexical) as LexicalState;
         const children = parsed?.root?.children;
 
         if (!children || children.length === 0) {
