@@ -63,5 +63,10 @@
     "markdown-it-sub": "2.0.0",
     "markdown-it-sup": "2.0.0",
     "semver": "7.8.5"
+  },
+  "nx": {
+    "tags": [
+      "npm-release"
+    ]
   }
 }

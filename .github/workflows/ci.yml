@@ -231,6 +231,13 @@ jobs:
             --json)
           echo "affected_playwright_projects=$PLAYWRIGHT_PROJECTS" >> "$GITHUB_OUTPUT"
 
+          # "npm-release" tag = workspace packages published to npm on a manual
+          # version bump (publish_npm_packages_main). Gates that job so it only
+          # runs when a tagged package is affected; the publish script itself
+          # then reconciles the whole bucket against npm.
+          NPM_RELEASE_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --projects 'tag:npm-release' --json)
+          echo "affected_npm_release_projects=$NPM_RELEASE_PROJECTS" >> "$GITHUB_OUTPUT"
+
           # Build the publish matrix for affected public apps. Matrix context
           # isn't available in a job-level `if:`, so the publish job can't filter
           # itself per-app — instead we emit the matrix here and it skips when
@@ -244,6 +251,7 @@ jobs:
       affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
       unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
       affected_playwright_projects: ${{ steps.affected.outputs.affected_playwright_projects }}
+      affected_npm_release_projects: ${{ steps.affected.outputs.affected_npm_release_projects }}
       publish_public_apps_matrix: ${{ steps.affected.outputs.publish_public_apps_matrix }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
@@ -265,7 +273,7 @@ jobs:
       nx_base: ${{ env.NX_BASE }}
 
   job_app_version_bump_check:
-    name: Check app version bump
+    name: Check app & package version bumps
     runs-on: ubuntu-latest
     needs: [job_setup]
     if: github.event_name == 'pull_request'
@@ -279,11 +287,23 @@ jobs:
       - name: Fetch main branch
         run: git fetch --no-tags origin main
 
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
       - name: Check app version bump
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node .github/scripts/check-app-version-bump.js
+
+      # Guard: a minor/major bump of an npm-release package must also bump its
+      # consumers, or their published workspace:~ ranges go stale on npm.
+      - name: Check npm-release package versions
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node .github/scripts/check-npm-package-versions.mjs
 
   job_migration_integrity_check:
     name: Check migration integrity
@@ -1981,15 +2001,16 @@ jobs:
         run: npm publish ghost-*.tgz --access public
 
   # --------------------------------------------------------------------------- #
-  # Publish changed koenig/* packages to npm. Gated on publish_ghost so npm
-  # only ever sees package versions whose content shipped in a released Ghost.
-  # Ghost itself never installs these from npm (dev/CI use workspace links,
-  # the production archive embeds them as component tarballs) — publishing is
-  # for external consumers only. See .github/scripts/publish-koenig-packages.js
+  # Publish changed npm-release packages (nx tag `npm-release`, koenig/* today)
+  # to npm. Gated on publish_ghost so npm only ever sees package versions whose
+  # content shipped in a released Ghost. Ghost itself never installs these from
+  # npm (dev/CI use workspace links, the production archive embeds them as
+  # component tarballs) — publishing is for external consumers only.
+  # See .github/scripts/publish-npm-packages.mjs
   # --------------------------------------------------------------------------- #
-  publish_koenig_packages:
+  publish_npm_packages:
     needs: [publish_ghost]
-    name: Publish Koenig packages to npm
+    name: Publish npm packages (release)
     runs-on: ubuntu-latest
     # Stable tags only (no '-' = no prerelease): the publish script computes
     # stable next-patch versions from npm, so running on an rc tag would
@@ -1998,10 +2019,10 @@ jobs:
       startsWith(github.ref, 'refs/tags/v')
       && !contains(github.ref_name, '-')
       && github.repository == 'TryGhost/Ghost'
-    # Serialize runs so two tags cut close together can't both compute the
-    # same next-patch number and collide on npm.
+    # Serialize against the main-lane publish (shared group) so two runs can't
+    # compute the same next-patch number and collide on npm.
     concurrency:
-      group: publish-koenig-packages
+      group: publish-npm-packages
       cancel-in-progress: false
     permissions:
       contents: read
@@ -2033,7 +2054,62 @@ jobs:
         run: npm install -g npm@11
 
       - name: Publish changed packages
-        run: node .github/scripts/publish-koenig-packages.js "$GITHUB_REF_NAME"
+        run: node .github/scripts/publish-npm-packages.mjs "$GITHUB_REF_NAME"
+
+  # --------------------------------------------------------------------------- #
+  # Publish manually-bumped npm-release packages on merge to main. Reconciles
+  # npm to the repo: any tagged package whose exact package.json version isn't
+  # on npm yet gets published. This is the path for a manual version bump (any
+  # level) landing outside the Ghost release cadence — the release (tag) lane
+  # above still auto-patches un-bumped changes. Gated on an affected tagged
+  # package so it doesn't spin up on unrelated merges; the script itself
+  # reconciles the whole bucket, so a too-tight gate can't drop a publish.
+  # --------------------------------------------------------------------------- #
+  publish_npm_packages_main:
+    needs: [job_setup, job_lint, job_unit-tests]
+    name: Publish npm packages (main)
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name != 'pull_request'
+      && github.repository == 'TryGhost/Ghost'
+      && needs.job_setup.outputs.is_main == 'true'
+      && needs.job_setup.result == 'success'
+      && needs.job_lint.result == 'success'
+      && needs.job_unit-tests.result != 'failure'
+      && needs.job_unit-tests.result != 'cancelled'
+      && needs.job_setup.outputs.affected_npm_release_projects != '[]'
+    # Shared group with the release (tag) lane so publishes never race each
+    # other on npm.
+    concurrency:
+      group: publish-npm-packages
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure .npmrc
+        run: |
+          echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
+
+      # TODO: Check we can remove this once we update Node to v24
+      - name: Install v11 of NPM # We need this to install packages via OIDC.
+        run: npm install -g npm@11
+
+      - name: Publish manually-bumped packages
+        run: node .github/scripts/publish-npm-packages.mjs --on-main
 
   # --------------------------------------------------------------------------- #
   # Trigger docker-library-ghost auto-update — runs after the npm package is
@@ -2128,7 +2204,7 @@ jobs:
   # --------------------------------------------------------------------------- #
   notify_release_failure:
     name: Notify release failure
-    needs: [job_setup, job_build_artifacts, job_ghost-cli, publish_ghost, publish_koenig_packages, create_github_release]
+    needs: [job_setup, job_build_artifacts, job_ghost-cli, publish_ghost, publish_npm_packages, create_github_release]
     if: failure() && startsWith(github.ref, 'refs/tags/v') && github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-slim
     permissions: {}  # only posts to Slack via curl; needs no GITHUB_TOKEN scopes

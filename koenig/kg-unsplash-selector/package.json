@@ -60,7 +60,8 @@
   },
   "nx": {
     "tags": [
-      "playwright"
+      "playwright",
+      "npm-release"
     ],
     "targets": {
       "test:acceptance": {

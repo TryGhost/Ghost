@@ -85,5 +85,10 @@
     "lexical": "0.13.1",
     "lodash": "catalog:",
     "luxon": "3.7.2"
+  },
+  "nx": {
+    "tags": [
+      "npm-release"
+    ]
   }
 }

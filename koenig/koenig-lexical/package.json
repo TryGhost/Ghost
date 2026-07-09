@@ -147,7 +147,8 @@
   },
   "nx": {
     "tags": [
-      "playwright"
+      "playwright",
+      "npm-release"
     ],
     "targets": {
       "build": {

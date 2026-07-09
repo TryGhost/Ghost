@@ -63,5 +63,10 @@
     "handlebars": "4.7.9",
     "juice": "12.1.1",
     "luxon": "3.7.2"
+  },
+  "nx": {
+    "tags": [
+      "npm-release"
+    ]
   }
 }

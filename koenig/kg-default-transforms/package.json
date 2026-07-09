@@ -51,5 +51,10 @@
     "@lexical/utils": "0.13.1",
     "@tryghost/kg-default-nodes": "workspace:~",
     "lexical": "0.13.1"
+  },
+  "nx": {
+    "tags": [
+      "npm-release"
+    ]
   }
 }

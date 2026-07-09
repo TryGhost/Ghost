@@ -183,6 +183,9 @@ catalogs:
     dotenv:
       specifier: 17.4.2
       version: 17.4.2
+    enquirer:
+      specifier: 2.3.6
+      version: 2.3.6
     entities:
       specifier: 4.5.0
       version: 4.5.0
@@ -406,6 +409,9 @@ importers:
       dependency-cruiser:
         specifier: 'catalog:'
         version: 18.0.0
+      enquirer:
+        specifier: 'catalog:'
+        version: 2.3.6
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.7.0)(supports-color@5.5.0)

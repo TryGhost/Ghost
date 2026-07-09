@@ -51,5 +51,10 @@
     "tsx": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "npm-release"
+    ]
   }
 }

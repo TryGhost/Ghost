@@ -49,7 +49,7 @@ Merged from the former TryGhost/Koenig repo with full git history:
 All Koenig packages resolve via `workspace:` — nothing in dev, CI, or the
 release archive installs them from npm. They are published to npm for
 external consumers only, automatically as part of the Ghost release lane
-(see `publish_koenig_packages` in ci.yml).
+(see `publish_npm_packages` in ci.yml).
 
 **Zero-build dev via the `source` export condition.** The `kg-*` libraries
 consumed by `ghost/core` (and `ghost/parse-email-address`) declare a `source`

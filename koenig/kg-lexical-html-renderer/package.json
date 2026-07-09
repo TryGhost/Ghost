@@ -66,5 +66,10 @@
     "@tryghost/kg-utils": "workspace:~",
     "jsdom": "catalog:",
     "lexical": "0.13.1"
+  },
+  "nx": {
+    "tags": [
+      "npm-release"
+    ]
   }
 }

@@ -47,5 +47,10 @@
   },
   "dependencies": {
     "lodash": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "npm-release"
+    ]
   }
 }
