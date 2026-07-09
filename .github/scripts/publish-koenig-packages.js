@@ -13,7 +13,12 @@
  * For each koenig/* package:
  *   1. Skip if its directory is unchanged between the previous release tag
  *      and the current one (first release after the monorepo merge has no
- *      koenig/ in the previous tag, so everything publishes once).
+ *      koenig/ in the previous tag, so everything publishes once). An
+ *      unchanged package still publishes when a runtime dependency's
+ *      major.minor line moved: its published `~x.y.z` ranges can't reach the
+ *      new line, so it gets a patch bump with freshly rewritten ranges.
+ *      Patch-level dependency changes don't republish dependents — tilde
+ *      ranges already resolve to the newest patch.
  *   2. Compute the next version: package.json pins the major.minor line,
  *      npm is the source of truth for the patch (compute-next-app-version).
  *   3. Write the version, build via Nx, and publish. Packages are processed
@@ -32,6 +37,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {execFileSync} = require('node:child_process');
 
+const semver = require('semver');
+
 const {computeNextVersion, getPublishedVersions} = require('./compute-next-app-version');
 
 const ROOT_DIR = path.resolve(__dirname, '../..');
@@ -49,6 +56,56 @@ function loadPackages() {
             return {dir, name: pkg.name, private: !!pkg.private, pkg};
         })
         .filter(entry => !entry.private);
+}
+
+function versionLine(version) {
+    const parsed = semver.parse(version);
+    if (!parsed) {
+        throw new Error(`Invalid version "${version}"`);
+    }
+    return `${parsed.major}.${parsed.minor}`;
+}
+
+/**
+ * Decide which packages to publish and why.
+ *
+ * A package publishes when its own directory changed, or when a runtime
+ * dependency (dependencies/peerDependencies — devDependencies never reach
+ * consumers) moved to a new major.minor line. Only direct dependents need
+ * this: they republish as a patch bump within their own line, so the tilde
+ * ranges in packages further up the graph still resolve to the fresh patch.
+ *
+ * @param {Array<{name: string, changed: boolean, previousVersion: string|null, pkg: object}>} entries
+ *   `previousVersion` is the package.json version at the previous release tag,
+ *   or null when the package didn't exist there.
+ * @returns {Map<string, string>} package name -> human-readable publish reason
+ */
+function selectPackagesToPublish(entries) {
+    const reasons = new Map();
+    const movedLines = new Map();
+
+    for (const entry of entries) {
+        if (!entry.changed) {
+            continue;
+        }
+        reasons.set(entry.name, 'directory changed');
+        if (entry.previousVersion && versionLine(entry.previousVersion) !== versionLine(entry.pkg.version)) {
+            movedLines.set(entry.name, versionLine(entry.pkg.version));
+        }
+    }
+
+    for (const entry of entries) {
+        if (reasons.has(entry.name)) {
+            continue;
+        }
+        const runtimeDeps = {...entry.pkg.dependencies, ...entry.pkg.peerDependencies};
+        const moved = Object.keys(runtimeDeps).filter(dep => movedLines.has(dep));
+        if (moved.length > 0) {
+            reasons.set(entry.name, moved.map(dep => `${dep} moved to ${movedLines.get(dep)}`).join(', '));
+        }
+    }
+
+    return reasons;
 }
 
 // Order packages so dependencies publish before dependents. workspace:~ specs
@@ -110,22 +167,34 @@ function main() {
             throw new Error(`Unknown koenig package: ${onlyPackage}`);
         }
     }
+    let reasons = null;
+    if (previousTag) {
+        reasons = selectPackagesToPublish(packages.map((entry) => {
+            const diff = run('git', ['diff', '--name-only', previousTag, currentTag, '--', `koenig/${entry.dir}`]).trim();
+            let previousVersion = null;
+            try {
+                previousVersion = JSON.parse(run('git', ['show', `${previousTag}:koenig/${entry.dir}/package.json`], {stdio: ['pipe', 'pipe', 'pipe']})).version;
+            } catch (error) {
+                // Package didn't exist at the previous tag
+            }
+            return {name: entry.name, changed: diff.length > 0, previousVersion, pkg: entry.pkg};
+        }));
+    }
+
     const published = [];
     const skipped = [];
 
     for (const entry of packages) {
         const pkgDir = path.join(KOENIG_DIR, entry.dir);
 
-        if (previousTag) {
-            const diff = run('git', ['diff', '--name-only', previousTag, currentTag, '--', `koenig/${entry.dir}`]).trim();
-            if (!diff) {
-                skipped.push(entry.name);
-                continue;
-            }
+        if (reasons && !reasons.has(entry.name)) {
+            skipped.push(entry.name);
+            continue;
         }
 
         const nextVersion = computeNextVersion(entry.pkg.version, getPublishedVersions(entry.name));
-        console.log(`\nPublishing ${entry.name}@${nextVersion}${dryRun ? ' (dry run)' : ''}`);
+        const reason = reasons ? reasons.get(entry.name) : null;
+        console.log(`\nPublishing ${entry.name}@${nextVersion}${reason ? ` (${reason})` : ''}${dryRun ? ' (dry run)' : ''}`);
 
         // Write the version before building so anything baked into the build
         // output matches what we publish. Not committed back — npm is the
@@ -150,9 +219,13 @@ function main() {
     console.log(`Unchanged since ${previousTag || 'n/a'} (${skipped.length}): ${skipped.join(', ') || 'none'}`);
 }
 
-try {
-    main();
-} catch (error) {
-    console.error(error.message);
-    process.exit(1);
+if (require.main === module) {
+    try {
+        main();
+    } catch (error) {
+        console.error(error.message);
+        process.exit(1);
+    }
 }
+
+module.exports = {selectPackagesToPublish};
