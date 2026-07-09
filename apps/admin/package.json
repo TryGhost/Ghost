@@ -14,12 +14,14 @@
     },
     "dependencies": {
         "@svg-maps/world": "2.0.0",
+        "@tanstack/react-virtual": "catalog:",
         "@tryghost/activitypub": "workspace:*",
         "@tryghost/admin-x-framework": "workspace:*",
         "@tryghost/admin-x-settings": "workspace:*",
         "@tryghost/kg-unsplash-selector": "workspace:*",
         "@tryghost/koenig-lexical": "workspace:*",
-        "@tryghost/nql-lang": "catalog:",        "@tryghost/shade": "workspace:*",
+        "@tryghost/nql-lang": "catalog:",
+        "@tryghost/shade": "workspace:*",
         "@xyflow/react": "12.11.1",
         "dequal": "catalog:",
         "i18n-iso-countries": "7.14.0",
@@ -32,6 +34,7 @@
         "react-router": "catalog:",
         "react-svg-map": "2.2.0",
         "sonner": "catalog:",
+        "temporal-polyfill": "catalog:",
         "use-debounce": "10.1.1",
         "validator": "catalog:",
         "zod": "catalog:"

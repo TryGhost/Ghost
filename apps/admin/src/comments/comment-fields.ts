@@ -1,4 +1,4 @@
-import {DATE_FILTER_OPERATORS, DEFAULT_DATE_OPERATOR, type FilterCodec, dateCodec, defineFields, extractComparator, scalarCodec, textCodec, withPastRelativeOperator} from '@tryghost/admin-x-framework/filters';
+import {DATE_FILTER_OPERATORS, DEFAULT_DATE_OPERATOR, type FilterCodec, dateCodec, defineFields, extractComparator, scalarCodec, textCodec, withPastRelativeOperator} from '@/shared/filters';
 
 const reportedCodec: FilterCodec = {
     parse(node, ctx) {

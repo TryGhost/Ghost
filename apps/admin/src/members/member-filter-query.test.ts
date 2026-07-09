@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {getMemberFields} from './member-fields';
 import {hasTimezoneSensitiveMemberFilter, isPredicateEnabled, parseMemberFilter, serializeMemberFilters} from './member-filter-query';
-import type {FilterPredicate} from '@tryghost/admin-x-framework/filters';
+import type {FilterPredicate} from '@/shared/filters';
 
 function stripIds(predicates: FilterPredicate[]) {
     return predicates.map(predicate => ({

@@ -13,7 +13,7 @@ import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/ap
 import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
-import {useEmailPostValueSource, useLabelValueSource, usePostResourceValueSource, useTierValueSource} from '@tryghost/admin-x-framework/filter-sources';
+import {useEmailPostValueSource, useLabelValueSource, usePostResourceValueSource, useTierValueSource} from '@/shared/filter-sources';
 import type {MemberView} from '@/members/hooks/use-member-views';
 
 interface MembersFiltersProps {

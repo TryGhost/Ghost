@@ -27,7 +27,7 @@ vi.mock('@tryghost/admin-x-framework/hooks', () => ({
     useHandleError: () => mockHandleError
 }));
 
-vi.mock('@tryghost/admin-x-framework/filter-sources', () => ({
+vi.mock('@/shared/filter-sources', () => ({
     useLabelValueSource: () => ({
         id: 'test.labels.default',
         useOptions: () => ({

@@ -7,7 +7,7 @@ import {FilterBar, PageHeader, createFilter} from '@tryghost/shade/patterns';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {adminCommentIncludes, useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
-import {escapeNqlString} from '@tryghost/admin-x-framework/filters';
+import {escapeNqlString} from '@/shared/filters';
 import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {serializeCommentFilters} from './comment-filter-query';
 import {shouldDelayCommentDateFilterHydration, useFilterState} from './hooks/use-filter-state';

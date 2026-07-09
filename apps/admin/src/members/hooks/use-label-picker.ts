@@ -3,7 +3,7 @@ import {type Label, useCreateLabel, useDeleteLabel, useEditLabel, useFindLabelBy
 import {type ValueSource} from '@tryghost/shade/patterns';
 import {useCallback, useMemo, useRef, useState} from 'react';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useLabelValueSource} from '@tryghost/admin-x-framework/filter-sources';
+import {useLabelValueSource} from '@/shared/filter-sources';
 import type {ComboboxOptionSource} from '@tryghost/shade/components';
 
 export interface UseLabelPickerOptions {

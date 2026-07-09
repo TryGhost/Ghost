@@ -65,21 +65,6 @@
             "types": "./types/test/*.d.ts",
             "import": "./dist/test/*.js",
             "require": "./dist/test/*.cjs"
-        },
-        "./virtual-list": {
-            "types": "./types/virtual-list/index.d.ts",
-            "import": "./dist/virtual-list/index.js",
-            "require": "./dist/virtual-list/index.cjs"
-        },
-        "./filters": {
-            "types": "./types/filters/index.d.ts",
-            "import": "./dist/filters/index.js",
-            "require": "./dist/filters/index.cjs"
-        },
-        "./filter-sources": {
-            "types": "./types/filter-sources/index.d.ts",
-            "import": "./dist/filter-sources/index.js",
-            "require": "./dist/filter-sources/index.cjs"
         }
     },
     "sideEffects": false,
@@ -130,18 +115,14 @@
         "@ebay/nice-modal-react": "catalog:",
         "@sentry/react": "catalog:",
         "@tanstack/react-query": "catalog:",
-        "@tanstack/react-virtual": "3.14.5",
         "@tinybirdco/charts": "0.3.0",
         "@tryghost/admin-x-design-system": "workspace:*",
-        "@tryghost/nql-lang": "catalog:",
         "@tryghost/shade": "workspace:*",
         "bson-objectid": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",
         "react-hot-toast": "catalog:",
-        "react-router": "catalog:",
-        "temporal-polyfill": "0.3.2",
-        "use-debounce": "10.1.1"
+        "react-router": "catalog:"
     },
     "peerDependencies": {
         "react": "^18.2.0",
