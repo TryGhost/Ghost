@@ -53,19 +53,6 @@ export const routes: RouteObject[] = [
                 ]
             },
             {
-                path: 'tags',
-                children: [
-                    {
-                        index: true,
-                        lazy: lazyComponent(() => import('@views/Tags/tags'))
-                    },
-                    {
-                        path: ':tagSlug',
-                        element: null
-                    }
-                ]
-            },
-            {
                 path: 'comments',
                 lazy: lazyComponent(() => import('@views/comments/comments'))
             },

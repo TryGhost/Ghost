@@ -1,7 +1,7 @@
 import {Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {LoadMoreButton, useInfiniteVirtualScroll, useVirtualListWindow} from '@tryghost/admin-x-framework/virtual-list';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
-import {Tag} from '@tryghost/admin-x-framework/api/tags';
+import type {Tag} from '@tryghost/admin-x-framework/api/tags';
 import {forwardRef, useRef} from 'react';
 
 const SpacerRow = ({height}: { height: number }) => (
