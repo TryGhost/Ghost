@@ -8,7 +8,7 @@ import {Loader} from './file-selectors/Gif/Loader';
 const TWO_COLUMN_WIDTH = 540;
 const THREE_COLUMN_WIDTH = 940;
 
-const GifSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLoading, isLazyLoading, error, changeColumnCount, loadNextPage, gifs, provider}) => {
+const GifSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLoading, isLazyLoading, error, changeColumnCount, loadNextPage, gifs}) => {
     const selectorRef = useRef(null);
     const searchRef = useRef(null);
     const [highlightedGif, setHighlightedGif] = useState(undefined);
@@ -306,7 +306,7 @@ const GifSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLoad
                     <input
                         ref={searchRef}
                         className="h-10 w-full rounded-full border border-grey-300 pl-10 pr-8 font-sans text-md font-normal text-black focus:border-green focus:shadow-insetgreen dark:border-grey-800 dark:bg-grey-950 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green"
-                        placeholder={provider === 'klipy' ? 'Search KLIPY' : 'Search Tenor for GIFs'}
+                        placeholder='Search KLIPY'
                         autoFocus
                         onChange={handleSearch}
                     />

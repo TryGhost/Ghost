@@ -4,52 +4,38 @@ import {useRef, useState} from 'react';
 const API_VERSION = 'v2';
 const DEBOUNCE_MS = 600;
 
-// Both Tenor and Klipy expose a Tenor-compatible v2 API; only the base URL and
-// API key differ, so one client serves either provider.
-const PROVIDER_API_URLS = {
-    klipy: 'https://api.klipy.com',
-    tenor: 'https://tenor.googleapis.com'
-};
+// Klipy exposes a Tenor-compatible v2 API, hence the v2 paths and
+// Tenor-style request params used throughout this client.
+const KLIPY_API_URL = 'https://api.klipy.com';
 
 export const ERROR_TYPE = {
     COMMON: 'common',
     INVALID_API_KEY: 'invalid_key'
 };
 
-// Resolve which GIF provider to use from the editor's cardConfig. Klipy takes
-// precedence when both are configured; returns null when neither is set.
+// Resolve the GIF provider config from the editor's cardConfig; returns null
+// when Klipy is not configured.
 export function getGifProviderConfig(cardConfig) {
     if (cardConfig?.klipy?.apiKey) {
         return {
-            provider: 'klipy',
-            apiUrl: PROVIDER_API_URLS.klipy,
+            apiUrl: KLIPY_API_URL,
+            // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
             apiKey: cardConfig.klipy.apiKey,
             contentFilter: cardConfig.klipy.contentFilter || 'off'
-        };
-    }
-    if (cardConfig?.tenor?.googleApiKey) {
-        return {
-            provider: 'tenor',
-            apiUrl: PROVIDER_API_URLS.tenor,
-            apiKey: cardConfig.tenor.googleApiKey,
-            contentFilter: cardConfig.tenor.contentFilter || 'off'
         };
     }
     return null;
 }
 
-// Tenor returns {error: {message}}; Klipy returns {result: false, errors: {message: [...]}}.
+// Klipy returns {result: false, errors: {message: [...]}}.
 export function extractErrorMessage(json) {
-    const klipyMessage = json?.errors?.message;
-    return json?.error?.message
-        || json?.error
-        || (Array.isArray(klipyMessage) ? klipyMessage[0] : klipyMessage)
+    const message = json?.errors?.message;
+    return (Array.isArray(message) ? message[0] : message)
         || 'Unknown error';
 }
 
-// Detect an invalid-API-key error from the provider's message. Tenor and Klipy
-// word these differently (Tenor: "API key not valid"; Klipy: "The provided API
-// key is invalid"), so match the phrasing they share.
+// Detect an invalid-API-key error from the provider's message ("The provided
+// API key is invalid"), matched loosely to tolerate wording changes.
 export function isInvalidKeyError(message) {
     const text = message || '';
     return /api key/i.test(text) && /(invalid|not valid)/i.test(text);

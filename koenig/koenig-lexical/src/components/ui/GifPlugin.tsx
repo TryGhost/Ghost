@@ -39,7 +39,6 @@ const GifPlugin = ({nodeKey}) => {
 
     return (
         <GifSelector
-            provider={providerConfig?.provider}
             onClickOutside={onClickOutside}
             onGifInsert={insertImageToNode}
             {...gifHook}
