@@ -1,10 +1,11 @@
 import type {AutomationStepToRun, AutomationsRepository} from './automations-repository';
+import type {RecordEmailSentOptions} from './automations-api';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import {MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import {MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS} from './constants';
 // @ts-expect-error Models currently lack type definitions.
-import {AutomatedEmailRecipient, Member} from '../../models';
+import {Member} from '../../models';
 
 type MemberWelcomeEmailService = {
     init: () => unknown;
@@ -40,7 +41,9 @@ type PollOptions = {
         'finishStepAndEnqueueNext' |
         'markStepTerminal' |
         'retryStep'
-    >;
+    > & {
+        recordEmailSent(options: RecordEmailSentOptions): Promise<void>;
+    };
     enqueueAnotherPollAt: (date: Readonly<Date>) => unknown;
     memberWelcomeEmailService: MemberWelcomeEmailService;
 };
@@ -190,14 +193,14 @@ const processStep = async ({
                 memberStatus
             });
             try {
-                await AutomatedEmailRecipient.add({
-                    member_id: step.member_id,
-                    member_uuid: member.get('uuid'),
-                    member_email: member.get('email'),
-                    member_name: member.get('name'),
-                    automation_action_revision_id: step.automation_action_revision_id,
+                await automationsApi.recordEmailSent({
+                    automationActionRevisionId: step.automation_action_revision_id,
+                    memberEmail: member.get('email'),
+                    memberId: step.member_id,
+                    memberName: member.get('name'),
+                    memberUuid: member.get('uuid'),
                     // TODO(NY-1439) Don't always set this to false.
-                    track_opens: false
+                    trackOpens: false
                 });
             } catch (err) {
                 logging.error({

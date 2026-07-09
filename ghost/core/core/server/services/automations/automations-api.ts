@@ -2,12 +2,15 @@ import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
 import {z} from 'zod';
+import {type Knex} from 'knex';
 import {createDatabaseAutomationsRepository} from './database-automations-repository';
 import {parseFakeWaitHoursMultiplier} from './fake-wait-hours-multiplier';
 import type {
     AutomationsRepository,
     EditAutomationData
 } from './automations-repository';
+// @ts-expect-error Models currently lack type definitions.
+import {AutomatedEmailRecipient} from '../../models';
 
 const {knex} = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
@@ -358,4 +361,32 @@ export async function markStepTerminal(...args: Parameters<AutomationsRepository
 
 export async function retryStep(...args: Parameters<AutomationsRepository['retryStep']>) {
     return await repository.retryStep(...args);
+}
+
+export type RecordEmailSentOptions = Readonly<{
+    automationActionRevisionId: string;
+    memberEmail: string;
+    memberId: string;
+    memberName: string | null;
+    memberUuid: string;
+    trackOpens: boolean;
+}>;
+
+export async function recordEmailSent(options: RecordEmailSentOptions): Promise<void> {
+    await knex.transaction(async (transacting: Knex.Transaction) => {
+        await AutomatedEmailRecipient.add({
+            member_id: options.memberId,
+            member_uuid: options.memberUuid,
+            member_email: options.memberEmail,
+            member_name: options.memberName,
+            automation_action_revision_id: options.automationActionRevisionId,
+            track_opens: options.trackOpens
+        }, {transacting});
+
+        await transacting('automation_action_revisions')
+            .where('id', options.automationActionRevisionId)
+            .update({
+                email_sent_count: transacting.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1])
+            });
+    });
 }
