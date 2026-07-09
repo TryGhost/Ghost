@@ -13,7 +13,7 @@ type JobManager = {
 };
 
 export class EmailAnalyticsJobScheduler {
-    #hasScheduled = false;
+    #hasScheduledNewslettersJob = false;
     readonly #models: Models;
     readonly #config: Config;
     readonly #jobManager: JobManager;
@@ -26,7 +26,7 @@ export class EmailAnalyticsJobScheduler {
 
     async scheduleRecurringJobs(skipEmailCheck = false): Promise<void> {
         if (
-            !this.#hasScheduled &&
+            !this.#hasScheduledNewslettersJob &&
             this.#config.get('emailAnalytics:enabled') &&
             this.#config.get('backgroundJobs:emailAnalytics')
         ) {
@@ -50,7 +50,7 @@ export class EmailAnalyticsJobScheduler {
                     name: 'email-analytics-fetch-latest'
                 });
 
-                this.#hasScheduled = true;
+                this.#hasScheduledNewslettersJob = true;
             }
         }
     }
