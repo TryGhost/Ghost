@@ -150,7 +150,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
             size='full'
             testId={testId}
         >
-            <div className='flex h-full flex-col'>
+            <div className='flex h-full min-h-0 flex-col'>
                 <div className='mb-4 flex items-center justify-between'>
                     <Heading level={2}>{title}</Heading>
                     <ButtonGroup buttons={[
@@ -174,7 +174,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
                     </div>
                 )}
 
-                <div className='min-h-0 flex-auto'>
+                <div className='mb-16 min-h-0 flex-auto'>
                     {!isLoading && (
                         <CodeEditor
                             data-testid='yaml-editor'
