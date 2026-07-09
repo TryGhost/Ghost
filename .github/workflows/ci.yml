@@ -934,7 +934,23 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build server and admin assets
+        # IS_SHIPPING enables the Sentry vite plugin in koenig-lexical: it
+        # injects debug IDs into the built editor bundles and uploads their
+        # sourcemaps. Only shippable builds (main + tags in the canonical
+        # repo) get it — debug-ID artifact bundles are release-agnostic, so
+        # per-merge uploads are deduplicated by content and create no
+        # release noise in Sentry.
+        env:
+          IS_SHIPPING: ${{ github.repository == 'TryGhost/Ghost' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag') && 'true' || '' }}
+          VITE_SENTRY_AUTH_TOKEN: ${{ secrets.VITE_SENTRY_AUTH_TOKEN }}
         run: |
+          # The Sentry plugin only warns when the token is missing, which
+          # would silently skip the upload AND poison the Nx cache with a
+          # never-uploaded debug ID — fail loudly instead.
+          if [ -n "$IS_SHIPPING" ] && [ -z "$VITE_SENTRY_AUTH_TOKEN" ]; then
+            echo "::error::IS_SHIPPING is set but VITE_SENTRY_AUTH_TOKEN is empty — Koenig sourcemaps would not reach Sentry"
+            exit 1
+          fi
           PKG_VERSION=$(node -p "require('./ghost/core/package.json').version")
           SHORT_SHA="${GITHUB_SHA:0:7}"
           if [ "${{ github.ref_type }}" != "tag" ]; then
