@@ -119,16 +119,7 @@ export const defaultMockData = {
             tiers: []
         },
         isPostLoading: false,
-        postType: {
-            isEmailOnly: false,
-            isPublishedOnly: false,
-            isPublishedAndEmailed: true,
-            metricsToDisplay: {
-                showEmailMetrics: true,
-                showWebMetrics: true,
-                showMemberGrowth: true
-            }
-        }
+        postType: 'post' as const
     }
 };
 
