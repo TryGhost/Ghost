@@ -30,7 +30,7 @@ export {trackEvent, trackFilterApplications} from './utils/analytics';
 export {getSymbol} from './utils/currency';
 
 // Stats utilities
-export {getStatEndpointUrl, getToken} from './utils/stats-config';
+export {getToken} from './utils/stats-config';
 
 // Post utilities
 export type {Post} from './api/posts';
@@ -39,7 +39,7 @@ export {isEmailOnly, isPublishedOnly, isPublishedAndEmailed, getPostMetricsToDis
 export {focusKoenigEditorOnBottomClick} from './utils/focus-koenig-editor-on-bottom-click';
 
 // Source utilities
-export {SOURCE_DOMAIN_MAP, getFaviconDomain, extractDomain, isDomainOrSubdomain, processSources, extendSourcesWithPercentages, normalizeSource} from './utils/source-utils';
+export {SOURCE_DOMAIN_MAP, getFaviconDomain, extractDomain, isDomainOrSubdomain, processSources, extendSourcesWithPercentages} from './utils/source-utils';
 export type {BaseSourceData, ProcessedSourceData, ExtendSourcesOptions} from './utils/source-utils';
 
 // Routing
@@ -62,6 +62,5 @@ export {useQueryClient} from '@tanstack/react-query';
 
 // API
 export type {TinybirdToken, TinybirdTokenResponseType} from './api/tinybird';
-export {getTinybirdToken} from './api/tinybird';
 export type {FeaturebaseToken, FeaturebaseTokenResponseType} from './api/featurebase';
 export {getFeaturebaseToken} from './api/featurebase';
