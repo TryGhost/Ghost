@@ -17,7 +17,7 @@ import {getClickHandler} from '@/analytics/utils/url-helpers';
 import {getPeriodText} from '@/analytics/utils/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
-import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {useGrowthStats} from '@/analytics/hooks/use-growth-stats';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@/analytics/hooks/use-top-posts-stats-with-range';

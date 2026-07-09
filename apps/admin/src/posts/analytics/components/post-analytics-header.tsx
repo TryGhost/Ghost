@@ -3,7 +3,8 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Navbar, PageMenu, PageMenuItem} from '@tryghost/shade/components';
 import {H1} from '@tryghost/shade/primitives';
 import {LucideIcon, formatDisplayDate, formatDisplayTime, formatNumber} from '@tryghost/shade/utils';
-import {useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
+import {usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
 import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {giftAccessLabel} from '@/posts/analytics/utils/gift-link';
@@ -29,7 +30,8 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
-    const {settings, site, statsConfig, post, isPostLoading, postId} = useGlobalData();
+    const {settings, site, statsConfig} = useAnalyticsData();
+    const {post, isPostLoading, postId} = usePostAnalytics();
     const canManageGiftLink = useCanManageGiftLink(post);
 
     const siteTimezone = getSiteTimezone(settings);

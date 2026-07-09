@@ -1,13 +1,13 @@
 import React from 'react';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {RightSidebarMenu, RightSidebarMenuLink} from '@tryghost/shade/components';
-import {useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
+import {usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 const Sidebar:React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const {post, postId} = useGlobalData();
+    const {post, postId} = usePostAnalytics();
 
     // In the Ember app, a post has been emailed if:
     // 1. It has an email object with non-failed status, or

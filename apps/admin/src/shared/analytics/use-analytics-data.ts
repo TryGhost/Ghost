@@ -19,10 +19,11 @@ export interface AnalyticsFrameworkData {
 }
 
 /**
- * Reads the framework-owned data the analytics views need (config/site/settings)
- * straight from the shell's FrameworkProvider. These are react-query hooks, so
- * calls across views share one cache entry — nothing is re-fetched per consumer,
- * and the data no longer lives in AnalyticsProvider.
+ * Reads the framework-owned data the analytics views (site-wide stats and post
+ * analytics) need (config/site/settings) straight from the shell's
+ * FrameworkProvider. These are react-query hooks, so calls across views share
+ * one cache entry — nothing is re-fetched per consumer, and the data no longer
+ * lives in AnalyticsProvider or PostAnalyticsProvider.
  *
  * The Tinybird token is deliberately not returned — `useTinybirdQuery` resolves
  * its own. It is still requested here so its loading and error states gate the

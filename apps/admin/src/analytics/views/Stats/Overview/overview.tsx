@@ -15,7 +15,7 @@ import {centsToDollars, formatQueryDate, getRangeDates, sanitizeChartData} from 
 import {getAudienceQueryParam} from '@/analytics/utils/audience';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
-import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {useGrowthStats} from '@/analytics/hooks/use-growth-stats';
 import {useLatestPostStats} from '@/analytics/hooks/use-latest-post-stats';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';

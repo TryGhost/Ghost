@@ -1,5 +1,5 @@
 import {Navigate} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 
 /**
  * Custom hook to check if a feature flag is enabled
@@ -10,10 +10,10 @@ import {useGlobalData} from '@/posts/analytics/providers/post-analytics-context'
  * @returns An object containing the feature flag status and optional component to render
  */
 export const useFeatureFlag = (flagName: string, fallbackPath: string) => {
-    const {isLoading, data} = useGlobalData();
+    const {isLoading, config} = useAnalyticsData();
 
     // Check if the feature flag is enabled from config.labs
-    const isEnabled = data?.labs?.[flagName] === true;
+    const isEnabled = config?.labs?.[flagName] === true;
 
     // If loading, don't make a decision yet
     if (isLoading) {

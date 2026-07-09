@@ -7,8 +7,8 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle, Separator, Sk
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {buildMembersUrl} from '@/members/member-route';
 import {centsToDollars} from '@/posts/analytics/Growth/growth-helpers';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {useAppContext} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '@/posts/analytics/hooks/use-post-referrers';
 
@@ -16,16 +16,16 @@ import {usePostReferrers} from '@/posts/analytics/hooks/use-post-referrers';
 interface postAnalyticsProps {}
 
 const Growth: React.FC<postAnalyticsProps> = () => {
-    const {data: globalData} = useGlobalData();
+    const {site} = useAnalyticsData();
     const {postId} = useParams();
     const {stats: postReferrers, totals, isLoading, currencySymbol} = usePostReferrers(postId || '');
     const {appSettings} = useAppContext();
     const navigate = useNavigate();
     const navigateToMembers = (filter: string) => navigate(buildMembersUrl({filter}));
 
-    // Get site URL and icon from global data
-    const siteUrl = globalData?.url as string | undefined;
-    const siteIcon = globalData?.icon as string | undefined;
+    // Get site URL and icon for source favicons
+    const siteUrl = site.url;
+    const siteIcon = site.icon;
 
     let containerClass = 'flex flex-col items-stretch gap-6';
     let cardClass = '';

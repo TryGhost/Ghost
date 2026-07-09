@@ -2,10 +2,10 @@ import React from 'react';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {STATS_RANGES} from '@/posts/analytics/utils/constants';
 import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
+import {usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
 
 const DateRangeSelect: React.FC = () => {
-    const {range, setRange} = useGlobalData();
+    const {range, setRange} = usePostAnalytics();
 
     return (
         <Select value={`${range}`} onValueChange={(value) => {

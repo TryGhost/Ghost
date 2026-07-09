@@ -5,9 +5,11 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {createTestWrapper, mockData, mockServer} from '@test-utils/posts-analytics/msw-helpers';
 import {usePostSuccessModal} from '@/posts/analytics/hooks/use-post-success-modal';
 
-// Mock React context (not HTTP)
-vi.mock('@/posts/analytics/providers/post-analytics-context');
-const mockUseGlobalData = vi.mocked(await import('@/posts/analytics/providers/post-analytics-context')).useGlobalData;
+// Mock the shared analytics data hook (not HTTP)
+vi.mock('@/shared/analytics/use-analytics-data', () => ({
+    useAnalyticsData: vi.fn()
+}));
+const mockUseAnalyticsData = vi.mocked(await import('@/shared/analytics/use-analytics-data')).useAnalyticsData;
 
 // Mock localStorage
 const mockLocalStorage = {
@@ -25,12 +27,12 @@ describe('usePostSuccessModal', () => {
         vi.clearAllMocks();
 
         // Default mocks
-        mockUseGlobalData.mockReturnValue({
+        mockUseAnalyticsData.mockReturnValue({
             site: {
                 title: 'Test Site',
                 icon: 'https://example.com/icon.png'
             }
-        } as unknown as ReturnType<typeof mockUseGlobalData>);
+        } as unknown as ReturnType<typeof mockUseAnalyticsData>);
 
         mockLocalStorage.getItem.mockReturnValue(null);
 

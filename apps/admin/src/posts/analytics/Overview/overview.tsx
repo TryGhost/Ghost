@@ -9,12 +9,13 @@ import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTit
 import {KPI_METRICS} from '@/posts/analytics/Web/components/kpi-metrics';
 import {type KpiDataItem} from '@/posts/analytics/utils/kpi-helpers';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
-import {type Post, useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
+import {type Post, usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
 import {STATS_RANGES} from '@/posts/analytics/utils/constants';
 import {centsToDollars} from '@/posts/analytics/Growth/growth-helpers';
 import {formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade/app';
 import {hasBeenEmailed, isPublishedOnly, useNavigate, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useActiveGiftLink} from '@tryghost/admin-x-framework/api/gift-links';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useCanManageGiftLink} from '@/posts/analytics/hooks/use-can-manage-gift-link';
 import {useEffect, useMemo, useState} from 'react';
@@ -23,7 +24,8 @@ import {usePostReferrers} from '@/posts/analytics/hooks/use-post-referrers';
 
 const Overview: React.FC = () => {
     const navigate = useNavigate();
-    const {statsConfig, isLoading: isConfigLoading, post, isPostLoading, postId} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading} = useAnalyticsData();
+    const {post, isPostLoading, postId} = usePostAnalytics();
     const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
     const {appSettings} = useAppContext();
     const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};

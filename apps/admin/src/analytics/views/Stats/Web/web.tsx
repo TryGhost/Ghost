@@ -17,7 +17,7 @@ import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/analytics/utils/audience';
 import {useFilterParams} from '@/analytics/hooks/use-filter-params';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
-import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 
 const Web: React.FC = () => {
     const {range} = useAnalytics();

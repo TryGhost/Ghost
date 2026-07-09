@@ -7,9 +7,11 @@ vi.mock('@tryghost/admin-x-framework', () => ({
     Navigate: ({to}: {to: string}) => React.createElement('div', {'data-testid': 'navigate', 'data-to': to})
 }));
 
-vi.mock('@/posts/analytics/providers/post-analytics-context');
+vi.mock('@/shared/analytics/use-analytics-data', () => ({
+    useAnalyticsData: vi.fn()
+}));
 
-const mockUseGlobalData = vi.mocked(await import('@/posts/analytics/providers/post-analytics-context')).useGlobalData;
+const mockUseAnalyticsData = vi.mocked(await import('@/shared/analytics/use-analytics-data')).useAnalyticsData;
 
 describe('useFeatureFlag', () => {
     beforeEach(() => {
@@ -17,10 +19,10 @@ describe('useFeatureFlag', () => {
     });
 
     it('returns loading state while data is loading', () => {
-        mockUseGlobalData.mockReturnValue({
+        mockUseAnalyticsData.mockReturnValue({
             isLoading: true,
-            data: undefined
-        } as unknown as ReturnType<typeof mockUseGlobalData>);
+            config: undefined
+        } as unknown as ReturnType<typeof mockUseAnalyticsData>);
 
         const {result} = renderHook(() => useFeatureFlag('testFlag', '/fallback'));
 
@@ -30,10 +32,10 @@ describe('useFeatureFlag', () => {
     });
 
     it('returns enabled when flag is true', () => {
-        mockUseGlobalData.mockReturnValue({
+        mockUseAnalyticsData.mockReturnValue({
             isLoading: false,
-            data: {labs: {testFlag: true}}
-        } as unknown as ReturnType<typeof mockUseGlobalData>);
+            config: {labs: {testFlag: true}}
+        } as unknown as ReturnType<typeof mockUseAnalyticsData>);
 
         const {result} = renderHook(() => useFeatureFlag('testFlag', '/fallback'));
 
@@ -43,10 +45,10 @@ describe('useFeatureFlag', () => {
     });
 
     it('returns redirect when flag is explicitly false', () => {
-        mockUseGlobalData.mockReturnValue({
+        mockUseAnalyticsData.mockReturnValue({
             isLoading: false,
-            data: {labs: {testFlag: false}}
-        } as unknown as ReturnType<typeof mockUseGlobalData>);
+            config: {labs: {testFlag: false}}
+        } as unknown as ReturnType<typeof mockUseAnalyticsData>);
 
         const {result} = renderHook(() => useFeatureFlag('testFlag', '/fallback'));
 
@@ -58,10 +60,10 @@ describe('useFeatureFlag', () => {
     });
 
     it('returns redirect when flag is absent', () => {
-        mockUseGlobalData.mockReturnValue({
+        mockUseAnalyticsData.mockReturnValue({
             isLoading: false,
-            data: {labs: {otherFlag: true}}
-        } as unknown as ReturnType<typeof mockUseGlobalData>);
+            config: {labs: {otherFlag: true}}
+        } as unknown as ReturnType<typeof mockUseAnalyticsData>);
 
         const {result} = renderHook(() => useFeatureFlag('testFlag', '/fallback'));
 

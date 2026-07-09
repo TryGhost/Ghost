@@ -5,7 +5,7 @@ import {type BaseSourceData, useNavigate, useParams} from '@tryghost/admin-x-fra
 import {GhAreaChart, type GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from '@tryghost/shade/patterns';
 import {HTable} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
-import {useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 
 interface WebOverviewProps {
     sourcesData: BaseSourceData[] | null;
@@ -20,10 +20,10 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
     const {postId} = useParams();
     const navigate = useNavigate();
 
-    // Get global data for site info
-    const {data: globalData} = useGlobalData();
-    const siteUrl = globalData?.url as string | undefined;
-    const siteIcon = globalData?.icon as string | undefined;
+    // Get site URL and icon for source favicons
+    const {site} = useAnalyticsData();
+    const siteUrl = site.url;
+    const siteIcon = site.icon;
 
     // Calculate total visits for sources percentage calculation
     const totalSourcesVisits = useMemo(() => {

@@ -82,14 +82,17 @@ export const defaultMockData = {
         }
     } satisfies PostGrowthStatsResponseType,
 
-    // Properly typed mock for PostAnalyticsContext
-    globalData: {
+    // Framework data exposed by useAnalyticsData (sourced from the shell)
+    analyticsData: {
         isLoading: false,
         settings: [],
-        data: undefined,
-        site: undefined,
+        config: undefined,
         statsConfig: undefined,
-        tinybirdToken: 'mock-tinybird-token',
+        site: {}
+    },
+
+    // Properly typed mock for PostAnalyticsContext (post-scoped state only)
+    postAnalyticsContext: {
         range: 30,
         setRange: vi.fn(),
         postId: 'test-post-id',
@@ -145,7 +148,8 @@ export const setupPostsAppMocks = async () => {
     const mockUsePostGrowthStats = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).usePostGrowthStats;
     const mockUseMrrHistory = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useMrrHistory;
     const mockUseTopLinks = vi.mocked(await import('@tryghost/admin-x-framework/api/links')).useTopLinks;
-    const mockUseGlobalData = vi.mocked(await import('@/posts/analytics/providers/post-analytics-context')).useGlobalData;
+    const mockUsePostAnalytics = vi.mocked(await import('@/posts/analytics/providers/post-analytics-context')).usePostAnalytics;
+    const mockUseAnalyticsData = vi.mocked(await import('@/shared/analytics/use-analytics-data')).useAnalyticsData;
 
     // Set up ALL mocks with sensible defaults using centralized fixtures
     mockApiHook<PostsResponseType>(mockGetPost, defaultMockData.postsResponse);
@@ -156,7 +160,8 @@ export const setupPostsAppMocks = async () => {
     mockApiHook<PostGrowthStatsResponseType>(mockUsePostGrowthStats, defaultMockData.growthStats);
     mockApiHook<MrrHistoryResponseType>(mockUseMrrHistory, responseFixtures.mrrHistory);
     mockApiHook<LinkResponseType>(mockUseTopLinks, responseFixtures.links);
-    mockUseGlobalData.mockReturnValue(defaultMockData.globalData);
+    mockUsePostAnalytics.mockReturnValue(defaultMockData.postAnalyticsContext);
+    mockUseAnalyticsData.mockReturnValue(defaultMockData.analyticsData);
 
     return {
         mockGetPost,
@@ -167,7 +172,8 @@ export const setupPostsAppMocks = async () => {
         mockUsePostGrowthStats,
         mockUseMrrHistory,
         mockUseTopLinks,
-        mockUseGlobalData
+        mockUsePostAnalytics,
+        mockUseAnalyticsData
     };
 };
 

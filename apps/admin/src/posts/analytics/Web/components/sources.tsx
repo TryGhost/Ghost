@@ -5,7 +5,7 @@ import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, Card
 import {HTable} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {getPeriodText} from '@/posts/analytics/utils/chart-helpers';
-import {useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
+import {usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
@@ -104,7 +104,7 @@ export const Sources: React.FC<SourcesCardProps> = ({
     topSourcesLimit = 10,
     onSourceClick
 }) => {
-    const {isPostLoading} = useGlobalData();
+    const {isPostLoading} = usePostAnalytics();
 
     // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {

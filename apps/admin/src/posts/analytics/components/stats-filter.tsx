@@ -8,7 +8,8 @@ import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@/posts/analytics/u
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/posts/analytics/utils/audience';
 import {useAppContext} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
+import {usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
 
 countries.registerLocale(enLocale);
@@ -142,7 +143,8 @@ const useTinybirdFilterOptions = (
     config: UseTinybirdFilterOptionsConfig = {}
 ) => {
     const {enabled = true} = config;
-    const {statsConfig, range} = useGlobalData();
+    const {statsConfig} = useAnalyticsData();
+    const {range} = usePostAnalytics();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
     const definition = FILTER_FIELD_DEFINITIONS[fieldKey];
@@ -210,7 +212,7 @@ const useTinybirdFilterOptions = (
 
 function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
-    const {post} = useGlobalData();
+    const {post} = usePostAnalytics();
     const postUuid = post?.uuid;
 
     // Track which filter field is currently being selected (lazy loading)

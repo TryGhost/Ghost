@@ -17,7 +17,8 @@ import {getPeriodText} from '@/posts/analytics/utils/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useFilterParams} from '@/posts/analytics/hooks/use-filter-params';
-import {useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
+import {usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
 
 interface ProcessedLocationData {
     location: string;
@@ -31,7 +32,8 @@ interface postAnalyticsProps {}
 const Web: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
-    const {statsConfig, isLoading: isConfigLoading, range, data: globalData, post, isPostLoading} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, site} = useAnalyticsData();
+    const {range, post, isPostLoading} = usePostAnalytics();
     const {appSettings} = useAppContext();
     const containerRef = useRef<HTMLElement>(null);
 
@@ -180,9 +182,9 @@ const Web: React.FC<postAnalyticsProps> = () => {
         return sourcesData.reduce((sum, source) => sum + Number(source.visits || 0), 0);
     }, [sourcesData]);
 
-    // Get site URL and icon from global data
-    const siteUrl = globalData?.url as string | undefined;
-    const siteIcon = globalData?.icon as string | undefined;
+    // Get site URL and icon for source favicons
+    const siteUrl = site.url;
+    const siteIcon = site.icon;
 
     // Memoize the processed locations data with percentages
     const processedLocationsData = useMemo<ProcessedLocationData[]>(() => {
