@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
-import {useLocation} from '@tryghost/admin-x-framework';
+import {useLocation} from 'react-router';
 
-const VIRTUAL_LIST_WINDOW_SIZE = 1000;
+const DEFAULT_VIRTUAL_LIST_WINDOW_SIZE = 1000;
 const VIRTUAL_LIST_WINDOW_HISTORY_STATE_KEY = 'ghostVirtualListWindow';
 
 function getVirtualListWindowState({
@@ -19,8 +19,8 @@ function getVirtualListWindowState({
     };
 }
 
-function getNextUnlockedItemCount(unlockedItemCount: number) {
-    return unlockedItemCount + VIRTUAL_LIST_WINDOW_SIZE;
+function getNextUnlockedItemCount(unlockedItemCount: number, windowSize: number) {
+    return unlockedItemCount + windowSize;
 }
 
 function getVirtualListWindowHistoryKey(pathname: string, resetKey: string) {
@@ -30,7 +30,7 @@ function getVirtualListWindowHistoryKey(pathname: string, resetKey: string) {
 function getStoredUnlockedItemCount(
     historyState: Record<string, unknown> | null | undefined,
     historyKey: string,
-    defaultUnlockedItemCount: number = VIRTUAL_LIST_WINDOW_SIZE
+    defaultUnlockedItemCount: number
 ) {
     const storedWindows = historyState?.[VIRTUAL_LIST_WINDOW_HISTORY_STATE_KEY];
 
@@ -76,31 +76,61 @@ function getCurrentHistoryState() {
     return window.history.state;
 }
 
+export interface UseVirtualListWindowOptions {
+    /**
+     * When this key changes the unlocked window resets to a single page.
+     * Defaults to the current `location.search`, so changing filters/queries
+     * resets the window. Pass a stable key to survive query changes.
+     */
+    resetKey?: string;
+    /**
+     * Number of rows unlocked per page, and the initial window size
+     * (default: 1000).
+     */
+    windowSize?: number;
+}
+
+export interface UseVirtualListWindowResult {
+    /** How many rows should currently be shown (capped at the unlocked window). */
+    visibleItemCount: number;
+    /** Whether there are more rows to reveal beyond the current window. */
+    canLoadMore: boolean;
+    /** Reveal the next window of rows. */
+    loadMore: () => void;
+}
+
+/**
+ * Caps how many rows of a (possibly huge) list are rendered at once, unlocking
+ * another window on demand. The unlocked size is persisted per history entry so
+ * that navigating back restores the previously expanded window.
+ *
+ * Fully data-source agnostic — the caller owns `totalItems` and decides how the
+ * returned `visibleItemCount` maps onto its data.
+ */
 export function useVirtualListWindow(
     totalItems: number,
     {
-        resetKey
-    }: {
-        resetKey?: string;
-    } = {}
-) {
+        resetKey,
+        windowSize = DEFAULT_VIRTUAL_LIST_WINDOW_SIZE
+    }: UseVirtualListWindowOptions = {}
+): UseVirtualListWindowResult {
     const {key: locationEntryKey, pathname, search} = useLocation();
     const effectiveResetKey = resetKey ?? search;
     const historyKey = getVirtualListWindowHistoryKey(pathname, effectiveResetKey);
     const [unlockedItemCount, setUnlockedItemCount] = useState(() => {
-        return getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey);
+        return getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, windowSize);
     });
     const previousHistoryKeyRef = useRef(historyKey);
 
     useEffect(() => {
         if (previousHistoryKeyRef.current !== historyKey) {
             previousHistoryKeyRef.current = historyKey;
-            setUnlockedItemCount(getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey));
+            setUnlockedItemCount(getStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, windowSize));
             return;
         }
 
         setStoredUnlockedItemCount(getCurrentHistoryState(), historyKey, unlockedItemCount);
-    }, [historyKey, locationEntryKey, unlockedItemCount]);
+    }, [historyKey, locationEntryKey, unlockedItemCount, windowSize]);
 
     const {visibleItemCount, canLoadMore} = getVirtualListWindowState({
         totalItems,
@@ -110,6 +140,6 @@ export function useVirtualListWindow(
     return {
         visibleItemCount,
         canLoadMore,
-        loadMore: () => setUnlockedItemCount(current => getNextUnlockedItemCount(current))
+        loadMore: () => setUnlockedItemCount(current => getNextUnlockedItemCount(current, windowSize))
     };
 }

@@ -1,14 +1,11 @@
-import LoadMoreButton from '@components/virtual-table/load-more-button';
 import MembersListItem from './members-list-item';
+import {LoadMoreButton, useInfiniteVirtualScroll, useScrollRestoration, useVirtualListWindow} from '@tryghost/admin-x-framework/virtual-list';
 import {Member} from '@tryghost/admin-x-framework/api/members';
 import {MembersTableColGroup, MembersTableHeader, PinnedMemberHeader} from './member-table-chrome';
 import {Table, TableBody, TableCell, TableRow} from '@tryghost/shade/components';
 import {buildMemberDetailPath} from '../member-detail-hash';
 import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
 import {getMemberTableLayout, getMemberTableLayoutStyles} from './member-table-layout';
-import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
-import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
-import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
 import type {ActiveColumn} from '../member-query-params';
 import type {RefObject} from 'react';
 
