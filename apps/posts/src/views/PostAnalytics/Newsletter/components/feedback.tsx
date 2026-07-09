@@ -1,8 +1,9 @@
 import {Avatar, AvatarFallback, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {HTable} from '@tryghost/shade/primitives';
 import {LucideIcon, formatPercentage, formatTimestamp, stringToHslColor, useSimplePagination} from '@tryghost/shade/utils';
+import {buildMemberDetailPath} from '../../../members/member-detail-hash';
 import {formatMemberName, getMemberInitials} from '@tryghost/shade/app';
-import {useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostFeedback} from '@hooks/use-post-feedback';
 import {useState} from 'react';
 
@@ -17,6 +18,7 @@ interface FeedbackProps {
 const Feedback: React.FC<FeedbackProps> = ({feedbackStats}) => {
     const {postId} = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [activeFeedbackTab, setActiveFeedbackTab] = useState<'positive' | 'negative'>('positive');
     const ITEMS_PER_PAGE = 9;
 
@@ -76,7 +78,11 @@ const Feedback: React.FC<FeedbackProps> = ({feedbackStats}) => {
                             <div className='flex w-full flex-col py-3'>
                                 {paginatedFeedback.map(item => (
                                     <div key={item.id} className='flex h-10 w-full items-center justify-between gap-3 rounded-sm border-none px-2 text-sm hover:cursor-pointer hover:bg-accent' onClick={() => {
-                                        navigate(`/members/${item.member.id}`, {crossApp: true});
+                                        // Member detail is now in-app React (Phase 8 cutover);
+                                        // client-side navigation with a `back` param so the
+                                        // detail-screen back link returns to this newsletter
+                                        // feedback page instead of the bare members list.
+                                        navigate(buildMemberDetailPath(item.member.id, location.pathname + location.search));
                                     }}>
                                         <div className='flex items-center gap-2 font-medium'>
                                             <Avatar className='size-7'>

@@ -22,6 +22,7 @@
         },
         "./api": "./src/api.ts",
         "./members": "./src/views/members/members.tsx",
+        "./member-detail": "./src/views/members/detail/member-detail.tsx",
         "./gift-link-modal": "./src/views/PostAnalytics/modals/gift-link-modal.tsx"
     },
     "private": true,

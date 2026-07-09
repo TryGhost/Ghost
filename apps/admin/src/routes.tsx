@@ -39,8 +39,6 @@ const EMBER_ROUTES: string[] = [
     "/tags/new",
     "/explore/*",
     "/migrate/*",
-    "/members/new",
-    "/members/:member_id",
     "/members-activity",
     "/designsandbox",
     "/mentions",
@@ -66,6 +64,15 @@ const membersRoute: RouteObject = {
         {
             path: "import",
             lazy: lazyComponent(() => import("@tryghost/posts/members"))
+        },
+        {
+            // Single route covers both edit (`:member_id`) and create (the
+            // sentinel `new`) — the same component branches on `member_id ===
+            // 'new'` and skips the fetch in create mode. Safe because real
+            // member ids are 24-char hex ObjectIds and can't collide with the
+            // literal "new".
+            path: ":member_id",
+            lazy: lazyComponent(() => import("@tryghost/posts/member-detail"))
         }
     ]
 };

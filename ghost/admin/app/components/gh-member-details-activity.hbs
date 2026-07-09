@@ -28,7 +28,8 @@
                         {{/if}}
                     </p>
                     <p>
-                        <LinkTo class="gh-member-details-activity-link" @route="member" @model={{@member}}>View member profile &rarr;</LinkTo>
+                        {{! Member detail is now React-owned (Phase 8 cutover); the Ember `member` route was removed from router.js, so link out via a plain anchor to the hash URL React handles. }}
+                        <a class="gh-member-details-activity-link" href="#/members/{{@member.id}}">View member profile &rarr;</a>
                     </p>
                 </div>
             </div>
