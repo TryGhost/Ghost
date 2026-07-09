@@ -1,3 +1,4 @@
+import { NavAddons } from './nav-addons';
 import { SidebarContent } from '@tryghost/shade/components';
 
 import AppSidebarBanner from './app-sidebar-banner';
@@ -21,15 +22,16 @@ function AppSidebarContent() {
 
   return (
     <SidebarContent className="justify-between px-3 pt-4 pb-1">
-      <div className="flex flex-col gap-2 sidebar:gap-4">
+            <Stack className="sidebar:gap-4" gap="sm">
         <NavMain />
         <NavContent />
+                <NavAddons />
         <NavGhostPro />
-      </div>
-      <div className={`flex flex-col gap-2 sidebar:gap-4 ${bannerContainerClassName}`}>
+            </Stack>
+            <Stack className={`sidebar:gap-4 ${bannerContainerClassName}`} gap="sm">
         <AppSidebarBanner banner={banner} />
         <NavSettings className="pb-0" />
-      </div>
+            </Stack>
     </SidebarContent>
   );
 }

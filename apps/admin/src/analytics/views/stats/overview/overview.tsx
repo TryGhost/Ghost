@@ -1,3 +1,5 @@
+import { AddonDashboardCards } from '@tryghost/addon-kit/host';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import DateRangeSelect from '@/analytics/views/stats/components/date-range-select';
 import LatestPost from './components/latest-post';
 import OverviewKPIs from './components/overview-kpis';
@@ -81,6 +83,7 @@ type GrowthChartDataItem = {
 };
 
 const Overview: React.FC = () => {
+  const addonsEnabled = useFeatureFlag('addons');
   const paidMembersEnabled = usePaidMembersEnabled();
   const { range } = useAnalytics();
   const { statsConfig, isLoading: isConfigLoading } = useAnalyticsData();
@@ -288,6 +291,7 @@ const Overview: React.FC = () => {
             </div>
           </HelpCard>
         </div>
+                {addonsEnabled && <AddonDashboardCards context={{range}} />}
       </StatsView>
     </StatsLayout>
   );
