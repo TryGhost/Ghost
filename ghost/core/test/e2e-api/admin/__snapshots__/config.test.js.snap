@@ -52,10 +52,6 @@ Object {
       "version": "0.3",
     },
     "stripeDirect": false,
-    "tenor": Object {
-      "contentFilter": "off",
-      "googleApiKey": null,
-    },
     "useGravatar": false,
     "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+/,
   },

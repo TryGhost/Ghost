@@ -18,7 +18,6 @@ module.exports = {
             'mailgunIsConfigured',
             'emailAnalytics',
             'hostSettings',
-            'tenor',
             'klipy',
             'pintura',
             'signupForm',

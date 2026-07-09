@@ -22,7 +22,7 @@ import {
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
-import {klipyConfig, tenorConfig} from './utils/gifConfig';
+import {klipyConfig} from './utils/gifConfig';
 import {useLocation, useSearchParams} from 'react-router-dom';
 import {useSnippets} from './utils/useSnippets';
 
@@ -46,7 +46,6 @@ function hideDeprecatedCardInMenu(searchParams) {
 const defaultCardConfig = {
     unsplash: defaultUnsplashHeaders,
     fetchEmbed: fetchEmbed,
-    tenor: tenorConfig,
     klipy: klipyConfig,
     fetchAutocompleteLinks: () => Promise.resolve([
         {label: 'Homepage', value: window.location.origin + '/'},

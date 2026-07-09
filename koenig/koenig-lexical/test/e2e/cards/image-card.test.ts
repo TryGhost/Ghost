@@ -772,8 +772,8 @@ test.describe('Image card', async () => {
         `, {ignoreCardToolbarContents: true});
     });
 
-    test('can insert tenor image', async () => {
-        await mockTenorApi(page);
+    test('can insert a gif image', async () => {
+        await mockKlipyApi(page);
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
 
@@ -783,7 +783,9 @@ test.describe('Image card', async () => {
         await expect(await page.locator('[data-gif-index="1"]')).toBeVisible();
         await page.click('[data-gif-index="1"]');
 
-        await expect(await page.getByTestId('image-card-populated')).toBeVisible();
+        // toBeAttached rather than toBeVisible: the fixture GIF URL is not
+        // network-loaded in tests, so visibility would depend on an external fetch
+        await expect(await page.getByTestId('image-card-populated')).toBeAttached();
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -792,7 +794,7 @@ test.describe('Image card', async () => {
                         <div>
                             <img
                                 alt=""
-                                src="https://media.tenor.com/ocbMLlwniWQAAAAC/steve-harvey-oh.gif" />
+                                src="https://static.klipy.com/gif/klipy-dog-dance.gif" />
                         </div>
                         <figcaption>
                             <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
@@ -816,7 +818,7 @@ test.describe('Image card', async () => {
     });
 
     test('can insert a gif with the keyboard', async () => {
-        await mockTenorApi(page);
+        await mockKlipyApi(page);
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
 
@@ -829,7 +831,9 @@ test.describe('Image card', async () => {
         await page.keyboard.press('Tab');
         await page.keyboard.press('Enter');
 
-        await expect(await page.getByTestId('image-card-populated')).toBeVisible();
+        // toBeAttached rather than toBeVisible: the fixture GIF URL is not
+        // network-loaded in tests, so visibility would depend on an external fetch
+        await expect(await page.getByTestId('image-card-populated')).toBeAttached();
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -838,7 +842,7 @@ test.describe('Image card', async () => {
                         <div>
                             <img
                                 alt=""
-                                src="https://media.tenor.com/Sm9aylrzSyMAAAAC/cats-animals.gif" />
+                                src="https://static.klipy.com/gif/klipy-cats-animals.gif" />
                         </div>
                         <figcaption>
                             <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
@@ -862,7 +866,7 @@ test.describe('Image card', async () => {
     });
 
     test('can close the gif selector on Esc', async () => {
-        await mockTenorApi(page);
+        await mockKlipyApi(page);
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
 
@@ -874,7 +878,7 @@ test.describe('Image card', async () => {
     });
 
     test('can show a gif selector error', async () => {
-        await mockTenorApi(page, {status: 400});
+        await mockKlipyApi(page, {status: 400});
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
 
@@ -1230,258 +1234,87 @@ async function insertEmptyImageCard(page) {
     });
 }
 
-function tenorTestData() {
-    return (
-        {
-            locale: 'en',
-            results: [
-                {
-                    id: '6897265628617702942',
-                    title: '',
-                    media_formats: {
-                        tinygif: {
-                            url: 'https://media.tenor.com/X7gCi8NE_h4AAAAM/cat-funny.gif',
-                            duration: 0,
-                            preview: '',
-                            dims: [
-                                220,
-                                204
-                            ],
-                            size: 522164
-                        },
-                        gif: {
-                            url: 'https://media.tenor.com/X7gCi8NE_h4AAAAC/cat-funny.gif',
-                            duration: 0,
-                            preview: '',
-                            dims: [
-                                498,
-                                460
-                            ],
-                            size: 4870544
-                        },
-                        tinygifpreview: {
-                            url: 'https://media.tenor.com/X7gCi8NE_h4AAAAF/cat-funny.png',
-                            duration: 0,
-                            preview: '',
-                            dims: [
-                                220,
-                                204
-                            ],
-                            size: 21743
-                        },
-                        gifpreview: {
-                            url: 'https://media.tenor.com/X7gCi8NE_h4AAAAe/cat-funny.png',
-                            duration: 0,
-                            preview: '',
-                            dims: [
-                                640,
-                                592
-                            ],
-                            size: 141384
-                        },
-                        mp4: {
-                            url: 'https://media.tenor.com/X7gCi8NE_h4AAAPo/cat-funny.mp4',
-                            duration: 3.7,
-                            preview: '',
-                            dims: [
-                                640,
-                                592
-                            ],
-                            size: 754491
-                        }
-                    },
-                    created: 1580334888.9161069,
-                    content_description: 'Cat Funny GIF',
-                    itemurl: 'https://tenor.com/view/cat-funny-fall-submit-play-gif-16179688',
-                    url: 'https://tenor.com/bf3eS.gif',
-                    tags: [
-                        'cat',
-                        'funny',
-                        'fall',
-                        'submit',
-                        'play'
-                    ],
-                    flags: [],
-                    hasaudio: false
-                },
-                {
-                    id: '11657229184981764452',
-                    title: '',
-                    media_formats: {
-                        tinygifpreview: {
-                            url: 'https://media.tenor.com/ocbMLlwniWQAAAAF/steve-harvey-oh.png',
-                            duration: 0,
-                            preview: '',
-                            dims: [
-                                220,
-                                124
-                            ],
-                            size: 11388
-                        },
-                        tinygif: {
-                            url: 'https://media.tenor.com/ocbMLlwniWQAAAAM/steve-harvey-oh.gif',
-                            duration: 0,
-                            preview: '',
-                            dims: [
-                                220,
-                                124
-                            ],
-                            size: 173121
-                        },
-                        gifpreview: {
-                            url: 'https://media.tenor.com/ocbMLlwniWQAAAAe/steve-harvey-oh.png',
-                            duration: 0,
-                            preview: '',
-                            dims: [
-                                640,
-                                360
-                            ],
-                            size: 65023
-                        },
-                        gif: {
-                            url: 'https://media.tenor.com/ocbMLlwniWQAAAAC/steve-harvey-oh.gif',
-                            duration: 0,
-                            preview: '',
-                            dims: [
-                                498,
-                                280
-                            ],
-                            size: 1669457
-                        },
-                        mp4: {
-                            url: 'https://media.tenor.com/ocbMLlwniWQAAAPo/steve-harvey-oh.mp4',
-                            duration: 2.4,
-                            preview: '',
-                            dims: [
-                                640,
-                                360
-                            ],
-                            size: 377541
-                        }
-                    },
-                    created: 1600453059.6729331,
-                    content_description: 'Steve Harvey Oh GIF',
-                    itemurl: 'https://tenor.com/view/steve-harvey-oh-you-crazy-point-stop-gif-18502036',
-                    url: 'https://tenor.com/bpNn6.gif',
-                    tags: [
-                        'Steve Harvey',
-                        'oh',
-                        'You Crazy',
-                        'point',
-                        'stop'
-                    ],
-                    flags: [],
-                    hasaudio: false
-                },
-                {
-                    id: '5363605506377337635',
-                    title: '',
-                    media_formats: {
-                        gif: {
-                            url: 'https://media.tenor.com/Sm9aylrzSyMAAAAC/cats-animals.gif',
-                            duration: 0,
-                            preview: '',
-                            dims: [
-                                498,
-                                431
-                            ],
-                            size: 1574979
-                        },
-                        gifpreview: {
-                            url: 'https://media.tenor.com/Sm9aylrzSyMAAAAe/cats-animals.png',
-                            duration: 0,
-                            preview: '',
-                            dims: [
-                                640,
-                                554
-                            ],
-                            size: 153379
-                        },
-                        tinygifpreview: {
-                            url: 'https://media.tenor.com/Sm9aylrzSyMAAAAF/cats-animals.png',
-                            duration: 0,
-                            preview: '',
-                            dims: [
-                                220,
-                                190
-                            ],
-                            size: 25196
-                        },
-                        tinygif: {
-                            url: 'https://media.tenor.com/Sm9aylrzSyMAAAAM/cats-animals.gif',
-                            duration: 0,
-                            preview: '',
-                            dims: [
-                                220,
-                                190
-                            ],
-                            size: 236117
-                        },
-                        mp4: {
-                            url: 'https://media.tenor.com/Sm9aylrzSyMAAAPo/cats-animals.mp4',
-                            duration: 1.2,
-                            preview: '',
-                            dims: [
-                                640,
-                                554
-                            ],
-                            size: 265062
-                        }
-                    },
-                    created: 1616817775.272332,
-                    content_description: 'Cats Animals GIF',
-                    itemurl: 'https://tenor.com/view/cats-animals-reaction-wow-surprised-gif-20914356',
-                    url: 'https://tenor.com/bzUWu.gif',
-                    tags: [
-                        'cats',
-                        'animals',
-                        'reaction',
-                        'wow',
-                        'surprised'
-                    ],
-                    flags: [],
-                    hasaudio: false
-                }
-            ]
-        }
-    );
-}
-
-const tenorUrl = /https:\/\/tenor\.googleapis\.com\/v2\//;
-async function mockTenorApi(page, {status} = {status: 200}) {
-    await page.route(tenorUrl, route => route.fulfill({
-        status,
-        body: JSON.stringify(tenorTestData())
-    }));
-}
-
 function klipyTestData() {
     return {
         results: [
             {
                 id: '2484942301552561',
-                title: 'Klipy Cat',
+                title: 'Klipy Cat Funny',
                 media_formats: {
                     tinygif: {
-                        url: 'https://static.klipy.com/gif/klipy-cat-tiny.gif',
+                        url: 'https://static.klipy.com/gif/klipy-cat-funny-tiny.gif',
                         duration: 0,
                         preview: '',
-                        dims: [220, 220],
-                        size: 271080
+                        dims: [220, 204],
+                        size: 522164
                     },
                     gif: {
-                        url: 'https://static.klipy.com/gif/klipy-cat.gif',
+                        url: 'https://static.klipy.com/gif/klipy-cat-funny.gif',
                         duration: 0,
                         preview: '',
-                        dims: [498, 498],
-                        size: 273268
+                        dims: [498, 460],
+                        size: 4870544
                     }
                 },
                 created: 1765483200,
-                content_description: 'Klipy Cat GIF',
-                itemurl: 'https://klipy.com/gifs/klipy-cat',
-                url: 'https://static.klipy.com/gif/klipy-cat.gif',
-                tags: ['cat'],
+                content_description: 'Klipy Cat Funny GIF',
+                itemurl: 'https://klipy.com/gifs/klipy-cat-funny',
+                url: 'https://static.klipy.com/gif/klipy-cat-funny.gif',
+                tags: ['cat', 'funny'],
+                flags: [],
+                hasaudio: false
+            },
+            {
+                id: '1165722918498176',
+                title: 'Klipy Dog Dance',
+                media_formats: {
+                    tinygif: {
+                        url: 'https://static.klipy.com/gif/klipy-dog-dance-tiny.gif',
+                        duration: 0,
+                        preview: '',
+                        dims: [220, 124],
+                        size: 173121
+                    },
+                    gif: {
+                        url: 'https://static.klipy.com/gif/klipy-dog-dance.gif',
+                        duration: 0,
+                        preview: '',
+                        dims: [498, 280],
+                        size: 1669457
+                    }
+                },
+                created: 1765483201,
+                content_description: 'Klipy Dog Dance GIF',
+                itemurl: 'https://klipy.com/gifs/klipy-dog-dance',
+                url: 'https://static.klipy.com/gif/klipy-dog-dance.gif',
+                tags: ['dog', 'dance'],
+                flags: [],
+                hasaudio: false
+            },
+            {
+                id: '5363605506377337',
+                title: 'Klipy Cats Animals',
+                media_formats: {
+                    tinygif: {
+                        url: 'https://static.klipy.com/gif/klipy-cats-animals-tiny.gif',
+                        duration: 0,
+                        preview: '',
+                        dims: [220, 190],
+                        size: 236117
+                    },
+                    gif: {
+                        url: 'https://static.klipy.com/gif/klipy-cats-animals.gif',
+                        duration: 0,
+                        preview: '',
+                        dims: [498, 431],
+                        size: 1574979
+                    }
+                },
+                created: 1765483202,
+                content_description: 'Klipy Cats Animals GIF',
+                itemurl: 'https://klipy.com/gifs/klipy-cats-animals',
+                url: 'https://static.klipy.com/gif/klipy-cats-animals.gif',
+                tags: ['cats', 'animals'],
                 flags: [],
                 hasaudio: false
             }
@@ -1497,61 +1330,3 @@ async function mockKlipyApi(page, {status} = {status: 200}) {
         body: JSON.stringify(klipyTestData())
     }));
 }
-
-test.describe('Image card - Klipy GIF provider', async () => {
-    let page;
-
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
-    });
-
-    test.afterAll(async () => {
-        await page.close();
-    });
-
-    test('can insert klipy image', async () => {
-        await mockKlipyApi(page);
-        // ?gifProvider=klipy makes the demo resolve the GIF card to Klipy
-        await initialize({page, uri: '/?gifProvider=klipy#/?content=false'});
-        await focusEditor(page);
-        await page.click('[data-kg-plus-button]');
-
-        await page.click('button[data-kg-card-menu-item="GIF"]');
-
-        await expect(await page.locator('[data-gif-index="0"]')).toBeVisible();
-        await page.click('[data-gif-index="0"]');
-
-        // toBeAttached rather than toBeVisible: the fixture GIF URL is not
-        // network-loaded in tests, so visibility would depend on an external fetch
-        await expect(await page.getByTestId('image-card-populated')).toBeAttached();
-
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
-                    <figure data-kg-card-width="regular">
-                        <div>
-                            <img
-                                alt=""
-                                src="https://static.klipy.com/gif/klipy-cat.gif" />
-                        </div>
-                        <figcaption>
-                            <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
-                                <div>
-                                    <div data-kg="editor">
-                                        <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true">
-                                            <p><br /></p>
-                                        </div>
-                                    </div>
-                                    <div>Type caption for image (optional)</div>
-                                </div>
-                            </div>
-                            <button name="alt-toggle-button" type="button">Alt</button>
-                        </figcaption>
-                    </figure>
-                    <div data-kg-card-toolbar="image"></div>
-                </div>
-            </div>
-            <p><br /></p>
-        `, {ignoreCardToolbarContents: true});
-    });
-});

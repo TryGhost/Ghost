@@ -3,7 +3,7 @@ name: Koenig Demo
 # Deploys the koenig-lexical demo (https://koenig.ghost.org) to GitHub Pages
 # on main pushes that touch koenig/. Replaces the pages.yml workflow from the
 # archived TryGhost/Koenig repo. Requires Pages to be enabled on this repo
-# (gh-pages branch) and the TENOR/KLIPY API key secrets to be present.
+# (gh-pages branch) and the KLIPY API key secret to be present.
 
 on:
   push:
@@ -29,7 +29,6 @@ jobs:
     permissions:
       contents: write
     env:
-      VITE_TENOR_API_KEY: ${{ secrets.TENOR_API_KEY }}
       VITE_KLIPY_API_KEY: ${{ secrets.KLIPY_API_KEY }}
     steps:
       - name: Checkout repo

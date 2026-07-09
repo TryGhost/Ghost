@@ -6,13 +6,12 @@ import {$getRoot, $isDecoratorNode} from 'lexical';
 import {HtmlOutputPlugin, KoenigComposableEditor, KoenigComposer} from '../src';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
-import {klipyConfig, tenorConfig} from './utils/gifConfig';
+import {klipyConfig} from './utils/gifConfig';
 import {useSnippets} from './utils/useSnippets';
 import {useState} from 'react';
 
 const cardConfig = {
     unsplash: {defaultHeaders: defaultUnsplashHeaders},
-    tenor: tenorConfig,
     klipy: klipyConfig
 };
 

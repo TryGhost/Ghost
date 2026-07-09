@@ -1,6 +1,6 @@
 import GifSelector from './GifSelector';
 import {getGifProviderConfig, useGif} from '../../utils/services/gif.js';
-import {tenorConfig} from '../../../demo/utils/gifConfig';
+import {klipyConfig} from '../../../demo/utils/gifConfig';
 
 const story = {
     title: 'File Selectors/Gif',
@@ -14,7 +14,7 @@ const story = {
 export default story;
 
 const Template = (args) => {
-    const gifHook = useGif({config: getGifProviderConfig({tenor: tenorConfig})});
+    const gifHook = useGif({config: getGifProviderConfig({klipy: klipyConfig})});
 
     return (
         <GifSelector {...gifHook} {...args} />
@@ -23,19 +23,19 @@ const Template = (args) => {
 
 export const Base = Template.bind({});
 Base.args = {
-    config: tenorConfig
+    config: klipyConfig
 };
 
 export const Loading = Template.bind({});
 Loading.args = {
-    config: tenorConfig,
+    config: klipyConfig,
     isLoading: true,
     isLazyLoading: false
 };
 
 export const LazyLoading = Template.bind({});
 LazyLoading.args = {
-    config: tenorConfig,
+    config: klipyConfig,
     isLoading: true,
     isLazyLoading: true,
     loadNextPage: () => {}
@@ -43,18 +43,18 @@ LazyLoading.args = {
 
 export const ErrorCommon = Template.bind({});
 ErrorCommon.args = {
-    config: tenorConfig,
+    config: klipyConfig,
     error: 'common'
 };
 
 export const ErrorInvalidKey = Template.bind({});
 ErrorInvalidKey.args = {
-    config: tenorConfig,
+    config: klipyConfig,
     error: 'invalid_key'
 };
 
 export const ErrorSpecific = Template.bind({});
 ErrorSpecific.args = {
-    config: tenorConfig,
+    config: klipyConfig,
     error: 'Something went wrong'
 };

@@ -96,13 +96,13 @@ const EmailEditor: React.FC<EmailEditorProps> = ({
     const config = configData?.config;
     const {fetchAutocompleteLinks, searchLinks} = useEmailLinkSuggestions();
     const fetchEmbed = useKoenigFetchEmbed();
-    const tenorConfig = config?.tenor?.googleApiKey ? config.tenor : null;
+    const klipyConfig = config?.klipy?.apiKey ? config.klipy : null;
     const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
 
     const cardConfig = useMemo(() => ({
         unsplash: unsplashConfig,
         pinturaConfig,
-        tenor: tenorConfig,
+        klipy: klipyConfig,
         fetchEmbed,
         fetchAutocompleteLinks,
         searchLinks,
@@ -110,7 +110,7 @@ const EmailEditor: React.FC<EmailEditorProps> = ({
             transistor: transistorEnabled
         },
         visibilitySettings: 'none'
-    }), [unsplashConfig, pinturaConfig, tenorConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks, transistorEnabled]);
+    }), [unsplashConfig, pinturaConfig, klipyConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks, transistorEnabled]);
 
     const registerEditorAPI = useCallback((api: unknown) => {
         editorAPIRef.current = api as KoenigAPI | null;
