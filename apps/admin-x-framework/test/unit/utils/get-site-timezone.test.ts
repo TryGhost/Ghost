@@ -1,4 +1,4 @@
-import {getSiteTimezone} from '@src/utils/get-site-timezone';
+import {getSiteTimezone} from '../../../src/utils/get-site-timezone';
 
 describe('getSiteTimezone', () => {
     it('returns the site timezone if found', () => {

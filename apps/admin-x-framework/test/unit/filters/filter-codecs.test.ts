@@ -1,7 +1,7 @@
 import nql from '@tryghost/nql-lang';
-import {dateCodec, numberCodec, scalarCodec, setCodec, textCodec} from './filter-codecs';
+import {dateCodec, numberCodec, scalarCodec, setCodec, textCodec} from '../../../src/filters/filter-codecs';
 import {describe, expect, it} from 'vitest';
-import type {CodecContext, FilterPredicate} from './filter-types';
+import type {CodecContext, FilterPredicate} from '../../../src/filters/filter-types';
 
 const statusContext: CodecContext = {
     key: 'status',

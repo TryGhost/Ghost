@@ -1,6 +1,6 @@
 import nql from '@tryghost/nql-lang';
 import {describe, expect, it} from 'vitest';
-import {extractComparator, extractFieldName} from './filter-ast';
+import {extractComparator, extractFieldName} from '../../../src/filters/filter-ast';
 
 describe('filter-ast helpers', () => {
     it('extracts simple field names', () => {

@@ -1,11 +1,8 @@
 import React, {useMemo} from 'react';
-import {DATE_OPERATOR_LABELS} from '../filters/filter-date';
+import {DATE_OPERATOR_LABELS, RELATIVE_DATE_OPERATOR_LABELS, createOperatorOptions, createRelativeDateRenderer, fieldHasRelativeOperator, getTodayInTimezone} from '@tryghost/admin-x-framework/filters';
 import {FilterFieldConfig, ValueSource} from '@tryghost/shade/patterns';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {RELATIVE_DATE_OPERATOR_LABELS, createRelativeDateRenderer, fieldHasRelativeOperator} from '../filters/filter-relative-date';
 import {commentFields} from './comment-fields';
-import {createOperatorOptions} from '../filters/filter-operator-options';
-import {getTodayInTimezone} from '../filters/filter-normalization';
 
 interface UseCommentFilterFieldsOptions {
     postValueSource: ValueSource<string>;

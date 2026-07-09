@@ -1,6 +1,6 @@
-import {defineFields} from './filter-types';
+import {defineFields} from '../../../src/filters/filter-types';
 import {describe, expect, expectTypeOf, it} from 'vitest';
-import type {CodecContext, FilterCodec, FilterField, ParsedPredicate} from './filter-types';
+import type {CodecContext, FilterCodec, FilterField, ParsedPredicate} from '../../../src/filters/filter-types';
 
 describe('defineFields', () => {
     it('returns the same object shape at runtime', () => {

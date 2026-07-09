@@ -1,5 +1,5 @@
-import {createCombinedValueSource} from '@src/hooks/filter-sources/create-combined-value-source';
-import {createRemoteValueSource} from '@src/hooks/filter-sources/create-remote-value-source';
+import {createCombinedValueSource} from '../../../src/filter-sources/create-combined-value-source';
+import {createRemoteValueSource} from '../../../src/filter-sources/create-remote-value-source';
 import {describe, expect, it} from 'vitest';
 import {renderHook} from '@testing-library/react';
 

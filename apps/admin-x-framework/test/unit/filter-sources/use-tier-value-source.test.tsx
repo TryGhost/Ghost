@@ -1,14 +1,14 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {renderHook} from '@testing-library/react';
-import {useTierValueSource} from '@src/hooks/filter-sources/use-tier-value-source';
-import type {Tier} from '@tryghost/admin-x-framework/api/tiers';
+import {useTierValueSource} from '../../../src/filter-sources/use-tier-value-source';
+import type {Tier} from '../../../src/api/tiers';
 
 const {mockUseBrowseTiers} = vi.hoisted(() => ({
     mockUseBrowseTiers: vi.fn()
 }));
 
-vi.mock('@tryghost/admin-x-framework/api/tiers', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('@tryghost/admin-x-framework/api/tiers')>();
+vi.mock('../../../src/api/tiers', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('../../../src/api/tiers')>();
     return {
         ...actual,
         useBrowseTiers: mockUseBrowseTiers

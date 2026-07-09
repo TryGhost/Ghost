@@ -1,6 +1,6 @@
 import {Temporal} from 'temporal-polyfill';
 
-export {escapeNqlString} from '@tryghost/admin-x-framework/utils/nql';
+export {escapeNqlString} from '../utils/nql';
 
 const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 const LEGACY_UTC_DATE_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?$/;

@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {getMemberFields, memberFields} from './member-fields';
-import type {CodecContext, FilterPredicate} from '../filters/filter-types';
+import type {CodecContext, FilterPredicate} from '@tryghost/admin-x-framework/filters';
 
 const dateContext: CodecContext = {
     key: 'created_at',

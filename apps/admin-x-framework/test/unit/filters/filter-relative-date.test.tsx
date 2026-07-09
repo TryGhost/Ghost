@@ -1,7 +1,14 @@
-import {afterEach, describe, expect, it, vi} from 'vitest';
-import {createRelativeDateRenderer, formatRelativeDateTooltip} from './filter-relative-date';
+import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
+import {createRelativeDateRenderer, formatRelativeDateTooltip} from '../../../src/filters/filter-relative-date';
 import {render, screen} from '@testing-library/react';
+import {setupShadeMocks} from '../../../src/test/setup';
 import type {FilterFieldConfig} from '@tryghost/shade/patterns';
+
+// The Shade date picker relies on matchMedia/ResizeObserver/getBoundingClientRect,
+// which jsdom does not provide.
+beforeAll(() => {
+    setupShadeMocks();
+});
 
 const dateField: FilterFieldConfig = {
     key: 'created_at',

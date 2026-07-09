@@ -5,7 +5,7 @@ import {H1} from '@tryghost/shade/primitives';
 import {LucideIcon, formatDisplayDate, formatDisplayTime, formatNumber} from '@tryghost/shade/utils';
 import {Post, useGlobalData} from '@src/providers/post-analytics-context';
 import {PostShareModal} from '@tryghost/shade/posts-stats';
-import {getSiteTimezone} from '@src/utils/get-site-timezone';
+import {getSiteTimezone} from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {giftAccessLabel} from '@src/utils/gift-link';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, trackEvent, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';

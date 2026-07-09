@@ -1,8 +1,5 @@
-import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
+import {type AstNode, type FilterPredicate, type ParsedPredicate, dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, resolveField, serializePredicates, stampPredicates} from '@tryghost/admin-x-framework/filters';
 import {memberFields} from './member-fields';
-import {resolveField} from '../filters/resolve-field';
-import type {AstNode} from '../filters/filter-ast';
-import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
 import type {MemberFields} from './member-fields';
 
 type CompoundMatcher = (node: AstNode) => ParsedPredicate | null;
