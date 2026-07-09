@@ -1,10 +1,13 @@
 import type {AutomationStepToRun, AutomationsRepository} from './automations-repository';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
+import {type Knex} from 'knex';
 import {MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import {MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS} from './constants';
 // @ts-expect-error Models currently lack type definitions.
 import {AutomatedEmailRecipient, Member} from '../../models';
+
+const db = require('../../data/db');
 
 type MemberWelcomeEmailService = {
     init: () => unknown;
@@ -190,14 +193,22 @@ const processStep = async ({
                 memberStatus
             });
             try {
-                await AutomatedEmailRecipient.add({
-                    member_id: step.member_id,
-                    member_uuid: member.get('uuid'),
-                    member_email: member.get('email'),
-                    member_name: member.get('name'),
-                    automation_action_revision_id: step.automation_action_revision_id,
-                    // TODO(NY-1439) Don't always set this to false.
-                    track_opens: false
+                await db.knex.transaction(async (transacting: Knex.Transaction) => {
+                    await AutomatedEmailRecipient.add({
+                        member_id: step.member_id,
+                        member_uuid: member.get('uuid'),
+                        member_email: member.get('email'),
+                        member_name: member.get('name'),
+                        automation_action_revision_id: step.automation_action_revision_id,
+                        // TODO(NY-1439) Don't always set this to false.
+                        track_opens: false
+                    }, {transacting});
+
+                    await transacting('automation_action_revisions')
+                        .where('id', step.automation_action_revision_id)
+                        .update({
+                            email_sent_count: transacting.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1])
+                        });
                 });
             } catch (err) {
                 logging.error({

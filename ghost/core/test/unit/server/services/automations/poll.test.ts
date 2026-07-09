@@ -7,6 +7,8 @@ import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../../../core/server/services/me
 // @ts-expect-error Models currently lack type definitions.
 import {AutomatedEmailRecipient, Member} from '../../../../../core/server/models';
 
+const db = require('../../../../../core/server/data/db');
+
 const MAX_STEPS_PER_BATCH = 100;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 
@@ -42,6 +44,9 @@ type PollOptionsStubs = PollOptions & {
     memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
 };
 type AutomatedEmailRecipientAdd = typeof AutomatedEmailRecipient.add;
+type TransactingStub = sinon.SinonStub<[string], unknown> & {
+    raw: sinon.SinonStub<[string, Array<string | number>], unknown>;
+};
 
 type MemberFixture = {
     email: string;
@@ -120,11 +125,32 @@ function buildEmailStep(attrs: Partial<SendEmailStep> = {}): SendEmailStep {
 describe('automations poll', function () {
     let automationsApi: AutomationsApiStubs;
     let automatedEmailRecipientAdd: sinon.SinonStub<Parameters<AutomatedEmailRecipientAdd>, ReturnType<AutomatedEmailRecipientAdd>>;
+    let emailSentCountExpression: unknown;
     let memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
     let options: PollOptionsStubs;
+    let raw: sinon.SinonStub<[string, string[] | number[] | Array<string | number>], unknown>;
+    let transacting: TransactingStub;
+    let updateRevision: sinon.SinonStub<[{email_sent_count: unknown}], Promise<void>>;
+    let whereRevision: sinon.SinonStub<[string, string], unknown>;
 
     beforeEach(function () {
         sinon.useFakeTimers({now: new Date('2026-01-01T12:00:00.000Z'), shouldAdvanceTime: true});
+
+        emailSentCountExpression = Symbol('email_sent_count_expression');
+        raw = sinon.stub<[string, Array<string | number>], unknown>().returns(emailSentCountExpression);
+        updateRevision = sinon.stub<[{email_sent_count: unknown}], Promise<void>>().resolves();
+        whereRevision = sinon.stub<[string, string], unknown>().returns({
+            update: updateRevision
+        });
+        transacting = Object.assign(
+            sinon.stub<[string], unknown>().withArgs('automation_action_revisions').returns({
+                where: whereRevision
+            }),
+            {raw}
+        );
+        sinon.stub(db.knex, 'transaction').callsFake(async (callback: unknown) => {
+            return await (callback as (trx: typeof transacting) => Promise<unknown>)(transacting);
+        });
 
         automationsApi = {
             fetchAndLockSteps: fake<AutomationsApi['fetchAndLockSteps']>().resolves({steps: [], nextStepReadyAt: null}),
@@ -355,10 +381,18 @@ describe('automations poll', function () {
             member_name: 'Test Member',
             automation_action_revision_id: 'revision-id',
             track_opens: false
+        }, {
+            transacting
+        });
+        sinon.assert.calledOnceWithExactly(whereRevision, 'id', 'revision-id');
+        sinon.assert.calledOnceWithExactly(raw, 'COALESCE(??, 0) + ?', ['email_sent_count', 1]);
+        sinon.assert.calledOnceWithExactly(updateRevision, {
+            email_sent_count: emailSentCountExpression
         });
         sinon.assert.callOrder(
             memberWelcomeEmailService.api.sendAutomationEmail,
             automatedEmailRecipientAdd,
+            updateRevision,
             automationsApi.finishStepAndEnqueueNext
         );
     });
@@ -372,6 +406,7 @@ describe('automations poll', function () {
 
         sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
         sinon.assert.calledOnce(automatedEmailRecipientAdd);
+        sinon.assert.notCalled(updateRevision);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.notCalled(automationsApi.retryStep);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
