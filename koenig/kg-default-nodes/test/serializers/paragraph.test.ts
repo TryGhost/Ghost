@@ -1,4 +1,3 @@
-import should from 'should';
 import {createDocument} from '../test-utils/index.js';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
@@ -8,16 +7,16 @@ import type {HTMLConfig, LexicalEditor} from 'lexical';
 describe('Serializers: paragraph', function () {
     let editor: LexicalEditor;
 
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: DEFAULT_NODES, html: DEFAULT_CONFIG.html as HTMLConfig});
@@ -29,10 +28,10 @@ describe('Serializers: paragraph', function () {
             const document = createDocument(htmlString);
             const nodes = $generateNodesFromDOM(editor, document);
 
-            should.equal(nodes.length, 3);
-            should.equal(nodes[0].getType(), 'paragraph');
-            should.equal(nodes[1].getType(), 'paragraph');
-            should.equal(nodes[2].getType(), 'paragraph');
+            expect(nodes.length).toBe(3);
+            expect(nodes[0].getType()).toBe('paragraph');
+            expect(nodes[1].getType()).toBe('paragraph');
+            expect(nodes[2].getType()).toBe('paragraph');
         }));
 
         it('(GDoc) removes empty paragraphs', editorTest(function () {
@@ -40,9 +39,9 @@ describe('Serializers: paragraph', function () {
             const document = createDocument(htmlString);
             const nodes = $generateNodesFromDOM(editor, document);
 
-            should.equal(nodes.length, 2);
-            should.equal(nodes[0].getType(), 'paragraph');
-            should.equal(nodes[1].getType(), 'paragraph');
+            expect(nodes.length).toBe(2);
+            expect(nodes[0].getType()).toBe('paragraph');
+            expect(nodes[1].getType()).toBe('paragraph');
         }));
 
         it('(non GDoc) keeps empty paragraphs around dividers', editorTest(function () {
@@ -50,12 +49,12 @@ describe('Serializers: paragraph', function () {
             const document = createDocument(htmlString);
             const nodes = $generateNodesFromDOM(editor, document);
 
-            should.equal(nodes.length, 5);
-            should.equal(nodes[0].getType(), 'paragraph');
-            should.equal(nodes[1].getType(), 'paragraph');
-            should.equal(nodes[2].getType(), 'horizontalrule');
-            should.equal(nodes[3].getType(), 'paragraph');
-            should.equal(nodes[4].getType(), 'paragraph');
+            expect(nodes.length).toBe(5);
+            expect(nodes[0].getType()).toBe('paragraph');
+            expect(nodes[1].getType()).toBe('paragraph');
+            expect(nodes[2].getType()).toBe('horizontalrule');
+            expect(nodes[3].getType()).toBe('paragraph');
+            expect(nodes[4].getType()).toBe('paragraph');
         }));
 
         it('(GDoc) removes empty paragraphs around dividers', editorTest(function () {
@@ -63,10 +62,10 @@ describe('Serializers: paragraph', function () {
             const document = createDocument(htmlString);
             const nodes = $generateNodesFromDOM(editor, document);
 
-            should.equal(nodes.length, 3);
-            should.equal(nodes[0].getType(), 'paragraph');
-            should.equal(nodes[1].getType(), 'horizontalrule');
-            should.equal(nodes[2].getType(), 'paragraph');
+            expect(nodes.length).toBe(3);
+            expect(nodes[0].getType()).toBe('paragraph');
+            expect(nodes[1].getType()).toBe('horizontalrule');
+            expect(nodes[2].getType()).toBe('paragraph');
         }));
     });
 });

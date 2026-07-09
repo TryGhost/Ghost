@@ -1,4 +1,3 @@
-import 'should';
 import {createHeadlessEditor} from '@lexical/headless';
 import {utils, type ExportDOMOptions, type ExportDOMOutput} from '../src/index.js';
 import type {LexicalEditor} from 'lexical';
@@ -41,22 +40,22 @@ describe('Utils: generateDecoratorNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     describe('exportDOM', function () {
         let NodeWithRender: GeneratedNodeClass;
         let $createNodeWithRender: (dataset?: Record<string, unknown>) => GeneratedNodeInstance;
 
-        before(function () {
+        beforeAll(function () {
             NodeWithRender = utils.generateDecoratorNode({
                 nodeType: 'render-test',
                 properties: [],
@@ -74,8 +73,8 @@ describe('Utils: generateDecoratorNode', function () {
             const node = $createNodeWithRender();
             const result = node.exportDOM(editor);
 
-            result.type.should.equal('inner');
-            expectHtmlElement(result).outerHTML.should.equal('<div>default render</div>');
+            expect(result.type).toBe('inner');
+            expect(expectHtmlElement(result).outerHTML).toBe('<div>default render</div>');
         }));
 
         it('uses versioned default renderer (static version)', editorTest(function () {
@@ -92,8 +91,8 @@ describe('Utils: generateDecoratorNode', function () {
             const node = new VersionedNode() as unknown as GeneratedNodeInstance;
             const result = node.exportDOM(editor);
 
-            result.type.should.equal('inner');
-            expectHtmlElement(result).outerHTML.should.equal('<div>version 2</div>');
+            expect(result.type).toBe('inner');
+            expect(expectHtmlElement(result).outerHTML).toBe('<div>version 2</div>');
         }));
 
         it('uses versioned default renderer (dataset version)', editorTest(function () {
@@ -110,8 +109,8 @@ describe('Utils: generateDecoratorNode', function () {
             const node = new VersionedNode({version: 2}) as unknown as GeneratedNodeInstance;
             const result = node.exportDOM(editor);
 
-            result.type.should.equal('inner');
-            expectHtmlElement(result).outerHTML.should.equal('<div>version 2</div>');
+            expect(result.type).toBe('inner');
+            expect(expectHtmlElement(result).outerHTML).toBe('<div>version 2</div>');
         }));
 
         it('throws error when defaultRenderFn is not provided', editorTest(function () {
@@ -121,7 +120,7 @@ describe('Utils: generateDecoratorNode', function () {
             });
 
             const node = new NodeWithoutRender() as unknown as GeneratedNodeInstance;
-            (() => node.exportDOM(editor)).should.throw('[generateDecoratorNode] no-render-test: "defaultRenderFn" is required');
+            expect(() => node.exportDOM(editor)).toThrow('[generateDecoratorNode] no-render-test: "defaultRenderFn" is required');
         }));
 
         it('throws error when default versioned renderer is missing for node version', editorTest(function () {
@@ -135,7 +134,7 @@ describe('Utils: generateDecoratorNode', function () {
             });
 
             const node = new VersionedNode() as unknown as GeneratedNodeInstance;
-            (() => node.exportDOM(editor)).should.throw('[generateDecoratorNode] versioned-render-test: "defaultRenderFn" for version 2 is required');
+            expect(() => node.exportDOM(editor)).toThrow('[generateDecoratorNode] versioned-render-test: "defaultRenderFn" for version 2 is required');
         }));
 
         ['emailCustomizationAlpha', 'emailCustomization'].forEach((feature) => {
@@ -153,8 +152,8 @@ describe('Utils: generateDecoratorNode', function () {
                     }
                 });
 
-                result.type.should.equal('inner');
-                expectHtmlElement(result).outerHTML.should.equal('<span>custom render</span>');
+                expect(result.type).toBe('inner');
+                expect(expectHtmlElement(result).outerHTML).toBe('<span>custom render</span>');
             }));
         });
 
@@ -171,7 +170,7 @@ describe('Utils: generateDecoratorNode', function () {
 
             const node = new VersionedNode({version: 2}) as unknown as GeneratedNodeInstance;
 
-            (() => node.exportDOM(editor, {
+            expect(() => node.exportDOM(editor, {
                 feature: {
                     emailCustomizationAlpha: true
                 },
@@ -180,7 +179,7 @@ describe('Utils: generateDecoratorNode', function () {
                         1: () => createRenderResult('div', 'version 1')
                     }
                 }
-            })).should.throw('[generateDecoratorNode] versioned-render-test: options.nodeRenderers[\'versioned-render-test\'] for version 2 is required');
+            })).toThrow('[generateDecoratorNode] versioned-render-test: options.nodeRenderers[\'versioned-render-test\'] for version 2 is required');
         }));
     });
 
@@ -188,7 +187,7 @@ describe('Utils: generateDecoratorNode', function () {
         let NodeWithVisibility: GeneratedNodeClass;
         let $createNodeWithVisibility: (dataset?: Record<string, unknown>) => GeneratedNodeInstance;
 
-        before(function () {
+        beforeAll(function () {
             NodeWithVisibility = utils.generateDecoratorNode({
                 nodeType: 'visibility-test',
                 properties: [],
@@ -205,9 +204,9 @@ describe('Utils: generateDecoratorNode', function () {
         it('adds visibility property with default', editorTest(function () {
             const node = $createNodeWithVisibility();
 
-            node.visibility.should.deepEqual(defaultVisibility, 'node.visibility');
-            node.getDataset().visibility!.should.deepEqual(defaultVisibility, 'node.getDataset().visibility');
-            node.exportJSON().visibility!.should.deepEqual(defaultVisibility, 'node.exportJSON().visibility');
+            expect(node.visibility).toEqual(defaultVisibility, 'node.visibility');
+            expect(node.getDataset().visibility!).toEqual(defaultVisibility, 'node.getDataset().visibility');
+            expect(node.exportJSON().visibility!).toEqual(defaultVisibility, 'node.exportJSON().visibility');
         }));
 
         it('can update visibility', editorTest(function () {
@@ -225,9 +224,9 @@ describe('Utils: generateDecoratorNode', function () {
 
             node.visibility = newVisibility;
 
-            node.visibility.should.deepEqual(newVisibility, 'node.visibility');
-            node.getDataset().visibility!.should.deepEqual(newVisibility, 'node.getDataset().visibility');
-            node.exportJSON().visibility!.should.deepEqual(newVisibility, 'node.exportJSON().visibility');
+            expect(node.visibility).toEqual(newVisibility, 'node.visibility');
+            expect(node.getDataset().visibility!).toEqual(newVisibility, 'node.getDataset().visibility');
+            expect(node.exportJSON().visibility!).toEqual(newVisibility, 'node.exportJSON().visibility');
         }));
 
         it('ensures default doesn\'t change when nested visibility objects are updated', editorTest(function () {
@@ -237,7 +236,7 @@ describe('Utils: generateDecoratorNode', function () {
             // that the default can't be accidentally changed by reference
             (node.visibility as {web: {nonMember: boolean}}).web.nonMember = false;
 
-            NodeWithVisibility.getPropertyDefaults().visibility!.should.deepEqual(defaultVisibility);
+            expect(NodeWithVisibility.getPropertyDefaults().visibility!).toEqual(defaultVisibility);
         }));
 
         // During the early visibility beta period we had a different format for visibility
@@ -252,7 +251,7 @@ describe('Utils: generateDecoratorNode', function () {
             }) as unknown as GeneratedNodeInstance;
 
             // old values are kept, new values are added
-            node.visibility.should.deepEqual({
+            expect(node.visibility).toEqual({
                 showOnWeb: false,
                 showOnEmail: true,
                 segment: 'status:free',
@@ -279,7 +278,7 @@ describe('Utils: generateDecoratorNode', function () {
                 }
             });
 
-            node.visibility.should.deepEqual({
+            expect(node.visibility).toEqual({
                 web: {
                     nonMember: false,
                     memberSegment: 'status:free'

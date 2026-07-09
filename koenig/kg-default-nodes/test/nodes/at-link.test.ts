@@ -1,5 +1,3 @@
-import should from 'should';
-import '../test-utils/index.js';
 import {JSDOM} from 'jsdom';
 import {createHeadlessEditor} from '@lexical/headless';
 import type {LexicalEditor, EditorConfig} from 'lexical';
@@ -13,16 +11,16 @@ describe('AtLinkNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -41,30 +39,30 @@ describe('AtLinkNode', function () {
 
     it('matches node with $isAtLinkNode', editorTest(function () {
         const atLinkNode = $createAtLinkNode(null);
-        $isAtLinkNode(atLinkNode).should.be.true();
+        expect($isAtLinkNode(atLinkNode)).toBe(true);
     }));
 
     it('can be constructed with link format', editorTest(function () {
         const atLinkNode = $createAtLinkNode(1);
-        atLinkNode.getLinkFormat()!.should.equal(1);
+        expect(atLinkNode.getLinkFormat()!).toBe(1);
     }));
 
     it('defaults link format to null when called without args', editorTest(function () {
         const atLinkNode = $createAtLinkNode();
-        should.equal(atLinkNode.getLinkFormat(), null);
+        expect(atLinkNode.getLinkFormat()).toBe(null);
     }));
 
     it('can be cloned with all data', editorTest(function () {
         const atLinkNode = $createAtLinkNode(1);
         const atLinkNodeClone = AtLinkNode.clone(atLinkNode);
 
-        atLinkNode.__key.should.equal(atLinkNodeClone.__key);
-        atLinkNodeClone.getLinkFormat()!.should.equal(1);
+        expect(atLinkNode.__key).toBe(atLinkNodeClone.__key);
+        expect(atLinkNodeClone.getLinkFormat()!).toBe(1);
     }));
 
     it('exports all data via exportJSON()', editorTest(function () {
         const atLinkNode = $createAtLinkNode(1);
-        atLinkNode.exportJSON().should.deepEqual({
+        expect(atLinkNode.exportJSON()).toEqual({
             children: [],
             direction: null,
             format: '',
@@ -77,7 +75,7 @@ describe('AtLinkNode', function () {
 
     it('imports all data via importJSON()', editorTest(function () {
         const atLinkNode = AtLinkNode.importJSON({linkFormat: 1} as ReturnType<AtLinkNode['exportJSON']>);
-        atLinkNode.getLinkFormat()!.should.equal(1);
+        expect(atLinkNode.getLinkFormat()!).toBe(1);
     }));
 
     it('uses theme class when creating DOM', editorTest(function () {
@@ -85,19 +83,19 @@ describe('AtLinkNode', function () {
         const dom = atLinkNode.createDOM(
             {theme: {atLink: 'multiple classes'}} as unknown as EditorConfig
         );
-        dom.classList.contains('multiple').should.be.true();
-        dom.classList.contains('classes').should.be.true();
+        expect(dom.classList.contains('multiple')).toBe(true);
+        expect(dom.classList.contains('classes')).toBe(true);
     }));
 
     it('never updates dom after creation', editorTest(function () {
         const atLinkNode = $createAtLinkNode(null);
-        atLinkNode.updateDOM().should.be.false();
+        expect(atLinkNode.updateDOM()).toBe(false);
     }));
 
     it('can get and set link format', editorTest(function () {
         const atLinkNode = $createAtLinkNode(null);
         atLinkNode.setLinkFormat(1);
-        atLinkNode.getLinkFormat()!.should.equal(1);
+        expect(atLinkNode.getLinkFormat()!).toBe(1);
     }));
 
     it('returns an empty element for exportDOM()', editorTest(function () {
@@ -106,27 +104,28 @@ describe('AtLinkNode', function () {
         atLinkNode.append(atLinkSearchNode);
         const {element, type} = atLinkNode.exportDOM();
 
-        should.exist(element);
-        should.equal(type, 'inner');
-        element.tagName.should.equal('SPAN');
-        element.innerHTML.should.equal('');
-        element.outerHTML.should.equal('<span></span>');
+        expect(element).not.toBeNull();
+        expect(element).not.toBeUndefined();
+        expect(type).toBe('inner');
+        expect(element.tagName).toBe('SPAN');
+        expect(element.innerHTML).toBe('');
+        expect(element.outerHTML).toBe('<span></span>');
     }));
 
     it('returns blank string for .getTextContent()', editorTest(function () {
         const atLinkNode = $createAtLinkNode(null);
         const atLinkSearchNode = $createAtLinkSearchNode('test');
         atLinkNode.append(atLinkSearchNode);
-        atLinkNode.getTextContent().should.equal('');
+        expect(atLinkNode.getTextContent()).toBe('');
     }));
 
     it('is inline', editorTest(function () {
         const atLinkNode = $createAtLinkNode(null);
-        atLinkNode.isInline().should.be.true();
+        expect(atLinkNode.isInline()).toBe(true);
     }));
 
     it('cannot be empty', editorTest(function () {
         const atLinkNode = $createAtLinkNode(null);
-        atLinkNode.canBeEmpty().should.be.false();
+        expect(atLinkNode.canBeEmpty()).toBe(false);
     }));
 });

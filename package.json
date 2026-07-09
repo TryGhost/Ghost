@@ -59,7 +59,9 @@
     "docker:rebase": "git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-design-system,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --build --force-recreate ghost-dev",
     "knip": "knip",
     "knip:fix": "knip --fix --allow-remove-files=false",
-    "lint": "pnpm nx run-many -t lint",
+    "lint": "pnpm nx run-many -t lint lint:boundaries",
+    "lint:boundaries": "depcruise ghost/core/core --config .dependency-cruiser.cjs",
+    "check": "pnpm lint && pnpm test",
     "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
     "test:unit": "pnpm nx run-many -t test:unit",
     "test:watch": "vitest",
@@ -85,6 +87,7 @@
     "@playwright/test": "catalog:",
     "@secretlint/secretlint-rule-pattern": "13.0.2",
     "@secretlint/secretlint-rule-preset-recommend": "13.0.2",
+    "dependency-cruiser": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "eslint-plugin-i18next": "6.1.5",
@@ -109,6 +112,19 @@
   "nx": {
     "includedScripts": [],
     "targets": {
+      "lint:boundaries": {
+        "executor": "nx:run-commands",
+        "cache": true,
+        "inputs": [
+          "{workspaceRoot}/.dependency-cruiser.cjs",
+          "{workspaceRoot}/ghost/core/core/**/*",
+          "sharedGlobals"
+        ],
+        "outputs": [],
+        "options": {
+          "command": "depcruise ghost/core/core --config .dependency-cruiser.cjs"
+        }
+      },
       "docker:up": {
         "executor": "nx:run-commands",
         "options": {

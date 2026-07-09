@@ -1,0 +1,157 @@
+import CommentLikesModal from './comment-likes-modal';
+import CommentReportsModal from './comment-reports-modal';
+import {buildThreadLink} from './thread-link';
+import {type Comment} from '@tryghost/admin-x-framework/api/comments';
+import {Link, useSearchParams} from '@tryghost/admin-x-framework';
+import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
+import {Tooltip, TooltipContent, TooltipTrigger} from '@tryghost/shade/components';
+import {useState} from 'react';
+
+interface MetricProps {
+    icon: React.ReactNode;
+    count: number;
+    label: string;
+    to?: string;
+    onClick?: () => void;
+    className?: string;
+    testId?: string;
+}
+
+function Metric({icon, count, label, to, onClick, className, testId}: MetricProps) {
+    const baseClassName = cn('flex items-center gap-1 text-xs text-gray-800', className);
+    const content = (
+        <>
+            {icon}
+            <span>{formatNumber(count)}</span>
+        </>
+    );
+
+    const isClickable = to || onClick;
+
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                {to ? (
+                    <Link
+                        className={cn(baseClassName, 'cursor-pointer hover:opacity-70')}
+                        data-testid={testId}
+                        to={to}
+                        onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                        }}
+                    >
+                        {content}
+                    </Link>
+                ) : onClick ? (
+                    <button
+                        className={cn(baseClassName, 'cursor-pointer hover:opacity-70')}
+                        data-testid={testId}
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClick();
+                        }}
+                    >
+                        {content}
+                    </button>
+                ) : (
+                    <div className={baseClassName} data-testid={testId}>
+                        {content}
+                    </div>
+                )}
+            </TooltipTrigger>
+            <TooltipContent>{isClickable ? `View ${label.toLowerCase()}` : label}</TooltipContent>
+        </Tooltip>
+    );
+}
+
+interface CommentMetricsProps {
+    comment: Comment;
+    dislikesEnabled: boolean;
+    className?: string;
+}
+
+export function CommentMetrics({
+    comment,
+    dislikesEnabled,
+    className
+}: CommentMetricsProps) {
+    const [searchParams] = useSearchParams();
+    const [likesModalOpen, setLikesModalOpen] = useState(false);
+    const [likesModalDefaultTab, setLikesModalDefaultTab] = useState<'likes' | 'dislikes'>('likes');
+    const [reportsModalOpen, setReportsModalOpen] = useState(false);
+    const repliesLink = buildThreadLink(searchParams, comment.id);
+
+    const repliesCount = comment.count?.direct_replies ?? comment.replies?.length ?? 0;
+    const likesCount = comment.count?.likes ?? 0;
+    const dislikesCount = dislikesEnabled ? (comment.count?.dislikes ?? 0) : 0;
+    const reportsCount = comment.count?.reports ?? 0;
+    const hasReplies = repliesCount > 0;
+    const hasLikes = likesCount > 0;
+    const hasDislikes = dislikesCount > 0;
+    const hasReports = reportsCount > 0;
+
+    return (
+        <>
+            <div className={cn('flex items-center gap-6', className)}>
+                <Metric
+                    count={repliesCount}
+                    icon={<LucideIcon.Reply size={16} strokeWidth={1.5} />}
+                    label="Replies"
+                    testId="replies-metric"
+                    to={hasReplies ? repliesLink : undefined}
+                />
+                {dislikesEnabled ? (
+                    <div className="flex items-center gap-3">
+                        <Metric
+                            count={likesCount}
+                            icon={<LucideIcon.ThumbsUp size={16} strokeWidth={1.5} />}
+                            label="Likes"
+                            testId="likes-metric"
+                            onClick={hasLikes ? () => {
+                                setLikesModalDefaultTab('likes');
+                                setLikesModalOpen(true);
+                            } : undefined}
+                        />
+                        <Metric
+                            count={dislikesCount}
+                            icon={<LucideIcon.ThumbsDown size={16} strokeWidth={1.5} />}
+                            label="Dislikes"
+                            testId="dislikes-metric"
+                            onClick={hasDislikes ? () => {
+                                setLikesModalDefaultTab('dislikes');
+                                setLikesModalOpen(true);
+                            } : undefined}
+                        />
+                    </div>
+                ) : (
+                    <Metric
+                        count={likesCount}
+                        icon={<LucideIcon.Heart size={16} strokeWidth={1.5} />}
+                        label="Likes"
+                        onClick={hasLikes ? () => setLikesModalOpen(true) : undefined}
+                    />
+                )}
+                <Metric
+                    className={hasReports ? 'font-semibold text-red' : undefined}
+                    count={reportsCount}
+                    icon={<LucideIcon.Flag size={16} strokeWidth={1.5} />}
+                    label="Reports"
+                    onClick={hasReports ? () => setReportsModalOpen(true) : undefined}
+                />
+            </div>
+            <CommentLikesModal
+                comment={comment}
+                defaultTab={likesModalDefaultTab}
+                dislikesEnabled={dislikesEnabled}
+                open={likesModalOpen}
+                onOpenChange={setLikesModalOpen}
+            />
+            <CommentReportsModal
+                comment={comment}
+                open={reportsModalOpen}
+                onOpenChange={setReportsModalOpen}
+            />
+        </>
+    );
+}

@@ -1,4 +1,3 @@
-import should from 'should';
 import {dom, createDocument} from '../test-utils/index.js';
 import {$getRoot, type LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
@@ -15,16 +14,16 @@ describe('FileNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({
@@ -45,38 +44,38 @@ describe('FileNode', function () {
 
     it('can match node with FileNode', editorTest(function () {
         const node = $createFileNode(dataset);
-        $isFileNode(node).should.be.true();
+        expect($isFileNode(node)).toBe(true);
     }));
 
     describe('data access', function (){
         it('has getters from all properties', editorTest(function () {
             const node = $createFileNode(dataset);
-            node.src.should.equal(dataset.src);
-            node.fileTitle.should.equal(dataset.fileTitle);
-            node.fileSize.should.equal(dataset.fileSize);
-            node.fileCaption.should.equal(dataset.fileCaption);
-            node.fileName.should.equal(dataset.fileName);
+            expect(node.src).toBe(dataset.src);
+            expect(node.fileTitle).toBe(dataset.fileTitle);
+            expect(node.fileSize).toBe(dataset.fileSize);
+            expect(node.fileCaption).toBe(dataset.fileCaption);
+            expect(node.fileName).toBe(dataset.fileName);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const node = $createFileNode(dataset);
             node.src = '/content/files/2023/03/IMG_0196.jpeg';
-            node.src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
+            expect(node.src).toBe('/content/files/2023/03/IMG_0196.jpeg');
             node.fileTitle = 'new title';
-            node.fileTitle.should.equal('new title');
+            expect(node.fileTitle).toBe('new title');
             node.fileSize = 123456;
-            node.fileSize.should.equal(123456);
-            node.formattedFileSize.should.equal('121 KB');
+            expect(node.fileSize).toBe(123456);
+            expect(node.formattedFileSize).toBe('121 KB');
             node.fileCaption = 'new description';
-            node.fileCaption.should.equal('new description');
+            expect(node.fileCaption).toBe('new description');
             node.fileName = 'IMG_0196.jpeg';
-            node.fileName.should.equal('IMG_0196.jpeg');
+            expect(node.fileName).toBe('IMG_0196.jpeg');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
             const node = $createFileNode(dataset);
             const fileNodeDataset = node.getDataset();
-            fileNodeDataset.should.deepEqual(dataset);
+            expect(fileNodeDataset).toEqual(dataset);
         }));
     });
 
@@ -84,7 +83,7 @@ describe('FileNode', function () {
         it('creates a file card', editorTest(function () {
             const fileNode = $createFileNode(dataset);
             const {element} = fileNode.exportDOM(editor, exportOptions);
-            (element as HTMLElement).outerHTML.should.equal(`<div class="kg-card kg-file-card"><a class="kg-file-card-container" href="/content/files/2023/03/IMG_0196.jpeg" title="Download" download=""><div class="kg-file-card-contents"><div class="kg-file-card-title">Cool image to download</div><div class="kg-file-card-caption">This is a description</div><div class="kg-file-card-metadata"><div class="kg-file-card-filename">IMG_0196.jpeg</div><div class="kg-file-card-filesize">121 KB</div></div></div><div class="kg-file-card-icon"><svg viewBox="0 0 24 24"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class="a" points="8.25 14.25 12 18 15.75 14.25"></polyline><line class="a" x1="12" y1="6.75" x2="12" y2="18"></line><circle class="a" cx="12" cy="12" r="11.25"></circle></svg></div></a></div>`);
+            expect((element as HTMLElement).outerHTML).toBe(`<div class="kg-card kg-file-card"><a class="kg-file-card-container" href="/content/files/2023/03/IMG_0196.jpeg" title="Download" download=""><div class="kg-file-card-contents"><div class="kg-file-card-title">Cool image to download</div><div class="kg-file-card-caption">This is a description</div><div class="kg-file-card-metadata"><div class="kg-file-card-filename">IMG_0196.jpeg</div><div class="kg-file-card-filesize">121 KB</div></div></div><div class="kg-file-card-icon"><svg viewBox="0 0 24 24"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class="a" points="8.25 14.25 12 18 15.75 14.25"></polyline><line class="a" x1="12" y1="6.75" x2="12" y2="18"></line><circle class="a" cx="12" cy="12" r="11.25"></circle></svg></div></a></div>`);
         }));
 
         describe('email template', function () {
@@ -104,21 +103,21 @@ describe('FileNode', function () {
                 const el = element as HTMLElement;
 
                 // Should not have title
-                should.not.exist(el.querySelector('.kg-file-title'));
+                expect(el.querySelector('.kg-file-title')).toBeNull();
 
                 // Should not have caption
-                should.not.exist(el.querySelector('.kg-file-description'));
+                expect(el.querySelector('.kg-file-description')).toBeNull();
 
                 // Should have smaller icon
                 const icon = el.querySelector('img') as HTMLImageElement;
-                icon.style.height.should.equal('20px');
+                expect(icon.style.height).toBe('20px');
             }));
         });
     });
 
     describe('getType', function () {
         it('returns the correct node type', editorTest(function () {
-            FileNode.getType().should.equal('file');
+            expect(FileNode.getType()).toBe('file');
         }));
     });
 
@@ -129,13 +128,13 @@ describe('FileNode', function () {
             const clone = FileNode.clone(fileNode) as FileNode;
             const cloneDataset = clone.getDataset();
 
-            cloneDataset.should.deepEqual({...fileNodeDataset});
+            expect(cloneDataset).toEqual({...fileNodeDataset});
         }));
     });
 
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
-            FileNode.urlTransformMap.should.deepEqual({
+            expect(FileNode.urlTransformMap).toEqual({
                 src: 'url'
             });
         }));
@@ -144,7 +143,7 @@ describe('FileNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const fileNode = $createFileNode(dataset);
-            fileNode.hasEditMode().should.be.true();
+            expect(fileNode.hasEditMode()).toBe(true);
         }));
     });
 
@@ -184,47 +183,49 @@ describe('FileNode', function () {
                 </div>
             `);
             const nodes = $generateNodesFromDOM(editor, document) as FileNode[];
-            nodes.length.should.equal(1);
-            nodes[0].src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
-            nodes[0].fileTitle.should.equal('Cool image to download');
-            nodes[0].fileCaption.should.equal('This is a description');
-            nodes[0].fileName.should.equal('IMG_0196.jpeg');
-            nodes[0].fileSize.should.equal(123904); // ~121 KB
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].src).toBe('/content/files/2023/03/IMG_0196.jpeg');
+            expect(nodes[0].fileTitle).toBe('Cool image to download');
+            expect(nodes[0].fileCaption).toBe('This is a description');
+            expect(nodes[0].fileName).toBe('IMG_0196.jpeg');
+            expect(nodes[0].fileSize).toBe(123904); // ~121 KB
         }));
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done: (err?: unknown) => void) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'file',
-                        ...dataset
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'file',
+                            ...dataset
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [fileNode] = $getRoot().getChildren() as FileNode[];
-                    fileNode.src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
-                    fileNode.fileTitle.should.equal('Cool image to download');
-                    fileNode.fileCaption.should.equal('This is a description');
-                    fileNode.fileName.should.equal('IMG_0196.jpeg');
-                    fileNode.fileSize.should.equal(123456);
-                    fileNode.formattedFileSize.should.equal('121 KB'); // ~121 KB
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                editor.getEditorState().read(() => {
+                    try {
+                        const [fileNode] = $getRoot().getChildren() as FileNode[];
+                        expect(fileNode.src).toBe('/content/files/2023/03/IMG_0196.jpeg');
+                        expect(fileNode.fileTitle).toBe('Cool image to download');
+                        expect(fileNode.fileCaption).toBe('This is a description');
+                        expect(fileNode.fileName).toBe('IMG_0196.jpeg');
+                        expect(fileNode.fileSize).toBe(123456);
+                        expect(fileNode.formattedFileSize).toBe('121 KB'); // ~121 KB
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });
@@ -233,7 +234,7 @@ describe('FileNode', function () {
         it('exports all data', editorTest(function () {
             const fileNode = $createFileNode(dataset);
             const json = fileNode.exportJSON();
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'file',
                 version: 1,
                 ...dataset
@@ -244,13 +245,13 @@ describe('FileNode', function () {
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
             const node = $createFileNode();
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
 
             node.fileTitle = 'Testing';
-            node.getTextContent().should.equal('Testing\n\n');
+            expect(node.getTextContent()).toBe('Testing\n\n');
 
             node.fileCaption = 'Test caption';
-            node.getTextContent().should.equal('Testing\nTest caption\n\n');
+            expect(node.getTextContent()).toBe('Testing\nTest caption\n\n');
         }));
     });
 });

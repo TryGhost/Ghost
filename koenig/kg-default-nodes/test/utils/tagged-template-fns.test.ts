@@ -19,7 +19,7 @@ describe('Internal utils: oneline', function () {
             </div>
         `;
 
-        result.should.equal('<div class="btn btn-accent"><table border="0" cellspacing="0" cellpadding="0" align="center"><tr><td align="center"><a href="http://example.com">Click me</a></td></tr></table></div>');
+        expect(result).toBe('<div class="btn btn-accent"><table border="0" cellspacing="0" cellpadding="0" align="center"><tr><td align="center"><a href="http://example.com">Click me</a></td></tr></table></div>');
     });
 
     it('works with plain strings', function () {
@@ -29,7 +29,7 @@ describe('Internal utils: oneline', function () {
             </div>
         `);
 
-        result.should.equal('<div class="test"><p>Hello world</p></div>');
+        expect(result).toBe('<div class="test"><p>Hello world</p></div>');
     });
 
     it('handles attributes on new lines', function () {

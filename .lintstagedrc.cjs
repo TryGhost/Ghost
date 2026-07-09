@@ -90,6 +90,14 @@ function buildCommand(workspace, files) {
     return `pnpm ${dirArg}exec eslint --cache -- ${relativeFiles}`;
 }
 
+function buildBoundaryCommand(files) {
+    const relativeFiles = files
+        .map(file => normalize(path.relative(ROOT, file)))
+        .map(shellQuote)
+        .join(' ');
+    return `pnpm exec depcruise --config .dependency-cruiser.cjs -- ${relativeFiles}`;
+}
+
 module.exports = {
     '*.{js,ts,tsx,jsx,cjs}': (files) => {
         const groups = new Map();
@@ -104,5 +112,7 @@ module.exports = {
         return [...groups.entries()].map(([workspace, wsFiles]) =>
             buildCommand(workspace || null, wsFiles)
         );
-    }
+    },
+    'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': (files) =>
+        buildBoundaryCommand(files)
 };
