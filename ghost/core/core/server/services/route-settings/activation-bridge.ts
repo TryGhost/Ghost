@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import errors from '@tryghost/errors';
+import {QUERY} from '../../../frontend/services/routing/config';
 import type {
     RouteSettings,
     Route,
@@ -8,34 +9,10 @@ import type {
     CollectionConfig,
     RouteData,
     DataShortForm,
+    DataShortFormResource,
     DataReadEntry,
     DataBrowseEntry
 } from './route-settings-parser';
-
-// Shape of a single entry in the frontend routing config's QUERY map.
-interface QueryResourceConfig {
-    controller: string;
-    type?: string;
-    resource: string;
-    resourceAlias?: string;
-    options?: Record<string, unknown>;
-}
-
-interface ResourceConfig {
-    QUERY: Record<string, QueryResourceConfig>;
-    TAXONOMIES: Record<string, unknown>;
-}
-
-// Lazy-loaded to avoid importing frontend code at module load time
-let RESOURCE_CONFIG: ResourceConfig;
-
-function getResourceConfig(): ResourceConfig {
-    if (!RESOURCE_CONFIG) {
-        // eslint-disable-next-line ghost/node/no-restricted-require -- intentional: the bridge is the single place that couples server → frontend config; removed in HKG-1898
-        RESOURCE_CONFIG = require('../../../frontend/services/routing/config');
-    }
-    return RESOURCE_CONFIG;
-}
 
 interface ExpandedData {
     query: Record<string, any>;
@@ -43,13 +20,9 @@ interface ExpandedData {
 }
 
 function expandShortFormData(shortForm: DataShortForm, resourceKey?: string): ExpandedData {
-    const config = getResourceConfig();
-    const [key, slug] = shortForm.split('.');
-    const queryConfig = config.QUERY[key];
 
-    if (!queryConfig) {
-        throw new errors.IncorrectUsageError({message: `Unknown route data resource: ${key}`});
-    }
+    const [key, slug] = shortForm.split('.') as [DataShortFormResource, string];
+    const queryConfig = QUERY[key];
 
     const data: ExpandedData = {
         query: {},
@@ -57,18 +30,17 @@ function expandShortFormData(shortForm: DataShortForm, resourceKey?: string): Ex
     };
 
     const effectiveKey = resourceKey || key;
-    data.query[effectiveKey] = _.cloneDeep(_.omit(queryConfig, 'resourceAlias'));
+    data.query[effectiveKey] = _.cloneDeep(queryConfig);
     data.query[effectiveKey].options.slug = slug;
 
-    const routerKey = queryConfig.resourceAlias || queryConfig.resource;
+    const routerKey = queryConfig.resource;
     data.router[routerKey] = [{slug, redirect: true}];
 
     return data;
 }
 
 function expandLongFormEntry(key: string, entry: DataReadEntry | DataBrowseEntry): ExpandedData {
-    const config = getResourceConfig();
-    const defaultResource = _.find(config.QUERY, {resource: entry.resource});
+    const defaultResource = Object.values(QUERY).find(item => item.resource === entry.resource);
 
     if (!defaultResource) {
         throw new errors.IncorrectUsageError({message: `Unknown route data resource: ${entry.resource}`});
@@ -84,16 +56,17 @@ function expandLongFormEntry(key: string, entry: DataReadEntry | DataBrowseEntry
         resource: defaultResource.resource
     };
 
-    data.query[key] = _.defaults(data.query[key], _.omit(defaultResource, ['options', 'resourceAlias']));
+    data.query[key] = _.defaults(data.query[key], _.omit(defaultResource, 'options'));
 
     const allowedQueryOptions = ['limit', 'order', 'filter', 'include', 'slug', 'visibility', 'status', 'page'];
     data.query[key].options = _.pick(entry, allowedQueryOptions);
 
     if (entry.type === 'read') {
-        data.query[key].options = _.defaults(data.query[key].options, defaultResource.options);
+        const defaultOptions = 'options' in defaultResource ? defaultResource.options : undefined;
+        data.query[key].options = _.defaults(data.query[key].options, defaultOptions);
     }
 
-    const routerKey = defaultResource.resourceAlias || defaultResource.resource;
+    const routerKey = defaultResource.resource;
     if (!data.router[routerKey]) {
         data.router[routerKey] = [];
     }
