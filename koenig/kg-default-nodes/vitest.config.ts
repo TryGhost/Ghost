@@ -1,20 +1,7 @@
-import {defineConfig} from 'vitest/config';
+import {createKoenigVitestConfig} from '../vitest.shared';
 
-export default defineConfig({
-    test: {
-        globals: true,
-        environment: 'node',
-        include: ['test/**/*.test.ts'],
-        // Installs the `should` and `sinon` globals that the mocha suite
-        // previously wired up via the same overrides module.
-        setupFiles: ['./test/test-utils/overrides.ts', './test/test-utils/assertions.ts'],
-        coverage: {
-            provider: 'v8',
-            reporter: ['text', 'cobertura'],
-            include: ['src/**'],
-            all: true,
-            // Preserves the mocha suite's `c8 --check-coverage` gate (lines >= 90%).
-            thresholds: {lines: 90}
-        }
-    }
+// thresholds preserves the mocha suite's `c8 --check-coverage` gate (lines >= 90%).
+export default createKoenigVitestConfig({
+    setupFiles: ['./test/test-utils/overrides.ts', './test/test-utils/assertions.ts'],
+    thresholds: {lines: 90}
 });

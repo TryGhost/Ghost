@@ -1,17 +1,6 @@
-import {defineConfig} from 'vitest/config';
+import {createKoenigVitestConfig} from '../vitest.shared';
 
-export default defineConfig({
-    test: {
-        globals: true,
-        environment: 'node',
-        include: ['test/**/*.test.ts'],
-        coverage: {
-            provider: 'v8',
-            reporter: ['text', 'cobertura'],
-            include: ['src/**'],
-            all: true,
-            // Preserves the mocha suite's `c8 --check-coverage --100` gate.
-            thresholds: {lines: 100, functions: 100, branches: 100, statements: 100}
-        }
-    }
+// thresholds preserves the mocha suite's `c8 --check-coverage --100` gate.
+export default createKoenigVitestConfig({
+    thresholds: {lines: 100, functions: 100, branches: 100, statements: 100}
 });
