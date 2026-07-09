@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@tryghost/activitypub": "workspace:*",
+    "@tryghost/addon-kit": "workspace:*",
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/admin-x-settings": "workspace:*",
     "@tryghost/kg-unsplash-selector": "0.4.3",
@@ -65,6 +66,7 @@
         "dependsOn": [
           "ghost-monorepo:docker:up",
           "ghost-admin:dev",
+          "@tryghost/addon-kit:dev",
           "@tryghost/admin-x-framework:dev",
           "@tryghost/admin-x-design-system:dev",
           "@tryghost/shade:dev"

@@ -184,6 +184,10 @@ tsconfig.tsbuildinfo
 /apps/admin-x-settings/playwright-report/
 /apps/admin-x-settings/playwright/.cache/
 
+# Add-ons (spike)
+/apps/addon-kit/dist
+/apps/addon-demo/dist
+
 # Tinybird
 .tinyb
 .venv

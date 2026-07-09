@@ -1,0 +1,84 @@
+{
+    "name": "@tryghost/addon-kit",
+    "type": "module",
+    "version": "0.0.0",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TryGhost/Ghost/tree/main/apps/addon-kit"
+    },
+    "author": "Ghost Foundation",
+    "private": true,
+    "exports": {
+        "./host": "./src/host/index.ts",
+        "./addon": "./src/addon/index.ts",
+        "./bootstrap": {
+            "types": "./dist/bootstrap.d.mts",
+            "default": "./dist/bootstrap.mjs"
+        }
+    },
+    "scripts": {
+        "dev": "vite build --watch",
+        "build": "vite build && tsc",
+        "test": "pnpm test:unit",
+        "test:unit": "vitest run",
+        "test:watch": "vitest",
+        "lint": "eslint --cache src test",
+        "lint:fix": "eslint --cache --fix src test",
+        "typecheck": "tsc"
+    },
+    "dependencies": {
+        "@quilted/threads": "catalog:",
+        "@remote-dom/core": "catalog:",
+        "@remote-dom/preact": "catalog:",
+        "@remote-dom/react": "catalog:",
+        "@tryghost/admin-x-framework": "workspace:*",
+        "@tryghost/shade": "workspace:*",
+        "preact": "catalog:",
+        "react": "catalog:",
+        "sonner": "catalog:"
+    },
+    "devDependencies": {
+        "@eslint/js": "catalog:",
+        "@testing-library/jest-dom": "catalog:",
+        "@testing-library/react": "catalog:",
+        "@types/node": "catalog:",
+        "@types/react": "catalog:",
+        "eslint": "catalog:",
+        "eslint-plugin-ghost": "catalog:",
+        "eslint-plugin-react": "catalog:",
+        "eslint-plugin-react-hooks": "catalog:",
+        "eslint-plugin-react-refresh": "catalog:",
+        "eslint-plugin-tailwindcss": "catalog:",
+        "globals": "catalog:",
+        "jsdom": "catalog:",
+        "tailwindcss": "catalog:",
+        "typescript": "catalog:",
+        "typescript-eslint": "catalog:",
+        "vite": "catalog:",
+        "vitest": "catalog:"
+    },
+    "nx": {
+        "targets": {
+            "dev": {
+                "continuous": true,
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "build": {
+                "outputs": [
+                    "{projectRoot}/dist"
+                ],
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "test:unit": {
+                "dependsOn": [
+                    "^build"
+                ]
+            }
+        }
+    }
+}

@@ -7,6 +7,7 @@ import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
 import TopPosts from './components/top-posts';
 import {ALL_AUDIENCES} from '@src/utils/constants';
+import {AddonDashboardCards} from '@tryghost/addon-kit/host';
 import {GhAreaChartDataItem} from '@tryghost/shade/patterns';
 import {H3} from '@tryghost/shade/primitives';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
@@ -16,6 +17,7 @@ import {getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useGrowthStats} from '@hooks/use-growth-stats';
+import {useLabsFlag} from '@src/hooks/use-labs-flag';
 import {useLatestPostStats} from '@hooks/use-latest-post-stats';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
@@ -71,6 +73,7 @@ type GrowthChartDataItem = {
 const Overview: React.FC = () => {
     const {appSettings} = useAppContext();
     const {statsConfig, isLoading: isConfigLoading, range} = useGlobalData();
+    const addonsEnabled = useLabsFlag('addons');
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
     const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
@@ -243,6 +246,8 @@ const Overview: React.FC = () => {
                         </div>
                     </HelpCard>
                 </div>
+                {/* Add-on cards render last, in a host-owned shell (labs: addons) */}
+                {addonsEnabled && <AddonDashboardCards context={{range}} />}
             </StatsView>
         </StatsLayout>
     );

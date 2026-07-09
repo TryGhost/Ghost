@@ -1,4 +1,5 @@
 @source "../../shade/src/**/*.{ts,tsx}";
+@source "../../addon-kit/src/host/**/*.{ts,tsx}";
 @source "../../posts/src/**/*.{ts,tsx}";
 @source "../../stats/src/**/*.{ts,tsx}";
 @source "../../activitypub/src/**/*.{ts,tsx}";

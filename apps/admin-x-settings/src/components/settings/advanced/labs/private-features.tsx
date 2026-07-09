@@ -71,6 +71,10 @@ const features: Feature[] = [{
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
+}, {
+    title: 'Add-ons',
+    description: 'Enables the remote add-on spike: sandboxed third-party add-ons rendering into admin surfaces',
+    flag: 'addons'
 }];
 
 const AlphaFeatures: React.FC = () => {

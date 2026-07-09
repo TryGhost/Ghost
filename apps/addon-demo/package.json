@@ -1,0 +1,52 @@
+{
+    "name": "@tryghost/addon-demo",
+    "type": "module",
+    "version": "0.0.0",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TryGhost/Ghost/tree/main/apps/addon-demo"
+    },
+    "author": "Ghost Foundation",
+    "private": true,
+    "scripts": {
+        "dev": "node build.mjs && node server.mjs",
+        "build": "tsc && node build.mjs",
+        "serve": "node server.mjs",
+        "lint": "eslint --cache src",
+        "lint:fix": "eslint --cache --fix src"
+    },
+    "dependencies": {
+        "@tryghost/addon-kit": "workspace:*",
+        "preact": "catalog:"
+    },
+    "devDependencies": {
+        "@eslint/js": "catalog:",
+        "@types/node": "catalog:",
+        "concurrently": "catalog:",
+        "eslint": "catalog:",
+        "eslint-plugin-ghost": "catalog:",
+        "globals": "catalog:",
+        "typescript": "catalog:",
+        "typescript-eslint": "catalog:",
+        "vite": "catalog:"
+    },
+    "nx": {
+        "targets": {
+            "dev": {
+                "continuous": true,
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "build": {
+                "outputs": [
+                    "{projectRoot}/dist"
+                ],
+                "dependsOn": [
+                    "^build"
+                ]
+            }
+        }
+    }
+}

@@ -3,6 +3,7 @@ import {SidebarContent} from "@tryghost/shade/components"
 import AppSidebarBanner from "./app-sidebar-banner";
 import NavMain from "./nav-main";
 import NavContent from "./nav-content";
+import { NavAddons } from "./nav-addons";
 import NavGhostPro from "./nav-ghost-pro";
 import NavSettings from "./nav-settings";
 import { useSidebarBannerState } from "./hooks/use-sidebar-banner-state";
@@ -24,6 +25,7 @@ function AppSidebarContent() {
             <div className="flex flex-col gap-2 sidebar:gap-4">
                 <NavMain />
                 <NavContent />
+                <NavAddons />
                 <NavGhostPro />
             </div>
             <div className={`flex flex-col gap-2 sidebar:gap-4 ${bannerContainerClassName}`}>

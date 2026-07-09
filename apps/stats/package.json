@@ -66,6 +66,7 @@
     },
     "dependencies": {
         "@svg-maps/world": "2.0.0",
+        "@tryghost/addon-kit": "workspace:*",
         "@tryghost/admin-x-framework": "workspace:*",
         "@tryghost/shade": "workspace:*",
         "i18n-iso-countries": "7.14.0",

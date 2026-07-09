@@ -499,6 +499,12 @@
             "type": "object"
         }
     },
+    "addons": {
+        "addons": {
+            "defaultValue": "[]",
+            "type": "array"
+        }
+    },
     "slack": {
         "slack_url": {
             "defaultValue": "",
