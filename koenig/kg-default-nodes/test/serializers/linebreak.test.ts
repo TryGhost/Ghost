@@ -1,4 +1,3 @@
-import should from 'should';
 import {createDocument} from '../test-utils/index.js';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
@@ -9,16 +8,16 @@ import type {ElementNode} from 'lexical';
 describe('Serializers: linebreak', function () {
     let editor: LexicalEditor;
 
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: DEFAULT_NODES, html: DEFAULT_CONFIG.html as HTMLConfig});
@@ -31,10 +30,10 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 3);
-                should.equal(nodes[0].getType(), 'extended-text');
-                should.equal(nodes[1].getType(), 'linebreak');
-                should.equal(nodes[2].getType(), 'extended-text');
+                expect(nodes.length).toBe(3);
+                expect(nodes[0].getType()).toBe('extended-text');
+                expect(nodes[1].getType()).toBe('linebreak');
+                expect(nodes[2].getType()).toBe('extended-text');
             }));
 
             it('(GDoc) default conversion for breaks inside paragraphs', editorTest(function () {
@@ -42,12 +41,12 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 1);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal((nodes[0] as ElementNode).getChildren().length, 3);
-                should.equal((nodes[0] as ElementNode).getChildren()[0].getType(), 'extended-text');
-                should.equal((nodes[0] as ElementNode).getChildren()[1].getType(), 'linebreak');
-                should.equal((nodes[0] as ElementNode).getChildren()[2].getType(), 'extended-text');
+                expect(nodes.length).toBe(1);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect((nodes[0] as ElementNode).getChildren().length).toBe(3);
+                expect((nodes[0] as ElementNode).getChildren()[0].getType()).toBe('extended-text');
+                expect((nodes[0] as ElementNode).getChildren()[1].getType()).toBe('linebreak');
+                expect((nodes[0] as ElementNode).getChildren()[2].getType()).toBe('extended-text');
             }));
         });
 
@@ -57,19 +56,19 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 3);
+                expect(nodes.length).toBe(3);
 
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal((nodes[0] as ElementNode).getChildren().length, 1);
-                should.equal((nodes[0] as ElementNode).getChildren()[0].getType(), 'extended-text');
-                should.equal((nodes[0] as ElementNode).getChildren()[0].getTextContent(), 'Before');
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect((nodes[0] as ElementNode).getChildren().length).toBe(1);
+                expect((nodes[0] as ElementNode).getChildren()[0].getType()).toBe('extended-text');
+                expect((nodes[0] as ElementNode).getChildren()[0].getTextContent()).toBe('Before');
 
-                should.equal(nodes[1].getType(), 'linebreak');
+                expect(nodes[1].getType()).toBe('linebreak');
 
-                should.equal(nodes[2].getType(), 'paragraph');
-                should.equal((nodes[2] as ElementNode).getChildren().length, 1);
-                should.equal((nodes[2] as ElementNode).getChildren()[0].getType(), 'extended-text');
-                should.equal((nodes[2] as ElementNode).getChildren()[0].getTextContent(), 'After');
+                expect(nodes[2].getType()).toBe('paragraph');
+                expect((nodes[2] as ElementNode).getChildren().length).toBe(1);
+                expect((nodes[2] as ElementNode).getChildren()[0].getType()).toBe('extended-text');
+                expect((nodes[2] as ElementNode).getChildren()[0].getTextContent()).toBe('After');
             }));
 
             it('(GDoc) no conversion for breaks between paragraphs', editorTest(function () {
@@ -77,16 +76,16 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 2);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal((nodes[0] as ElementNode).getChildren().length, 1);
-                should.equal((nodes[0] as ElementNode).getChildren()[0].getType(), 'extended-text');
-                should.equal((nodes[0] as ElementNode).getChildren()[0].getTextContent(), 'Before');
+                expect(nodes.length).toBe(2);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect((nodes[0] as ElementNode).getChildren().length).toBe(1);
+                expect((nodes[0] as ElementNode).getChildren()[0].getType()).toBe('extended-text');
+                expect((nodes[0] as ElementNode).getChildren()[0].getTextContent()).toBe('Before');
 
-                should.equal(nodes[1].getType(), 'paragraph');
-                should.equal((nodes[1] as ElementNode).getChildren().length, 1);
-                should.equal((nodes[1] as ElementNode).getChildren()[0].getType(), 'extended-text');
-                should.equal((nodes[1] as ElementNode).getChildren()[0].getTextContent(), 'After');
+                expect(nodes[1].getType()).toBe('paragraph');
+                expect((nodes[1] as ElementNode).getChildren().length).toBe(1);
+                expect((nodes[1] as ElementNode).getChildren()[0].getType()).toBe('extended-text');
+                expect((nodes[1] as ElementNode).getChildren()[0].getTextContent()).toBe('After');
             }));
         });
 
@@ -96,12 +95,12 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 5);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'linebreak');
-                should.equal(nodes[2].getType(), 'extended-text');
-                should.equal(nodes[3].getType(), 'linebreak');
-                should.equal(nodes[4].getType(), 'paragraph');
+                expect(nodes.length).toBe(5);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('linebreak');
+                expect(nodes[2].getType()).toBe('extended-text');
+                expect(nodes[3].getType()).toBe('linebreak');
+                expect(nodes[4].getType()).toBe('paragraph');
             }));
 
             it('(GDoc) skips linebreaks between unordered list and paragraph', editorTest(function () {
@@ -109,10 +108,10 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 3);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'extended-text');
-                should.equal(nodes[2].getType(), 'paragraph');
+                expect(nodes.length).toBe(3);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('extended-text');
+                expect(nodes[2].getType()).toBe('paragraph');
             }));
 
             it('(non GDoc) default conversion for linebreaks between ordered list and paragraph', editorTest(function () {
@@ -120,12 +119,12 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 5);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'linebreak');
-                should.equal(nodes[2].getType(), 'extended-text');
-                should.equal(nodes[3].getType(), 'linebreak');
-                should.equal(nodes[4].getType(), 'paragraph');
+                expect(nodes.length).toBe(5);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('linebreak');
+                expect(nodes[2].getType()).toBe('extended-text');
+                expect(nodes[3].getType()).toBe('linebreak');
+                expect(nodes[4].getType()).toBe('paragraph');
             }));
 
             it('(GDoc) skips linebreaks between ordered list and paragraph', editorTest(function () {
@@ -133,10 +132,10 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 3);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'extended-text');
-                should.equal(nodes[2].getType(), 'paragraph');
+                expect(nodes.length).toBe(3);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('extended-text');
+                expect(nodes[2].getType()).toBe('paragraph');
             }));
 
             it('(non GDoc) default conversion for linebreaks between description list and paragraph', editorTest(function () {
@@ -144,12 +143,12 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 5);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'linebreak');
-                should.equal(nodes[2].getType(), 'extended-text');
-                should.equal(nodes[3].getType(), 'linebreak');
-                should.equal(nodes[4].getType(), 'paragraph');
+                expect(nodes.length).toBe(5);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('linebreak');
+                expect(nodes[2].getType()).toBe('extended-text');
+                expect(nodes[3].getType()).toBe('linebreak');
+                expect(nodes[4].getType()).toBe('paragraph');
             }));
 
             it('(GDoc) skips linebreaks between description list and paragraph', editorTest(function () {
@@ -157,10 +156,10 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 3);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'extended-text');
-                should.equal(nodes[2].getType(), 'paragraph');
+                expect(nodes.length).toBe(3);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('extended-text');
+                expect(nodes[2].getType()).toBe('paragraph');
             }));
         });
 
@@ -170,12 +169,12 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 5);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'linebreak');
-                should.equal(nodes[2].getType(), 'extended-heading');
-                should.equal(nodes[3].getType(), 'linebreak');
-                should.equal(nodes[4].getType(), 'paragraph');
+                expect(nodes.length).toBe(5);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('linebreak');
+                expect(nodes[2].getType()).toBe('extended-heading');
+                expect(nodes[3].getType()).toBe('linebreak');
+                expect(nodes[4].getType()).toBe('paragraph');
             }));
 
             it('(GDoc) skips linebreaks between H1 and paragraph', editorTest(function () {
@@ -183,10 +182,10 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 3);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'extended-heading');
-                should.equal(nodes[2].getType(), 'paragraph');
+                expect(nodes.length).toBe(3);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('extended-heading');
+                expect(nodes[2].getType()).toBe('paragraph');
             }));
 
             it('(non GDoc) default conversion for a linebreak between a H2 and paragraph', editorTest(function () {
@@ -194,12 +193,12 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 5);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'linebreak');
-                should.equal(nodes[2].getType(), 'extended-heading');
-                should.equal(nodes[3].getType(), 'linebreak');
-                should.equal(nodes[4].getType(), 'paragraph');
+                expect(nodes.length).toBe(5);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('linebreak');
+                expect(nodes[2].getType()).toBe('extended-heading');
+                expect(nodes[3].getType()).toBe('linebreak');
+                expect(nodes[4].getType()).toBe('paragraph');
             }));
 
             it('(GDoc) skips linebreaks between H2 and paragraph', editorTest(function () {
@@ -207,10 +206,10 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 3);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'extended-heading');
-                should.equal(nodes[2].getType(), 'paragraph');
+                expect(nodes.length).toBe(3);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('extended-heading');
+                expect(nodes[2].getType()).toBe('paragraph');
             }));
 
             it('(non GDoc) default conversion for a linebreak between a H3 and paragraph', editorTest(function () {
@@ -218,12 +217,12 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 5);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'linebreak');
-                should.equal(nodes[2].getType(), 'extended-heading');
-                should.equal(nodes[3].getType(), 'linebreak');
-                should.equal(nodes[4].getType(), 'paragraph');
+                expect(nodes.length).toBe(5);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('linebreak');
+                expect(nodes[2].getType()).toBe('extended-heading');
+                expect(nodes[3].getType()).toBe('linebreak');
+                expect(nodes[4].getType()).toBe('paragraph');
             }));
 
             it('(GDoc) skips linebreaks between H3 and paragraph', editorTest(function () {
@@ -231,10 +230,10 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 3);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'extended-heading');
-                should.equal(nodes[2].getType(), 'paragraph');
+                expect(nodes.length).toBe(3);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('extended-heading');
+                expect(nodes[2].getType()).toBe('paragraph');
             }));
 
             it('(non GDoc) default conversion for a linebreak between a H4 and paragraph', editorTest(function () {
@@ -242,12 +241,12 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 5);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'linebreak');
-                should.equal(nodes[2].getType(), 'extended-heading');
-                should.equal(nodes[3].getType(), 'linebreak');
-                should.equal(nodes[4].getType(), 'paragraph');
+                expect(nodes.length).toBe(5);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('linebreak');
+                expect(nodes[2].getType()).toBe('extended-heading');
+                expect(nodes[3].getType()).toBe('linebreak');
+                expect(nodes[4].getType()).toBe('paragraph');
             }));
 
             it('(GDoc) skips linebreaks between H4 and paragraph', editorTest(function () {
@@ -255,10 +254,10 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 3);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'extended-heading');
-                should.equal(nodes[2].getType(), 'paragraph');
+                expect(nodes.length).toBe(3);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('extended-heading');
+                expect(nodes[2].getType()).toBe('paragraph');
             }));
 
             it('(non GDoc) default conversion for a linebreak between a H5 and paragraph', editorTest(function () {
@@ -266,12 +265,12 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 5);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'linebreak');
-                should.equal(nodes[2].getType(), 'extended-heading');
-                should.equal(nodes[3].getType(), 'linebreak');
-                should.equal(nodes[4].getType(), 'paragraph');
+                expect(nodes.length).toBe(5);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('linebreak');
+                expect(nodes[2].getType()).toBe('extended-heading');
+                expect(nodes[3].getType()).toBe('linebreak');
+                expect(nodes[4].getType()).toBe('paragraph');
             }));
 
             it('(GDoc) skips linebreaks between H5 and paragraph', editorTest(function () {
@@ -279,10 +278,10 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 3);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'extended-heading');
-                should.equal(nodes[2].getType(), 'paragraph');
+                expect(nodes.length).toBe(3);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('extended-heading');
+                expect(nodes[2].getType()).toBe('paragraph');
             }));
 
             it('(non GDoc) default conversion for a linebreak between a H6 and paragraph', editorTest(function () {
@@ -290,12 +289,12 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 5);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'linebreak');
-                should.equal(nodes[2].getType(), 'extended-heading');
-                should.equal(nodes[3].getType(), 'linebreak');
-                should.equal(nodes[4].getType(), 'paragraph');
+                expect(nodes.length).toBe(5);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('linebreak');
+                expect(nodes[2].getType()).toBe('extended-heading');
+                expect(nodes[3].getType()).toBe('linebreak');
+                expect(nodes[4].getType()).toBe('paragraph');
             }));
 
             it('(GDoc) skips linebreaks between H6 and paragraph', editorTest(function () {
@@ -303,10 +302,10 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 3);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'extended-heading');
-                should.equal(nodes[2].getType(), 'paragraph');
+                expect(nodes.length).toBe(3);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('extended-heading');
+                expect(nodes[2].getType()).toBe('paragraph');
             }));
         });
 
@@ -316,12 +315,12 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 5);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'linebreak');
-                should.equal(nodes[2].getType(), 'linebreak');
-                should.equal(nodes[3].getType(), 'linebreak');
-                should.equal(nodes[4].getType(), 'paragraph');
+                expect(nodes.length).toBe(5);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('linebreak');
+                expect(nodes[2].getType()).toBe('linebreak');
+                expect(nodes[3].getType()).toBe('linebreak');
+                expect(nodes[4].getType()).toBe('paragraph');
             }));
 
             it('(GDoc) skips empty paragraphs if there are multiple linebreaks', editorTest(function () {
@@ -329,9 +328,9 @@ describe('Serializers: linebreak', function () {
                 const document = createDocument(htmlString);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                should.equal(nodes.length, 2);
-                should.equal(nodes[0].getType(), 'paragraph');
-                should.equal(nodes[1].getType(), 'paragraph');
+                expect(nodes.length).toBe(2);
+                expect(nodes[0].getType()).toBe('paragraph');
+                expect(nodes[1].getType()).toBe('paragraph');
             }));
         });
     });

@@ -1,4 +1,4 @@
-import {createDocument, dom, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
@@ -15,16 +15,16 @@ describe('CalloutNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({
@@ -44,37 +44,37 @@ describe('CalloutNode', function () {
 
     it('can match node with calloutNode', editorTest(function () {
         const node = $createCalloutNode(dataset);
-        $isCalloutNode(node).should.be.true();
+        expect($isCalloutNode(node)).toBe(true);
     }));
 
     describe('data access', function (){
         it('has getters for all properties', editorTest(function () {
             const node = $createCalloutNode(dataset);
-            node.calloutText.should.equal(dataset.calloutText);
-            node.calloutEmoji.should.equal(dataset.calloutEmoji);
-            node.backgroundColor.should.equal(dataset.backgroundColor);
+            expect(node.calloutText).toBe(dataset.calloutText);
+            expect(node.calloutEmoji).toBe(dataset.calloutEmoji);
+            expect(node.backgroundColor).toBe(dataset.backgroundColor);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const node = $createCalloutNode(dataset);
             node.calloutText = 'new text';
-            node.calloutText.should.equal('new text');
+            expect(node.calloutText).toBe('new text');
             node.backgroundColor = 'red';
-            node.backgroundColor.should.equal('red');
+            expect(node.backgroundColor).toBe('red');
             node.calloutEmoji = '\u{1F44D}';
-            node.calloutEmoji.should.equal('\u{1F44D}');
+            expect(node.calloutEmoji).toBe('\u{1F44D}');
         }));
 
         it('has getDataset() method', editorTest(function () {
             const node = $createCalloutNode(dataset);
             const nodeDataset = node.getDataset();
-            nodeDataset.should.deepEqual(dataset);
+            expect(nodeDataset).toEqual(dataset);
         }));
     });
 
     describe('getType', function () {
         it('returns the correct node type', editorTest(function () {
-            CalloutNode.getType().should.equal('callout');
+            expect(CalloutNode.getType()).toBe('callout');
         }));
     });
 
@@ -85,20 +85,20 @@ describe('CalloutNode', function () {
             const clone = CalloutNode.clone(calloutNode) as CalloutNode;
             const cloneDataset = clone.getDataset();
 
-            cloneDataset.should.deepEqual({...calloutNodeDataset});
+            expect(cloneDataset).toEqual({...calloutNodeDataset});
         }));
     });
 
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
-            CalloutNode.urlTransformMap.should.deepEqual({});
+            expect(CalloutNode.urlTransformMap).toEqual({});
         }));
     });
 
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const calloutNode = $createCalloutNode(dataset);
-            calloutNode.hasEditMode().should.be.true();
+            expect(calloutNode.hasEditMode()).toBe(true);
         }));
     });
 
@@ -107,7 +107,7 @@ describe('CalloutNode', function () {
             const calloutNode = $createCalloutNode(dataset);
             const json = calloutNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'callout',
                 version: 1,
                 ...dataset
@@ -120,7 +120,7 @@ describe('CalloutNode', function () {
             const node = $createCalloutNode(dataset);
             const result = node.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
-            element.outerHTML.should.prettifyTo(html`
+            assertPrettifiesTo(element.outerHTML, html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
                     <div class="kg-callout-emoji">\u{1F4A1}</div>
                     <div class="kg-callout-text">
@@ -142,10 +142,10 @@ describe('CalloutNode', function () {
                 </div>
             `);
             const nodes = $generateNodesFromDOM(editor, document) as CalloutNode[];
-            nodes.length.should.equal(1);
-            nodes[0].backgroundColor.should.equal('red');
-            nodes[0].calloutText.should.equal('This is a callout');
-            nodes[0].calloutEmoji.should.equal('\u{1F4A1}');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].backgroundColor).toBe('red');
+            expect(nodes[0].calloutText).toBe('This is a callout');
+            expect(nodes[0].calloutEmoji).toBe('\u{1F4A1}');
         }));
 
         it('parses callout card with no emoji', editorTest(function () {
@@ -155,42 +155,44 @@ describe('CalloutNode', function () {
                 </div>
             `);
             const nodes = $generateNodesFromDOM(editor, document) as CalloutNode[];
-            nodes.length.should.equal(1);
-            nodes[0].backgroundColor.should.equal('red');
-            nodes[0].calloutText.should.equal('This is a callout');
-            nodes[0].calloutEmoji.should.equal('');
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].backgroundColor).toBe('red');
+            expect(nodes[0].calloutText).toBe('This is a callout');
+            expect(nodes[0].calloutEmoji).toBe('');
         }));
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'callout',
-                        ...dataset
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'callout',
+                            ...dataset
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [calloutNode] = $getRoot().getChildren() as CalloutNode[];
-                    calloutNode.calloutText.should.equal(dataset.calloutText);
-                    calloutNode.calloutEmoji.should.equal(dataset.calloutEmoji);
-                    calloutNode.backgroundColor.should.equal(dataset.backgroundColor);
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                editor.getEditorState().read(() => {
+                    try {
+                        const [calloutNode] = $getRoot().getChildren() as CalloutNode[];
+                        expect(calloutNode.calloutText).toBe(dataset.calloutText);
+                        expect(calloutNode.calloutEmoji).toBe(dataset.calloutEmoji);
+                        expect(calloutNode.backgroundColor).toBe(dataset.backgroundColor);
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });
@@ -198,11 +200,11 @@ describe('CalloutNode', function () {
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
             const node = $createCalloutNode();
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
 
             node.calloutText = 'Test';
 
-            node.getTextContent().should.equal('Test\n\n');
+            expect(node.getTextContent()).toBe('Test\n\n');
         }));
     });
 });

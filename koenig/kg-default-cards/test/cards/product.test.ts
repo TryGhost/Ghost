@@ -1,5 +1,3 @@
-import '../utils/index.js';
-
 import card from '../../src/cards/product.js';
 import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
 const serializer = new HTMLSerializer(voidMap);
@@ -23,7 +21,7 @@ describe('Product card', function () {
 
             const html = `<div class="kg-card kg-product-card"><div class="kg-product-card-container"><img src="https://example.com/images/ok.jpg" class="kg-product-card-image" loading="lazy" /><div class="kg-product-card-title-container"><h4 class="kg-product-card-title">Product title!</h4></div><div class="kg-product-card-rating"><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"/></svg></span><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"/></svg></span><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"/></svg></span><span class=" kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"/></svg></span><span class=" kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"/></svg></span></div><div class="kg-product-card-description">This product is ok</div><a href="https://example.com/product/ok" class="kg-product-card-button kg-product-card-btn-accent" target="_blank" rel="noopener noreferrer"><span>Click me</span></a></div></div>`;
 
-            serializer.serialize(card.render(opts)).should.equal(html);
+            expect(serializer.serialize(card.render(opts))).toBe(html);
         });
     });
 
@@ -37,7 +35,7 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.equal('');
+            expect(serializer.serialize(card.render(opts))).toBe('');
         });
 
         it('renders if only title is present', function () {
@@ -48,7 +46,7 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.not.equal('');
+            expect(serializer.serialize(card.render(opts))).not.toBe('');
         });
 
         it('renders if only description is present', function () {
@@ -59,7 +57,7 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.not.equal('');
+            expect(serializer.serialize(card.render(opts))).not.toBe('');
         });
 
         it('renders if only button is present', function () {
@@ -72,7 +70,7 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.not.equal('');
+            expect(serializer.serialize(card.render(opts))).not.toBe('');
         });
     });
 
@@ -94,8 +92,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('width="3000" height="6000"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('width="3000" height="6000"');
         });
 
         it('omits width and height when not available', function () {
@@ -117,8 +115,8 @@ describe('Product card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.not.containEql('width="');
-            output.should.not.containEql('height="');
+            expect(output).not.toContain('width="');
+            expect(output).not.toContain('height="');
         });
 
         it('uses resized width and height when there\'s a max width', function () {
@@ -141,8 +139,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('width="2000" height="4000"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('width="2000" height="4000"');
         });
 
         it('uses original width and height when transform is not available', function () {
@@ -165,8 +163,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('width="3000" height="6000"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('width="3000" height="6000"');
         });
     });
 
@@ -195,8 +193,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w1000/2020/06/image.png 1000w, /content/images/size/w1600/2020/06/image.png 1600w, /content/images/size/w2400/2020/06/image.png 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w1000/2020/06/image.png 1000w, /content/images/size/w1600/2020/06/image.png 1600w, /content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('is included when src is __GHOST_URL__ relative', function () {
@@ -223,8 +221,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="__GHOST_URL__/content/images/size/w600/2020/06/image.png 600w, __GHOST_URL__/content/images/size/w1000/2020/06/image.png 1000w, __GHOST_URL__/content/images/size/w1600/2020/06/image.png 1600w, __GHOST_URL__/content/images/size/w2400/2020/06/image.png 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="__GHOST_URL__/content/images/size/w600/2020/06/image.png 600w, __GHOST_URL__/content/images/size/w1000/2020/06/image.png 1000w, __GHOST_URL__/content/images/size/w1600/2020/06/image.png 1600w, __GHOST_URL__/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('is included for absolute images', function () {
@@ -252,8 +250,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="https://localhost:2368/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/content/images/size/w2400/2020/06/image.png 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="https://localhost:2368/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('is included for absolute images when siteUrl has trailing slash', function () {
@@ -281,8 +279,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="https://localhost:2368/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/content/images/size/w2400/2020/06/image.png 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="https://localhost:2368/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('is omitted when target === email', function () {
@@ -310,8 +308,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('srcset=');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('srcset=');
         });
 
         it('is omitted when no contentImageSizes are passed as options', function () {
@@ -329,8 +327,8 @@ describe('Product card', function () {
                 options: {}
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('srcset=');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('srcset=');
         });
 
         it('is omitted when `srcsets: false` is passed in as an option', function () {
@@ -358,8 +356,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('srcset=');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('srcset=');
         });
 
         it('is omitted when canTransformImages is provided and returns false', function () {
@@ -389,8 +387,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('srcset=');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('srcset=');
         });
 
         it('is omitted when no width is provided', function () {
@@ -416,8 +414,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('srcset=');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('srcset=');
         });
 
         it('is omitted when image is smaller than minimum responsive width', function () {
@@ -444,8 +442,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('srcset=');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('srcset=');
         });
 
         it('omits sizes larger than image width and includes original image width if smaller than largest responsive width', function () {
@@ -472,8 +470,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/2020/06/image.png 750w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/2020/06/image.png 750w"');
         });
 
         it('works correctly with subdirectories', function () {
@@ -500,8 +498,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="/subdir/content/images/size/w600/2020/06/image.png 600w, /subdir/content/images/size/w1000/2020/06/image.png 1000w, /subdir/content/images/size/w1600/2020/06/image.png 1600w, /subdir/content/images/size/w2400/2020/06/image.png 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="/subdir/content/images/size/w600/2020/06/image.png 600w, /subdir/content/images/size/w1000/2020/06/image.png 1000w, /subdir/content/images/size/w1600/2020/06/image.png 1600w, /subdir/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('works correctly for absolute subdirectories', function () {
@@ -529,8 +527,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="https://localhost:2368/blog/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/blog/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/blog/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/blog/content/images/size/w2400/2020/06/image.png 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="https://localhost:2368/blog/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/blog/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/blog/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/blog/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('is included when src is an Unsplash image', function () {
@@ -558,8 +556,8 @@ describe('Product card', function () {
             };
 
             // note that '&' in URLs will be rendered as '&amp;' to maintain HTML encoding
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w"');
         });
 
         it('has same size omission behaviour for Unsplash as local files', function () {
@@ -586,8 +584,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=750&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 750w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=750&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 750w"');
         });
     });
 
@@ -616,8 +614,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('sizes="(min-width: 720px) 720px"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('sizes="(min-width: 720px) 720px"');
         });
 
         it('is added for __GHOST_URL__ relative images', function () {
@@ -644,8 +642,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('sizes="(min-width: 720px) 720px"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('sizes="(min-width: 720px) 720px"');
         });
 
         it('is added for absolute images', function () {
@@ -673,8 +671,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.match(/sizes="\(min-width: 720px\) 720px"/);
+            expect(serializer.serialize(card.render(opts)))
+                .toMatch(/sizes="\(min-width: 720px\) 720px"/);
         });
 
         it('is added for absolute images when siteUrl has trailing slash', function () {
@@ -702,8 +700,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('sizes="(min-width: 720px) 720px"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('sizes="(min-width: 720px) 720px"');
         });
 
         it('is omitted when srcset is not added', function () {
@@ -731,12 +729,12 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('sizes="');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('sizes="');
 
             // sanity check
-            serializer.serialize(card.render(opts))
-                .should.containEql('/content/images/2020/06/image.png');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('/content/images/2020/06/image.png');
         });
 
         it('is omitted when width is missing', function () {
@@ -763,12 +761,12 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('sizes="');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('sizes="');
 
             // sanity check
-            serializer.serialize(card.render(opts))
-                .should.containEql('/content/images/2020/06/image.png');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('/content/images/2020/06/image.png');
         });
 
         it('is included when only height is missing', function () {
@@ -795,8 +793,8 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('sizes="(min-width: 720px) 720px"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('sizes="(min-width: 720px) 720px"');
         });
 
         it('is omitted for standard images when width is less than 720', function () {
@@ -823,11 +821,11 @@ describe('Product card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.not.match(/sizes="/);
+            expect(serializer.serialize(card.render(opts))).not.toMatch(/sizes="/);
 
             // sanity check
-            serializer.serialize(card.render(opts))
-                .should.containEql('/content/images/2020/06/image.png');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('/content/images/2020/06/image.png');
         });
     });
 
@@ -852,7 +850,7 @@ describe('Product card', function () {
 
             const html = `<table cellspacing="0" cellpadding="0" border="0" class="kg-product-card"><tr><td align="center" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><img src="https://example.com/images/ok.jpg" style="height: auto; border: none; padding-bottom: 16px;" border="0"></td></tr><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 700;">Product title!</h4></td></tr><tr style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><td valign="top" class="kg-product-rating"><img src="https://static.ghost.org/v4.0.0/images/star-rating-darkmode-3.png" border="0" class="is-dark-background"><img src="https://static.ghost.org/v4.0.0/images/star-rating-3.png" border="0" class="is-light-background"></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div style="padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div class="btn btn-accent" style="box-sizing: border-box;display: table;width: 100%;padding-top: 16px;"><a href="https://example.com/product/ok" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 0;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;"><span style="display: block;padding: 12px 25px;">Click me</span></a></div></td></tr></table>`;
 
-            serializer.serialize(card.render(opts)).should.equal(html);
+            expect(serializer.serialize(card.render(opts))).toBe(html);
         });
 
         it('generates the same card when the star-rating is disabled', function () {
@@ -874,7 +872,7 @@ describe('Product card', function () {
 
             const html = `<table cellspacing="0" cellpadding="0" border="0" class="kg-product-card"><tr><td align="center" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><img src="https://example.com/images/ok.jpg" style="height: auto; border: none; padding-bottom: 16px;" border="0"></td></tr><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 700;">Product title!</h4></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div style="padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div class="btn btn-accent" style="box-sizing: border-box;display: table;width: 100%;padding-top: 16px;"><a href="https://example.com/product/ok" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 0;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;"><span style="display: block;padding: 12px 25px;">Click me</span></a></div></td></tr></table>`;
 
-            serializer.serialize(card.render(opts)).should.equal(html);
+            expect(serializer.serialize(card.render(opts))).toBe(html);
         });
 
         it('allows disabling the button', function () {
@@ -894,7 +892,7 @@ describe('Product card', function () {
 
             const html = `<table cellspacing="0" cellpadding="0" border="0" class="kg-product-card"><tr><td align="center" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><img src="https://example.com/images/ok.jpg" style="height: auto; border: none; padding-bottom: 16px;" border="0"></td></tr><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 700;">Product title!</h4></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div style="padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr></table>`;
 
-            serializer.serialize(card.render(opts)).should.equal(html);
+            expect(serializer.serialize(card.render(opts))).toBe(html);
         });
 
         it('renders without an image if the attribute isn\'t there', function () {
@@ -913,7 +911,7 @@ describe('Product card', function () {
 
             const html = `<table cellspacing="0" cellpadding="0" border="0" class="kg-product-card"><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 700;">Product title!</h4></td></tr><tr><td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;"><div style="padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr></table>`;
 
-            serializer.serialize(card.render(opts)).should.equal(html);
+            expect(serializer.serialize(card.render(opts))).toBe(html);
         });
 
         it('adds image width/height and uses resized local image', function () {
@@ -944,9 +942,9 @@ describe('Product card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.match(/width="600"/);
-            output.should.match(/height="400"/);
-            output.should.match(/\/content\/images\/size\/w1600\/2020\/06\/image\.png/);
+            expect(output).toMatch(/width="600"/);
+            expect(output).toMatch(/height="400"/);
+            expect(output).toMatch(/\/content\/images\/size\/w1600\/2020\/06\/image\.png/);
         });
 
         it('adds image width/height and uses resized unsplash image', function () {
@@ -968,9 +966,9 @@ describe('Product card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.match(/width="600"/);
-            output.should.match(/height="400"/);
-            output.should.match(/images\.unsplash\.com\/test\.jpg\?w=1200/);
+            expect(output).toMatch(/width="600"/);
+            expect(output).toMatch(/height="400"/);
+            expect(output).toMatch(/images\.unsplash\.com\/test\.jpg\?w=1200/);
         });
 
         it('adds image width/height and uses original src when local image can\'t be transformed', function () {
@@ -1001,10 +999,10 @@ describe('Product card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.match(/width="600"/);
-            output.should.match(/height="400"/);
-            output.should.match(/\/content\/images\/2020\/06\/image\.png/);
-            output.should.not.match(/\/content\/images\/size\/w1600\/2020\/06\/image\.png/);
+            expect(output).toMatch(/width="600"/);
+            expect(output).toMatch(/height="400"/);
+            expect(output).toMatch(/\/content\/images\/2020\/06\/image\.png/);
+            expect(output).not.toMatch(/\/content\/images\/size\/w1600\/2020\/06\/image\.png/);
         });
 
         it('uses original image src if size is smaller than "retina" size', function () {
@@ -1035,9 +1033,9 @@ describe('Product card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.match(/width="600"/);
-            output.should.match(/height="400"/);
-            output.should.match(/\/content\/images\/2020\/06\/image\.png/);
+            expect(output).toMatch(/width="600"/);
+            expect(output).toMatch(/height="400"/);
+            expect(output).toMatch(/\/content\/images\/2020\/06\/image\.png/);
         });
 
         it('uses original image width/height if image is smaller than 600px wide', function () {
@@ -1068,9 +1066,9 @@ describe('Product card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.match(/width="450"/);
-            output.should.match(/height="300"/);
-            output.should.match(/\/content\/images\/2020\/06\/image\.png/);
+            expect(output).toMatch(/width="450"/);
+            expect(output).toMatch(/height="300"/);
+            expect(output).toMatch(/\/content\/images\/2020\/06\/image\.png/);
         });
 
         it('skips image width/height and resize if payload is missing dimensions', function () {
@@ -1099,9 +1097,9 @@ describe('Product card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.not.match(/width="/);
-            output.should.not.match(/height="/);
-            output.should.match(/\/content\/images\/2020\/06\/image\.png/);
+            expect(output).not.toMatch(/width="/);
+            expect(output).not.toMatch(/height="/);
+            expect(output).toMatch(/\/content\/images\/2020\/06\/image\.png/);
         });
 
         it('resizes Unsplash images even if width/height data is missing', function () {
@@ -1130,7 +1128,7 @@ describe('Product card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.match(/test\.jpg\?w=1200/);
+            expect(output).toMatch(/test\.jpg\?w=1200/);
         });
     });
 
@@ -1147,10 +1145,10 @@ describe('Product card', function () {
 
         const transformed = card.absoluteToRelative!(payload, {siteUrl: 'https://ghost.org'});
 
-        (transformed.productTitle as string).should.equal('<a href="/">Home</a>');
-        (transformed.productDescription as string).should.equal('<a href="/">Home</a>');
-        (transformed.productUrl as string).should.equal('/');
-        (transformed.productImageSrc as string).should.equal('/');
+        expect((transformed.productTitle as string)).toBe('<a href="/">Home</a>');
+        expect((transformed.productDescription as string)).toBe('<a href="/">Home</a>');
+        expect((transformed.productUrl as string)).toBe('/');
+        expect((transformed.productImageSrc as string)).toBe('/');
     });
 
     it('transforms product urls relative to absolute', function () {
@@ -1166,10 +1164,10 @@ describe('Product card', function () {
 
         const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'https://ghost.org'});
 
-        (transformed.productTitle as string).should.equal('<a href="https://ghost.org/">Home</a>');
-        (transformed.productDescription as string).should.equal('<a href="https://ghost.org/">Home</a>');
-        (transformed.productUrl as string).should.equal('https://ghost.org/');
-        (transformed.productImageSrc as string).should.equal('https://ghost.org/');
+        expect((transformed.productTitle as string)).toBe('<a href="https://ghost.org/">Home</a>');
+        expect((transformed.productDescription as string)).toBe('<a href="https://ghost.org/">Home</a>');
+        expect((transformed.productUrl as string)).toBe('https://ghost.org/');
+        expect((transformed.productImageSrc as string)).toBe('https://ghost.org/');
     });
 
     it('transforms product urls to transform ready', function () {
@@ -1185,9 +1183,9 @@ describe('Product card', function () {
 
         const transformed = card.toTransformReady!(payload, {siteUrl: 'https://ghost.org'});
 
-        (transformed.productTitle as string).should.equal('<a href="__GHOST_URL__/">Home</a>');
-        (transformed.productDescription as string).should.equal('<a href="__GHOST_URL__/">Home</a>');
-        (transformed.productUrl as string).should.equal('__GHOST_URL__/');
-        (transformed.productImageSrc as string).should.equal('__GHOST_URL__/');
+        expect((transformed.productTitle as string)).toBe('<a href="__GHOST_URL__/">Home</a>');
+        expect((transformed.productDescription as string)).toBe('<a href="__GHOST_URL__/">Home</a>');
+        expect((transformed.productUrl as string)).toBe('__GHOST_URL__/');
+        expect((transformed.productImageSrc as string)).toBe('__GHOST_URL__/');
     });
 });

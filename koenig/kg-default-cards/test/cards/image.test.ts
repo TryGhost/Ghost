@@ -1,5 +1,3 @@
-import '../utils/index.js';
-
 import card from '../../src/cards/image.js';
 import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
 const serializer = new HTMLSerializer(voidMap);
@@ -15,7 +13,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy"></figure>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy"></figure>');
     });
 
     it('renders an image with caption', function () {
@@ -29,7 +27,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card kg-card-hascaption"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy"><figcaption><b>Test caption</b></figcaption></figure>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<figure class="kg-card kg-image-card kg-card-hascaption"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy"><figcaption><b>Test caption</b></figcaption></figure>');
     });
 
     it('renders an image with alt text', function () {
@@ -43,7 +41,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt="example image" loading="lazy"></figure>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt="example image" loading="lazy"></figure>');
     });
 
     it('renders an image with blank alt text', function () {
@@ -56,7 +54,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy"></figure>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy"></figure>');
     });
 
     it('renders an image with title attribute', function () {
@@ -70,7 +68,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy" title="example image"></figure>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<figure class="kg-card kg-image-card"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy" title="example image"></figure>');
     });
 
     it('renders an image with a link', function () {
@@ -85,7 +83,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('<figure class="kg-card kg-image-card"><a href="https://example.com"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy" title="example image"></a></figure>');
+        expect(serializer.serialize(card.render(opts))).toEqual('<figure class="kg-card kg-image-card"><a href="https://example.com"><img src="https://www.ghost.org/image.png" class="kg-image" alt loading="lazy" title="example image"></a></figure>');
     });
 
     it('renders nothing with no src', function () {
@@ -99,7 +97,7 @@ describe('Image card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.eql('');
+        expect(serializer.serialize(card.render(opts))).toEqual('');
     });
 
     describe('sizes', function () {
@@ -114,8 +112,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('<figure class="kg-card kg-image-card">');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('<figure class="kg-card kg-image-card">');
         });
 
         it('wide', function () {
@@ -129,8 +127,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('<figure class="kg-card kg-image-card kg-width-wide">');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('<figure class="kg-card kg-image-card kg-width-wide">');
         });
 
         it('full', function () {
@@ -144,8 +142,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('<figure class="kg-card kg-image-card kg-width-full">');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('<figure class="kg-card kg-image-card kg-width-full">');
         });
     });
 
@@ -162,8 +160,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('width="3000" height="6000"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('width="3000" height="6000"');
         });
 
         it('omits width and height when not available', function () {
@@ -178,8 +176,8 @@ describe('Image card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.not.containEql(' width="');
-            output.should.not.containEql(' height="');
+            expect(output).not.toContain(' width="');
+            expect(output).not.toContain(' height="');
         });
 
         it('uses resized width and height when there\'s a max width', function () {
@@ -200,8 +198,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('width="2000" height="4000"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('width="2000" height="4000"');
         });
 
         it('uses original width and height when transform is not available', function () {
@@ -222,8 +220,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('width="3000" height="6000"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('width="3000" height="6000"');
         });
     });
 
@@ -250,8 +248,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w1000/2020/06/image.png 1000w, /content/images/size/w1600/2020/06/image.png 1600w, /content/images/size/w2400/2020/06/image.png 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/size/w1000/2020/06/image.png 1000w, /content/images/size/w1600/2020/06/image.png 1600w, /content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('is included when src is __GHOST_URL__ relative', function () {
@@ -276,8 +274,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="__GHOST_URL__/content/images/size/w600/2020/06/image.png 600w, __GHOST_URL__/content/images/size/w1000/2020/06/image.png 1000w, __GHOST_URL__/content/images/size/w1600/2020/06/image.png 1600w, __GHOST_URL__/content/images/size/w2400/2020/06/image.png 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="__GHOST_URL__/content/images/size/w600/2020/06/image.png 600w, __GHOST_URL__/content/images/size/w1000/2020/06/image.png 1000w, __GHOST_URL__/content/images/size/w1600/2020/06/image.png 1600w, __GHOST_URL__/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('is included for absolute images', function () {
@@ -303,8 +301,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="https://localhost:2368/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/content/images/size/w2400/2020/06/image.png 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="https://localhost:2368/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('is included for absolute images when siteUrl has trailing slash', function () {
@@ -330,8 +328,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="https://localhost:2368/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/content/images/size/w2400/2020/06/image.png 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="https://localhost:2368/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('is omitted when target === email', function () {
@@ -357,8 +355,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('srcset=');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('srcset=');
         });
 
         it('is omitted when no contentImageSizes are passed as options', function () {
@@ -374,8 +372,8 @@ describe('Image card', function () {
                 options: {}
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('srcset=');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('srcset=');
         });
 
         it('is omitted when `srcsets: false` is passed in as an option', function () {
@@ -401,8 +399,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('srcset=');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('srcset=');
         });
 
         it('is omitted when canTransformImages is provided and returns false', function () {
@@ -430,8 +428,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('srcset=');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('srcset=');
         });
 
         it('is omitted when no width is provided', function () {
@@ -455,8 +453,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('srcset=');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('srcset=');
         });
 
         it('is omitted when image is smaller than minimum responsive width', function () {
@@ -481,8 +479,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.not.containEql('srcset=');
+            expect(serializer.serialize(card.render(opts)))
+                .not.toContain('srcset=');
         });
 
         it('omits sizes larger than image width and includes original image width if smaller than largest responsive width', function () {
@@ -507,8 +505,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/2020/06/image.png 750w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="/content/images/size/w600/2020/06/image.png 600w, /content/images/2020/06/image.png 750w"');
         });
 
         it('works correctly with subdirectories', function () {
@@ -533,8 +531,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="/subdir/content/images/size/w600/2020/06/image.png 600w, /subdir/content/images/size/w1000/2020/06/image.png 1000w, /subdir/content/images/size/w1600/2020/06/image.png 1600w, /subdir/content/images/size/w2400/2020/06/image.png 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="/subdir/content/images/size/w600/2020/06/image.png 600w, /subdir/content/images/size/w1000/2020/06/image.png 1000w, /subdir/content/images/size/w1600/2020/06/image.png 1600w, /subdir/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('works correctly for absolute subdirectories', function () {
@@ -560,8 +558,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="https://localhost:2368/blog/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/blog/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/blog/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/blog/content/images/size/w2400/2020/06/image.png 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="https://localhost:2368/blog/content/images/size/w600/2020/06/image.png 600w, https://localhost:2368/blog/content/images/size/w1000/2020/06/image.png 1000w, https://localhost:2368/blog/content/images/size/w1600/2020/06/image.png 1600w, https://localhost:2368/blog/content/images/size/w2400/2020/06/image.png 2400w"');
         });
 
         it('is included when src is an Unsplash image', function () {
@@ -587,8 +585,8 @@ describe('Image card', function () {
             };
 
             // note that '&' in URLs will be rendered as '&amp;' to maintain HTML encoding
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1000&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1000w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=1600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 1600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=2400&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 2400w"');
         });
 
         it('has same size omission behaviour for Unsplash as local files', function () {
@@ -613,8 +611,8 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts))
-                .should.containEql('srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=750&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 750w"');
+            expect(serializer.serialize(card.render(opts)))
+                .toContain('srcset="https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https://images.unsplash.com/photo-1591672299888-e16a08b6c7ce?ixlib=rb-1.2.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=750&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 750w"');
         });
     });
 
@@ -641,7 +639,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.match(/sizes="\(min-width: 720px\) 720px"/);
+            expect(serializer.serialize(card.render(opts))).toMatch(/sizes="\(min-width: 720px\) 720px"/);
         });
 
         it('is added for __GHOST_URL__ relative images', function () {
@@ -666,7 +664,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.match(/sizes="\(min-width: 720px\) 720px"/);
+            expect(serializer.serialize(card.render(opts))).toMatch(/sizes="\(min-width: 720px\) 720px"/);
         });
 
         it('is added for absolute images', function () {
@@ -692,7 +690,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.match(/sizes="\(min-width: 720px\) 720px"/);
+            expect(serializer.serialize(card.render(opts))).toMatch(/sizes="\(min-width: 720px\) 720px"/);
         });
 
         it('is added for absolute images when siteUrl has trailing slash', function () {
@@ -718,7 +716,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.match(/sizes="\(min-width: 720px\) 720px"/);
+            expect(serializer.serialize(card.render(opts))).toMatch(/sizes="\(min-width: 720px\) 720px"/);
         });
 
         it('is added for wide images', function () {
@@ -744,7 +742,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.match(/sizes="\(min-width: 1200px\) 1200px"/);
+            expect(serializer.serialize(card.render(opts))).toMatch(/sizes="\(min-width: 1200px\) 1200px"/);
         });
 
         it('is omitted when srcset is not added', function () {
@@ -770,7 +768,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.not.match(/sizes="/);
+            expect(serializer.serialize(card.render(opts))).not.toMatch(/sizes="/);
         });
 
         it('is omitted when width is missing', function () {
@@ -795,7 +793,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.not.match(/sizes="/);
+            expect(serializer.serialize(card.render(opts))).not.toMatch(/sizes="/);
         });
 
         it('is included when only height is missing', function () {
@@ -820,7 +818,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.match(/sizes="\(min-width: 720px\) 720px"/);
+            expect(serializer.serialize(card.render(opts))).toMatch(/sizes="\(min-width: 720px\) 720px"/);
         });
 
         it('is omitted for standard images when width is less than 720', function () {
@@ -845,7 +843,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.not.match(/sizes="/);
+            expect(serializer.serialize(card.render(opts))).not.toMatch(/sizes="/);
         });
 
         it('is omitted for wide images when width is less than 1200', function () {
@@ -871,7 +869,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.not.match(/sizes="/);
+            expect(serializer.serialize(card.render(opts))).not.toMatch(/sizes="/);
         });
 
         it('is omitted for full images', function () {
@@ -897,7 +895,7 @@ describe('Image card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.not.match(/sizes="/);
+            expect(serializer.serialize(card.render(opts))).not.toMatch(/sizes="/);
         });
     });
 
@@ -928,9 +926,9 @@ describe('Image card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.match(/width="600"/);
-            output.should.match(/height="400"/);
-            output.should.match(/\/content\/images\/size\/w1600\/2020\/06\/image\.png/);
+            expect(output).toMatch(/width="600"/);
+            expect(output).toMatch(/height="400"/);
+            expect(output).toMatch(/\/content\/images\/size\/w1600\/2020\/06\/image\.png/);
         });
 
         it('adds width/height and uses resized unsplash image', function () {
@@ -950,9 +948,9 @@ describe('Image card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.match(/width="600"/);
-            output.should.match(/height="400"/);
-            output.should.match(/images\.unsplash\.com\/test\.jpg\?w=1200/);
+            expect(output).toMatch(/width="600"/);
+            expect(output).toMatch(/height="400"/);
+            expect(output).toMatch(/images\.unsplash\.com\/test\.jpg\?w=1200/);
         });
 
         it('adds width/height and uses original src when local image can\'t be transformed', function () {
@@ -981,10 +979,10 @@ describe('Image card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.match(/width="600"/);
-            output.should.match(/height="400"/);
-            output.should.match(/\/content\/images\/2020\/06\/image\.png/);
-            output.should.not.match(/\/content\/images\/size\/w1600\/2020\/06\/image\.png/);
+            expect(output).toMatch(/width="600"/);
+            expect(output).toMatch(/height="400"/);
+            expect(output).toMatch(/\/content\/images\/2020\/06\/image\.png/);
+            expect(output).not.toMatch(/\/content\/images\/size\/w1600\/2020\/06\/image\.png/);
         });
 
         it('uses original image if size is smaller than "retina" size', function () {
@@ -1013,9 +1011,9 @@ describe('Image card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.match(/width="600"/);
-            output.should.match(/height="400"/);
-            output.should.match(/\/content\/images\/2020\/06\/image\.png/);
+            expect(output).toMatch(/width="600"/);
+            expect(output).toMatch(/height="400"/);
+            expect(output).toMatch(/\/content\/images\/2020\/06\/image\.png/);
         });
 
         it('uses original image width/height if image is smaller than 600px wide', function () {
@@ -1044,9 +1042,9 @@ describe('Image card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.match(/width="450"/);
-            output.should.match(/height="300"/);
-            output.should.match(/\/content\/images\/2020\/06\/image\.png/);
+            expect(output).toMatch(/width="450"/);
+            expect(output).toMatch(/height="300"/);
+            expect(output).toMatch(/\/content\/images\/2020\/06\/image\.png/);
         });
 
         it('skips width/height and resize if payload is missing dimensions', function () {
@@ -1073,9 +1071,9 @@ describe('Image card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.not.match(/width="/);
-            output.should.not.match(/height="/);
-            output.should.match(/\/content\/images\/2020\/06\/image\.png/);
+            expect(output).not.toMatch(/width="/);
+            expect(output).not.toMatch(/height="/);
+            expect(output).toMatch(/\/content\/images\/2020\/06\/image\.png/);
         });
 
         it('resizes Unsplash images even if width/height data is missing', function () {
@@ -1102,7 +1100,7 @@ describe('Image card', function () {
 
             const output = serializer.serialize(card.render(opts));
 
-            output.should.match(/test\.jpg\?w=1200/);
+            expect(output).toMatch(/test\.jpg\?w=1200/);
         });
     });
 
@@ -1114,11 +1112,11 @@ describe('Image card', function () {
 
         const transformed = card.absoluteToRelative!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        (transformed.src as string)
-            .should.equal('/content/images/2018/08/NatGeo01-9.jpg');
+        expect((transformed.src as string))
+            .toBe('/content/images/2018/08/NatGeo01-9.jpg');
 
-        (transformed.caption as string)
-            .should.equal('A link to <a href="/post">an internal post</a>');
+        expect((transformed.caption as string))
+            .toBe('A link to <a href="/post">an internal post</a>');
     });
 
     it('transforms urls relative to absolute', function () {
@@ -1129,10 +1127,10 @@ describe('Image card', function () {
 
         const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'http://127.0.0.1:2369/', itemUrl: 'http://127.0.0.1:2369/post'});
 
-        (transformed.src as string)
-            .should.equal('http://127.0.0.1:2369/content/images/2018/08/NatGeo01-9.jpg');
+        expect((transformed.src as string))
+            .toBe('http://127.0.0.1:2369/content/images/2018/08/NatGeo01-9.jpg');
 
-        (transformed.caption as string)
-            .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
+        expect((transformed.caption as string))
+            .toBe('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
     });
 });

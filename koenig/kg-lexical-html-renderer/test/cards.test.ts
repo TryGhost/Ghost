@@ -72,7 +72,7 @@ describe('Cards', function () {
   <figcaption>This is a caption</figcaption>
 </figure>
 `;
-        output.should.equal(expected);
+        expect(output).toBe(expected);
     });
 
     it('renders a paywall card', async function () {
@@ -88,7 +88,7 @@ describe('Cards', function () {
         const output = await Prettier.format(renderedInput, {parser: 'html'});
 
         const expected = `<!--members-only-->\n`;
-        output.should.equal(expected);
+        expect(output).toBe(expected);
     });
 
     it('renders HTML card with unclosed tags', async function () {
@@ -129,7 +129,7 @@ describe('Cards', function () {
 </div>
 <!--kg-card-end: html-->
 `;
-        renderedInput.should.equal(expected);
+        expect(renderedInput).toBe(expected);
     });
 
     it('renders HTML card with html entities and single-quote attributes', async function () {
@@ -147,7 +147,7 @@ describe('Cards', function () {
 <div data-graph-name='The "all-in" cost of a grant'>Test</div>
 <!--kg-card-end: html-->
 `;
-        renderedInput.should.equal(expected);
+        expect(renderedInput).toBe(expected);
     });
 
     // https://linear.app/ghost/issue/ONC-801/
@@ -172,6 +172,6 @@ describe('Cards', function () {
 <!--kg-card-end: html-->
 `;
 
-        renderedInput.should.equal(expected);
+        expect(renderedInput).toBe(expected);
     });
 });

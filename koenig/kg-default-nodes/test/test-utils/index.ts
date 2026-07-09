@@ -1,6 +1,4 @@
 import {JSDOM} from 'jsdom';
-import './overrides.js';
-import './assertions.js';
 import Prettier from '@prettier/sync';
 import {buildCallRenderer} from './build-call-renderer.js';
 

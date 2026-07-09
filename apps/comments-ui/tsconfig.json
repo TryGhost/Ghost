@@ -4,6 +4,12 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "react": ["./node_modules/@types/react"],
+      "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
+      "react-dom": ["./node_modules/@types/react-dom"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",

@@ -1,19 +1,6 @@
-import config from 'ghost-admin/config/environment';
+// The analytics/posts admin-x apps (stats, posts) were migrated into the React
+// Ghost Admin app, so Ember no longer loads them as standalone AdminXApps and
+// there is nothing to mock. Kept as no-ops so existing callers stay valid.
+export function mockAnalyticsApps() {}
 
-export function mockAnalyticsApps() {
-    // Mock the posts component to prevent actual loading
-    config.postsFilename = 'posts.js';
-    config.postsHash = 'development';
-    window['@tryghost/posts'] = {
-        AdminXApp: function MockPostsComponent() {
-            return '<div data-test-posts-component>Mock Posts Component</div>';
-        }
-    };
-}
-
-export function cleanupMockAnalyticsApps() {
-    // Clean up mocks
-    delete window['@tryghost/posts'];
-    delete config.postsFilename;
-    delete config.postsHash;
-}
+export function cleanupMockAnalyticsApps() {}
