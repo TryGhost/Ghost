@@ -5,9 +5,7 @@ import {poll} from '../../../../../core/server/services/automations/poll';
 import type {AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
 import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../../../core/server/services/member-welcome-emails/constants';
 // @ts-expect-error Models currently lack type definitions.
-import {AutomatedEmailRecipient, Member} from '../../../../../core/server/models';
-
-const db = require('../../../../../core/server/data/db');
+import {Member} from '../../../../../core/server/models';
 
 const MAX_STEPS_PER_BATCH = 100;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
@@ -42,10 +40,6 @@ type PollOptionsStubs = PollOptions & {
     automationsApi: AutomationsApiStubs;
     enqueueAnotherPollAt: StubbedFunction<PollOptions['enqueueAnotherPollAt']>;
     memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
-};
-type AutomatedEmailRecipientAdd = typeof AutomatedEmailRecipient.add;
-type TransactingStub = sinon.SinonStub<[string], unknown> & {
-    raw: sinon.SinonStub<[string, Array<string | number>], unknown>;
 };
 
 type MemberFixture = {
@@ -124,38 +118,17 @@ function buildEmailStep(attrs: Partial<SendEmailStep> = {}): SendEmailStep {
 
 describe('automations poll', function () {
     let automationsApi: AutomationsApiStubs;
-    let automatedEmailRecipientAdd: sinon.SinonStub<Parameters<AutomatedEmailRecipientAdd>, ReturnType<AutomatedEmailRecipientAdd>>;
-    let emailSentCountExpression: unknown;
     let memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
     let options: PollOptionsStubs;
-    let raw: sinon.SinonStub<[string, string[] | number[] | Array<string | number>], unknown>;
-    let transacting: TransactingStub;
-    let updateRevision: sinon.SinonStub<[{email_sent_count: unknown}], Promise<void>>;
-    let whereRevision: sinon.SinonStub<[string, string], unknown>;
 
     beforeEach(function () {
         sinon.useFakeTimers({now: new Date('2026-01-01T12:00:00.000Z'), shouldAdvanceTime: true});
-
-        emailSentCountExpression = Symbol('email_sent_count_expression');
-        raw = sinon.stub<[string, Array<string | number>], unknown>().returns(emailSentCountExpression);
-        updateRevision = sinon.stub<[{email_sent_count: unknown}], Promise<void>>().resolves();
-        whereRevision = sinon.stub<[string, string], unknown>().returns({
-            update: updateRevision
-        });
-        transacting = Object.assign(
-            sinon.stub<[string], unknown>().withArgs('automation_action_revisions').returns({
-                where: whereRevision
-            }),
-            {raw}
-        );
-        sinon.stub(db.knex, 'transaction').callsFake(async (callback: unknown) => {
-            return await (callback as (trx: typeof transacting) => Promise<unknown>)(transacting);
-        });
 
         automationsApi = {
             fetchAndLockSteps: fake<AutomationsApi['fetchAndLockSteps']>().resolves({steps: [], nextStepReadyAt: null}),
             finishStepAndEnqueueNext: fake<AutomationsApi['finishStepAndEnqueueNext']>().resolves(null),
             markStepTerminal: fake<AutomationsApi['markStepTerminal']>().resolves(true),
+            recordEmailSent: fake<AutomationsApi['recordEmailSent']>().resolves(),
             retryStep: fake<AutomationsApi['retryStep']>().resolves(true)
         };
 
@@ -174,7 +147,6 @@ describe('automations poll', function () {
         };
 
         sinon.stub(Member, 'findOne').resolves(buildMember());
-        automatedEmailRecipientAdd = sinon.stub(AutomatedEmailRecipient, 'add').resolves();
     });
 
     afterEach(function () {
@@ -290,7 +262,7 @@ describe('automations poll', function () {
 
         sinon.assert.notCalled(memberWelcomeEmailService.init);
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
-        sinon.assert.notCalled(automatedEmailRecipientAdd);
+        sinon.assert.notCalled(automationsApi.recordEmailSent);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
@@ -325,7 +297,7 @@ describe('automations poll', function () {
 
         sinon.assert.notCalled(memberWelcomeEmailService.init);
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
-        sinon.assert.notCalled(automatedEmailRecipientAdd);
+        sinon.assert.notCalled(automationsApi.recordEmailSent);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
@@ -374,25 +346,17 @@ describe('automations poll', function () {
 
         await poll(options);
 
-        sinon.assert.calledOnceWithExactly(automatedEmailRecipientAdd, {
-            member_id: step.member_id,
-            member_uuid: '00000000-0000-4000-8000-000000000001',
-            member_email: 'member@example.com',
-            member_name: 'Test Member',
-            automation_action_revision_id: 'revision-id',
-            track_opens: false
-        }, {
-            transacting
-        });
-        sinon.assert.calledOnceWithExactly(whereRevision, 'id', 'revision-id');
-        sinon.assert.calledOnceWithExactly(raw, 'COALESCE(??, 0) + ?', ['email_sent_count', 1]);
-        sinon.assert.calledOnceWithExactly(updateRevision, {
-            email_sent_count: emailSentCountExpression
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
+            automationActionRevisionId: 'revision-id',
+            memberEmail: 'member@example.com',
+            memberId: 'member-id',
+            memberName: 'Test Member',
+            memberUuid: '00000000-0000-4000-8000-000000000001',
+            trackOpens: false
         });
         sinon.assert.callOrder(
             memberWelcomeEmailService.api.sendAutomationEmail,
-            automatedEmailRecipientAdd,
-            updateRevision,
+            automationsApi.recordEmailSent,
             automationsApi.finishStepAndEnqueueNext
         );
     });
@@ -400,13 +364,12 @@ describe('automations poll', function () {
     it('does not retry the email send when recording the automated email recipient fails', async function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
-        automatedEmailRecipientAdd.rejects(new Error('recipient persistence failed'));
+        automationsApi.recordEmailSent.rejects(new Error('recipient persistence failed'));
 
         await poll(options);
 
         sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
-        sinon.assert.calledOnce(automatedEmailRecipientAdd);
-        sinon.assert.notCalled(updateRevision);
+        sinon.assert.calledOnce(automationsApi.recordEmailSent);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.notCalled(automationsApi.retryStep);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
