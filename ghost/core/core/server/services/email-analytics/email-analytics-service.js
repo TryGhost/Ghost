@@ -59,7 +59,7 @@ module.exports = class EmailAnalyticsService {
     settings;
     queries;
     eventProcessor;
-    providers;
+    provider;
 
     /**
      * @type {FetchData}
@@ -99,16 +99,16 @@ module.exports = class EmailAnalyticsService {
      * @param {object} dependencies.settings
      * @param {object} dependencies.queries
      * @param {EmailEventProcessor} dependencies.eventProcessor
-     * @param {object} dependencies.providers
+     * @param {object} dependencies.provider
      * @param {import('@tryghost/domain-events')} dependencies.domainEvents
      * @param {import('@tryghost/prometheus-metrics')} dependencies.prometheusClient
      */
-    constructor({config, settings, queries, eventProcessor, providers, domainEvents, prometheusClient}) {
+    constructor({config, settings, queries, eventProcessor, provider, domainEvents, prometheusClient}) {
         this.config = config;
         this.settings = settings;
         this.queries = queries;
         this.eventProcessor = eventProcessor;
-        this.providers = providers;
+        this.provider = provider;
         this.domainEvents = domainEvents;
         this.prometheusClient = prometheusClient;
 
@@ -451,9 +451,7 @@ module.exports = class EmailAnalyticsService {
         };
 
         try {
-            for (const provider of this.providers) {
-                await provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
-            }
+            await this.provider.fetchLatest(processBatch, {begin, end, maxEvents, events: eventTypes});
         } catch (err) {
             if (err.message !== 'Fetching canceled') {
                 logging.error('[EmailAnalytics] Error while fetching');
