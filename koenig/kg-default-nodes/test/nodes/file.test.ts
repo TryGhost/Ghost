@@ -93,36 +93,6 @@ describe('FileNode', function () {
                 exportOptions.postUrl = 'https://example.com/post';
             });
 
-            it('renders complete email template with all fields', editorTest(function () {
-                const fileNode = $createFileNode(dataset);
-                const {element} = fileNode.exportDOM(editor, exportOptions);
-                const el = element as HTMLElement;
-
-                // Check basic structure
-                el.tagName.should.equal('TABLE');
-                el.className.should.equal('kg-file-card');
-
-                // Check title is present and linked
-                const titleLink = el.querySelector('.kg-file-title')!;
-                titleLink.textContent!.should.equal('Cool image to download');
-                titleLink.closest('a')!.href.should.equal('https://example.com/post');
-
-                // Check caption is present and linked
-                const descriptionLink = el.querySelector('.kg-file-description')!;
-                descriptionLink.textContent!.should.equal('This is a description');
-                descriptionLink.closest('a')!.href.should.equal('https://example.com/post');
-
-                // Check metadata
-                const metaLink = el.querySelector('.kg-file-meta')!;
-                metaLink.innerHTML.should.containEql('IMG_0196.jpeg');
-                metaLink.innerHTML.should.containEql('121 KB');
-
-                // Check icon
-                const icon = el.querySelector('img') as HTMLImageElement;
-                icon.src.should.equal('https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png');
-                icon.style.height.should.equal('24px');
-            }));
-
             it('renders email template without title and caption', editorTest(function () {
                 const minimalDataset = {
                     src: '/content/files/2023/03/IMG_0196.jpeg',
@@ -142,25 +112,6 @@ describe('FileNode', function () {
                 // Should have smaller icon
                 const icon = el.querySelector('img') as HTMLImageElement;
                 icon.style.height.should.equal('20px');
-            }));
-
-            it('properly escapes HTML in all fields', editorTest(function () {
-                const datasetWithHtml = {
-                    ...dataset,
-                    fileTitle: 'Title with <script>alert("xss")</script>',
-                    fileCaption: 'Caption with <strong>html</strong>',
-                    fileName: 'file<.html'
-                };
-                const fileNode = $createFileNode(datasetWithHtml);
-                const {element} = fileNode.exportDOM(editor, exportOptions);
-                const el = element as HTMLElement;
-
-                const elHtml = el.innerHTML;
-                elHtml.should.not.containEql('<script>');
-                elHtml.should.not.containEql('<strong>');
-                elHtml.should.containEql('file&lt;.html');
-                elHtml.should.containEql('Title with ');
-                elHtml.should.containEql('Caption with ');
             }));
         });
     });

@@ -68,13 +68,15 @@ export * from './nodes/zwnj/ZWNJNode.js';
 // export utility functions that are useful in other packages or tests
 import * as visibilityUtils from './utils/visibility.js';
 import * as taggedTemplateFns from './utils/tagged-template-fns.js';
+import * as replacementStrings from './utils/replacement-strings.js';
 import {generateDecoratorNode} from './generate-decorator-node.js';
 import {rgbToHex} from './utils/rgb-to-hex.js';
 export const utils = {
     generateDecoratorNode,
     visibility: visibilityUtils,
     rgbToHex,
-    taggedTemplateFns
+    taggedTemplateFns,
+    replacementStrings
 };
 
 export const serializers = {

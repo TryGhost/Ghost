@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import {oneline} from '../../src/utils/tagged-template-fns.js';
 
 describe('Internal utils: oneline', function () {
@@ -29,5 +30,18 @@ describe('Internal utils: oneline', function () {
         `);
 
         result.should.equal('<div class="test"><p>Hello world</p></div>');
+    });
+
+    it('handles attributes on new lines', function () {
+        const result = oneline`
+            <div
+                class="test classes"
+                data-test="testing"
+                style="color: red;"
+            >
+            </div>
+        `;
+
+        assert.equal(result, '<div class="test classes" data-test="testing" style="color: red;"></div>');
     });
 });

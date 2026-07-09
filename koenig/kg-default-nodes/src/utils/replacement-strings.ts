@@ -11,7 +11,16 @@ export function removeSpaces(html: string) {
  * Example: {foo} -> %%{foo}%%
  */
 export function wrapReplacementStrings(html: string) {
-    return html.replace(/\{(\w*?)(?:,? *"(.*?)")?\}/g, '%%$&%%');
+    return html.replace(/\{(\w*?)(?:,? *"(.*?)")?\}/g, (token, _id, _fallback, offset, input) => {
+        const hasLeadingPercents = input.slice(Math.max(0, offset - 2), offset) === '%%';
+        const hasTrailingPercents = input.slice(offset + token.length, offset + token.length + 2) === '%%';
+
+        if (hasLeadingPercents && hasTrailingPercents) {
+            return token;
+        }
+
+        return `%%${token}%%`;
+    });
 }
 
 /**

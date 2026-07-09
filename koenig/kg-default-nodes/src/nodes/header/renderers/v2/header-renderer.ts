@@ -1,8 +1,11 @@
 import {addCreateDocumentOption} from '../../../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../../../export-dom.js';
 import {getFirstHtmlElement} from '../../../../utils/get-first-html-element.js';
+import {renderEmailButton} from '../../../../utils/render-helpers/email-button.js';
 import {slugify} from '../../../../utils/slugify.js';
 import {getSrcsetAttribute, type ImageRenderOptions} from '../../../../utils/srcset-attribute.js';
+
+// TODO: nodeData.buttonTextColor should be calculated on the fly here rather than hardcoded by the editor
 
 interface HeaderV2NodeData {
     alignment: string;
@@ -45,7 +48,7 @@ interface HeaderV2DatasetNode {
 }
 
 interface HeaderV2RenderOptions extends ExportDOMOptions {
-    design?: { buttonStyle?: string };
+    design?: { buttonStyle?: 'fill' | 'outline' };
 }
 
 function cardTemplate(nodeData: HeaderV2NodeData, options: HeaderV2RenderOptions = {}) {
@@ -65,13 +68,11 @@ function cardTemplate(nodeData: HeaderV2NodeData, options: HeaderV2RenderOptions
             height: nodeData.backgroundImageHeight
         };
 
-        const srcsetValue = bgImage.width !== null
-            ? getSrcsetAttribute({
-                src: bgImage.src,
-                width: bgImage.width,
-                options: options as ImageRenderOptions
-            })
-            : '';
+        const srcsetValue = getSrcsetAttribute({
+            src: bgImage.src,
+            width: bgImage.width as number,
+            options: options as ImageRenderOptions
+        });
         const srcset = srcsetValue ? `srcset="${srcsetValue}"` : '';
 
         imgTemplate = `
@@ -117,97 +118,129 @@ function cardTemplate(nodeData: HeaderV2NodeData, options: HeaderV2RenderOptions
         `;
 }
 
+function generateMSOSplitHeaderImage(nodeData: HeaderV2NodeData) {
+    const {backgroundSize, backgroundImageSrc, backgroundColor} = nodeData;
+
+    if (backgroundSize === 'contain') {
+        return `
+            <!--[if mso]>
+                <v:rect xmlns:v="urn:schemas-microsoft-com:vml" stroke="false" style="width:600px;height:320px;">
+                    <v:fill type="frame" aspect="atmost" size="225pt,120pt" src="${backgroundImageSrc}" color="${backgroundColor}" />
+                    <v:textbox inset="0,0,0,0">
+                    </v:textbox>
+                </v:rect>
+            <![endif]-->
+            `;
+    } else {
+        return `
+            <!--[if mso]>
+                <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:320px;">
+                    <v:fill type="frame" aspect="atleast" src="${backgroundImageSrc}" color="${backgroundColor}" />
+                    <v:textbox inset="0,0,0,0">
+                    </v:textbox>
+                </v:rect>
+            <![endif]-->
+            `;
+    }
+}
+
+function generateMSOContentWrapper(nodeData: HeaderV2NodeData) {
+    const {backgroundImageSrc, backgroundColor} = nodeData;
+    const hasContainAndSplit = nodeData.backgroundSize === 'contain' && nodeData.layout === 'split';
+    const hasImageWithoutSplit = nodeData.backgroundImageSrc && nodeData.layout !== 'split';
+
+    // Outlook clients will return the first td, all other clients will return the second td
+    const msoOpenTag = `
+                    <!--[if mso]>
+                        <td class="kg-header-card-content" style="${hasImageWithoutSplit ? 'padding: 0;' : 'padding: 40px;'}${hasContainAndSplit ? 'padding-top: 0;' : ''}">
+                    <![endif]-->
+                    <!--[if !mso]><!-->
+                        <td class="kg-header-card-content" style="${hasContainAndSplit ? 'padding-top: 0;' : ''}">
+                    <!--<![endif]-->
+                    `;
+
+    const msoImageVML = hasImageWithoutSplit ? `
+                    <!--[if mso]>
+                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;">
+                            <v:fill src="${backgroundImageSrc}" color="${backgroundColor}" type="frame" aspect="atleast" focusposition="0.5,0.5" />
+                            <v:textbox inset="30pt,30pt,30pt,30pt" style="mso-fit-shape-to-text:true;">
+                    <![endif]-->
+                    ` : '';
+
+    return msoOpenTag + msoImageVML;
+}
+
+function generateMSOContentClosing(nodeData: HeaderV2NodeData) {
+    const hasImageWithoutSplit = nodeData.backgroundImageSrc && nodeData.layout !== 'split';
+
+    if (!hasImageWithoutSplit) {
+        return '';
+    }
+
+    return `
+        <!--[if mso]>
+            </v:textbox>
+        </v:rect>
+        <![endif]-->
+        `;
+}
+
 function emailTemplate(nodeData: HeaderV2NodeData, options: HeaderV2RenderOptions) {
     const backgroundAccent = nodeData.backgroundColor === 'accent' ? `background-color: ${nodeData.accentColor};` : '';
-    let buttonAccent = nodeData.buttonColor === 'accent' ? `background-color: ${nodeData.accentColor};` : nodeData.buttonColor;
-    let buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : '';
-    let buttonTextColor = nodeData.buttonTextColor;
     const alignment = nodeData.alignment === 'center' ? 'text-align: center;' : '';
     const backgroundImageStyle = nodeData.backgroundImageSrc ? (nodeData.layout !== 'split' ? `background-image: url(${nodeData.backgroundImageSrc}); background-size: cover; background-position: center center;` : `background-color: ${nodeData.backgroundColor};`) : `background-color: ${nodeData.backgroundColor};`;
     const splitImageStyle = `background-image: url(${nodeData.backgroundImageSrc}); background-size: ${nodeData.backgroundSize !== 'contain' ? 'cover' : '50%'}; background-position: center`;
 
-    if (
-        (options?.feature?.emailCustomization || options?.feature?.emailCustomizationAlpha) &&
-        options?.design?.buttonStyle === 'outline'
-    ) {
-        if (nodeData.buttonColor === 'accent') {
-            buttonAccent = '';
-            buttonStyle = `
-                border: 1px solid ${nodeData.accentColor};
-                background-color: transparent;
-                color: ${nodeData.accentColor} !important;
-            `;
-            buttonTextColor = nodeData.accentColor;
-        } else {
-            buttonStyle = `
-                border: 1px solid ${nodeData.buttonColor};
-                background-color: transparent;
-                color: ${nodeData.buttonColor} !important;
-            `;
-            buttonTextColor = nodeData.buttonColor;
-        }
-    }
+    const showButton = nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '';
 
-    if (options?.feature?.emailCustomization || options?.feature?.emailCustomizationAlpha) {
-        return (
-            `
-            <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
-                ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
-                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                        <tr>
-                            <td background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}" class="kg-header-card-image"></td>
-                        </tr>
-                    </table>
-                ` : ''}
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
-                    <tr>
-                        <td class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr>
-                                    <td align="${nodeData.alignment}">
-                                        <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="kg-header-card-subheading-wrapper" align="${nodeData.alignment}">
-                                        <p class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `
-                                        <td class="kg-header-button-wrapper">
-                                            <table class="btn" border="0" cellspacing="0" cellpadding="0" align="${nodeData.alignment}">
-                                                <tr>
-                                                    <td align="center" style="${buttonStyle} ${buttonAccent}">
-                                                        <a href="${nodeData.buttonUrl}" style="color: ${buttonTextColor};">${nodeData.buttonText}</a>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                    ` : ''}
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            `
-        );
-    }
+    const buttonHtml = renderEmailButton({
+        url: nodeData.buttonUrl,
+        text: nodeData.buttonText,
+        alignment: nodeData.alignment,
+        color: nodeData.buttonColor,
+        style: options?.design?.buttonStyle
+    });
+
+    const hasDarkBg = nodeData.textColor?.toLowerCase() === '#ffffff';
 
     return (
         `
-        <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
+        <div class="kg-header-card kg-v2 ${hasDarkBg ? 'kg-header-card-dark-bg' : 'kg-header-card-light-bg'}" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
             ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
-                <div class="kg-header-card-image" background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}"></div>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}" class="kg-header-card-image" bgcolor="${nodeData.backgroundColor}" align="center">
+                            ${generateMSOSplitHeaderImage(nodeData) /* mso-only img, no shared markup */}
+                        </td>
+                    </tr>
+                </table>
             ` : ''}
-            <div class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
-                <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
-                <p class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</p>
-                ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `
-                    <a class="kg-header-card-button" href="${nodeData.buttonUrl}" style="color: ${nodeData.buttonTextColor}; ${buttonStyle} ${buttonAccent}">${nodeData.buttonText}</a>
-                ` : ''}
-            </div>
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
+                <tr>
+                    ${generateMSOContentWrapper(nodeData) /* creates correct opening td tag for any platform */}
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td align="${nodeData.alignment}">
+                                    <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="kg-header-card-subheading-wrapper" align="${nodeData.alignment}">
+                                    <p class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                ${showButton ? `
+                                    <td class="kg-header-button-wrapper">
+                                        ${buttonHtml}
+                                    </td>
+                                ` : ''}
+                            </tr>
+                        </table>
+                ${generateMSOContentClosing(nodeData) /* mso-only closing tags, no shared markup */}
+                    </td>
+                </tr>
+            </table>
         </div>
         `
     );

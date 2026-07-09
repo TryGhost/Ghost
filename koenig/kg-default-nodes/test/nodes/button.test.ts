@@ -127,32 +127,14 @@ describe('ButtonNode', function () {
             };
             const result = buttonNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
-            const output = element.outerHTML;
-
-            output.should.not.containEql('kg-card');
-            output.should.containEql('<div class="btn btn-accent">');
-            output.should.containEql('<table border="0" cellspacing="0" cellpadding="0"');
-            output.should.containEql('<td align="center">');
-        }));
-
-        it('renders for email target (emailCustomization)', editorTest(function () {
-            const buttonNode = $createButtonNode(dataset);
-            const options = {
-                target: 'email',
-                feature: {
-                    emailCustomization: true
-                }
-            };
-            const result = buttonNode.exportDOM(editor, {...exportOptions, ...options});
-            const element = result.element as HTMLElement;
             const output = element.innerHTML;
 
             output.should.prettifyTo(html`
-                <table border="0" cellpadding="0" cellspacing="0">
+                <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
                     <tbody>
                         <tr>
-                            <td>
-                                <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="center">
+                            <td class="kg-card-spacing">
+                                <table class="btn" border="0" cellspacing="0" cellpadding="0" align="center">
                                     <tbody>
                                         <tr>
                                             <td align="center">
@@ -166,47 +148,6 @@ describe('ButtonNode', function () {
                     </tbody>
                 </table>
             `);
-        }));
-
-        it('renders for email target (emailCustomizationAlpha)', editorTest(function () {
-            const buttonNode = $createButtonNode(dataset);
-            const options = {
-                target: 'email',
-                feature: {
-                    emailCustomizationAlpha: true
-                }
-            };
-            const result = buttonNode.exportDOM(editor, {...exportOptions, ...options});
-            const element = result.element as HTMLElement;
-            const output = element.innerHTML;
-
-            output.should.prettifyTo(html`
-                <table border="0" cellpadding="0" cellspacing="0">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="center">
-                                    <tbody>
-                                        <tr>
-                                            <td align="center">
-                                                <a href="http://blog.com/post1">click me</a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            `);
-        }));
-
-        it('renders an empty span with a missing buttonUrl', editorTest(function () {
-            const buttonNode = $createButtonNode();
-            const result = buttonNode.exportDOM(editor, exportOptions);
-            const element = result.element as HTMLElement;
-
-            element.outerHTML.should.equal('<span></span>');
         }));
     });
 

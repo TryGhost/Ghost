@@ -1,14 +1,14 @@
-export function cleanDOM(node: Element, allowedTags: string[]) {
-    for (let i = 0; i < node.childNodes.length; i++) {
-        const child = node.childNodes[i];
-        if (child.nodeType === 1 && !allowedTags.includes((child as Element).tagName)) {
+export function cleanDOM(element: Element, allowedTags: ReadonlyArray<string>): void {
+    for (let i = 0; i < element.children.length; i++) {
+        const child = element.children[i];
+        if (child.nodeType === 1 && !allowedTags.includes(child.tagName)) {
             while (child.firstChild) {
-                node.insertBefore(child.firstChild, child);
+                element.insertBefore(child.firstChild, child);
             }
-            node.removeChild(child);
+            element.removeChild(child);
             i -= 1;
         } else if (child.nodeType === 1) {
-            cleanDOM(child as Element, allowedTags);
+            cleanDOM(child, allowedTags);
         }
     }
 }

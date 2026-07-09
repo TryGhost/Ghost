@@ -11,17 +11,10 @@ interface AudioNodeData {
 
 interface RenderOptions extends ExportDOMOptions {}
 
-interface EmailAudioRenderOptions extends RenderOptions {
-    target: 'email';
-    postUrl: string;
-}
-
-interface DefaultAudioRenderOptions extends RenderOptions {
+interface AudioRenderOptions extends RenderOptions {
     target?: string;
     postUrl?: string;
 }
-
-type AudioRenderOptions = EmailAudioRenderOptions | DefaultAudioRenderOptions;
 
 export function renderAudioNode(node: AudioNodeData, options: AudioRenderOptions = {}): ExportDOMOutput {
     addCreateDocumentOption(options);
@@ -35,18 +28,10 @@ export function renderAudioNode(node: AudioNodeData, options: AudioRenderOptions
     const emptyThumbnailCls = getEmptyThumbnailCls(node);
 
     if (options.target === 'email') {
-        if (!isEmailRenderOptions(options)) {
-            throw new Error('renderAudioNode requires options.postUrl when options.target is "email"');
-        }
-
         return emailTemplate(node, document, options, thumbnailCls, emptyThumbnailCls);
     } else {
         return frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls);
     }
-}
-
-function isEmailRenderOptions(options: AudioRenderOptions): options is EmailAudioRenderOptions {
-    return options.target === 'email' && typeof options.postUrl === 'string' && options.postUrl.trim() !== '';
 }
 
 function frontendTemplate(node: AudioNodeData, document: Document, thumbnailCls: string, emptyThumbnailCls: string) {
@@ -196,7 +181,8 @@ function frontendTemplate(node: AudioNodeData, document: Document, thumbnailCls:
     return {element, type: 'outer' as const};
 }
 
-function emailTemplate(node: AudioNodeData, document: Document, options: EmailAudioRenderOptions, thumbnailCls: string, emptyThumbnailCls: string) {
+function emailTemplate(node: AudioNodeData, document: Document, options: AudioRenderOptions, thumbnailCls: string, emptyThumbnailCls: string) {
+    const postUrl = options.postUrl || node.src;
     const html = (`
         <table cellspacing="0" cellpadding="0" border="0" class="kg-audio-card">
                 <tr>
@@ -204,7 +190,7 @@ function emailTemplate(node: AudioNodeData, document: Document, options: EmailAu
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
                                 <td width="60">
-                                    <a href="${options.postUrl}" style="display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;">
+                                    <a href="${postUrl}" style="display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;">
                                         ${node.thumbnailSrc ? `
                                         <img src="${node.thumbnailSrc}" class="${thumbnailCls}" style="width: 60px; height: 60px; object-fit: cover; border: 0; border-radius: 2px;">
                                         ` : `
@@ -213,11 +199,11 @@ function emailTemplate(node: AudioNodeData, document: Document, options: EmailAu
                                     </a>
                                 </td>
                                 <td style="position: relative; vertical-align: center;" valign="middle">
-                                    <a href="${options.postUrl}" style="position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;"></a>
+                                    <a href="${postUrl}" style="position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;"></a>
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                         <tr>
                                             <td>
-                                                <a href="${options.postUrl}" class="kg-audio-title">${node.title}</a>
+                                                <a href="${postUrl}" class="kg-audio-title">${node.title}</a>
                                             </td>
                                         </tr>
                                         <tr>
@@ -225,10 +211,10 @@ function emailTemplate(node: AudioNodeData, document: Document, options: EmailAu
                                                 <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                                     <tr>
                                                         <td width="24" style="vertical-align: middle;" valign="middle">
-                                                            <a href="${options.postUrl}" class="kg-audio-play-button"></a>
+                                                            <a href="${postUrl}" class="kg-audio-play-button"></a>
                                                         </td>
                                                         <td style="vertical-align: middle;" valign="middle">
-                                                            <a href="${options.postUrl}" class="kg-audio-duration">${getFormattedDuration(node.duration)}<span class="kg-audio-link"> • Click to play audio</span></a>
+                                                            <a href="${postUrl}" class="kg-audio-duration">${getFormattedDuration(node.duration)}<span class="kg-audio-link"> • Click to play audio</span></a>
                                                         </td>
                                                     </tr>
                                                 </table>

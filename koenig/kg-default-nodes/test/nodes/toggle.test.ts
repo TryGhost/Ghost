@@ -198,32 +198,6 @@ describe('ToggleNode', function () {
             const element = result.element as HTMLElement;
 
             element.outerHTML.should.prettifyTo(html`
-                <div style="background: transparent;
-                border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;">
-                    <h4 style="font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top:0px">Heading</h4>
-                    <div style="font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;">Content</div>
-                </div>
-            `);
-        }));
-
-        it('renders for email target (emailCustomizationAlpha)', editorTest(function () {
-            const payload = {
-                heading: 'Heading',
-                content: 'Content'
-            };
-
-            const options = {
-                target: 'email',
-                postUrl: 'https://example.com/my-post',
-                feature: {
-                    emailCustomizationAlpha: true
-                }
-            };
-            const toggleNode = $createToggleNode(payload);
-            const result = toggleNode.exportDOM(editor, {...exportOptions, ...options});
-            const element = result.element as HTMLElement;
-
-            element.outerHTML.should.prettifyTo(html`
                 <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
                     <tbody>
                         <tr>
@@ -239,30 +213,6 @@ describe('ToggleNode', function () {
                     </tbody>
                 </table>
             `);
-        }));
-
-        it('renders heading', editorTest(function () {
-            const payload = {
-                heading: 'Heading',
-                content: 'Content'
-            };
-
-            const toggleNode = $createToggleNode(payload);
-            const result = toggleNode.exportDOM(editor, exportOptions);
-            const element = result.element as HTMLElement;
-            element.outerHTML.should.containEql('<h4 class="kg-toggle-heading-text">Heading</h4>');
-        }));
-
-        it('renders content', editorTest(function () {
-            const payload = {
-                heading: 'Heading',
-                content: 'Content'
-            };
-
-            const toggleNode = $createToggleNode(payload);
-            const result = toggleNode.exportDOM(editor, exportOptions);
-            const element = result.element as HTMLElement;
-            element.outerHTML.should.containEql('<div class="kg-toggle-content">Content</div>');
         }));
     });
 

@@ -8,7 +8,6 @@ const storage = require('../adapters/storage');
 
 let nodes;
 let lexicalHtmlRenderer;
-let customNodeRenderers;
 let urlTransformMap;
 let postsService;
 let serializePosts;
@@ -30,7 +29,7 @@ function createLexicalHtmlRenderer(onError) {
     });
 }
 
-function buildRenderOptions(userOptions, nodeRenderers) {
+function buildRenderOptions(userOptions) {
     if (!postsService) {
         const getPostServiceInstance = require('../services/posts/posts-service-instance');
         postsService = getPostServiceInstance();
@@ -53,13 +52,16 @@ function buildRenderOptions(userOptions, nodeRenderers) {
                 && imageTransform.shouldResizeFileExtension(ext)
                 && typeof storage.getStorage('images').saveRaw === 'function';
         },
+        canTransformImageToFormat(format) {
+            const imageTransform = require('@tryghost/image-transform');
+
+            return imageTransform.canTransformFiles()
+                && imageTransform.canTransformToFormat(format);
+        },
         feature: {
-            contentVisibility: true, // force on until Koenig has been bumped
-            emailCustomization: true, // force on until Koenig has been bumped
             emailUniqueid: labs.isSet('emailUniqueid'),
             pictureImageFormats: labs.isSet('pictureImageFormats')
-        },
-        nodeRenderers
+        }
     }, userOptions);
 }
 
@@ -94,25 +96,8 @@ module.exports = {
         return lexicalHtmlRenderer;
     },
 
-    get customNodeRenderers() {
-        if (!customNodeRenderers) {
-            try {
-                customNodeRenderers = require('../services/koenig/node-renderers');
-            } catch (err) {
-                throw new errors.InternalServerError({
-                    message: 'Unable to render post content',
-                    context: 'The custom node renderers module could not be required',
-                    code: 'KOENIG_CUSTOM_NODE_RENDERERS_LOAD_ERROR',
-                    err: err
-                });
-            }
-        }
-
-        return customNodeRenderers;
-    },
-
     async render(lexical, userOptions = {}) {
-        const options = buildRenderOptions(userOptions, this.customNodeRenderers);
+        const options = buildRenderOptions(userOptions);
         return await this.lexicalHtmlRenderer.render(lexical, options);
     },
 
@@ -124,7 +109,7 @@ module.exports = {
 
             // The validation renderer rethrows parser errors so this method can
             // convert every malformed document into a boolean result.
-            const options = buildRenderOptions(userOptions, this.customNodeRenderers);
+            const options = buildRenderOptions(userOptions);
             await lexicalValidationRenderer.render(lexical, options);
             return true;
         } catch {

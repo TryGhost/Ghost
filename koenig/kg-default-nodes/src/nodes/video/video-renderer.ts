@@ -1,6 +1,5 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
-import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 
 interface VideoNodeData {
@@ -17,30 +16,12 @@ interface VideoNodeData {
 
 interface BaseVideoRenderOptions extends ExportDOMOptions {}
 
-interface EmailVideoRenderOptions extends BaseVideoRenderOptions {
-    target: 'email';
-    postUrl: string;
-}
-
-interface DefaultVideoRenderOptions extends BaseVideoRenderOptions {
+interface VideoRenderOptions extends BaseVideoRenderOptions {
     target?: string;
     postUrl?: string;
 }
 
-type VideoRenderOptions = EmailVideoRenderOptions | DefaultVideoRenderOptions;
 const DEFAULT_EMAIL_ASPECT_RATIO = 16 / 9;
-
-function hasVideoDimensions(node: VideoNodeData): node is VideoNodeData & {width: number; height: number} {
-    return node.width !== null && node.height !== null && node.width > 0 && node.height > 0;
-}
-
-function getPosterSpacerSrc(width: number, height: number) {
-    return `https://img.spacergif.org/v1/${width}x${height}/0a/spacer.png`;
-}
-
-function isEmailRenderOptions(options: VideoRenderOptions): options is EmailVideoRenderOptions {
-    return options.target === 'email' && typeof options.postUrl === 'string' && options.postUrl.trim() !== '';
-}
 
 export function renderVideoNode(node: VideoNodeData, options: VideoRenderOptions = {}) {
     addCreateDocumentOption(options);
@@ -53,26 +34,23 @@ export function renderVideoNode(node: VideoNodeData, options: VideoRenderOptions
 
     const cardClasses = getCardClasses(node).join(' ');
 
-    const htmlString = options.target === 'email'
-        ? (() => {
-            if (!isEmailRenderOptions(options)) {
-                throw new Error('renderVideoNode requires options.postUrl when options.target is "email"');
-            }
-
-            return emailCardTemplate({node, options, cardClasses});
-        })()
-        : cardTemplate({node, cardClasses});
+    let htmlString;
+    if (options.target === 'email') {
+        htmlString = emailCardTemplate({node, options, cardClasses});
+    } else {
+        htmlString = cardTemplate({node, cardClasses});
+    }
 
     const element = document.createElement('div');
     element.innerHTML = htmlString.trim();
 
-    return {element: getFirstHtmlElement(element, 'renderVideoNode'), type: 'outer' as const};
+    return {element: element.firstElementChild as HTMLElement, type: 'outer' as const};
 }
 
-export function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClasses: string}) {
-    const widthAttr = hasVideoDimensions(node) ? `width="${node.width}"` : '';
-    const heightAttr = hasVideoDimensions(node) ? `height="${node.height}"` : '';
-    const posterAttr = hasVideoDimensions(node) ? `poster="${getPosterSpacerSrc(node.width, node.height)}"` : '';
+function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClasses: string}) {
+    const width = node.width;
+    const height = node.height;
+    const posterSpacerSrc = `https://img.spacergif.org/v1/${width}x${height}/0a/spacer.png`;
     const autoplayAttr = node.loop ? 'loop autoplay muted' : '';
     const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
     const hideControlsClass = node.loop ? ' kg-video-hide' : '';
@@ -83,9 +61,9 @@ export function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClas
             <div class="kg-video-container">
                 <video
                     src="${node.src}"
-                    ${posterAttr}
-                    ${widthAttr}
-                    ${heightAttr}
+                    poster="${posterSpacerSrc}"
+                    width="${width}"
+                    height="${height}"
                     ${autoplayAttr}
                     playsinline
                     preload="metadata"
@@ -137,13 +115,14 @@ export function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClas
     );
 }
 
-export function emailCardTemplate({node, options, cardClasses}: {node: VideoNodeData, options: EmailVideoRenderOptions, cardClasses: string}) {
+function emailCardTemplate({node, options, cardClasses}: {node: VideoNodeData, options: VideoRenderOptions, cardClasses: string}) {
     const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
+    const postUrl = options.postUrl || node.src;
     const emailTemplateMaxWidth = 600;
-    const aspectRatio = hasVideoDimensions(node) ? node.width / node.height : DEFAULT_EMAIL_ASPECT_RATIO;
+    const aspectRatio = node.width && node.height ? node.width / node.height : DEFAULT_EMAIL_ASPECT_RATIO;
     const emailSpacerWidth = Math.round(emailTemplateMaxWidth / 4);
     const emailSpacerHeight = Math.round(emailTemplateMaxWidth / aspectRatio);
-    const posterSpacerSrc = getPosterSpacerSrc(emailSpacerWidth, emailSpacerHeight);
+    const posterSpacerSrc = `https://img.spacergif.org/v1/${emailSpacerWidth}x${emailSpacerHeight}/0a/spacer.png`;
     const outlookCircleLeft = Math.round((emailTemplateMaxWidth / 2) - 39);
     const outlookCircleTop = Math.round((emailSpacerHeight / 2) - 39);
     const outlookPlayLeft = Math.round((emailTemplateMaxWidth / 2) - 11);
@@ -153,7 +132,7 @@ export function emailCardTemplate({node, options, cardClasses}: {node: VideoNode
         `
          <figure class="${cardClasses}">
             <!--[if !mso !vml]-->
-            <a class="kg-video-preview" href="${options.postUrl}" aria-label="Play video" style="mso-hide: all">
+            <a class="kg-video-preview" href="${postUrl}" aria-label="Play video" style="mso-hide: all">
                 <table
                     cellpadding="0"
                     cellspacing="0"
@@ -177,7 +156,7 @@ export function emailCardTemplate({node, options, cardClasses}: {node: VideoNode
             <!--[endif]-->
 
             <!--[if vml]>
-            <v:group xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" coordsize="${emailTemplateMaxWidth},${emailSpacerHeight}" coordorigin="0,0" href="${options.postUrl}" style="width:${emailTemplateMaxWidth}px;height:${emailSpacerHeight}px;">
+            <v:group xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" coordsize="${emailTemplateMaxWidth},${emailSpacerHeight}" coordorigin="0,0" href="${postUrl}" style="width:${emailTemplateMaxWidth}px;height:${emailSpacerHeight}px;">
                 <v:rect fill="t" stroked="f" style="position:absolute;width:${emailTemplateMaxWidth};height:${emailSpacerHeight};"><v:fill src="${thumbnailSrc}" type="frame"/></v:rect>
                 <v:oval fill="t" strokecolor="white" strokeweight="4px" style="position:absolute;left:${outlookCircleLeft};top:${outlookCircleTop};width:78;height:78"><v:fill color="black" opacity="30%" /></v:oval>
                 <v:shape coordsize="24,32" path="m,l,32,24,16,xe" fillcolor="white" stroked="f" style="position:absolute;left:${outlookPlayLeft};top:${outlookPlayTop};width:30;height:34;" />
@@ -190,7 +169,7 @@ export function emailCardTemplate({node, options, cardClasses}: {node: VideoNode
     );
 }
 
-export function getCardClasses(node: VideoNodeData) {
+function getCardClasses(node: VideoNodeData) {
     const cardClasses = ['kg-card kg-video-card'];
 
     if (node.cardWidth) {

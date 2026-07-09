@@ -89,13 +89,10 @@ export default function render(node: TwitterNode, document: Document, options: R
         const entities = mentions.concat(urls).concat(hashtags).sort((a: TwitterEntity, b: TwitterEntity) => a.start - b.start);
         let tweetContent = tweetData.text;
 
-        let tweetImageUrl = null;
         const firstMedia = tweetData.includes?.media?.[0];
-        const hasImageOrVideo = tweetData.attachments?.media_keys && firstMedia;
-        if (hasImageOrVideo) {
-            tweetImageUrl = firstMedia.preview_image_url || firstMedia.url;
-        }
-        const hasPoll = tweetData.attachments && tweetData.attachments && tweetData.attachments.poll_ids;
+        const tweetImageUrl = firstMedia?.preview_image_url || firstMedia?.url || null;
+        const hasImageOrVideo = Boolean(tweetData.attachments?.media_keys && tweetImageUrl);
+        const hasPoll = tweetData.attachments && tweetData.attachments.poll_ids;
 
         if (mentions) {
             let last = 0;

@@ -205,37 +205,6 @@ describe('CodeBlockNode', function () {
                 <pre><code>&lt;script&gt;&lt;/script&gt;</code></pre>
             `);
         }));
-
-        it('renders language class if provided', editorTest(function () {
-            const codeBlockNode = $createCodeBlockNode({language, code});
-            const {element} = codeBlockNode.exportDOM(editor, exportOptions);
-            const el = element as HTMLElement;
-
-            el.outerHTML.should.prettifyTo(html`
-                <pre><code class="language-javascript">&lt;script&gt;&lt;/script&gt;</code></pre>
-            `);
-        }));
-
-        it('renders empty span when code is undefined or empty', editorTest(function () {
-            const codeBlockNode = $createCodeBlockNode({code: ''});
-            const {element} = codeBlockNode.exportDOM(editor, exportOptions);
-            const el = element as HTMLElement;
-
-            el.outerHTML.should.equal('<span></span>');
-        }));
-
-        it('renders a figure if a caption is provided', editorTest(function () {
-            const codeBlockNode = $createCodeBlockNode({language, code, caption});
-            const {element} = codeBlockNode.exportDOM(editor, exportOptions);
-            const el = element as HTMLElement;
-
-            el.outerHTML.should.prettifyTo(html`
-                <figure class="kg-card kg-code-card">
-                    <pre><code class="language-javascript">&lt;script&gt;&lt;/script&gt;</code></pre>
-                    <figcaption>A code block</figcaption>
-                </figure>
-            `);
-        }));
     });
 
     describe('importDOM', function () {

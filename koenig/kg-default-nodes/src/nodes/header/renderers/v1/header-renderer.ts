@@ -1,5 +1,6 @@
 import {addCreateDocumentOption} from '../../../../utils/add-create-document-option.js';
-import type {ExportDOMOptions} from '../../../../export-dom.js';
+import type {ExportDOMOptions, ExportDOMOutput} from '../../../../export-dom.js';
+import {html} from '../../../../utils/tagged-template-fns.js';
 import {renderEmptyContainer} from '../../../../utils/render-empty-container.js';
 import {slugify} from '../../../../utils/slugify.js';
 
@@ -16,7 +17,7 @@ interface HeaderV1NodeData {
 
 interface RenderOptions extends ExportDOMOptions {}
 
-export function renderHeaderNodeV1(node: HeaderV1NodeData, options: RenderOptions = {}) {
+export function renderHeaderNodeV1(node: HeaderV1NodeData, options: RenderOptions = {}): ExportDOMOutput {
     addCreateDocumentOption(options);
 
     const document = options.createDocument!();
@@ -41,34 +42,32 @@ export function renderHeaderNodeV1(node: HeaderV1NodeData, options: RenderOption
         backgroundImageSrc: node.backgroundImageSrc
     };
 
+    const headerHtml = html`
+        <div
+            class="kg-card kg-header-card kg-width-full kg-size-${templateData.size} kg-style-${templateData.style}"
+            data-kg-background-image="${templateData.backgroundImageSrc}"
+            style="${templateData.backgroundImageStyle}"
+        >
+            ${templateData.hasHeader && html`
+                <h2 class="kg-header-card-header" id="${templateData.headerSlug}">
+                    ${templateData.header}
+                </h2>
+            `}
+            ${templateData.hasSubheader && html`
+                <h3 class="kg-header-card-subheader" id="${templateData.subheaderSlug}">
+                    ${templateData.subheader}
+                </h3>
+            `}
+            ${templateData.buttonEnabled && html`
+                <a class="kg-header-card-button" href="${templateData.buttonUrl}">
+                    ${templateData.buttonText}
+                </a>
+            `}
+        </div>
+    `;
+
     const div = document.createElement('div');
-    div.classList.add('kg-card', 'kg-header-card', 'kg-width-full', `kg-size-${templateData.size}`, `kg-style-${templateData.style}`);
-    div.setAttribute('data-kg-background-image', templateData.backgroundImageSrc);
-    div.setAttribute('style', templateData.backgroundImageStyle);
+    div.innerHTML = headerHtml;
 
-    if (templateData.hasHeader) {
-        const headerElement = document.createElement('h2');
-        headerElement.classList.add('kg-header-card-header');
-        headerElement.setAttribute('id', templateData.headerSlug);
-        headerElement.innerHTML = templateData.header;
-        div.appendChild(headerElement);
-    }
-
-    if (templateData.hasSubheader) {
-        const subheaderElement = document.createElement('h3');
-        subheaderElement.classList.add('kg-header-card-subheader');
-        subheaderElement.setAttribute('id', templateData.subheaderSlug);
-        subheaderElement.innerHTML = templateData.subheader;
-        div.appendChild(subheaderElement);
-    }
-
-    if (templateData.buttonEnabled) {
-        const buttonElement = document.createElement('a');
-        buttonElement.classList.add('kg-header-card-button');
-        buttonElement.setAttribute('href', templateData.buttonUrl);
-        buttonElement.textContent = templateData.buttonText;
-        div.appendChild(buttonElement);
-    }
-
-    return {element: div, type: 'outer' as const};
+    return {element: div, type: 'inner' as const};
 }

@@ -2,6 +2,7 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option.js
 import type {ExportDOMOptions, ExportDOMOutput} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 import {renderWithVisibility} from '../../utils/visibility.js';
+import {wrapReplacementStrings} from '../../utils/replacement-strings.js';
 
 interface HtmlNodeData {
     html: string;
@@ -23,7 +24,13 @@ export function renderHtmlNode(node: HtmlNodeData, options: RenderOptions = {}):
         return renderEmptyContainer(document);
     }
 
-    const wrappedHtml = `\n<!--kg-card-begin: html-->\n${html}\n<!--kg-card-end: html-->\n`;
+    // Wrap replacement strings like {uniqueid} with %% for email processing
+    // Only wrap if emailUniqueid labs flag is enabled
+    let processedHtml = html;
+    if (options.feature?.emailUniqueid) {
+        processedHtml = wrapReplacementStrings(html);
+    }
+    const wrappedHtml = `\n<!--kg-card-begin: html-->\n${processedHtml}\n<!--kg-card-end: html-->\n`;
 
     const textarea = document.createElement('textarea');
     textarea.value = wrappedHtml;
