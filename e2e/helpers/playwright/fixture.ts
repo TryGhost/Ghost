@@ -15,7 +15,7 @@ const debug = baseDebug('e2e:ghost-fixture');
 const STRIPE_SECRET_KEY = 'sk_test_e2eTestKey';
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_e2eTestKey';
 
-type ResolvedIsolation = 'per-file' | 'per-test';
+export type ResolvedIsolation = 'per-file' | 'per-test';
 type LabsFlags = Record<string, boolean>;
 
 /**
@@ -43,7 +43,7 @@ interface PerFileAuthenticatedSessionCache {
     storageState: Awaited<ReturnType<BrowserContext['storageState']>>;
 }
 
-interface TestEnvironmentContext {
+export interface TestEnvironmentContext {
     holder: GhostInstance;
     resolvedIsolation: ResolvedIsolation;
     cycle: () => Promise<void>;
@@ -51,11 +51,11 @@ interface TestEnvironmentContext {
     markResetEnvironmentBlocker: (fixtureName: string) => void;
 }
 
-interface InternalFixtures {
+export interface InternalFixtures {
     _testEnvironmentContext: TestEnvironmentContext;
 }
 
-interface WorkerFixtures {
+export interface WorkerFixtures {
     _cleanupPerFileInstance: void;
     _egressSummary: void;
 }
