@@ -9,6 +9,9 @@ catalogs:
     '@ebay/nice-modal-react':
       specifier: 1.2.13
       version: 1.2.13
+    '@eslint/compat':
+      specifier: 2.1.0
+      version: 2.1.0
     '@eslint/js':
       specifier: 9.39.4
       version: 9.39.4
@@ -3612,6 +3615,12 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@1.21.7)
+      eslint-plugin-ghost:
+        specifier: 'catalog:'
+        version: 3.5.0(@babel/core@8.0.1)(eslint@9.39.4(jiti@1.21.7))
+      eslint-plugin-react:
+        specifier: 'catalog:'
+        version: 7.37.5(eslint@9.39.4(jiti@1.21.7))
       eslint-plugin-react-hooks:
         specifier: 'catalog:'
         version: 5.2.0(eslint@9.39.4(jiti@1.21.7))
@@ -3706,6 +3715,12 @@ importers:
       '@emoji-mart/data':
         specifier: 1.2.1
         version: 1.2.1
+      '@eslint/compat':
+        specifier: 'catalog:'
+        version: 2.1.0(eslint@9.39.4(jiti@2.7.0))
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 9.39.4
       '@etchteam/storybook-addon-status':
         specifier: 8.1.0
         version: 8.1.0(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@18.3.31)(prettier@3.9.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -3841,6 +3856,9 @@ importers:
       emoji-mart:
         specifier: 5.6.0
         version: 5.6.0
+      eslint-plugin-ghost:
+        specifier: 'catalog:'
+        version: 3.5.0(@babel/core@8.0.1)(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react:
         specifier: 'catalog:'
         version: 7.37.5(eslint@9.39.4(jiti@2.7.0))
@@ -3862,6 +3880,9 @@ importers:
       fs-extra:
         specifier: 'catalog:'
         version: 11.3.6
+      globals:
+        specifier: 'catalog:'
+        version: 17.7.0
       highlight.js:
         specifier: 10.7.3
         version: 10.7.3
@@ -26480,6 +26501,12 @@ snapshots:
       '@eslint/core': 1.2.1
     optionalDependencies:
       eslint: 9.39.4(jiti@2.7.0)(supports-color@5.5.0)
+
+  '@eslint/compat@2.1.0(eslint@9.39.4(jiti@2.7.0))':
+    dependencies:
+      '@eslint/core': 1.2.1
+    optionalDependencies:
+      eslint: 9.39.4(jiti@2.7.0)
 
   '@eslint/config-array@0.21.2(supports-color@5.5.0)':
     dependencies:

@@ -42,6 +42,8 @@
     "@vitest/coverage-v8": "catalog:",
     "autoprefixer": "10.5.2",
     "eslint": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
+    "eslint-plugin-react": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-react-refresh": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",

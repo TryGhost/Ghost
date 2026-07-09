@@ -32,6 +32,7 @@ allowBuilds:
 
 catalog:
   '@ebay/nice-modal-react': 1.2.13
+  '@eslint/compat': 2.1.0
   '@eslint/js': 9.39.4
   '@faker-js/faker': 10.5.0
   '@playwright/test': 1.61.1
