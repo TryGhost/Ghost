@@ -27,12 +27,16 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const [cardWidth, setCardWidth] = React.useState<CardWidth>(width || 'regular');
     const containerRef = React.useRef(null);
     const skipClick = React.useRef(false);
+    const isTouchDeviceRef = React.useRef<boolean | null>(null);
 
     const {selectedCardKey, isEditingCard, isDragging} = useKoenigSelectedCardContext();
 
     const isSelected = selectedCardKey === nodeKey;
     const isEditing = isSelected && isEditingCard;
-    const isTouchDevice = window.matchMedia?.('(pointer: coarse), (hover: none)').matches;
+    if (isTouchDeviceRef.current === null) {
+        isTouchDeviceRef.current = window.matchMedia?.('(pointer: coarse), (hover: none)').matches ?? false;
+    }
+    const isTouchDevice = isTouchDeviceRef.current;
 
     const handleVisibilityToggle = React.useCallback((event) => {
         event.preventDefault();
