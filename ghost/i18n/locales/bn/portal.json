@@ -191,8 +191,6 @@
     "Save": "সংরক্ষণ করুন",
     "Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.": "",
     "Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.": "",
-    "Send an email and say hi!": "একটি ইমেল পাঠান এবং হাই বলুন!",
-    "Send an email to {senderEmail} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.": "{senderEmail} এ একটি ইমেল পাঠান এবং হ্যালো বলুন। এটি আপনার মেইল প্রোভাইডারকে সংকেত দিতে সাহায্য করতে পারে যে এই ঠিকানায় এবং এই ঠিকানা থেকে ইমেলগুলি বিশ্বাসযোগ্য হওয়া উচিত।",
     "Send the link below to share it with whoever you'd like.": "",
     "Sending login link...": "লগইন লিঙ্ক পাঠানো হচ্ছে...",
     "Sending...": "পাঠানো হচ্ছে...",
