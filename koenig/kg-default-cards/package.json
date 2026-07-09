@@ -1,7 +1,11 @@
 {
   "name": "@tryghost/kg-default-cards",
   "version": "10.3.3",
-  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-default-cards",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-default-cards"
+  },
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "build/cjs/index.js",

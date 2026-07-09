@@ -1,7 +1,11 @@
 {
   "name": "@tryghost/koenig-lexical",
   "version": "1.8.3",
-  "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/koenig-lexical",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/koenig-lexical"
+  },
   "author": "Ghost Foundation",
   "license": "MIT",
   "type": "module",

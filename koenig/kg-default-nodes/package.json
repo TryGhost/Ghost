@@ -1,7 +1,11 @@
 {
   "name": "@tryghost/kg-default-nodes",
   "version": "2.1.3",
-  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-default-nodes",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-default-nodes"
+  },
   "author": "Ghost Foundation",
   "license": "MIT",
   "engines": {
