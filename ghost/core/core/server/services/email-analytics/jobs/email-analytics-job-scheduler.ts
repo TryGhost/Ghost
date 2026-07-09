@@ -1,9 +1,25 @@
 import * as path from 'node:path';
 import moment from 'moment';
-import type * as bookshelf from 'bookshelf';
 
-type Models = {Email: bookshelf.Model<any>};
+type CountableQuery = {
+    where(column: string, operator: string, value: unknown): CountableQuery;
+    count(): Promise<string | number>;
+};
+type ExistingRecipientQuery = {
+    where(column: string, operator: string, value: unknown): ExistingRecipientQuery;
+    whereNotNull(column: string): ExistingRecipientQuery;
+    first(column: string): Promise<unknown>;
+};
+type Models = {
+    Email: {
+        where(column: string, operator: string, value: unknown): CountableQuery;
+    };
+    AutomatedEmailRecipient: {
+        query(): ExistingRecipientQuery;
+    };
+};
 type Config = {get(key: string): unknown};
+type Labs = {isSet(flag: string): boolean};
 type JobManager = {
     addJob(options: {
         job: string;
@@ -12,46 +28,103 @@ type JobManager = {
     }): void;
 };
 
+function randomFiveMinuteCron(): string {
+    // Use a random seconds value to avoid spikes to external APIs on the minute.
+    const seconds = Math.floor(Math.random() * 60); // 0-59
+    // Run every 5 minutes, on 1,6,11..., 2,7,12..., 3,8,13..., etc.
+    const minutes = Math.floor(Math.random() * 5); // 0-4
+
+    return `${seconds} ${minutes}/5 * * * *`;
+}
+
 export class EmailAnalyticsJobScheduler {
     #hasScheduledNewslettersJob = false;
+    #hasScheduledAutomationsJob = false;
     readonly #models: Models;
     readonly #config: Config;
+    readonly #labs: Labs;
     readonly #jobManager: JobManager;
 
-    constructor(models: Models, config: Config, jobManager: JobManager) {
+    constructor({
+        models,
+        config,
+        labs,
+        jobManager
+    }: {
+        models: Models,
+        config: Config,
+        labs: Labs,
+        jobManager: JobManager
+    }) {
         this.#models = models;
         this.#config = config;
+        this.#labs = labs;
         this.#jobManager = jobManager;
     }
 
-    async scheduleRecurringJobs(skipEmailCheck = false): Promise<void> {
-        if (
-            !this.#hasScheduledNewslettersJob &&
+    async scheduleRecurringJobs(skipNewsletterEmailCheck = false): Promise<void> {
+        const isConfigured = (
             this.#config.get('emailAnalytics:enabled') &&
             this.#config.get('backgroundJobs:emailAnalytics')
-        ) {
-            // Don't register email analytics job if we have no emails,
-            // processor usage from many sites spinning up threads can be high.
-            // Mega service will re-run this scheduling task when an email is sent
-            const emailCount = skipEmailCheck ? 1 : Number(await this.#models.Email
-                .where('created_at', '>', moment.utc().subtract(30, 'days').toISOString())
-                .where('status', '<>', 'failed')
-                .count());
-
-            if (emailCount > 0) {
-                // use a random seconds value to avoid spikes to external APIs on the minute
-                const s = Math.floor(Math.random() * 60); // 0-59
-                // run every 5 minutes, on 1,6,11..., 2,7,12..., 3,8,13..., etc
-                const m = Math.floor(Math.random() * 5); // 0-4
-
-                this.#jobManager.addJob({
-                    at: `${s} ${m}/5 * * * *`,
-                    job: path.resolve(__dirname, 'fetch-latest/index.js'),
-                    name: 'email-analytics-fetch-latest'
-                });
-
-                this.#hasScheduledNewslettersJob = true;
-            }
+        );
+        if (!isConfigured) {
+            return;
         }
+
+        await Promise.all([
+            this.#scheduleRecurringNewslettersJob(skipNewsletterEmailCheck),
+            this.#scheduleRecurringAutomationsJob()
+        ]);
+    }
+
+    async #scheduleRecurringNewslettersJob(skipNewsletterEmailCheck: boolean): Promise<void> {
+        if (this.#hasScheduledNewslettersJob) {
+            return;
+        }
+
+        // Don't register email analytics job if we have no emails,
+        // processor usage from many sites spinning up threads can be high.
+        // Mega service will re-run this scheduling task when an email is sent
+        const emailCount = skipNewsletterEmailCheck ? 1 : Number(await this.#models.Email
+            .where('created_at', '>', moment.utc().subtract(30, 'days').toISOString())
+            .where('status', '<>', 'failed')
+            .count());
+
+        if (emailCount > 0) {
+            this.#jobManager.addJob({
+                at: randomFiveMinuteCron(),
+                job: path.resolve(__dirname, 'fetch-latest/index.js'),
+                name: 'email-analytics-fetch-latest'
+            });
+
+            this.#hasScheduledNewslettersJob = true;
+        }
+    }
+
+    async #scheduleRecurringAutomationsJob(): Promise<void> {
+        if (this.#hasScheduledAutomationsJob) {
+            return;
+        }
+
+        if (!this.#labs.isSet('automationAnalytics')) {
+            return;
+        }
+
+        const automatedEmailRecipient = await this.#models.AutomatedEmailRecipient
+            .query()
+            .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
+            .whereNotNull('mailgun_message_id')
+            .first('id');
+        if (!automatedEmailRecipient) {
+            return;
+        }
+
+        this.#jobManager.addJob({
+            at: randomFiveMinuteCron(),
+            job: path.resolve(__dirname, 'automation-fetch-latest/index.js'),
+            name: 'email-analytics-automation-fetch-latest'
+        });
+
+        this.#hasScheduledAutomationsJob = true;
     }
 }
