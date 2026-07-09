@@ -23,6 +23,9 @@ export type {KoenigFileUploadType} from './hooks/use-koenig-file-upload';
 export {useKoenigLinkSuggestions} from './hooks/use-koenig-link-suggestions';
 export {useFeaturebase} from './hooks/use-featurebase';
 
+// Analytics utilities
+export {trackEvent, trackFilterApplications} from './utils/analytics';
+
 // Currency utilities
 export {getSymbol} from './utils/currency';
 

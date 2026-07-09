@@ -11,6 +11,7 @@ import {canCopyGiftLink} from 'ghost-admin/utils/gift-link';
 import {capitalizeFirstLetter} from 'ghost-admin/helpers/capitalize-first-letter';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
+import {trackEvent} from 'ghost-admin/utils/analytics';
 
 /**
  * @tryghost/tpl doesn't work in admin yet (Safari)
@@ -99,6 +100,21 @@ export default class PostsContextMenu extends Component {
             return tpl(messages[type].single, {count: this.selectionList.count, type: this.type, Type: capitalizeFirstLetter(this.type)});
         }
         return tpl(messages[type].multiple, {count: this.selectionList.count, type: this.type, Type: capitalizeFirstLetter(this.type)});
+    }
+
+    // Fired via {{did-update}} on the menu's openCount, which bumps on every
+    // open request — including right-clicking another post while the menu is
+    // already open, where isOpen alone wouldn't change.
+    @action
+    trackMenuOpened() {
+        if (!this.menu.isOpen) {
+            return;
+        }
+        trackEvent('Posts Context Menu Opened', {
+            giftLinkShown: this.canCopyGiftLink,
+            postType: this.type,
+            selection: this.selectionList.isSingle ? 'single' : 'multiple'
+        });
     }
 
     @action

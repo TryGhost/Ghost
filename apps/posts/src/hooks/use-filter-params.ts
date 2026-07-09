@@ -1,6 +1,6 @@
 import {Filter} from '@tryghost/shade/patterns';
+import {trackFilterApplications, useSearchParams} from '@tryghost/admin-x-framework';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
-import {useSearchParams} from '@tryghost/admin-x-framework';
 
 // Supported filter fields that can be synced to URL
 const SUPPORTED_FILTER_FIELDS = [
@@ -148,6 +148,10 @@ export function useFilterParams(options: UseFilterParamsOptions = {}): UseFilter
         // Handle functional updates
         const newFilters = typeof action === 'function' ? action(filters) : action;
         const newParams = filtersToSearchParams(newFilters);
+
+        // Every filter-apply path funnels through here (filter toolbar,
+        // click-to-filter rows), so this is the one place usage is tracked
+        trackFilterApplications(filters, newFilters, 'post-analytics');
 
         // Preserve any non-filter params (like tab, etc.)
         const currentParams = new URLSearchParams(searchParams);

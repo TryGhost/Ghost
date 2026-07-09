@@ -81,7 +81,7 @@ describe('GiftLinkModal', () => {
     it('ensures the gift link once when opened under StrictMode', async () => {
         render(
             <StrictMode>
-                <GiftLinkModal postId='post-id' open onOpenChange={vi.fn()} />
+                <GiftLinkModal postId='post-id' source='share-modal' open onOpenChange={vi.fn()} />
             </StrictMode>
         );
 
@@ -94,15 +94,15 @@ describe('GiftLinkModal', () => {
 
     it('ensures again after the modal is closed and reopened', async () => {
         const {rerender} = render(
-            <GiftLinkModal postId='post-id' open onOpenChange={vi.fn()} />
+            <GiftLinkModal postId='post-id' source='share-modal' open onOpenChange={vi.fn()} />
         );
 
         await waitFor(() => {
             expect(mockEnsureGiftLink).toHaveBeenCalledTimes(1);
         });
 
-        rerender(<GiftLinkModal open={false} postId='post-id' onOpenChange={vi.fn()} />);
-        rerender(<GiftLinkModal postId='post-id' open onOpenChange={vi.fn()} />);
+        rerender(<GiftLinkModal open={false} postId='post-id' source='share-modal' onOpenChange={vi.fn()} />);
+        rerender(<GiftLinkModal postId='post-id' source='share-modal' open onOpenChange={vi.fn()} />);
 
         await waitFor(() => {
             expect(mockEnsureGiftLink).toHaveBeenCalledTimes(2);
@@ -111,14 +111,14 @@ describe('GiftLinkModal', () => {
 
     it('ensures again when the open modal receives a different post id', async () => {
         const {rerender} = render(
-            <GiftLinkModal postId='post-id' open onOpenChange={vi.fn()} />
+            <GiftLinkModal postId='post-id' source='share-modal' open onOpenChange={vi.fn()} />
         );
 
         await waitFor(() => {
             expect(mockEnsureGiftLink).toHaveBeenCalledTimes(1);
         });
 
-        rerender(<GiftLinkModal postId='other-post-id' open onOpenChange={vi.fn()} />);
+        rerender(<GiftLinkModal postId='other-post-id' source='share-modal' open onOpenChange={vi.fn()} />);
 
         await waitFor(() => {
             expect(mockEnsureGiftLink).toHaveBeenCalledTimes(2);
@@ -128,14 +128,14 @@ describe('GiftLinkModal', () => {
 
     it('ensures again when the open modal receives a different resource', async () => {
         const {rerender} = render(
-            <GiftLinkModal postId='post-id' resource='posts' open onOpenChange={vi.fn()} />
+            <GiftLinkModal postId='post-id' resource='posts' source='share-modal' open onOpenChange={vi.fn()} />
         );
 
         await waitFor(() => {
             expect(mockEnsureGiftLink).toHaveBeenCalledTimes(1);
         });
 
-        rerender(<GiftLinkModal postId='post-id' resource='pages' open onOpenChange={vi.fn()} />);
+        rerender(<GiftLinkModal postId='post-id' resource='pages' source='share-modal' open onOpenChange={vi.fn()} />);
 
         await waitFor(() => {
             expect(mockEnsureGiftLink).toHaveBeenCalledTimes(2);
