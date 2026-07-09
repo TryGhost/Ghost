@@ -1,6 +1,6 @@
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
-import {Automation} from '@tryghost/admin-x-framework/api/automations';
+import type {Automation} from '@tryghost/admin-x-framework/api/automations';
 import {Link} from '@tryghost/admin-x-framework';
 import {Skeleton, Table, TableBody, TableCell, TableRow} from '@tryghost/shade/components';
 

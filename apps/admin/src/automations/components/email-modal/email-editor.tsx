@@ -1,4 +1,5 @@
 import React, {Suspense, useCallback, useMemo, useRef} from 'react';
+import type {ComponentType} from 'react';
 import {LoadingIndicator} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
@@ -23,8 +24,25 @@ const fileUploader = {
     fileTypes: koenigFileUploadTypes
 };
 
+// @tryghost/koenig-lexical ships no type declarations, so its runtime module
+// resolves as `any`. Declare just the EmailEditor surface we use so the lazy
+// component keeps its props under Admin's stricter type-checking.
+interface KoenigEmailEditorProps {
+    cardConfig?: unknown;
+    className?: string;
+    darkMode?: boolean;
+    fileUploader?: unknown;
+    initialEditorState?: string;
+    placeholderText?: string;
+    registerAPI?: (api: unknown) => void;
+    onChange?: (state: unknown) => void;
+}
+
 // Lazy-load the editor as its own chunk; the ESM import lets Vite dedupe React.
-const EmailEditorComponent = React.lazy(() => import('@tryghost/koenig-lexical').then(module => ({default: module.EmailEditor})));
+const EmailEditorComponent = React.lazy(async () => {
+    const module = await import('@tryghost/koenig-lexical') as {EmailEditor: ComponentType<KoenigEmailEditorProps>};
+    return {default: module.EmailEditor};
+});
 
 // Inline fallback if the editor chunk fails to load — kept lightweight so a
 // failure shows inside the modal rather than replacing the whole view.

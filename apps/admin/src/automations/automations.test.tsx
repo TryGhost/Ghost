@@ -1,12 +1,14 @@
-import Automations from '@src/views/Automations/automations';
+import Automations from './automations';
 import {MemoryRouter} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
-const mockUseBrowseAutomations = vi.fn();
-const mockUseBrowseSettings = vi.fn();
-const mockUseBrowseConfig = vi.fn();
-const mockUseCurrentUser = vi.fn();
+const {mockUseBrowseAutomations, mockUseBrowseSettings, mockUseBrowseConfig, mockUseCurrentUser} = vi.hoisted(() => ({
+    mockUseBrowseAutomations: vi.fn(),
+    mockUseBrowseSettings: vi.fn(),
+    mockUseBrowseConfig: vi.fn(),
+    mockUseCurrentUser: vi.fn()
+}));
 
 vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/automations')>(
@@ -14,7 +16,7 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     );
     return {
         ...actual,
-        useBrowseAutomations: (...args: unknown[]) => mockUseBrowseAutomations(...args)
+        useBrowseAutomations: mockUseBrowseAutomations
     };
 });
 
@@ -24,7 +26,7 @@ vi.mock('@tryghost/admin-x-framework/api/settings', async () => {
     );
     return {
         ...actual,
-        useBrowseSettings: () => mockUseBrowseSettings()
+        useBrowseSettings: mockUseBrowseSettings
     };
 });
 
@@ -34,7 +36,7 @@ vi.mock('@tryghost/admin-x-framework/api/config', async () => {
     );
     return {
         ...actual,
-        useBrowseConfig: () => mockUseBrowseConfig()
+        useBrowseConfig: mockUseBrowseConfig
     };
 });
 
@@ -44,7 +46,7 @@ vi.mock('@tryghost/admin-x-framework/api/current-user', async () => {
     );
     return {
         ...actual,
-        useCurrentUser: () => mockUseCurrentUser()
+        useCurrentUser: mockUseCurrentUser
     };
 });
 

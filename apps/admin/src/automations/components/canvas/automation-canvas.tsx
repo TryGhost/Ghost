@@ -1,19 +1,23 @@
 import '@xyflow/react/dist/style.css';
 import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
-import EmailContentModal from '../email-modal/email-content-modal';
+import EmailContentModal from '@/automations/components/email-modal/email-content-modal';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Banner, Button, LoadingIndicator} from '@tryghost/shade/components';
-import {AutomationAction, AutomationDetail, AutomationSendEmailAction, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
+import {MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationAction, AutomationDetail, AutomationSendEmailAction} from '@tryghost/admin-x-framework/api/automations';
 import {AutomationCanvasControls} from './controls';
-import {AutomationFlowNode, CanvasAnchor, NodeContextMenuEntry, StepNodeDisplayData, TAIL_CANVAS_ID, TRIGGER_CANVAS_ID, nodeTypes, toApiAnchor} from './nodes';
-import {Background, BackgroundVariant, Edge, ReactFlow} from '@xyflow/react';
+import {TAIL_CANVAS_ID, TRIGGER_CANVAS_ID} from './nodes';
+import {nodeTypes, toApiAnchor} from './node-helpers';
+import type {AutomationFlowNode, CanvasAnchor, NodeContextMenuEntry, StepNodeDisplayData} from './nodes';
+import {Background, BackgroundVariant, ReactFlow} from '@xyflow/react';
+import type {Edge} from '@xyflow/react';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type StepPickerType} from './step-picker';
 import {StepSidebar} from './step-sidebar';
 import {formatWait} from './format-wait';
-import {isEmptyEmailLexical} from '../../utils';
+import {isEmptyEmailLexical} from '@/automations/utils';
 import {useLocation, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
-import type {EmailModalMode} from '../types';
+import type {EmailModalMode} from '@/automations/components/types';
 
 const NODE_X = 0;
 const NODE_WIDTH = 256;
@@ -43,7 +47,7 @@ const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
         };
     default: {
         const _exhaustive: never = action;
-        throw new Error(`Unknown automation action type: ${_exhaustive}`);
+        throw new Error(`Unknown automation action type: ${String(_exhaustive)}`);
     }
     }
 };
@@ -403,7 +407,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         nextSearchParams.set(EMAIL_STEP_QUERY_PARAM, actionId);
         setSearchParams(nextSearchParams, {
             state: {
-                ...(location.state && typeof location.state === 'object' ? location.state : {}),
+                ...(location.state && typeof location.state === 'object' ? location.state as Record<string, unknown> : {}),
                 automationEmailModal: true
             }
         });

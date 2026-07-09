@@ -1,6 +1,7 @@
-import AutomationEditor from '@src/views/Automations/editor';
+import AutomationEditor from './editor';
 import React from 'react';
-import {AutomationDetail, MAX_AUTOMATION_ACTIONS} from '@tryghost/admin-x-framework/api/automations';
+import {MAX_AUTOMATION_ACTIONS} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationDetail, AutomationDetailResponseType, EditAutomationPayload} from '@tryghost/admin-x-framework/api/automations';
 import {RouterProvider, createMemoryRouter} from 'react-router';
 import {act, fireEvent, render, screen, waitFor, within} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
@@ -22,7 +23,7 @@ vi.mock('sonner', () => ({
 // Stub the email content editor modal — its real internals (Koenig + email API
 // hooks) are out of scope here. The stub exposes the seed props and a save button
 // so we can assert the canvas wiring (open → seed → onSave → draft → publish).
-vi.mock('@src/views/Automations/components/email-modal/email-content-modal', () => {
+vi.mock('@/automations/components/email-modal/email-content-modal', () => {
     const EmailContentModalStub = ({initialMode, initialSubject, initialLexical, isDiscardNavigationBlocked, onClose, onDirtyChange, onDiscardBlockedNavigation, onKeepEditingAfterBlockedNavigation, onSave}: {
         initialMode?: 'edit' | 'preview';
         initialSubject: string;
@@ -92,9 +93,13 @@ vi.mock('@src/views/Automations/components/email-modal/email-content-modal', () 
     };
 });
 
-const mockUseReadAutomation = vi.fn();
+type MockEditMutationOptions = {
+    onSuccess?: (data: AutomationDetailResponseType) => void;
+    onError?: (error?: unknown) => void;
+};
+const mockUseReadAutomation = vi.fn<(...args: unknown[]) => {data?: AutomationDetailResponseType; isLoading?: boolean; isError?: boolean}>();
 const mockEditMutation = {
-    mutate: vi.fn(),
+    mutate: vi.fn<(payload: EditAutomationPayload, options: MockEditMutationOptions) => void>(),
     isLoading: false,
     variables: undefined as {id: string; status: 'active' | 'inactive'} | undefined
 };
@@ -784,9 +789,9 @@ describe('AutomationEditor', () => {
                     expect.objectContaining({
                         id: 'action-email',
                         type: 'send_email',
-                        data: expect.objectContaining({email_subject: 'Updated subject'})
+                        data: expect.objectContaining({email_subject: 'Updated subject'}) as unknown
                     })
-                ])
+                ]) as unknown
             }),
             expect.any(Object)
         );
@@ -830,9 +835,9 @@ describe('AutomationEditor', () => {
                         data: expect.objectContaining({
                             email_subject: 'Edited via modal',
                             email_lexical: NON_EMPTY_EMAIL_LEXICAL
-                        })
+                        }) as unknown
                     })
-                ])
+                ]) as unknown
             }),
             expect.any(Object)
         );
@@ -1227,7 +1232,7 @@ describe('AutomationEditor', () => {
             isError: false
         });
         mockEditMutation.mutate.mockImplementation((_payload, options) => {
-            options.onError();
+            options.onError?.();
         });
 
         renderEditor();
@@ -1298,7 +1303,7 @@ describe('AutomationEditor', () => {
             isError: false
         });
         mockEditMutation.mutate.mockImplementation((_payload, options) => {
-            options.onError();
+            options.onError?.();
         });
 
         renderEditor();
@@ -1321,7 +1326,7 @@ describe('AutomationEditor', () => {
             isError: false
         });
         mockEditMutation.mutate.mockImplementation((payload, options) => {
-            options.onSuccess({automations: [{...automationDetail, status: payload.status}]});
+            options.onSuccess?.({automations: [{...automationDetail, status: payload.status}]});
         });
 
         renderEditor();
@@ -1672,9 +1677,9 @@ describe('AutomationEditor', () => {
                 actions: expect.arrayContaining([
                     expect.objectContaining({
                         type: 'send_email',
-                        data: expect.objectContaining({email_subject: 'Edited via modal'})
+                        data: expect.objectContaining({email_subject: 'Edited via modal'}) as unknown
                     })
-                ])
+                ]) as unknown
             }),
             expect.any(Object)
         );
@@ -1945,7 +1950,7 @@ describe('AutomationEditor', () => {
                 isLoading: false,
                 isError: false
             });
-            options.onSuccess({automations: [published]});
+            options.onSuccess?.({automations: [published]});
         });
 
         renderEditor();
@@ -2063,7 +2068,7 @@ describe('AutomationEditor', () => {
             isError: false
         });
         mockEditMutation.mutate.mockImplementation((payload, options) => {
-            options.onSuccess({automations: [{
+            options.onSuccess?.({automations: [{
                 ...automationDetail,
                 actions: payload.actions,
                 edges: payload.edges
@@ -2095,8 +2100,8 @@ describe('AutomationEditor', () => {
         const targets = new Set(mutateCall.edges.map((e: {target_action_id: string}) => e.target_action_id));
         // Every source/target references a real action in the payload.
         const actionIds = new Set(mutateCall.actions.map((a: {id: string}) => a.id));
-        sources.forEach(id => expect(actionIds.has(id as string)).toBe(true));
-        targets.forEach(id => expect(actionIds.has(id as string)).toBe(true));
+        sources.forEach(id => expect(actionIds.has(id)).toBe(true));
+        targets.forEach(id => expect(actionIds.has(id)).toBe(true));
     });
 
     it('confirms before publishing changes to an active automation', async () => {
@@ -2122,8 +2127,8 @@ describe('AutomationEditor', () => {
             {
                 id: 'automation-id-1',
                 status: 'active',
-                actions: expect.any(Array),
-                edges: expect.any(Array)
+                actions: expect.any(Array) as unknown,
+                edges: expect.any(Array) as unknown
             },
             expect.any(Object)
         );
@@ -2181,7 +2186,7 @@ describe('AutomationEditor', () => {
             isError: false
         });
         mockEditMutation.mutate.mockImplementation((_payload, options) => {
-            options.onError();
+            options.onError?.();
         });
 
         renderEditor();
@@ -2255,7 +2260,7 @@ describe('AutomationEditor', () => {
             isError: false
         });
         mockEditMutation.mutate.mockImplementation((_payload, options) => {
-            options.onError();
+            options.onError?.();
         });
 
         renderEditor();
