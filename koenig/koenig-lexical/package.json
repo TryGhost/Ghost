@@ -146,6 +146,15 @@
       "playwright"
     ],
     "targets": {
+      "build": {
+        "inputs": [
+          {
+            "env": "IS_SHIPPING"
+          },
+          "default",
+          "^default"
+        ]
+      },
       "build:demo": {
         "dependsOn": [
           "^build"
