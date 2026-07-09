@@ -602,6 +602,9 @@ importers:
       '@tryghost/koenig-lexical':
         specifier: workspace:*
         version: link:../../koenig/koenig-lexical
+      '@tryghost/nql-lang':
+        specifier: 'catalog:'
+        version: 0.6.6
       '@tryghost/posts':
         specifier: workspace:*
         version: link:../posts

@@ -1,7 +1,7 @@
 import React from 'react';
-import {Filter, Filters} from '@tryghost/shade/patterns';
+import {type Filter, Filters} from '@tryghost/shade/patterns';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {useCommentFilterFields} from '../use-comment-filter-fields';
+import {useCommentFilterFields} from '@/comments/use-comment-filter-fields';
 import {useMemberValueSource, usePostResourceValueSource} from '@tryghost/admin-x-framework/filter-sources';
 
 interface CommentsFiltersProps {

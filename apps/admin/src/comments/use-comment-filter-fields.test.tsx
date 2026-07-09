@@ -1,6 +1,6 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {renderHook} from '@testing-library/react';
-import {useCommentFilterFields} from '@src/views/comments/use-comment-filter-fields';
+import {useCommentFilterFields} from '@/comments/use-comment-filter-fields';
 import type {ValueSource} from '@tryghost/shade/patterns';
 
 const emptyValueSource: ValueSource<string> = {
@@ -39,7 +39,7 @@ describe('useCommentFilterFields', () => {
                 {value: 'is-or-greater', label: 'on or after'},
                 {value: 'in-the-last', label: 'in the last'}
             ],
-            customRenderer: expect.any(Function)
+            customRenderer: expect.any(Function) as unknown
         });
     });
 });

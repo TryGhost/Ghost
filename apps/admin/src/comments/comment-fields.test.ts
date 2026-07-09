@@ -1,5 +1,5 @@
 import nql from '@tryghost/nql-lang';
-import {commentFields} from '@src/views/comments/comment-fields';
+import {commentFields} from '@/comments/comment-fields';
 import {describe, expect, it} from 'vitest';
 import type {CodecContext, FilterPredicate} from '@tryghost/admin-x-framework/filters';
 

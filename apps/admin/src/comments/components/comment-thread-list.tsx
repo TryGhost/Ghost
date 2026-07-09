@@ -1,13 +1,14 @@
 import CommentContent from './comment-content';
 import React from 'react';
 import {Avatar, Button, LoadingIndicator} from '@tryghost/shade/components';
-import {Comment, useHideComment, useShowComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
+import {type Comment, useHideComment, useShowComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
-import {CommentMetrics, buildThreadLink} from './comment-metrics';
+import {CommentMetrics} from './comment-metrics';
+import {buildThreadLink} from './thread-link';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {useCommentsPinningEnabled} from '@src/hooks/use-comments-pinning-enabled';
+import {useCommentsPinningEnabled} from '@/comments/hooks/use-comments-pinning-enabled';
 
 function RepliesLine({hasReplies}: {hasReplies: boolean}) {
     if (!hasReplies) {

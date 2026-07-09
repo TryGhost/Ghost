@@ -1,6 +1,6 @@
 import CommentsFilters from './components/comments-filters';
 import CommentsList from './components/comments-list';
-import MainLayout from '@components/layout/main-layout';
+import {Box, Container} from '@tryghost/shade/primitives';
 import React, {useCallback, useMemo} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
 import {FilterBar, PageHeader, createFilter} from '@tryghost/shade/patterns';
@@ -84,7 +84,7 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
     const hasFilters = filters.length > 0;
 
     return (
-        <MainLayout>
+        <Box className='size-full'><Container className='relative flex h-full flex-col' size='page'>
             <ListPage data-testid="comments-page">
                 <ListPage.Header>
                     <PageHeader blurredBackground={false} sticky={false}>
@@ -151,7 +151,7 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
                         <>
                             <CommentsList
                                 dislikesEnabled={dislikesEnabled}
-                                fetchNextPage={fetchNextPage}
+                                fetchNextPage={() => void fetchNextPage()}
                                 hasNextPage={hasNextPage}
                                 isFetchingNextPage={isFetchingNextPage}
                                 isLoading={isFetching && !isFetchingNextPage}
@@ -171,7 +171,7 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
                     )}
                 </ListPage.Body>
             </ListPage>
-        </MainLayout>
+        </Container></Box>
     );
 };
 
@@ -184,7 +184,7 @@ const Comments: React.FC = () => {
 
     if (shouldDelayHydration) {
         return (
-            <MainLayout>
+            <Box className='size-full'><Container className='relative flex h-full flex-col' size='page'>
                 <ListPage>
                     <ListPage.Header>
                         <PageHeader blurredBackground={false} sticky={false}>
@@ -199,7 +199,7 @@ const Comments: React.FC = () => {
                         </div>
                     </ListPage.Body>
                 </ListPage>
-            </MainLayout>
+            </Container></Box>
         );
     }
 

@@ -1,4 +1,4 @@
-import {CommentHeader} from '../../../../../src/views/comments/components/comment-header';
+import {CommentHeader} from './comment-header';
 import {TooltipProvider} from '@tryghost/shade/components';
 import {fireEvent, render, screen} from '@testing-library/react';
 

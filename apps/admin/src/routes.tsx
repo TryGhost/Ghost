@@ -81,6 +81,10 @@ export const routes: RouteObject[] = [
                 lazy: lazyComponent(() => import("./tags/tags")),
             },
             {
+                path: "/comments",
+                lazy: lazyComponent(() => import("./comments/comments")),
+            },
+            {
                 path: "/automations",
                 lazy: lazyComponent(() => import("./automations/automations")),
             },
