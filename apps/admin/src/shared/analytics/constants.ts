@@ -17,6 +17,8 @@ export const STATS_RANGES = {
     },
     yearToDate: {
         name: 'Year to date',
+        // -1 is the year-to-date sentinel understood by shade's getRangeDates —
+        // it resolves to January 1st of the current year, not a trailing window
         value: -1
     },
     last12Months: {

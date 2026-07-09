@@ -2,7 +2,7 @@ import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, Card
 import {CONTENT_TYPES, type ContentType, getContentDescription, getContentTitle} from '@/analytics/utils/content-helpers';
 import {LucideIcon, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
-import {getAudienceQueryParam} from '@/analytics/utils/audience';
+import {getAudienceQueryParam} from '@/shared/analytics/audience';
 import {getClickHandler} from '@/analytics/utils/url-helpers';
 import {getPeriodText} from '@/analytics/utils/chart-helpers';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';

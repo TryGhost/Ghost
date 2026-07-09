@@ -1,5 +1,5 @@
 import React from 'react';
-import SourceIcon from '@/posts/analytics/components/source-icon';
+import SourceIcon from '@/shared/analytics/source-icon';
 import {type BaseSourceData, type ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable} from '@tryghost/shade/components';
 import {HTable} from '@tryghost/shade/primitives';

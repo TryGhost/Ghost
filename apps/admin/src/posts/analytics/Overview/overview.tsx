@@ -1,4 +1,4 @@
-import DisabledSourcesIndicator from '@/posts/analytics/components/disabled-sources-indicator';
+import DisabledSourcesIndicator from '@/shared/analytics/disabled-sources-indicator';
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '@/posts/analytics/components/kpi-card';
 import NewsletterOverview from './components/newsletter-overview';
@@ -10,7 +10,7 @@ import {KPI_METRICS} from '@/posts/analytics/Web/components/kpi-metrics';
 import {type KpiDataItem} from '@/posts/analytics/utils/kpi-helpers';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Post, usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
-import {STATS_RANGES} from '@/posts/analytics/utils/constants';
+import {STATS_RANGES} from '@/shared/analytics/constants';
 import {centsToDollars} from '@/posts/analytics/Growth/growth-helpers';
 import {formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade/app';
 import {hasBeenEmailed, isPublishedOnly, useNavigate, useTinybirdQuery} from '@tryghost/admin-x-framework';
@@ -41,7 +41,7 @@ const Overview: React.FC = () => {
     // Calculate chart range based on days between today and post publication date
     const chartRange = useMemo(() => {
         if (!post?.published_at) {
-            return STATS_RANGES.ALL_TIME.value; // Fallback if no publication date
+            return STATS_RANGES.allTime.value; // Fallback if no publication date
         }
         const calculatedRange = getRangeForStartDate(post.published_at);
         return calculatedRange;

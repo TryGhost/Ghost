@@ -4,12 +4,11 @@ import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Button} from '@tryghost/shade/components';
 import {type Filter, type FilterFieldConfig, Filters} from '@tryghost/shade/patterns';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@/analytics/utils/constants';
+import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from './constants';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
-import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/analytics/utils/audience';
+import {getAudienceFromFilterValues, getAudienceQueryParam} from './audience';
 import {useAppContext} from '@tryghost/admin-x-framework';
-import {useAnalytics} from '@/analytics/providers/analytics-context';
-import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
+import {useAnalyticsData} from './use-analytics-data';
 import {useTinybirdQuery, useWebAnalyticsEnabled} from '@tryghost/admin-x-framework';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
@@ -18,6 +17,12 @@ countries.registerLocale(enLocale);
 interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'fields' | 'onChange'> {
     filters: Filter[];
     onChange?: (filters: Filter[]) => void;
+    /** Date range the filter option queries are scoped to (day count or the -1 year-to-date sentinel) */
+    range: number;
+    /** Scope every option query to a single post (post analytics) */
+    postUuid?: string;
+    /** Offer the post/page filter field (site-wide analytics only) */
+    showPostField?: boolean;
 }
 
 // Helper to get country name from code
@@ -87,7 +92,7 @@ const FILTER_FIELD_DEFINITIONS: Record<string, FilterFieldDefinition> = {
         endpoint: 'api_top_locations',
         valueKey: 'location',
         filterItem(item) {
-            const location = String((item.location as string | number | null | undefined) ?? '');
+            const location = typeof item.location === 'string' || typeof item.location === 'number' || typeof item.location === 'boolean' ? String(item.location) : '';
             return location !== '' && !UNKNOWN_LOCATION_VALUES.includes(location);
         },
         transformValue: v => ({value: v, label: getCountryName(v)})
@@ -147,11 +152,12 @@ interface UseTinybirdFilterOptionsConfig {
 // Handles the common pattern: fetch data, transform to options, ensure selected value is included
 const useTinybirdFilterOptions = (
     fieldKey: string,
-    currentFilters: Filter[] = [],
+    currentFilters: Filter[],
+    range: number,
+    postUuid?: string,
     config: UseTinybirdFilterOptionsConfig = {}
 ) => {
     const {enabled = true} = config;
-    const {range} = useAnalytics();
     const {statsConfig} = useAnalyticsData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
@@ -174,8 +180,13 @@ const useTinybirdFilterOptions = (
             limit: '50'
         };
 
+        // Add post_uuid for post-specific filtering
+        if (postUuid) {
+            baseParams.post_uuid = postUuid;
+        }
+
         return buildFilterParams(currentFilters, fieldKey, baseParams);
-    }, [statsConfig?.id, startDate, endDate, timezone, audience, currentFilters, fieldKey]);
+    }, [statsConfig?.id, startDate, endDate, timezone, audience, currentFilters, fieldKey, postUuid]);
 
     const {data, loading} = useTinybirdQuery({
         endpoint: definition?.endpoint || '',
@@ -223,12 +234,11 @@ interface UsePostOptionsConfig {
 
 // Hook to fetch posts/pages options from Ghost API (which queries Tinybird and enriches with titles)
 // This uses a different API pattern so it can't use the generic hook
-const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsConfig = {}) => {
+const usePostOptions = (currentFilters: Filter[], range: number, config: UsePostOptionsConfig = {}) => {
     const {enabled = true} = config;
     // Post options come from a Ghost API (useTopContent), not useTinybirdQuery, so
     // they don't inherit the central web-analytics gate — apply it here.
     const webAnalyticsEnabled = useWebAnalyticsEnabled();
-    const {range} = useAnalytics();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
     // Derive audience from filters (URL is the source of truth)
@@ -292,7 +302,7 @@ const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsCon
     return {options, loading: isLoading};
 };
 
-function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
+function StatsFilter({filters, onChange, range, postUuid, showPostField = false, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
 
     // Track which filter field is currently being selected (lazy loading)
@@ -336,19 +346,21 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     }, [activeFilterField, filters]);
 
     // Fetch options for all Tinybird-backed fields using the generic hook
-    // Options are contextual - filtered based on currently applied filters
+    // Options are contextual - filtered based on currently applied filters (and
+    // scoped to a single post when postUuid is provided)
     // Lazy loading: only fetch when field is active or has applied filter
-    const {options: utmSourceOptions, loading: utmSourceLoading} = useTinybirdFilterOptions('utm_source', filters, {enabled: shouldFetchOptions('utm_source')});
-    const {options: utmMediumOptions, loading: utmMediumLoading} = useTinybirdFilterOptions('utm_medium', filters, {enabled: shouldFetchOptions('utm_medium')});
-    const {options: utmCampaignOptions, loading: utmCampaignLoading} = useTinybirdFilterOptions('utm_campaign', filters, {enabled: shouldFetchOptions('utm_campaign')});
-    const {options: utmContentOptions, loading: utmContentLoading} = useTinybirdFilterOptions('utm_content', filters, {enabled: shouldFetchOptions('utm_content')});
-    const {options: utmTermOptions, loading: utmTermLoading} = useTinybirdFilterOptions('utm_term', filters, {enabled: shouldFetchOptions('utm_term')});
-    const {options: sourceOptions, loading: sourceLoading} = useTinybirdFilterOptions('source', filters, {enabled: shouldFetchOptions('source')});
-    const {options: deviceOptions, loading: deviceLoading} = useTinybirdFilterOptions('device', filters, {enabled: shouldFetchOptions('device')});
-    const {options: locationOptions, loading: locationLoading} = useTinybirdFilterOptions('location', filters, {enabled: shouldFetchOptions('location')});
+    const {options: utmSourceOptions, loading: utmSourceLoading} = useTinybirdFilterOptions('utm_source', filters, range, postUuid, {enabled: shouldFetchOptions('utm_source')});
+    const {options: utmMediumOptions, loading: utmMediumLoading} = useTinybirdFilterOptions('utm_medium', filters, range, postUuid, {enabled: shouldFetchOptions('utm_medium')});
+    const {options: utmCampaignOptions, loading: utmCampaignLoading} = useTinybirdFilterOptions('utm_campaign', filters, range, postUuid, {enabled: shouldFetchOptions('utm_campaign')});
+    const {options: utmContentOptions, loading: utmContentLoading} = useTinybirdFilterOptions('utm_content', filters, range, postUuid, {enabled: shouldFetchOptions('utm_content')});
+    const {options: utmTermOptions, loading: utmTermLoading} = useTinybirdFilterOptions('utm_term', filters, range, postUuid, {enabled: shouldFetchOptions('utm_term')});
+    const {options: sourceOptions, loading: sourceLoading} = useTinybirdFilterOptions('source', filters, range, postUuid, {enabled: shouldFetchOptions('source')});
+    const {options: deviceOptions, loading: deviceLoading} = useTinybirdFilterOptions('device', filters, range, postUuid, {enabled: shouldFetchOptions('device')});
+    const {options: locationOptions, loading: locationLoading} = useTinybirdFilterOptions('location', filters, range, postUuid, {enabled: shouldFetchOptions('location')});
 
-    // Fetch options for posts - data is contextual based on current filters
-    const {options: postOptions, loading: postLoading} = usePostOptions(filters, {enabled: shouldFetchOptions('post')});
+    // Fetch options for posts - data is contextual based on current filters.
+    // Only offered site-wide; post analytics is already scoped to a single post.
+    const {options: postOptions, loading: postLoading} = usePostOptions(filters, range, {enabled: showPostField && shouldFetchOptions('post')});
 
     // Note: Only 'is' operator supported - Tinybird pipes only support exact match
     const supportedOperators = useMemo(() => [
@@ -438,6 +450,26 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
             }
         ];
 
+        // The post/page field is only offered on site-wide analytics; post
+        // analytics is already scoped to a single post.
+        const postField: FilterFieldConfig[] = showPostField ? [
+            {
+                key: 'post',
+                label: 'Post or page',
+                type: 'select',
+                icon: <LucideIcon.PenLine />,
+                options: postOptions,
+                searchable: true,
+                isLoading: postLoading,
+                operators: supportedOperators,
+                defaultOperator: 'is',
+                className: 'w-80',
+                popoverContentClassName: 'w-80',
+                hideOperatorSelect: true,
+                selectedOptionsClassName: 'hidden'
+            }
+        ] : [];
+
         return [
             {
                 group: 'Basic',
@@ -452,21 +484,7 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
                         hideOperatorSelect: true,
                         autoCloseOnSelect: true
                     },
-                    {
-                        key: 'post',
-                        label: 'Post or page',
-                        type: 'select',
-                        icon: <LucideIcon.PenLine />,
-                        options: postOptions,
-                        searchable: true,
-                        isLoading: postLoading,
-                        operators: supportedOperators,
-                        defaultOperator: 'is',
-                        className: 'w-80',
-                        popoverContentClassName: 'w-80',
-                        hideOperatorSelect: true,
-                        selectedOptionsClassName: 'hidden'
-                    },
+                    ...postField,
                     {
                         key: 'source',
                         label: 'Source',
@@ -528,7 +546,7 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
                 fields: utmFields
             }
         ];
-    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, postOptions, postLoading, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading]);
+    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, showPostField, postOptions, postLoading, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading]);
 
     // Show clear button when there's at least one filter
     const hasFilters = filters.length > 0;
@@ -568,6 +586,6 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
             )}
         </div>
     );
-};
+}
 
 export default StatsFilter;

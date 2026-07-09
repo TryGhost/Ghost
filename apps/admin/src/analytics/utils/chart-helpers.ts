@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import {STATS_RANGE_OPTIONS} from './constants';
+import {STATS_RANGE_OPTIONS} from '@/shared/analytics/constants';
 
 /**
  * Returns additional text for subheads

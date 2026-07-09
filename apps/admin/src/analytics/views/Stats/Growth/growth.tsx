@@ -1,5 +1,5 @@
 import DateRangeSelect from '@/analytics/views/Stats/components/date-range-select';
-import DisabledSourcesIndicator from '@/analytics/views/Stats/components/disabled-sources-indicator';
+import DisabledSourcesIndicator from '@/shared/analytics/disabled-sources-indicator';
 import GrowthKPIs from './components/growth-kpis';
 import GrowthSources from './components/growth-sources';
 import NewSubscribersCadence from './components/new-subscribers-cadence';

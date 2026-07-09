@@ -2,7 +2,7 @@ import React from 'react';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, EmptyIndicator} from '@tryghost/shade/components';
 import {GhAreaChart, type GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
-import {STATS_RANGES} from '@/analytics/utils/constants';
+import {STATS_RANGES} from '@/shared/analytics/constants';
 import {centsToDollars} from '@tryghost/shade/app';
 import {getPeriodText} from '@/analytics/utils/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';

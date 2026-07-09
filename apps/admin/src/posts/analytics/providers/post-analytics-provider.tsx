@@ -1,4 +1,5 @@
-import {POST_ANALYTICS_INCLUDE, STATS_RANGES} from '@/posts/analytics/utils/constants';
+import {POST_ANALYTICS_INCLUDE} from '@/posts/analytics/utils/constants';
+import {STATS_RANGES} from '@/shared/analytics/constants';
 import {PostAnalyticsContext} from '@/posts/analytics/providers/post-analytics-context';
 import {type ReactNode, useState} from 'react';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
@@ -14,7 +15,7 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
         throw new Error('Post ID is required for PostAnalyticsProvider');
     }
 
-    const [range, setRange] = useState(STATS_RANGES.LAST_30_DAYS.value);
+    const [range, setRange] = useState(STATS_RANGES.last30Days.value);
 
     // Fetch post data with all required includes. The gift-link modal reuses
     // POST_ANALYTICS_INCLUDE for the same query key, so both read one cached post.

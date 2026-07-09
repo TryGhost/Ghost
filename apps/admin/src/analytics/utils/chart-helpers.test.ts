@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import {STATS_RANGE_OPTIONS} from '@/analytics/utils/constants';
+import {STATS_RANGE_OPTIONS} from '@/shared/analytics/constants';
 import {
     aggregateByMonthExact,
     aggregateByWeek,

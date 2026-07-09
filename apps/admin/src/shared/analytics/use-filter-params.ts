@@ -2,8 +2,10 @@ import {type Filter} from '@tryghost/shade/patterns';
 import {trackFilterApplications, useSearchParams} from '@tryghost/admin-x-framework';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
 
-// Supported filter fields that can be synced to URL
-const SUPPORTED_FILTER_FIELDS = [
+// Every filter field the analytics surfaces can sync to the URL. Site-wide
+// analytics supports all of them; post analytics excludes 'post' because the
+// whole surface is already scoped to a single post.
+export const ANALYTICS_FILTER_FIELDS = [
     'audience',
     'post',
     'device',
@@ -17,7 +19,9 @@ const SUPPORTED_FILTER_FIELDS = [
     'utm_term'
 ] as const;
 
-const SUPPORTED_FILTER_FIELDS_SET: ReadonlySet<string> = new Set(SUPPORTED_FILTER_FIELDS);
+export type AnalyticsFilterField = typeof ANALYTICS_FILTER_FIELDS[number];
+
+export const POST_ANALYTICS_FILTER_FIELDS = ANALYTICS_FILTER_FIELDS.filter(field => field !== 'post');
 
 // Special marker for empty string values in URL (e.g., "Direct" traffic)
 const EMPTY_VALUE_MARKER = '__empty__';
@@ -30,11 +34,11 @@ const ENCODED_COMMA = '%2C';
  * Format: field=value or field=value1,value2 for multi-select
  * Empty strings are encoded as __empty__ to preserve them in URLs
  */
-function filtersToSearchParams(filters: Filter[]): URLSearchParams {
+function filtersToSearchParams(filters: Filter[], supportedFieldsSet: ReadonlySet<string>): URLSearchParams {
     const params = new URLSearchParams();
 
     filters.forEach((filter) => {
-        if (SUPPORTED_FILTER_FIELDS_SET.has(filter.field)) {
+        if (supportedFieldsSet.has(filter.field)) {
             if (filter.values.length > 0) {
                 // Join multiple values with comma, encoding empty strings and escaping commas within values
                 const value = filter.values
@@ -68,12 +72,12 @@ function getStableFilterId(field: string): string {
  * Parse URL search params into Filter objects
  * Preserves the order of params as they appear in the URL
  */
-function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
+function searchParamsToFilters(searchParams: URLSearchParams, supportedFieldsSet: ReadonlySet<string>): Filter[] {
     const filters: Filter[] = [];
 
     // Iterate in URL order to preserve the sequence filters were added
     searchParams.forEach((value, field) => {
-        if (!SUPPORTED_FILTER_FIELDS_SET.has(field)) {
+        if (!supportedFieldsSet.has(field)) {
             return;
         }
 
@@ -104,6 +108,10 @@ function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
 }
 
 interface UseFilterParamsOptions {
+    /** Filter fields this surface syncs to the URL; anything else is ignored */
+    supportedFields: readonly AnalyticsFilterField[];
+    /** Context label reported when a filter application is tracked */
+    trackingSource: string;
     /** Called when filters change from URL */
     onFiltersChange?: (filters: Filter[]) => void;
 }
@@ -123,17 +131,18 @@ interface UseFilterParamsReturn {
  * Hook to sync filter state with URL query parameters
  * Enables bookmarking and sharing filtered views
  */
-export function useFilterParams(options: UseFilterParamsOptions = {}): UseFilterParamsReturn {
+export function useFilterParams({supportedFields, trackingSource, onFiltersChange}: UseFilterParamsOptions): UseFilterParamsReturn {
     const [searchParams, setSearchParams] = useSearchParams();
-    const {onFiltersChange} = options;
+
+    const supportedFieldsSet: ReadonlySet<string> = useMemo(() => new Set(supportedFields), [supportedFields]);
 
     // Track if we're currently updating to prevent loops
     const isUpdating = useRef(false);
 
     // Parse filters from URL on mount and when URL changes
     const filters = useMemo(() => {
-        return searchParamsToFilters(searchParams);
-    }, [searchParams]);
+        return searchParamsToFilters(searchParams, supportedFieldsSet);
+    }, [searchParams, supportedFieldsSet]);
 
     // Notify parent of filter changes from URL (initial load or external navigation)
     useEffect(() => {
@@ -148,17 +157,17 @@ export function useFilterParams(options: UseFilterParamsOptions = {}): UseFilter
 
         // Handle functional updates
         const newFilters = typeof action === 'function' ? action(filters) : action;
-        const newParams = filtersToSearchParams(newFilters);
+        const newParams = filtersToSearchParams(newFilters, supportedFieldsSet);
 
         // Every filter-apply path funnels through here (filter toolbar,
         // click-to-filter rows), so this is the one place usage is tracked
-        trackFilterApplications(filters, newFilters, 'stats');
+        trackFilterApplications(filters, newFilters, trackingSource);
 
         // Preserve any non-filter params (like tab, etc.)
         const currentParams = new URLSearchParams(searchParams);
 
         // Remove old filter params
-        SUPPORTED_FILTER_FIELDS.forEach((field) => {
+        supportedFields.forEach((field) => {
             currentParams.delete(field);
         });
 
@@ -174,7 +183,7 @@ export function useFilterParams(options: UseFilterParamsOptions = {}): UseFilter
         setTimeout(() => {
             isUpdating.current = false;
         }, 0);
-    }, [filters, searchParams, setSearchParams]);
+    }, [filters, searchParams, setSearchParams, supportedFields, supportedFieldsSet, trackingSource]);
 
     // Clear all filter params from URL
     const clearFilters = useCallback(() => {
@@ -183,7 +192,7 @@ export function useFilterParams(options: UseFilterParamsOptions = {}): UseFilter
         const currentParams = new URLSearchParams(searchParams);
 
         // Remove all filter params
-        SUPPORTED_FILTER_FIELDS.forEach((field) => {
+        supportedFields.forEach((field) => {
             currentParams.delete(field);
         });
 
@@ -192,7 +201,7 @@ export function useFilterParams(options: UseFilterParamsOptions = {}): UseFilter
         setTimeout(() => {
             isUpdating.current = false;
         }, 0);
-    }, [searchParams, setSearchParams]);
+    }, [searchParams, setSearchParams, supportedFields]);
 
     return {
         filters,
