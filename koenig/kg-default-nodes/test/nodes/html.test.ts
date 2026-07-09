@@ -16,16 +16,16 @@ describe('HtmlNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes, onError: (e: Error) => {
@@ -263,79 +263,83 @@ describe('HtmlNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done: (err?: unknown) => void) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'html',
-                        ...dataset
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'html',
+                            ...dataset
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [htmlNode] = $getRoot().getChildren() as HtmlNode[];
+                editor.getEditorState().read(() => {
+                    try {
+                        const [htmlNode] = $getRoot().getChildren() as HtmlNode[];
 
-                    htmlNode.html.should.equal('<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>');
+                        htmlNode.html.should.equal('<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>');
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
 
-        it('updates old visibility format to new format', function (done: (err?: unknown) => void) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'html',
-                        html: '<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>',
-                        visibility: {
+        it('updates old visibility format to new format', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'html',
+                            html: '<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>',
+                            visibility: {
+                                showOnEmail: true,
+                                showOnWeb: true
+                            }
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
+
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
+
+                editor.getEditorState().read(() => {
+                    try {
+                        const [htmlNode] = $getRoot().getChildren() as HtmlNode[];
+
+                        (htmlNode.visibility as Record<string, unknown>).should.deepEqual({
+                            showOnWeb: true,
                             showOnEmail: true,
-                            showOnWeb: true
-                        }
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+                            web: {
+                                nonMember: true,
+                                memberSegment: 'status:free,status:-free'
+                            },
+                            email: {
+                                memberSegment: 'status:free,status:-free'
+                            }
+                        });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-
-            editor.getEditorState().read(() => {
-                try {
-                    const [htmlNode] = $getRoot().getChildren() as HtmlNode[];
-
-                    (htmlNode.visibility as Record<string, unknown>).should.deepEqual({
-                        showOnWeb: true,
-                        showOnEmail: true,
-                        web: {
-                            nonMember: true,
-                            memberSegment: 'status:free,status:-free'
-                        },
-                        email: {
-                            memberSegment: 'status:free,status:-free'
-                        }
-                    });
-
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });

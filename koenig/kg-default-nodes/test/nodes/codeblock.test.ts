@@ -18,16 +18,16 @@ describe('CodeBlockNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -53,66 +53,70 @@ describe('CodeBlockNode', function () {
     }));
 
     describe('importJSON', function () {
-        it('imports all properties', function (done: (err?: unknown) => void) {
-            const serialized = `
-                {
-                    "root": {
-                        "children": [
-                            {
-                                "type": "codeblock",
-                                "code": "<?php echo 'Hello World'; ?>",
-                                "language": "php",
-                                "caption": "Your first PHP enabled page"
-                            }
-                        ],
-                        "direction": null,
-                        "format": "",
-                        "indent": 0,
-                        "type": "root",
-                        "version": 1
+        it('imports all properties', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serialized = `
+                    {
+                        "root": {
+                            "children": [
+                                {
+                                    "type": "codeblock",
+                                    "code": "<?php echo 'Hello World'; ?>",
+                                    "language": "php",
+                                    "caption": "Your first PHP enabled page"
+                                }
+                            ],
+                            "direction": null,
+                            "format": "",
+                            "indent": 0,
+                            "type": "root",
+                            "version": 1
+                        }
                     }
-                }
-            `;
+                `;
 
-            const editorState = editor.parseEditorState(serialized);
+                const editorState = editor.parseEditorState(serialized);
 
-            editorState.read(() => {
-                try {
-                    const codeBlockNode = $getRoot().getChildren()[0] as CodeBlockNode;
-                    should(codeBlockNode.code).equal(`<?php echo 'Hello World'; ?>`);
-                    should(codeBlockNode.language).equal('php');
-                    should(codeBlockNode.caption).equal('Your first PHP enabled page');
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                editorState.read(() => {
+                    try {
+                        const codeBlockNode = $getRoot().getChildren()[0] as CodeBlockNode;
+                        should(codeBlockNode.code).equal(`<?php echo 'Hello World'; ?>`);
+                        should(codeBlockNode.language).equal('php');
+                        should(codeBlockNode.caption).equal('Your first PHP enabled page');
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });
 
     describe('exportJSON', function () {
-        it('exports all properties', function (done: (err?: unknown) => void) {
-            editor.update(() => {
-                try {
-                    const codeBlockNode = $createCodeBlockNode({code, language, caption});
-                    $getRoot().append(codeBlockNode);
-                } catch (e) {
-                    done(e);
-                }
-            }, {discrete: true});
+        it('exports all properties', function () {
+            return new Promise<void>((resolve, reject) => {
+                editor.update(() => {
+                    try {
+                        const codeBlockNode = $createCodeBlockNode({code, language, caption});
+                        $getRoot().append(codeBlockNode);
+                    } catch (e) {
+                        reject(e);
+                    }
+                }, {discrete: true});
 
-            const parsedExport = JSON.parse(JSON.stringify(editor.getEditorState()));
+                const parsedExport = JSON.parse(JSON.stringify(editor.getEditorState()));
 
-            parsedExport.root.children.should.deepEqual([
-                {
-                    type: 'codeblock',
-                    version: 1,
-                    code: '<script></script>',
-                    language: 'javascript',
-                    caption: 'A code block'
-                }
-            ]);
-            done();
+                parsedExport.root.children.should.deepEqual([
+                    {
+                        type: 'codeblock',
+                        version: 1,
+                        code: '<script></script>',
+                        language: 'javascript',
+                        caption: 'A code block'
+                    }
+                ]);
+                resolve();
+            });
         });
     });
 

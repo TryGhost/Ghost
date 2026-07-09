@@ -18,16 +18,16 @@ describe('BookmarkNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -231,41 +231,43 @@ describe('BookmarkNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'bookmark',
-                        ...dataset
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'bookmark',
+                            ...dataset
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [bookmarkNode] = $getRoot().getChildren() as BookmarkNode[];
+                editor.getEditorState().read(() => {
+                    try {
+                        const [bookmarkNode] = $getRoot().getChildren() as BookmarkNode[];
 
-                    bookmarkNode.url.should.equal(dataset.url);
-                    bookmarkNode.icon.should.equal((dataset.metadata as Record<string, unknown>).icon);
-                    bookmarkNode.title.should.equal((dataset.metadata as Record<string, unknown>).title);
-                    bookmarkNode.description.should.equal((dataset.metadata as Record<string, unknown>).description);
-                    bookmarkNode.author.should.equal((dataset.metadata as Record<string, unknown>).author);
-                    bookmarkNode.publisher.should.equal((dataset.metadata as Record<string, unknown>).publisher);
-                    bookmarkNode.thumbnail.should.equal((dataset.metadata as Record<string, unknown>).thumbnail);
-                    bookmarkNode.caption.should.equal(dataset.caption);
+                        bookmarkNode.url.should.equal(dataset.url);
+                        bookmarkNode.icon.should.equal((dataset.metadata as Record<string, unknown>).icon);
+                        bookmarkNode.title.should.equal((dataset.metadata as Record<string, unknown>).title);
+                        bookmarkNode.description.should.equal((dataset.metadata as Record<string, unknown>).description);
+                        bookmarkNode.author.should.equal((dataset.metadata as Record<string, unknown>).author);
+                        bookmarkNode.publisher.should.equal((dataset.metadata as Record<string, unknown>).publisher);
+                        bookmarkNode.thumbnail.should.equal((dataset.metadata as Record<string, unknown>).thumbnail);
+                        bookmarkNode.caption.should.equal(dataset.caption);
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });

@@ -15,16 +15,16 @@ describe('CallToActionNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -216,9 +216,7 @@ describe('CallToActionNode', function () {
         }));
     });
 
-    describe('urlTransformMap', function () {
-        // not yet implemented
-    });
+    describe.todo('urlTransformMap');
 
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
@@ -362,44 +360,46 @@ describe('CallToActionNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
-            const serializedData = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'call-to-action',
-                        backgroundColor: 'green',
-                        buttonColor: '#F0F0F0',
-                        buttonText: 'Get access now',
-                        buttonTextColor: '#000000',
-                        buttonUrl: 'http://someblog.com/somepost',
-                        hasSponsorLabel: true,
-                        sponsorLabel: '<p>This post is brought to you by our sponsors</p>',
-                        imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
-                        layout: 'minimal',
-                        showButton: true,
-                        showDividers: true,
-                        textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedData = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'call-to-action',
+                            backgroundColor: 'green',
+                            buttonColor: '#F0F0F0',
+                            buttonText: 'Get access now',
+                            buttonTextColor: '#000000',
+                            buttonUrl: 'http://someblog.com/somepost',
+                            hasSponsorLabel: true,
+                            sponsorLabel: '<p>This post is brought to you by our sponsors</p>',
+                            imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                            layout: 'minimal',
+                            showButton: true,
+                            showDividers: true,
+                            textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedData);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedData);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [callToActionNode] = $getRoot().getChildren();
-                    $isCallToActionNode(callToActionNode).should.be.true();
+                editor.getEditorState().read(() => {
+                    try {
+                        const [callToActionNode] = $getRoot().getChildren();
+                        $isCallToActionNode(callToActionNode).should.be.true();
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });

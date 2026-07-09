@@ -14,16 +14,16 @@ describe('HeaderNode', function () {
         let dataset: Record<string, unknown>;
         let exportOptions: Record<string, unknown>;
 
-        const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+        const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
             editor.update(() => {
                 try {
                     testFn();
-                    done();
+                    resolve();
                 } catch (e) {
-                    done(e);
+                    reject(e);
                 }
             });
-        };
+        });
 
         beforeEach(function () {
             editor = createHeadlessEditor({nodes: editorNodes});
@@ -206,16 +206,16 @@ describe('HeaderNode', function () {
         let dataset: Record<string, unknown>;
         let exportOptions: Record<string, unknown>;
 
-        const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+        const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
             editor.update(() => {
                 try {
                     testFn();
-                    done();
+                    resolve();
                 } catch (e) {
-                    done(e);
+                    reject(e);
                 }
             });
-        };
+        });
 
         beforeEach(function () {
             editor = createHeadlessEditor({nodes: editorNodes});

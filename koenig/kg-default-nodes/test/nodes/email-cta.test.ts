@@ -11,16 +11,16 @@ describe('EmailCtaNode', function () {
     let dataset: Record<string, unknown>;
     let exportOptions: Record<string, unknown>;
 
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({
@@ -156,39 +156,41 @@ describe('EmailCtaNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done: (err?: unknown) => void) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'email-cta',
-                        ...dataset
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'email-cta',
+                            ...dataset
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [emailNode] = $getRoot().getChildren() as EmailCtaNode[];
+                editor.getEditorState().read(() => {
+                    try {
+                        const [emailNode] = $getRoot().getChildren() as EmailCtaNode[];
 
-                    emailNode.alignment.should.equal(dataset.alignment);
-                    emailNode.buttonText.should.equal(dataset.buttonText);
-                    emailNode.buttonUrl.should.equal(dataset.buttonUrl);
-                    emailNode.html.should.equal(dataset.html);
-                    emailNode.segment.should.equal(dataset.segment);
-                    emailNode.showButton.should.equal(dataset.showButton);
-                    emailNode.showDividers.should.equal(dataset.showDividers);
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        emailNode.alignment.should.equal(dataset.alignment);
+                        emailNode.buttonText.should.equal(dataset.buttonText);
+                        emailNode.buttonUrl.should.equal(dataset.buttonUrl);
+                        emailNode.html.should.equal(dataset.html);
+                        emailNode.segment.should.equal(dataset.segment);
+                        emailNode.showButton.should.equal(dataset.showButton);
+                        emailNode.showDividers.should.equal(dataset.showDividers);
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });

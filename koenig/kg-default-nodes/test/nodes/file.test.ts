@@ -15,16 +15,16 @@ describe('FileNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({
@@ -194,37 +194,39 @@ describe('FileNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done: (err?: unknown) => void) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'file',
-                        ...dataset
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'file',
+                            ...dataset
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [fileNode] = $getRoot().getChildren() as FileNode[];
-                    fileNode.src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
-                    fileNode.fileTitle.should.equal('Cool image to download');
-                    fileNode.fileCaption.should.equal('This is a description');
-                    fileNode.fileName.should.equal('IMG_0196.jpeg');
-                    fileNode.fileSize.should.equal(123456);
-                    fileNode.formattedFileSize.should.equal('121 KB'); // ~121 KB
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                editor.getEditorState().read(() => {
+                    try {
+                        const [fileNode] = $getRoot().getChildren() as FileNode[];
+                        fileNode.src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
+                        fileNode.fileTitle.should.equal('Cool image to download');
+                        fileNode.fileCaption.should.equal('This is a description');
+                        fileNode.fileName.should.equal('IMG_0196.jpeg');
+                        fileNode.fileSize.should.equal(123456);
+                        fileNode.formattedFileSize.should.equal('121 KB'); // ~121 KB
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });

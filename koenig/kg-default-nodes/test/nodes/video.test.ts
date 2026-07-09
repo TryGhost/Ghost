@@ -17,16 +17,16 @@ describe('VideoNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -206,48 +206,50 @@ describe('VideoNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'video',
-                        ...dataset,
-                        cardWidth: 'wide',
-                        loop: true
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'video',
+                            ...dataset,
+                            cardWidth: 'wide',
+                            loop: true
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [videoNode] = $getRoot().getChildren() as VideoNode[];
+                editor.getEditorState().read(() => {
+                    try {
+                        const [videoNode] = $getRoot().getChildren() as VideoNode[];
 
-                    videoNode.src.should.equal(dataset.src);
-                    videoNode.caption.should.equal(dataset.caption);
-                    videoNode.fileName.should.equal(dataset.fileName);
-                    videoNode.mimeType.should.equal(dataset.mimeType);
-                    videoNode.width!.should.equal(dataset.width);
-                    videoNode.height!.should.equal(dataset.height);
-                    videoNode.duration.should.equal(dataset.duration);
-                    videoNode.thumbnailSrc.should.equal(dataset.thumbnailSrc);
-                    videoNode.customThumbnailSrc.should.equal(dataset.customThumbnailSrc);
-                    videoNode.thumbnailWidth!.should.equal(dataset.thumbnailWidth);
-                    videoNode.thumbnailHeight!.should.equal(dataset.thumbnailHeight);
-                    videoNode.cardWidth.should.equal('wide');
-                    videoNode.loop.should.be.true();
+                        videoNode.src.should.equal(dataset.src);
+                        videoNode.caption.should.equal(dataset.caption);
+                        videoNode.fileName.should.equal(dataset.fileName);
+                        videoNode.mimeType.should.equal(dataset.mimeType);
+                        videoNode.width!.should.equal(dataset.width);
+                        videoNode.height!.should.equal(dataset.height);
+                        videoNode.duration.should.equal(dataset.duration);
+                        videoNode.thumbnailSrc.should.equal(dataset.thumbnailSrc);
+                        videoNode.customThumbnailSrc.should.equal(dataset.customThumbnailSrc);
+                        videoNode.thumbnailWidth!.should.equal(dataset.thumbnailWidth);
+                        videoNode.thumbnailHeight!.should.equal(dataset.thumbnailHeight);
+                        videoNode.cardWidth.should.equal('wide');
+                        videoNode.loop.should.be.true();
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });
