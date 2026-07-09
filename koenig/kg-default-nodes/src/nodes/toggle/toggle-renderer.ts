@@ -28,35 +28,23 @@ function cardTemplate({node}: {node: ToggleNodeData}) {
     );
 }
 
-function emailCardTemplate({node}: {node: ToggleNodeData}, options: RenderOptions = {}) {
-    if (options.feature?.emailCustomization || options.feature?.emailCustomizationAlpha) {
-        return (
-            html`
-            <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
-                <tbody>
-                    <tr>
-                        <td class="kg-toggle-heading">
-                            <h4>${node.heading}</h4>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="kg-toggle-content">
-                            ${node.content}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            `
-        );
-    }
-
+function emailCardTemplate({node}: {node: ToggleNodeData}) {
     return (
-        `
-        <div style="background: transparent;
-        border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;">
-            <h4 style="font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top:0px">${node.heading}</h4>
-            <div style="font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;">${node.content}</div>
-        </div>
+        html`
+        <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
+            <tbody>
+                <tr>
+                    <td class="kg-toggle-heading">
+                        <h4>${node.heading}</h4>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="kg-toggle-content">
+                        ${node.content}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
         `
     );
 }
@@ -67,7 +55,7 @@ export function renderToggleNode(node: ToggleNodeData, options: RenderOptions = 
     const document = options.createDocument!();
 
     const htmlString = options.target === 'email'
-        ? emailCardTemplate({node}, options)
+        ? emailCardTemplate({node})
         : cardTemplate({node});
 
     const container = document.createElement('div');

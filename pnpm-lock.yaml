@@ -180,6 +180,9 @@ catalogs:
     dotenv:
       specifier: 17.4.2
       version: 17.4.2
+    entities:
+      specifier: 4.5.0
+      version: 4.5.0
     eslint:
       specifier: 9.39.4
       version: 9.39.4
@@ -3402,6 +3405,9 @@ importers:
       '@lexical/utils':
         specifier: 0.13.1
         version: 0.13.1(lexical@0.13.1)
+      '@tryghost/color-utils':
+        specifier: 'catalog:'
+        version: 0.2.19
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:~
         version: link:../kg-clean-basic-html
@@ -3411,6 +3417,9 @@ importers:
       clsx:
         specifier: 'catalog:'
         version: 2.1.1
+      entities:
+        specifier: 'catalog:'
+        version: 4.5.0
       html-minifier:
         specifier: 4.0.0
         version: 4.0.0

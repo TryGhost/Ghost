@@ -1,10 +1,21 @@
 import {getAvailableImageWidths} from '../../utils/get-available-image-widths.js';
-import {isLocalContentImage} from '../../utils/is-local-content-image.js';
-import {setSrcsetAttribute} from '../../utils/srcset-attribute.js';
+import {isContentImage} from '../../utils/is-content-image.js';
+import {getSrcsetAttribute, setSrcsetAttribute} from '../../utils/srcset-attribute.js';
 import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
+
+const MODERN_IMAGE_FORMATS = ['avif', 'webp'];
+
+function isAnimatedImage(url = '') {
+    try {
+        const parsedUrl = new URL(url, 'http://localhost');
+        return parsedUrl.pathname.toLowerCase().endsWith('.gif');
+    } catch {
+        return false;
+    }
+}
 
 interface ImageNodeData {
     src: string;
@@ -69,7 +80,7 @@ export function renderImageNode(node: ImageNodeData, options: ImageRenderOptions
     if (
         defaultMaxWidth &&
             node.width > defaultMaxWidth &&
-            isLocalContentImage(node.src, options.siteUrl) &&
+            isContentImage(node.src, options.siteUrl, options.imageBaseUrl) &&
             canTransformImage &&
             canTransformImage(node.src)
     ) {
@@ -82,22 +93,78 @@ export function renderImageNode(node: ImageNodeData, options: ImageRenderOptions
         img.setAttribute('height', String(height));
     }
 
+    const imgAttributes = {
+        src: node.src,
+        width: node.width,
+        height: node.height
+    };
+
+    let picture: HTMLPictureElement | null = null;
+
     if (options.target !== 'email') {
-        const imgAttributes = {
-            src: node.src,
-            width: node.width,
-            height: node.height
-        };
         setSrcsetAttribute(img, imgAttributes, options);
 
+        let sizes: string | undefined;
         if (img.getAttribute('srcset') && node.width && node.width >= 720) {
             // standard size
             if (!node.cardWidth || node.cardWidth === 'regular') {
-                img.setAttribute('sizes', '(min-width: 720px) 720px');
+                sizes = '(min-width: 720px) 720px';
             }
 
             if (node.cardWidth === 'wide' && node.width >= 1200) {
-                img.setAttribute('sizes', '(min-width: 1200px) 1200px');
+                sizes = '(min-width: 1200px) 1200px';
+            }
+        }
+
+        if (sizes) {
+            img.setAttribute('sizes', sizes);
+        }
+
+        const shouldRenderPicture = Boolean(
+            options.feature?.pictureImageFormats &&
+            img.getAttribute('srcset') &&
+            !isAnimatedImage(node.src) &&
+            isContentImage(node.src, options.siteUrl, options.imageBaseUrl) &&
+            options.canTransformImage?.(node.src) &&
+            typeof options.canTransformImageToFormat === 'function'
+        );
+
+        if (shouldRenderPicture) {
+            picture = document.createElement('picture');
+            let sourcesAdded = false;
+
+            MODERN_IMAGE_FORMATS.forEach((format) => {
+                if (!options.canTransformImageToFormat!(format)) {
+                    return;
+                }
+
+                const formattedSrcset = getSrcsetAttribute({
+                    src: node.src,
+                    width: node.width,
+                    options,
+                    format
+                });
+
+                if (!formattedSrcset) {
+                    return;
+                }
+
+                const source = document.createElement('source');
+                source.setAttribute('srcset', formattedSrcset);
+                source.setAttribute('type', `image/${format}`);
+
+                if (sizes) {
+                    source.setAttribute('sizes', sizes);
+                }
+
+                picture!.appendChild(source);
+                sourcesAdded = true;
+            });
+
+            if (sourcesAdded) {
+                picture.appendChild(img);
+            } else {
+                picture = null;
             }
         }
     }
@@ -117,7 +184,7 @@ export function renderImageNode(node: ImageNodeData, options: ImageRenderOptions
         img.setAttribute('height', String(imageDimensions.height));
 
         const contentImageSizes = options.imageOptimization?.contentImageSizes;
-        if (contentImageSizes && isLocalContentImage(node.src, options.siteUrl) && options.canTransformImage?.(node.src)) {
+        if (contentImageSizes && isContentImage(node.src, options.siteUrl, options.imageBaseUrl) && options.canTransformImage?.(node.src)) {
             // find available image size next up from 2x600 so we can use it for the "retina" src
             const availableImageWidths = getAvailableImageWidths(node, contentImageSizes);
             const srcWidth = availableImageWidths.find(width => width >= 1200);
@@ -137,10 +204,10 @@ export function renderImageNode(node: ImageNodeData, options: ImageRenderOptions
     if (node.href) {
         const a = document.createElement('a');
         a.setAttribute('href', node.href);
-        a.appendChild(img);
+        a.appendChild(picture || img);
         figure.appendChild(a);
     } else {
-        figure.appendChild(img);
+        figure.appendChild(picture || img);
     }
 
     if (node.caption) {

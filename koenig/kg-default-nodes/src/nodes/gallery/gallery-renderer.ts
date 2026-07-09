@@ -1,7 +1,7 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {getAvailableImageWidths} from '../../utils/get-available-image-widths.js';
-import {isLocalContentImage} from '../../utils/is-local-content-image.js';
+import {isContentImage} from '../../utils/is-content-image.js';
 import {isUnsplashImage} from '../../utils/is-unsplash-image.js';
 import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
 import {setSrcsetAttribute} from '../../utils/srcset-attribute.js';
@@ -122,7 +122,7 @@ export function renderGalleryNode(node: GalleryNodeData, options: GalleryRenderO
             if (
                 defaultMaxWidth &&
                 image.width > defaultMaxWidth &&
-                isLocalContentImage(image.src, options.siteUrl) &&
+                isContentImage(image.src, options.siteUrl, options.imageBaseUrl) &&
                 canTransformImage &&
                 canTransformImage(image.src)
             ) {
@@ -156,7 +156,7 @@ export function renderGalleryNode(node: GalleryNodeData, options: GalleryRenderO
                 }
 
                 const contentImageSizes = options.imageOptimization?.contentImageSizes;
-                if (contentImageSizes && isLocalContentImage(image.src, options.siteUrl) && options.canTransformImage?.(image.src)) {
+                if (contentImageSizes && isContentImage(image.src, options.siteUrl, options.imageBaseUrl) && options.canTransformImage?.(image.src)) {
                     // find available image size next up from 2x600 so we can use it for the "retina" src
                     const availableImageWidths = getAvailableImageWidths(image, contentImageSizes);
                     const srcWidth = availableImageWidths.find(width => width >= 1200);

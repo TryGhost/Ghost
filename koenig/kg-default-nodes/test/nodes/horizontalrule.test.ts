@@ -44,9 +44,10 @@ describe('HorizontalNode', function () {
     describe('exportDOM', function () {
         it('creates hr element', editorTest(function () {
             const hrNode = $createHorizontalRuleNode();
-            const {element} = hrNode.exportDOM(editor, exportOptions);
+            const result = hrNode.exportDOM(editor, exportOptions);
 
-            (element as HTMLElement).outerHTML.should.prettifyTo(html`
+            (result as unknown as {type?: string}).type!.should.equal('inner');
+            (result.element as HTMLElement).innerHTML.should.prettifyTo(html`
                 <hr />
             `);
         }));

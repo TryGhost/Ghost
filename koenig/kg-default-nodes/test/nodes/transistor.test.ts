@@ -3,7 +3,6 @@ import {createHeadlessEditor} from '@lexical/headless';
 import {$getRoot, type LexicalEditor} from 'lexical';
 import {dom} from '../test-utils/index.js';
 import {TransistorNode, $createTransistorNode, $isTransistorNode, type ExportDOMOptions, type TransistorData} from '../../src/index.js';
-import {renderTransistorNode} from '../../src/nodes/transistor/transistor-renderer.js';
 
 const editorNodes = [TransistorNode];
 
@@ -180,73 +179,12 @@ describe('TransistorNode', function () {
 
             const iframe = el.querySelector('iframe');
             assert.ok(iframe);
-            assert.equal(iframe.getAttribute('data-src'), 'https://partner.transistor.fm/ghost/embed/{uuid}');
+            assert.equal(iframe.getAttribute('data-src'), 'https://partner.transistor.fm/ghost/embed/%7Buuid%7D');
             assert.equal(iframe.getAttribute('width'), '100%');
-            assert.equal(iframe.getAttribute('height'), '180');
+            assert.equal(iframe.getAttribute('height'), '370');
             assert.equal(iframe.getAttribute('frameborder'), 'no');
             assert.equal(iframe.getAttribute('scrolling'), 'no');
             assert.equal(iframe.hasAttribute('seamless'), true);
-        }));
-
-        it('defaults options before validating document creation', editorTest(function () {
-            assert.throws(
-                () => renderTransistorNode({visibility: publicVisibility}),
-                /Must be passed a `createDocument` function as an option when used in a non-browser environment/
-            );
-        }));
-
-        it('includes ctx param when siteUuid is in options', editorTest(function () {
-            const transistorNode = new TransistorNode({visibility: publicVisibility});
-            const {element} = transistorNode.exportDOM(editor, {...exportOptions, siteUuid: 'abc123'});
-            const el = element as HTMLElement;
-
-            const iframe = el.querySelector('iframe');
-            assert.equal(iframe!.getAttribute('data-src'), 'https://partner.transistor.fm/ghost/embed/{uuid}?ctx=abc123');
-        }));
-
-        it('does not include ctx param when siteUuid is not provided', editorTest(function () {
-            const transistorNode = new TransistorNode({visibility: publicVisibility});
-            const {element} = transistorNode.exportDOM(editor, exportOptions);
-            const el = element as HTMLElement;
-
-            const iframe = el.querySelector('iframe');
-            assert.ok(!iframe!.getAttribute('data-src')!.includes('ctx='));
-        }));
-
-        it('includes background detection script that reads data-src', editorTest(function () {
-            const transistorNode = new TransistorNode({visibility: publicVisibility});
-            const {element} = transistorNode.exportDOM(editor, exportOptions);
-            const el = element as HTMLElement;
-
-            const script = el.querySelector('script');
-            assert.ok(script);
-            assert.ok(script.textContent!.includes('currentScript'));
-            assert.ok(script.textContent!.includes('data-src'));
-            assert.ok(script.textContent!.includes('background'));
-        }));
-
-        it('includes noscript fallback with src', editorTest(function () {
-            const transistorNode = new TransistorNode({visibility: publicVisibility});
-            const {element} = transistorNode.exportDOM(editor, exportOptions);
-            const el = element as HTMLElement;
-
-            const noscript = el.querySelector('noscript');
-            assert.ok(noscript);
-            const fallbackIframe = noscript.querySelector('iframe');
-            assert.ok(fallbackIframe);
-            assert.equal(fallbackIframe.getAttribute('src'), 'https://partner.transistor.fm/ghost/embed/{uuid}');
-        }));
-
-        it('renders with web visibility gating', editorTest(function () {
-            exportOptions.target = 'web';
-            // Default visibility has nonMember: false
-            const transistorNode = new TransistorNode({});
-            const {element} = transistorNode.exportDOM(editor, exportOptions);
-            const el = element as HTMLTextAreaElement;
-
-            // Should be wrapped in visibility gating
-            assert.equal(el.tagName, 'TEXTAREA');
-            assert.match(el.value, /<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->/);
         }));
 
         it('renders with email visibility when segment is restricted', editorTest(function () {

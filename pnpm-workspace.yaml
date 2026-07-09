@@ -90,6 +90,7 @@ catalog:
   dequal: 2.0.3
   dompurify: 3.4.11
   dotenv: 17.4.2
+  entities: 4.5.0
   eslint: 9.39.4
   eslint-plugin-ghost: 3.5.0
   eslint-plugin-react: 7.37.5

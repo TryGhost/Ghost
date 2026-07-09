@@ -1,10 +1,10 @@
+import {decodeHTML} from 'entities';
+
 /**
  * Escape HTML special characters
- * @param {string} unsafe
- * @returns string
  */
-export function escapeHtml(unsafe: string) {
-    return unsafe
+export function escapeHtml(unsafe: string | null | undefined) {
+    return decodeHTML(unsafe ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')

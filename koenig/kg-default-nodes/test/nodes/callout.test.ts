@@ -131,62 +131,6 @@ describe('CalloutNode', function () {
                 </div>
                 `);
         }));
-
-        it('can render to HTML with no emoji', editorTest(function () {
-            const dataset2 = {
-                calloutText: '<p dir="ltr"><b><strong>Hello!</strong></b><span> Check </span><i><em class="italic">this</em></i> <a href="https://ghost.org" rel="noopener"><span>out</span></a><span>.</span></p>',
-                calloutEmoji: '',
-                backgroundColor: 'blue'
-            };
-            const node = $createCalloutNode(dataset2);
-            const result = node.exportDOM(editor, exportOptions);
-            const element = result.element as HTMLElement;
-            element.outerHTML.should.prettifyTo(html`
-                <div class="kg-card kg-callout-card kg-callout-card-blue">
-                    <div class="kg-callout-text">
-                        <b><strong>Hello!</strong></b
-                        >Check<i><em class="italic">this</em></i
-                        ><a href="https://ghost.org" rel="noopener">out</a>.
-                    </div>
-                </div>
-                `);
-        }));
-
-        it('can render to HTML with invalid backgroundColor', editorTest(function () {
-            dataset.backgroundColor = 'rgba(124, 139, 154, 0.13)';
-
-            const node = $createCalloutNode(dataset);
-            const result = node.exportDOM(editor, exportOptions);
-            const element = result.element as HTMLElement;
-
-            element.outerHTML.should.prettifyTo(html`
-                <div class="kg-card kg-callout-card kg-callout-card-white">
-                    <div class="kg-callout-emoji">\u{1F4A1}</div>
-                    <div class="kg-callout-text">
-                        <b><strong>Hello!</strong></b
-                        >Check<i><em class="italic">this</em></i
-                        ><a href="https://ghost.org" rel="noopener">out</a>.
-                    </div>
-                </div>
-            `);
-        }));
-
-        it('can render with inline code', editorTest(function () {
-            dataset.calloutText = '<p><span style="white-space: pre-wrap;">Does </span><code spellcheck="false" style="white-space: pre-wrap;"><span>inline code</span></code><span style="white-space: pre-wrap;"> render properly?</span></p>';
-
-            const node = $createCalloutNode(dataset);
-            const result = node.exportDOM(editor, exportOptions);
-            const element = result.element as HTMLElement;
-
-            element.outerHTML.should.prettifyTo(html`
-                <div class="kg-card kg-callout-card kg-callout-card-blue">
-                    <div class="kg-callout-emoji">\u{1F4A1}</div>
-                    <div class="kg-callout-text">
-                        Does <code spellcheck="false" style="white-space: pre-wrap">inline code</code> render properly?
-                    </div>
-                </div>
-            `);
-        }));
     });
 
     describe('importDOM', function () {

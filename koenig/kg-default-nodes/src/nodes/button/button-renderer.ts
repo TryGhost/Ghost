@@ -21,7 +21,7 @@ export function renderButtonNode(node: ButtonNodeData, options: RenderOptions = 
     }
 
     if (options.target === 'email') {
-        return emailTemplate(node, options, document);
+        return emailTemplate(node, document);
     } else {
         return frontendTemplate(node, document);
     }
@@ -42,69 +42,30 @@ function frontendTemplate(node: ButtonNodeData, document: Document) {
     return {element: cardDiv, type: 'outer' as const};
 }
 
-function emailTemplate(node: ButtonNodeData, options: RenderOptions, document: Document) {
+function emailTemplate(node: ButtonNodeData, document: Document) {
     const {buttonUrl, buttonText} = node;
 
-    let cardHtml;
-    if (options.feature?.emailCustomization) {
-        cardHtml = html`
-        <table border="0" cellpadding="0" cellspacing="0">
-            <tr>
-                <td>
-                    <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0" align="${node.alignment}">
-                        <tr>
-                            <td align="center">
-                                <a href="${buttonUrl}">${buttonText}</a>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>`;
+    const buttonHtml = renderEmailButton({
+        alignment: node.alignment,
+        url: buttonUrl,
+        text: buttonText || 'Button Title'
+    });
 
-        const element = document.createElement('p');
-        element.innerHTML = cardHtml;
-        return {element, type: 'outer' as const};
-    } else if (options.feature?.emailCustomizationAlpha) {
-        const buttonHtml = renderEmailButton({
-            alignment: node.alignment,
-            color: 'accent',
-            url: buttonUrl,
-            text: buttonText
-        });
-
-        cardHtml = html`
-        <table border="0" cellpadding="0" cellspacing="0">
+    const cardHtml = html`
+        <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
             <tbody>
                 <tr>
-                    <td>
+                    <td class="kg-card-spacing">
                         ${buttonHtml}
                     </td>
                 </tr>
             </tbody>
         </table>
-        `;
+    `;
 
-        const element = document.createElement('div');
-        element.innerHTML = cardHtml;
-        return {element, type: 'inner' as const};
-    } else {
-        cardHtml = html`
-        <div class="btn btn-accent">
-            <table border="0" cellspacing="0" cellpadding="0" align="${node.alignment}">
-                <tr>
-                    <td align="center">
-                        <a href="${buttonUrl}">${buttonText}</a>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        `;
-
-        const element = document.createElement('p');
-        element.innerHTML = cardHtml;
-        return {element, type: 'outer' as const};
-    }
+    const element = document.createElement('div');
+    element.innerHTML = cardHtml;
+    return {element, type: 'inner' as const};
 }
 
 function getCardClasses(node: ButtonNodeData) {

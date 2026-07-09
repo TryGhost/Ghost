@@ -1,5 +1,5 @@
 import type {ExportDOMOptions} from '../export-dom.js';
-import {isLocalContentImage} from './is-local-content-image.js';
+import {isContentImage} from './is-content-image.js';
 import {getAvailableImageWidths} from './get-available-image-widths.js';
 import {isUnsplashImage} from './is-unsplash-image.js';
 
@@ -12,19 +12,19 @@ export interface ImageRenderOptions extends ExportDOMOptions {
     };
 }
 
-export const getSrcsetAttribute = function ({src, width, options}: {src: string; width: number; options: ImageRenderOptions}) {
+export const getSrcsetAttribute = function ({src, width, options, format}: {src: string; width: number; options: ImageRenderOptions; format?: string}) {
     if (!options.imageOptimization || options.imageOptimization.srcsets === false || !width || !options.imageOptimization.contentImageSizes) {
         return;
     }
 
-    if (isLocalContentImage(src, options.siteUrl) && options.canTransformImage && !options.canTransformImage(src)) {
+    if (isContentImage(src, options.siteUrl, options.imageBaseUrl) && options.canTransformImage && !options.canTransformImage(src)) {
         return;
     }
 
     const srcsetWidths = getAvailableImageWidths({width}, options.imageOptimization.contentImageSizes);
 
-    // apply srcset if this is a relative image that matches Ghost's image url structure
-    if (isLocalContentImage(src, options.siteUrl)) {
+    // apply srcset if this is a local or CDN image that matches Ghost's image url structure
+    if (isContentImage(src, options.siteUrl, options.imageBaseUrl)) {
         const match = src.match(/(.*\/content\/images)\/(.*)/);
         if (!match) {
             return;
@@ -36,10 +36,19 @@ export const getSrcsetAttribute = function ({src, width, options}: {src: string;
         srcsetWidths.forEach((srcsetWidth) => {
             if (srcsetWidth === width) {
                 // use original image path if width matches exactly (avoids 302s from size->original)
-                srcs.push(`${src} ${srcsetWidth}w`);
+                // unless a specific output format was requested
+                if (format) {
+                    srcs.push(`${imagesPath}/size/w${srcsetWidth}/format/${format}/${filename} ${srcsetWidth}w`);
+                } else {
+                    srcs.push(`${src} ${srcsetWidth}w`);
+                }
             } else if (srcsetWidth <= width) {
                 // avoid creating srcset sizes larger than intrinsic image width
-                srcs.push(`${imagesPath}/size/w${srcsetWidth}/${filename} ${srcsetWidth}w`);
+                if (format) {
+                    srcs.push(`${imagesPath}/size/w${srcsetWidth}/format/${format}/${filename} ${srcsetWidth}w`);
+                } else {
+                    srcs.push(`${imagesPath}/size/w${srcsetWidth}/${filename} ${srcsetWidth}w`);
+                }
             }
         });
 
@@ -55,6 +64,9 @@ export const getSrcsetAttribute = function ({src, width, options}: {src: string;
 
         srcsetWidths.forEach((srcsetWidth) => {
             unsplashUrl.searchParams.set('w', String(srcsetWidth));
+            if (format) {
+                unsplashUrl.searchParams.set('fm', format);
+            }
             srcs.push(`${unsplashUrl.href} ${srcsetWidth}w`);
         });
 

@@ -10,8 +10,8 @@ interface EmbedNodeData {
     caption: string;
     metadata: {
         thumbnail_url?: string;
-        thumbnail_width?: number;
-        thumbnail_height?: number;
+        thumbnail_width?: number | string;
+        thumbnail_height?: number | string;
         tweet_data?: Record<string, unknown>;
         [key: string]: unknown;
     };
@@ -41,12 +41,15 @@ function renderTemplate(node: EmbedNodeData, document: Document, options: Render
     const metadata = node.metadata;
     const url = node.url;
     const isVideoWithThumbnail = node.embedType === 'video' && metadata && metadata.thumbnail_url;
+    const thumbnailWidth = Number(metadata?.thumbnail_width);
+    const thumbnailHeight = Number(metadata?.thumbnail_height);
+    const hasValidThumbnailDimensions = thumbnailWidth > 0 && thumbnailHeight > 0 && Number.isFinite(thumbnailWidth) && Number.isFinite(thumbnailHeight);
     const figure = document.createElement('figure');
     figure.setAttribute('class', 'kg-card kg-embed-card');
 
-    if (isEmail && isVideoWithThumbnail && metadata.thumbnail_width && metadata.thumbnail_height) {
+    if (isEmail && isVideoWithThumbnail && hasValidThumbnailDimensions) {
         const emailTemplateMaxWidth = 600;
-        const thumbnailAspectRatio = metadata.thumbnail_width / metadata.thumbnail_height;
+        const thumbnailAspectRatio = thumbnailWidth / thumbnailHeight;
         const spacerWidth = Math.round(emailTemplateMaxWidth / 4);
         const spacerHeight = Math.round(emailTemplateMaxWidth / thumbnailAspectRatio);
         const html = `

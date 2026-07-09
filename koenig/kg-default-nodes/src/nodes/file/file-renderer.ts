@@ -2,7 +2,6 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option.js
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 import {escapeHtml} from '../../utils/escape-html.js';
-import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 import {bytesToSize} from '../../utils/size-byte-converter.js';
 
 interface FileNodeData {
@@ -31,23 +30,14 @@ export function renderFileNode(node: FileNodeData, options: RenderOptions = {}) 
     }
 }
 
-function wrapWithAnchor(content: string, href: string | undefined, cls: string, style?: string) {
-    if (href) {
-        const styleAttr = style ? ` style="${style}"` : '';
-        return `<a href="${escapeHtml(href)}" class="${cls}"${styleAttr}>${content}</a>`;
-    }
-    return `<span class="${cls}">${content}</span>`;
-}
-
 function emailTemplate(node: FileNodeData, document: Document, options: RenderOptions) {
+    const href = escapeHtml(options.postUrl || node.src);
     let iconCls;
     if (!node.fileTitle && !node.fileCaption) {
         iconCls = 'margin-top: 6px; height: 20px; width: 20px; max-width: 20px; padding-top: 4px; padding-bottom: 4px;';
     } else {
         iconCls = 'margin-top: 6px; height: 24px; width: 24px; max-width: 24px;';
     }
-
-    const href = options.postUrl || node.src || undefined;
 
     const html = (`
         <table cellspacing="0" cellpadding="4" border="0" class="kg-file-card" width="100%">
@@ -58,24 +48,22 @@ function emailTemplate(node: FileNodeData, document: Document, options: RenderOp
                             <td valign="middle" style="vertical-align: middle;">
                                 ${node.fileTitle ? `
                                 <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
-                                    ${wrapWithAnchor(escapeHtml(node.fileTitle), href, 'kg-file-title')}
+                                    <a href="${href}" class="kg-file-title">${escapeHtml(node.fileTitle)}</a>
                                 </td></tr></table>
                                 ` : ``}
                                 ${node.fileCaption ? `
                                 <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
-                                    ${wrapWithAnchor(escapeHtml(node.fileCaption), href, 'kg-file-description')}
+                                    <a href="${href}" class="kg-file-description">${escapeHtml(node.fileCaption)}</a>
                                 </td></tr></table>
                                 ` : ``}
                                 <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
-                                    ${wrapWithAnchor(`<span class="kg-file-name">${escapeHtml(node.fileName)}</span> &bull; ${bytesToSize(node.fileSize)}`, href, 'kg-file-meta')}
+                                    <a href="${href}" class="kg-file-meta"><span class="kg-file-name">${escapeHtml(node.fileName)}</span> &bull; ${bytesToSize(node.fileSize)}</a>
                                 </td></tr></table>
                             </td>
                             <td width="80" valign="middle" class="kg-file-thumbnail">
-                                ${href
-            ? `<a href="${escapeHtml(href)}" style="display: block; top: 0; right: 0; bottom: 0; left: 0;">
+                                <a href="${href}" style="display: block; top: 0; right: 0; bottom: 0; left: 0;">
                                     <img src="https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png" style="${escapeHtml(iconCls)}">
-                                </a>`
-            : `<img src="https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png" style="${escapeHtml(iconCls)}">`}
+                                </a>
                             </td>
                         </tr>
                     </table>
@@ -87,7 +75,7 @@ function emailTemplate(node: FileNodeData, document: Document, options: RenderOp
     const container = document.createElement('div');
     container.innerHTML = html.trim();
 
-    return {element: getFirstHtmlElement(container, 'renderFileNode emailTemplate'), type: 'outer' as const};
+    return {element: container.firstElementChild as HTMLTableElement, type: 'outer' as const};
 }
 
 function cardTemplate(node: FileNodeData, document: Document) {

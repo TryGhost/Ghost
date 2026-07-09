@@ -1,6 +1,6 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions, ExportDOMOutput} from '../../export-dom.js';
-import {render} from '@tryghost/kg-markdown-html-renderer';
+import {render as markdownHtmlRenderer} from '@tryghost/kg-markdown-html-renderer';
 
 interface MarkdownNodeData {
     markdown: string;
@@ -10,13 +10,9 @@ interface MarkdownRenderOptions extends ExportDOMOptions {}
 
 export function renderMarkdownNode(node: MarkdownNodeData, options: MarkdownRenderOptions = {}): ExportDOMOutput<'inner'> {
     addCreateDocumentOption(options);
-    if (typeof options.createDocument !== 'function') {
-        throw new TypeError('renderMarkdownNode requires options.createDocument to be a function');
-    }
+    const document = options.createDocument!();
 
-    const document = options.createDocument();
-
-    const html = render(node.markdown || '', options as Record<string, unknown>);
+    const html = markdownHtmlRenderer(node.markdown || '', options as {ghostVersion?: string});
 
     const element = document.createElement('div');
     element.innerHTML = html;
