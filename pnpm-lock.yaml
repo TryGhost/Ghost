@@ -3699,9 +3699,6 @@ importers:
       autoprefixer:
         specifier: 10.5.2
         version: 10.5.2(postcss@8.5.16)
-      concurrently:
-        specifier: 'catalog:'
-        version: 10.0.3
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@1.21.7)
@@ -3735,9 +3732,6 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)
-      vite-plugin-css-injected-by-js:
-        specifier: 5.0.1
-        version: 5.0.1(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
       vite-plugin-dts:
         specifier: 5.0.3
         version: 5.0.3(esbuild@0.28.1)(rolldown@1.1.4)(rollup@4.62.2)(supports-color@5.5.0)(typescript@5.9.3)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(esbuild@0.28.1)(postcss@8.5.16))
@@ -3790,12 +3784,6 @@ importers:
 
   koenig/koenig-lexical:
     devDependencies:
-      '@babel/core':
-        specifier: 8.0.1
-        version: 8.0.1
-      '@babel/plugin-proposal-private-property-in-object':
-        specifier: 7.21.11
-        version: 7.21.11(@babel/core@8.0.1)
       '@codemirror/autocomplete':
         specifier: 6.20.3
         version: 6.20.3
@@ -3820,9 +3808,6 @@ importers:
       '@emoji-mart/data':
         specifier: 1.2.1
         version: 1.2.1
-      '@emoji-mart/react':
-        specifier: 1.1.1
-        version: 1.1.1(emoji-mart@5.6.0)(react@18.3.1)
       '@etchteam/storybook-addon-status':
         specifier: 8.1.0
         version: 8.1.0(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@18.3.31)(prettier@3.9.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -3904,9 +3889,6 @@ importers:
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:~
         version: link:../kg-clean-basic-html
-      '@tryghost/kg-converters':
-        specifier: workspace:~
-        version: link:../kg-converters
       '@tryghost/kg-default-nodes':
         specifier: workspace:~
         version: link:../kg-default-nodes
@@ -3946,21 +3928,12 @@ importers:
       autoprefixer:
         specifier: 10.5.2
         version: 10.5.2(postcss@8.5.16)
-      babel-loader:
-        specifier: 10.1.1
-        version: 10.1.1(@babel/core@8.0.1)(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(esbuild@0.28.1)(postcss@8.5.16))
       clsx:
         specifier: 'catalog:'
         version: 2.1.1
-      codemirror:
-        specifier: 6.0.2
-        version: 6.0.2
       concurrently:
         specifier: 'catalog:'
         version: 10.0.3
-      cross-fetch:
-        specifier: 'catalog:'
-        version: 4.1.0(encoding@0.1.13)
       dompurify:
         specifier: 'catalog:'
         version: 3.4.11
@@ -5490,12 +5463,6 @@ packages:
 
   '@emoji-mart/data@1.2.1':
     resolution: {integrity: sha512-no2pQMWiBy6gpBEiqGeU77/bFejDqUTRY7KX+0+iur13op3bqUsXdnwoZs6Xb1zbv0gAj5VvS1PWoUUckSr5Dw==}
-
-  '@emoji-mart/react@1.1.1':
-    resolution: {integrity: sha512-NMlFNeWgv1//uPsvLxvGQoIerPuVdXwK/EUek8OOkJ6wVOWPUizRBJU0hDqWZCOROVpfBgCemaC3m6jDOXi03g==}
-    peerDependencies:
-      emoji-mart: ^5.2
-      react: ^16.8 || ^17 || ^18
 
   '@emotion/babel-plugin@11.13.5':
     resolution: {integrity: sha512-pxHCpT2ex+0q+HH91/zsdHkw/lXd468DIN2zvfvLtPKLLMo6gQj7oLObq8PhkrxOZb/gGCq03S3Z7PDhS8pduQ==}
@@ -11698,19 +11665,6 @@ packages:
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     peerDependencies:
       '@babel/core': ^7.8.0
-
-  babel-loader@10.1.1:
-    resolution: {integrity: sha512-JwKSzk2kjIe7mgPK+/lyZ2QAaJcpahNAdM+hgR2HI8D0OJVkdj8Rl6J3kaLYki9pwF7P2iWnD8qVv80Lq1ABtg==}
-    engines: {node: ^18.20.0 || ^20.10.0 || >=22.0.0}
-    peerDependencies:
-      '@babel/core': ^7.12.0 || ^8.0.0-beta.1
-      '@rspack/core': ^1.0.0 || ^2.0.0-0
-      webpack: '>=5.61.0'
-    peerDependenciesMeta:
-      '@rspack/core':
-        optional: true
-      webpack:
-        optional: true
 
   babel-loader@8.4.1:
     resolution: {integrity: sha512-nXzRChX+Z1GoE6yWavBQg6jDslyFF3SDjl2paADuoQtQW10JqShJt62R6eJQ5m/pjJFDT8xgKIWSP85OY8eXeA==}
@@ -23674,11 +23628,6 @@ packages:
     peerDependencies:
       vite: '>2.0.0-0'
 
-  vite-plugin-css-injected-by-js@5.0.1:
-    resolution: {integrity: sha512-JSB0jjN4VCKqG7XTUdrwiIl5gA+z2yi/tAl9WHo0X4sdyJ1yrmbLOEjf95TDoDIIuKr4GJIc7lMJG0CT88eEUQ==}
-    peerDependencies:
-      vite: '>8.0.0-0'
-
   vite-plugin-dts@5.0.3:
     resolution: {integrity: sha512-gIth6NdCEHWPiiRMCK3N6C8WjvdsrtEQrmsiG8h6Ov+lFP+b07Y+wcs9H0H7n146l0PDTYK4cQN1vgeG1pMdRQ==}
     peerDependencies:
@@ -24767,19 +24716,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/helper-create-class-features-plugin@7.29.7(@babel/core@8.0.1)':
-    dependencies:
-      '@babel/core': 8.0.1
-      '@babel/helper-annotate-as-pure': 7.29.7
-      '@babel/helper-member-expression-to-functions': 7.29.7
-      '@babel/helper-optimise-call-expression': 7.29.7
-      '@babel/helper-replace-supers': 7.29.7(@babel/core@8.0.1)
-      '@babel/helper-skip-transparent-expression-wrappers': 7.29.7
-      '@babel/traverse': 7.29.7
-      semver: 6.3.1
-    transitivePeerDependencies:
-      - supports-color
-
   '@babel/helper-create-regexp-features-plugin@7.29.7(@babel/core@7.29.7)':
     dependencies:
       '@babel/core': 7.29.7
@@ -24843,15 +24779,6 @@ snapshots:
   '@babel/helper-replace-supers@7.29.7(@babel/core@7.29.7)':
     dependencies:
       '@babel/core': 7.29.7
-      '@babel/helper-member-expression-to-functions': 7.29.7
-      '@babel/helper-optimise-call-expression': 7.29.7
-      '@babel/traverse': 7.29.7
-    transitivePeerDependencies:
-      - supports-color
-
-  '@babel/helper-replace-supers@7.29.7(@babel/core@8.0.1)':
-    dependencies:
-      '@babel/core': 8.0.1
       '@babel/helper-member-expression-to-functions': 7.29.7
       '@babel/helper-optimise-call-expression': 7.29.7
       '@babel/traverse': 7.29.7
@@ -25000,16 +24927,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/plugin-proposal-private-property-in-object@7.21.11(@babel/core@8.0.1)':
-    dependencies:
-      '@babel/core': 8.0.1
-      '@babel/helper-annotate-as-pure': 7.29.7
-      '@babel/helper-create-class-features-plugin': 7.29.7(@babel/core@8.0.1)
-      '@babel/helper-plugin-utils': 7.29.7
-      '@babel/plugin-syntax-private-property-in-object': 7.14.5(@babel/core@8.0.1)
-    transitivePeerDependencies:
-      - supports-color
-
   '@babel/plugin-syntax-async-generators@7.8.4(@babel/core@7.29.7)':
     dependencies:
       '@babel/core': 7.29.7
@@ -25098,11 +25015,6 @@ snapshots:
   '@babel/plugin-syntax-private-property-in-object@7.14.5(@babel/core@7.29.7)':
     dependencies:
       '@babel/core': 7.29.7
-      '@babel/helper-plugin-utils': 7.29.7
-
-  '@babel/plugin-syntax-private-property-in-object@7.14.5(@babel/core@8.0.1)':
-    dependencies:
-      '@babel/core': 8.0.1
       '@babel/helper-plugin-utils': 7.29.7
 
   '@babel/plugin-syntax-top-level-await@7.14.5(@babel/core@7.29.7)':
@@ -26454,11 +26366,6 @@ snapshots:
       tslib: 2.8.1
 
   '@emoji-mart/data@1.2.1': {}
-
-  '@emoji-mart/react@1.1.1(emoji-mart@5.6.0)(react@18.3.1)':
-    dependencies:
-      emoji-mart: 5.6.0
-      react: 18.3.1
 
   '@emotion/babel-plugin@11.13.5':
     dependencies:
@@ -33767,13 +33674,6 @@ snapshots:
       slash: 3.0.0
     transitivePeerDependencies:
       - supports-color
-
-  babel-loader@10.1.1(@babel/core@8.0.1)(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(esbuild@0.28.1)(postcss@8.5.16)):
-    dependencies:
-      '@babel/core': 8.0.1
-      find-up: 5.0.0
-    optionalDependencies:
-      webpack: 5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(esbuild@0.28.1)(postcss@8.5.16)
 
   babel-loader@8.4.1(@babel/core@7.29.7)(webpack@4.47.0):
     dependencies:
@@ -50149,10 +50049,6 @@ snapshots:
   vite-plugin-css-injected-by-js@3.5.2(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)):
     dependencies:
       vite: 8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)
-
-  vite-plugin-css-injected-by-js@5.0.1(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)):
-    dependencies:
-      vite: 8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)
 
   vite-plugin-dts@5.0.3(esbuild@0.28.1)(rolldown@1.1.4)(rollup@4.62.2)(supports-color@5.5.0)(typescript@5.9.3)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(esbuild@0.28.1)(postcss@8.5.16)):
     dependencies:

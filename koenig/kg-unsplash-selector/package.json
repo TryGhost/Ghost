@@ -41,7 +41,6 @@
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "autoprefixer": "10.5.2",
-    "concurrently": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-react-refresh": "catalog:",
@@ -53,7 +52,6 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-css-injected-by-js": "5.0.1",
     "vite-plugin-dts": "5.0.3",
     "vite-plugin-svgr": "5.2.0",
     "vitest": "catalog:"
