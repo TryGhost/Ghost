@@ -27,7 +27,7 @@
         "dev": "vite build --watch",
         "dev:start": "vite",
         "build": "tsc && vite build",
-        "lint": "pnpm run lint:code && pnpm run lint:test",
+        "lint": "pnpm run '/^lint:/'",
         "lint:code": "eslint --cache src",
         "lint:test": "eslint --cache test",
         "test": "pnpm test:unit",

@@ -23,7 +23,7 @@
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
     "clean": "rm -rf build tsconfig.tsbuildinfo",
     "build": "pnpm clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
-    "test": "pnpm test:types && pnpm test:unit",
+    "test": "pnpm run '/^test:/'",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
     "test:types": "tsc --noEmit",
     "lint": "eslint",

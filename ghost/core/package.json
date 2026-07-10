@@ -45,7 +45,7 @@
   "scripts": {
     "archive": "node scripts/pack.js",
     "dev": "nodemon index.js",
-    "build:assets": "pnpm build:assets:css && pnpm build:assets:js",
+    "build:assets": "pnpm run '/^build:assets:/'",
     "build:assets:js": "node bin/minify-assets.js",
     "generate-golden-email": "node bin/generate-golden-email.js",
     "migrate:create": "node bin/create-migration.js",
@@ -70,9 +70,9 @@
     "lint:shared": "eslint 'core/shared/**/*.js' --cache",
     "lint:frontend": "eslint 'core/frontend/**/*.js' --cache",
     "lint:test": "eslint 'test/**/*.js' --cache",
-    "lint:code": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend",
+    "lint:code": "pnpm run '/^lint:(server|shared|frontend)$/'",
     "lint:types": "pnpm --filter @tryghost/parse-email-address build && eslint '**/*.ts' --cache && tsc --noEmit",
-    "lint": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend && pnpm lint:test && pnpm lint:types"
+    "lint": "pnpm run '/^lint:(server|shared|frontend|test|types)$/'"
   },
   "engines": {
     "node": "^22.18.0",

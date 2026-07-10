@@ -43,7 +43,7 @@
     "pretest:watch": "pnpm pretest",
     "posttest": "pnpm lint",
     "coverage": "vitest run --coverage",
-    "lint": "pnpm run lint:js && pnpm run lint:css",
+    "lint": "pnpm run '/^lint:/'",
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:js": "eslint --cache demo src test",
     "storybook": "catalog:",
