@@ -31,6 +31,7 @@
     "@eslint/js": "catalog:",
     "@faker-js/faker": "catalog:",
     "@playwright/test": "catalog:",
+    "@tryghost/test-data": "workspace:*",
     "@tryghost/debug": "catalog:",
     "@tryghost/logging": "catalog:",
     "@types/dockerode": "4.0.1",

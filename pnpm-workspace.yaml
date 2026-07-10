@@ -5,6 +5,7 @@ packages:
   - 'koenig/*'
   - 'packages/**'
   - '!packages/_template'
+  - 'testing/*'
 
 strictDepBuilds: true
 catalogMode: strict
