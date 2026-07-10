@@ -1,9 +1,31 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {expectMemoizationWithoutParams} from '@test-utils/analytics/hook-testing-utils';
 import {mockApiHook, mockLoading, mockNull, mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook, waitFor} from '@testing-library/react';
 import {useLatestPostStats} from '@/analytics/hooks/use-latest-post-stats';
 import type {PostStatsResponseType} from '@tryghost/admin-x-framework/api/stats';
+
+/**
+ * Asserts that a parameterless hook memoizes its result: rerenders without
+ * dependency changes return the same reference, and rerenders after
+ * `setupChangedDependencies` return a new one.
+ */
+const expectMemoizationWithoutParams = <R,>(
+    hookFunction: () => R,
+    setupChangedDependencies: () => void
+) => {
+    // Initial render
+    const {result, rerender} = renderHook(() => hookFunction());
+    const firstResult = result.current;
+
+    // Rerender without changing dependencies - should return same reference
+    rerender();
+    expect(result.current).toBe(firstResult);
+
+    // Change dependencies and rerender - should return different reference
+    setupChangedDependencies();
+    rerender();
+    expect(result.current).not.toBe(firstResult);
+};
 
 // Mock external dependencies
 vi.mock('@tryghost/admin-x-framework/api/posts', () => ({
