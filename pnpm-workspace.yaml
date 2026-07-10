@@ -5,6 +5,7 @@ packages:
   - 'koenig/*'
   - 'packages/**'
   - '!packages/_template'
+  - 'configs/*'
   - 'testing/*'
 
 strictDepBuilds: true

@@ -1,28 +1,8 @@
 {
+    "extends": "@internal/cfg-typescript/esm.json",
     "compilerOptions": {
-        "target": "es2022",
-        "module": "nodenext",
-        "moduleResolution": "nodenext",
         "rootDir": "src",
-        "outDir": "build",
-        "types": [
-            "node"
-        ],
-        "allowImportingTsExtensions": true,
-        "rewriteRelativeImportExtensions": true,
-        "declaration": true,
-        "declarationMap": true,
-        "sourceMap": true,
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "resolveJsonModule": true,
-        "strict": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
-        "noUncheckedIndexedAccess": true,
-        "skipLibCheck": true
+        "outDir": "build"
     },
     "include": [
         "src/**/*"
