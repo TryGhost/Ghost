@@ -46,7 +46,7 @@ const localPlugin = {
 const tailwindCssConfig = `${import.meta.dirname}/src/index.css`;
 
 export default tseslint.config([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'test-utils/acceptance/public']),
   {files: ['**/*'], ...strictLinterOptions},
   {
     files: ['**/*.{ts,tsx}'],
