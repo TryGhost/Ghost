@@ -14,7 +14,7 @@ import {getPeriodText} from '@/analytics/utils/chart-helpers';
 import {getRangeDates} from '@tryghost/shade/app';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
-import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@/analytics/hooks/use-newsletter-stats-with-range';
 import type {TopNewslettersOrder} from '@/analytics/hooks/use-newsletter-stats-with-range';
 

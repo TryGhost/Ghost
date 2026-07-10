@@ -1,7 +1,4 @@
-import {type Config} from '@tryghost/admin-x-framework/api/config';
 import {type Post as PostBase} from '@tryghost/admin-x-framework/api/posts';
-import {type Setting} from '@tryghost/admin-x-framework/api/settings';
-import {type StatsConfig} from '@tryghost/admin-x-framework';
 import {createContext, useContext} from 'react';
 
 // Comprehensive Post type with all the includes we fetch in PostAnalytics
@@ -30,30 +27,24 @@ export interface Post extends PostBase {
     tiers?: object[];
 }
 
+// PostAnalyticsProvider owns only post-scoped state: the routed post and the
+// selected date range. Framework data (config/site/settings/tinybird) is read
+// from the shell's FrameworkProvider via `useAnalyticsData` — it is NOT stored
+// here.
 export type PostAnalyticsContextType = {
-    data: Config | undefined;
-    site: {
-        url?: string;
-        icon?: string;
-        title?: string;
-    } | undefined;
-    statsConfig: StatsConfig | undefined;
-    tinybirdToken: string | undefined;
-    isLoading: boolean;
-    range: number;
-    setRange: (value: number) => void;
-    settings: Setting[];
     postId: string;
     post: Post | undefined;
     isPostLoading: boolean;
+    range: number;
+    setRange: (value: number) => void;
 }
 
 export const PostAnalyticsContext = createContext<PostAnalyticsContextType | undefined>(undefined);
 
-export const useGlobalData = () => {
+export const usePostAnalytics = () => {
     const context = useContext(PostAnalyticsContext);
     if (!context) {
-        throw new Error('useGlobalData must be used within a PostAnalyticsProvider');
+        throw new Error('usePostAnalytics must be used within a PostAnalyticsProvider');
     }
     return context;
 };

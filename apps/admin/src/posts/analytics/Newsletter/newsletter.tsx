@@ -6,7 +6,7 @@ import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, Ca
 import {HTable} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade/utils';
 import {NewsletterRadialChart, type NewsletterRadialChartData} from './components/newsletter-radial-chart';
-import {type Post, useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
+import {type Post, usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
 import {buildMembersUrl} from '@/members/member-route';
 import {getLinkById} from '@/posts/analytics/utils/link-helpers';
 import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
@@ -78,7 +78,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
     // Use shared post data from context
-    const {post, isPostLoading, postId} = useGlobalData();
+    const {post, isPostLoading, postId} = usePostAnalytics();
     const navigateToMembers = (filter: string) => navigate(buildMembersUrl({filter}), {crossApp: true});
     const typedPost = post as Post;
     // Use the utility function from admin-x-framework

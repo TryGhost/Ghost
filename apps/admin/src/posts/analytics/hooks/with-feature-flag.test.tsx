@@ -7,9 +7,11 @@ vi.mock('@tryghost/admin-x-framework', () => ({
     Navigate: ({to}: {to: string}) => React.createElement('div', {'data-testid': 'navigate', 'data-to': to}, `Redirecting to ${to}`)
 }));
 
-vi.mock('@/posts/analytics/providers/post-analytics-context');
+vi.mock('@/shared/analytics/use-analytics-data', () => ({
+    useAnalyticsData: vi.fn()
+}));
 
-const mockUseGlobalData = vi.mocked(await import('@/posts/analytics/providers/post-analytics-context')).useGlobalData;
+const mockUseAnalyticsData = vi.mocked(await import('@/shared/analytics/use-analytics-data')).useAnalyticsData;
 
 describe('withFeatureFlag', () => {
     const TestComponent = ({message}: {message: string}) => <div data-testid="test-component">{message}</div>;
@@ -19,10 +21,10 @@ describe('withFeatureFlag', () => {
     });
 
     it('renders the wrapped component and forwards props when enabled', () => {
-        mockUseGlobalData.mockReturnValue({
+        mockUseAnalyticsData.mockReturnValue({
             isLoading: false,
-            data: {labs: {testFlag: true}}
-        } as unknown as ReturnType<typeof mockUseGlobalData>);
+            config: {labs: {testFlag: true}}
+        } as unknown as ReturnType<typeof mockUseAnalyticsData>);
 
         const WrappedComponent = withFeatureFlag(TestComponent, 'testFlag', '/fallback', 'Test Title');
         render(<WrappedComponent message="Hello World" />);
@@ -32,10 +34,10 @@ describe('withFeatureFlag', () => {
     });
 
     it('renders redirect when disabled', () => {
-        mockUseGlobalData.mockReturnValue({
+        mockUseAnalyticsData.mockReturnValue({
             isLoading: false,
-            data: {labs: {testFlag: false}}
-        } as unknown as ReturnType<typeof mockUseGlobalData>);
+            config: {labs: {testFlag: false}}
+        } as unknown as ReturnType<typeof mockUseAnalyticsData>);
 
         const WrappedComponent = withFeatureFlag(TestComponent, 'testFlag', '/fallback', 'Test Title');
         render(<WrappedComponent message="Hello World" />);
@@ -45,10 +47,10 @@ describe('withFeatureFlag', () => {
     });
 
     it('renders loading UI with title while loading', () => {
-        mockUseGlobalData.mockReturnValue({
+        mockUseAnalyticsData.mockReturnValue({
             isLoading: true,
-            data: undefined
-        } as unknown as ReturnType<typeof mockUseGlobalData>);
+            config: undefined
+        } as unknown as ReturnType<typeof mockUseAnalyticsData>);
 
         const WrappedComponent = withFeatureFlag(TestComponent, 'testFlag', '/fallback', 'Test Title');
         render(<WrappedComponent message="Hello World" />);

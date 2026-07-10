@@ -1,23 +1,24 @@
-import DateRangeSelect from '@/posts/analytics/components/date-range-select';
+import DateRangeSelect from '@/shared/analytics/date-range-select';
 import Kpis from './components/kpis';
 import Locations from './components/locations';
 import PostAnalyticsContent from '@/posts/analytics/components/post-analytics-content';
 import PostAnalyticsHeader from '@/posts/analytics/components/post-analytics-header';
 import Sources from './components/sources';
-import StatsFilter from '@/posts/analytics/components/stats-filter';
+import StatsFilter from '@/shared/analytics/stats-filter';
 import {BarChartLoadingIndicator, Card, CardContent, EmptyIndicator, NavbarActions} from '@tryghost/shade/components';
 import {Navigate, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {type KpiDataItem, getWebKpiValues} from '@/posts/analytics/utils/kpi-helpers';
 import {LucideIcon, getScrollParent} from '@tryghost/shade/utils';
-import {STATS_RANGES, UNKNOWN_LOCATION_VALUES} from '@/posts/analytics/utils/constants';
+import {STATS_RANGES, UNKNOWN_LOCATION_VALUES} from '@/shared/analytics/constants';
 import {createFilter} from '@tryghost/shade/patterns';
 import {formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade/app';
-import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/posts/analytics/utils/audience';
+import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/shared/analytics/audience';
 import {getPeriodText} from '@/posts/analytics/utils/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
-import {useFilterParams} from '@/posts/analytics/hooks/use-filter-params';
-import {useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
+import {POST_ANALYTICS_FILTER_FIELDS, useFilterParams} from '@/shared/analytics/use-filter-params';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
+import {usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
 
 interface ProcessedLocationData {
     location: string;
@@ -31,12 +32,17 @@ interface postAnalyticsProps {}
 const Web: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
-    const {statsConfig, isLoading: isConfigLoading, range, data: globalData, post, isPostLoading} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, site} = useAnalyticsData();
+    const {range, setRange, post, isPostLoading} = usePostAnalytics();
     const {appSettings} = useAppContext();
     const containerRef = useRef<HTMLElement>(null);
 
-    // Use URL-synced filter state for bookmarking and sharing
-    const {filters: analyticsFilters, setFilters: setAnalyticsFilters} = useFilterParams();
+    // Use URL-synced filter state for bookmarking and sharing. The 'post'
+    // field is not offered here — the surface is already scoped to one post.
+    const {filters: analyticsFilters, setFilters: setAnalyticsFilters} = useFilterParams({
+        supportedFields: POST_ANALYTICS_FILTER_FIELDS,
+        trackingSource: 'post-analytics'
+    });
 
     // Derive audience from filters - URL is the single source of truth
     const audience = useMemo(() => {
@@ -54,10 +60,14 @@ const Web: React.FC<postAnalyticsProps> = () => {
     // Calculate chart range based on days between today and post publication date
     const chartRange = useMemo(() => {
         if (!post?.published_at) {
-            return STATS_RANGES.ALL_TIME.value; // Fallback if no publication date
+            return STATS_RANGES.allTime.value; // Fallback if no publication date
         }
         const calculatedRange = getRangeForStartDate(post.published_at);
-        if (range > calculatedRange) {
+        // Resolve the selected range to a concrete day count before clamping to
+        // the post's age — "Year to date" is the sentinel -1, not a day count
+        const {startDate: rangeStart, endDate: rangeEnd} = getRangeDates(range);
+        const rangeInDays = rangeEnd.diff(rangeStart, 'days') + 1;
+        if (rangeInDays > calculatedRange) {
             return calculatedRange;
         }
         return range;
@@ -176,9 +186,9 @@ const Web: React.FC<postAnalyticsProps> = () => {
         return sourcesData.reduce((sum, source) => sum + Number(source.visits || 0), 0);
     }, [sourcesData]);
 
-    // Get site URL and icon from global data
-    const siteUrl = globalData?.url as string | undefined;
-    const siteIcon = globalData?.icon as string | undefined;
+    // Get site URL and icon for source favicons
+    const siteUrl = site.url;
+    const siteIcon = site.icon;
 
     // Memoize the processed locations data with percentages
     const processedLocationsData = useMemo<ProcessedLocationData[]>(() => {
@@ -223,15 +233,17 @@ const Web: React.FC<postAnalyticsProps> = () => {
             <PostAnalyticsHeader currentTab='Web'>
                 {hasFilters &&
                 <NavbarActions>
-                    <DateRangeSelect />
+                    <DateRangeSelect range={range} onRangeChange={setRange} />
                 </NavbarActions>
                 }
                 <NavbarActions className={`${hasFilters ? 'mt-0! [grid-area:subactions] lg:mt-[25px]!' : '[grid-area:actions]'}`}>
                     <StatsFilter
                         filters={analyticsFilters}
+                        postUuid={post?.uuid}
+                        range={range}
                         onChange={setAnalyticsFilters}
                     />
-                    {!hasFilters && <DateRangeSelect />}
+                    {!hasFilters && <DateRangeSelect range={range} onRangeChange={setRange} />}
                 </NavbarActions>
             </PostAnalyticsHeader>
             <PostAnalyticsContent ref={containerRef}>

@@ -1,7 +1,7 @@
 import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Tabs, TabsList} from '@tryghost/shade/components';
 import {GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue} from '@tryghost/shade/patterns';
 import {KPI_METRICS} from '@/analytics/views/Stats/Web/web-kpi-metrics';
-import {STATS_RANGES} from '@/analytics/utils/constants';
+import {STATS_RANGES} from '@/shared/analytics/constants';
 import {formatDuration, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {getYRange} from '@tryghost/shade/app';
 import {sanitizeChartData, truncateLeadingEmptyData} from '@/analytics/utils/chart-helpers';

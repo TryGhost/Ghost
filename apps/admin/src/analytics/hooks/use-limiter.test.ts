@@ -2,11 +2,11 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {renderHook} from '@testing-library/react';
 import {useLimiter} from '@/analytics/hooks/use-limiter';
 
-vi.mock('@/analytics/hooks/use-analytics-data', () => ({
+vi.mock('@/shared/analytics/use-analytics-data', () => ({
     useAnalyticsData: vi.fn()
 }));
 
-const mockUseAnalyticsData = vi.mocked(await import('@/analytics/hooks/use-analytics-data')).useAnalyticsData;
+const mockUseAnalyticsData = vi.mocked(await import('@/shared/analytics/use-analytics-data')).useAnalyticsData;
 
 type AnalyticsData = ReturnType<typeof mockUseAnalyticsData>;
 

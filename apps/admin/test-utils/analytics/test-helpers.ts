@@ -88,7 +88,7 @@ export const applyMocksToModules = (mocks: ReturnType<typeof setupStatsAppMocks>
         useAnalytics: mocks.mockUseAnalytics
     }));
 
-    vi.doMock('@/analytics/hooks/use-analytics-data', () => ({
+    vi.doMock('@/shared/analytics/use-analytics-data', () => ({
         useAnalyticsData: mocks.mockUseAnalyticsData
     }));
 

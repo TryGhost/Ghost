@@ -1,7 +1,7 @@
 import React from 'react';
 import {type Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useEffect, useMemo, useState} from 'react';
-import {useGlobalData} from '@/posts/analytics/providers/post-analytics-context';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 
 interface PublishedPostData {
     id: string;
@@ -22,7 +22,7 @@ export const usePostSuccessModal = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [publishedPostData, setPublishedPostData] = useState<PublishedPostData | null>(null);
     const [postCount, setPostCount] = useState<number | null>(null);
-    const {site} = useGlobalData();
+    const {site} = useAnalyticsData();
 
     // Fetch the published post data if we have it
     const {data: postResponse} = useBrowsePosts({

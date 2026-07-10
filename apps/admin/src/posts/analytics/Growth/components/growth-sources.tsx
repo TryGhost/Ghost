@@ -1,6 +1,6 @@
-import DisabledSourcesIndicator from '@/posts/analytics/components/disabled-sources-indicator';
+import DisabledSourcesIndicator from '@/shared/analytics/disabled-sources-indicator';
 import React from 'react';
-import SourceIcon from '@/posts/analytics/components/source-icon';
+import SourceIcon from '@/shared/analytics/source-icon';
 import {type BaseSourceData, type ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';

@@ -1,4 +1,4 @@
-import {STATS_RANGES} from '@/posts/analytics/utils/constants';
+import {STATS_RANGES} from '@/shared/analytics/constants';
 /**
  * Returns additional text for subheads
  */
