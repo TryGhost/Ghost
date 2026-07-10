@@ -16,7 +16,10 @@ export const membersScreen = {
 
     /** Add a text filter through the filters UI: Filter button → field option → fill the value input. */
     async addFilter(field: keyof typeof membersSelectors.textFilterFields, value: string): Promise<void> {
-        await page.getByRole("button", { name: membersSelectors.names.filterButton }).click();
+        // The button is labelled "Filter" with no filters and "Add filter"
+        // once one exists — match both, like the e2e page object.
+        const buttonName = new RegExp(`^(${membersSelectors.names.filterButton}|${membersSelectors.names.addFilterButton})$`);
+        await page.getByRole("button", { name: buttonName }).click();
         await page.getByRole("option", { name: field, exact: true }).click();
         await page.getByRole("textbox", { name: membersSelectors.textFilterFields[field] }).fill(value);
     },

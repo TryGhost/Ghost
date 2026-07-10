@@ -37,15 +37,21 @@ function toAdminApiPath(url: string): string {
  * these must be declared with `fakeEndpoint` — they get the same
  * record-and-418 treatment as unhandled admin API requests instead of the
  * `onUnhandledRequest: "bypass"` default (which exists for vite modules and
- * assets, not app traffic).
+ * assets, not app traffic). `pattern` is the MSW route; `isMatch` is the
+ * equivalent URL predicate the in-flight ledger uses.
  */
-const EXTERNAL_URL_BLOCKLIST: string[] = [
+const EXTERNAL_URL_BLOCKLIST: Array<{ pattern: string; isMatch: (url: string) => boolean }> = [
     // The what's-new changelog feed (src/whats-new/hooks/use-changelog.ts)
     // and anything else on ghost.org.
-    "https://ghost.org/*",
+    { pattern: "https://ghost.org/*", isMatch: (url) => url.startsWith("https://ghost.org/") },
     // The ActivityPub API root (admin-x-framework utils/helpers.ts).
-    "*/.ghost/activitypub/*",
+    { pattern: "*/.ghost/activitypub/*", isMatch: (url) => url.includes("/.ghost/activitypub/") },
 ];
+
+/** The requests the harness owns — admin API + blocklisted external origins — and therefore tracks in flight. */
+function isTrackedUrl(url: string): boolean {
+    return ADMIN_API_PATTERN.test(url) || EXTERNAL_URL_BLOCKLIST.some(({ isMatch }) => isMatch(url));
+}
 
 /**
  * External requests that are shell boot chrome: fired on every render
@@ -73,6 +79,10 @@ export function registerRoute(method: string, path: string | RegExp): void {
 let recorded418s: string[] = [];
 let unhandledRequestsAllowed = false;
 
+// Snapshot of the route listing taken by resetFakeApi, so the verification
+// (which runs after the reset) can report what the test had faked.
+let routesDuringLastTest: string[] = [];
+
 /** Record a 418-serving request so `verifyNoUnhandledRequests` can fail the test. */
 export function record418(description: string): void {
     recorded418s.push(description);
@@ -98,6 +108,10 @@ export function verifyNoUnhandledRequests(): void {
     unhandledRequestsAllowed = false;
 
     if (!allowed && requests.length > 0) {
+        // The reset that precedes this call trimmed the live route listing
+        // back to the boot table; the snapshot holds what the test had faked.
+        const faked = routesDuringLastTest.length > 0 ? routesDuringLastTest : registeredRoutes;
+
         throw new Error(
             [
                 "Request(s) no fake handled (served a 418) during this test:",
@@ -106,32 +120,43 @@ export function verifyNoUnhandledRequests(): void {
                 "Declare admin API requests with a resource fake (fakeTags, fakeMembers, ...) or a renderAdminApp boot override,",
                 "external requests with fakeEndpoint(method, url, response),",
                 "or call allowUnhandledRequests() at the start of the test to opt out.",
+                "",
+                "Faked during this test:",
+                ...faked.map((route) => `  - ${route}`),
             ].join("\n")
         );
     }
 }
 
-// In-flight admin-API ledger, fed by the MSW lifecycle events installed at
-// worker start: requestId → "METHOD path". `settleAdminApiRequests` drains it
-// in afterEach so a request started at the tail of one test can't resolve
-// against the next test's handler table (or 418 after its own test already
-// passed — the false-green race).
-const inFlightAdminApiRequests = new Map<string, string>();
+// In-flight ledger for requests the harness owns (admin API + blocklisted
+// external origins), fed by the MSW lifecycle events installed at worker
+// start: requestId → "METHOD path". `settleRequests` drains it in afterEach
+// so a request started at the tail of one test can't resolve against the
+// next test's handler table (or 418 after its own test already passed — the
+// false-green race).
+const inFlightRequests = new Map<string, string>();
 
-function trackInFlightAdminApiRequests(worker: SetupWorker): void {
+function trackInFlightRequests(worker: SetupWorker): void {
     worker.events.on("request:start", ({ request, requestId }) => {
-        if (ADMIN_API_PATTERN.test(request.url)) {
-            inFlightAdminApiRequests.set(requestId, `${request.method} ${toAdminApiPath(request.url)}`);
+        if (isTrackedUrl(request.url)) {
+            const path = ADMIN_API_PATTERN.test(request.url) ? toAdminApiPath(request.url) : request.url;
+            inFlightRequests.set(requestId, `${request.method} ${path}`);
         }
     });
-    // "request:end" fires for every request the worker saw — handled,
-    // bypassed or unhandled — so each tracked start gets exactly one delete.
+    // "request:end" fires when a request completes (handled, bypassed or
+    // unhandled) — but NOT when its handler throws: msw emits
+    // "unhandledException" instead and responds 500. Listen to both so every
+    // tracked start gets exactly one delete; otherwise a throwing
+    // function-form fake would poison the ledger for the rest of the file.
     worker.events.on("request:end", ({ requestId }) => {
-        inFlightAdminApiRequests.delete(requestId);
+        inFlightRequests.delete(requestId);
+    });
+    worker.events.on("unhandledException", ({ requestId }) => {
+        inFlightRequests.delete(requestId);
     });
 }
 
-export interface SettleAdminApiRequestsOptions {
+export interface SettleRequestsOptions {
     /** How long the in-flight ledger must stay continuously empty before resolving. */
     quietMs?: number;
     /** Overall deadline; throws listing the still-pending requests when exceeded. */
@@ -147,18 +172,18 @@ function sleep(ms: number): Promise<void> {
 }
 
 /**
- * Resolves once no admin API request has been in flight for `quietMs`
- * continuously. Called between `cleanup()` (an unmounted app can't start new
- * requests) and `resetFakeApi()` (in-flight requests must still hit the fakes
- * declared for them), so stragglers are drained inside the test that caused
- * them.
+ * Resolves once no tracked request (admin API or blocklisted external) has
+ * been in flight for `quietMs` continuously. Called between `cleanup()` (an
+ * unmounted app can't start new requests) and `resetFakeApi()` (in-flight
+ * requests must still hit the fakes declared for them), so stragglers are
+ * drained inside the test that caused them.
  */
-export async function settleAdminApiRequests({ quietMs = 50, timeoutMs = 2000 }: SettleAdminApiRequestsOptions = {}): Promise<void> {
+export async function settleRequests({ quietMs = 50, timeoutMs = 2000 }: SettleRequestsOptions = {}): Promise<void> {
     const deadline = Date.now() + timeoutMs;
     let quietSince: number | undefined;
 
     while (Date.now() < deadline) {
-        if (inFlightAdminApiRequests.size === 0) {
+        if (inFlightRequests.size === 0) {
             quietSince ??= Date.now();
             if (Date.now() - quietSince >= quietMs) {
                 return;
@@ -169,14 +194,14 @@ export async function settleAdminApiRequests({ quietMs = 50, timeoutMs = 2000 }:
         await sleep(SETTLE_POLL_MS);
     }
 
-    if (inFlightAdminApiRequests.size === 0) {
+    if (inFlightRequests.size === 0) {
         return;
     }
 
     throw new Error(
         [
-            `Admin API request(s) still in flight ${timeoutMs}ms after the test finished:`,
-            ...[...inFlightAdminApiRequests.values()].map((description) => `  - ${description}`),
+            `Request(s) still in flight ${timeoutMs}ms after the test finished:`,
+            ...[...inFlightRequests.values()].map((description) => `  - ${description}`),
         ].join("\n")
     );
 }
@@ -278,7 +303,7 @@ export async function startFakeApi({ resolver, routes }: StartFakeApiOptions): P
         ),
         // Known external origins nothing above handled: fail fast instead of
         // letting the request escape to the real network.
-        ...EXTERNAL_URL_BLOCKLIST.map((pattern) =>
+        ...EXTERNAL_URL_BLOCKLIST.map(({ pattern }) =>
             http.all(pattern, ({ request }) => {
                 record418(`${request.method} ${request.url} (external origin)`);
                 return new HttpResponse(
@@ -289,7 +314,7 @@ export async function startFakeApi({ resolver, routes }: StartFakeApiOptions): P
         )
     );
 
-    trackInFlightAdminApiRequests(worker);
+    trackInFlightRequests(worker);
 
     await worker.start({
         serviceWorker: { url: "/mockServiceWorker.js" },
@@ -301,6 +326,7 @@ export async function startFakeApi({ resolver, routes }: StartFakeApiOptions): P
 }
 
 export function resetFakeApi(): void {
+    routesDuringLastTest = [...registeredRoutes];
     worker?.resetHandlers();
     registeredRoutes.length = bootRouteCount;
 }

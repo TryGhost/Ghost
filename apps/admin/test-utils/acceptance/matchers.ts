@@ -18,7 +18,13 @@ function matchesExpected(expected: string | RegExp, actual: string | undefined):
     if (actual === undefined) {
         return false;
     }
-    return typeof expected === "string" ? actual === expected : expected.test(actual);
+    if (typeof expected === "string") {
+        return actual === expected;
+    }
+    // A /g or /y RegExp is stateful — .test() advances lastIndex, so repeated
+    // polls alternate match/no-match (and break .not). Strip those flags.
+    const stateless = expected.global || expected.sticky ? new RegExp(expected.source, expected.flags.replace(/[gy]/g, "")) : expected;
+    return stateless.test(actual);
 }
 
 /**

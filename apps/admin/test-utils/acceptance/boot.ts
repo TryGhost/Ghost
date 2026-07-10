@@ -17,8 +17,8 @@ import { registerAdminApiHandler, registerRoute } from "./worker";
  * write (theme/navigation sync).
  *
  * These are handled by DEFAULT inside the harness — specs never mention them.
- * To change a boot response for one test, pass an override to
- * `renderAdminApp({boot: {...}})` keyed by the entry name below.
+ * To change a boot response for one test, pass an override keyed by the entry
+ * name below, e.g. `renderAdminApp("/", {boot: {browseMe: {response: ...}}})`.
  *
  * All canned responses come from `@tryghost/test-data` — that package is
  * the root of the dependency graph, so nothing in this harness imports
