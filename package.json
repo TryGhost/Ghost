@@ -44,6 +44,7 @@
     "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
     "dev:daemon": "NX_DAEMON=true NX_TUI=false NX_DEFAULT_OUTPUT_STYLE=stream pnpm nx run ghost-monorepo:docker:dev",
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
+    "create-package": "node ./scripts/create-package.mjs",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
     "setup": "pnpm install && git submodule update --init --recursive",
     "reset:db": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && pnpm knex-migrator reset && pnpm knex-migrator init'",

@@ -3,6 +3,8 @@ packages:
   - 'apps/*'
   - 'e2e'
   - 'koenig/*'
+  - 'packages/**'
+  - '!packages/_template'
 
 strictDepBuilds: true
 catalogMode: strict
