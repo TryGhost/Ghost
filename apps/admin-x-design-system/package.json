@@ -103,7 +103,7 @@
                     "command": "vite build --watch"
                 },
                 "dependsOn": [
-                    "^build"
+                    "build"
                 ]
             },
             "build": {
