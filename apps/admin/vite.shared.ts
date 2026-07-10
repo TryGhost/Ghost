@@ -21,6 +21,4 @@ export const sharedResolve = {
         // TODO: Remove this when @tryghost/nql is updated
         mingo: require.resolve("mingo/dist/mingo.js"),
     },
-    // Shim node modules utilized by the @tryghost/nql package
-    external: ["fs", "path", "util"],
 };

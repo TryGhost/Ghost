@@ -1,17 +1,11 @@
-/**
- * Acceptance-harness public surface. A typical spec:
- *
- *   import {mockTags, renderAdminApp} from "@test-utils/acceptance";
- *   import {tag} from "@tryghost/test-data";
- *
- *   it("lists tags", async () => {
- *       mockTags([tag({name: "News"})]);
- *       const screen = await renderAdminApp({route: "/tags"});
- *       await expect.element(screen.getByRole("link", {name: "News"})).toBeVisible();
- *   });
- */
-export { renderAdminApp } from "./render-admin-app";
+/** Acceptance-harness public surface — see README.md for the spec anatomy. */
+export { currentRoute, renderAdminApp } from "./render-admin-app";
 export type { RenderAdminAppOptions } from "./render-admin-app";
-export { defineResource, mockMembers, mockTags } from "./resources";
-export type { BrowseQuery, MockMembersOptions, ResourceCapture, ResourceOptions, ResourceSemantics, RespondWith } from "./resources";
-export { allowUnmockedRequests } from "./worker";
+export { defineResource, fakeMembers, fakeTags } from "./resources";
+export type { BrowseQuery, FakeMembersOptions, ResourceCapture, ResourceOptions, ResourceSemantics, RespondWith } from "./resources";
+export { allowUnhandledRequests, fakeAdminEndpoint, fakeEndpoint } from "./worker";
+export type { CapturedEndpointRequest, EndpointCapture, FakeAdminEndpointResponse, FakeEndpointOptions } from "./worker";
+
+// Test-data re-exports, so a spec needs a single import surface.
+export { changelogEntry, currentUserResponse, label, member, tag } from "@tryghost/test-data";
+export type { ChangelogEntry, CurrentUserResponse, Label, Member, Tag } from "@tryghost/test-data";

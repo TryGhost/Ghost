@@ -1,3 +1,6 @@
+// jsdom unit-tier factories only; acceptance specs use @tryghost/test-data
+// builders (see test-utils/acceptance/README.md).
+
 import type { User } from "@tryghost/admin-x-framework/api/users";
 
 const createMockUser = (overrides?: Partial<User>): User => ({

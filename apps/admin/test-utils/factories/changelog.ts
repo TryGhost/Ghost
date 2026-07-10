@@ -1,3 +1,6 @@
+// jsdom unit-tier factories only; acceptance specs use @tryghost/test-data
+// builders (see test-utils/acceptance/README.md).
+
 import type { ChangelogEntry, RawChangelogEntry, RawChangelogResponse } from "@/whats-new/hooks/use-changelog";
 
 /**

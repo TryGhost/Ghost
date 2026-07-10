@@ -7,17 +7,23 @@ export {member} from "./builders/member";
 export type {Member, MemberNewsletter, MemberTier} from "./builders/member";
 export {label} from "./builders/label";
 export type {Label} from "./builders/label";
-export {defaultThemesResponse, theme, themesListResponse} from "./builders/theme";
+export {defaultThemesResponse, theme} from "./builders/theme";
 export type {Theme, ThemePackage, ThemesResponse} from "./builders/theme";
 export {post} from "./builders/post";
 export type {Post} from "./builders/post";
+export {changelogEntry} from "./builders/changelog";
+export type {ChangelogEntry} from "./builders/changelog";
 export {buildLexical, buildLexicalParagraph} from "./builders/lexical";
 export type {CardSpec} from "./builders/lexical";
 
-export {browseResponse, readResponse} from "./envelopes";
+export {browseResponse} from "./envelopes";
 export type {BrowseResponse, BrowseResponseOptions, Pagination} from "./envelopes";
 
 export {generateId, generateSlug, generateUuid} from "./utils";
+
+export {membersSelectors} from "./selectors/members";
+export {tagsSelectors} from "./selectors/tags";
+export {whatsNewSelectors} from "./selectors/whats-new";
 
 export {
     activeThemeResponse,

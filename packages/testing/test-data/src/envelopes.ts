@@ -44,8 +44,3 @@ export function browseResponse<K extends string, T>(
         }
     } as BrowseResponse<K, T>;
 }
-
-/** Read/singular envelope: Ghost still keys single entities by the plural resource. */
-export function readResponse<K extends string, T>(resourceKey: K, entity: T): Record<K, T[]> {
-    return {[resourceKey]: [entity]} as Record<K, T[]>;
-}

@@ -3,23 +3,24 @@ import { cleanup } from "vitest-browser-react";
 
 import "./matchers";
 import { defaultBootResolver, defaultBootRoutes } from "./boot";
-import { resetMockWorker, startMockWorker, verifyNoUnmockedRequests } from "./worker";
+import { resetFakeApi, settleRequests, startFakeApi, verifyNoUnhandledRequests } from "./worker";
 
 beforeAll(async () => {
-    await startMockWorker({ resolver: defaultBootResolver, routes: defaultBootRoutes() });
+    await startFakeApi({ resolver: defaultBootResolver, routes: defaultBootRoutes() });
 });
 
 afterEach(async () => {
-    // Unmount the app before touching the mock worker or the URL — resetting
-    // either while the app is live triggers navigations/refetches against a
-    // handler-less worker, which surface as unhandled rejections. (Query
-    // caches need no teardown: each renderAdminApp gets a fresh QueryClient.)
+    // Order is load-bearing: unmount first (a live app refetches against a
+    // reset worker); drain before the reset (stragglers must hit their
+    // declared fakes) and before the verification (late 418s belong to the
+    // test that caused them); finally so a drain timeout can't leak handlers
+    // or 418 records into the next test.
     await cleanup();
-
-    resetMockWorker();
-    window.location.hash = "";
-
-    // Last, after teardown is safely done: fail the test if any admin API
-    // request went unmocked (was served a 418) while it ran.
-    verifyNoUnmockedRequests();
+    try {
+        await settleRequests();
+    } finally {
+        resetFakeApi();
+        window.location.hash = "";
+        verifyNoUnhandledRequests();
+    }
 });

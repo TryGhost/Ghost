@@ -3,27 +3,6 @@ import { browseResponse, type Label, type Member, type Tag } from "@tryghost/tes
 
 import { record418, registerAdminApiHandler, registerRoute } from "./worker";
 
-/**
- * Resource handlers: declare the world, let the handler serve it.
- *
- * THE RULE: a resource handler may implement *trivial declared* query
- * behaviors — ones where the handler only echoes back a slice of exactly what
- * the spec declared (a `visibility` field match, page/limit slicing) — but
- * NEVER NQL. For NQL-filtered lists (members `?filter=`, `?search=`) the spec
- * declares the response and asserts the outgoing filter string instead,
- * because that serialization IS the behavior under test; re-implementing NQL
- * in the mock would test the mock.
- *
- * Each resource states which side of that line it is on via `semantics`:
- *
- *   - `{kind: "passthrough"}` — serves exactly the declared entities and
- *     never interprets the query. Per-request responses are declared with a
- *     function of the parsed query.
- *   - `{kind: "declared-query", covers, select}` — `select` applies the
- *     trivial declared behaviors; any filter component outside `covers`
- *     responds 418 instead of silently serving the full world.
- */
-
 export interface BrowseQuery {
     /** Full request URL, for raw assertions on encoding. */
     url: string;
@@ -31,6 +10,8 @@ export interface BrowseQuery {
     filter?: string;
     /** Decoded ?search param, if present. */
     search?: string;
+    /** Decoded ?order param (e.g. "created_at desc"), if present. */
+    order?: string;
     page: number;
     limit: number | "all";
 }
@@ -44,7 +25,7 @@ export interface ResourceCapture {
 /** The entities to serve: one world for every request, or per-request via a function of the parsed query. */
 export type RespondWith<TEntity> = TEntity[] | ((query: BrowseQuery) => TEntity[]);
 
-/** Explicit, greppable statement of how much query behavior a resource mock implements (see THE RULE above). */
+/** How much query behavior the fake implements — see THE RULE on `defineResource`. */
 export type ResourceSemantics<TEntity> =
     | {
           kind: "declared-query";
@@ -72,16 +53,16 @@ function parseBrowseQuery(request: Request): BrowseQuery {
         url: request.url,
         filter: params.get("filter") ?? undefined,
         search: params.get("search") ?? undefined,
+        order: params.get("order") ?? undefined,
         page: Number(params.get("page") ?? "1"),
         limit: rawLimit === "all" ? "all" : rawLimit ? Number(rawLimit) : 15,
     };
 }
 
 /**
- * Strict declared-query filter parsing: split the NQL into top-level `+`
- * components and return the ones whose key `covers` does not include. NQL
- * grouping is out of scope on purpose — a component that doesn't parse as a
- * simple `key:value` also counts as uncovered.
+ * Split the filter into top-level `+` components and return those whose key
+ * `covers` doesn't include; components that aren't a simple `key:value` count
+ * as uncovered (NQL grouping is out of scope).
  */
 function uncoveredFilterComponents(filter: string | undefined, covers: string[]): string[] {
     if (!filter) {
@@ -95,15 +76,26 @@ function uncoveredFilterComponents(filter: string | undefined, covers: string[])
 }
 
 /**
- * Define a mock for one admin API list resource. The returned function
- * registers a handler that owns the resource's browse URL: it parses the
- * query, records it on the returned capture (for outgoing-NQL assertions),
- * applies the resource's declared semantics and wraps the result in the Ghost
- * list envelope (which slices pagination itself). Unmatched paths fall
- * through to the boot table / 418 catch-all.
+ * Define a fake for one admin API list resource. The returned function
+ * registers a handler owning the resource's browse URL: it records each
+ * parsed query on the returned capture and serves the declared entities in
+ * the Ghost list envelope (which slices pagination itself).
+ *
+ * THE RULE: a resource fake may implement trivial declared query behaviors —
+ * only echoing back a slice of exactly what the spec declared (a field
+ * match, page/limit slicing) — but NEVER NQL. Two semantics:
+ *
+ *   - `{kind: "passthrough"}` — serves exactly the declared entities, never
+ *     interprets the query. For NQL-filtered lists the spec declares the
+ *     response (per-request via a function of the query) and asserts the
+ *     outgoing filter string: that serialization is the behavior under test,
+ *     and re-implementing NQL in the fake would test the fake.
+ *   - `{kind: "declared-query", covers, select}` — `select` applies the
+ *     trivial behaviors; filter components outside `covers` respond 418
+ *     instead of silently serving the full world.
  */
 export function defineResource<TEntity>({ resource, semantics, skip }: ResourceOptions<TEntity>) {
-    return function mockResource(respondWith: RespondWith<TEntity>): ResourceCapture {
+    return function fakeResource(respondWith: RespondWith<TEntity>): ResourceCapture {
         const requests: BrowseQuery[] = [];
 
         registerRoute("GET", `/${resource}/?…`);
@@ -152,13 +144,8 @@ export function defineResource<TEntity>({ resource, semantics, skip }: ResourceO
     };
 }
 
-/**
- * Declared-world handler for the tags list: give it every tag that exists and
- * it serves whichever slice the app asks for — the `visibility` filter the
- * tags screen tabs send, plus page/limit slicing (trivial declared semantics
- * only, see THE RULE above).
- */
-export const mockTags = defineResource<Tag>({
+/** Tags list fake: declared-query semantics covering the `visibility` filter the tags tabs send. */
+export const fakeTags = defineResource<Tag>({
     resource: "tags",
     semantics: {
         kind: "declared-query",
@@ -175,7 +162,6 @@ const MEMBER_COUNT_PROBE_PATH = "/members/?limit=1";
 
 const membersResource = defineResource<Member>({
     resource: "members",
-    // EXPLICIT mode: no fake filtering ever happens (see THE RULE above).
     semantics: { kind: "passthrough" },
     // Leave the sidebar count probe to the boot table so it never pollutes
     // `lastRequest` assertions.
@@ -188,24 +174,26 @@ const tiersResource = defineResource({ resource: "tiers", semantics: { kind: "pa
 const offersResource = defineResource({ resource: "offers", semantics: { kind: "passthrough" } });
 const newslettersResource = defineResource({ resource: "newsletters", semantics: { kind: "passthrough" } });
 
-export interface MockMembersOptions {
-    /** Labels served to the members page filter bar's label lookup (default none). */
+export interface FakeMembersOptions {
+    /**
+     * Extra labels for the filter-bar lookup, additive to those embedded in
+     * array-form members — and the only way to serve labels with the
+     * function form.
+     */
     labels?: Label[];
 }
 
 /**
- * Explicit-mode handler for the members list: serves exactly the declared
- * entities and captures every browse request so specs can assert the outgoing
- * NQL (`lastRequest.filter`, `lastRequest.search`, raw `lastRequest.url`).
- * Pass an array to serve the same world for every request, or a function of
- * the parsed query to declare per-request responses, e.g.
- * `({search}) => (search ? [] : allMembers)`.
- *
- * Also serves the members page's filter-bar lookups (labels/tiers/offers/
- * newsletters) so specs don't have to mention page chrome.
+ * Members list fake (passthrough): serves the declared members and captures
+ * every browse request for outgoing-NQL assertions. Also serves the page's
+ * filter-bar lookups — labels from the declared members plus
+ * `options.labels`; tiers/offers/newsletters empty.
  */
-export function mockMembers(members: RespondWith<Member>, { labels = [] }: MockMembersOptions = {}): ResourceCapture {
-    labelsResource(labels);
+export function fakeMembers(members: RespondWith<Member>, { labels = [] }: FakeMembersOptions = {}): ResourceCapture {
+    const embeddedLabels = Array.isArray(members) ? members.flatMap((m) => m.labels) : [];
+    const labelsById = new Map([...embeddedLabels, ...labels].map((l) => [l.id, l]));
+
+    labelsResource([...labelsById.values()]);
     tiersResource([]);
     offersResource([]);
     newslettersResource([]);
