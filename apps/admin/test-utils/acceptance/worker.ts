@@ -2,26 +2,11 @@ import { http, HttpResponse } from "msw";
 import { setupWorker, type SetupWorker } from "msw/browser";
 
 /**
- * The fake Ghost Admin API for the acceptance harness — a simplified working
- * implementation served through MSW's service worker, the same test-double
- * family as e2e's fake-stripe-server and fake-mailgun-server.
- *
- * Handler layering (highest priority first):
- *   1. Runtime handlers registered per test via `registerAdminApiHandler` /
- *      `fakeEndpoint` — the resource fakes (`fakeTags`, `fakeMembers`, ...)
- *      and any boot overrides passed to `renderAdminApp`.
- *   2. The default shell boot table (settings/config/site/me + sidebar
- *      extras) — installed once at worker start so `resetHandlers()` restores
- *      it between tests.
- *   3. A catch-all for anything else under /ghost/api/admin/: records the miss
- *      and responds 418 listing the currently faked routes. Recorded misses
- *      fail the test in afterEach (see `allowUnhandledRequests`), so a spec
- *      immediately sees which request it forgot to declare.
- *   4. Catch-alls for the known external origins the app calls (see
- *      `EXTERNAL_URL_BLOCKLIST`): same record-and-418 treatment, so a
- *      forgotten `fakeEndpoint` fails the test instead of hitting the real
- *      network from CI.
- * All other non-admin-API requests (modules, assets) bypass the worker.
+ * The fake Ghost Admin API: an MSW worker with layered handlers. Per-test
+ * registrations (resource fakes, boot overrides, fakeEndpoint) win over the
+ * persistent boot table; anything else the worker owns (admin API paths,
+ * blocklisted external origins) is recorded and served a 418 that fails the
+ * test in afterEach. Everything else (vite modules, assets) bypasses.
  */
 
 const ADMIN_API_PATTERN = /\/ghost\/api\/admin\//;
@@ -33,40 +18,27 @@ function toAdminApiPath(url: string): string {
 }
 
 /**
- * External origins the admin app is known to call at runtime. Requests to
- * these must be declared with `fakeEndpoint` — they get the same
- * record-and-418 treatment as unhandled admin API requests instead of the
- * `onUnhandledRequest: "bypass"` default (which exists for vite modules and
- * assets, not app traffic). `pattern` is the MSW route; `isMatch` is the
- * equivalent URL predicate the in-flight ledger uses.
+ * External origins the app calls at runtime: 418 unless declared with
+ * `fakeEndpoint`. `isMatch` mirrors `pattern` for the in-flight ledger.
  */
 const EXTERNAL_URL_BLOCKLIST: Array<{ pattern: string; isMatch: (url: string) => boolean }> = [
-    // The what's-new changelog feed (src/whats-new/hooks/use-changelog.ts)
-    // and anything else on ghost.org.
+    // ghost.org, incl. the what's-new changelog feed (src/whats-new/hooks/use-changelog.ts)
     { pattern: "https://ghost.org/*", isMatch: (url) => url.startsWith("https://ghost.org/") },
-    // The ActivityPub API root (admin-x-framework utils/helpers.ts).
+    // ActivityPub API root (admin-x-framework utils/helpers.ts)
     { pattern: "*/.ghost/activitypub/*", isMatch: (url) => url.includes("/.ghost/activitypub/") },
 ];
 
-/** The requests the harness owns — admin API + blocklisted external origins — and therefore tracks in flight. */
 function isTrackedUrl(url: string): boolean {
     return ADMIN_API_PATTERN.test(url) || EXTERNAL_URL_BLOCKLIST.some(({ isMatch }) => isMatch(url));
 }
 
-/**
- * External requests that are shell boot chrome: fired on every render
- * regardless of route, so they are served by default and specs never mention
- * them (mirroring the admin-API boot table). Override per test with
- * `fakeEndpoint`, which wins over these.
- */
+/** External boot chrome, served by default like the boot table; override per test with `fakeEndpoint`. */
 const DEFAULT_EXTERNAL_RESPONSES: Array<{ method: string; url: string; response: unknown }> = [
-    // The what's-new changelog feed: an empty feed keeps the user menu quiet.
     { method: "GET", url: "https://ghost.org/changelog.json", response: { posts: [] } },
 ];
 
-// Routes listed by the 418 catch-all. Seeded with the boot table at worker
-// start (always the first entries); per-test registrations are appended and
-// trimmed back to the boot entries on reset.
+// Routes listed by the 418 responses: boot entries first, per-test
+// registrations appended and trimmed back on reset.
 const registeredRoutes: string[] = [];
 let bootRouteCount = 0;
 
@@ -74,13 +46,11 @@ export function registerRoute(method: string, path: string | RegExp): void {
     registeredRoutes.push(`${method} ${path}`);
 }
 
-// 418 bookkeeping: every request that got a 418 during the current test.
-// setup.ts fails the test in afterEach unless the test opted out.
 let recorded418s: string[] = [];
 let unhandledRequestsAllowed = false;
 
-// Snapshot of the route listing taken by resetFakeApi, so the verification
-// (which runs after the reset) can report what the test had faked.
+// Snapshot taken by resetFakeApi: the verification runs after the reset has
+// trimmed the live route listing.
 let routesDuringLastTest: string[] = [];
 
 /** Record a 418-serving request so `verifyNoUnhandledRequests` can fail the test. */
@@ -88,19 +58,12 @@ export function record418(description: string): void {
     recorded418s.push(description);
 }
 
-/**
- * Per-test opt-out from the fail-on-unhandled-request check in afterEach.
- * Resets automatically after each test.
- */
+/** Per-test opt-out from the fail-on-unhandled-request check; resets after each test. */
 export function allowUnhandledRequests(): void {
     unhandledRequestsAllowed = true;
 }
 
-/**
- * Called from afterEach: throws if any request was served a 418 during the
- * test (unless `allowUnhandledRequests()` opted out), then resets the
- * bookkeeping either way.
- */
+/** Throws if any request was served a 418 during the test (unless opted out), then resets the bookkeeping. */
 export function verifyNoUnhandledRequests(): void {
     const requests = recorded418s;
     const allowed = unhandledRequestsAllowed;
@@ -108,8 +71,6 @@ export function verifyNoUnhandledRequests(): void {
     unhandledRequestsAllowed = false;
 
     if (!allowed && requests.length > 0) {
-        // The reset that precedes this call trimmed the live route listing
-        // back to the boot table; the snapshot holds what the test had faked.
         const faked = routesDuringLastTest.length > 0 ? routesDuringLastTest : registeredRoutes;
 
         throw new Error(
@@ -128,12 +89,8 @@ export function verifyNoUnhandledRequests(): void {
     }
 }
 
-// In-flight ledger for requests the harness owns (admin API + blocklisted
-// external origins), fed by the MSW lifecycle events installed at worker
-// start: requestId → "METHOD path". `settleRequests` drains it in afterEach
-// so a request started at the tail of one test can't resolve against the
-// next test's handler table (or 418 after its own test already passed — the
-// false-green race).
+// In-flight ledger (requestId → "METHOD path") for requests the worker owns;
+// drained in afterEach so stragglers can't cross test boundaries.
 const inFlightRequests = new Map<string, string>();
 
 function trackInFlightRequests(worker: SetupWorker): void {
@@ -143,11 +100,9 @@ function trackInFlightRequests(worker: SetupWorker): void {
             inFlightRequests.set(requestId, `${request.method} ${path}`);
         }
     });
-    // "request:end" fires when a request completes (handled, bypassed or
-    // unhandled) — but NOT when its handler throws: msw emits
-    // "unhandledException" instead and responds 500. Listen to both so every
-    // tracked start gets exactly one delete; otherwise a throwing
-    // function-form fake would poison the ledger for the rest of the file.
+    // msw 2.x emits "request:end" for completed requests but only
+    // "unhandledException" when a handler throws — listen to both, or a
+    // throwing fake leaks its ledger entry.
     worker.events.on("request:end", ({ requestId }) => {
         inFlightRequests.delete(requestId);
     });
@@ -157,9 +112,9 @@ function trackInFlightRequests(worker: SetupWorker): void {
 }
 
 export interface SettleRequestsOptions {
-    /** How long the in-flight ledger must stay continuously empty before resolving. */
+    /** How long the ledger must stay continuously empty before resolving. */
     quietMs?: number;
-    /** Overall deadline; throws listing the still-pending requests when exceeded. */
+    /** Deadline; throws listing the still-pending requests when exceeded. */
     timeoutMs?: number;
 }
 
@@ -171,13 +126,7 @@ function sleep(ms: number): Promise<void> {
     });
 }
 
-/**
- * Resolves once no tracked request (admin API or blocklisted external) has
- * been in flight for `quietMs` continuously. Called between `cleanup()` (an
- * unmounted app can't start new requests) and `resetFakeApi()` (in-flight
- * requests must still hit the fakes declared for them), so stragglers are
- * drained inside the test that caused them.
- */
+/** Resolves once no tracked request has been in flight for `quietMs` continuously. */
 export async function settleRequests({ quietMs = 50, timeoutMs = 2000 }: SettleRequestsOptions = {}): Promise<void> {
     const deadline = Date.now() + timeoutMs;
     let quietSince: number | undefined;
@@ -220,9 +169,8 @@ function runningWorker(): SetupWorker {
 type AdminApiResolver = (request: Request, apiPath: string) => Promise<Response | undefined> | Response | undefined;
 
 /**
- * Register a runtime admin-API handler. The resolver receives the request and
- * its admin-relative path; returning `undefined` falls through to
- * lower-priority handlers (boot table, then the 418 catch-all).
+ * Register a runtime admin-API handler; a resolver returning `undefined`
+ * falls through to the boot table, then the 418 catch-all.
  */
 export function registerAdminApiHandler(resolver: AdminApiResolver): void {
     runningWorker().use(
@@ -237,12 +185,9 @@ export interface FakeEndpointOptions {
 }
 
 /**
- * Fake one non-admin-API endpoint (an absolute URL, e.g.
- * `fakeEndpoint("GET", "https://ghost.org/changelog.json", {posts: []})`) for
- * the current test. Registered like any runtime handler, so it wins over the
- * external-origin blocklist and resets between tests. Admin API requests
- * belong to the resource fakes / boot overrides / `fakeAdminEndpoint`, not
- * this.
+ * Fake one non-admin-API absolute URL for the current test (wins over the
+ * external-origin blocklist, resets between tests). Admin API paths belong
+ * to resource fakes / boot overrides / `fakeAdminEndpoint`.
  */
 export function fakeEndpoint(method: string, url: string, response: unknown, { status = 200 }: FakeEndpointOptions = {}): void {
     const expectedMethod = method.toUpperCase();
@@ -258,7 +203,6 @@ export function fakeEndpoint(method: string, url: string, response: unknown, { s
 }
 
 export interface CapturedEndpointRequest {
-    /** Full request URL. */
     url: string;
     /** Parsed JSON request body, or undefined when there is none. */
     body: unknown;
@@ -270,26 +214,16 @@ export interface EndpointCapture {
     readonly lastRequest: CapturedEndpointRequest | undefined;
 }
 
-/**
- * A JSON body, or a function of the captured request that derives one (kept
- * as a named non-`unknown` union so the function form's parameter stays
- * contextually typed).
- */
+// A named non-`unknown` union: `unknown | fn` collapses to `unknown` and the
+// function form's parameter would lose contextual typing.
 export type FakeAdminEndpointResponse = object | unknown[] | null | ((request: CapturedEndpointRequest) => unknown);
 
 /**
- * Fake one admin API endpoint that has no resource fake (yet) — stats
- * subpaths, settings chrome, a mutation the spec asserts on. `apiPath`
- * matches the request's path relative to /ghost/api/admin (string = exact
- * including the query, RegExp = test), e.g.
- * `fakeAdminEndpoint("PUT", /^\/users\/\w+\//, ({body}) => body)`.
- *
- * `response` may be a function of the captured request to derive the reply
- * from the payload — `({body}) => body` is an honest echo. Returns a capture
- * of every matched request for outgoing-payload assertions.
- *
- * Prefer a resource fake (`defineResource`) for browse endpoints — it
- * declares query semantics; this is the blessed one-off escape hatch.
+ * Fake one admin API endpoint that has no resource fake. `apiPath` is
+ * relative to /ghost/api/admin (string = exact including the query, RegExp =
+ * test). `response` may be a function of the captured request —
+ * `({body}) => body` echoes. Returns a capture of every matched request.
+ * Prefer `defineResource` for browse endpoints.
  */
 export function fakeAdminEndpoint(
     method: string,
@@ -346,12 +280,13 @@ export async function startFakeApi({ resolver, routes }: StartFakeApiOptions): P
     registeredRoutes.push(...routes, ...DEFAULT_EXTERNAL_RESPONSES.map(({ method, url }) => `${method} ${url}`));
     bootRouteCount = registeredRoutes.length;
 
+    // Initial handlers persist across resetHandlers(); order is priority.
     worker = setupWorker(
-        // Default shell boot table — persistent across resetHandlers().
+        // Shell boot table.
         http.all(ADMIN_API_PATTERN, async ({ request }) => {
             return await resolver(request, toAdminApiPath(request.url));
         }),
-        // Catch-all: any admin API request nothing above handled.
+        // 418 catch-all for the rest of the admin API.
         http.all(ADMIN_API_PATTERN, ({ request }) => {
             const apiPath = toAdminApiPath(request.url);
             record418(`${request.method} ${apiPath}`);
@@ -367,7 +302,7 @@ export async function startFakeApi({ resolver, routes }: StartFakeApiOptions): P
                 { status: 418 }
             );
         }),
-        // External boot chrome — persistent defaults, like the boot table.
+        // External boot chrome defaults.
         ...DEFAULT_EXTERNAL_RESPONSES.map(({ method, url, response }) =>
             http.all(url, ({ request }) => {
                 if (request.method !== method) {
@@ -376,8 +311,7 @@ export async function startFakeApi({ resolver, routes }: StartFakeApiOptions): P
                 return HttpResponse.json(response as Record<string, unknown>);
             })
         ),
-        // Known external origins nothing above handled: fail fast instead of
-        // letting the request escape to the real network.
+        // 418 catch-alls for the blocklisted external origins.
         ...EXTERNAL_URL_BLOCKLIST.map(({ pattern }) =>
             http.all(pattern, ({ request }) => {
                 record418(`${request.method} ${request.url} (external origin)`);

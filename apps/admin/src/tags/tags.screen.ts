@@ -1,11 +1,7 @@
 import { page } from "vitest/browser";
 import { tagsSelectors } from "@tryghost/test-data";
 
-/**
- * Screen helper for the tags list: locator factories for the acceptance
- * specs. Selector strings come from the `@tryghost/test-data` registry (the
- * same strings the e2e page objects use); assertions stay in the specs.
- */
+/** Tags screen locators for acceptance specs; no assertions. */
 export const tagsScreen = {
     tagRows: () => page.getByTestId(tagsSelectors.testIds.listRow),
     link: (name: string) => page.getByRole("link", { name, exact: true }),

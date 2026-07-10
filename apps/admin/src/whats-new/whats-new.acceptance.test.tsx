@@ -12,16 +12,9 @@ import {
 import { tagsScreen } from "@/tags/tags.screen";
 import { whatsNewScreen } from "./whats-new.screen";
 
-// Ported from e2e/tests/admin/whats-new.test.ts (the single-boot cases; the
-// reload-shaped dismissal journeys stay in e2e). This spec is also the worked
-// example for the harness escape hatches: fakeEndpoint for an external feed,
-// a browseMe boot override for persisted user state, and fakeAdminEndpoint
-// for capturing a non-browse admin request.
-
 const LAST_SEEN = "2025-01-01T00:00:00.000Z";
 const NEWER_THAN_LAST_SEEN = "2025-06-01T00:00:00.000Z";
 
-/** The canned current user with what's-new preferences persisted at LAST_SEEN. */
 function userWhoLastSawChangelogAt(lastSeenDate: string): CurrentUserResponse {
     const me = currentUserResponse();
     me.users[0].accessibility = JSON.stringify({ whatsNew: { lastSeenDate } });
@@ -30,7 +23,7 @@ function userWhoLastSawChangelogAt(lastSeenDate: string): CurrentUserResponse {
 
 describe("What's new banner", () => {
     it("shows no banner when the changelog feed is empty", async () => {
-        // The default boot already serves an empty changelog feed.
+        // The default boot serves an empty changelog feed.
         fakeTags([]);
         await renderAdminApp("/tags");
 
@@ -64,8 +57,7 @@ describe("What's new banner", () => {
         fakeEndpoint("GET", "https://ghost.org/changelog.json", {
             posts: [changelogEntry({ published_at: NEWER_THAN_LAST_SEEN })],
         });
-        // Capture the preferences write; `({body}) => body` echoes the PUT
-        // like the boot table does, so the client's write persists.
+        // Echo the PUT so the client's write persists (see boot.ts's editUserPreferences).
         const prefsApi = fakeAdminEndpoint("PUT", /^\/users\/\w+\//, ({ body }) => body);
         await renderAdminApp("/tags", {
             boot: { browseMe: { response: userWhoLastSawChangelogAt(LAST_SEEN) } },

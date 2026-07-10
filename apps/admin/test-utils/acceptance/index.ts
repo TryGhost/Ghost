@@ -1,16 +1,4 @@
-/**
- * Acceptance-harness public surface. A typical spec:
- *
- *   import {expect, it} from "vitest";
- *   import {fakeTags, renderAdminApp, tag} from "@test-utils/acceptance";
- *   import {tagsScreen} from "./tags.screen";
- *
- *   it("lists tags", async () => {
- *       fakeTags([tag({name: "News"})]);
- *       await renderAdminApp("/tags");
- *       await expect.element(tagsScreen.link("News")).toBeVisible();
- *   });
- */
+/** Acceptance-harness public surface — see README.md for the spec anatomy. */
 export { currentRoute, renderAdminApp } from "./render-admin-app";
 export type { RenderAdminAppOptions } from "./render-admin-app";
 export { defineResource, fakeMembers, fakeTags } from "./resources";
@@ -18,8 +6,6 @@ export type { BrowseQuery, FakeMembersOptions, ResourceCapture, ResourceOptions,
 export { allowUnhandledRequests, fakeAdminEndpoint, fakeEndpoint } from "./worker";
 export type { CapturedEndpointRequest, EndpointCapture, FakeAdminEndpointResponse, FakeEndpointOptions } from "./worker";
 
-// The builders and canned boot responses specs declare their world with,
-// re-exported so a spec needs only this module (plus vitest and its screen
-// helper).
+// Test-data re-exports, so a spec needs a single import surface.
 export { changelogEntry, currentUserResponse, label, member, tag } from "@tryghost/test-data";
 export type { ChangelogEntry, CurrentUserResponse, Label, Member, Tag } from "@tryghost/test-data";

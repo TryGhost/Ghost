@@ -10,20 +10,11 @@ import { installBootOverrides, type BootOverrides } from "./boot";
 
 export interface RenderAdminAppOptions {
     /**
-     * Labs flags to flip for this test. Sugar that compiles to lockstep
-     * settings + config boot overrides — the admin client reads labs from
-     * BOTH, so they must flip together.
+     * Labs flags for this test; compiles to lockstep settings + config boot
+     * overrides (the admin client reads labs from both).
      */
     labs?: Record<string, boolean>;
-    /**
-     * Escape hatch over the shell boot table. The requests the admin shell
-     * fires on boot (settings/config/site/me, sidebar members count, active
-     * theme, the fire-and-forget user-preferences PUT) are handled by default —
-     * specs never mention them. Pass `response`/`responseStatus` overrides
-     * keyed by boot entry name to change one for a test, e.g.
-     * `renderAdminApp("/", {boot: {browseConfig: {response: ...}}})`.
-     * Matching keeps the default entry's method/path. Wins over `labs`.
-     */
+    /** Boot-table overrides keyed by entry name (see boot.ts); wins over `labs`. */
     boot?: BootOverrides;
 }
 
@@ -36,15 +27,10 @@ export function currentRoute(): string {
 }
 
 /**
- * Boots the real admin app — the same provider stack as src/main.tsx, via the
- * shared AdminAppRoot — inside the browser-mode page, with the Ghost Admin
- * API served by MSW. `route` is the hash route to boot on, e.g. "/tags" or
- * "/members?filter=label:VIP".
- *
- * Cross-app navigations (Ember-owned routes) are recorded on
- * `document.body.dataset.externalNavigate` instead of navigating, mirroring
- * the Playwright acceptance harness so `expectExternalNavigate`-style
- * assertions can be ported.
+ * Boots the real admin app (the same provider stack as src/main.tsx) at the
+ * given hash route, e.g. "/tags" or "/members?filter=label:VIP". Cross-app
+ * (Ember-owned) navigations are recorded on
+ * `document.body.dataset.externalNavigate` instead of navigating.
  */
 export async function renderAdminApp(route: string = "/", { labs, boot }: RenderAdminAppOptions = {}): Promise<
     Awaited<ReturnType<typeof render>>
@@ -61,8 +47,8 @@ export async function renderAdminApp(route: string = "/", { labs, boot }: Render
         installBootOverrides(overrides);
     }
 
-    // EmberRoot expects the Ember host element to exist in the document; in
-    // the test page there is no Ember app, so provide an empty stand-in.
+    // EmberRoot expects the Ember host element to exist; there is no Ember
+    // app in the test page, so provide an empty stand-in.
     if (!document.getElementById("ember-app")) {
         const emberApp = document.createElement("div");
         emberApp.id = "ember-app";
@@ -73,10 +59,8 @@ export async function renderAdminApp(route: string = "/", { labs, boot }: Render
     // before the router is created.
     window.location.hash = `#${route}`;
 
-    // A fresh QueryClient per render, passed through FrameworkProvider's
-    // queryClient seam: mirrors the production singleton's defaults
-    // (admin-x-framework utils/query-client.ts) except nothing is cached
-    // beyond the test, so tests are isolated without teardown scrubbing.
+    // Fresh QueryClient per render, mirroring the production defaults
+    // (admin-x-framework utils/query-client.ts) so nothing outlives the test.
     const queryClient = new QueryClient({
         defaultOptions: {
             queries: {

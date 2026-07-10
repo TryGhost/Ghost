@@ -3,11 +3,9 @@ import {createBuilder} from "../factory";
 import {generateSlug} from "../utils";
 
 /**
- * Entry from the ghost.org changelog feed (https://ghost.org/changelog.json),
- * as consumed by the admin what's-new banner and dialog. This is the RAW feed
- * shape: snake_case fields, `featured` as a "true"/"false" string, and
- * `published_at` as an ISO datetime string (the real feed serializes via
- * moment's toISOString(true), so offsets like "+00:00" also occur).
+ * Raw entry shape from the ghost.org changelog feed
+ * (https://ghost.org/changelog.json): snake_case, `featured` is a
+ * "true"/"false" string, `published_at` is ISO (offsets like "+00:00" occur).
  */
 export interface ChangelogEntry {
     slug: string;

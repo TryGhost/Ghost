@@ -8,21 +8,18 @@ import {siteData} from "./data/site";
 /**
  * Canned Ghost Admin API responses for the requests an admin client fires on
  * boot regardless of route: settings, config, site, the current user, and the
- * active theme. Test harnesses build their default boot tables from these so
- * specs never mention shell chrome.
+ * active theme. Test harnesses build their default boot tables from these.
  *
  * The canned data under ./data is the single source of truth for these boot
- * payloads (originally ported from the framework test harness, whose JSON
- * copies have since been deleted). This package is the root of the test-data
- * dependency graph and must not import from admin-x-framework.
+ * payloads. This package is the root of the test-data dependency graph and
+ * must not import from admin-x-framework.
  *
- * Each accessor returns a freshly-minted object graph — callers can mutate the
- * result for a test without poisoning the canned data (unlike the
- * shared-mutable fixtures in the legacy framework harness).
+ * Each accessor returns a freshly-minted object graph, so callers can mutate
+ * the result without poisoning the canned data.
  *
  * Labs flags default to off; pass `{labs}` to `settingsResponse`/
- * `configResponse` to flip individual flags for a test (they must flip in
- * BOTH — the admin client reads labs from settings and config).
+ * `configResponse` to flip flags for a test (they must flip in both — the
+ * admin client reads labs from settings and config).
  */
 
 export interface Setting {

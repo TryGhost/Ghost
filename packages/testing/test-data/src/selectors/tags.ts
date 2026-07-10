@@ -1,10 +1,6 @@
 /**
- * Selector strings for the admin tags screen, shared by every test tier.
- *
- * Source of truth is the component source (apps/admin/src/tags). The e2e
- * page objects (e2e/helpers/pages/admin/tags) and the admin screen helpers
- * (apps/admin/src/tags/tags.screen.ts) both consume this registry —
- * strings only: no locators, no runner imports.
+ * Tags screen selector strings, consumed by the admin screen helpers and the
+ * e2e page objects. Source of truth: apps/admin/src/tags.
  */
 export const tagsSelectors = {
     testIds: {
@@ -13,7 +9,6 @@ export const tagsSelectors = {
         listRow: "tag-list-row",
         headerTabs: "tags-header-tabs"
     },
-    /** Accessible names (aria-labels / visible control text). */
     names: {
         publicTab: "Public tags",
         internalTab: "Internal tags",

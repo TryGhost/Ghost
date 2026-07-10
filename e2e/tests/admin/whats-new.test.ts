@@ -58,10 +58,8 @@ async function mockChangelog(page: Page, entries: RawChangelogEntry[]): Promise<
     });
 }
 
-// The single-boot cases (banner appears / empty feed / close-button
-// dismissal) are covered by the acceptance tier:
-// apps/admin/src/whats-new/whats-new.acceptance.test.tsx. The journeys that
-// need real persistence across reloads stay here.
+// Single-boot cases live in apps/admin/src/whats-new/whats-new.acceptance.test.tsx;
+// only journeys needing real persistence across reloads belong here.
 test.describe('Ghost Admin - What\'s New Banner', () => {
     test.describe('banner notification', () => {
         test('does not show banner for entries from before user joined', async ({page}) => {

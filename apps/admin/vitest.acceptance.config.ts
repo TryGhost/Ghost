@@ -8,11 +8,9 @@ import tailwindcss from "@tailwindcss/vite";
 import { sharedDefine, sharedResolve } from "./vite.shared";
 
 /**
- * Acceptance tier: full-app tests running in a real Chromium instance via
- * Vitest Browser Mode, against a fake Ghost Admin API served through MSW
- * (see test-utils/acceptance/). Unit tests stay in vite.config.ts (jsdom).
- *
- * Run with: pnpm test:acceptance
+ * Acceptance tier: full-app tests in real Chromium via Vitest Browser Mode,
+ * against a fake Ghost Admin API (test-utils/acceptance/). Unit tests stay
+ * in vite.config.ts (jsdom).
  */
 export default defineConfig({
     plugins: [tailwindcss() as PluginOption, react(), tsconfigPaths()],
@@ -21,15 +19,10 @@ export default defineConfig({
     publicDir: "./test-utils/acceptance/public",
     define: sharedDefine,
     optimizeDeps: {
-        // Point the dep scanner at every app module (not just the html entry)
-        // so deps behind lazy route imports are discovered and pre-bundled up
-        // front — if Vite's dep optimizer discovers them mid-run it reloads
-        // the test page, which duplicates React and flakes the suite ("Vite
-        // unexpectedly reloaded a test"). Test files are excluded: they
-        // import node-side tooling (vitest → vite → fsevents) the browser
-        // bundler can't process, and vitest already treats them as entries.
-        // Screen helpers (*.screen.ts) are test-lane modules too — they
-        // import vitest/browser, which vitest serves itself.
+        // Scan every app module so deps behind lazy routes are pre-bundled up
+        // front — mid-run discovery reloads the test page and flakes the
+        // suite. Test files and screen helpers import test-lane modules the
+        // browser bundler can't process; vitest serves those itself.
         entries: ["src/**/*.{ts,tsx}", "!src/**/*.test.*", "!src/**/*.screen.ts"],
     },
     resolve: sharedResolve,
@@ -47,9 +40,7 @@ export default defineConfig({
             headless: true,
             provider: playwright(),
             instances: [{ browser: "chromium" }],
-            // Explicit (it's the headless-mode default): a failing test drops
-            // a screenshot of the page under __screenshots__/ (gitignored) —
-            // often the fastest way to see what the app actually rendered.
+            // Failure screenshots land in __screenshots__/ (gitignored).
             screenshotFailures: true,
             // Match the e2e suite's desktop viewport — the admin chrome
             // collapses into mobile menus at the vitest default (414px).

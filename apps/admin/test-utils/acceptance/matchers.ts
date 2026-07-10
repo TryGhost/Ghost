@@ -3,8 +3,7 @@ import { server, type Locator } from "vitest/browser";
 
 import type { ResourceCapture } from "./resources";
 
-// Poll timing follows vitest's configured expect.poll defaults (set in
-// vitest.acceptance.config.ts) rather than hard-coding harness-local values.
+// Poll timing follows the configured expect.poll defaults (vitest.acceptance.config.ts).
 const POLL_INTERVAL_MS = server.config.expect.poll?.interval ?? 50;
 const POLL_TIMEOUT_MS = server.config.expect.poll?.timeout ?? 1000;
 
@@ -27,12 +26,7 @@ function matchesExpected(expected: string | RegExp, actual: string | undefined):
     return stateless.test(actual);
 }
 
-/**
- * Shared engine for the request-assertion matchers: polls the capture's
- * `lastRequest` until the named query field matches `expected` — exact
- * equality for a string, `.test()` for a RegExp — or, with `.not`, until it
- * doesn't, timing out after the configured expect.poll timeout.
- */
+/** Polls the capture's `lastRequest` until `field` matches `expected` (`.not`-aware). */
 async function pollCapturedRequestField(
     isNot: boolean,
     capture: ResourceCapture,
@@ -43,7 +37,6 @@ async function pollCapturedRequestField(
     let actual = capture.lastRequest?.[field];
     let pass = matchesExpected(expected, actual);
 
-    // Poll until the assertion (including .not) would pass or time out.
     while (pass === isNot && Date.now() < deadline) {
         await sleep(POLL_INTERVAL_MS);
         actual = capture.lastRequest?.[field];
@@ -65,17 +58,11 @@ async function pollCapturedRequestField(
 }
 
 expect.extend({
-    /**
-     * `await expect(locator).toHaveCount(n)` — polls until the locator resolves to
-     * exactly `n` elements (or, with `.not`, until it doesn't), timing out after
-     * the configured expect.poll timeout. The retrying replacement for
-     * `expect.poll(() => locator.all().length).toBe(n)`.
-     */
+    /** `await expect(locator).toHaveCount(n)` — polls until the locator resolves to exactly `n` elements (`.not`-aware). */
     async toHaveCount(received: Locator, expected: number) {
         const deadline = Date.now() + POLL_TIMEOUT_MS;
         let actual = received.all().length;
 
-        // Poll until the assertion (including .not) would pass or time out.
         while ((actual === expected) === Boolean(this.isNot) && Date.now() < deadline) {
             await sleep(POLL_INTERVAL_MS);
             actual = received.all().length;
@@ -88,22 +75,12 @@ expect.extend({
         };
     },
 
-    /**
-     * `await expect(api).toHaveSentFilter(expected)` — polls the resource
-     * capture until the latest request's decoded `?filter` matches. The
-     * retrying, self-describing replacement for
-     * `expect.poll(() => api.lastRequest?.filter)`.
-     */
+    /** `await expect(api).toHaveSentFilter(x)` — polls until the latest request's decoded ?filter matches (string = exact, RegExp = partial). */
     async toHaveSentFilter(received: ResourceCapture, expected: string | RegExp) {
         return await pollCapturedRequestField(Boolean(this.isNot), received, "filter", expected);
     },
 
-    /**
-     * `await expect(api).toHaveSentSearch(expected)` — polls the resource
-     * capture until the latest request's decoded `?search` matches. The
-     * retrying, self-describing replacement for
-     * `expect.poll(() => api.lastRequest?.search)`.
-     */
+    /** `await expect(api).toHaveSentSearch(x)` — polls until the latest request's decoded ?search matches (string = exact, RegExp = partial). */
     async toHaveSentSearch(received: ResourceCapture, expected: string | RegExp) {
         return await pollCapturedRequestField(Boolean(this.isNot), received, "search", expected);
     },

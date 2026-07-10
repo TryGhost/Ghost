@@ -1,10 +1,6 @@
 /**
- * Selector strings for the admin members screen, shared by every test tier.
- *
- * Source of truth is the component source (apps/admin/src/members). The e2e
- * page objects (e2e/helpers/pages/admin/members) and the admin screen helpers
- * (apps/admin/src/members/members.screen.ts) both consume this registry —
- * strings only: no locators, no runner imports.
+ * Members screen selector strings, consumed by the admin screen helpers and
+ * the e2e page objects. Source of truth: apps/admin/src/members.
  */
 export const membersSelectors = {
     testIds: {
@@ -12,7 +8,6 @@ export const membersSelectors = {
         searchInput: "members-search-input",
         actionsButton: "members-actions"
     },
-    /** Accessible names (aria-labels / visible control text). */
     names: {
         searchInput: "Search members",
         filterButton: "Filter",

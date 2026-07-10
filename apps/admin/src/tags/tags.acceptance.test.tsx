@@ -3,10 +3,6 @@ import { describe, expect, it } from "vitest";
 import { fakeTags, renderAdminApp, tag } from "@test-utils/acceptance";
 import { tagsScreen } from "./tags.screen";
 
-// Ported from e2e/tests/admin/tags/list.test.ts (the read-only cases): same
-// UI assertions, with the Ghost Admin API served by the acceptance harness's
-// tags fake instead of a real per-worker Ghost instance.
-
 describe("Tags list", () => {
     it("lists public tags with description and posts count", async () => {
         fakeTags([
@@ -20,8 +16,7 @@ describe("Tags list", () => {
         await expect.element(row).toHaveTextContent("News description");
         await expect.element(row).toHaveTextContent("1 post");
 
-        // The tabs are a Radix single-select toggle group: items expose
-        // role="radio" with aria-checked.
+        // The tabs are a single-select toggle group: role="radio" + aria-checked.
         await expect.element(tagsScreen.publicTab()).toHaveAttribute("aria-checked", "true");
         await expect.element(tagsScreen.internalTab()).toHaveAttribute("aria-checked", "false");
     });

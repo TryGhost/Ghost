@@ -1,11 +1,7 @@
 import { page } from "vitest/browser";
 import { whatsNewSelectors } from "@tryghost/test-data";
 
-/**
- * Screen helper for the what's-new banner: locator factories for the
- * acceptance specs. Selector strings come from the `@tryghost/test-data`
- * registry; assertions stay in the specs.
- */
+/** What's-new banner locators for acceptance specs; no assertions. */
 export const whatsNewScreen = {
     banner: () => page.getByTestId(whatsNewSelectors.testIds.banner),
     bannerTitle: () => page.getByTestId(whatsNewSelectors.testIds.bannerTitle),
