@@ -6,7 +6,7 @@ import {Button, EmptyIndicator, Sheet, SheetContent, SheetDescription, SheetHead
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {centsToDollars} from '@tryghost/shade/app';
 import {getFaviconDomain, getSymbol, useAppContext} from '@tryghost/admin-x-framework';
-import {getPeriodText} from '@/analytics/utils/chart-helpers';
+import {getPeriodText} from '@/shared/analytics/chart-helpers';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
 import {useTopSourcesGrowth} from '@/analytics/hooks/use-top-sources-growth';
