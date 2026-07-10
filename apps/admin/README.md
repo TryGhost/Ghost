@@ -19,7 +19,7 @@ pnpm dev
 ## Testing
 
 - **Unit tests** (`pnpm test:unit`): Vitest + jsdom, colocated `*.test.ts(x)` files.
-- **Acceptance tests** (`pnpm test:acceptance`): the real app in real Chromium with the admin API mocked by MSW — see [test-utils/acceptance/README.md](test-utils/acceptance/README.md).
+- **Acceptance tests** (`pnpm test:acceptance`): the real app in real Chromium against a fake admin API served through MSW — see [test-utils/acceptance/README.md](test-utils/acceptance/README.md).
 - **Browser e2e** against a real Ghost instance lives in the top-level [`e2e/`](../../e2e) workspace.
 
 ## Building for Production

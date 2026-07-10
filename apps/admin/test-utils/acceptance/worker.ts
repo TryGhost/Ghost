@@ -2,22 +2,24 @@ import { http, HttpResponse } from "msw";
 import { setupWorker, type SetupWorker } from "msw/browser";
 
 /**
- * MSW worker lifecycle for the acceptance harness.
+ * The fake Ghost Admin API for the acceptance harness — a simplified working
+ * implementation served through MSW's service worker, the same test-double
+ * family as e2e's fake-stripe-server and fake-mailgun-server.
  *
  * Handler layering (highest priority first):
  *   1. Runtime handlers registered per test via `registerAdminApiHandler` /
- *      `mockEndpoint` — the resource handlers (`mockTags`, `mockMembers`, ...)
+ *      `fakeEndpoint` — the resource fakes (`fakeTags`, `fakeMembers`, ...)
  *      and any boot overrides passed to `renderAdminApp`.
  *   2. The default shell boot table (settings/config/site/me + sidebar
  *      extras) — installed once at worker start so `resetHandlers()` restores
  *      it between tests.
  *   3. A catch-all for anything else under /ghost/api/admin/: records the miss
- *      and responds 418 listing the currently mocked routes. Recorded misses
- *      fail the test in afterEach (see `allowUnmockedRequests`), so a spec
+ *      and responds 418 listing the currently faked routes. Recorded misses
+ *      fail the test in afterEach (see `allowUnhandledRequests`), so a spec
  *      immediately sees which request it forgot to declare.
  *   4. Catch-alls for the known external origins the app calls (see
  *      `EXTERNAL_URL_BLOCKLIST`): same record-and-418 treatment, so a
- *      forgotten `mockEndpoint` fails the test instead of hitting the real
+ *      forgotten `fakeEndpoint` fails the test instead of hitting the real
  *      network from CI.
  * All other non-admin-API requests (modules, assets) bypass the worker.
  */
@@ -32,8 +34,8 @@ function toAdminApiPath(url: string): string {
 
 /**
  * External origins the admin app is known to call at runtime. Requests to
- * these must be declared with `mockEndpoint` — they get the same
- * record-and-418 treatment as unmocked admin API requests instead of the
+ * these must be declared with `fakeEndpoint` — they get the same
+ * record-and-418 treatment as unhandled admin API requests instead of the
  * `onUnhandledRequest: "bypass"` default (which exists for vite modules and
  * assets, not app traffic).
  */
@@ -49,7 +51,7 @@ const EXTERNAL_URL_BLOCKLIST: string[] = [
  * External requests that are shell boot chrome: fired on every render
  * regardless of route, so they are served by default and specs never mention
  * them (mirroring the admin-API boot table). Override per test with
- * `mockEndpoint`, which wins over these.
+ * `fakeEndpoint`, which wins over these.
  */
 const DEFAULT_EXTERNAL_RESPONSES: Array<{ method: string; url: string; response: unknown }> = [
     // The what's-new changelog feed: an empty feed keeps the user menu quiet.
@@ -69,41 +71,41 @@ export function registerRoute(method: string, path: string | RegExp): void {
 // 418 bookkeeping: every request that got a 418 during the current test.
 // setup.ts fails the test in afterEach unless the test opted out.
 let recorded418s: string[] = [];
-let unmockedRequestsAllowed = false;
+let unhandledRequestsAllowed = false;
 
-/** Record a 418-serving request so `verifyNoUnmockedRequests` can fail the test. */
+/** Record a 418-serving request so `verifyNoUnhandledRequests` can fail the test. */
 export function record418(description: string): void {
     recorded418s.push(description);
 }
 
 /**
- * Per-test opt-out from the fail-on-unmocked-request check in afterEach.
+ * Per-test opt-out from the fail-on-unhandled-request check in afterEach.
  * Resets automatically after each test.
  */
-export function allowUnmockedRequests(): void {
-    unmockedRequestsAllowed = true;
+export function allowUnhandledRequests(): void {
+    unhandledRequestsAllowed = true;
 }
 
 /**
  * Called from afterEach: throws if any request was served a 418 during the
- * test (unless `allowUnmockedRequests()` opted out), then resets the
+ * test (unless `allowUnhandledRequests()` opted out), then resets the
  * bookkeeping either way.
  */
-export function verifyNoUnmockedRequests(): void {
+export function verifyNoUnhandledRequests(): void {
     const requests = recorded418s;
-    const allowed = unmockedRequestsAllowed;
+    const allowed = unhandledRequestsAllowed;
     recorded418s = [];
-    unmockedRequestsAllowed = false;
+    unhandledRequestsAllowed = false;
 
     if (!allowed && requests.length > 0) {
         throw new Error(
             [
-                "Request(s) went unmocked (served a 418) during this test:",
+                "Request(s) no fake handled (served a 418) during this test:",
                 ...requests.map((request) => `  - ${request}`),
                 "",
-                "Declare admin API requests with a resource handler (mockTags, mockMembers, ...) or a renderAdminApp boot override,",
-                "external requests with mockEndpoint(method, url, response),",
-                "or call allowUnmockedRequests() at the start of the test to opt out.",
+                "Declare admin API requests with a resource fake (fakeTags, fakeMembers, ...) or a renderAdminApp boot override,",
+                "external requests with fakeEndpoint(method, url, response),",
+                "or call allowUnhandledRequests() at the start of the test to opt out.",
             ].join("\n")
         );
     }
@@ -147,8 +149,9 @@ function sleep(ms: number): Promise<void> {
 /**
  * Resolves once no admin API request has been in flight for `quietMs`
  * continuously. Called between `cleanup()` (an unmounted app can't start new
- * requests) and `resetMockWorker()` (in-flight mocked requests must still hit
- * their handlers), so stragglers are drained inside the test that caused them.
+ * requests) and `resetFakeApi()` (in-flight requests must still hit the fakes
+ * declared for them), so stragglers are drained inside the test that caused
+ * them.
  */
 export async function settleAdminApiRequests({ quietMs = 50, timeoutMs = 2000 }: SettleAdminApiRequestsOptions = {}): Promise<void> {
     const deadline = Date.now() + timeoutMs;
@@ -204,18 +207,18 @@ export function registerAdminApiHandler(resolver: AdminApiResolver): void {
     );
 }
 
-export interface MockEndpointOptions {
+export interface FakeEndpointOptions {
     status?: number;
 }
 
 /**
- * Mock one non-admin-API endpoint (an absolute URL, e.g.
- * `mockEndpoint("GET", "https://ghost.org/changelog.json", {posts: []})`) for
+ * Fake one non-admin-API endpoint (an absolute URL, e.g.
+ * `fakeEndpoint("GET", "https://ghost.org/changelog.json", {posts: []})`) for
  * the current test. Registered like any runtime handler, so it wins over the
  * external-origin blocklist and resets between tests. Admin API requests
- * belong to the resource handlers / boot overrides, not this.
+ * belong to the resource fakes / boot overrides, not this.
  */
-export function mockEndpoint(method: string, url: string, response: unknown, { status = 200 }: MockEndpointOptions = {}): void {
+export function fakeEndpoint(method: string, url: string, response: unknown, { status = 200 }: FakeEndpointOptions = {}): void {
     const expectedMethod = method.toUpperCase();
 
     runningWorker().use(
@@ -228,14 +231,14 @@ export function mockEndpoint(method: string, url: string, response: unknown, { s
     );
 }
 
-export interface StartMockWorkerOptions {
+export interface StartFakeApiOptions {
     /** The persistent lowest-priority resolver for the shell boot table. */
     resolver: AdminApiResolver;
     /** "METHOD path" descriptions of the boot table, for the 418 route listing. */
     routes: string[];
 }
 
-export async function startMockWorker({ resolver, routes }: StartMockWorkerOptions): Promise<SetupWorker> {
+export async function startFakeApi({ resolver, routes }: StartFakeApiOptions): Promise<SetupWorker> {
     if (worker) {
         return worker;
     }
@@ -254,11 +257,11 @@ export async function startMockWorker({ resolver, routes }: StartMockWorkerOptio
             record418(`${request.method} ${apiPath}`);
             return new HttpResponse(
                 [
-                    "No matching mock found. If this request is needed for the test, declare it with a resource handler (mockTags, mockMembers, ...) or a renderAdminApp boot override",
+                    "No fake handles this request. If it is needed for the test, declare it with a resource fake (fakeTags, fakeMembers, ...) or a renderAdminApp boot override",
                     "",
                     `Request: ${request.method} ${apiPath}`,
                     "",
-                    "Currently mocked:",
+                    "Currently faked:",
                     ...registeredRoutes,
                 ].join("\n"),
                 { status: 418 }
@@ -279,7 +282,7 @@ export async function startMockWorker({ resolver, routes }: StartMockWorkerOptio
             http.all(pattern, ({ request }) => {
                 record418(`${request.method} ${request.url} (external origin)`);
                 return new HttpResponse(
-                    `No matching mock found for external origin. Declare it with mockEndpoint("${request.method}", "${request.url}", ...)`,
+                    `No fake handles this external request. Declare it with fakeEndpoint("${request.method}", "${request.url}", ...)`,
                     { status: 418 }
                 );
             })
@@ -297,7 +300,7 @@ export async function startMockWorker({ resolver, routes }: StartMockWorkerOptio
     return worker;
 }
 
-export function resetMockWorker(): void {
+export function resetFakeApi(): void {
     worker?.resetHandlers();
     registeredRoutes.length = bootRouteCount;
 }

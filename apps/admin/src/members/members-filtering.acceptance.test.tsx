@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { label, member, mockMembers, renderAdminApp } from "@test-utils/acceptance";
+import { fakeMembers, label, member, renderAdminApp } from "@test-utils/acceptance";
 import { membersScreen } from "./members.screen";
 
 describe("Members list", () => {
     it("lists members", async () => {
-        mockMembers([
+        fakeMembers([
             member({ name: "First Member" }),
             member({ name: "Second Member" }),
             member({ name: "Third Member" }),
@@ -20,7 +20,7 @@ describe("Members list", () => {
 
     it("filters members by label from the URL", async () => {
         const vip = label({ name: "VIP" });
-        const membersApi = mockMembers([
+        const membersApi = fakeMembers([
             member({ name: "Labelled One", labels: [vip] }),
             member({ name: "Labelled Two", labels: [vip] }),
         ]);
@@ -35,7 +35,7 @@ describe("Members list", () => {
     });
 
     it("shows no results state when search matches nothing", async () => {
-        const membersApi = mockMembers(
+        const membersApi = fakeMembers(
             ({ search }) => (search ? [] : [member({ name: "Existing Member" })])
         );
         await renderAdminApp("/members");
@@ -50,7 +50,7 @@ describe("Members list", () => {
     });
 
     it("builds a name filter through the filters UI", async () => {
-        const membersApi = mockMembers(({ filter }) => (filter
+        const membersApi = fakeMembers(({ filter }) => (filter
             ? [member({ name: "Alice Alpha" })]
             : [
                 member({ name: "Alice Alpha" }),

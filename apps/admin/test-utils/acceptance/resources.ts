@@ -4,15 +4,15 @@ import { browseResponse, type Label, type Member, type Tag } from "@tryghost/tes
 import { record418, registerAdminApiHandler, registerRoute } from "./worker";
 
 /**
- * Resource handlers: declare the world, let the handler serve it.
+ * Resource fakes: declare the world, let the fake serve it.
  *
- * THE RULE: a resource handler may implement *trivial declared* query
- * behaviors — ones where the handler only echoes back a slice of exactly what
+ * THE RULE: a resource fake may implement *trivial declared* query
+ * behaviors — ones where the fake only echoes back a slice of exactly what
  * the spec declared (a `visibility` field match, page/limit slicing) — but
  * NEVER NQL. For NQL-filtered lists (members `?filter=`, `?search=`) the spec
  * declares the response and asserts the outgoing filter string instead,
  * because that serialization IS the behavior under test; re-implementing NQL
- * in the mock would test the mock.
+ * in the fake would test the fake.
  *
  * Each resource states which side of that line it is on via `semantics`:
  *
@@ -44,7 +44,7 @@ export interface ResourceCapture {
 /** The entities to serve: one world for every request, or per-request via a function of the parsed query. */
 export type RespondWith<TEntity> = TEntity[] | ((query: BrowseQuery) => TEntity[]);
 
-/** Explicit, greppable statement of how much query behavior a resource mock implements (see THE RULE above). */
+/** Explicit, greppable statement of how much query behavior a resource fake implements (see THE RULE above). */
 export type ResourceSemantics<TEntity> =
     | {
           kind: "declared-query";
@@ -95,7 +95,7 @@ function uncoveredFilterComponents(filter: string | undefined, covers: string[])
 }
 
 /**
- * Define a mock for one admin API list resource. The returned function
+ * Define a fake for one admin API list resource. The returned function
  * registers a handler that owns the resource's browse URL: it parses the
  * query, records it on the returned capture (for outgoing-NQL assertions),
  * applies the resource's declared semantics and wraps the result in the Ghost
@@ -103,7 +103,7 @@ function uncoveredFilterComponents(filter: string | undefined, covers: string[])
  * through to the boot table / 418 catch-all.
  */
 export function defineResource<TEntity>({ resource, semantics, skip }: ResourceOptions<TEntity>) {
-    return function mockResource(respondWith: RespondWith<TEntity>): ResourceCapture {
+    return function fakeResource(respondWith: RespondWith<TEntity>): ResourceCapture {
         const requests: BrowseQuery[] = [];
 
         registerRoute("GET", `/${resource}/?…`);
@@ -153,12 +153,12 @@ export function defineResource<TEntity>({ resource, semantics, skip }: ResourceO
 }
 
 /**
- * Declared-world handler for the tags list: give it every tag that exists and
+ * Declared-world fake for the tags list: give it every tag that exists and
  * it serves whichever slice the app asks for — the `visibility` filter the
  * tags screen tabs send, plus page/limit slicing (trivial declared semantics
  * only, see THE RULE above).
  */
-export const mockTags = defineResource<Tag>({
+export const fakeTags = defineResource<Tag>({
     resource: "tags",
     semantics: {
         kind: "declared-query",
@@ -175,7 +175,7 @@ const MEMBER_COUNT_PROBE_PATH = "/members/?limit=1";
 
 const membersResource = defineResource<Member>({
     resource: "members",
-    // EXPLICIT mode: no fake filtering ever happens (see THE RULE above).
+    // EXPLICIT mode: the fake never interprets queries (see THE RULE above).
     semantics: { kind: "passthrough" },
     // Leave the sidebar count probe to the boot table so it never pollutes
     // `lastRequest` assertions.
@@ -188,7 +188,7 @@ const tiersResource = defineResource({ resource: "tiers", semantics: { kind: "pa
 const offersResource = defineResource({ resource: "offers", semantics: { kind: "passthrough" } });
 const newslettersResource = defineResource({ resource: "newsletters", semantics: { kind: "passthrough" } });
 
-export interface MockMembersOptions {
+export interface FakeMembersOptions {
     /**
      * Extra labels served to the members page filter bar's label lookup, in
      * addition to the labels embedded in array-form declared members (which
@@ -200,7 +200,7 @@ export interface MockMembersOptions {
 }
 
 /**
- * Explicit-mode handler for the members list: serves exactly the declared
+ * Explicit-mode fake for the members list: serves exactly the declared
  * entities and captures every browse request so specs can assert the outgoing
  * NQL (`lastRequest.filter`, `lastRequest.search`, raw `lastRequest.url`).
  * Pass an array to serve the same world for every request, or a function of
@@ -212,7 +212,7 @@ export interface MockMembersOptions {
  * is derived from the declared world — labels embedded in array-form members
  * plus any extra `options.labels`.
  */
-export function mockMembers(members: RespondWith<Member>, { labels = [] }: MockMembersOptions = {}): ResourceCapture {
+export function fakeMembers(members: RespondWith<Member>, { labels = [] }: FakeMembersOptions = {}): ResourceCapture {
     const embeddedLabels = Array.isArray(members) ? members.flatMap((m) => m.labels) : [];
     const labelsById = new Map([...embeddedLabels, ...labels].map((l) => [l.id, l]));
 

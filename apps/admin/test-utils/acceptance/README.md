@@ -1,12 +1,12 @@
 # Acceptance tier
 
-Full-app tests: the **real admin app** (the same provider stack as `src/main.tsx`) booted in a **real Chromium** instance via Vitest Browser Mode, with the **Ghost Admin API served by MSW**. The shell's boot chrome (settings/config/site/me, sidebar members count, active theme, the ghost.org changelog feed) is mocked by default — specs never mention it.
+Full-app tests: the **real admin app** (the same provider stack as `src/main.tsx`) booted in a **real Chromium** instance via Vitest Browser Mode, against a **fake Ghost Admin API** — a simplified working implementation served in-browser through MSW, the same test-double family as e2e's fake-stripe-server and fake-mailgun-server. The shell's boot chrome (settings/config/site/me, sidebar members count, active theme, the ghost.org changelog feed) is handled by default — specs never mention it.
 
 ## Anatomy of a spec
 
 Use [`src/tags/tags.acceptance.test.tsx`](../../src/tags/tags.acceptance.test.tsx) as the template:
 
-- **Given** — declare the world with builders + a resource handler: `mockTags([tag({name: "News"})])`. Bind the returned capture (`const membersApi = mockMembers(...)`) only when the spec asserts outgoing requests.
+- **Given** — declare the world with builders + a resource fake: `fakeTags([tag({name: "News"})])`. Bind the returned capture (`const membersApi = fakeMembers(...)`) only when the spec asserts outgoing requests.
 - **When** — `await renderAdminApp("/tags")`, then gesture through the screen helper (`tagsScreen.internalTab().click()`).
 - **Then** — exactly three assertion idioms:
 
@@ -24,9 +24,9 @@ await expect.poll(() => membersApi.lastRequest?.limit).toBe(100);
 
 ## The 418 loop
 
-Don't guess the app's network graph — run the test, the 418 names what's missing. Any request without a declared mock is served a 418 (admin API paths *and* known external origins like ghost.org) and fails the test in `afterEach`, listing the request and the currently mocked routes. Declare admin API requests with a resource handler or a `renderAdminApp` boot override, external URLs with `mockEndpoint(method, url, response)`; `allowUnmockedRequests()` opts a single test out.
+Don't guess the app's network graph — run the test, the 418 names what's missing. Any request no fake handles is served a 418 (admin API paths *and* known external origins like ghost.org) and fails the test in `afterEach`, listing the request and the currently faked routes. Declare admin API requests with a resource fake or a `renderAdminApp` boot override, external URLs with `fakeEndpoint(method, url, response)`; `allowUnhandledRequests()` opts a single test out.
 
-**THE RULE:** mocks never implement NQL — declare the response and assert the outgoing filter string instead (see the doc comment in `resources.ts`).
+**THE RULE:** fakes never implement NQL — declare the response and assert the outgoing filter string instead (see the doc comment in `resources.ts`).
 
 ## Screen helpers
 
@@ -45,5 +45,5 @@ pnpm test:acceptance:watch -- --browser.headless=false   # headed, watch the bro
 ## Debugging
 
 - **Failure screenshots** land in `__screenshots__/` (gitignored) — the fastest way to see what actually rendered.
-- **418 bodies** name the unmatched request and list what is mocked.
+- **418 bodies** name the unhandled request and list what is faked.
 - There are **no Playwright traces** in this tier — a spec that needs trace-level debugging belongs in `e2e/`.

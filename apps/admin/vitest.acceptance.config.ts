@@ -9,8 +9,8 @@ import { sharedDefine, sharedResolve } from "./vite.shared";
 
 /**
  * Acceptance tier: full-app tests running in a real Chromium instance via
- * Vitest Browser Mode, with the Ghost Admin API mocked by MSW (see
- * test-utils/acceptance/). Unit tests stay in vite.config.ts (jsdom).
+ * Vitest Browser Mode, against a fake Ghost Admin API served through MSW
+ * (see test-utils/acceptance/). Unit tests stay in vite.config.ts (jsdom).
  *
  * Run with: pnpm test:acceptance
  */

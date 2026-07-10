@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { mockTags, renderAdminApp, tag } from "@test-utils/acceptance";
+import { fakeTags, renderAdminApp, tag } from "@test-utils/acceptance";
 import { tagsScreen } from "./tags.screen";
 
 // Ported from e2e/tests/admin/tags/list.test.ts (the read-only cases): same
 // UI assertions, with the Ghost Admin API served by the acceptance harness's
-// tags resource handler instead of a real per-worker Ghost instance.
+// tags fake instead of a real per-worker Ghost instance.
 
 describe("Tags list", () => {
     it("lists public tags with description and posts count", async () => {
-        mockTags([
+        fakeTags([
             tag({ name: "News", description: "News description", count: { posts: 1 } }),
         ]);
         await renderAdminApp("/tags");
@@ -25,7 +25,7 @@ describe("Tags list", () => {
     });
 
     it("lists public and internal tags separately", async () => {
-        mockTags([
+        fakeTags([
             tag({ name: "Public Tag Name" }),
             tag({ name: "Other Public Tag Name" }),
             tag({ name: "#Internal Tag Name", visibility: "internal" }),
@@ -45,7 +45,7 @@ describe("Tags list", () => {
     });
 
     it("shows the empty state with a call to action when there are no tags", async () => {
-        mockTags([]);
+        fakeTags([]);
         await renderAdminApp("/tags");
 
         await expect.element(tagsScreen.emptyStateHeading()).toBeVisible();
