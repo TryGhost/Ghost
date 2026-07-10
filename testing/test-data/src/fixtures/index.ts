@@ -1,3 +1,4 @@
+import {theme, type Theme} from "../builders/theme";
 import {configData} from "./data/config";
 import {currentUserData} from "./data/current-user";
 import {labsDefaults} from "./data/labs";
@@ -48,7 +49,7 @@ export interface CurrentUserResponse {
 }
 
 export interface ActiveThemeResponse {
-    themes: Array<Record<string, unknown>>;
+    themes: Theme[];
 }
 
 export interface LabsOverrides {
@@ -106,19 +107,6 @@ export interface ActiveThemeOptions {
 
 export function activeThemeResponse({errors = [], warnings = []}: ActiveThemeOptions = {}): ActiveThemeResponse {
     return {
-        themes: [
-            {
-                name: "casper",
-                active: true,
-                package: {
-                    name: "casper",
-                    description: "A clean, minimal default theme for the Ghost publishing platform",
-                    version: "5.4.10"
-                },
-                templates: [],
-                errors,
-                warnings
-            }
-        ]
+        themes: [theme({active: true, errors, warnings})]
     };
 }
