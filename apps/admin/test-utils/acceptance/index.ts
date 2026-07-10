@@ -12,6 +12,6 @@
  */
 export { renderAdminApp } from "./render-admin-app";
 export type { RenderAdminAppOptions } from "./render-admin-app";
-export { defineResource, mockTags } from "./resources";
-export type { BrowseQuery, ResourceCapture, ResourceOptions, ResourceSemantics, RespondWith } from "./resources";
+export { defineResource, mockMembers, mockTags } from "./resources";
+export type { BrowseQuery, MockMembersOptions, ResourceCapture, ResourceOptions, ResourceSemantics, RespondWith } from "./resources";
 export { allowUnmockedRequests } from "./worker";

@@ -1,19 +1,15 @@
 import {Locator, Page, expect} from '@playwright/test';
+import {configResponse, currentUserResponse, defaultThemesResponse, settingsResponse, siteResponse} from '@tryghost/test-data';
 
 import actionsFixture from './responses/actions.json';
-import configFixture from './responses/config.json';
 import customThemeSettingsFixture from './responses/custom_theme_settings.json';
 import incomingRecommendationsFixture from './responses/incoming_recommendations.json';
 import invitesFixture from './responses/invites.json';
 import labelsFixture from './responses/labels.json';
-import meFixture from './responses/me.json';
 import newslettersFixture from './responses/newsletters.json';
 import offersFixture from './responses/offers.json';
 import recommendationsFixture from './responses/recommendations.json';
 import rolesFixture from './responses/roles.json';
-import settingsFixture from './responses/settings.json';
-import siteFixture from './responses/site.json';
-import themesFixture from './responses/themes.json';
 import tiersFixture from './responses/tiers.json';
 import usersFixture from './responses/users.json';
 import memberCountHistoryFixture from './responses/member_count_history.json';
@@ -33,6 +29,7 @@ import {OffersResponseType} from '../api/offers';
 import {IncomingRecommendationResponseType, RecommendationResponseType} from '../api/recommendations';
 import {RolesResponseType} from '../api/roles';
 import {SettingsResponseType} from '../api/settings';
+import {SiteResponseType} from '../api/site';
 import {ThemesResponseType} from '../api/themes';
 import {TiersResponseType} from '../api/tiers';
 import {UsersResponseType} from '../api/users';
@@ -55,13 +52,19 @@ interface RequestRecord {
     headers?: {[key: string]: string}
 }
 
+// The boot fixtures (settings, config, site, me) live in @tryghost/test-data.
+// The accessors return fresh copies, so calling them once at module load keeps
+// this object shared-mutable across a test file, exactly like the old JSON
+// imports (specs mutate it via toggleLabsFlag and direct pushes).
+const siteFixture = siteResponse() as SiteResponseType;
+
 export const responseFixtures = {
-    settings: settingsFixture as SettingsResponseType,
+    settings: settingsResponse() as SettingsResponseType,
     recommendations: recommendationsFixture as RecommendationResponseType,
     incomingRecommendations: incomingRecommendationsFixture as IncomingRecommendationResponseType,
-    config: configFixture as ConfigResponseType,
+    config: configResponse() as ConfigResponseType,
     users: usersFixture as UsersResponseType,
-    me: meFixture as UsersResponseType,
+    me: currentUserResponse() as UsersResponseType,
     roles: rolesFixture as RolesResponseType,
     site: siteFixture,
     invites: invitesFixture as InvitesResponseType,
@@ -69,7 +72,7 @@ export const responseFixtures = {
     tiers: tiersFixture as TiersResponseType,
     labels: labelsFixture as LabelsResponseType,
     offers: offersFixture as OffersResponseType,
-    themes: themesFixture as ThemesResponseType,
+    themes: defaultThemesResponse() as ThemesResponseType,
     newsletters: newslettersFixture as NewslettersResponseType,
     actions: actionsFixture as ActionsResponseType,
     latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]},
@@ -81,38 +84,13 @@ export const responseFixtures = {
     postReferrers: postReferrersFixture as PostReferrersResponseType
 };
 
-const defaultLabFlags = {
-    collections: false,
-    outboundLinkTagging: false,
-    members: false
-};
-
-// Inject defaultLabFlags into responseFixtures.settings and config
-let labsSetting = responseFixtures.settings.settings.find(s => s.key === 'labs');
-let configSettings = responseFixtures.config.config;
-
-if (configSettings) {
-    configSettings.labs = defaultLabFlags;
-}
-
-if (!labsSetting) {
-    // If 'labs' key doesn't exist, create it
-    responseFixtures.settings.settings.push({
-        key: 'labs',
-        value: JSON.stringify(defaultLabFlags)
-    });
-} else {
-    // If 'labs' key exists, update its value
-    labsSetting.value = JSON.stringify(defaultLabFlags);
-}
-
 interface LabsSettings {
     [key: string]: boolean;
 }
 
 export function toggleLabsFlag(flag: string, value: boolean) {
     // Update responseFixtures.settings
-    labsSetting = responseFixtures.settings.settings.find(s => s.key === 'labs');
+    const labsSetting = responseFixtures.settings.settings.find(s => s.key === 'labs');
 
     if (!labsSetting) {
         throw new Error('Labs settings not found');
@@ -133,7 +111,7 @@ export function toggleLabsFlag(flag: string, value: boolean) {
     labsSetting.value = JSON.stringify(labs);
 
     // Update responseFixtures.config
-    configSettings = responseFixtures.config.config;
+    const configSettings = responseFixtures.config.config;
 
     if (configSettings && configSettings.labs) {
         configSettings.labs[flag] = value;

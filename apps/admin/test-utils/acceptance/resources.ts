@@ -1,5 +1,5 @@
 import { HttpResponse } from "msw";
-import { browseResponse, type Tag } from "@tryghost/test-data";
+import { browseResponse, type Label, type Member, type Tag } from "@tryghost/test-data";
 
 import { record418, registerAdminApiHandler, registerRoute } from "./worker";
 
@@ -169,3 +169,45 @@ export const mockTags = defineResource<Tag>({
         },
     },
 });
+
+/** The sidebar's global member-count probe — shell chrome, served by the boot table. */
+const MEMBER_COUNT_PROBE_PATH = "/members/?limit=1";
+
+const membersResource = defineResource<Member>({
+    resource: "members",
+    // EXPLICIT mode: no fake filtering ever happens (see THE RULE above).
+    semantics: { kind: "passthrough" },
+    // Leave the sidebar count probe to the boot table so it never pollutes
+    // `lastRequest` assertions.
+    skip: (apiPath) => apiPath === MEMBER_COUNT_PROBE_PATH,
+});
+
+// Members-page chrome: the filter bar mounts with the page and probes these lookups.
+const labelsResource = defineResource<Label>({ resource: "labels", semantics: { kind: "passthrough" } });
+const tiersResource = defineResource({ resource: "tiers", semantics: { kind: "passthrough" } });
+const offersResource = defineResource({ resource: "offers", semantics: { kind: "passthrough" } });
+const newslettersResource = defineResource({ resource: "newsletters", semantics: { kind: "passthrough" } });
+
+export interface MockMembersOptions {
+    /** Labels served to the members page filter bar's label lookup (default none). */
+    labels?: Label[];
+}
+
+/**
+ * Explicit-mode handler for the members list: serves exactly the declared
+ * entities and captures every browse request so specs can assert the outgoing
+ * NQL (`lastRequest.filter`, `lastRequest.search`, raw `lastRequest.url`).
+ * Pass an array to serve the same world for every request, or a function of
+ * the parsed query to declare per-request responses, e.g.
+ * `({search}) => (search ? [] : allMembers)`.
+ *
+ * Also serves the members page's filter-bar lookups (labels/tiers/offers/
+ * newsletters) so specs don't have to mention page chrome.
+ */
+export function mockMembers(members: RespondWith<Member>, { labels = [] }: MockMembersOptions = {}): ResourceCapture {
+    labelsResource(labels);
+    tiersResource([]);
+    offersResource([]);
+    newslettersResource([]);
+    return membersResource(members);
+}
