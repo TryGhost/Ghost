@@ -1,0 +1,41 @@
+# Acceptance tier
+
+Full-app tests: the **real admin app** (the same provider stack as `src/main.tsx`) booted in a **real Chromium** instance via Vitest Browser Mode, with the **Ghost Admin API served by MSW**. The shell's boot chrome (settings/config/site/me, sidebar members count, active theme, the ghost.org changelog feed) is mocked by default — specs never mention it.
+
+## Anatomy of a spec
+
+Use [`src/tags/tags.acceptance.test.tsx`](../../src/tags/tags.acceptance.test.tsx) as the template:
+
+- **Given** — declare the world with builders + a resource handler: `mockTags([tag({name: "News"})])`. Bind the returned capture (`const membersApi = mockMembers(...)`) only when the spec asserts outgoing requests.
+- **When** — `await renderAdminApp("/tags")`, then gesture through the screen helper (`tagsScreen.internalTab().click()`).
+- **Then** — exactly three assertion idioms:
+
+| Asserting | Idiom |
+| --- | --- |
+| Element state | `await expect.element(locator).toBeVisible() / toHaveTextContent() / toHaveAttribute()` |
+| Element counts | `await expect(locator).toHaveCount(n)` |
+| Captured requests | `await expect.poll(() => membersApi.lastRequest?.filter).toBe(...)` |
+
+## The 418 loop
+
+Don't guess the app's network graph — run the test, the 418 names what's missing. Any request without a declared mock is served a 418 (admin API paths *and* known external origins like ghost.org) and fails the test in `afterEach`, listing the request and the currently mocked routes. Declare admin API requests with a resource handler or a `renderAdminApp` boot override, external URLs with `mockEndpoint(method, url, response)`; `allowUnmockedRequests()` opts a single test out.
+
+**THE RULE:** mocks never implement NQL — declare the response and assert the outgoing filter string instead (see the doc comment in `resources.ts`).
+
+## Screen helpers
+
+Per-area locator vocabulary lives in `src/<area>/<area>.screen.ts` (e.g. `membersScreen`): locator factories + multi-step gestures, **no assertions**. Selector strings come from the shared registry in `@tryghost/test-data` (`membersSelectors`, `tagsSelectors`) — the same strings the e2e page objects use, so both tiers break together when the UI changes.
+
+## Running
+
+```bash
+pnpm test:acceptance                               # run once
+pnpm test:acceptance:watch                         # watch mode
+pnpm test:acceptance:watch -- --browser.headless=false   # headed, watch the browser
+```
+
+## Debugging
+
+- **Failure screenshots** land in `__screenshots__/` (gitignored) — the fastest way to see what actually rendered.
+- **418 bodies** name the unmatched request and list what is mocked.
+- There are **no Playwright traces** in this tier — a spec that needs trace-level debugging belongs in `e2e/`.
