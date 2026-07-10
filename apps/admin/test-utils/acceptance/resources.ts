@@ -1,5 +1,14 @@
 import { HttpResponse } from "msw";
-import { browseResponse, type Label, type Member, type Tag } from "@tryghost/test-data";
+import {
+    activeThemeResponse,
+    browseResponse,
+    currentUserResponse,
+    settingsResponse,
+    type Label,
+    type Member,
+    type SettingsResponse,
+    type Tag,
+} from "@tryghost/test-data";
 
 import { record418, registerAdminApiHandler, registerRoute } from "./worker";
 
@@ -210,4 +219,97 @@ export function mockMembers(members: RespondWith<Member>, { labels = [] }: MockM
     offersResource([]);
     newslettersResource([]);
     return membersResource(members);
+}
+
+// Settings-screen chrome: admin-x-settings renders EVERY settings group on
+// one page (routes only scroll/expand), so all of these fire on any
+// /settings/* mount regardless of which screen a spec is about.
+const usersResource = defineResource({ resource: "users", semantics: { kind: "passthrough" } });
+const invitesResource = defineResource({ resource: "invites", semantics: { kind: "passthrough" } });
+const rolesResource = defineResource({ resource: "roles", semantics: { kind: "passthrough" } });
+const themesResource = defineResource({ resource: "themes", semantics: { kind: "passthrough" } });
+const automatedEmailsResource = defineResource({ resource: "automated_emails", semantics: { kind: "passthrough" } });
+const recommendationsResource = defineResource({ resource: "recommendations", semantics: { kind: "passthrough" } });
+const integrationsResource = defineResource({ resource: "integrations", semantics: { kind: "passthrough" } });
+
+/**
+ * Declares the world the settings area's page chrome reads at mount — every
+ * settings group renders on one page, so this covers the requests ALL
+ * /settings/* specs trigger: the staff section (users/invites/roles), design
+ * (themes), membership (tiers/newsletters), growth (recommendations, offers,
+ * referrer stats) and advanced (integrations, automated emails).
+ *
+ * Defaults are the minimal believable world: the boot table's owner as the
+ * only staff user, the canned active theme, and empty lists everywhere else.
+ * Screen-specific data a spec asserts on should be declared in the spec, not
+ * here.
+ */
+export function mockSettingsScreens(): void {
+    usersResource(currentUserResponse().users);
+    invitesResource([]);
+    rolesResource([]);
+    themesResource(activeThemeResponse().themes);
+    tiersResource([]);
+    offersResource([]);
+    newslettersResource([]);
+    automatedEmailsResource([]);
+    recommendationsResource([]);
+    integrationsResource([]);
+
+    // Two endpoints defineResource can't express:
+    //  - /incoming_recommendations/ responds under the `recommendations` key
+    //    (useBrowseIncomingRecommendations crashes on any other envelope);
+    //  - /stats/referrers/ (growth's "Top sources") isn't a list envelope.
+    registerRoute("GET", "/incoming_recommendations/?…");
+    registerRoute("GET", "/stats/referrers/");
+    registerAdminApiHandler((request, apiPath) => {
+        if (request.method !== "GET") {
+            return undefined;
+        }
+        if (apiPath === "/incoming_recommendations/" || apiPath.startsWith("/incoming_recommendations/?")) {
+            return HttpResponse.json(browseResponse("recommendations", [], { limit: 5 }));
+        }
+        if (apiPath === "/stats/referrers/") {
+            return HttpResponse.json({ stats: [] });
+        }
+        return undefined;
+    });
+}
+
+type SettingsPutBody = { settings: Array<{ key: string; value: string | boolean | null }> };
+
+export interface EditSettingsCapture {
+    /** Every PUT /settings/ body, oldest first. */
+    requests: SettingsPutBody[];
+    readonly lastRequest: SettingsPutBody | undefined;
+}
+
+/**
+ * Handles PUT /settings/ the way Ghost does — echoes back the full settings
+ * world with the submitted keys applied — and captures every request body so
+ * specs can assert exactly what the UI saved.
+ */
+export function mockEditSettings(): EditSettingsCapture {
+    const requests: SettingsPutBody[] = [];
+
+    registerRoute("PUT", "/settings/");
+    registerAdminApiHandler(async (request, apiPath) => {
+        if (request.method !== "PUT" || apiPath !== "/settings/") {
+            return undefined;
+        }
+
+        const body = (await request.json()) as SettingsPutBody;
+        requests.push(body);
+
+        const overrides = Object.fromEntries(body.settings.map(({ key, value }) => [key, value]));
+        const response: SettingsResponse = settingsResponse({ settings: overrides });
+        return HttpResponse.json(response);
+    });
+
+    return {
+        requests,
+        get lastRequest() {
+            return requests[requests.length - 1];
+        },
+    };
 }
