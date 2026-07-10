@@ -1,3 +1,7 @@
+// jsdom unit-tier factories ONLY — not for acceptance specs. Acceptance tests
+// declare their world with @tryghost/test-data builders + the fake Admin API
+// (see test-utils/acceptance/README.md).
+
 import type { User } from "@tryghost/admin-x-framework/api/users";
 
 const createMockUser = (overrides?: Partial<User>): User => ({

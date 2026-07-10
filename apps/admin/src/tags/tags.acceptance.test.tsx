@@ -20,8 +20,10 @@ describe("Tags list", () => {
         await expect.element(row).toHaveTextContent("News description");
         await expect.element(row).toHaveTextContent("1 post");
 
-        await expect.element(tagsScreen.publicTab()).toHaveAttribute("data-state", "on");
-        await expect.element(tagsScreen.internalTab()).toHaveAttribute("data-state", "off");
+        // The tabs are a Radix single-select toggle group: items expose
+        // role="radio" with aria-checked.
+        await expect.element(tagsScreen.publicTab()).toHaveAttribute("aria-checked", "true");
+        await expect.element(tagsScreen.internalTab()).toHaveAttribute("aria-checked", "false");
     });
 
     it("lists public and internal tags separately", async () => {
@@ -32,15 +34,15 @@ describe("Tags list", () => {
         ]);
         await renderAdminApp("/tags");
 
-        await expect.element(tagsScreen.rowLink("Public Tag Name")).toBeVisible();
+        await expect.element(tagsScreen.link("Public Tag Name")).toBeVisible();
         await expect(tagsScreen.tagRows()).toHaveCount(2);
 
         await tagsScreen.internalTab().click();
-        await expect.element(tagsScreen.rowLink("#Internal Tag Name")).toBeVisible();
+        await expect.element(tagsScreen.link("#Internal Tag Name")).toBeVisible();
         await expect(tagsScreen.tagRows()).toHaveCount(1);
 
         await tagsScreen.publicTab().click();
-        await expect.element(tagsScreen.rowLink("Public Tag Name")).toBeVisible();
+        await expect.element(tagsScreen.link("Public Tag Name")).toBeVisible();
         await expect(tagsScreen.tagRows()).toHaveCount(2);
     });
 

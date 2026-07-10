@@ -28,6 +28,14 @@ export interface RenderAdminAppOptions {
 }
 
 /**
+ * The app's current hash route (e.g. "/members?filter=..."), for URL
+ * assertions: `await expect.poll(currentRoute).toBe("/members")`.
+ */
+export function currentRoute(): string {
+    return window.location.hash.replace(/^#/, "");
+}
+
+/**
  * Boots the real admin app — the same provider stack as src/main.tsx, via the
  * shared AdminAppRoot — inside the browser-mode page, with the Ghost Admin
  * API served by MSW. `route` is the hash route to boot on, e.g. "/tags" or

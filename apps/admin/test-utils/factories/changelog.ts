@@ -1,3 +1,7 @@
+// jsdom unit-tier factories ONLY — not for acceptance specs. Acceptance tests
+// declare their world with @tryghost/test-data builders + the fake Admin API
+// (see test-utils/acceptance/README.md).
+
 import type { ChangelogEntry, RawChangelogEntry, RawChangelogResponse } from "@/whats-new/hooks/use-changelog";
 
 /**

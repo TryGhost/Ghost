@@ -31,6 +31,8 @@ export interface BrowseQuery {
     filter?: string;
     /** Decoded ?search param, if present. */
     search?: string;
+    /** Decoded ?order param (e.g. "created_at desc"), if present. */
+    order?: string;
     page: number;
     limit: number | "all";
 }
@@ -72,6 +74,7 @@ function parseBrowseQuery(request: Request): BrowseQuery {
         url: request.url,
         filter: params.get("filter") ?? undefined,
         search: params.get("search") ?? undefined,
+        order: params.get("order") ?? undefined,
         page: Number(params.get("page") ?? "1"),
         limit: rawLimit === "all" ? "all" : rawLimit ? Number(rawLimit) : 15,
     };

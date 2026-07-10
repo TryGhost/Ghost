@@ -241,7 +241,8 @@ export interface FakeEndpointOptions {
  * `fakeEndpoint("GET", "https://ghost.org/changelog.json", {posts: []})`) for
  * the current test. Registered like any runtime handler, so it wins over the
  * external-origin blocklist and resets between tests. Admin API requests
- * belong to the resource fakes / boot overrides, not this.
+ * belong to the resource fakes / boot overrides / `fakeAdminEndpoint`, not
+ * this.
  */
 export function fakeEndpoint(method: string, url: string, response: unknown, { status = 200 }: FakeEndpointOptions = {}): void {
     const expectedMethod = method.toUpperCase();
@@ -254,6 +255,80 @@ export function fakeEndpoint(method: string, url: string, response: unknown, { s
             return HttpResponse.json(response as Record<string, unknown>, { status });
         })
     );
+}
+
+export interface CapturedEndpointRequest {
+    /** Full request URL. */
+    url: string;
+    /** Parsed JSON request body, or undefined when there is none. */
+    body: unknown;
+}
+
+export interface EndpointCapture {
+    /** Every matched request, oldest first. */
+    requests: CapturedEndpointRequest[];
+    readonly lastRequest: CapturedEndpointRequest | undefined;
+}
+
+/**
+ * A JSON body, or a function of the captured request that derives one (kept
+ * as a named non-`unknown` union so the function form's parameter stays
+ * contextually typed).
+ */
+export type FakeAdminEndpointResponse = object | unknown[] | null | ((request: CapturedEndpointRequest) => unknown);
+
+/**
+ * Fake one admin API endpoint that has no resource fake (yet) — stats
+ * subpaths, settings chrome, a mutation the spec asserts on. `apiPath`
+ * matches the request's path relative to /ghost/api/admin (string = exact
+ * including the query, RegExp = test), e.g.
+ * `fakeAdminEndpoint("PUT", /^\/users\/\w+\//, ({body}) => body)`.
+ *
+ * `response` may be a function of the captured request to derive the reply
+ * from the payload — `({body}) => body` is an honest echo. Returns a capture
+ * of every matched request for outgoing-payload assertions.
+ *
+ * Prefer a resource fake (`defineResource`) for browse endpoints — it
+ * declares query semantics; this is the blessed one-off escape hatch.
+ */
+export function fakeAdminEndpoint(
+    method: string,
+    apiPath: string | RegExp,
+    response: FakeAdminEndpointResponse,
+    { status = 200 }: FakeEndpointOptions = {}
+): EndpointCapture {
+    const expectedMethod = method.toUpperCase();
+    const requests: CapturedEndpointRequest[] = [];
+
+    registerRoute(expectedMethod, apiPath);
+    registerAdminApiHandler(async (request, path) => {
+        const isMatch = typeof apiPath === "string" ? path === apiPath : apiPath.test(path);
+        if (request.method !== expectedMethod || !isMatch) {
+            return undefined;
+        }
+
+        let body: unknown;
+        try {
+            body = await request.clone().json();
+        } catch {
+            body = undefined;
+        }
+
+        const captured: CapturedEndpointRequest = { url: request.url, body };
+        requests.push(captured);
+
+        const responseBody =
+            typeof response === "function" ? (response as (request: CapturedEndpointRequest) => unknown)(captured) : response;
+
+        return HttpResponse.json(responseBody as Record<string, unknown>, { status });
+    });
+
+    return {
+        requests,
+        get lastRequest() {
+            return requests[requests.length - 1];
+        },
+    };
 }
 
 export interface StartFakeApiOptions {

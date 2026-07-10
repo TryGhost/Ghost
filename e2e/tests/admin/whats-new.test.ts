@@ -58,25 +58,12 @@ async function mockChangelog(page: Page, entries: RawChangelogEntry[]): Promise<
     });
 }
 
+// The single-boot cases (banner appears / empty feed / close-button
+// dismissal) are covered by the acceptance tier:
+// apps/admin/src/whats-new/whats-new.acceptance.test.tsx. The journeys that
+// need real persistence across reloads stay here.
 test.describe('Ghost Admin - What\'s New Banner', () => {
     test.describe('banner notification', () => {
-        test('shows banner for new entries the user has not seen', async ({page}) => {
-            await mockChangelog(page, [
-                createEntry(daysFromNow(1), {
-                    title: 'New Update',
-                    excerpt: 'This is an exciting new feature'
-                })
-            ]);
-
-            const banner = new WhatsNewBanner(page);
-            await banner.goto();
-            await banner.waitForBanner();
-
-            await expect(banner.container).toBeVisible();
-            await expect(banner.title).toHaveText('New Update');
-            await expect(banner.excerpt).toHaveText('This is an exciting new feature');
-        });
-
         test('does not show banner for entries from before user joined', async ({page}) => {
             await mockChangelog(page, [createEntry(daysAgo(30))]);
 
@@ -86,30 +73,7 @@ test.describe('Ghost Admin - What\'s New Banner', () => {
             await expect(banner.container).toBeHidden();
         });
 
-        test('does not show banner when there are no entries', async ({page}) => {
-            await mockChangelog(page, []);
-
-            const banner = new WhatsNewBanner(page);
-            await banner.goto();
-
-            await expect(banner.container).toBeHidden();
-        });
-
         test.describe('dismissal behavior', () => {
-            test('hides banner immediately when close button is clicked', async ({page}) => {
-                await mockChangelog(page, [createEntry(daysFromNow(1))]);
-
-                const banner = new WhatsNewBanner(page);
-                await banner.goto();
-                await banner.waitForBanner();
-
-                await expect(banner.container).toBeVisible();
-
-                await banner.dismiss();
-
-                await expect(banner.container).toBeHidden();
-            });
-
             test('hides banner immediately when link is clicked', async ({page}) => {
                 await mockChangelog(page, [createEntry(daysFromNow(1))]);
 

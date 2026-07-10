@@ -27,6 +27,7 @@ import { registerAdminApiHandler, registerRoute } from "./worker";
 export interface BootRequestConfig {
     method: string;
     path: string | RegExp;
+    /** The JSON response — or a function of the request for the rare entry that must react to its payload. */
     response: unknown;
     responseStatus?: number;
 }
@@ -71,7 +72,17 @@ export function defaultBootRequests() {
         editUserPreferences: {
             method: "PUT",
             path: /^\/users\/\w+\/\?include=roles/,
-            response: currentUserResponse(),
+            // An honest echo, not a canned reply: the framework REPLACES its
+            // cached current user with this response (updateQueryCache), so
+            // answering with the canned user would silently wipe the client's
+            // write — preference writes (theme, navigation, what's-new
+            // lastSeenDate) would never persist and features gated on them
+            // could never activate, with zero 418s to point at the cause.
+            response: async (request: Request) => {
+                const body = (await request.clone().json()) as { users?: Array<Record<string, unknown>> };
+                const { users } = currentUserResponse();
+                return { users: [{ ...users[0], ...body.users?.[0] }] };
+            },
         },
     } satisfies Record<string, BootRequestConfig>;
 }
@@ -97,8 +108,13 @@ function matches(config: BootRequestConfig, method: string, apiPath: string): bo
     return typeof config.path === "string" ? config.path === apiPath : config.path.test(apiPath);
 }
 
-function respond(config: BootRequestConfig): Response {
-    return HttpResponse.json(config.response as Record<string, unknown>, {
+async function respond(config: BootRequestConfig, request: Request): Promise<Response> {
+    const body =
+        typeof config.response === "function"
+            ? await (config.response as (request: Request) => Promise<unknown>)(request)
+            : config.response;
+
+    return HttpResponse.json(body as Record<string, unknown>, {
         status: config.responseStatus ?? 200,
     });
 }
@@ -108,9 +124,9 @@ function respond(config: BootRequestConfig): Response {
  * at worker start. Resource handlers and boot overrides always win over it.
  * Rebuilds the table per request so every response is a fresh object.
  */
-export function defaultBootResolver(request: Request, apiPath: string): Response | undefined {
+export async function defaultBootResolver(request: Request, apiPath: string): Promise<Response | undefined> {
     const config = Object.values(defaultBootRequests()).find((entry) => matches(entry, request.method, apiPath));
-    return config ? respond(config) : undefined;
+    return config ? await respond(config, request) : undefined;
 }
 
 /** Register per-test boot overrides (higher priority than the defaults). */
@@ -124,8 +140,8 @@ export function installBootOverrides(overrides: BootOverrides): void {
         registerRoute(config.method, config.path);
     }
 
-    registerAdminApiHandler((request, apiPath) => {
+    registerAdminApiHandler(async (request, apiPath) => {
         const config = entries.find((entry) => matches(entry, request.method, apiPath));
-        return config ? respond(config) : undefined;
+        return config ? await respond(config, request) : undefined;
     });
 }

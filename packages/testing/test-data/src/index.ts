@@ -11,6 +11,8 @@ export {defaultThemesResponse, theme} from "./builders/theme";
 export type {Theme, ThemePackage, ThemesResponse} from "./builders/theme";
 export {post} from "./builders/post";
 export type {Post} from "./builders/post";
+export {changelogEntry} from "./builders/changelog";
+export type {ChangelogEntry} from "./builders/changelog";
 export {buildLexical, buildLexicalParagraph} from "./builders/lexical";
 export type {CardSpec} from "./builders/lexical";
 
@@ -21,6 +23,7 @@ export {generateId, generateSlug, generateUuid} from "./utils";
 
 export {membersSelectors} from "./selectors/members";
 export {tagsSelectors} from "./selectors/tags";
+export {whatsNewSelectors} from "./selectors/whats-new";
 
 export {
     activeThemeResponse,
