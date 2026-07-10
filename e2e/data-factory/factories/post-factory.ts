@@ -1,9 +1,7 @@
 import {Factory} from '@/data-factory';
-import {buildLexical} from './lexical';
+import {buildLexical, post} from '@tryghost/test-data';
 import {generateSlug} from '@/data-factory';
-import {post} from '@tryghost/test-data';
-import type {Post as CanonicalPost} from '@tryghost/test-data';
-import type {CardSpec} from './lexical';
+import type {Post as CanonicalPost, CardSpec} from '@tryghost/test-data';
 
 /**
  * The *write/create* shape POSTed to /ghost/api/admin/posts/ (Date objects,

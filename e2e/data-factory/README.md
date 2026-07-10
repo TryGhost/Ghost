@@ -6,18 +6,22 @@ A minimal test data factory for Ghost e2e tests, written in TypeScript.
 
 ```
 e2e/data-factory/          # Source files (TypeScript) - committed to git
-├── factory.ts             # Base factory class
+├── factory.ts             # Base factory class (adds the persistence lane)
 ├── factories/             # Factory implementations
+│   ├── member-factory.ts
 │   ├── post-factory.ts
 │   ├── tag-factory.ts
-│   └── user-factory.ts
+│   └── ...
 ├── persistence/
 │   ├── adapter.ts         # Persistence interface
 │   └── adapters/          # Adapter implementations (API, Knex, etc)
 ├── setup.ts               # Setup helper functions
-├── index.ts               # Main exports
-└── utils.ts               # Utility functions
+└── index.ts               # Main exports
 ```
+
+Entity shapes, randomised defaults and shared helpers (id/slug generators,
+Lexical document builders) live in `@tryghost/test-data` and are re-exported
+from the `@/data-factory` barrel.
 
 ## Setup
 

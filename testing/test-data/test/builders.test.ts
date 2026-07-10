@@ -1,5 +1,5 @@
+import {buildLexical, buildLexicalParagraph, defaultThemesResponse, label, member, post, tag, theme} from "../src/index";
 import {describe, expect, it} from "vitest";
-import {defaultThemesResponse, label, member, post, tag, theme} from "../src/index";
 
 describe("builders", () => {
     it("builds fully-populated entities with overrides winning", () => {
@@ -26,6 +26,23 @@ describe("builders", () => {
         expect(lexical.root.children[0].type).toBe("paragraph");
         expect(built.html).toMatch(/^<p>/);
         expect(built.plaintext).toBeTruthy();
+    });
+
+    it("builds lexical documents from paragraphs and card specs", () => {
+        const paragraphDoc = JSON.parse(buildLexicalParagraph("Hello")) as {
+            root: {type: string; children: Array<{type: string; children: Array<{text: string}>}>};
+        };
+        expect(paragraphDoc.root.type).toBe("root");
+        expect(paragraphDoc.root.children[0].type).toBe("paragraph");
+        expect(paragraphDoc.root.children[0].children[0].text).toBe("Hello");
+
+        const cardDoc = JSON.parse(buildLexical({transistor: {accentColor: "#FF0000"}})) as {
+            root: {children: Array<{type: string; accentColor?: string}>};
+        };
+        expect(cardDoc.root.children.map(child => child.type)).toEqual(["paragraph", "transistor", "paragraph"]);
+        expect(cardDoc.root.children[1].accentColor).toBe("#FF0000");
+
+        expect(() => buildLexical("no-such-card")).toThrow(/Unknown card type/);
     });
 
     it("attaches label entities to members", () => {

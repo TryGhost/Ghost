@@ -25,6 +25,8 @@ export type {PersistenceAdapter} from './persistence/adapter';
 
 // Utilities (shared with the admin acceptance harness via @tryghost/test-data)
 export {generateId, generateUuid, generateSlug} from '@tryghost/test-data';
+export {buildLexical, buildLexicalParagraph} from '@tryghost/test-data';
+export type {CardSpec} from '@tryghost/test-data';
 
 // Factory Setup Helpers
 export {createPostFactory} from './setup';

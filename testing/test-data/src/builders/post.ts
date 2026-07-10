@@ -1,4 +1,5 @@
 import {faker} from "@faker-js/faker";
+import {buildLexicalParagraph} from "./lexical";
 import {createBuilder} from "../factory";
 import {generateId, generateSlug, generateUuid} from "../utils";
 import type {Tag} from "./tag";
@@ -55,35 +56,6 @@ export interface Post {
     published_at: string | null;
 }
 
-/** Minimal valid Lexical document containing a single paragraph of text. */
-function buildLexical(text: string): string {
-    return JSON.stringify({
-        root: {
-            children: [{
-                children: [{
-                    detail: 0,
-                    format: 0,
-                    mode: "normal",
-                    style: "",
-                    text,
-                    type: "text",
-                    version: 1
-                }],
-                direction: "ltr",
-                format: "",
-                indent: 0,
-                type: "paragraph",
-                version: 1
-            }],
-            direction: "ltr",
-            format: "",
-            indent: 0,
-            type: "root",
-            version: 1
-        }
-    });
-}
-
 export const post = createBuilder<Post>(() => {
     const now = new Date().toISOString();
     const title = faker.lorem.sentence();
@@ -96,7 +68,7 @@ export const post = createBuilder<Post>(() => {
         title,
         slug: `${generateSlug(title)}-${faker.string.alphanumeric(6).toLowerCase()}`,
         mobiledoc: null,
-        lexical: buildLexical(content),
+        lexical: buildLexicalParagraph(content),
         html: `<p>${content}</p>`,
         plaintext: content,
         comment_id: generateId(),

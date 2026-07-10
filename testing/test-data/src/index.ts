@@ -11,6 +11,8 @@ export {defaultThemesResponse, theme, themesListResponse} from "./builders/theme
 export type {Theme, ThemePackage, ThemesResponse} from "./builders/theme";
 export {post} from "./builders/post";
 export type {Post} from "./builders/post";
+export {buildLexical, buildLexicalParagraph} from "./builders/lexical";
+export type {CardSpec} from "./builders/lexical";
 
 export {browseResponse, readResponse} from "./envelopes";
 export type {BrowseResponse, BrowseResponseOptions, Pagination} from "./envelopes";
