@@ -9,8 +9,6 @@ import { AdminAppRoot } from "@/app-root";
 import { installBootOverrides, type BootOverrides } from "./boot";
 
 export interface RenderAdminAppOptions {
-    /** Hash route to boot the app on, e.g. "/tags" or "/members?filter=label:VIP" (default "/") */
-    route?: string;
     /**
      * Labs flags to flip for this test. Sugar that compiles to lockstep
      * settings + config boot overrides — the admin client reads labs from
@@ -23,7 +21,7 @@ export interface RenderAdminAppOptions {
      * theme, the fire-and-forget user-preferences PUT) are handled by default —
      * specs never mention them. Pass `response`/`responseStatus` overrides
      * keyed by boot entry name to change one for a test, e.g.
-     * `renderAdminApp({route: "/", boot: {browseConfig: {response: ...}}})`.
+     * `renderAdminApp("/", {boot: {browseConfig: {response: ...}}})`.
      * Matching keeps the default entry's method/path. Wins over `labs`.
      */
     boot?: BootOverrides;
@@ -32,14 +30,15 @@ export interface RenderAdminAppOptions {
 /**
  * Boots the real admin app — the same provider stack as src/main.tsx, via the
  * shared AdminAppRoot — inside the browser-mode page, with the Ghost Admin
- * API served by MSW.
+ * API served by MSW. `route` is the hash route to boot on, e.g. "/tags" or
+ * "/members?filter=label:VIP".
  *
  * Cross-app navigations (Ember-owned routes) are recorded on
  * `document.body.dataset.externalNavigate` instead of navigating, mirroring
  * the Playwright acceptance harness so `expectExternalNavigate`-style
  * assertions can be ported.
  */
-export async function renderAdminApp({ route = "/", labs, boot }: RenderAdminAppOptions = {}): Promise<
+export async function renderAdminApp(route: string = "/", { labs, boot }: RenderAdminAppOptions = {}): Promise<
     Awaited<ReturnType<typeof render>>
 > {
     const overrides: BootOverrides = {

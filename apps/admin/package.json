@@ -11,6 +11,7 @@
         "test": "pnpm test:unit",
         "test:unit": "vitest run",
         "test:acceptance": "vitest run -c vitest.acceptance.config.ts",
+        "test:acceptance:watch": "vitest -c vitest.acceptance.config.ts",
         "typecheck": "tsc -b"
     },
     "dependencies": {

@@ -45,6 +45,10 @@ export default defineConfig({
             headless: true,
             provider: playwright(),
             instances: [{ browser: "chromium" }],
+            // Explicit (it's the headless-mode default): a failing test drops
+            // a screenshot of the page under __screenshots__/ (gitignored) —
+            // often the fastest way to see what the app actually rendered.
+            screenshotFailures: true,
             // Match the e2e suite's desktop viewport — the admin chrome
             // collapses into mobile menus at the vitest default (414px).
             viewport: { width: 1280, height: 800 },

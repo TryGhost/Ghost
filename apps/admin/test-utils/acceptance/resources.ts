@@ -189,7 +189,13 @@ const offersResource = defineResource({ resource: "offers", semantics: { kind: "
 const newslettersResource = defineResource({ resource: "newsletters", semantics: { kind: "passthrough" } });
 
 export interface MockMembersOptions {
-    /** Labels served to the members page filter bar's label lookup (default none). */
+    /**
+     * Extra labels served to the members page filter bar's label lookup, in
+     * addition to the labels embedded in array-form declared members (which
+     * are always served). Only needed for labels attached to no declared
+     * member — and required for any labels at all when the members are
+     * declared with a function.
+     */
     labels?: Label[];
 }
 
@@ -202,10 +208,15 @@ export interface MockMembersOptions {
  * `({search}) => (search ? [] : allMembers)`.
  *
  * Also serves the members page's filter-bar lookups (labels/tiers/offers/
- * newsletters) so specs don't have to mention page chrome.
+ * newsletters) so specs don't have to mention page chrome. The label lookup
+ * is derived from the declared world — labels embedded in array-form members
+ * plus any extra `options.labels`.
  */
 export function mockMembers(members: RespondWith<Member>, { labels = [] }: MockMembersOptions = {}): ResourceCapture {
-    labelsResource(labels);
+    const embeddedLabels = Array.isArray(members) ? members.flatMap((m) => m.labels) : [];
+    const labelsById = new Map([...embeddedLabels, ...labels].map((l) => [l.id, l]));
+
+    labelsResource([...labelsById.values()]);
     tiersResource([]);
     offersResource([]);
     newslettersResource([]);
