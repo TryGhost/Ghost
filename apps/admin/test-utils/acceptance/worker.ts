@@ -6,8 +6,8 @@ import { setupWorker, type SetupWorker } from "msw/browser";
  *
  * Handler layering (highest priority first):
  *   1. Runtime handlers registered per test via `registerAdminApiHandler` — the
- *      resource handlers (`mockTags`, ...) and any boot overrides passed to
- *      `renderAdminApp`.
+ *      resource handlers (`mockTags`, `mockMembers`, ...) and any boot
+ *      overrides passed to `renderAdminApp`.
  *   2. The default shell boot table (settings/config/site/me + sidebar
  *      extras) — installed once at worker start so `resetHandlers()` restores
  *      it between tests.
@@ -71,7 +71,7 @@ export function verifyNoUnmockedRequests(): void {
                 "Admin API request(s) went unmocked (served a 418) during this test:",
                 ...requests.map((request) => `  - ${request}`),
                 "",
-                "Declare them with a resource handler (mockTags, ...) or a renderAdminApp boot override,",
+                "Declare them with a resource handler (mockTags, mockMembers, ...) or a renderAdminApp boot override,",
                 "or call allowUnmockedRequests() at the start of the test to opt out.",
             ].join("\n")
         );
@@ -127,7 +127,7 @@ export async function startMockWorker({ resolver, routes }: StartMockWorkerOptio
             record418(`${request.method} ${apiPath}`);
             return new HttpResponse(
                 [
-                    "No matching mock found. If this request is needed for the test, declare it with a resource handler (mockTags, ...) or a renderAdminApp boot override",
+                    "No matching mock found. If this request is needed for the test, declare it with a resource handler (mockTags, mockMembers, ...) or a renderAdminApp boot override",
                     "",
                     `Request: ${request.method} ${apiPath}`,
                     "",
