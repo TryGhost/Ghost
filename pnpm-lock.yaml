@@ -695,7 +695,7 @@ importers:
         version: 14.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/test-data':
         specifier: workspace:*
-        version: link:../../testing/test-data
+        version: link:../../packages/testing/test-data
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.0
@@ -1012,7 +1012,7 @@ importers:
         version: link:../shade
       '@tryghost/test-data':
         specifier: workspace:*
-        version: link:../../testing/test-data
+        version: link:../../packages/testing/test-data
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -1981,7 +1981,7 @@ importers:
         version: 4.2.1(supports-color@5.5.0)
       '@tryghost/test-data':
         specifier: workspace:*
-        version: link:../testing/test-data
+        version: link:../packages/testing/test-data
       '@types/dockerode':
         specifier: 4.0.1
         version: 4.0.1
@@ -3996,7 +3996,7 @@ importers:
         specifier: 13.6.31
         version: 13.6.31
 
-  testing/test-data:
+  packages/testing/test-data:
     dependencies:
       '@faker-js/faker':
         specifier: 'catalog:'
