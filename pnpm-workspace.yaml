@@ -6,7 +6,7 @@ packages:
   - 'packages/**'
   - '!packages/_template'
   - 'configs/*'
-  - 'testing/*'
+  - 'packages/testing/*'
 
 strictDepBuilds: true
 catalogMode: strict
