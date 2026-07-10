@@ -1951,6 +1951,9 @@ importers:
       '@tryghost/logging':
         specifier: 4.2.1
         version: 4.2.1(supports-color@5.5.0)
+      '@tryghost/test-data':
+        specifier: workspace:*
+        version: link:../testing/test-data
       '@types/dockerode':
         specifier: 4.0.1
         version: 4.0.1
@@ -1977,7 +1980,7 @@ importers:
         version: 2.10.4(eslint@9.39.4(jiti@2.7.0))
       express:
         specifier: 4.22.2
-        version: 4.22.2
+        version: 4.22.2(supports-color@1.2.0)
       knex:
         specifier: 3.1.0
         version: 3.1.0(mysql2@3.22.5(@types/node@26.0.0))
@@ -2149,7 +2152,7 @@ importers:
         version: 3.0.1
       ember-cli:
         specifier: 3.24.0
-        version: 3.24.0(encoding@0.1.13)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@5.5.0)(underscore@1.13.8)
+        version: 3.24.0(encoding@0.1.13)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@1.2.0)(underscore@1.13.8)
       ember-cli-app-version:
         specifier: 5.0.0
         version: 5.0.0
@@ -2164,7 +2167,7 @@ importers:
         version: 1.0.3
       ember-cli-dependency-checker:
         specifier: 3.3.2
-        version: 3.3.2(ember-cli@3.24.0(encoding@0.1.13)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@5.5.0)(underscore@1.13.8))
+        version: 3.3.2(ember-cli@3.24.0(encoding@0.1.13)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@1.2.0)(underscore@1.13.8))
       ember-cli-deprecation-workflow:
         specifier: 2.2.0
         version: 2.2.0
@@ -2197,7 +2200,7 @@ importers:
         version: 3.1.0
       ember-composable-helpers:
         specifier: 5.0.0
-        version: 5.0.0
+        version: 5.0.0(supports-color@1.2.0)
       ember-concurrency:
         specifier: 2.3.7
         version: 2.3.7(@babel/core@7.29.7)
@@ -2524,7 +2527,7 @@ importers:
         version: 3.2.3
       '@tryghost/prometheus-metrics':
         specifier: 1.0.8
-        version: 1.0.8
+        version: 1.0.8(supports-color@1.2.0)
       '@tryghost/promise':
         specifier: 2.2.3
         version: 2.2.3
@@ -2635,7 +2638,7 @@ importers:
         version: 4.5.0
       express:
         specifier: 4.22.2
-        version: 4.22.2
+        version: 4.22.2(supports-color@1.2.0)
       express-brute:
         specifier: 1.0.1
         version: 1.0.1(express@4.22.2)
@@ -2653,10 +2656,10 @@ importers:
         version: 2.0.0
       express-queue:
         specifier: 0.0.13
-        version: 0.0.13(supports-color@5.5.0)
+        version: 0.0.13(supports-color@1.2.0)
       express-session:
         specifier: 1.19.0
-        version: 1.19.0
+        version: 1.19.0(supports-color@1.2.0)
       file-type:
         specifier: 21.3.4
         version: 21.3.4(supports-color@5.5.0)
@@ -2821,7 +2824,7 @@ importers:
         version: 0.9.1
       probe-image-size:
         specifier: 7.3.0
-        version: 7.3.0
+        version: 7.3.0(supports-color@1.2.0)
       rss:
         specifier: 1.2.2
         version: 1.2.2
@@ -3964,6 +3967,28 @@ importers:
       yjs:
         specifier: 13.6.31
         version: 13.6.31
+
+  testing/test-data:
+    dependencies:
+      '@faker-js/faker':
+        specifier: 'catalog:'
+        version: 10.5.0
+    devDependencies:
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 9.39.4
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      typescript-eslint:
+        specifier: 'catalog:'
+        version: 8.62.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(typescript@5.9.3))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
 
 packages:
 
@@ -31042,7 +31067,7 @@ snapshots:
     dependencies:
       '@tryghost/jest-snapshot': 2.1.0
       cookiejar: 2.1.4
-      express: 4.22.2
+      express: 4.22.2(supports-color@1.2.0)
       form-data: 4.0.5
       mime-types: 3.0.2
     transitivePeerDependencies:
@@ -31274,10 +31299,10 @@ snapshots:
       lodash: 4.18.1
       prettyjson: 1.2.5
 
-  '@tryghost/prometheus-metrics@1.0.8':
+  '@tryghost/prometheus-metrics@1.0.8(supports-color@1.2.0)':
     dependencies:
       '@tryghost/logging': 4.2.1(supports-color@5.5.0)
-      express: 4.22.1
+      express: 4.22.1(supports-color@1.2.0)
       prom-client: 15.1.3
       stoppable: 1.1.0
     transitivePeerDependencies:
@@ -34381,7 +34406,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  broccoli-config-replace@1.1.3:
+  broccoli-config-replace@1.1.3(supports-color@1.2.0):
     dependencies:
       broccoli-plugin: 1.3.1
       debug: 2.6.9(supports-color@1.2.0)
@@ -34445,7 +34470,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  broccoli-funnel@2.0.1:
+  broccoli-funnel@2.0.1(supports-color@1.2.0):
     dependencies:
       array-equal: 1.0.2
       blank-object: 1.0.2
@@ -34775,7 +34800,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  broccoli@3.5.2:
+  broccoli@3.5.2(supports-color@1.2.0):
     dependencies:
       '@types/chai': 4.3.20
       '@types/chai-as-promised': 7.1.8
@@ -34785,7 +34810,7 @@ snapshots:
       broccoli-slow-trees: 3.1.0
       broccoli-source: 3.0.1
       commander: 4.1.1
-      connect: 3.7.0
+      connect: 3.7.0(supports-color@1.2.0)
       console-ui: 3.1.2
       esm: 3.2.25
       findup-sync: 4.0.0
@@ -35742,10 +35767,10 @@ snapshots:
 
   connect-slashes@1.4.0: {}
 
-  connect@3.7.0:
+  connect@3.7.0(supports-color@1.2.0):
     dependencies:
       debug: 2.6.9(supports-color@1.2.0)
-      finalhandler: 1.1.2
+      finalhandler: 1.1.2(supports-color@1.2.0)
       parseurl: 1.3.3
       utils-merge: 1.0.1
     transitivePeerDependencies:
@@ -37096,10 +37121,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli-dependency-checker@3.3.2(ember-cli@3.24.0(encoding@0.1.13)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@5.5.0)(underscore@1.13.8)):
+  ember-cli-dependency-checker@3.3.2(ember-cli@3.24.0(encoding@0.1.13)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@1.2.0)(underscore@1.13.8)):
     dependencies:
       chalk: 2.4.2
-      ember-cli: 3.24.0(encoding@0.1.13)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@5.5.0)(underscore@1.13.8)
+      ember-cli: 3.24.0(encoding@0.1.13)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@1.2.0)(underscore@1.13.8)
       find-yarn-workspace-root: 1.2.1
       is-git-url: 1.0.0
       resolve: 1.22.12
@@ -37432,7 +37457,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli@3.24.0(encoding@0.1.13)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@5.5.0)(underscore@1.13.8):
+  ember-cli@3.24.0(encoding@0.1.13)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@1.2.0)(underscore@1.13.8):
     dependencies:
       '@babel/core': 7.29.7
       '@babel/plugin-transform-modules-amd': 7.29.7(@babel/core@7.29.7)
@@ -37440,13 +37465,13 @@ snapshots:
       babel-plugin-module-resolver: 4.1.0
       bower-config: 1.4.3
       bower-endpoint-parser: 0.2.2
-      broccoli: 3.5.2
+      broccoli: 3.5.2(supports-color@1.2.0)
       broccoli-amd-funnel: 2.0.1
       broccoli-babel-transpiler: 7.8.1
       broccoli-builder: 0.18.14
       broccoli-concat: 4.2.7
       broccoli-config-loader: 1.0.1
-      broccoli-config-replace: 1.1.3
+      broccoli-config-replace: 1.1.3(supports-color@1.2.0)
       broccoli-debug: 0.6.5
       broccoli-funnel: 2.0.2
       broccoli-funnel-reducer: 1.0.0
@@ -37475,7 +37500,7 @@ snapshots:
       ensure-posix-path: 1.1.1
       execa: 4.1.0
       exit: 0.1.2
-      express: 4.22.2
+      express: 4.22.2(supports-color@1.2.0)
       filesize: 6.4.0
       find-up: 5.0.0
       find-yarn-workspace-root: 2.0.0
@@ -37496,12 +37521,12 @@ snapshots:
       isbinaryfile: 4.0.10
       js-yaml: 3.14.2
       json-stable-stringify: 1.3.0
-      leek: 0.0.24
+      leek: 0.0.24(supports-color@1.2.0)
       lodash.template: 4.18.1
       markdown-it: 12.3.2
       markdown-it-terminal: 0.2.1
       minimatch: 3.1.5
-      morgan: 1.11.0
+      morgan: 1.11.0(supports-color@1.2.0)
       nopt: 3.0.6
       npm-package-arg: 8.1.5
       p-defer: 3.0.0
@@ -37588,10 +37613,10 @@ snapshots:
       - '@babel/core'
       - supports-color
 
-  ember-composable-helpers@5.0.0:
+  ember-composable-helpers@5.0.0(supports-color@1.2.0):
     dependencies:
       '@babel/core': 7.29.7
-      broccoli-funnel: 2.0.1
+      broccoli-funnel: 2.0.1(supports-color@1.2.0)
       ember-cli-babel: 7.26.11
       resolve: 1.22.12
     transitivePeerDependencies:
@@ -39490,11 +39515,11 @@ snapshots:
 
   express-brute@1.0.1(express@4.22.2):
     dependencies:
-      express: 4.22.2
+      express: 4.22.2(supports-color@1.2.0)
       long-timeout: 0.1.1
       underscore: 1.13.8
 
-  express-end@0.0.8:
+  express-end@0.0.8(supports-color@1.2.0):
     dependencies:
       debug: 2.6.9(supports-color@1.2.0)
     transitivePeerDependencies:
@@ -39522,19 +39547,19 @@ snapshots:
 
   express-lazy-router@1.0.6(express@4.22.2):
     dependencies:
-      express: 4.22.2
+      express: 4.22.2(supports-color@1.2.0)
 
   express-query-boolean@2.0.0: {}
 
-  express-queue@0.0.13(supports-color@5.5.0):
+  express-queue@0.0.13(supports-color@1.2.0):
     dependencies:
       debug: 4.4.3(supports-color@5.5.0)
-      express-end: 0.0.8
+      express-end: 0.0.8(supports-color@1.2.0)
       mini-queue: 0.0.14
     transitivePeerDependencies:
       - supports-color
 
-  express-session@1.19.0:
+  express-session@1.19.0(supports-color@1.2.0):
     dependencies:
       cookie: 0.7.2
       cookie-signature: 1.0.7
@@ -39549,7 +39574,7 @@ snapshots:
 
   express-unless@2.1.3: {}
 
-  express@4.22.1:
+  express@4.22.1(supports-color@1.2.0):
     dependencies:
       accepts: 1.3.8
       array-flatten: 1.1.1
@@ -39563,7 +39588,7 @@ snapshots:
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
-      finalhandler: 1.3.2
+      finalhandler: 1.3.2(supports-color@1.2.0)
       fresh: 0.5.2
       http-errors: 2.0.1
       merge-descriptors: 1.0.3
@@ -39575,7 +39600,7 @@ snapshots:
       qs: 6.15.3
       range-parser: 1.2.1
       safe-buffer: 5.2.1
-      send: 0.19.2
+      send: 0.19.2(supports-color@1.2.0)
       serve-static: 1.16.3
       setprototypeof: 1.2.0
       statuses: 2.0.2
@@ -39585,7 +39610,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  express@4.22.2:
+  express@4.22.2(supports-color@1.2.0):
     dependencies:
       accepts: 1.3.8
       array-flatten: 1.1.1
@@ -39599,7 +39624,7 @@ snapshots:
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
-      finalhandler: 1.3.2
+      finalhandler: 1.3.2(supports-color@1.2.0)
       fresh: 0.5.2
       http-errors: 2.0.1
       merge-descriptors: 1.0.3
@@ -39611,7 +39636,7 @@ snapshots:
       qs: 6.15.3
       range-parser: 1.2.1
       safe-buffer: 5.2.1
-      send: 0.19.2
+      send: 0.19.2(supports-color@1.2.0)
       serve-static: 1.16.3
       setprototypeof: 1.2.0
       statuses: 2.0.2
@@ -39844,7 +39869,7 @@ snapshots:
     dependencies:
       to-regex-range: 5.0.1
 
-  finalhandler@1.1.2:
+  finalhandler@1.1.2(supports-color@1.2.0):
     dependencies:
       debug: 2.6.9(supports-color@1.2.0)
       encodeurl: 1.0.2
@@ -39856,7 +39881,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  finalhandler@1.3.2:
+  finalhandler@1.3.2(supports-color@1.2.0):
     dependencies:
       debug: 2.6.9(supports-color@1.2.0)
       encodeurl: 2.0.0
@@ -42827,7 +42852,7 @@ snapshots:
       ee-log: 3.0.9
       ee-types: 2.2.1
 
-  leek@0.0.24:
+  leek@0.0.24(supports-color@1.2.0):
     dependencies:
       debug: 2.6.9(supports-color@1.2.0)
       lodash.assign: 3.2.0
@@ -44290,7 +44315,7 @@ snapshots:
 
   moo@0.5.3: {}
 
-  morgan@1.11.0:
+  morgan@1.11.0(supports-color@1.2.0):
     dependencies:
       basic-auth: 2.0.1
       debug: 2.6.9(supports-color@1.2.0)
@@ -46331,11 +46356,11 @@ snapshots:
     dependencies:
       crypto: 0.0.3
 
-  probe-image-size@7.3.0:
+  probe-image-size@7.3.0(supports-color@1.2.0):
     dependencies:
       lodash.merge: 4.6.2
       needle: 2.9.1
-      stream-parser: 0.3.1
+      stream-parser: 0.3.1(supports-color@1.2.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -47653,7 +47678,7 @@ snapshots:
 
   semver@7.8.5: {}
 
-  send@0.19.2:
+  send@0.19.2(supports-color@1.2.0):
     dependencies:
       debug: 2.6.9(supports-color@1.2.0)
       depd: 2.0.0
@@ -47690,7 +47715,7 @@ snapshots:
   sentry-testkit@6.4.1:
     dependencies:
       body-parser: 1.20.5
-      express: 4.22.2
+      express: 4.22.2(supports-color@1.2.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -47703,7 +47728,7 @@ snapshots:
       encodeurl: 2.0.0
       escape-html: 1.0.3
       parseurl: 1.3.3
-      send: 0.19.2
+      send: 0.19.2(supports-color@1.2.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -48261,7 +48286,7 @@ snapshots:
       readable-stream: 3.6.2
       xtend: 4.0.2
 
-  stream-parser@0.3.1:
+  stream-parser@0.3.1(supports-color@1.2.0):
     dependencies:
       debug: 2.6.9(supports-color@1.2.0)
     transitivePeerDependencies:
@@ -48900,7 +48925,7 @@ snapshots:
       compression: 1.8.1
       consolidate: 1.0.4(@babel/core@7.29.7)(handlebars@4.7.9)(lodash@4.18.1)(mustache@4.2.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.8)
       execa: 9.6.1
-      express: 4.22.2
+      express: 4.22.2(supports-color@1.2.0)
       fireworm: 0.7.2
       glob: 13.0.6
       http-proxy: 1.18.1
