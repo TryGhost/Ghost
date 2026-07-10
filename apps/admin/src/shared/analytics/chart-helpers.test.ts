@@ -179,7 +179,8 @@ describe('chart-helpers', () => {
             expect(getAggregationStrategy(31)).toBe('none');
             expect(getAggregationStrategy(90)).toBe('none');
             expect(getAggregationStrategy(91)).toBe('weekly');
-            expect(getAggregationStrategy(356)).toBe('weekly');
+            expect(getAggregationStrategy(270)).toBe('weekly');
+            expect(getAggregationStrategy(271)).toBe('monthly');
             expect(getAggregationStrategy(372)).toBe('monthly');
         });
 
@@ -206,6 +207,7 @@ describe('chart-helpers', () => {
         it('buckets all time by the span of the data', () => {
             expect(getAggregationStrategy(STATS_RANGES.allTime.value, createDateRange(30))).toBe('none');
             expect(getAggregationStrategy(STATS_RANGES.allTime.value, createDateRange(180))).toBe('weekly');
+            expect(getAggregationStrategy(STATS_RANGES.allTime.value, createDateRange(300))).toBe('monthly');
             expect(getAggregationStrategy(STATS_RANGES.allTime.value, createDateRange(500))).toBe('monthly');
         });
     });
@@ -221,7 +223,7 @@ describe('chart-helpers', () => {
         });
 
         describe('weekly aggregation', () => {
-            it('aggregates data weekly for 91-356 day ranges', () => {
+            it('aggregates data weekly for 91-270 day ranges', () => {
                 const data = createDateRange(91);
                 const result = sanitizeChartData(data, 91);
 
@@ -340,7 +342,11 @@ describe('chart-helpers', () => {
                 const result = sanitizeChartData(data, STATS_RANGES.yearToDate.value, 'value', 'sum');
 
                 expect(result.length).toBeLessThan(30);
-                result.forEach((item) => {
+                // The partial first bucket is labeled with the range start
+                // (January 1st), not the enclosing calendar week of the
+                // previous year
+                expect(result[0].date).toBe('2024-01-01');
+                result.slice(1).forEach((item) => {
                     expect(item.date).toBe(moment(item.date).startOf('week').format('YYYY-MM-DD'));
                 });
             });
@@ -375,6 +381,15 @@ describe('chart-helpers', () => {
                     expect(item.date).toBe(moment(item.date).startOf('month').format('YYYY-MM-DD'));
                 });
             });
+
+            it('labels the partial first bucket with the first data point, not the calendar month start', () => {
+                // A post published mid-month, ~10 months old: monthly buckets
+                const data = createDateRange(300, '2025-08-06', () => 5);
+                const result = sanitizeChartData(data, STATS_RANGES.allTime.value, 'value', 'sum');
+
+                expect(result[0].date).toBe('2025-08-06');
+                expect(result[1].date).toBe('2025-09-01');
+            });
         });
 
         it('honors an override strategy', () => {
@@ -406,6 +421,7 @@ describe('chart-helpers', () => {
         });
 
         it('maps monthly bucketing into the "MMM YYYY" display band', () => {
+            expect(getEffectiveChartRange(300, createDateRange(300))).toBe(366);
             expect(getEffectiveChartRange(372, createDateRange(372))).toBe(366);
         });
 

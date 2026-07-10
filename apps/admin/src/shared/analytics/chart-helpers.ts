@@ -70,8 +70,11 @@ export function resolveEffectiveRangeDays(range: number, data: {date: string}[] 
 /**
  * Determines the bucketing for a chart. One rule for every range, including
  * the sentinels (via resolveEffectiveRangeDays): spans under 91 days render
- * daily points, 91-356 days render weekly buckets, anything longer renders
- * monthly buckets.
+ * daily points, 91-270 days render weekly buckets, anything longer renders
+ * monthly buckets. The weekly band caps at ~9 months because beyond that
+ * weekly charts get too dense (~40+ points) while monthly already gives a
+ * readable 9-12; only span-resolved ranges (Year to date, All time, post age)
+ * can land between the fixed dropdown options of 91 and 372 days.
  */
 export function getAggregationStrategy(
     range: number,
@@ -84,7 +87,7 @@ export function getAggregationStrategy(
 
     const effectiveDays = resolveEffectiveRangeDays(range, data);
 
-    if (effectiveDays > 356) {
+    if (effectiveDays > 270) {
         return 'monthly';
     }
     if (effectiveDays >= 91) {
@@ -110,12 +113,20 @@ function calculateAggregatedValue(total: number, count: number, lastValue: numbe
  * sum/avg charts (e.g. web visits) and exact charts (e.g. member totals)
  * place points on the same dates. Non-aggregated fields keep the values of
  * the last item in the period.
+ *
+ * The one exception is the partial first bucket: the calendar period
+ * containing the start of a range usually begins before the range does, and
+ * labeling that bucket with the calendar period start dates the chart before
+ * its own range — a Year to date chart opening with "Week of 28 Dec" of the
+ * previous year. When labelFloor falls inside the first bucket's period, the
+ * first label is clamped to it.
  */
 function aggregateByPeriod<T extends {date: string}>(
     data: T[],
     fieldName: keyof T,
     aggregationType: AggregationType,
-    unit: 'week' | 'month'
+    unit: 'week' | 'month',
+    labelFloor?: string
 ): T[] {
     const aggregated: T[] = [];
     let periodStart = moment(data[0].date).startOf(unit);
@@ -145,7 +156,25 @@ function aggregateByPeriod<T extends {date: string}>(
     });
     pushBucket();
 
+    const first = aggregated[0];
+    if (labelFloor && labelFloor > first.date && moment(labelFloor).isSame(moment(first.date), unit)) {
+        aggregated[0] = {...first, date: labelFloor};
+    }
+
     return aggregated;
+}
+
+/**
+ * The date the first bucket's label may be clamped to: where the range
+ * actually starts. All time has no calendar anchor, so its floor is the
+ * first (trimmed) data point.
+ */
+function getFirstBucketFloor(range: number, chartData: {date: string}[]): string {
+    if (range === STATS_RANGES.allTime.value) {
+        return chartData[0].date;
+    }
+    const {startDate} = getRangeDates(range);
+    return startDate.format('YYYY-MM-DD');
 }
 
 function trimForRange<T extends {date: string}>(data: T[], range: number, fieldName: keyof T): T[] {
@@ -160,7 +189,7 @@ function trimForRange<T extends {date: string}>(data: T[], range: number, fieldN
 /**
  * Sanitizes chart data based on the date range
  * - Spans under 91 days keep daily points
- * - Spans of 91-356 days aggregate into weekly buckets
+ * - Spans of 91-270 days aggregate into weekly buckets
  * - Longer spans aggregate into monthly buckets
  * Year to date and All time resolve to their real spans before the rule is
  * applied, so they bucket like the equivalent fixed range would.
@@ -186,9 +215,9 @@ export const sanitizeChartData = <T extends {date: string}>(
 
     switch (strategy) {
     case 'weekly':
-        return aggregateByPeriod(chartData, fieldName, aggregationType, 'week');
+        return aggregateByPeriod(chartData, fieldName, aggregationType, 'week', getFirstBucketFloor(range, chartData));
     case 'monthly':
-        return aggregateByPeriod(chartData, fieldName, aggregationType, 'month');
+        return aggregateByPeriod(chartData, fieldName, aggregationType, 'month', getFirstBucketFloor(range, chartData));
     default:
         return chartData;
     }

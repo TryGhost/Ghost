@@ -32,6 +32,9 @@ const fillMissingDataPoints = (data: {date: string; signups: number; cancellatio
     }
 
     const {startDate, endDate} = getRangeDates(dateRange);
+    // sanitizeChartData clamps the partial first bucket's label to the range
+    // start; clamp the generated period keys the same way so they line up
+    const rangeStartKey = moment(startDate).format('YYYY-MM-DD');
 
     // Create a map of existing data by date
     const dataMap = new Map(data.map(item => [item.date, item]));
@@ -48,7 +51,8 @@ const fillMissingDataPoints = (data: {date: string; signups: number; cancellatio
         const endPeriod = moment(endDate).startOf('month');
 
         while (currentPeriod.isSameOrBefore(endPeriod)) {
-            const dateKey = currentPeriod.format('YYYY-MM-DD');
+            const periodKey = currentPeriod.format('YYYY-MM-DD');
+            const dateKey = periodKey < rangeStartKey ? rangeStartKey : periodKey;
             if (!seenKeys.has(dateKey)) {
                 seenKeys.add(dateKey);
                 const existingData = dataMap.get(dateKey);
@@ -71,7 +75,8 @@ const fillMissingDataPoints = (data: {date: string; signups: number; cancellatio
         const endPeriod = moment(endDate).startOf('week');
 
         while (currentPeriod.isSameOrBefore(endPeriod)) {
-            const dateKey = currentPeriod.format('YYYY-MM-DD');
+            const periodKey = currentPeriod.format('YYYY-MM-DD');
+            const dateKey = periodKey < rangeStartKey ? rangeStartKey : periodKey;
             if (!seenKeys.has(dateKey)) {
                 seenKeys.add(dateKey);
                 const existingData = dataMap.get(dateKey);
