@@ -83,7 +83,7 @@ jobs:
         uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
         with:
           main-branch-name: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
-          error-on-no-successful-workflow: ${{ env.IS_MAIN == 'true' }}
+          error-on-no-successful-workflow: ${{ env.IS_MAIN == 'true' && github.repository == 'TryGhost/Ghost' }}
 
       - name: Check user org membership
         id: check_user_org_membership
