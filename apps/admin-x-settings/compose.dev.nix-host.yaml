@@ -1,0 +1,22 @@
+services:
+  ghost-dev:
+    ports:
+      - "23680:2368"
+  ghost-dev-gateway:
+    network_mode: host
+    ports: !reset []
+    volumes:
+      - ./compose.dev.nix-host.Caddyfile:/etc/caddy/Caddyfile:ro
+    environment:
+      GHOST_BACKEND: localhost:23680
+      ADMIN_DEV_SERVER: localhost:5174
+      ADMIN_LIVE_RELOAD_SERVER: localhost:4200
+      PORTAL_DEV_SERVER: localhost:4175
+      COMMENTS_DEV_SERVER: localhost:7173
+      SIGNUP_DEV_SERVER: localhost:6174
+      SEARCH_DEV_SERVER: localhost:4178
+      ANNOUNCEMENT_DEV_SERVER: localhost:4177
+      ADMIN_TOOLBAR_DEV_SERVER: localhost:4176
+      LEXICAL_DEV_SERVER: localhost:4173
+      ANALYTICS_PROXY_TARGET: localhost:3000
+      ACTIVITYPUB_PROXY_TARGET: localhost:8080
