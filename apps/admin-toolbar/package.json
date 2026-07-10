@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
+    "@internal/cfg-eslint": "workspace:*",
     "concurrently": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",

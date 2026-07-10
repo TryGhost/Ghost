@@ -44,6 +44,7 @@
     "@types/jsdom": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
     "jsdom": "catalog:",
     "simple-dom": "1.4.0",
     "typescript": "catalog:",

@@ -42,6 +42,7 @@
     "@types/jsdom": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
     "jsdom": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",

@@ -84,19 +84,11 @@
   },
   "devDependencies": {
     "@eslint/compat": "2.1.0",
-    "@eslint/js": "catalog:",
     "@playwright/test": "catalog:",
     "@secretlint/secretlint-rule-pattern": "13.0.2",
     "@secretlint/secretlint-rule-preset-recommend": "13.0.2",
     "dependency-cruiser": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-ghost": "catalog:",
-    "eslint-plugin-i18next": "6.1.5",
-    "eslint-plugin-react": "catalog:",
-    "eslint-plugin-react-hooks": "catalog:",
-    "eslint-plugin-react-refresh": "catalog:",
-    "eslint-plugin-storybook": "10.4.6",
-    "eslint-plugin-tailwindcss": "catalog:",
     "globals": "catalog:",
     "husky": "9.1.7",
     "jsonc-parser": "catalog:",
@@ -107,7 +99,6 @@
     "secretlint": "13.0.2",
     "semver": "7.8.5",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
     "vitest": "catalog:"
   },
   "nx": {

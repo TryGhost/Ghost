@@ -38,6 +38,7 @@
     "@lexical/headless": "0.13.1",
     "@lexical/link": "0.13.1",
     "@vitest/coverage-v8": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"

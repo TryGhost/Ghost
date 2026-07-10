@@ -36,7 +36,7 @@
         "react-dom": "catalog:"
     },
     "devDependencies": {
-        "@eslint/js": "catalog:",
+        "@internal/cfg-eslint-react": "workspace:*",
         "@playwright/test": "catalog:",
         "@storybook/addon-docs": "catalog:",
         "@storybook/addon-links": "catalog:",
@@ -49,12 +49,8 @@
         "autoprefixer": "10.5.2",
         "concurrently": "catalog:",
         "eslint": "catalog:",
-        "eslint-plugin-ghost": "catalog:",
-        "eslint-plugin-react": "catalog:",
         "eslint-plugin-tailwindcss": "catalog:tailwind3",
-        "globals": "catalog:",
         "jsdom": "catalog:",
-        "typescript-eslint": "catalog:",
         "postcss": "catalog:",
         "postcss-import": "16.1.1",
         "storybook": "catalog:",
