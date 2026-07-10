@@ -13,7 +13,7 @@ const adapterManager = new AdapterManager({
 });
 
 adapterManager.registerAdapter('storage', require('ghost-storage-base'));
-adapterManager.registerAdapter('scheduling', require('../../adapters/scheduling/scheduling-base'));
+adapterManager.registerAdapter('scheduling', require('@tryghost/adapter-base-scheduling').SchedulingBase);
 adapterManager.registerAdapter('sso', require('@tryghost/adapter-base-sso').SSOBase);
 adapterManager.registerAdapter('cache', require('@tryghost/adapter-base-cache'));
 adapterManager.registerAdapter('redirects', require('@tryghost/adapter-base-redirects').RedirectsStoreBase);

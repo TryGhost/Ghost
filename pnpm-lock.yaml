@@ -138,6 +138,9 @@ catalogs:
     '@types/sanitize-html':
       specifier: 2.16.1
       version: 2.16.1
+    '@types/sinon':
+      specifier: 22.0.0
+      version: 22.0.0
     '@types/validator':
       specifier: 13.15.10
       version: 13.15.10
@@ -2290,6 +2293,9 @@ importers:
       '@tryghost/adapter-base-redirects':
         specifier: workspace:*
         version: link:../../packages/adapters/redirects-base
+      '@tryghost/adapter-base-scheduling':
+        specifier: workspace:*
+        version: link:../../packages/adapters/scheduling-base
       '@tryghost/adapter-base-sso':
         specifier: workspace:*
         version: link:../../packages/adapters/sso-base
@@ -2829,8 +2835,8 @@ importers:
         specifier: 7.7.1
         version: 7.7.1
       '@types/sinon':
-        specifier: 21.0.1
-        version: 21.0.1
+        specifier: 'catalog:'
+        version: 22.0.0
       '@types/supertest':
         specifier: 6.0.3
         version: 6.0.3
@@ -3857,6 +3863,43 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.7.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@22.20.0)(@vitest/browser-playwright@4.1.9)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.0)(typescript@5.9.3))(vite@8.1.3(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
+
+  packages/adapters/scheduling-base:
+    dependencies:
+      '@tryghost/logging':
+        specifier: 4.2.1
+        version: 4.2.1(supports-color@5.5.0)
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: 'workspace:'
+        version: link:../../../configs/eslint
+      '@internal/cfg-typescript':
+        specifier: 'workspace:'
+        version: link:../../../configs/typescript
+      '@internal/cfg-vitest':
+        specifier: 'workspace:'
+        version: link:../../../configs/vitest
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.0
+      '@types/sinon':
+        specifier: 'catalog:'
+        version: 22.0.0
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.9(@vitest/browser@4.1.9)(vitest@4.1.9)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)
+      sinon:
+        specifier: 'catalog:'
+        version: 22.0.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -10333,8 +10376,8 @@ packages:
   '@types/set-cookie-parser@2.4.10':
     resolution: {integrity: sha512-GGmQVGpQWUe5qglJozEjZV/5dyxbOOZ0LHe/lqyWssB88Y4svNfst0uqBVscdDeIKl5Jy5+aPSvy7mI9tYRguw==}
 
-  '@types/sinon@21.0.1':
-    resolution: {integrity: sha512-5yoJSqLbjH8T9V2bksgRayuhpZy+723/z6wBOR+Soe4ZlXC0eW8Na71TeaZPUWDQvM7LYKa9UGFc6LRqxiR5fQ==}
+  '@types/sinon@22.0.0':
+    resolution: {integrity: sha512-TDbVpbccc2HfiqHR09Argj3mHV1KMW7sCCKj52fsl8lbRLkEn7fB1966EWhOKWUBcqfBueZuPoA7/OK1CKiy3g==}
 
   '@types/sinonjs__fake-timers@15.0.1':
     resolution: {integrity: sha512-Ko2tjWJq8oozHzHV+reuvS5KYIRAokHnGbDwGh/J64LntgpbuylF74ipEL24HCyRjf9FOlBiBHWBR1RlVKsI1w==}
@@ -31636,7 +31679,7 @@ snapshots:
     dependencies:
       '@types/node': 26.0.0
 
-  '@types/sinon@21.0.1':
+  '@types/sinon@22.0.0':
     dependencies:
       '@types/sinonjs__fake-timers': 15.0.1
 

@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
-const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/scheduling-default');
+const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/scheduling-default').default;
 
 describe('Scheduling Default Adapter', function () {
     const scope = {};
