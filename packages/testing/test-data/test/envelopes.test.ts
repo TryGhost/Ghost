@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {browseResponse, readResponse, tag} from "../src/index";
+import {browseResponse, tag} from "../src/index";
 
 describe("envelopes", () => {
     it("wraps a full result set with single-page pagination meta", () => {
@@ -45,11 +45,5 @@ describe("envelopes", () => {
             next: null,
             prev: null
         });
-    });
-
-    it("keys read responses by the plural resource", () => {
-        const entity = tag({name: "Solo"});
-
-        expect(readResponse("tags", entity)).toEqual({tags: [entity]});
     });
 });

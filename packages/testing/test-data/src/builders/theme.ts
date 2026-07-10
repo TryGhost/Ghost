@@ -51,7 +51,7 @@ export interface ThemesResponse {
 }
 
 /** `/themes/` browse envelope (no pagination meta, unlike most browse endpoints). */
-export function themesListResponse(themes: Theme[]): ThemesResponse {
+function themesListResponse(themes: Theme[]): ThemesResponse {
     return {themes};
 }
 

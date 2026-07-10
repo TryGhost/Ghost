@@ -11,11 +11,10 @@ import {siteData} from "./data/site";
  * active theme. Test harnesses build their default boot tables from these so
  * specs never mention shell chrome.
  *
- * The canned data under ./data is ported from
- * apps/admin-x-framework/src/test/responses. Transitional duplication: the
- * framework copy belongs to the legacy Playwright harness; this package is the
- * root of the test-data dependency graph and must not import from
- * admin-x-framework.
+ * The canned data under ./data is the single source of truth for these boot
+ * payloads (originally ported from the framework test harness, whose JSON
+ * copies have since been deleted). This package is the root of the test-data
+ * dependency graph and must not import from admin-x-framework.
  *
  * Each accessor returns a freshly-minted object graph — callers can mutate the
  * result for a test without poisoning the canned data (unlike the
