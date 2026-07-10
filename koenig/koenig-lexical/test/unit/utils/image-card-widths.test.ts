@@ -13,7 +13,7 @@ describe('image-card-widths utils', () => {
     });
 
     it('filters invalid values and de-duplicates while preserving order', () => {
-        expect(getAllowedImageCardWidths(['wide', 'invalid', 'full', 'wide'])).toEqual(['wide', 'full']);
+        expect(getAllowedImageCardWidths(['wide', 'invalid', null, 7, 'full', 'wide'])).toEqual(['wide', 'full']);
     });
 
     it('defaults to regular width when available', () => {
@@ -22,5 +22,9 @@ describe('image-card-widths utils', () => {
 
     it('defaults to first allowed width when regular is not available', () => {
         expect(getDefaultImageCardWidth(['wide', 'full'])).toBe('wide');
+    });
+
+    it('defaults to regular width when no widths are supplied', () => {
+        expect(getDefaultImageCardWidth([])).toBe('regular');
     });
 });

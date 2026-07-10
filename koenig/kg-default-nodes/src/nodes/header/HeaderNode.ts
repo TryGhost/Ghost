@@ -31,8 +31,11 @@ export type HeaderData = DecoratorNodeData<typeof headerProperties>;
 
 export interface HeaderNode extends DecoratorNodeValueMap<typeof headerProperties> {}
 
+type HeaderRenderNode = Parameters<typeof renderHeaderNodeV1>[0] & Parameters<typeof renderHeaderNodeV2>[0];
+type HeaderRenderOutput = ReturnType<typeof renderHeaderNodeV1> | ReturnType<typeof renderHeaderNodeV2>;
+
 // This is our first node that has a custom version property
-export class HeaderNode extends generateDecoratorNode({
+export class HeaderNode extends generateDecoratorNode<typeof headerProperties, false, HeaderRenderOutput, HeaderRenderNode>({
     nodeType: 'header',
     properties: headerProperties,
     defaultRenderFn: {

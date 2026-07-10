@@ -8,13 +8,22 @@ import {VISIBILITY_SETTINGS} from '../utils/visibility';
 import {mergeRegister} from '@lexical/utils';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {CardWidth} from '@tryghost/kg-default-nodes';
 
-const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, children}) => {
+interface KoenigCardWrapperProps {
+    nodeKey: string;
+    width?: CardWidth;
+    wrapperStyle?: string;
+    IndicatorIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    children?: React.ReactNode;
+}
+
+const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, children}: KoenigCardWrapperProps) => {
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
     const [cardType, setCardType] = React.useState(null);
     const [captionHasFocus, setCaptionHasFocus] = React.useState(null);
-    const [cardWidth, setCardWidth] = React.useState(width || 'regular');
+    const [cardWidth, setCardWidth] = React.useState<CardWidth>(width || 'regular');
     const containerRef = React.useRef(null);
     const skipClick = React.useRef(false);
 
