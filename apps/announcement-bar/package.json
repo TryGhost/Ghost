@@ -49,15 +49,12 @@
         ]
     },
     "devDependencies": {
-        "@eslint/js": "catalog:",
+        "@internal/cfg-eslint-react": "workspace:*",
         "@vitejs/plugin-react": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "concurrently": "catalog:",
         "cross-fetch": "catalog:",
         "eslint": "catalog:",
-        "eslint-plugin-ghost": "catalog:",
-        "eslint-plugin-react": "catalog:",
-        "globals": "catalog:",
         "jsdom": "catalog:",
         "vite": "catalog:",
         "vite-plugin-svgr": "catalog:",

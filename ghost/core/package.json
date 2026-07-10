@@ -246,6 +246,7 @@
   "devDependencies": {
     "@actions/core": "3.0.1",
     "@eslint/js": "catalog:",
+    "@internal/cfg-eslint": "workspace:*",
     "@prettier/sync": "0.6.1",
     "@tryghost/express-test": "2.1.0",
     "@tryghost/webhook-mock-receiver": "2.1.0",

@@ -23,10 +23,9 @@
         "@faker-js/faker": "catalog:"
     },
     "devDependencies": {
-        "@eslint/js": "catalog:",
+        "@internal/cfg-eslint": "workspace:*",
         "eslint": "catalog:",
         "typescript": "catalog:",
-        "typescript-eslint": "catalog:",
         "vitest": "catalog:"
     }
 }

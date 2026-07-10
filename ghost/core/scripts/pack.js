@@ -154,7 +154,8 @@ while (componentQueue.length > 0) {
     );
     packedComponents.set(name, tgzName);
 
-    for (const [depName, spec] of Object.entries(depPkg.dependencies || {})) {
+    const allDeps = {...depPkg.dependencies, ...depPkg.devDependencies, ...depPkg.optionalDependencies};
+    for (const [depName, spec] of Object.entries(allDeps)) {
         if (typeof spec === 'string' && spec.startsWith('workspace:')) {
             componentQueue.push(depName);
         }

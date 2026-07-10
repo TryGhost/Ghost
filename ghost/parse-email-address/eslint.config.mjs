@@ -1,3 +1,3 @@
-import {nodeLibConfig} from '../../eslint.shared.mjs';
+import {nodeLibConfig} from '@internal/cfg-eslint';
 
-export default await nodeLibConfig();
+export default nodeLibConfig();

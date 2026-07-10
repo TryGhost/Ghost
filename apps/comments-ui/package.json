@@ -63,7 +63,7 @@
         "react-string-replace": "2.0.1"
     },
     "devDependencies": {
-        "@eslint/js": "catalog:",
+        "@internal/cfg-eslint-react": "workspace:*",
         "@playwright/test": "catalog:",
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:react17",
@@ -77,13 +77,8 @@
         "bson-objectid": "catalog:",
         "concurrently": "catalog:",
         "eslint": "catalog:",
-        "eslint-plugin-ghost": "catalog:",
-        "eslint-plugin-i18next": "6.1.5",
-        "eslint-plugin-react": "catalog:",
         "eslint-plugin-tailwindcss": "catalog:tailwind3",
-        "globals": "catalog:",
         "jsdom": "catalog:",
-        "typescript-eslint": "catalog:",
         "moment": "2.30.1",
         "postcss": "catalog:",
         "postcss-import": "16.1.1",

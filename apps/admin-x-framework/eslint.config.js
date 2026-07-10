@@ -1,6 +1,6 @@
-import {reactAppConfig} from '../../eslint.shared.mjs';
+import {reactAppConfig} from '@internal/cfg-eslint-react';
 
-export default await reactAppConfig({
+export default reactAppConfig({
     shadeRestricted: true,
     extraTestRules: {
         // TODO: 71 legacy violations in test/ — mostly mock-fixture typing

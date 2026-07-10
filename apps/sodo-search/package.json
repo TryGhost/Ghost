@@ -50,7 +50,7 @@
         ]
     },
     "devDependencies": {
-        "@eslint/js": "catalog:",
+        "@internal/cfg-eslint-react": "workspace:*",
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:react17",
         "@vitejs/plugin-react": "catalog:",
@@ -59,9 +59,6 @@
         "concurrently": "catalog:",
         "cross-fetch": "catalog:",
         "eslint": "catalog:",
-        "eslint-plugin-ghost": "catalog:",
-        "eslint-plugin-react": "catalog:",
-        "globals": "catalog:",
         "jsdom": "catalog:",
         "nock": "14.0.16",
         "postcss": "catalog:",

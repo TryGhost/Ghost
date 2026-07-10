@@ -40,6 +40,7 @@
     "dockerode": "5.0.1",
     "dotenv": "catalog:",
     "eslint": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
     "eslint-plugin-no-relative-import-paths": "1.6.1",
     "eslint-plugin-playwright": "2.10.4",
     "express": "4.22.2",

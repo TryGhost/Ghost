@@ -32,15 +32,11 @@
     "access": "public"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
+    "@internal/cfg-eslint": "workspace:*",
     "@types/node": "catalog:",
-    "@typescript-eslint/parser": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-ghost": "3.5.0",
-    "globals": "17.7.0",
     "tsx": "catalog:",
-    "typescript-eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
