@@ -1,5 +1,5 @@
 import {Locator, Page, expect} from '@playwright/test';
-import {configResponse, currentUserResponse, settingsResponse, siteResponse} from '@tryghost/test-data';
+import {configResponse, currentUserResponse, defaultThemesResponse, settingsResponse, siteResponse} from '@tryghost/test-data';
 
 import actionsFixture from './responses/actions.json';
 import customThemeSettingsFixture from './responses/custom_theme_settings.json';
@@ -10,7 +10,6 @@ import newslettersFixture from './responses/newsletters.json';
 import offersFixture from './responses/offers.json';
 import recommendationsFixture from './responses/recommendations.json';
 import rolesFixture from './responses/roles.json';
-import themesFixture from './responses/themes.json';
 import tiersFixture from './responses/tiers.json';
 import usersFixture from './responses/users.json';
 import memberCountHistoryFixture from './responses/member_count_history.json';
@@ -73,7 +72,7 @@ export const responseFixtures = {
     tiers: tiersFixture as TiersResponseType,
     labels: labelsFixture as LabelsResponseType,
     offers: offersFixture as OffersResponseType,
-    themes: themesFixture as ThemesResponseType,
+    themes: defaultThemesResponse() as ThemesResponseType,
     newsletters: newslettersFixture as NewslettersResponseType,
     actions: actionsFixture as ActionsResponseType,
     latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]},
