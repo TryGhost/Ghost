@@ -61,7 +61,7 @@
     "knip": "knip",
     "knip:fix": "knip --fix --allow-remove-files=false",
     "lint": "pnpm nx run-many -t lint lint:boundaries",
-    "lint:boundaries": "depcruise ghost/core/core --config .dependency-cruiser.cjs",
+    "lint:boundaries": "depcruise ghost/core/core apps --config .dependency-cruiser.cjs",
     "check": "pnpm lint && pnpm test",
     "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
     "test:unit": "pnpm nx run-many -t test:unit",
@@ -110,11 +110,12 @@
         "inputs": [
           "{workspaceRoot}/.dependency-cruiser.cjs",
           "{workspaceRoot}/ghost/core/core/**/*",
+          "{workspaceRoot}/apps/**/*",
           "sharedGlobals"
         ],
         "outputs": [],
         "options": {
-          "command": "depcruise ghost/core/core --config .dependency-cruiser.cjs"
+          "command": "depcruise ghost/core/core apps --config .dependency-cruiser.cjs"
         }
       },
       "docker:up": {
