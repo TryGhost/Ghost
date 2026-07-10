@@ -3,12 +3,21 @@ import { label, member } from "@tryghost/test-data";
 
 import { mockMembers, renderAdminApp } from "@test-utils/acceptance";
 
-// Ported from e2e/tests/admin/members/search-and-filter.test.ts (the
-// acceptance halves). Members filtering is NQL-serialization behavior, so the
-// handler runs in EXPLICIT mode: the spec declares what the API returns and
-// asserts the outgoing filter/search string — the handler never interprets NQL.
+describe("Members list", () => {
+    it("lists members", async () => {
+        mockMembers([
+            member({ name: "First Member", email: "first@example.com" }),
+            member({ name: "Second Member", email: "second@example.com" }),
+            member({ name: "Third Member", email: "third@example.com" }),
+        ]);
+        const screen = await renderAdminApp({ route: "/members" });
 
-describe("Members filtering", () => {
+        await expect(screen.getByTestId("members-list-item")).toHaveCount(3);
+        await expect.element(screen.getByRole("link", { name: "First Member", exact: true })).toBeVisible();
+        await expect.element(screen.getByRole("link", { name: "Second Member", exact: true })).toBeVisible();
+        await expect.element(screen.getByRole("link", { name: "Third Member", exact: true })).toBeVisible();
+    });
+
     it("filters members by label from the URL", async () => {
         const vip = label({ name: "VIP" });
         const members = mockMembers(
@@ -23,9 +32,8 @@ describe("Members filtering", () => {
         await expect.element(screen.getByRole("link", { name: "Labelled One", exact: true })).toBeVisible();
         await expect(screen.getByTestId("members-list-item")).toHaveCount(2);
 
-        // The page re-serializes the URL's `label:VIP` into the multiselect
-        // list form before querying the API — that serialization is the
-        // behavior under test here.
+        // The URL's `label:VIP` is re-serialized into the multiselect list
+        // form on the API request.
         expect(members.lastRequest?.url).toContain("filter=label%3A%5BVIP%5D");
     });
 
