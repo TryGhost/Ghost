@@ -31,7 +31,7 @@ describe("Members list", () => {
 
         // The URL's `label:VIP` is re-serialized into the multiselect list
         // form on the API request.
-        await expect.poll(() => membersApi.lastRequest?.filter).toBe("label:[VIP]");
+        await expect(membersApi).toHaveSentFilter("label:[VIP]");
     });
 
     it("shows no results state when search matches nothing", async () => {
@@ -46,7 +46,7 @@ describe("Members list", () => {
 
         await expect.element(membersScreen.noResults()).toBeVisible();
         await expect.element(membersScreen.showAllButton()).toBeVisible();
-        await expect.poll(() => membersApi.lastRequest?.search).toBe("nonexistentnamestring");
+        await expect(membersApi).toHaveSentSearch("nonexistentnamestring");
     });
 
     it("builds a name filter through the filters UI", async () => {
@@ -62,7 +62,7 @@ describe("Members list", () => {
 
         await membersScreen.addFilter("Name", "Alice");
 
-        await expect.poll(() => membersApi.lastRequest?.filter).toContain("name:~'Alice'");
+        await expect(membersApi).toHaveSentFilter(/name:~'Alice'/);
         await expect(membersScreen.memberRows()).toHaveCount(1);
         await expect.element(membersScreen.link("Alice Alpha")).toBeVisible();
     });

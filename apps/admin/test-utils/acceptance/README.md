@@ -14,7 +14,13 @@ Use [`src/tags/tags.acceptance.test.tsx`](../../src/tags/tags.acceptance.test.ts
 | --- | --- |
 | Element state | `await expect.element(locator).toBeVisible() / toHaveTextContent() / toHaveAttribute()` |
 | Element counts | `await expect(locator).toHaveCount(n)` |
-| Captured requests | `await expect.poll(() => membersApi.lastRequest?.filter).toBe(...)` |
+| Captured requests | `await expect(membersApi).toHaveSentFilter("label:[VIP]")` / `toHaveSentSearch(...)` — string for an exact match against the decoded param, RegExp for a partial one |
+
+For captured-request fields the matchers don't cover (`url`, `page`, `limit`), fall back to raw polling:
+
+```ts
+await expect.poll(() => membersApi.lastRequest?.limit).toBe(100);
+```
 
 ## The 418 loop
 
@@ -25,6 +31,8 @@ Don't guess the app's network graph — run the test, the 418 names what's missi
 ## Screen helpers
 
 Per-area locator vocabulary lives in `src/<area>/<area>.screen.ts` (e.g. `membersScreen`): locator factories + multi-step gestures, **no assertions**. Selector strings come from the shared registry in `@tryghost/test-data` (`membersSelectors`, `tagsSelectors`) — the same strings the e2e page objects use, so both tiers break together when the UI changes.
+
+> **Follow-up:** the registry is the interim single source. The end-state is app-owned selector modules — testids only; accessible names stay product copy, asserted as users see it — consumed by the components AND both test tiers, pending an import surface and an e2e dependency-cost check. Until then, component source remains the source of truth and the registry mirrors it.
 
 ## Running
 
