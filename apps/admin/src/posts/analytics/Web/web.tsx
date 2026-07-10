@@ -13,7 +13,7 @@ import {STATS_RANGES, UNKNOWN_LOCATION_VALUES} from '@/shared/analytics/constant
 import {createFilter} from '@tryghost/shade/patterns';
 import {formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/shared/analytics/audience';
-import {getPeriodText} from '@/posts/analytics/utils/chart-helpers';
+import {getPeriodText} from '@/shared/analytics/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
 import {POST_ANALYTICS_FILTER_FIELDS, useFilterParams} from '@/shared/analytics/use-filter-params';

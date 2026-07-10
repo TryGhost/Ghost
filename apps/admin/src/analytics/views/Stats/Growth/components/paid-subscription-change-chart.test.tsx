@@ -26,13 +26,6 @@ vi.mock('@tryghost/shade/utils', async () => {
     };
 });
 
-// Mock chart helpers
-vi.mock('@/analytics/utils/chart-helpers', () => ({
-    determineAggregationStrategy: vi.fn(() => 'daily'),
-    getPeriodText: vi.fn((range: number) => `in the last ${range} days`),
-    sanitizeChartData: vi.fn((data: unknown[]) => data)
-}));
-
 describe('PaidMembersChangeChart Component', () => {
     // Helper to generate mock data with dates within the mocked range (2024-01-01 to 2024-01-31)
     const getMockMemberData = () => {

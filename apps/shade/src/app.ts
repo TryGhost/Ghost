@@ -11,7 +11,6 @@ export {
     getRangeForStartDate,
     formatDisplayDateWithRange,
     centsToDollars,
-    sanitizeChartData,
     getYRange,
     getYRangeWithMinPadding,
     getYRangeWithLargePadding,
