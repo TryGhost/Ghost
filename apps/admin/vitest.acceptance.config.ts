@@ -28,7 +28,9 @@ export default defineConfig({
         // unexpectedly reloaded a test"). Test files are excluded: they
         // import node-side tooling (vitest → vite → fsevents) the browser
         // bundler can't process, and vitest already treats them as entries.
-        entries: ["src/**/*.{ts,tsx}", "!src/**/*.test.*"],
+        // Screen helpers (*.screen.ts) are test-lane modules too — they
+        // import vitest/browser, which vitest serves itself.
+        entries: ["src/**/*.{ts,tsx}", "!src/**/*.test.*", "!src/**/*.screen.ts"],
     },
     resolve: sharedResolve,
     test: {
