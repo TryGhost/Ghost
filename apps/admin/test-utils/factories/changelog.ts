@@ -23,7 +23,7 @@ export const createRawChangelogEntry = (overrides: Partial<RawChangelogEntry> = 
  * Creates a parsed changelog entry.
  * This represents what the hook returns after processing the raw API response.
  */
-export const createChangelogEntry = (overrides: Partial<ChangelogEntry> = {}): ChangelogEntry => ({
+const createChangelogEntry = (overrides: Partial<ChangelogEntry> = {}): ChangelogEntry => ({
     slug: "test-entry-1",
     title: "Test Entry",
     customExcerpt: "Test excerpt",

@@ -1,6 +1,6 @@
 import type { User } from "@tryghost/admin-x-framework/api/users";
 
-export const createMockUser = (overrides?: Partial<User>): User => ({
+const createMockUser = (overrides?: Partial<User>): User => ({
     id: "user-123",
     name: "Test User",
     slug: "test-user",

@@ -5,7 +5,7 @@ Clean, composable mock server setup with just 2 patterns.
 ## Quick Start
 
 ```typescript
-import {mockServer, mockData} from '../utils/msw-helpers';
+import {mockServer, mockData} from '@test-utils/posts-analytics/msw-helpers';
 
 // 90% of cases - just declare what data you want
 mockServer.setup({
@@ -47,7 +47,7 @@ mockServer.setup({
 For everything complex - errors, external APIs, conditional logic:
 
 ```typescript
-import {endpoint, when} from '../utils/msw-helpers';
+import {endpoint, when} from '@test-utils/posts-analytics/msw-helpers';
 
 mockServer.setup({
     // Standard data
@@ -192,16 +192,4 @@ const posts = [
     {id: '1', title: 'Post 1'},
     {id: '2', title: 'Post 2'}
 ];
-```
-
-## Quick Helper
-
-For PostAnalyticsProvider tests:
-```typescript
-import {setupPostAnalyticsProvider} from '../utils/msw-helpers';
-
-test('with analytics provider', () => {
-    setupPostAnalyticsProvider('my-post-id');
-    // Provider will have post data available
-});
 ```

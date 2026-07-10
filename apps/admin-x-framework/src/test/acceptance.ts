@@ -12,12 +12,8 @@ import recommendationsFixture from './responses/recommendations.json';
 import rolesFixture from './responses/roles.json';
 import tiersFixture from './responses/tiers.json';
 import usersFixture from './responses/users.json';
-import memberCountHistoryFixture from './responses/member_count_history.json';
-import mrrHistoryFixture from './responses/mrr_history.json';
 import newsletterStatsFixture from './responses/newsletter_stats.json';
-import linksFixture from './responses/links.json';
 import topPostsFixture from './responses/top_posts.json';
-import postReferrersFixture from './responses/post_referrers.json';
 
 import {ActionsResponseType} from '../api/actions';
 import {ConfigResponseType} from '../api/config';
@@ -34,8 +30,7 @@ import {ThemesResponseType} from '../api/themes';
 import {TiersResponseType} from '../api/tiers';
 import {UsersResponseType} from '../api/users';
 import {ExternalLink} from '../routing';
-import {MemberCountHistoryResponseType, MrrHistoryResponseType, NewsletterStatsResponseType, TopPostsStatsResponseType, PostReferrersResponseType} from '../api/stats';
-import {LinkResponseType} from '../api/links';
+import {NewsletterStatsResponseType, TopPostsStatsResponseType} from '../api/stats';
 
 interface MockRequestConfig {
     method: string;
@@ -76,12 +71,8 @@ export const responseFixtures = {
     newsletters: newslettersFixture as NewslettersResponseType,
     actions: actionsFixture as ActionsResponseType,
     latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]},
-    memberCountHistory: memberCountHistoryFixture as MemberCountHistoryResponseType,
-    mrrHistory: mrrHistoryFixture as MrrHistoryResponseType,
     newsletterStats: newsletterStatsFixture as NewsletterStatsResponseType,
-    links: linksFixture as LinkResponseType,
-    topPosts: topPostsFixture as TopPostsStatsResponseType,
-    postReferrers: postReferrersFixture as PostReferrersResponseType
+    topPosts: topPostsFixture as TopPostsStatsResponseType
 };
 
 interface LabsSettings {
@@ -140,49 +131,6 @@ export const globalDataRequests = {
     browseSite: {method: 'GET', path: '/site/', response: responseFixtures.site},
     browseMe: {method: 'GET', path: '/users/me/?include=roles', response: responseFixtures.me}
 };
-
-export const statsRequests = {
-    browseMemberCountHistory: {method: 'GET', path: /^\/stats\/member_count\//, response: responseFixtures.memberCountHistory},
-    browseMrrHistory: {method: 'GET', path: '/stats/mrr/', response: responseFixtures.mrrHistory},
-    browseNewsletterStats: {method: 'GET', path: /^\/stats\/newsletter-stats\//, response: responseFixtures.newsletterStats},
-    browseTopPosts: {method: 'GET', path: /^\/stats\/top-posts\//, response: responseFixtures.topPosts},
-    browsePostReferrers: {method: 'GET', path: /^\/stats\/posts\/[^/]+\/top-referrers/, response: responseFixtures.postReferrers},
-    browseLinks: {method: 'GET', path: /^\/links\//, response: responseFixtures.links}
-};
-
-export const postsRequests = {
-    browsePost: {method: 'GET', path: /^\/posts\/[^/]+\//, response: {posts: [{
-        id: '64d623b64676110001e897d9',
-        newsletter: {id: 'newsletter-123'},
-        email: {email_count: 1000, opened_count: 450},
-        count: {clicks: 120}
-    }]}},
-    browseNewsletterStats: {method: 'GET', path: /^\/stats\/newsletter-stats\//, response: responseFixtures.newsletterStats},
-    browseLinks: {method: 'GET', path: /^\/links\//, response: responseFixtures.links}
-};
-
-/**
- * Default mock requests that include all common endpoints.
- * Apps can use this directly or override specific requests as needed.
- */
-export const defaultRequests = {
-    ...globalDataRequests,
-    ...limitRequests,
-    ...statsRequests,
-    ...postsRequests
-};
-
-/**
- * Helper function to create mock requests with optional overrides
- * @param overrides - Optional overrides for specific requests
- * @returns Combined request configuration
- */
-export function createMockRequests(overrides: Record<string, MockRequestConfig> = {}) {
-    return {
-        ...defaultRequests,
-        ...overrides
-    };
-}
 
 export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests, options = {}}: {page: Page, requests: Requests, options?: {useActivityPub?: boolean}}) {
     const lastApiRequests: {[key in keyof Requests]?: RequestRecord} = {};
