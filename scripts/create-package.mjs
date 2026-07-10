@@ -65,10 +65,6 @@ if (existsSync(targetDir)) {
 
 const description = values.description ?? `The ${name} package for Ghost.`;
 
-// Relative path from the package back to the root shared eslint config. Depends
-// on nesting depth (packages/foo -> ../../, packages/a/b -> ../../../).
-const eslintShared = relative(targetDir, join(ROOT, 'eslint.shared.mjs')).split(sep).join('/');
-
 // Recursively collect every file path under a directory.
 async function walk(dir) {
     const entries = await readdir(dir, {withFileTypes: true});
@@ -88,7 +84,6 @@ function applyTokens(text) {
     return text
         .replaceAll('{{NAME}}', name)
         .replaceAll('{{DIRECTORY}}', packageDir)
-        .replaceAll('{{ESLINT_SHARED}}', eslintShared)
         .replaceAll('{{DESCRIPTION}}', description);
 }
 
