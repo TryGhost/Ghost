@@ -10,6 +10,7 @@
         "preview": "vite preview",
         "test": "pnpm test:unit",
         "test:unit": "vitest run",
+        "test:acceptance": "vitest run -c vitest.acceptance.config.ts",
         "typecheck": "tsc -b"
     },
     "dependencies": {
@@ -42,16 +43,18 @@
     "devDependencies": {
         "@eslint/js": "catalog:",
         "@tailwindcss/vite": "catalog:",
-        "@types/papaparse": "5.5.2",
         "@tanstack/react-query": "catalog:",
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:",
+        "@tryghost/test-data": "workspace:*",
         "@types/node": "catalog:",
+        "@types/papaparse": "5.5.2",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@types/react-svg-map": "2.1.4",
         "@types/validator": "catalog:",
         "@vitejs/plugin-react": "catalog:",
+        "@vitest/browser-playwright": "catalog:",
         "eslint": "catalog:",
         "eslint-plugin-no-relative-import-paths": "1.6.1",
         "eslint-plugin-react-hooks": "catalog:",
@@ -67,10 +70,19 @@
         "typescript-eslint": "catalog:",
         "vite": "catalog:",
         "vite-tsconfig-paths": "6.1.1",
-        "vitest": "catalog:"
+        "vitest": "catalog:",
+        "vitest-browser-react": "catalog:"
     },
     "nx": {
+        "tags": [
+            "playwright"
+        ],
         "targets": {
+            "test:acceptance": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
             "dev": {
                 "continuous": true,
                 "executor": "nx:run-commands",

@@ -1,0 +1,171 @@
+import { HttpResponse } from "msw";
+import { browseResponse, type Tag } from "@tryghost/test-data";
+
+import { record418, registerAdminApiHandler, registerRoute } from "./worker";
+
+/**
+ * Resource handlers: declare the world, let the handler serve it.
+ *
+ * THE RULE: a resource handler may implement *trivial declared* query
+ * behaviors — ones where the handler only echoes back a slice of exactly what
+ * the spec declared (a `visibility` field match, page/limit slicing) — but
+ * NEVER NQL. For NQL-filtered lists (members `?filter=`, `?search=`) the spec
+ * declares the response and asserts the outgoing filter string instead,
+ * because that serialization IS the behavior under test; re-implementing NQL
+ * in the mock would test the mock.
+ *
+ * Each resource states which side of that line it is on via `semantics`:
+ *
+ *   - `{kind: "passthrough"}` — serves exactly the declared entities and
+ *     never interprets the query. Per-request responses are declared with a
+ *     function of the parsed query.
+ *   - `{kind: "declared-query", covers, select}` — `select` applies the
+ *     trivial declared behaviors; any filter component outside `covers`
+ *     responds 418 instead of silently serving the full world.
+ */
+
+export interface BrowseQuery {
+    /** Full request URL, for raw assertions on encoding. */
+    url: string;
+    /** Decoded ?filter param (NQL), if present. */
+    filter?: string;
+    /** Decoded ?search param, if present. */
+    search?: string;
+    page: number;
+    limit: number | "all";
+}
+
+export interface ResourceCapture {
+    /** Every matched browse request, oldest first. */
+    requests: BrowseQuery[];
+    readonly lastRequest: BrowseQuery | undefined;
+}
+
+/** The entities to serve: one world for every request, or per-request via a function of the parsed query. */
+export type RespondWith<TEntity> = TEntity[] | ((query: BrowseQuery) => TEntity[]);
+
+/** Explicit, greppable statement of how much query behavior a resource mock implements (see THE RULE above). */
+export type ResourceSemantics<TEntity> =
+    | {
+          kind: "declared-query";
+          /** The filter component keys `select` consumes (e.g. `["visibility"]`); anything else responds 418. */
+          covers: string[];
+          /** Trivial declared query semantics applied to the declared entities before pagination. */
+          select: (entities: TEntity[], query: BrowseQuery) => TEntity[];
+      }
+    | { kind: "passthrough" };
+
+export interface ResourceOptions<TEntity> {
+    /** Admin API path segment and envelope key, e.g. 'tags' → GET /tags/. */
+    resource: string;
+    semantics: ResourceSemantics<TEntity>;
+    /** Browse paths to leave to lower-priority handlers (shell chrome like the sidebar count probe). */
+    skip?: (apiPath: string) => boolean;
+}
+
+function parseBrowseQuery(request: Request): BrowseQuery {
+    const url = new URL(request.url);
+    const params = url.searchParams;
+    const rawLimit = params.get("limit");
+
+    return {
+        url: request.url,
+        filter: params.get("filter") ?? undefined,
+        search: params.get("search") ?? undefined,
+        page: Number(params.get("page") ?? "1"),
+        limit: rawLimit === "all" ? "all" : rawLimit ? Number(rawLimit) : 15,
+    };
+}
+
+/**
+ * Strict declared-query filter parsing: split the NQL into top-level `+`
+ * components and return the ones whose key `covers` does not include. NQL
+ * grouping is out of scope on purpose — a component that doesn't parse as a
+ * simple `key:value` also counts as uncovered.
+ */
+function uncoveredFilterComponents(filter: string | undefined, covers: string[]): string[] {
+    if (!filter) {
+        return [];
+    }
+
+    return filter.split("+").filter((component) => {
+        const key = component.match(/^([\w.]+):/)?.[1];
+        return !key || !covers.includes(key);
+    });
+}
+
+/**
+ * Define a mock for one admin API list resource. The returned function
+ * registers a handler that owns the resource's browse URL: it parses the
+ * query, records it on the returned capture (for outgoing-NQL assertions),
+ * applies the resource's declared semantics and wraps the result in the Ghost
+ * list envelope (which slices pagination itself). Unmatched paths fall
+ * through to the boot table / 418 catch-all.
+ */
+export function defineResource<TEntity>({ resource, semantics, skip }: ResourceOptions<TEntity>) {
+    return function mockResource(respondWith: RespondWith<TEntity>): ResourceCapture {
+        const requests: BrowseQuery[] = [];
+
+        registerRoute("GET", `/${resource}/?…`);
+        registerAdminApiHandler((request, apiPath) => {
+            const isBrowse = request.method === "GET" && (apiPath === `/${resource}/` || apiPath.startsWith(`/${resource}/?`));
+            if (!isBrowse || skip?.(apiPath)) {
+                return undefined;
+            }
+
+            const query = parseBrowseQuery(request);
+            requests.push(query);
+
+            const declared = typeof respondWith === "function" ? respondWith(query) : respondWith;
+
+            let matching = declared;
+            if (semantics.kind === "declared-query") {
+                const uncovered = uncoveredFilterComponents(query.filter, semantics.covers);
+                if (uncovered.length > 0) {
+                    record418(`${request.method} ${apiPath} — filter component(s) not covered by declared semantics: ${uncovered.join(", ")}`);
+                    return new HttpResponse(
+                        [
+                            `Declared semantics for '${resource}' only cover ${semantics.covers.map((key) => `\`${key}:\``).join(", ")};`,
+                            `this request's filter contains: ${uncovered.join(", ")}.`,
+                            "Use passthrough mode (declare the response with a function of the query) for this spec.",
+                        ].join(" "),
+                        { status: 418 }
+                    );
+                }
+                matching = semantics.select(declared, query);
+            }
+
+            return HttpResponse.json(
+                browseResponse(resource, matching, {
+                    page: query.page,
+                    limit: query.limit,
+                })
+            );
+        });
+
+        return {
+            requests,
+            get lastRequest() {
+                return requests[requests.length - 1];
+            },
+        };
+    };
+}
+
+/**
+ * Declared-world handler for the tags list: give it every tag that exists and
+ * it serves whichever slice the app asks for — the `visibility` filter the
+ * tags screen tabs send, plus page/limit slicing (trivial declared semantics
+ * only, see THE RULE above).
+ */
+export const mockTags = defineResource<Tag>({
+    resource: "tags",
+    semantics: {
+        kind: "declared-query",
+        covers: ["visibility"],
+        select: (tags, { filter }) => {
+            const visibility = filter?.match(/(?:^|\+)visibility:(\w+)/)?.[1];
+            return visibility ? tags.filter((t) => t.visibility === visibility) : tags;
+        },
+    },
+});
