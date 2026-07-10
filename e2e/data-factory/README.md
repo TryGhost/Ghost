@@ -82,24 +82,28 @@ const post = await postFactory.create({
 
 ### Adding New Factories
 
-1. Create a new factory class extending `Factory<TOptions, TResult>`
-2. Implement the `build()` method (returns in-memory object)
+1. Add (or reuse) a canonical builder in `@tryghost/test-data` — it owns the
+   entity's Admin API *response* shape and randomised defaults
+2. Create a factory class extending `Factory<TOptions, TResult>` whose
+   `build()` derives the *write/create* payload from that builder (see
+   `tag-factory.ts` for a 1:1 delegation, `member-factory.ts` and
+   `post-factory.ts` for shapes where the write payload differs from the
+   response — flattened relations, dropped response-only fields)
 3. Set `entityType` property (used for persistence)
 4. Create a setup helper in `setup.ts` for convenient usage in tests
 
 Example:
 ```typescript
 import {Factory} from '../factory';
+import {member} from '@tryghost/test-data';
 
 export class MemberFactory extends Factory<Partial<Member>, Member> {
     entityType = 'members';
 
     build(options: Partial<Member> = {}): Member {
         return {
-            id: generateId(),
-            email: options.email || faker.internet.email(),
-            name: options.name || faker.person.fullName(),
-            // ... more fields
+            ...toCreatePayload(member()), // response shape -> write payload
+            ...options
         };
     }
 }

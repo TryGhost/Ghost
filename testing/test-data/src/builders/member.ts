@@ -5,8 +5,9 @@ import type {Label} from "./label";
 
 /**
  * Ghost Admin API member resource — the API *response* shape (labels are full
- * Label entities). e2e's member factory builds the *write/create* shape
- * (`labels: string[]`) and deliberately stays separate.
+ * Label entities, ISO-string dates). Write-lane consumers derive their create
+ * payload from this builder: e2e's MemberFactory flattens labels/newsletters
+ * to names/ids and drops response-only fields before POSTing.
  */
 export interface MemberTier {
     id: string;
