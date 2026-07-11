@@ -1,5 +1,5 @@
 import { HttpResponse } from "msw";
-import { browseResponse, type Label, type Member, type Tag } from "@tryghost/test-data";
+import { browseResponse, type Label, type Member, type Tag, type Tier } from "@tryghost/test-data";
 
 import { record418, registerAdminApiHandler, registerRoute } from "./worker";
 
@@ -170,7 +170,7 @@ const membersResource = defineResource<Member>({
 
 // Members-page chrome: the filter bar mounts with the page and probes these lookups.
 const labelsResource = defineResource<Label>({ resource: "labels", semantics: { kind: "passthrough" } });
-const tiersResource = defineResource({ resource: "tiers", semantics: { kind: "passthrough" } });
+const tiersResource = defineResource<Tier>({ resource: "tiers", semantics: { kind: "passthrough" } });
 const offersResource = defineResource({ resource: "offers", semantics: { kind: "passthrough" } });
 const newslettersResource = defineResource({ resource: "newsletters", semantics: { kind: "passthrough" } });
 
@@ -181,20 +181,22 @@ export interface FakeMembersOptions {
      * function form.
      */
     labels?: Label[];
+    /** Tiers for the filter-bar lookup; the tier filter appears once >1 paid tier is served. */
+    tiers?: Tier[];
 }
 
 /**
  * Members list fake (passthrough): serves the declared members and captures
  * every browse request for outgoing-NQL assertions. Also serves the page's
  * filter-bar lookups — labels from the declared members plus
- * `options.labels`; tiers/offers/newsletters empty.
+ * `options.labels`, tiers from `options.tiers`; offers/newsletters empty.
  */
-export function fakeMembers(members: RespondWith<Member>, { labels = [] }: FakeMembersOptions = {}): ResourceCapture {
+export function fakeMembers(members: RespondWith<Member>, { labels = [], tiers = [] }: FakeMembersOptions = {}): ResourceCapture {
     const embeddedLabels = Array.isArray(members) ? members.flatMap((m) => m.labels) : [];
     const labelsById = new Map([...embeddedLabels, ...labels].map((l) => [l.id, l]));
 
     labelsResource([...labelsById.values()]);
-    tiersResource([]);
+    tiersResource(tiers);
     offersResource([]);
     newslettersResource([]);
     return membersResource(members);

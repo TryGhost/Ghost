@@ -47,6 +47,17 @@ export async function renderAdminApp(route: string = "/", { labs, boot }: Render
         installBootOverrides(overrides);
     }
 
+    // Mirror the production host page (index.html): the react-admin body
+    // class and the #root mount point drive the shell's grid layout — without
+    // them the body grows with content and virtualized lists never scroll.
+    document.body.classList.add("react-admin");
+    let rootElement = document.getElementById("root");
+    if (!rootElement) {
+        rootElement = document.createElement("div");
+        rootElement.id = "root";
+        document.body.appendChild(rootElement);
+    }
+
     // EmberRoot expects the Ember host element to exist; there is no Ember
     // app in the test page, so provide an empty stand-in.
     if (!document.getElementById("ember-app")) {
@@ -93,5 +104,5 @@ export async function renderAdminApp(route: string = "/", { labs, boot }: Render
         queryClient,
     };
 
-    return await render(<AdminAppRoot framework={framework} />);
+    return await render(<AdminAppRoot framework={framework} />, { container: rootElement });
 }

@@ -7,6 +7,8 @@ export {member} from "./builders/member";
 export type {Member, MemberNewsletter, MemberTier} from "./builders/member";
 export {label} from "./builders/label";
 export type {Label} from "./builders/label";
+export {tier} from "./builders/tier";
+export type {Tier} from "./builders/tier";
 export {defaultThemesResponse, theme} from "./builders/theme";
 export type {Theme, ThemePackage, ThemesResponse} from "./builders/theme";
 export {post} from "./builders/post";

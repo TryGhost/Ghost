@@ -1,4 +1,4 @@
-import {buildLexical, buildLexicalParagraph, defaultThemesResponse, label, member, post, tag, theme} from "../src/index";
+import {buildLexical, buildLexicalParagraph, defaultThemesResponse, label, member, post, tag, theme, tier} from "../src/index";
 import {describe, expect, it} from "vitest";
 
 describe("builders", () => {
@@ -52,6 +52,13 @@ describe("builders", () => {
         expect(built.labels).toEqual([vip]);
         expect(built.email).toContain("@");
         expect(member.many([{name: "A"}, {name: "B"}]).map(m => m.name)).toEqual(["A", "B"]);
+    });
+
+    it("builds paid tiers", () => {
+        const built = tier({name: "Silver Tier"});
+
+        expect(built).toMatchObject({name: "Silver Tier", type: "paid", active: true});
+        expect(built.slug).toBeTruthy();
     });
 
     it("builds themes and the canned casper+edition list", () => {

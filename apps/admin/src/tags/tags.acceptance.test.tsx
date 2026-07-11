@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { fakeTags, renderAdminApp, tag } from "@test-utils/acceptance";
+import { currentRoute, fakeTags, renderAdminApp, tag } from "@test-utils/acceptance";
 import { tagsScreen } from "./tags.screen";
 
 describe("Tags list", () => {
@@ -47,5 +47,33 @@ describe("Tags list", () => {
 
         await expect.element(tagsScreen.emptyStateHeading()).toBeVisible();
         await expect.element(tagsScreen.createNewTagLink()).toBeVisible();
+    });
+
+    it("navigates to the new tag editor from the header button", async () => {
+        fakeTags([]);
+        await renderAdminApp("/tags");
+
+        await tagsScreen.newTagLink().click();
+
+        // /tags/new is Ember-owned; the shell records the route and defers.
+        await expect.poll(currentRoute).toBe("/tags/new");
+    });
+
+    it("fetches the next page when scrolling to the end of the list", async () => {
+        // 120 tags: the browse page size is 100, so the tail needs a second fetch.
+        const tagsApi = fakeTags(
+            tag.many(Array.from({ length: 120 }, (_, i) => ({ name: `Tag ${String(i + 1).padStart(3, "0")}` })))
+        );
+        await renderAdminApp("/tags");
+
+        await expect.element(tagsScreen.link("Tag 001")).toBeVisible();
+        expect(tagsApi.lastRequest?.page).toBe(1);
+
+        tagsScreen.scrollListToEnd();
+
+        await expect.poll(() => tagsApi.lastRequest?.page).toBe(2);
+        await expect.element(tagsScreen.link("Tag 120")).toBeVisible();
+        // Virtualized: only a window of rows is in the DOM at once.
+        expect(tagsScreen.tagRows().all().length).toBeLessThan(120);
     });
 });
