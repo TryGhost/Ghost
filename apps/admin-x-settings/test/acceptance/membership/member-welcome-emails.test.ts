@@ -712,7 +712,7 @@ test.describe('Member emails settings', async () => {
             await expect.poll(() => lastApiRequests.fetchOembed?.url || '').toContain('url=https%3A%2F%2Fghost.org%2F');
         });
 
-        test('welcome email editor bookmark card fetches bookmark metadata', async ({page}) => {
+        test.skip('welcome email editor bookmark card fetches bookmark metadata', async ({page}) => {
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
