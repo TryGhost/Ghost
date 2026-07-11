@@ -62,25 +62,23 @@ services:
     working_dir: /home/ghost/ghost/core
     command: ["pnpm", "dev"]
     volumes:
-      # Keep the runtime workspace graph aligned with the packages installed
-      # by docker/ghost-dev/Dockerfile. Mounting all of ghost/ exposes
-      # ghost/admin, which depends on apps/* and causes pnpm to repair the
-      # workspace before running scripts.
-      - ./ghost/core:/home/ghost/ghost/core
-      - ./ghost/i18n:/home/ghost/ghost/i18n
-      - ./ghost/parse-email-address:/home/ghost/ghost/parse-email-address
-      # Koenig packages in ghost/core's server-side graph — must match the
-      # package.json set installed by docker/ghost-dev/Dockerfile
-      - ./koenig/kg-card-factory:/home/ghost/koenig/kg-card-factory
-      - ./koenig/kg-clean-basic-html:/home/ghost/koenig/kg-clean-basic-html
-      - ./koenig/kg-converters:/home/ghost/koenig/kg-converters
-      - ./koenig/kg-default-cards:/home/ghost/koenig/kg-default-cards
-      - ./koenig/kg-default-nodes:/home/ghost/koenig/kg-default-nodes
-      - ./koenig/kg-default-transforms:/home/ghost/koenig/kg-default-transforms
-      - ./koenig/kg-html-to-lexical:/home/ghost/koenig/kg-html-to-lexical
-      - ./koenig/kg-lexical-html-renderer:/home/ghost/koenig/kg-lexical-html-renderer
-      - ./koenig/kg-markdown-html-renderer:/home/ghost/koenig/kg-markdown-html-renderer
-      - ./koenig/kg-utils:/home/ghost/koenig/kg-utils
+      # Mount the backend source as whole-directory mounts instead of
+      # enumerating each server-graph workspace package. `pnpm dev` runs in
+      # ghost/core, and pnpm's verify-deps-before-run only checks ghost/core's
+      # own dependency closure — which is fully installed in the root
+      # /home/ghost/node_modules baked into the image and never mounted over —
+      # so the non-server packages these dirs also expose (e.g. ghost/admin,
+      # whose @tryghost/admin-x-framework dep lives under apps/ and is left
+      # dangling; koenig-lexical) fall outside that closure and don't trigger a
+      # workspace repair. Because root node_modules is never mounted,
+      # linux-built native modules survive; each package's local node_modules
+      # holds only relative symlinks that re-resolve into the root store.
+      # verify-deps-before-run=false is set below as belt-and-suspenders in
+      # case a future pnpm widens that check back to the whole workspace.
+      - ./ghost:/home/ghost/ghost
+      - ./koenig:/home/ghost/koenig
+      - ./configs:/home/ghost/configs
+      - ./packages:/home/ghost/packages
       # Mount specific content subdirectories to preserve themes/adapters from source
       - ghost-dev-data:/home/ghost/ghost/core/content/data
       - ghost-dev-images:/home/ghost/ghost/core/content/images

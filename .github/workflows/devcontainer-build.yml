@@ -23,9 +23,9 @@ on:
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - '.npmrc'
-      - 'ghost/core/package.json'
-      - 'ghost/i18n/package.json'
-      - 'ghost/parse-email-address/package.json'
+      # Individual workspace manifests aren't listed: the image installs via
+      # `pnpm install --filter "ghost..." --frozen-lockfile`, so any dependency
+      # change that affects the image necessarily updates pnpm-lock.yaml above.
 
 permissions:
   contents: read
