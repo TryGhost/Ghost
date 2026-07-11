@@ -124,7 +124,7 @@ function UserMenu(props: UserMenuProps) {
                                     variant="success"
                                     size="sm"
                                     label="New updates available"
-                                    data-test-whats-new-avatar-badge
+                                    data-testid="whats-new-avatar-badge"
                                 />
                             </span>
                         )}
@@ -165,7 +165,7 @@ function UserMenu(props: UserMenuProps) {
                                 variant="success"
                                 size="sm"
                                 label="New updates available"
-                                data-test-whats-new-menu-badge
+                                data-testid="whats-new-menu-badge"
                                 />
                         </div>
                     )}

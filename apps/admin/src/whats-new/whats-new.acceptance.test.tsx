@@ -9,6 +9,7 @@ import {
     renderAdminApp,
     type CurrentUserResponse,
 } from "@test-utils/acceptance";
+import { sidebarScreen } from "@/layout/sidebar.screen";
 import { tagsScreen } from "@/tags/tags.screen";
 import { whatsNewScreen } from "./whats-new.screen";
 
@@ -77,5 +78,87 @@ describe("What's new banner", () => {
                 return preferences.whatsNew?.lastSeenDate;
             })
             .toBe(NEWER_THAN_LAST_SEEN);
+    });
+});
+
+describe("What's new menu", () => {
+    it("shows the changelog entries in the What's new modal", async () => {
+        fakeEndpoint("GET", "https://ghost.org/changelog.json", {
+            posts: [
+                changelogEntry({
+                    title: "Latest Update",
+                    custom_excerpt: "Latest feature",
+                    published_at: NEWER_THAN_LAST_SEEN,
+                    // Non-blocklisted host: image requests bypass the worker.
+                    feature_image: "https://static.test/latest-update.jpg",
+                }),
+                changelogEntry({
+                    title: "Previous Update",
+                    custom_excerpt: "Previous feature",
+                    published_at: LAST_SEEN,
+                }),
+            ],
+        });
+        await renderAdminApp("/");
+
+        await sidebarScreen.userMenuTrigger().click();
+        await whatsNewScreen.menuItem().click();
+
+        await expect.element(whatsNewScreen.dialog()).toBeVisible();
+        await expect(whatsNewScreen.entries()).toHaveCount(2);
+        await expect.element(whatsNewScreen.entry(0)).toHaveTextContent("Latest Update");
+        await expect.element(whatsNewScreen.entry(0)).toHaveTextContent("Latest feature");
+        await expect.element(whatsNewScreen.entryImage(0)).toBeVisible();
+        await expect.element(whatsNewScreen.entry(1)).toHaveTextContent("Previous Update");
+        await expect.element(whatsNewScreen.entry(1)).toHaveTextContent("Previous feature");
+    });
+
+    it("shows badges when an entry is newer than the user's last seen date", async () => {
+        fakeEndpoint("GET", "https://ghost.org/changelog.json", {
+            posts: [changelogEntry({ published_at: NEWER_THAN_LAST_SEEN })],
+        });
+        await renderAdminApp("/", {
+            boot: { browseMe: { response: userWhoLastSawChangelogAt(LAST_SEEN) } },
+        });
+
+        await expect.element(whatsNewScreen.avatarBadge()).toBeVisible();
+
+        await sidebarScreen.userMenuTrigger().click();
+        await expect.element(whatsNewScreen.menuBadge()).toBeVisible();
+    });
+
+    it("shows no banner or badges for entries from before the user joined", async () => {
+        // A user with no stored what's-new state is initialized to the present day.
+        fakeEndpoint("GET", "https://ghost.org/changelog.json", {
+            posts: [changelogEntry({ published_at: "2020-01-01T00:00:00.000Z" })],
+        });
+        await renderAdminApp("/");
+
+        await sidebarScreen.userMenuTrigger().click();
+        await expect.element(whatsNewScreen.menuItem()).toBeVisible();
+        await expect.element(whatsNewScreen.menuBadge()).not.toBeInTheDocument();
+        await expect.element(whatsNewScreen.avatarBadge()).not.toBeInTheDocument();
+        await expect.element(whatsNewScreen.banner()).not.toBeInTheDocument();
+    });
+
+    it("clears the banner and badges when the What's new modal is opened", async () => {
+        fakeEndpoint("GET", "https://ghost.org/changelog.json", {
+            posts: [changelogEntry({ published_at: NEWER_THAN_LAST_SEEN })],
+        });
+        await renderAdminApp("/", {
+            boot: { browseMe: { response: userWhoLastSawChangelogAt(LAST_SEEN) } },
+        });
+
+        await expect.element(whatsNewScreen.banner()).toBeVisible();
+        await expect.element(whatsNewScreen.avatarBadge()).toBeVisible();
+
+        await sidebarScreen.userMenuTrigger().click();
+        await whatsNewScreen.menuItem().click();
+        await expect.element(whatsNewScreen.dialog()).toBeVisible();
+        await whatsNewScreen.closeDialog();
+
+        await expect.element(whatsNewScreen.dialog()).not.toBeInTheDocument();
+        await expect.element(whatsNewScreen.banner()).not.toBeInTheDocument();
+        await expect.element(whatsNewScreen.avatarBadge()).not.toBeInTheDocument();
     });
 });

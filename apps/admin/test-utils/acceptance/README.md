@@ -21,13 +21,18 @@ The request matchers assert against the **latest** captured request; inspect `ca
 ```ts
 await expect.poll(() => membersApi.lastRequest?.limit).toBe(100);
 await expect.poll(currentRoute).toBe("/members");   // URL assertions
+await expect.poll(() => document.documentElement.classList.contains("dark")).toBe(true);   // DOM state no locator reaches
 ```
 
 **One render per test.** Each `renderAdminApp` gets a fresh QueryClient and the fake API resets between tests — there is no reload. State that would be persisted on a real server (user preferences, settings) is *represented* by boot overrides; a journey that genuinely needs persistence across reloads belongs in `e2e/`.
 
+**What can't port.** UI fed by the Ember state-bridge (`window.EmberBridge` events) is unreachable by network fakes — there is no Ember app in this tier. Examples: nav active states from the routing bridge (`useEmberRouting`), the upgrade banner from `subscriptionChange`. Grep the component's hooks for `ember-bridge` before porting; those behaviors stay in `e2e/`.
+
 ## The 418 loop
 
 Don't guess the app's network graph — run the test, the 418 names what's missing. Any request no fake handles is served a 418 (admin API paths *and* known external origins like ghost.org) and fails the test in `afterEach`, listing the request and the currently faked routes. Declare admin API requests with a resource fake or a `renderAdminApp` boot override, external URLs with `fakeEndpoint(method, url, response)`; `allowUnhandledRequests()` opts a single test out.
+
+**Cross-app navigation.** When a spec asserts only the shell's behavior and a navigation mounts another app (settings, ActivityPub), don't fake that app's boot graph: `allowUnhandledRequests()` with a one-line constraint comment ("the settings app owns its request graph") is the sanctioned pattern.
 
 When your area calls a new external origin, add it to `EXTERNAL_URL_BLOCKLIST` in `worker.ts` so a forgotten fake fails the test instead of hitting the real network from CI. `fakeEndpoint` serves JSON bodies only — point fixture image URLs at a non-blocklisted host (they bypass the worker) rather than faking them.
 
