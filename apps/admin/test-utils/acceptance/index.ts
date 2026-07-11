@@ -7,5 +7,5 @@ export { allowUnhandledRequests, fakeAdminEndpoint, fakeEndpoint } from "./worke
 export type { CapturedEndpointRequest, EndpointCapture, FakeAdminEndpointResponse, FakeEndpointOptions } from "./worker";
 
 // Test-data re-exports, so a spec needs a single import surface.
-export { changelogEntry, currentUserResponse, label, member, tag } from "@tryghost/test-data";
-export type { ChangelogEntry, CurrentUserResponse, Label, Member, Tag } from "@tryghost/test-data";
+export { activeThemeResponse, changelogEntry, currentUserResponse, label, member, settingsResponse, tag } from "@tryghost/test-data";
+export type { ActiveThemeResponse, ChangelogEntry, CurrentUserResponse, Label, Member, SettingsResponse, Tag } from "@tryghost/test-data";

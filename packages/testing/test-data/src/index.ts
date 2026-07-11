@@ -22,6 +22,7 @@ export type {BrowseResponse, BrowseResponseOptions, Pagination} from "./envelope
 export {generateId, generateSlug, generateUuid} from "./utils";
 
 export {membersSelectors} from "./selectors/members";
+export {sidebarSelectors} from "./selectors/sidebar";
 export {tagsSelectors} from "./selectors/tags";
 export {whatsNewSelectors} from "./selectors/whats-new";
 
