@@ -1,5 +1,7 @@
 const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {escapeHtml} = require('../render-utils/escape-html');
 const {renderEmptyContainer} = require('../render-utils/render-empty-container');
+const {getSpacerImageSrc} = require('../render-utils/spacer-image-src');
 
 function renderVideoNode(node, options = {}) {
     addCreateDocumentOption(options);
@@ -14,7 +16,7 @@ function renderVideoNode(node, options = {}) {
 
     const htmlString = options.target === 'email'
         ? emailCardTemplate({node, options, cardClasses})
-        : cardTemplate({node, cardClasses});
+        : cardTemplate({node, options, cardClasses});
 
     const element = document.createElement('div');
     element.innerHTML = htmlString.trim();
@@ -22,10 +24,11 @@ function renderVideoNode(node, options = {}) {
     return {element: element.firstElementChild};
 }
 
-function cardTemplate({node, cardClasses}) {
+function cardTemplate({node, options, cardClasses}) {
     const width = node.width;
     const height = node.height;
-    const posterSpacerSrc = `https://img.spacergif.org/v1/${width}x${height}/0a/spacer.png`;
+    const posterSpacerSrc = getSpacerImageSrc({width, height, options});
+    const posterSpacerAttr = posterSpacerSrc ? `poster="${escapeHtml(posterSpacerSrc)}"` : '';
     const autoplayAttr = node.loop ? 'loop autoplay muted' : '';
     const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
     const hideControlsClass = node.loop ? ' kg-video-hide' : '';
@@ -36,7 +39,7 @@ function cardTemplate({node, cardClasses}) {
             <div class="kg-video-container">
                 <video
                     src="${node.src}"
-                    poster="${posterSpacerSrc}"
+                    ${posterSpacerAttr}
                     width="${width}"
                     height="${height}"
                     ${autoplayAttr}
@@ -96,7 +99,10 @@ function emailCardTemplate({node, options, cardClasses}) {
     const aspectRatio = node.width / node.height;
     const emailSpacerWidth = Math.round(emailTemplateMaxWidth / 4);
     const emailSpacerHeight = Math.round(emailTemplateMaxWidth / aspectRatio);
-    const posterSpacerSrc = `https://img.spacergif.org/v1/${emailSpacerWidth}x${emailSpacerHeight}/0a/spacer.png`;
+    const posterSpacerSrc = getSpacerImageSrc({width: emailSpacerWidth, height: emailSpacerHeight, options});
+    const posterSpacerImage = posterSpacerSrc
+        ? `<img src="${escapeHtml(posterSpacerSrc)}" alt="" width="100%" border="0" style="display:block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;">`
+        : '&nbsp;';
     const outlookCircleLeft = Math.round((emailTemplateMaxWidth / 2) - 39);
     const outlookCircleTop = Math.round((emailSpacerHeight / 2) - 39);
     const outlookPlayLeft = Math.round((emailTemplateMaxWidth / 2) - 11);
@@ -118,7 +124,7 @@ function emailCardTemplate({node, options, cardClasses}) {
                 >
                     <tr style="mso-hide: all">
                         <td width="25%" style="visibility: hidden; mso-hide: all">
-                            <img src="${posterSpacerSrc}" alt="" width="100%" border="0" style="display:block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;">
+                            ${posterSpacerImage}
                         </td>
                         <td width="50%" align="center" valign="middle" style="vertical-align: middle; mso-hide: all;">
                             <div class="kg-video-play-button" style="mso-hide: all"><div style="mso-hide: all"></div></div>

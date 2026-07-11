@@ -1,5 +1,7 @@
 const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {escapeHtml} = require('../render-utils/escape-html');
 const {renderEmptyContainer} = require('../render-utils/render-empty-container');
+const {getSpacerImageSrc} = require('../render-utils/spacer-image-src');
 const twitterRenderer = require('./embed/types/twitter');
 
 function renderEmbedNode(node, options = {}) {
@@ -31,13 +33,17 @@ function renderTemplate(node, document, options) {
         const thumbnailAspectRatio = metadata.thumbnail_width / metadata.thumbnail_height;
         const spacerWidth = Math.round(emailTemplateMaxWidth / 4);
         const spacerHeight = Math.round(emailTemplateMaxWidth / thumbnailAspectRatio);
+        const spacerImageSrc = getSpacerImageSrc({width: spacerWidth, height: spacerHeight, options});
+        const spacerImage = spacerImageSrc
+            ? `<img src="${escapeHtml(spacerImageSrc)}" alt="" width="100%" border="0" style="display:block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;">`
+            : '&nbsp;';
         const html = `
             <!--[if !mso !vml]-->
             <a class="kg-video-preview" href="${url}" aria-label="Play video" style="mso-hide: all">
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" background="${metadata.thumbnail_url}" role="presentation" style="background: url('${metadata.thumbnail_url}') left top / cover; mso-hide: all">
                     <tr style="mso-hide: all">
                         <td width="25%" style="visibility: hidden; mso-hide: all">
-                            <img src="https://img.spacergif.org/v1/${spacerWidth}x${spacerHeight}/0a/spacer.png" alt="" width="100%" border="0" style="display:block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;">
+                            ${spacerImage}
                         </td>
                         <td width="50%" align="center" valign="middle" style="vertical-align: middle; mso-hide: all;">
                             <div class="kg-video-play-button" style="mso-hide: all"><div style="mso-hide: all"></div></div>

@@ -7,6 +7,7 @@ import {useSearch} from './providers/settings-app-provider';
 
 interface TopLevelGroupProps extends Omit<SettingGroupProps, 'isVisible' | 'highlight'> {
     keywords: string[];
+    headerClassName?: string;
 }
 
 const TopLevelGroup: React.FC<TopLevelGroupProps> = ({keywords, navid, children, ...props}) => {

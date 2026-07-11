@@ -152,5 +152,16 @@ describe('services/koenig/node-renderers/embed-renderer', function () {
             const result = renderForEmail(getTestData({isEmpty: () => true}));
             assert.equal(result.html, '');
         });
+
+        it('omits the hidden spacer image when spacer image output is disabled', function () {
+            const result = renderForEmail(getTestData(), {
+                spacerImage: {
+                    urlTemplate: ''
+                }
+            });
+
+            assert.doesNotMatch(result.html, /img\.spacergif\.org/);
+            assert.doesNotMatch(result.html, /opacity:\s*0;\s*visibility:\s*hidden/);
+        });
     });
 });

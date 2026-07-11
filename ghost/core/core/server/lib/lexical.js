@@ -84,7 +84,12 @@ module.exports = {
             siteUuid: settingsCache.get('site_uuid'),
             siteUrl: config.get('url'),
             imageBaseUrl: config.get('urls:image') || '',
-            imageOptimization: config.get('imageOptimization'),
+            imageOptimization: {
+                ...config.get('imageOptimization'),
+                spacerImage: {
+                    urlTemplate: settingsCache.get('spacer_image_url_template')
+                }
+            },
             canTransformImage(storagePath) {
                 const imageTransform = require('@tryghost/image-transform');
                 const {ext} = path.parse(storagePath);

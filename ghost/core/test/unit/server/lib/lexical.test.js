@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const jsdom = require('jsdom');
 const lexicalLib = require('../../../../core/server/lib/lexical');
+const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('lib/lexical', function () {
     afterEach(function () {
@@ -49,6 +50,38 @@ describe('lib/lexical', function () {
 
             assert(rendered.includes('<figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption">'));
             assert(rendered.includes('<div class="kg-card kg-audio-card">'));
+        });
+
+        it('passes disabled spacer image settings to video rendering', async function () {
+            sinon.stub(settingsCache, 'get').callsFake((key) => {
+                return key === 'spacer_image_url_template' ? '' : undefined;
+            });
+
+            const lexicalState = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'video',
+                        version: 1,
+                        src: '/content/media/video.mp4',
+                        fileName: 'video.mp4',
+                        width: 1920,
+                        height: 1080,
+                        duration: 120,
+                        thumbnailSrc: '/content/images/video-thumb.jpg',
+                        cardWidth: 'regular'
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const rendered = await lexicalLib.render(lexicalState);
+
+            assert.doesNotMatch(rendered, /img\.spacergif\.org/);
+            assert.doesNotMatch(rendered, /\sposter="/);
         });
 
         it(`calls custom renderers`, async function () {

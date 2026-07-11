@@ -6,6 +6,7 @@ import Labs from './labs';
 import MigrationTools from './migration-tools';
 import React from 'react';
 import SearchableSection from '../../searchable-section';
+import SpacerImageProvider from './spacer-image-provider';
 
 export const searchKeywords = {
     integrations: ['advanced', 'integrations', 'zapier', 'slack', 'unsplash', 'first promoter', 'firstpromoter', 'pintura', 'disqus', 'analytics', 'ulysses', 'typeform', 'buffer', 'plausible', 'github', 'webhooks'],
@@ -13,6 +14,7 @@ export const searchKeywords = {
     codeInjection: ['advanced', 'code injection', 'head', 'footer'],
     labs: ['advanced', 'labs', 'alpha', 'private', 'beta', 'flag', 'routes', 'redirect', 'translation', 'editor', 'portal'],
     history: ['advanced', 'history', 'log', 'events', 'user events', 'staff', 'audit', 'action'],
+    spacerImageProvider: ['advanced', 'spacer', 'image', 'provider', 'video', 'email', 'privacy'],
     dangerzone: ['danger', 'danger zone', 'delete', 'content', 'delete all content', 'delete site']
 };
 
@@ -23,6 +25,7 @@ const AdvancedSettings: React.FC = () => {
             <MigrationTools keywords={searchKeywords.migrationtools} />
             <CodeInjection keywords={searchKeywords.codeInjection} />
             <Labs keywords={searchKeywords.labs} />
+            <SpacerImageProvider keywords={searchKeywords.spacerImageProvider} />
             <History keywords={searchKeywords.history} />
             <DangerZone keywords={searchKeywords.dangerzone} />
         </SearchableSection>

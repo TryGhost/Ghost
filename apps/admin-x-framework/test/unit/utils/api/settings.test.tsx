@@ -1,4 +1,4 @@
-import {getSettingValue, getSettingValues, isSettingReadOnly} from '../../../../src/api/settings';
+import {getSettingValue, getSettingValues, isSettingReadOnly, shouldInvalidateAfterSettingsEdit} from '../../../../src/api/settings';
 
 describe('settings utils', () => {
     describe('getSettingValue', () => {
@@ -54,6 +54,26 @@ describe('settings utils', () => {
             const settings = undefined;
             const value = isSettingReadOnly(settings, 'test_key');
             expect(value).toEqual(undefined);
+        });
+    });
+
+    describe('shouldInvalidateAfterSettingsEdit', () => {
+        it('does not invalidate settings queries', () => {
+            expect(shouldInvalidateAfterSettingsEdit({queryKey: ['SettingsResponseType']})).toBe(false);
+        });
+
+        it('does not invalidate ActivityPub package queries', () => {
+            expect(shouldInvalidateAfterSettingsEdit({queryKey: ['notifications_count', 'ghost']})).toBe(false);
+        });
+
+        it('does not invalidate Admin framework ActivityPub queries', () => {
+            expect(shouldInvalidateAfterSettingsEdit({
+                queryKey: ['InboxResponseData', 'http://localhost:2368/.ghost/activitypub/reader/ghost']
+            })).toBe(false);
+        });
+
+        it('invalidates other Admin queries', () => {
+            expect(shouldInvalidateAfterSettingsEdit({queryKey: ['ConfigResponseType']})).toBe(true);
         });
     });
 });

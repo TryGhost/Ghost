@@ -4,12 +4,15 @@ const validator = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
 const AnnouncementBarSettings = require('../../../../../services/announcement-bar-service/announcement-bar-settings');
 
+const DEFAULT_SPACER_IMAGE_URL_TEMPLATE = 'https://img.spacergif.org/v1/{width}x{height}/0a/spacer.png';
+
 const messages = {
     invalidEmailReceived: 'Please send a valid email',
     invalidEmailValueReceived: 'Please enter a valid email address.',
     invalidEmailTypeReceived: 'Invalid email type received',
     invalidAnnouncementVisibilityValueReceived: 'Please enter a valid announcement visibility value',
-    invalidAnnouncementBackgroundValueReceived: 'Please enter a valid announcement background value'
+    invalidAnnouncementBackgroundValueReceived: 'Please enter a valid announcement background value',
+    invalidSpacerImageUrlTemplateValueReceived: 'Please choose the default spacer image provider or disable spacer images.'
 };
 
 module.exports = {
@@ -97,6 +100,14 @@ module.exports = {
                     });
                     errors.push(visibilityError);
                 }
+            }
+
+            if (setting.key === 'spacer_image_url_template' && ![DEFAULT_SPACER_IMAGE_URL_TEMPLATE, '', null].includes(setting.value)) {
+                const spacerImageUrlTemplateError = new ValidationError({
+                    message: tpl(messages.invalidSpacerImageUrlTemplateValueReceived),
+                    property: setting.key
+                });
+                errors.push(spacerImageUrlTemplateError);
             }
         });
 

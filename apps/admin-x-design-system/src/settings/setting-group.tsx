@@ -19,6 +19,7 @@ export interface SettingGroupProps {
     hideEditButton?: boolean;
     alwaysShowSaveButton?: boolean;
     highlight?: boolean;
+    headerClassName?: string;
 
     /**
      * Show a green outline in case the modal that's been triggered from the group is closed
@@ -57,6 +58,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
     border = true,
     highlight = false,
     highlightOnModalClose = true,
+    headerClassName,
     styles,
     onEditingChange,
     onSave,
@@ -159,7 +161,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
             <div className={containerClasses} data-testid={testId}>
                 <div ref={ref} className='absolute' id={navid && navid}></div>
                 {customHeader ? customHeader :
-                    <SettingGroupHeader beta={beta} description={description} title={title!}>
+                    <SettingGroupHeader beta={beta} description={description} headerClassName={headerClassName} title={title!}>
                         {customButtons ? customButtons :
                             (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : 'mt-[-5px] -mr-1'} size='sm' />)
                         }
@@ -173,7 +175,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
             <div className={containerClasses} data-testid={testId}>
                 <div ref={ref} className='absolute' id={navid && navid}></div>
                 {customHeader ? customHeader :
-                    <SettingGroupHeader beta={beta} description={description} title={title!}>
+                    <SettingGroupHeader beta={beta} description={description} headerClassName={headerClassName} title={title!}>
                         {customButtons ? customButtons :
                             (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : 'mt-[-5px] -mr-1'} size='sm' />)
                         }

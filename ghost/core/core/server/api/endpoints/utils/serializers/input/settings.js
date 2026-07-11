@@ -67,6 +67,7 @@ const EDITABLE_SETTINGS = [
     'accent_color',
     'editor_default_email_recipients',
     'editor_default_email_recipients_filter',
+    'spacer_image_url_template',
     'labs',
     'comments_enabled',
     'outbound_link_tagging',

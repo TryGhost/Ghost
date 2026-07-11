@@ -26,6 +26,37 @@ export interface SettingsResponseType {
 // Requests
 
 const dataType = 'SettingsResponseType';
+const activityPubQueryTypes = [
+    'account',
+    'account_liked_posts',
+    'account_posts',
+    'blocked_accounts',
+    'blocked_domains',
+    'discovery_feed',
+    'feed',
+    'inbox',
+    'notifications',
+    'notifications_count',
+    'reply_chain',
+    'search_results',
+    'suggested_profiles',
+    'explore_profiles',
+    'topics'
+];
+
+export function shouldInvalidateAfterSettingsEdit(query: {queryKey: readonly unknown[]}) {
+    const [queryType, queryUrl] = query.queryKey;
+
+    if (queryType === dataType) {
+        return false;
+    }
+
+    if (typeof queryUrl === 'string' && queryUrl.includes('/.ghost/activitypub/')) {
+        return false;
+    }
+
+    return !(typeof queryType === 'string' && activityPubQueryTypes.includes(queryType));
+}
 
 export const useBrowseSettings = createQuery<SettingsResponseType>({
     dataType,
@@ -53,9 +84,7 @@ export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
     // response, so we don't need to refetch them.
     invalidateQueries: {
         filters: {
-            predicate(query) {
-                return query.queryKey[0] !== dataType;
-            }
+            predicate: shouldInvalidateAfterSettingsEdit
         }
     }
 });
@@ -73,9 +102,7 @@ export const useRegenerateAccessCode = createMutation<SettingsResponseType, null
     },
     invalidateQueries: {
         filters: {
-            predicate(query) {
-                return query.queryKey[0] !== dataType;
-            }
+            predicate: shouldInvalidateAfterSettingsEdit
         }
     }
 });

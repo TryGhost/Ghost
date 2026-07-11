@@ -108,6 +108,11 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
         handleSave: async () => {
             const result = await handleSave();
             if (result) {
+                setFormState(state => state.map((setting) => {
+                    const cleanSetting = {...setting};
+                    delete cleanSetting.dirty;
+                    return cleanSetting;
+                }));
                 setEditing(false);
             } else {
             }

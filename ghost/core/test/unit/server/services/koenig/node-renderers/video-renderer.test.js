@@ -84,6 +84,17 @@ describe('services/koenig/node-renderers/video-renderer', function () {
             const result = renderForWeb(getTestData({src: ''}));
             assert.equal(result.html, '');
         });
+
+        it('omits the poster when spacer image output is disabled', function () {
+            const result = renderForWeb(getTestData(), {
+                spacerImage: {
+                    urlTemplate: ''
+                }
+            });
+
+            assert.doesNotMatch(result.html, /\sposter="/);
+            assert.doesNotMatch(result.html, /img\.spacergif\.org/);
+        });
     });
 
     describe('email', function () {
@@ -130,6 +141,17 @@ describe('services/koenig/node-renderers/video-renderer', function () {
         it('renders nothing with a missing src', function () {
             const result = renderForEmail(getTestData({src: ''}));
             assert.equal(result.html, '');
+        });
+
+        it('omits the hidden spacer image when spacer image output is disabled', function () {
+            const result = renderForEmail(getTestData(), {
+                spacerImage: {
+                    urlTemplate: ''
+                }
+            });
+
+            assert.doesNotMatch(result.html, /img\.spacergif\.org/);
+            assert.doesNotMatch(result.html, /opacity:\s*0;\s*visibility:\s*hidden/);
         });
     });
 });
