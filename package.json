@@ -41,7 +41,7 @@
   "devDependencies": {
     "@tryghost/pro-ship": "1.1.5",
     "@types/express": "5.0.6",
-    "@types/node": "24.13.2",
+    "@types/node": "24.13.3",
     "@vitest/coverage-v8": "4.1.10",
     "oxlint": "1.73.0",
     "typescript": "5.9.3",
