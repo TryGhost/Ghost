@@ -1,5 +1,5 @@
 import { HttpResponse } from "msw";
-import { browseResponse, type Automation, type Label, type Member, type Tag, type Tier } from "@tryghost/test-data";
+import { browseResponse, type Automation, type Comment, type Label, type Member, type Tag, type Tier } from "@tryghost/test-data";
 
 import { record418, registerAdminApiHandler, registerRoute } from "./worker";
 
@@ -160,6 +160,18 @@ export const fakeTags = defineResource<Tag>({
 /** Automations list fake: the browse request carries no query the fake would need to interpret. */
 export const fakeAutomations = defineResource<Automation>({
     resource: "automations",
+    semantics: { kind: "passthrough" },
+});
+
+/**
+ * Comments list fake (passthrough): the main list and the thread sidebar's
+ * reply queries share this browse endpoint, differing only in the NQL filter
+ * — declare per-request responses with a function of the query. The
+ * single-comment read (`GET /comments/<id>/`) is not a browse path; declare
+ * it with `fakeAdminEndpoint` when the thread sidebar is under test.
+ */
+export const fakeComments = defineResource<Comment>({
+    resource: "comments",
     semantics: { kind: "passthrough" },
 });
 

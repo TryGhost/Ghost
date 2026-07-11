@@ -1,4 +1,4 @@
-import {automation, buildLexical, buildLexicalParagraph, defaultThemesResponse, label, member, post, tag, theme, tier} from "../src/index";
+import {automation, buildLexical, buildLexicalParagraph, comment, defaultThemesResponse, label, member, post, tag, theme, tier} from "../src/index";
 import {describe, expect, it} from "vitest";
 
 describe("builders", () => {
@@ -64,6 +64,17 @@ describe("builders", () => {
     it("builds automations", () => {
         expect(automation({status: "active"}).status).toBe("active");
         expect(automation().slug).toBeTruthy();
+    });
+
+    it("builds comments with linked member and post embeds", () => {
+        const built = comment({html: "<p>Hello</p>"});
+
+        expect(built.html).toBe("<p>Hello</p>");
+        expect(built.member_id).toBe(built.member.id);
+        expect(built.post_id).toBe(built.post.id);
+        expect(built.status).toBe("published");
+        expect(built.parent_id).toBeNull();
+        expect(built.count.direct_replies).toBe(0);
     });
 
     it("builds themes and the canned casper+edition list", () => {
