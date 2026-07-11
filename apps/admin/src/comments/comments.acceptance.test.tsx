@@ -3,10 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
     browseResponse,
     comment,
+    commentThread,
     currentRoute,
     fakeAdminEndpoint,
     fakeComments,
     renderAdminApp,
+    reply,
     type Comment,
 } from "@test-utils/acceptance";
 import { commentsScreen } from "./comments.screen";
@@ -41,20 +43,9 @@ describe("Comments deep linking", () => {
 
 describe("Comments thread sidebar", () => {
     it("navigates within threads and shows the replied-to context", async () => {
-        const root = comment({ html: "<p>Root comment</p>", count: { replies: 1, direct_replies: 1, likes: 0, dislikes: 0, reports: 0 } });
-        const firstReply = comment({
-            html: "<p>First level reply</p>",
-            parent_id: root.id,
-            in_reply_to_id: root.id,
-            in_reply_to_snippet: "Root comment",
-            count: { replies: 1, direct_replies: 1, likes: 0, dislikes: 0, reports: 0 },
-        });
-        const nestedReply = comment({
-            html: "<p>Nested reply to first level</p>",
-            parent_id: root.id,
-            in_reply_to_id: firstReply.id,
-            in_reply_to_snippet: "First level reply",
-        });
+        const [root, firstReply, nestedReply] = commentThread("Root comment", [
+            reply("First level reply", ["Nested reply to first level"]),
+        ]);
         fakeCommentRead(root);
         fakeCommentRead(firstReply);
         // Thread queries filter on the thread root's id; the main list sends no filter.
@@ -69,52 +60,41 @@ describe("Comments thread sidebar", () => {
         await expect.element(commentsScreen.threadRow(root.id)).toBeVisible();
         await expect.element(commentsScreen.threadRow(firstReply.id)).toBeVisible();
         // Direct children carry no replied-to context in their parent's thread.
-        await expect.element(commentsScreen.repliedToLink(commentsScreen.threadRow(firstReply.id))).not.toBeInTheDocument();
+        await expect.element(commentsScreen.threadRow(firstReply.id).repliedToLink()).not.toBeInTheDocument();
 
-        await commentsScreen.repliesMetric(commentsScreen.threadRow(firstReply.id)).click();
+        await commentsScreen.threadRow(firstReply.id).repliesMetric().click();
 
         await expect.poll(currentRoute).toContain(`thread=is%3A${firstReply.id}`);
         await expect.element(commentsScreen.threadRow(firstReply.id)).toBeVisible();
         await expect.element(commentsScreen.threadRow(nestedReply.id)).toBeVisible();
         // The thread root — itself a reply — shows what it replied to.
-        await expect.element(commentsScreen.repliedToLink(commentsScreen.threadRow(firstReply.id))).toBeVisible();
+        await expect.element(commentsScreen.threadRow(firstReply.id).repliedToLink()).toBeVisible();
     });
 
     it("opens threads from the main comment list", async () => {
-        const root = comment({ html: "<p>Comment with replies</p>", count: { replies: 1, direct_replies: 1, likes: 0, dislikes: 0, reports: 0 } });
-        const reply = comment({
-            html: "<p>A reply to the comment</p>",
-            parent_id: root.id,
-            in_reply_to_id: root.id,
-            in_reply_to_snippet: "Comment with replies",
-        });
+        const [root, rootReply] = commentThread("Comment with replies", ["A reply to the comment"]);
         fakeCommentRead(root);
-        fakeComments(({ filter }) => (filter ? [reply] : [root, reply]));
+        fakeComments(({ filter }) => (filter ? [rootReply] : [root, rootReply]));
         await renderAdminApp("/comments");
 
-        await commentsScreen.repliesMetric(commentsScreen.commentRow("Comment with replies")).click();
+        await commentsScreen.commentRow("Comment with replies").repliesMetric().click();
 
         await expect.poll(currentRoute).toContain(`thread=is%3A${root.id}`);
         await expect.element(commentsScreen.threadRow(root.id)).toBeVisible();
-        await expect.element(commentsScreen.threadRow(reply.id)).toBeVisible();
+        await expect.element(commentsScreen.threadRow(rootReply.id)).toBeVisible();
 
         // Back on the list, the reply's replied-to link is the other thread entry point.
         await commentsScreen.closeThreadSidebar();
         await expect.element(commentsScreen.threadSidebar()).not.toBeInTheDocument();
 
-        await commentsScreen.repliedToLink(commentsScreen.commentRow("A reply to the comment")).click();
+        await commentsScreen.commentRow("A reply to the comment").repliedToLink().click();
 
         await expect.poll(currentRoute).toContain(`thread=is%3A${root.id}`);
         await expect.element(commentsScreen.threadSidebar()).toBeVisible();
     });
 
     it("loads more replies from the load more button", async () => {
-        const root = comment({ html: "<p>Root comment for pagination test</p>", count: { replies: 5, direct_replies: 5, likes: 0, dislikes: 0, reports: 0 } });
-        const replies = Array.from({ length: 5 }, (_, i) => comment({
-            html: `<p>Reply number ${i + 1}</p>`,
-            parent_id: root.id,
-            in_reply_to_id: root.id,
-        }));
+        const [root, ...replies] = commentThread("Root comment for pagination test", 5);
         fakeCommentRead(root);
         fakeComments([root]);
         // The thread query (the only filtered browse here) pages at 3 replies per request.

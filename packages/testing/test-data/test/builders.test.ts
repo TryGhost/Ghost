@@ -1,4 +1,4 @@
-import {automation, buildLexical, buildLexicalParagraph, comment, defaultThemesResponse, label, member, post, tag, theme, tier} from "../src/index";
+import {automation, buildLexical, buildLexicalParagraph, comment, commentThread, defaultThemesResponse, label, member, post, reply, tag, theme, tier} from "../src/index";
 import {describe, expect, it} from "vitest";
 
 describe("builders", () => {
@@ -54,6 +54,17 @@ describe("builders", () => {
         expect(member.many([{name: "A"}, {name: "B"}]).map(m => m.name)).toEqual(["A", "B"]);
     });
 
+    it("builds n entities with fresh defaults from many's count form", () => {
+        const built = tag.many(3);
+
+        expect(built).toHaveLength(3);
+        expect(new Set(built.map(t => t.id)).size).toBe(3);
+        expect(new Set(built.map(t => t.slug)).size).toBe(3);
+
+        const named = tag.many(3, index => ({name: `Tag ${index + 1}`}));
+        expect(named.map(t => t.name)).toEqual(["Tag 1", "Tag 2", "Tag 3"]);
+    });
+
     it("builds paid tiers", () => {
         const built = tier({name: "Silver Tier"});
 
@@ -75,6 +86,60 @@ describe("builders", () => {
         expect(built.status).toBe("published");
         expect(built.parent_id).toBeNull();
         expect(built.count.direct_replies).toBe(0);
+    });
+
+    it("builds flat comment threads with reply linkage and counts derived", () => {
+        const thread = commentThread("Root comment", [
+            reply("First reply", ["Nested reply"]),
+            reply()
+        ]);
+
+        expect(thread).toHaveLength(4);
+        const [root, first, nested, second] = thread;
+        expect(thread.root).toBe(root);
+        expect(thread.all).toBe(thread);
+        expect(root.html).toBe("<p>Root comment</p>");
+        expect(first.html).toBe("<p>First reply</p>");
+
+        for (const descendant of [first, nested, second]) {
+            expect(descendant.parent_id).toBe(root.id);
+            expect(descendant.post_id).toBe(root.post_id);
+            expect(descendant.post).toEqual(root.post);
+        }
+
+        expect(first.in_reply_to_id).toBe(root.id);
+        expect(first.in_reply_to_snippet).toBe("Root comment");
+        expect(nested.in_reply_to_id).toBe(first.id);
+        expect(nested.in_reply_to_snippet).toBe("First reply");
+        expect(second.in_reply_to_id).toBe(root.id);
+
+        expect(root.count).toMatchObject({replies: 3, direct_replies: 2});
+        expect(first.count).toMatchObject({replies: 1, direct_replies: 1});
+        expect(nested.count).toMatchObject({replies: 0, direct_replies: 0});
+    });
+
+    it("expands a reply count into default replies", () => {
+        const [root, ...replies] = commentThread("Root comment", 3);
+
+        expect(replies.map(r => r.html)).toEqual(["<p>Reply 1</p>", "<p>Reply 2</p>", "<p>Reply 3</p>"]);
+        expect(replies.map(r => r.in_reply_to_snippet)).toEqual(["Root comment", "Root comment", "Root comment"]);
+        expect(root.count).toMatchObject({replies: 3, direct_replies: 3});
+    });
+
+    it("derives thread snippets from html text content and lets overrides win", () => {
+        const [, first, second] = commentThread({html: "<p>Hello <strong>world</strong>!</p>"}, [
+            reply(),
+            reply({
+                parent_id: "custom-parent",
+                in_reply_to_snippet: "Custom snippet",
+                count: {replies: 9, direct_replies: 9, likes: 1, dislikes: 0, reports: 0}
+            })
+        ]);
+
+        expect(first.in_reply_to_snippet).toBe("Hello world!");
+        expect(second.parent_id).toBe("custom-parent");
+        expect(second.in_reply_to_snippet).toBe("Custom snippet");
+        expect(second.count).toEqual({replies: 9, direct_replies: 9, likes: 1, dislikes: 0, reports: 0});
     });
 
     it("builds themes and the canned casper+edition list", () => {

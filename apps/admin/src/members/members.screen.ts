@@ -1,18 +1,26 @@
 import { page } from "vitest/browser";
-import { membersSelectors } from "@tryghost/test-data";
+import {
+    addFilterButton,
+    filterButton,
+    membersListItem,
+    noResultsText,
+    searchLabel,
+    showAllButton,
+    textFilterFields,
+} from "@tryghost/test-data/selectors/members";
 
 /** Members screen locators and gestures for acceptance specs; no assertions. */
 export const membersScreen = {
-    memberRows: () => page.getByTestId(membersSelectors.testIds.listItem),
+    memberRows: () => page.getByTestId(membersListItem),
     link: (name: string) => page.getByRole("link", { name, exact: true }),
-    searchInput: () => page.getByLabelText(membersSelectors.names.searchInput),
-    noResults: () => page.getByText(membersSelectors.text.noResults),
-    showAllButton: () => page.getByRole("button", { name: membersSelectors.names.showAllButton }),
+    searchInput: () => page.getByLabelText(searchLabel),
+    noResults: () => page.getByText(noResultsText),
+    showAllButton: () => page.getByRole("button", { name: showAllButton }),
 
     /** Add a text filter through the filters UI: Filter button → field option → fill the value input. */
-    async addFilter(field: keyof typeof membersSelectors.textFilterFields, value: string): Promise<void> {
+    async addFilter(field: keyof typeof textFilterFields, value: string): Promise<void> {
         await membersScreen.openFilterField(field);
-        await page.getByRole("textbox", { name: membersSelectors.textFilterFields[field] }).fill(value);
+        await page.getByRole("textbox", { name: textFilterFields[field] }).fill(value);
     },
 
     /** Add a searchable multiselect filter: Filter button → field option → search → pick an option. */
@@ -25,7 +33,7 @@ export const membersScreen = {
 
     async openFilterField(field: string): Promise<void> {
         // The trigger relabels from "Filter" to "Add filter" once a filter exists.
-        const buttonName = new RegExp(`^(${membersSelectors.names.filterButton}|${membersSelectors.names.addFilterButton})$`);
+        const buttonName = new RegExp(`^(${filterButton}|${addFilterButton})$`);
         await page.getByRole("button", { name: buttonName }).click();
         await page.getByRole("option", { name: field, exact: true }).click();
     },

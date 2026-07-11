@@ -1,6 +1,6 @@
 import {AdminPage} from '@/helpers/pages';
 import {Locator, Page} from '@playwright/test';
-import {commentsSelectors} from '@tryghost/test-data';
+import {commentListRow, commentsList} from '@tryghost/test-data/selectors/comments';
 
 export class CommentsPage extends AdminPage {
     readonly commentsList: Locator;
@@ -20,8 +20,8 @@ export class CommentsPage extends AdminPage {
         super(page);
         this.pageUrl = '/ghost/#/comments';
 
-        this.commentsList = page.getByTestId(commentsSelectors.testIds.list);
-        this.commentRows = page.getByTestId(commentsSelectors.testIds.listRow);
+        this.commentsList = page.getByTestId(commentsList);
+        this.commentRows = page.getByTestId(commentListRow);
         this.viewOnPostMenuItem = page.getByRole('menuitem', {name: 'View on post'});
         this.viewMemberMenuItem = page.getByRole('menuitem', {name: 'View member'});
         this.disableCommentingMenuItem = page.getByRole('menuitem', {name: 'Disable commenting'});

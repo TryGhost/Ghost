@@ -61,12 +61,11 @@ describe("Tags list", () => {
 
     it("fetches the next page when scrolling to the end of the list", async () => {
         // 120 tags: the browse page size is 100, so the tail needs a second fetch.
-        const tagsApi = fakeTags(
-            tag.many(Array.from({ length: 120 }, (_, i) => ({ name: `Tag ${String(i + 1).padStart(3, "0")}` })))
-        );
+        // Default tag names can repeat; the strict link locators need unique names.
+        const tagsApi = fakeTags(tag.many(120, i => ({ name: `Tag ${i + 1}` })));
         await renderAdminApp("/tags");
 
-        await expect.element(tagsScreen.link("Tag 001")).toBeVisible();
+        await expect.element(tagsScreen.link("Tag 1")).toBeVisible();
         expect(tagsApi.lastRequest?.page).toBe(1);
 
         tagsScreen.scrollListToEnd();
