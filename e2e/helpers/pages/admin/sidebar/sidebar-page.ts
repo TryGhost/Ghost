@@ -1,6 +1,7 @@
+import * as sidebarSel from '@tryghost/test-data/selectors/sidebar';
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
-import {sidebarSelectors, whatsNewSelectors} from '@tryghost/test-data';
+import {whatsNewMenuItem} from '@tryghost/test-data/selectors/whats-new';
 
 export type UserRole = 'Administrator' | 'Editor' | 'Author' | 'Contributor';
 
@@ -53,21 +54,21 @@ export class SidebarPage extends AdminPage {
     constructor(page: Page) {
         super(page);
         this.sidebar = page.getByRole('navigation');
-        this.postsToggle = this.sidebar.getByRole('button', {name: sidebarSelectors.names.postsToggle});
-        this.userDropdownTrigger = page.getByRole('button', {name: sidebarSelectors.names.userMenuTrigger});
-        this.appearanceMenuItem = page.getByRole('menuitem', {name: sidebarSelectors.names.appearanceMenuItem});
-        this.themeLightOption = page.getByRole('menuitem', {name: sidebarSelectors.names.lightAppearanceOption});
-        this.themeSystemOption = page.getByRole('menuitem', {name: sidebarSelectors.names.systemAppearanceOption});
-        this.themeDarkOption = page.getByRole('menuitem', {name: sidebarSelectors.names.darkAppearanceOption});
-        this.whatsNewButton = page.getByRole('menuitem', {name: whatsNewSelectors.names.menuItem});
-        this.userProfileLink = page.getByRole('menuitem', {name: sidebarSelectors.names.profileMenuItem});
-        this.signOutLink = page.getByRole('menuitem', {name: sidebarSelectors.names.signOutMenuItem});
+        this.postsToggle = this.sidebar.getByRole('button', {name: sidebarSel.postsToggle});
+        this.userDropdownTrigger = page.getByRole('button', {name: sidebarSel.userMenuTrigger});
+        this.appearanceMenuItem = page.getByRole('menuitem', {name: sidebarSel.appearanceMenuItem});
+        this.themeLightOption = page.getByRole('menuitem', {name: sidebarSel.lightAppearanceOption});
+        this.themeSystemOption = page.getByRole('menuitem', {name: sidebarSel.systemAppearanceOption});
+        this.themeDarkOption = page.getByRole('menuitem', {name: sidebarSel.darkAppearanceOption});
+        this.whatsNewButton = page.getByRole('menuitem', {name: whatsNewMenuItem});
+        this.userProfileLink = page.getByRole('menuitem', {name: sidebarSel.profileMenuItem});
+        this.signOutLink = page.getByRole('menuitem', {name: sidebarSel.signOutMenuItem});
 
-        this.networkNotificationBadge = this.sidebar.getByTestId(sidebarSelectors.testIds.networkBadge);
-        this.ghostProLink = this.sidebar.getByRole('link', {name: sidebarSelectors.names.ghostProLink});
-        this.upgradeNowLink = this.sidebar.getByRole('link', {name: sidebarSelectors.names.upgradeNowLink});
-        this.themeErrorBanner = page.getByRole('status').filter({hasText: sidebarSelectors.text.themeErrorsBanner});
-        this.themeErrorDialog = page.getByRole('dialog', {name: sidebarSelectors.names.themeErrorsDialog});
+        this.networkNotificationBadge = this.sidebar.getByTestId(sidebarSel.networkNotificationBadge);
+        this.ghostProLink = this.sidebar.getByRole('link', {name: sidebarSel.ghostProLink});
+        this.upgradeNowLink = this.sidebar.getByRole('link', {name: sidebarSel.upgradeNowLink});
+        this.themeErrorBanner = page.getByRole('status').filter({hasText: sidebarSel.themeErrorsBannerText});
+        this.themeErrorDialog = page.getByRole('dialog', {name: sidebarSel.themeErrorsDialog});
     }
 
     getNavLink(name: string): Locator {

@@ -29,12 +29,8 @@ export type {BrowseResponse, BrowseResponseOptions, Pagination} from "./envelope
 
 export {generateId, generateSlug, generateUuid} from "./utils";
 
-export {automationsSelectors} from "./selectors/automations";
-export {commentsSelectors} from "./selectors/comments";
-export {membersSelectors} from "./selectors/members";
-export {sidebarSelectors} from "./selectors/sidebar";
-export {tagsSelectors} from "./selectors/tags";
-export {whatsNewSelectors} from "./selectors/whats-new";
+// Selector modules are deliberately NOT re-exported here: their flat names
+// collide across surfaces. Import them via "@tryghost/test-data/selectors/*".
 
 export {
     activeThemeResponse,

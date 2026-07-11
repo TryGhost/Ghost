@@ -2,26 +2,24 @@
  * Comments screen selector strings, consumed by the admin screen helpers and
  * the e2e page objects. Source of truth: apps/admin/src/comments.
  */
-export const commentsSelectors = {
-    testIds: {
-        page: "comments-page",
-        list: "comments-list",
-        listRow: "comment-list-row",
-        repliesMetric: "replies-metric",
-        repliedToLink: "replied-to-link",
-        /** Thread sidebar rows carry the comment id: `comment-thread-row-<id>`. */
-        threadRowPrefix: "comment-thread-row-"
-    },
-    names: {
-        filterButton: "Filter",
-        addFilterButton: "Add filter",
-        showAllCommentsButton: "Show all comments",
-        threadSidebar: "Thread",
-        loadMoreRepliesButton: "Load more replies"
-    },
-    text: {
-        emptyState: "No comments yet",
-        notFound: "Comment not found",
-        repliedTo: "Replied to:"
-    }
-} as const;
+
+// testids
+export const commentsPage = "comments-page";
+export const commentsList = "comments-list";
+export const commentListRow = "comment-list-row";
+export const repliesMetric = "replies-metric";
+export const repliedToLink = "replied-to-link";
+/** Thread sidebar rows carry the comment id: `comment-thread-row-<id>`. */
+export const commentThreadRowPrefix = "comment-thread-row-";
+
+// accessible names
+export const filterButton = "Filter";
+export const addFilterButton = "Add filter";
+export const showAllCommentsButton = "Show all comments";
+export const threadSidebarLabel = "Thread";
+export const loadMoreRepliesButton = "Load more replies";
+
+// text fragments
+export const emptyStateText = "No comments yet";
+export const notFoundText = "Comment not found";
+export const repliedToText = "Replied to:";

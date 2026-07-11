@@ -67,16 +67,16 @@ For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec
 
 ## Screen helpers
 
-Per-area locator vocabulary lives in `src/<area>/<area>.screen.ts` (e.g. `membersScreen`): locator factories + multi-step gestures, **no assertions**. Selector strings come from the shared registry in `@tryghost/test-data` (`membersSelectors`, `tagsSelectors`, `whatsNewSelectors`) — the same strings the e2e page objects use, so both tiers break together when the UI changes.
+Per-area locator vocabulary lives in `src/<area>/<area>.screen.ts` (e.g. `membersScreen`): locator factories + multi-step gestures, **no assertions**. Selector strings come from the shared per-area registry modules — flat named constants imported via `@tryghost/test-data/selectors/<area>` (e.g. `import {repliesMetric} from "@tryghost/test-data/selectors/comments"`, or `import * as sel from ...` when a file uses many) — the same strings the e2e page objects use, so both tiers break together when the UI changes. Testid constants are the camelCase of the testid string itself (`"replies-metric"` → `repliesMetric`); accessible-name constants carry their element kind or a `Label` suffix (`newTagLink`, `searchLabel`); bare text fragments end in `Text`. The modules are deliberately not re-exported from the package root — flat names collide across surfaces.
 
 **Row scopes.** A helper that identifies a repeated row returns a *scope*: the row locator itself, augmented with factories for the row's parts — `commentsScreen.threadRow(id).repliedToLink()`. Never write a helper that takes another helper's locator as an argument; scopes keep call sites at one nesting level, reading left-to-right, and the scope is still a locator, so all three assertion idioms work on it unchanged (`await expect.element(commentsScreen.commentRow("…")).toBeVisible()`).
 
 Adding a new screen:
 
 1. Give the component semantic roles/labels; add `data-testid` attributes only where no accessible locator exists.
-2. Add a `<area>Selectors` module under `packages/testing/test-data/src/selectors/` (strings only) and export it from the package index.
+2. Add a selectors module under `packages/testing/test-data/src/selectors/<area>.ts` — flat named string constants only, no wrapper object, not exported from the package index (the `./selectors/*` subpath serves it).
 3. Add `src/<area>/<area>.screen.ts` consuming the registry via the global `page` from `vitest/browser`.
-4. Point the e2e page object at the same registry strings (locator code stays Playwright-native).
+4. Point the e2e page object at the same registry constants (locator code stays Playwright-native).
 
 > **Follow-up:** the registry is the interim single source. The end-state is app-owned selector modules — testids only; accessible names stay product copy, asserted as users see it — consumed by the components AND both test tiers, pending an import surface and an e2e dependency-cost check. Until then, component source remains the source of truth and the registry mirrors it.
 

@@ -1,6 +1,6 @@
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
-import {automationsSelectors} from '@tryghost/test-data';
+import {automationListRow, automationsList, automationsListLoading, automationsPage} from '@tryghost/test-data/selectors/automations';
 
 export class AutomationsPage extends AdminPage {
     readonly pageContent: Locator;
@@ -14,11 +14,11 @@ export class AutomationsPage extends AdminPage {
         super(page);
 
         this.pageUrl = '/ghost/#/automations';
-        this.pageContent = page.getByTestId(automationsSelectors.testIds.page);
-        this.automationsList = page.getByTestId(automationsSelectors.testIds.list);
-        this.automationListRow = this.automationsList.getByTestId(automationsSelectors.testIds.listRow);
+        this.pageContent = page.getByTestId(automationsPage);
+        this.automationsList = page.getByTestId(automationsList);
+        this.automationListRow = this.automationsList.getByTestId(automationListRow);
 
-        this.loadingPlaceholder = page.getByTestId(automationsSelectors.testIds.listLoading);
+        this.loadingPlaceholder = page.getByTestId(automationsListLoading);
     }
 
     title(name: string) {

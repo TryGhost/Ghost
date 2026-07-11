@@ -1,6 +1,6 @@
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
-import {whatsNewSelectors} from '@tryghost/test-data';
+import {bannerLabel, dismissButton, whatsNewBannerExcerpt, whatsNewBannerTitle} from '@tryghost/test-data/selectors/whats-new';
 
 export class WhatsNewBanner extends AdminPage {
     readonly container: Locator;
@@ -12,11 +12,11 @@ export class WhatsNewBanner extends AdminPage {
     constructor(page: Page) {
         super(page);
 
-        this.container = page.getByRole('status', {name: whatsNewSelectors.names.banner});
-        this.closeButton = this.container.getByRole('button', {name: whatsNewSelectors.names.dismissButton});
+        this.container = page.getByRole('status', {name: bannerLabel});
+        this.closeButton = this.container.getByRole('button', {name: dismissButton});
         this.link = this.container.getByRole('link');
-        this.title = this.container.getByTestId(whatsNewSelectors.testIds.bannerTitle);
-        this.excerpt = this.container.getByTestId(whatsNewSelectors.testIds.bannerExcerpt);
+        this.title = this.container.getByTestId(whatsNewBannerTitle);
+        this.excerpt = this.container.getByTestId(whatsNewBannerExcerpt);
     }
 
     async dismiss(): Promise<void> {
