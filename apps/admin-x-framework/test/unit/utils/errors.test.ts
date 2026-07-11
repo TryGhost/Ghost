@@ -13,6 +13,7 @@ import {
     ValidationError,
     AlreadyExistsError,
     errorsWithMessage,
+    getErrorMessage,
     ErrorResponse
 } from '../../../src/utils/errors';
 
@@ -305,6 +306,40 @@ describe('errors utils', () => {
             expect(errorsWithMessage).toContain(ThemeValidationError);
             expect(errorsWithMessage).toContain(HostLimitError);
             expect(errorsWithMessage).toContain(EmailError);
+        });
+    });
+
+    describe('getErrorMessage', () => {
+        const makeValidationError = (context: string | null) => {
+            const data: ErrorResponse = {
+                errors: [{
+                    code: 'VALIDATION',
+                    context,
+                    details: null,
+                    ghostErrorCode: null,
+                    help: 'Help text',
+                    id: 'error-id',
+                    message: 'Validation error, cannot edit label.',
+                    property: null,
+                    type: 'ValidationError'
+                }]
+            };
+            return new ValidationError({} as Response, data);
+        };
+
+        it('returns the context of a ValidationError', () => {
+            const error = makeValidationError('Label already exists');
+            expect(getErrorMessage(error, 'Fallback message')).toBe('Label already exists');
+        });
+
+        it('falls back to the error message when context is empty', () => {
+            const error = makeValidationError(null);
+            expect(getErrorMessage(error, 'Fallback message')).toBe('Validation error, cannot edit label.');
+        });
+
+        it('returns the fallback for other errors', () => {
+            expect(getErrorMessage(new Error('boom'), 'Fallback message')).toBe('Fallback message');
+            expect(getErrorMessage(undefined, 'Fallback message')).toBe('Fallback message');
         });
     });
 

@@ -18,10 +18,24 @@ RUN apt-get update && \
 WORKDIR /home/ghost
 
 # Copy package files for dependency installation
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 COPY ghost/parse-email-address/package.json ghost/parse-email-address/package.json
+# Koenig packages in ghost/core's server-side dependency graph (direct deps
+# plus kg-utils/kg-default-transforms, which they depend on). The editor UI
+# packages (koenig-lexical, kg-unsplash-selector, kg-simplemde) are admin
+# build-time deps and stay out of the server image.
+COPY koenig/kg-card-factory/package.json koenig/kg-card-factory/package.json
+COPY koenig/kg-clean-basic-html/package.json koenig/kg-clean-basic-html/package.json
+COPY koenig/kg-converters/package.json koenig/kg-converters/package.json
+COPY koenig/kg-default-cards/package.json koenig/kg-default-cards/package.json
+COPY koenig/kg-default-nodes/package.json koenig/kg-default-nodes/package.json
+COPY koenig/kg-default-transforms/package.json koenig/kg-default-transforms/package.json
+COPY koenig/kg-html-to-lexical/package.json koenig/kg-html-to-lexical/package.json
+COPY koenig/kg-lexical-html-renderer/package.json koenig/kg-lexical-html-renderer/package.json
+COPY koenig/kg-markdown-html-renderer/package.json koenig/kg-markdown-html-renderer/package.json
+COPY koenig/kg-utils/package.json koenig/kg-utils/package.json
 
 # Install dependencies
 # Note: Dependencies are installed at build time, but source code is mounted at runtime.
@@ -48,7 +62,8 @@ ENV portal__url=/ghost/assets/portal/portal.min.js \
     sodoSearch__url=/ghost/assets/sodo-search/sodo-search.min.js \
     sodoSearch__styles=/ghost/assets/sodo-search/main.css \
     signupForm__url=/ghost/assets/signup-form/signup-form.min.js \
-    announcementBar__url=/ghost/assets/announcement-bar/announcement-bar.min.js
+    announcementBar__url=/ghost/assets/announcement-bar/announcement-bar.min.js \
+    adminToolbar__url=/ghost/assets/admin-toolbar/admin-toolbar.min.js
 
 # Source code will be mounted from host at /home/ghost/ghost/core
 # This allows the Ghost dev script to pick up file changes for hot-reload

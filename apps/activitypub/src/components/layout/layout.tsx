@@ -51,7 +51,7 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
                                     showBorder={!(currentPage === 'reader' && hasTopics) && !(currentPage === 'explore')}
                                     onToggleMobileSidebar={toggleMobileSidebar}
                                 />
-                                <div className='px-[min(4vw,32px)]'>
+                                <div className='px-[min(4vw,24px)]'>
                                     {children}
                                 </div>
                             </div>

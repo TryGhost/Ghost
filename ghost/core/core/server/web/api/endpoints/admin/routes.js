@@ -46,6 +46,7 @@ module.exports = function apiRoutes() {
     router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
     router.get('/comments/:id/reports', mw.authAdminApi, http(api.commentReports.browse));
     router.get('/comments/:id/likes', mw.authAdminApi, http(api.commentLikes.browse));
+    router.get('/comments/:id/dislikes', mw.authAdminApi, http(api.commentDislikes.browse));
     router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
     router.post('/comments', mw.authAdminApi, http(api.comments.add));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
@@ -60,6 +61,15 @@ module.exports = function apiRoutes() {
     router.put('/pages/:id', mw.authAdminApi, http(api.pages.edit));
     router.delete('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
     router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));
+
+    // Gift links
+    router.get('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.browse));
+    router.put('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.ensure));
+    router.post('/posts/:id/gift_links', mw.authAdminApi, http(api.giftLinks.create));
+    router.get('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.browse));
+    router.put('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.ensure));
+    router.post('/pages/:id/gift_links', mw.authAdminApi, http(api.giftLinks.create));
+    router.put('/gift_links/remove_all', mw.authAdminApi, http(api.giftLinks.removeAll));
 
     // # Integrations
 
@@ -189,6 +199,8 @@ module.exports = function apiRoutes() {
     // ## Automations
     router.get('/automations', mw.authAdminApi, http(api.automations.browse));
     router.get('/automations/:id', mw.authAdminApi, http(api.automations.read));
+    router.post('/automations/:id/email_preview', mw.authAdminApi, http(api.automationEmailPreviews.preview));
+    router.post('/automations/:id/email_test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automationEmailPreviews.sendTestEmail));
     router.put('/automations/poll', mw.authAdminApiWithUrl, http(api.automations.poll));
     router.put('/automations/:id', mw.authAdminApi, http(api.automations.edit));
 
@@ -306,7 +318,7 @@ module.exports = function apiRoutes() {
     router.post('/authentication/setup', http(api.authentication.setup));
     router.put('/authentication/setup', mw.authAdminApi, http(api.authentication.updateSetup));
     router.get('/authentication/setup', http(api.authentication.isSetup));
-    router.post('/authentication/global_password_reset', mw.authAdminApi, http(api.authentication.resetAllPasswords));
+    router.post('/authentication/reset', mw.authAdminApi, http(api.authentication.reset));
 
     // ## Images
     router.post('/images/upload',

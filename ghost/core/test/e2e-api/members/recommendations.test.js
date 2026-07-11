@@ -59,7 +59,7 @@ describe('Recommendation Event Tracking', function () {
     let recommendationId;
     let clock;
 
-    before(async function () {
+    beforeAll(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
         membersAgent2 = membersAgent.duplicate();
         await membersAgent2.loginAs('authenticationtest@email.com');

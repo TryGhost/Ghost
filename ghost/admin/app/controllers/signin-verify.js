@@ -15,7 +15,6 @@ const TASK_SUCCESS = true;
 const TASK_FAILURE = false;
 const DEFAULT_RESEND_TOKEN_COUNTDOWN = 15;
 
-// eslint-disable-next-line ghost/ember/alias-model-in-controller
 class VerifyData {
     @tracked token;
     @tracked hasValidated = new TrackedArray();

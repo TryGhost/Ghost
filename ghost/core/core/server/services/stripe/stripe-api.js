@@ -3,7 +3,8 @@ const {VersionMismatchError} = require('@tryghost/errors');
 // @ts-ignore
 const debug = require('@tryghost/debug')('stripe');
 const ghostConfig = require('../../../shared/config');
-const Stripe = require('stripe').Stripe;
+const stripe = require('stripe');
+const i18n = require('../i18n');
 
 /* Stripe has the following rate limits:
 *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -141,7 +142,7 @@ module.exports = class StripeAPI {
         if (stripeApiProtocol) {
             stripeConfig.protocol = stripeApiProtocol;
         }
-        this._stripe = new Stripe(config.secretKey, stripeConfig);
+        this._stripe = new stripe.Stripe(config.secretKey, stripeConfig);
         this._config = config;
         this._testMode = config.secretKey && config.secretKey.startsWith('sk_test_');
         if (this._testMode) {
@@ -511,6 +512,21 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Apply Automatic Tax related session options consistently.
+     * @param {object} stripeSessionOptions
+     * @param {{hasCustomer: boolean}} ctx
+     */
+    _applyAutomaticTaxSessionOptions(stripeSessionOptions, {hasCustomer}) {
+        if (!this._config.enableAutomaticTax) {
+            return;
+        }
+        stripeSessionOptions.tax_id_collection = {enabled: true};
+        if (hasCustomer) {
+            stripeSessionOptions.customer_update = {address: 'auto', name: 'auto'};
+        }
+    }
+
+    /**
      * Create a new Stripe Checkout Session for a new subscription.
      *
      * @param {string} priceId
@@ -597,9 +613,7 @@ module.exports = class StripeAPI {
             stripeSessionOptions.customer_email = customerEmail;
         }
 
-        if (customerId && this._config.enableAutomaticTax) {
-            stripeSessionOptions.customer_update = {address: 'auto'};
-        }
+        this._applyAutomaticTaxSessionOptions(stripeSessionOptions, {hasCustomer: Boolean(customerId)});
 
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
@@ -628,11 +642,9 @@ module.exports = class StripeAPI {
          * @type {Stripe.Checkout.SessionCreateParams}
          */
 
-        // TODO - add it higher up the stack to the metadata object.
-        // add ghost_donation key to metadata object
         metadata = {
-            ghost_donation: true,
-            ...metadata
+            ...metadata,
+            ghost_donation: true
         };
 
         const stripeSessionOptions = {
@@ -649,11 +661,8 @@ module.exports = class StripeAPI {
             invoice_creation: {
                 enabled: true,
                 invoice_data: {
-                    // Make sure we pass the data through to the invoice
-                    metadata: {
-                        ghost_donation: true,
-                        ...metadata
-                    }
+                    // Stripe does not inherit Checkout Session metadata for invoice records
+                    metadata
                 }
             },
             line_items: [{
@@ -673,9 +682,7 @@ module.exports = class StripeAPI {
             ]
         };
 
-        if (customer && this._config.enableAutomaticTax) {
-            stripeSessionOptions.customer_update = {address: 'auto'};
-        }
+        this._applyAutomaticTaxSessionOptions(stripeSessionOptions, {hasCustomer: Boolean(customer)});
 
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
@@ -702,7 +709,9 @@ module.exports = class StripeAPI {
     async createGiftCheckoutSession({amount, currency, tierName, cadence, duration, metadata, successUrl, cancelUrl, customer, customerEmail}) {
         await this._rateLimitBucket.throttle();
 
-        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
+        const cadenceLabel = cadence === 'year' ?
+            i18n.t('{count} year', {count: duration}) :
+            i18n.t('{count} month', {count: duration});
 
         const stripeSessionOptions = {
             mode: 'payment',
@@ -715,21 +724,22 @@ module.exports = class StripeAPI {
             customer: customer ? customer.id : undefined,
             customer_email: !customer && customerEmail ? customerEmail : undefined,
             submit_type: 'pay',
+            invoice_creation: {
+                enabled: true
+            },
             line_items: [{
                 price_data: {
                     currency,
                     unit_amount: amount,
                     product_data: {
-                        name: `Gift Subscription - ${tierName} (${cadenceLabel})`
+                        name: `${i18n.t('Gift subscription')} — ${tierName} (${cadenceLabel})`
                     }
                 },
                 quantity: 1
             }]
         };
 
-        if (customer && this._config.enableAutomaticTax) {
-            stripeSessionOptions.customer_update = {address: 'auto'};
-        }
+        this._applyAutomaticTaxSessionOptions(stripeSessionOptions, {hasCustomer: Boolean(customer)});
 
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);

@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const models = require('../../../../core/server/models');
+const ghostBookshelf = require('../../../../core/server/models/base');
 const permissions = require('../../../../core/server/services/permissions');
 const schema = require('../../../../core/server/data/schema');
 const security = require('@tryghost/security');
@@ -10,6 +11,49 @@ const testUtils = require('../../../utils');
 describe('Unit: models/user', function () {
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('lock method', function () {
+        function lockUser(status) {
+            const save = sinon.stub().resolves();
+            const instance = {
+                get(key) {
+                    if (key === 'status') {
+                        return status;
+                    }
+                    return undefined;
+                },
+                save
+            };
+            models.User.prototype.lock.call(instance, {transacting: 'tx'});
+            return save;
+        }
+
+        it('rotates the password and transitions an active user to locked', function () {
+            const save = lockUser('active');
+            const update = save.firstCall.args[0];
+            assert.equal(update.status, 'locked');
+            assert.equal(typeof update.password, 'string');
+            assert.ok(update.password.length > 0);
+        });
+
+        it('rotates the password on a suspended user but preserves inactive status', function () {
+            // The compromised credential is invalidated for the inactive
+            // account too, but the account stays on the suspended-signin
+            // path rather than gaining a password-reset path it shouldn't have.
+            const save = lockUser('inactive');
+            const update = save.firstCall.args[0];
+            assert.equal(update.status, undefined, 'status is left unchanged for inactive users');
+            assert.equal(typeof update.password, 'string');
+            assert.ok(update.password.length > 0);
+        });
+
+        it('rotates the password and transitions an already-locked user (still locked)', function () {
+            const save = lockUser('locked');
+            const update = save.firstCall.args[0];
+            assert.equal(update.status, 'locked');
+            assert.equal(typeof update.password, 'string');
+        });
     });
 
     describe('updateLastSeen method', function () {
@@ -68,6 +112,94 @@ describe('Unit: models/user', function () {
                         assert.equal((err[0] instanceof errors.ValidationError), true);
                         assert.match(err[0].message, /users\.email/);
                     });
+            });
+        });
+    });
+
+    describe('add', function () {
+        // Stub the parent Bookshelf add so we can inspect the filtered data
+        // without hitting the database; the rest of the add chain is skipped.
+        function stubParentAdd() {
+            return sinon.stub(ghostBookshelf.Model, 'add').rejects(new Error('stop'));
+        }
+
+        it('sets system colour mode as the default accessibility preference for new users', async function () {
+            const add = stubParentAdd();
+
+            await assert.rejects(models.User.add({
+                name: 'Invited User',
+                email: 'invited@example.com'
+            }, {context: {internal: true}}));
+
+            assert.equal(add.calledOnce, true);
+            assert.deepEqual(JSON.parse(add.firstCall.args[0].accessibility), {
+                nightShift: 'system'
+            });
+        });
+
+        it('does not inject a default accessibility preference when importing', async function () {
+            const add = stubParentAdd();
+
+            await assert.rejects(models.User.add({
+                name: 'Imported User',
+                email: 'imported@example.com'
+            }, {context: {internal: true}, importing: true}));
+
+            assert.equal(add.calledOnce, true);
+            assert.equal(add.firstCall.args[0].accessibility, undefined);
+        });
+
+        it('preserves an explicit accessibility preference for new users', async function () {
+            const add = stubParentAdd();
+
+            await assert.rejects(models.User.add({
+                name: 'Invited User',
+                email: 'invited@example.com',
+                accessibility: JSON.stringify({nightShift: 'dark'})
+            }, {context: {internal: true}}));
+
+            assert.equal(add.calledOnce, true);
+            assert.deepEqual(JSON.parse(add.firstCall.args[0].accessibility), {
+                nightShift: 'dark'
+            });
+        });
+    });
+
+    describe('setup', function () {
+        it('sets system colour mode as the default accessibility preference for the initial owner', async function () {
+            const edit = sinon.stub(models.User, 'edit').resolves();
+
+            await models.User.setup({
+                name: 'Test User',
+                email: 'test@example.com',
+                password: 'Xt9!pL4#vQ8$mN2@rZ6%'
+            }, {
+                id: 'owner-id',
+                context: {internal: true}
+            });
+
+            assert.equal(edit.calledOnce, true);
+            assert.deepEqual(JSON.parse(edit.firstCall.args[0].accessibility), {
+                nightShift: 'system'
+            });
+        });
+
+        it('preserves explicit accessibility preference during initial owner setup', async function () {
+            const edit = sinon.stub(models.User, 'edit').resolves();
+
+            await models.User.setup({
+                name: 'Test User',
+                email: 'test@example.com',
+                password: 'Xt9!pL4#vQ8$mN2@rZ6%',
+                accessibility: JSON.stringify({nightShift: 'dark'})
+            }, {
+                id: 'owner-id',
+                context: {internal: true}
+            });
+
+            assert.equal(edit.calledOnce, true);
+            assert.deepEqual(JSON.parse(edit.firstCall.args[0].accessibility), {
+                nightShift: 'dark'
             });
         });
     });

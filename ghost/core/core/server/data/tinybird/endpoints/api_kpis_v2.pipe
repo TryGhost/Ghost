@@ -1,3 +1,6 @@
+# NOTE: This _v2 Tinybird pipe is NOT currently in use. To make non-breaking, additive changes to the current Tinybird endpoints, modify the un-suffixed "v1" versions of the pipes instead. The _v2 pipes will be removed in a future release.
+# The _v2 pipes were added as part of a performance improvement experiment, which has been put on hold.
+
 TOKEN "stats_page" READ
 TOKEN "axis" READ
 
@@ -5,7 +8,7 @@ NODE timeseries
 SQL >
 
     %
-        {% set _single_day = defined(date_from) and day_diff(date_from, date_to) == 0 %}
+        {% set _single_day = defined(date_from) and defined(date_to) and day_diff(date_from, date_to) == 0 %}
         with
             {% if defined(date_from) %}
                 toStartOfDay(
@@ -35,13 +38,29 @@ SQL >
                 ) as end
             {% else %} toStartOfDay(today()) as end
             {% end %}
+            {% if _single_day %}
+                ,
+                {% if defined(current_time) %}
+                    toDateTime({{ String(current_time, description="Current time override for tests", required=False) }}, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})
+                {% else %}
+                    toTimezone(now(), {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})
+                {% end %} as current_time,
+                if(
+                    toDate(end) = toDate(current_time),
+                    least(
+                        timestampAdd(end, interval 1 day),
+                        timestampAdd(start, toIntervalHour(toHour(current_time) + 1))
+                    ),
+                    timestampAdd(end, interval 1 day)
+                ) as end_exclusive
+            {% end %}
         {% if _single_day %}
             select
                 arrayJoin(
                     arrayMap(
                         x -> toDateTime(toString(toDateTime(x)), {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}),
                         range(
-                            toUInt32(toDateTime(start)), toUInt32(timestampAdd(end, interval 1 day)), 3600
+                            toUInt32(toDateTime(start)), toUInt32(end_exclusive), 3600
                         )
                     )
                 ) as date
@@ -81,7 +100,7 @@ SQL >
     %
         select
             site_uuid,
-            {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
+            {% if defined(date_from) and defined(date_to) and day_diff(date_from, date_to) == 0 %}
                 toStartOfHour(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
             {% else %}
                 toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
@@ -121,7 +140,7 @@ SQL >
 
     %
             select
-                {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
+                {% if defined(date_from) and defined(date_to) and day_diff(date_from, date_to) == 0 %}
                     toStartOfHour(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
                 {% else %}
                     toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
@@ -129,7 +148,7 @@ SQL >
                 count() pageviews
             from timeseries a
             inner join _mv_hits h on
-                {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
+                {% if defined(date_from) and defined(date_to) and day_diff(date_from, date_to) == 0 %}
                     a.date = toStartOfHour(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))
                 {% else %}
                     a.date = toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))

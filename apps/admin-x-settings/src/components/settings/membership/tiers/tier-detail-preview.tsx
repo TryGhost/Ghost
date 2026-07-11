@@ -16,7 +16,7 @@ export const TrialDaysLabel: React.FC<{size?: 'sm' | 'md'; trialDays: number;}> 
     }
 
     const containerClassName = clsx(
-        size === 'sm' ? 'px-1.5 py-0.5 text-xs' : 'px-2.5 py-1.5 text-sm',
+        size === 'sm' ? 'px-1.5 py-0.5 text-sm' : 'px-2.5 py-1.5',
         'relative -mt-1 -mr-1 rounded-full leading-none font-semibold tracking-wide whitespace-nowrap text-grey-900'
     );
 
@@ -33,7 +33,7 @@ const TierBenefits: React.FC<{benefits: string[]}> = ({benefits}) => {
         return (
             <div className="mt-4 w-full text-md leading-snug text-grey-900 opacity-30">
                 <div className="mb-2.5 flex items-start">
-                    <Icon className="mt-[3px] mr-[10px] h-3.5! w-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
+                    <Icon className="mt-[3px] mr-[10px] size-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
                     <div>Expert analysis</div>
                 </div>
             </div>
@@ -46,7 +46,7 @@ const TierBenefits: React.FC<{benefits: string[]}> = ({benefits}) => {
                     return (
                         <div key={benefit} className="mt-4 w-full text-md leading-snug text-grey-900">
                             <div className="mb-2.5 flex items-start">
-                                <Icon className="mt-[3px] mr-[10px] h-3.5! w-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
+                                <Icon className="mt-[3px] mr-[10px] size-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
                                 <div>{benefit}</div>
                             </div>
                         </div>
@@ -62,7 +62,7 @@ const DiscountLabel: React.FC<{discount: number}> = ({discount}) => {
         return null;
     }
     return (
-        <span className="mt-1 text-sm leading-none font-semibold text-pink">{discount}% discount</span>
+        <span className="mt-1 leading-none font-semibold text-pink">{discount}% discount</span>
     );
 };
 

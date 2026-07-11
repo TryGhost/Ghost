@@ -17,7 +17,7 @@ const pageMatcher = {
 describe('Pages Content API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('users', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
         await agent.authenticate();

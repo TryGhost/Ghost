@@ -33,14 +33,14 @@ describe('MembersStatsService', function () {
         /** @type {Date} */
         let dayBeforeYesterdayDate;
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
         });
 
         /** @type {import('knex').Knex} */
         let db;
 
-        before(function () {
+        beforeAll(function () {
             todayDate = moment.utc(today).toDate();
             tomorrowDate = moment.utc(tomorrow).toDate();
             yesterdayDate = moment.utc(yesterday).toDate();
@@ -54,7 +54,7 @@ describe('MembersStatsService', function () {
             currentCounts.comped = 0;
             currentCounts.gift = 0;
 
-            db = knex({client: 'sqlite3', connection: {filename: ':memory:'}, useNullAsDefault: true});
+            db = knex({client: 'better-sqlite3', connection: {filename: ':memory:'}, useNullAsDefault: true});
             membersStatsService = new MembersStatsService({knex: db});
 
             await db.schema.createTable('members_status_events', function (table) {

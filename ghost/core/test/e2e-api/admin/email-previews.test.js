@@ -45,7 +45,7 @@ describe('Email Preview API', function () {
         sinon.stub(Date.prototype, 'getFullYear').returns(2025);
     });
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'newsletters', 'posts');
         await agent.loginAsOwner();
@@ -341,6 +341,71 @@ describe('Email Preview API', function () {
         });
     });
 
+    describe('Tier-restricted posts', function () {
+        let post;
+
+        beforeAll(async function () {
+            const paidTier = await models.Product.findOne({type: 'paid'});
+
+            const lexical = JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [{detail: 0, format: 0, mode: 'normal', style: '', text: 'Free preview text', type: 'text', version: 1}],
+                            direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1
+                        },
+                        {type: 'paywall', version: 1},
+                        {
+                            children: [{detail: 0, format: 0, mode: 'normal', style: '', text: 'Members only tier content', type: 'text', version: 1}],
+                            direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1
+                        }
+                    ],
+                    direction: 'ltr', format: '', indent: 0, type: 'root', version: 1
+                }
+            });
+
+            const {body: draftBody} = await agent
+                .post('posts/')
+                .body({posts: [{title: 'Tier-restricted email preview post', status: 'draft', lexical}]})
+                .expectStatus(201);
+            const [draft] = draftBody.posts;
+
+            const {body: updatedBody} = await agent
+                .put(`posts/${draft.id}/`)
+                .body({posts: [{
+                    id: draft.id,
+                    updated_at: draft.updated_at,
+                    visibility: 'tiers',
+                    tiers: [{id: paidTier.id}]
+                }]})
+                .expectStatus(200);
+            post = updatedBody.posts[0];
+        });
+
+        it('renders the full content for the paid member preview', async function () {
+            await agent
+                .get(`email_previews/posts/${post.id}/?memberSegment=${encodeURIComponent('status:-free')}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const {html} = body.email_previews[0];
+                    assert.ok(html.includes('Members only tier content'), 'paid member preview should include the gated content');
+                    assert.ok(!html.includes('Become a paid member'), 'paid member preview should not include the paywall CTA');
+                });
+        });
+
+        it('renders the paywall for the free member preview', async function () {
+            await agent
+                .get(`email_previews/posts/${post.id}/?memberSegment=${encodeURIComponent('status:free')}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const {html} = body.email_previews[0];
+                    assert.ok(html.includes('Free preview text'), 'free member preview should include the public preview');
+                    assert.ok(!html.includes('Members only tier content'), 'free member preview should not include the gated content');
+                    assert.ok(html.includes('Become a paid member'), 'free member preview should include the paywall CTA');
+                });
+        });
+    });
+
     describe('As Owner', function () {
         it('can send test email', async function () {
             await agent
@@ -358,7 +423,7 @@ describe('Email Preview API', function () {
     });
 
     describe('As Admin', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsAdmin();
         });
 
@@ -378,7 +443,7 @@ describe('Email Preview API', function () {
     });
 
     describe('As Editor', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsEditor();
         });
 
@@ -398,12 +463,12 @@ describe('Email Preview API', function () {
     });
 
     describe('As Author', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsAuthor();
         });
 
         it('cannot send test email', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             await agent
                 .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
                 .body({
@@ -424,12 +489,12 @@ describe('Email Preview API', function () {
     });
 
     describe('As Contributor', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsContributor();
         });
 
         it('cannot send test email', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             await agent
                 .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
                 .body({

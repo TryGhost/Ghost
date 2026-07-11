@@ -51,7 +51,7 @@ class CommentReportsImporter extends TableImporter {
 
         const reportTime = dateToDatabaseString.randomBetween(this.model.created_at, new Date());
 
-        const reporter = this.possibleReporters[faker.datatype.number(this.possibleReporters.length - 1)];
+        const reporter = this.possibleReporters[faker.number.int(this.possibleReporters.length - 1)];
 
         return {
             id: this.fastFakeObjectId(),

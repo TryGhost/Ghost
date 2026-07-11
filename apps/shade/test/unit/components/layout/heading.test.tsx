@@ -13,7 +13,7 @@ describe('Heading Components', () => {
         assert.ok(heading, 'H1 should be rendered');
         assert.equal(heading.tagName.toLowerCase(), 'h1', 'Should be an h1 element');
         assert.equal(heading.textContent, 'Heading 1', 'Should render the provided content');
-        assert.ok(heading.className.includes('text-3xl'), 'Should have correct styling');
+        assert.ok(heading.className.includes('text-2xl'), 'Should have correct styling');
         assert.ok(heading.className.includes('font-bold'), 'Should have font-bold class');
     });
 
@@ -22,7 +22,7 @@ describe('Heading Components', () => {
         const heading = screen.getByTestId('h1');
         
         assert.ok(heading.className.includes('custom-h1-class'), 'Should have custom class');
-        assert.ok(heading.className.includes('text-3xl'), 'Should retain default styling');
+        assert.ok(heading.className.includes('text-2xl'), 'Should retain default styling');
     });
 
     it('renders H2 with correct tag and styling', () => {
@@ -32,7 +32,7 @@ describe('Heading Components', () => {
         assert.ok(heading, 'H2 should be rendered');
         assert.equal(heading.tagName.toLowerCase(), 'h2', 'Should be an h2 element');
         assert.equal(heading.textContent, 'Heading 2', 'Should render the provided content');
-        assert.ok(heading.className.includes('text-2xl'), 'Should have correct styling');
+        assert.ok(heading.className.includes('text-xl'), 'Should have correct styling');
         assert.ok(heading.className.includes('font-bold'), 'Should have font-bold class');
     });
 
@@ -41,7 +41,7 @@ describe('Heading Components', () => {
         const heading = screen.getByTestId('h2');
         
         assert.ok(heading.className.includes('custom-h2-class'), 'Should have custom class');
-        assert.ok(heading.className.includes('text-2xl'), 'Should retain default styling');
+        assert.ok(heading.className.includes('text-xl'), 'Should retain default styling');
     });
 
     it('renders H3 with correct tag and styling', () => {
@@ -51,7 +51,7 @@ describe('Heading Components', () => {
         assert.ok(heading, 'H3 should be rendered');
         assert.equal(heading.tagName.toLowerCase(), 'h3', 'Should be an h3 element');
         assert.equal(heading.textContent, 'Heading 3', 'Should render the provided content');
-        assert.ok(heading.className.includes('text-xl'), 'Should have correct styling');
+        assert.ok(heading.className.includes('text-lg'), 'Should have correct styling');
         assert.ok(heading.className.includes('font-semibold'), 'Should have font-semibold class');
     });
 
@@ -60,7 +60,7 @@ describe('Heading Components', () => {
         const heading = screen.getByTestId('h3');
         
         assert.ok(heading.className.includes('custom-h3-class'), 'Should have custom class');
-        assert.ok(heading.className.includes('text-xl'), 'Should retain default styling');
+        assert.ok(heading.className.includes('text-lg'), 'Should retain default styling');
     });
 
     it('renders H4 with correct tag and styling', () => {
@@ -70,7 +70,7 @@ describe('Heading Components', () => {
         assert.ok(heading, 'H4 should be rendered');
         assert.equal(heading.tagName.toLowerCase(), 'h4', 'Should be an h4 element');
         assert.equal(heading.textContent, 'Heading 4', 'Should render the provided content');
-        assert.ok(heading.className.includes('text-lg'), 'Should have correct styling');
+        assert.ok(heading.className.includes('text-md'), 'Should have correct styling');
         assert.ok(heading.className.includes('font-semibold'), 'Should have font-semibold class');
     });
 
@@ -79,7 +79,7 @@ describe('Heading Components', () => {
         const heading = screen.getByTestId('h4');
         
         assert.ok(heading.className.includes('custom-h4-class'), 'Should have custom class');
-        assert.ok(heading.className.includes('text-lg'), 'Should retain default styling');
+        assert.ok(heading.className.includes('text-md'), 'Should retain default styling');
     });
 
     it('forwards ref correctly for H1', () => {

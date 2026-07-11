@@ -243,5 +243,58 @@ describe('Unit: Service: post-analytics', function () {
             expect(service._fetchedUuids.size).to.equal(0);
             expect(service._fetchedMemberIds.size).to.equal(0);
         });
+
+        it('ignores a visitor counts response that resolves after reset', async function () {
+            ghostPathsStub.url.api.returns('/stats/posts-visitor-counts');
+
+            let resolveFirstRequest;
+            ajaxStub.onCall(0).returns(new Promise((resolve) => {
+                resolveFirstRequest = resolve;
+            }));
+            ajaxStub.onCall(1).resolves({
+                stats: [{data: {visitor_counts: {uuid2: 200}}}]
+            });
+
+            // Start a fetch for the old filter view, then change filters
+            // (reset) before it resolves
+            const firstLoad = service.loadVisitorCounts(['uuid1']);
+            service.reset();
+            await service.loadVisitorCounts(['uuid2']);
+            await settled();
+
+            expect(service.visitorCounts).to.deep.equal({uuid2: 200});
+
+            // The stale request now resolves - it must not repopulate the cache
+            resolveFirstRequest({stats: [{data: {visitor_counts: {uuid1: 100}}}]});
+            await firstLoad;
+            await settled();
+
+            expect(service.visitorCounts).to.deep.equal({uuid2: 200});
+        });
+
+        it('ignores a member counts response that resolves after reset', async function () {
+            ghostPathsStub.url.api.returns('/stats/posts-member-counts');
+
+            let resolveFirstRequest;
+            ajaxStub.onCall(0).returns(new Promise((resolve) => {
+                resolveFirstRequest = resolve;
+            }));
+            ajaxStub.onCall(1).resolves({
+                stats: [{2: {free_members: 20, paid_members: 15}}]
+            });
+
+            const firstLoad = service.loadMemberCounts([{id: '1', uuid: 'uuid1'}]);
+            service.reset();
+            await service.loadMemberCounts([{id: '2', uuid: 'uuid2'}]);
+            await settled();
+
+            expect(service.memberCounts).to.deep.equal({uuid2: {free: 20, paid: 15}});
+
+            resolveFirstRequest({stats: [{1: {free_members: 10, paid_members: 5}}]});
+            await firstLoad;
+            await settled();
+
+            expect(service.memberCounts).to.deep.equal({uuid2: {free: 20, paid: 15}});
+        });
     });
 }); 

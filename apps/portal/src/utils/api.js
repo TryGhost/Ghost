@@ -250,7 +250,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        update({name, subscribed, newsletters, enableCommentNotifications}) {
+        update({name, subscribed, newsletters, enableCommentNotifications, enableUpdatesAndAnnouncements}) {
             const url = endpointFor({type: 'members', resource: 'member'});
             const body = {
                 name,
@@ -259,6 +259,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             };
             if (enableCommentNotifications !== undefined) {
                 body.enable_comment_notifications = enableCommentNotifications;
+            }
+            if (enableUpdatesAndAnnouncements !== undefined) {
+                body.enable_updates_and_announcements = enableUpdatesAndAnnouncements;
             }
 
             return makeRequest({
@@ -435,7 +438,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async updateNewsletters({uuid, newsletters, key, enableCommentNotifications}) {
+        async updateNewsletters({uuid, newsletters, key, enableCommentNotifications, enableUpdatesAndAnnouncements}) {
             let url = endpointFor({type: 'members', resource: `member/newsletters`});
             url = url + `?uuid=${uuid}&key=${key}`;
             const body = {
@@ -444,6 +447,10 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
 
             if (enableCommentNotifications !== undefined) {
                 body.enable_comment_notifications = enableCommentNotifications;
+            }
+
+            if (enableUpdatesAndAnnouncements !== undefined) {
+                body.enable_updates_and_announcements = enableUpdatesAndAnnouncements;
             }
 
             return makeRequest({
@@ -493,6 +500,11 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
 
+            if (!successUrl) {
+                const checkoutSuccessUrl = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
+                checkoutSuccessUrl.searchParams.set('stripe', 'success');
+                successUrl = checkoutSuccessUrl.href;
+            }
             if (!cancelUrl) {
                 const checkoutCancelUrl = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
                 checkoutCancelUrl.searchParams.set('stripe', 'cancel');
@@ -535,8 +547,11 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }).then(async function (res) {
                 if (!res.ok) {
                     const errData = await res.json();
-                    const errMssg = errData?.errors?.[0]?.message || 'Failed to signup, please try again.';
-                    throw new Error(errMssg);
+                    const err = errData?.errors?.[0] || {};
+                    const errMssg = err.message || 'Failed to signup, please try again.';
+                    const error = new Error(errMssg);
+                    error.code = err.code;
+                    throw error;
                 }
                 return res.json();
             }).then(function (responseBody) {

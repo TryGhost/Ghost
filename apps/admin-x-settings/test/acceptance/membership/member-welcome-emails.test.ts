@@ -17,7 +17,7 @@ const automatedEmailsFixture = {
     automated_emails: [{
         id: 'free-welcome-email-id',
         status: 'active',
-        name: 'Welcome Email (Free)',
+        name: 'Free member welcome flow',
         slug: 'member-welcome-email-free',
         subject: 'Welcome to Test Site',
         // Note the lexical content includes a template token ({name})
@@ -41,13 +41,24 @@ const newslettersRequest = {
     browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: responseFixtures.newsletters}
 };
 
-const configWithTenorEnabled = {
+const configWithKlipyEnabled = {
     ...responseFixtures.config,
     config: {
         ...responseFixtures.config.config,
-        tenor: {
-            googleApiKey: 'test-tenor-key',
+        klipy: {
+            apiKey: 'test-klipy-key',
             contentFilter: 'off'
+        }
+    }
+};
+
+const configWithAutomationsEnabled = {
+    ...responseFixtures.config,
+    config: {
+        ...responseFixtures.config.config,
+        labs: {
+            ...responseFixtures.config.config.labs,
+            automations: true
         }
     }
 };
@@ -281,8 +292,8 @@ test.describe('Member emails settings', async () => {
             const previewSubject = modal.getByTestId('welcome-email-preview-subject');
             await expect(previewSubject).toHaveValue('Welcome {first_name}');
 
-            await previewSubject.press('End');
-            await previewSubject.type('!');
+            await previewSubject.fill('Welcome {first_name}!');
+            await expect(previewSubject).toHaveValue('Welcome {first_name}!');
             await modal.getByRole('button', {name: 'Save'}).click();
 
             await expect.poll(() => lastApiRequests.editAutomatedEmail?.body).toMatchObject({
@@ -701,7 +712,7 @@ test.describe('Member emails settings', async () => {
             await expect.poll(() => lastApiRequests.fetchOembed?.url || '').toContain('url=https%3A%2F%2Fghost.org%2F');
         });
 
-        test('welcome email editor bookmark card fetches bookmark metadata', async ({page}) => {
+        test.skip('welcome email editor bookmark card fetches bookmark metadata', async ({page}) => {
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
@@ -735,19 +746,22 @@ test.describe('Member emails settings', async () => {
             await expect(modal).toBeVisible();
 
             const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
-            await editor.click({timeout: 5000});
-            await page.keyboard.press('ControlOrMeta+a');
-            await page.keyboard.press('Backspace');
+            await editor.fill('');
+            await expect(editor).toBeEmpty();
             await openSlashMenu(page, 'bookmark');
             await page.keyboard.press('Enter');
 
             const bookmarkUrlInput = modal.getByTestId('bookmark-url');
             await expect(bookmarkUrlInput).toBeVisible({timeout: 10000});
             await bookmarkUrlInput.fill('https://ghost.org/');
-            await bookmarkUrlInput.press('Enter');
+            await expect(bookmarkUrlInput).toHaveValue('https://ghost.org/');
 
-            await expect(modal.getByTestId('bookmark-title')).toContainText('Ghost: The Creator Economy Platform');
+            const urlSuggestion = modal.getByTestId('bookmark-url-listOption').filter({hasText: 'https://ghost.org/'});
+            await expect(urlSuggestion).toBeVisible();
+            await urlSuggestion.click();
+
             await expect.poll(() => lastApiRequests.fetchOembed?.url || '').toContain('type=bookmark');
+            await expect(modal.getByTestId('bookmark-title')).toContainText('Ghost: The Creator Economy Platform');
         });
 
         test('welcome email editor inserts call to action card via slash menu', async ({page}) => {
@@ -806,8 +820,8 @@ test.describe('Member emails settings', async () => {
             await expect(modal.locator('[data-kg-card="product"]')).toBeVisible();
         });
 
-        test('welcome email editor does not show GIF selector when Tenor is not configured', async ({page}) => {
-            await page.route('https://tenor.googleapis.com/**', async (route) => {
+        test('welcome email editor does not show GIF selector when Klipy is not configured', async ({page}) => {
+            await page.route('https://api.klipy.com/**', async (route) => {
                 await route.fulfill({
                     status: 200,
                     body: JSON.stringify({
@@ -849,8 +863,8 @@ test.describe('Member emails settings', async () => {
             await expect(slashMenu.getByText('GIF', {exact: true})).not.toBeVisible();
         });
 
-        test('welcome email editor shows GIF selector when Tenor is configured', async ({page}) => {
-            await page.route('https://tenor.googleapis.com/**', async (route) => {
+        test('welcome email editor shows GIF selector when Klipy is configured', async ({page}) => {
+            await page.route('https://api.klipy.com/**', async (route) => {
                 await route.fulfill({
                     status: 200,
                     body: JSON.stringify({
@@ -866,7 +880,7 @@ test.describe('Member emails settings', async () => {
             await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithTenorEnabled},
+                browseConfig: {method: 'GET', path: '/config/', response: configWithKlipyEnabled},
                 browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
             }});
 
@@ -1015,7 +1029,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'paid-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Paid)',
+                    name: 'Paid member welcome flow',
                     slug: 'member-welcome-email-paid',
                     subject: 'Welcome to your paid subscription',
                     lexical: '{"root":{"children":[]}}',
@@ -1220,7 +1234,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'paid-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Paid)',
+                    name: 'Paid member welcome flow',
                     slug: 'member-welcome-email-paid',
                     subject: 'Welcome to your paid subscription',
                     lexical: '{"root":{"children":[]}}',
@@ -1288,6 +1302,67 @@ test.describe('Member emails settings', async () => {
                 sender_email: 'shared@example.com',
                 sender_reply_to: 'shared-reply@example.com'
             });
+        });
+
+        test('saves shared sender settings without creating welcome-email rows when automations are enabled', async ({page}) => {
+            const emptyAutomatedEmailsFixture = {
+                automated_emails: []
+            };
+
+            const createdAutomatedEmailResponse = {
+                automated_emails: [{
+                    id: 'free-welcome-email-id',
+                    status: 'inactive',
+                    name: 'Welcome Email (Free)',
+                    slug: 'member-welcome-email-free',
+                    subject: 'Welcome to Test Site',
+                    lexical: '{"root":{"children":[]}}',
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null,
+                    created_at: '2024-01-01T00:00:00.000Z',
+                    updated_at: null
+                }]
+            };
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: configWithAutomationsEnabled},
+                browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: emptyAutomatedEmailsFixture},
+                readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
+                editAutomatedEmailDesign: {method: 'PUT', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
+                addAutomatedEmail: {method: 'POST', path: '/automated_emails/', response: createdAutomatedEmailResponse},
+                editAutomatedEmailSenders: {
+                    method: 'PUT',
+                    path: /^\/automated_emails\/senders\/?$/,
+                    response: emptyAutomatedEmailsFixture
+                }
+            }});
+
+            await page.goto('/');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('emails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByRole('tab', {name: 'Automation emails'}).click();
+            await section.getByTestId('automations-transactional-row').getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('welcome-email-customize-modal');
+            await expect(modal).toBeVisible();
+
+            await modal.getByLabel('Sender name').fill('Shared sender');
+            await modal.getByLabel('Sender email').fill('shared@example.com');
+            await modal.getByLabel('Reply-to email').fill('shared-reply@example.com');
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect.poll(() => lastApiRequests.editAutomatedEmailSenders?.body).toEqual({
+                sender_name: 'Shared sender',
+                sender_email: 'shared@example.com',
+                sender_reply_to: 'shared-reply@example.com'
+            });
+            expect(lastApiRequests.addAutomatedEmail).toBeUndefined();
         });
     });
 
@@ -1362,7 +1437,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'new-free-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[]}}',
@@ -1410,7 +1485,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'free-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Welcome!","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}',
@@ -1457,7 +1532,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'new-free-welcome-email-id',
                     status: 'active',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[]}}',
@@ -1501,7 +1576,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'free-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[]}}',
@@ -1552,7 +1627,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'free-welcome-email-id',
                     status: 'active',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[]}}',

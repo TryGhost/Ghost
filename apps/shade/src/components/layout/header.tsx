@@ -26,7 +26,7 @@ function HeaderTitle({className, children}: PropsWithChildrenAndClassName) {
     return (
         <H1
             className={cn(
-                'text-2xl leading-[1.2em] lg:text-3xl [grid-area:title]',
+                'text-2xl leading-[1.2em] [grid-area:title] lg:text-3xl',
                 className
             )}
             data-header='header-title'
@@ -40,7 +40,7 @@ function HeaderMeta({className, children}: PropsWithChildrenAndClassName) {
     return (
         <Inline
             align='center'
-            className={cn('text-muted-foreground [grid-area:meta] pb-4 pt-1', className)}
+            className={cn('pt-1 pb-4 text-muted-foreground [grid-area:meta]', className)}
             data-header='header-meta'
             gap='none'
             justify='start'
@@ -67,7 +67,7 @@ function HeaderActions({className, children}: PropsWithChildrenAndClassName) {
     return (
         <Inline
             align='center'
-            className={cn('[grid-area:actions] sm:justify-self-end self-start', className)}
+            className={cn('self-start [grid-area:actions] sm:justify-self-end', className)}
             data-header='header-actions'
             gap='lg'
         >
@@ -80,7 +80,7 @@ function HeaderNav({className, children}: PropsWithChildrenAndClassName) {
     return (
         <Inline
             align='center'
-            className={cn('[grid-area:nav] self-start mt-2 lg:mt-0.5', className)}
+            className={cn('mt-2 self-start [grid-area:nav] lg:mt-0.5', className)}
             data-header='header-nav'
             gap='sm'
         >

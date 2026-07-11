@@ -4,7 +4,7 @@ const {anyEtag, anyISODate, anyISODateTime, anyContentLength, anyContentVersion,
 describe('Explore API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'members');
         await agent.loginAsOwner();

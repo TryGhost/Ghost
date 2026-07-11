@@ -5,5 +5,14 @@
     ],
     "ignore": [
         "ghost/core/test/utils/fixtures/themes/**/assets/built/**"
-    ]
+    ],
+    "workspaces": {
+        "ghost/core": {
+            "ignoreDependencies": [
+                "@slack/webhook",
+                "superagent",
+                "superagent-throttle"
+            ]
+        }
+    }
 }

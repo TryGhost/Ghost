@@ -1,19 +1,17 @@
 const _ = require('lodash');
-const config = require('../../../../../../shared/config');
+const urlService = require('../../../../../services/url');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:pages');
 const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
-const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const postsSchema = require('../../../../../data/schema').tables.posts;
 const clean = require('./utils/clean');
 const lexical = require('../../../../../lib/lexical');
 
 const messages = {
-    failedHtmlToMobiledoc: 'Failed to convert HTML to Mobiledoc',
     failedHtmlToLexical: 'Failed to convert HTML to Lexical'
 };
 
@@ -52,12 +50,13 @@ function selectAllAllowedColumns(frame) {
     }
 }
 
-// Mirror of input/posts.js. See the comment there.
 function forceUrlRelationsWhenLazy(frame) {
-    if (config.get('lazyRouting')
-        && Array.isArray(frame.options.columns)
-        && frame.options.columns.includes('url')) {
-        frame.options.withRelated = _.union(frame.options.withRelated || [], ['tags', 'authors']);
+    if (Array.isArray(frame.options.columns) && frame.options.columns.includes('url')) {
+        const relations = urlService.facade.getRequiredRelations();
+        if (relations.length) {
+            frame.options.withRelated = _.union(frame.options.withRelated || [], relations);
+        }
+        url.forceUrlColumnsWhenLazy(frame, 'pages');
     }
 }
 
@@ -178,25 +177,6 @@ module.exports = {
             const html = frame.data.pages[0].html;
 
             if (frame.options.source === 'html' && !_.isEmpty(html)) {
-                if (process.env.CI) {
-                    console.time('htmlToMobiledocConverter (page)'); // eslint-disable-line no-console
-                }
-
-                try {
-                    frame.data.pages[0].mobiledoc = JSON.stringify(mobiledoc.htmlToMobiledocConverter(html));
-                } catch (err) {
-                    throw new ValidationError({
-                        message: tpl(messages.failedHtmlToMobiledoc),
-                        err
-                    });
-                }
-
-                if (process.env.CI) {
-                    console.timeEnd('htmlToMobiledocConverter (page)'); // eslint-disable-line no-console
-                }
-
-                // normally we don't allow both mobiledoc+lexical but the model layer will remove lexical
-                // if mobiledoc is already present to avoid migrating formats outside of an explicit conversion
                 if (process.env.CI) {
                     console.time('htmlToLexicalConverter (page)'); // eslint-disable-line no-console
                 }

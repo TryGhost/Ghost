@@ -22,7 +22,7 @@ function PageHeaderBreadcrumb({className, children}: PropsWithChildrenAndClassNa
     return (
         <Inline
             align='center'
-            className={cn('text-sm text-muted-foreground pt-1', className)}
+            className={cn('pt-1 text-sm text-muted-foreground', className)}
             data-page-header='breadcrumb'
             gap='sm'
         >
@@ -35,7 +35,7 @@ function PageHeaderCount({className, children}: PropsWithChildrenAndClassName) {
     return (
         <Text
             as='span'
-            className={cn('ml-2 lg:ml-3 text-[1.9rem] sidebar:text-[2.2rem] tabular-nums', className)}
+            className={cn('ml-1 text-base tabular-nums', className)}
             data-page-header='count'
             tone='secondary'
             weight='regular'
@@ -101,7 +101,7 @@ function PageHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
     const heading = (
         <H1
             className={cn(
-                'text-2xl leading-[1.2em] sidebar:text-[2.5rem] whitespace-nowrap',
+                'text-lg font-semibold tracking-[0.1px] whitespace-nowrap',
                 className
             )}
             data-page-header='title'
@@ -129,7 +129,7 @@ function PageHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
 function PageHeaderLeft({className, children}: PropsWithChildrenAndClassName) {
     return (
         <Stack
-            className={cn('min-w-0 h-full min-h-(--control-height)', className)}
+            className={cn('h-full min-h-(--control-height) min-w-0', className)}
             data-page-header='left'
             gap='xs'
             justify='center'
@@ -307,7 +307,7 @@ function PageHeaderActions({className, children}: PropsWithChildrenAndClassName)
     return (
         <Inline
             align='center'
-            className={cn('shrink-0 min-h-(--control-height)', className)}
+            className={cn('min-h-(--control-height) shrink-0', className)}
             data-page-header='actions'
             gap='lg'
         >

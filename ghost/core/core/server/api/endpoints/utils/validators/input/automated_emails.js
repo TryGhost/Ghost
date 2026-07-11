@@ -1,12 +1,12 @@
 // Filename must match the docName specified in ../../../automated-emails.js
-/* eslint-disable ghost/filenames/match-regex */
+/* eslint-disable local-filenames/match-regex */
 
 const validator = require('@tryghost/validator');
 const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const ALLOWED_STATUSES = ['inactive', 'active'];
-const ALLOWED_NAMES = ['Welcome Email (Free)', 'Welcome Email (Paid)'];
+const ALLOWED_NAMES = ['Free member welcome flow', 'Paid member welcome flow'];
 const ALLOWED_SLUGS = ['member-welcome-email-free', 'member-welcome-email-paid'];
 
 const messages = {

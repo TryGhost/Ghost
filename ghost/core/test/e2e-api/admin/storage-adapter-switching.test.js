@@ -11,7 +11,7 @@ describe('Ghost Admin - Storage Adapter Switching', function () {
     let siteUrl;
     const cdnUrl = 'https://cdn.example.com/c/site-uuid';
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'snippets');
         await agent.loginAsOwner();

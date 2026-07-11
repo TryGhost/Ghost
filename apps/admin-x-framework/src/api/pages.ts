@@ -8,6 +8,8 @@ export type Page = {
     url: string;
     status?: string;
     published_at?: string;
+    visibility?: string;
+    uuid?: string;
 };
 
 export interface PagesResponseType {

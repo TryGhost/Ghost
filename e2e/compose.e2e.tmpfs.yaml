@@ -1,0 +1,5 @@
+services:
+  mysql:
+    volumes: !override []
+    tmpfs:
+      - /var/lib/mysql:rw,size=${GHOST_E2E_MYSQL_TMPFS_SIZE:-2g}

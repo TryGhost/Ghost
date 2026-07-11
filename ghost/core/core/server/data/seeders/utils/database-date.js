@@ -26,7 +26,7 @@ dateToDatabaseString.randomBetween = function randomBetween(start, end) {
     const earliest = dateToDatabaseString.parse(start);
     const latest = dateToDatabaseString.parse(end);
 
-    return latest > earliest ? faker.date.between(earliest, latest) : earliest;
+    return latest > earliest ? faker.date.between({from: earliest, to: latest}) : earliest;
 };
 
 module.exports = dateToDatabaseString;

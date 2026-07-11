@@ -138,7 +138,7 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
 
             setIsCheckingEditorLimit(true);
 
-            const error = await checkThemeLimitError(editingThemeName.toLowerCase());
+            const error = await checkThemeLimitError('.');
 
             if (isCancelled) {
                 return;

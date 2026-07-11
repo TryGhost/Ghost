@@ -1,0 +1,27 @@
+{
+    "name": "@internal/cfg-eslint-react",
+    "version": "0.0.0",
+    "description": "Shared ESLint config for internal Ghost React apps",
+    "private": true,
+    "type": "module",
+    "license": "MIT",
+    "exports": {
+        ".": "./index.mjs"
+    },
+    "files": [
+        "index.mjs"
+    ],
+    "dependencies": {
+        "@eslint/js": "catalog:",
+        "@internal/cfg-eslint": "workspace:*",
+        "eslint-plugin-ghost": "catalog:",
+        "eslint-plugin-i18next": "6.1.5",
+        "eslint-plugin-react": "catalog:",
+        "eslint-plugin-react-hooks": "catalog:",
+        "eslint-plugin-react-refresh": "catalog:",
+        "eslint-plugin-storybook": "10.4.6",
+        "eslint-plugin-tailwindcss": "catalog:",
+        "globals": "catalog:",
+        "typescript-eslint": "catalog:"
+    }
+}

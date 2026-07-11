@@ -1,143 +1,83 @@
 {
-  "name": "@tryghost/portal",
-  "version": "2.68.50",
-  "license": "MIT",
-  "repository": "https://github.com/TryGhost/Ghost",
-  "author": "Ghost Foundation",
-  "files": [
-    "umd/",
-    "LICENSE",
-    "README.md"
-  ],
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "scripts": {
-    "dev": "concurrently --kill-others --names preview,build \"pnpm preview -l silent\" \"pnpm build:watch\"",
-    "build": "vite build",
-    "build:watch": "vite build --watch",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ci": "pnpm test --coverage",
-    "test:unit": "pnpm test:ci",
-    "lint:code": "eslint src test --ext .js,.ts --cache",
-    "lint:types": "tsc --noEmit",
-    "lint": "pnpm lint:code && pnpm lint:types",
-    "preship": "pnpm lint",
-    "ship": "node ../../.github/scripts/release-apps.js",
-    "prepublishOnly": "pnpm build"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true
-    },
-    "globals": {
-      "vi": "readonly",
-      "describe": "readonly",
-      "it": "readonly",
-      "test": "readonly",
-      "expect": "readonly",
-      "beforeEach": "readonly",
-      "afterEach": "readonly",
-      "beforeAll": "readonly",
-      "afterAll": "readonly",
-      "require": "readonly"
-    },
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2022
-    },
-    "extends": [
-      "plugin:ghost/browser",
-      "plugin:i18next/recommended",
-      "plugin:react/recommended",
-      "plugin:react/jsx-runtime"
+    "name": "@tryghost/portal",
+    "type": "module",
+    "version": "2.69.16",
+    "license": "MIT",
+    "repository": "https://github.com/TryGhost/Ghost",
+    "author": "Ghost Foundation",
+    "files": [
+        "umd/",
+        "LICENSE",
+        "README.md"
     ],
-    "plugins": [
-      "ghost",
-      "i18next"
-    ],
-    "rules": {
-      "react/prop-types": "off",
-      "ghost/filenames/match-regex": [
-        "error",
-        "^[a-z0-9.-]+$",
-        false
-      ]
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
     },
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
+    "scripts": {
+        "dev": "vite build --watch --mode development",
+        "build": "vite build",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:ci": "pnpm test --coverage",
+        "test:unit": "pnpm test:ci",
+        "lint:code": "eslint src test --cache",
+        "lint:types": "tsc --noEmit",
+        "lint": "pnpm run '/^lint:/'",
+        "preship": "pnpm lint",
+        "ship": "node ../../.github/scripts/release-apps.js",
+        "prepublishOnly": "pnpm build"
     },
-    "overrides": [
-      {
-        "files": [
-          "*.ts",
-          "*.tsx"
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
         ],
-        "parser": "@typescript-eslint/parser",
-        "parserOptions": {
-          "sourceType": "module",
-          "ecmaVersion": 2022,
-          "ecmaFeatures": {
-            "jsx": true
-          },
-          "project": "./tsconfig.json"
-        },
-        "extends": [
-          "plugin:@typescript-eslint/recommended"
-        ],
-        "plugins": [
-          "@typescript-eslint"
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
         ]
-      }
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "@doist/react-interpolate": "2.2.1",
-    "@sentry/react": "catalog:",
-    "@testing-library/jest-dom": "6.9.1",
-    "@testing-library/react": "12.1.5",
-    "@testing-library/user-event": "14.6.1",
-    "@tryghost/i18n": "workspace:*",
-    "@typescript-eslint/eslint-plugin": "8.49.0",
-    "@typescript-eslint/parser": "catalog:",
-    "@vitejs/plugin-react": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "concurrently": "catalog:",
-    "cross-fetch": "catalog:",
-    "dompurify": "catalog:",
-    "eslint": "catalog:",
-    "eslint-plugin-i18next": "6.1.4",
-    "jsdom": "catalog:",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "vite": "catalog:",
-    "vite-plugin-css-injected-by-js": "3.5.2",
-    "vite-plugin-svgr": "catalog:",
-    "vitest": "catalog:"
-  },
-  "dependencies": {
-    "@tryghost/debug": "catalog:"
-  },
-  "nx": {
-    "tags": [
-      "i18n"
-    ]
-  }
+    },
+    "devDependencies": {
+        "@doist/react-interpolate": "2.2.2",
+        "@internal/cfg-eslint-react": "workspace:*",
+        "@sentry/react": "catalog:",
+        "@testing-library/jest-dom": "catalog:",
+        "@testing-library/react": "catalog:react17",
+        "@testing-library/user-event": "14.6.1",
+        "@tryghost/i18n": "workspace:*",
+        "@vitejs/plugin-react": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
+        "concurrently": "catalog:",
+        "cross-fetch": "catalog:",
+        "dompurify": "catalog:",
+        "eslint": "catalog:",
+        "jsdom": "catalog:",
+        "react": "catalog:react17",
+        "react-dom": "catalog:react17",
+        "vite": "catalog:",
+        "vite-plugin-svgr": "catalog:",
+        "vitest": "catalog:"
+    },
+    "dependencies": {
+        "@tryghost/debug": "catalog:"
+    },
+    "nx": {
+        "targets": {
+            "dev": {
+                "continuous": true,
+                "executor": "nx:run-commands",
+                "options": {
+                    "cwd": "apps/portal",
+                    "command": "vite build --watch --mode development"
+                }
+            }
+        },
+        "tags": [
+            "i18n",
+            "public-app"
+        ]
+    }
 }

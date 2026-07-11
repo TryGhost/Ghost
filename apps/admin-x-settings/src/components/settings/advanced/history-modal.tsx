@@ -49,7 +49,6 @@ const HistoryFilterToggle: React.FC<{
         checked={!excludedItems.includes(item)}
         direction='rtl'
         label={label}
-        labelClasses='text-sm'
         onChange={e => toggleItem(item, e.target.checked)}
     />;
 };
@@ -120,12 +119,21 @@ const HistoryActionDescription: React.FC<{action: Action}> = ({action}) => {
     const {updateRoute} = useRouting();
     const contextResource = getContextResource(action);
 
-    if (contextResource) {
+    if (action.resource_type === 'security_action' && action.context?.action_name === 'reset_authentication') {
+        const apiKeysRotated = typeof action.context.api_keys_rotated === 'number' ? action.context.api_keys_rotated : null;
+        const usersLocked = typeof action.context.users_locked === 'number' ? action.context.users_locked : null;
+        const details = [
+            apiKeysRotated !== null ? `${apiKeysRotated} API ${apiKeysRotated === 1 ? 'key' : 'keys'} rotated` : null,
+            usersLocked !== null ? `${usersLocked} ${usersLocked === 1 ? 'user' : 'users'} locked` : null
+        ].filter(Boolean);
+
+        return <>{details.length ? details.join(', ') : 'Authentication reset'}</>;
+    } else if (contextResource) {
         const {group, key} = contextResource;
 
         return <>
             {group.slice(0, 1).toUpperCase()}{group.slice(1)}
-            {group !== key && <span className='text-xs'> <code className='mb-1 bg-white text-grey-800 dark:bg-grey-900 dark:text-white'>({key})</code></span>}
+            {group !== key && <span> <code className='mb-1 bg-white text-grey-800 dark:bg-grey-900 dark:text-white'>({key})</code></span>}
         </>;
     } else if (action.resource?.title || action.resource?.name || action.context?.primary_name) {
         const linkTarget = getLinkTarget(action);
@@ -228,13 +236,14 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                             <>
                                 <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
                                 {data.actions.map(action => !action.skip && <ListItem
+                                    key={action.id}
                                     avatar={<HistoryAvatar action={action} />}
                                     detail={[
                                         new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
                                         new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
                                     ].join(' | ')}
                                     title={
-                                        <div className='text-sm'>
+                                        <div>
                                             {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
                                             {!isBulkAction(action) && <HistoryActionDescription action={action} />}
                                             {action.count ? <> {action.count} times</> : null}

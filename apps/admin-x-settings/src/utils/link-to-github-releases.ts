@@ -31,7 +31,7 @@ export function linkToGitHubReleases(version: string): string {
 
     // Check pre-release segment for a commit SHA (legacy format: -0-gabcdef or -pre-gabcdef)
     try {
-        const semverVersion = semverParse(versionWithoutBuild, {includePrerelease: true} as any);
+        const semverVersion = semverParse(versionWithoutBuild, {includePrerelease: true});
         const prerelease = semverVersion?.prerelease;
 
         if (prerelease && prerelease.length > 0) {

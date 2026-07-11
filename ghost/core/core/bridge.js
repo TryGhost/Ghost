@@ -112,6 +112,10 @@ class Bridge {
         debug('reload frontend');
         const siteApp = require('./frontend/web/site');
 
+        // Clear lazy router configs before re-registration so they don't pile up
+        // across reloads. No-op without a lazy backend; eager resets separately.
+        urlService.facade.reset();
+
         const routerConfig = {
             routeSettings: await routeSettings.loadRouteSettings(),
             urlService: urlService.facade
@@ -122,16 +126,12 @@ class Bridge {
         // re-initialize apps (register app routers, because we have re-initialized the site routers)
         appService.init();
 
-        if (!urlService.facade.isLazy()) {
-            // connect routers and resources again. The lazy URL service has
-            // nothing to precompute, so this step (and the queue itself) is
-            // skipped in lazy mode.
-            urlService.queue.start({
-                event: 'init',
-                tolerance: 100,
-                requiredSubscriberCount: 1
-            });
-        }
+        // connect routers and resources again
+        urlService.queue.start({
+            event: 'init',
+            tolerance: 100,
+            requiredSubscriberCount: 1
+        });
     }
 }
 

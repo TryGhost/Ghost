@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const _ = require('lodash');
 const testUtils = require('../../../../utils');
 const moment = require('moment');
@@ -13,18 +12,29 @@ const fs = require('fs-extra');
 const ImportManager = require('../../../../../core/server/data/importer');
 
 const JSONHandler = require('../../../../../core/server/data/importer/handlers/json');
-let ImageHandler = rewire('../../../../../core/server/data/importer/handlers/image');
+const ImageHandler = Object.assign({}, require('../../../../../core/server/data/importer/handlers/image'));
 const MarkdownHandler = require('../../../../../core/server/data/importer/handlers/markdown');
 const RevueHandler = require('../../../../../core/server/data/importer/handlers/revue');
 const DataImporter = require('../../../../../core/server/data/importer/importers/data');
 const RevueImporter = require('../../../../../core/server/data/importer/importers/importer-revue');
+const UsersImporter = require('../../../../../core/server/data/importer/importers/data/users-importer');
+const RolesImporter = require('../../../../../core/server/data/importer/importers/data/roles-importer');
+const TagsImporter = require('../../../../../core/server/data/importer/importers/data/tags-importer');
+const NewslettersImporter = require('../../../../../core/server/data/importer/importers/data/newsletters-importer');
+const SettingsImporter = require('../../../../../core/server/data/importer/importers/data/settings-importer');
+const ProductsImporter = require('../../../../../core/server/data/importer/importers/data/products-importer');
+const StripeProductsImporter = require('../../../../../core/server/data/importer/importers/data/stripe-products-importer');
+const StripePricesImporter = require('../../../../../core/server/data/importer/importers/data/stripe-prices-importer');
+const PostsImporter = require('../../../../../core/server/data/importer/importers/data/posts-importer');
+const CustomThemeSettingsImporter = require('../../../../../core/server/data/importer/importers/data/custom-theme-settings-importer');
+const RevueSubscriberImporter = require('../../../../../core/server/data/importer/importers/data/revue-subscriber-importer');
+const Base = require('../../../../../core/server/models/base');
 const configUtils = require('../../../../utils/config-utils');
 const logging = require('@tryghost/logging');
 
 describe('Importer', function () {
     afterEach(async function () {
         sinon.restore();
-        ImageHandler = rewire('../../../../../core/server/data/importer/handlers/image');
         await configUtils.restore();
     });
 
@@ -70,7 +80,7 @@ describe('Importer', function () {
 
         it('gets the correct types', function () {
             assert(Array.isArray(ImportManager.getContentTypes()));
-            assert.equal(ImportManager.getContentTypes().length, 23);
+            assert.equal(ImportManager.getContentTypes().length, 24);
             assert(ImportManager.getContentTypes().includes('image/jpeg'));
             assert(ImportManager.getContentTypes().includes('image/png'));
             assert(ImportManager.getContentTypes().includes('image/gif'));
@@ -89,6 +99,7 @@ describe('Importer', function () {
             assert(ImportManager.getContentTypes().includes('audio/wav'));
             assert(ImportManager.getContentTypes().includes('audio/x-wav'));
             assert(ImportManager.getContentTypes().includes('audio/ogg'));
+            assert(ImportManager.getContentTypes().includes('application/ogg'));
             assert(ImportManager.getContentTypes().includes('audio/x-m4a'));
 
             assert(ImportManager.getContentTypes().includes('application/octet-stream'));
@@ -124,7 +135,7 @@ describe('Importer', function () {
         });
 
         it('cleans up', async function () {
-            const file = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+            const file = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir');
             ImportManager.fileToDelete = file;
             const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.resolve());
 
@@ -143,7 +154,7 @@ describe('Importer', function () {
 
         it('silently ignores clean up errors', async function () {
             const loggingStub = sinon.stub(logging, 'error');
-            const file = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+            const file = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir');
             ImportManager.fileToDelete = file;
             const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.reject(new Error('Unknown file')));
 
@@ -217,61 +228,61 @@ describe('Importer', function () {
 
             describe('Validate Zip', function () {
                 it('accepts a zip with a base directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip without a base directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-without-base-dir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with an image directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-image-dir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a content directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-content-dir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a content/images directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-images-subdir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-content-images-subdir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a media directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-media-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-media-dir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a files directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-files-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-files-dir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with uppercase image extensions', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-uppercase-extensions');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-uppercase-extensions');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('fails a zip with two base directories', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-double-base-dir');
 
                     assert.throws(ImportManager.isValidZip.bind(ImportManager, testDir), errors.UnsupportedMediaTypeError);
                 });
 
                 it('fails a zip with no content', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-invalid');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-invalid');
 
                     assert.throws(ImportManager.isValidZip.bind(ImportManager, testDir), errors.UnsupportedMediaTypeError);
                 });
@@ -288,7 +299,7 @@ describe('Importer', function () {
                 });
 
                 it('accepts a zip with a base directory', async function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     const zipResult = await ImportManager.processZip(testZip);
@@ -298,7 +309,7 @@ describe('Importer', function () {
                 });
 
                 it('accepts a zip without a base directory', async function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-without-base-dir');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     const zipResult = await ImportManager.processZip(testZip);
@@ -308,7 +319,7 @@ describe('Importer', function () {
                 });
 
                 it('accepts a zip with an image directory', async function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-image-dir');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     const zipResult = await ImportManager.processZip(testZip);
@@ -318,7 +329,7 @@ describe('Importer', function () {
                 });
 
                 it('accepts a zip with uppercase image extensions', async function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-uppercase-extensions');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-uppercase-extensions');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     const zipResult = await ImportManager.processZip(testZip);
@@ -328,7 +339,7 @@ describe('Importer', function () {
                 });
 
                 it('throws zipContainsMultipleDataFormats', async function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-multiple-data-formats');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-multiple-data-formats');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     await assert.rejects(ImportManager.processZip(testZip), /multiple data formats/);
@@ -336,7 +347,7 @@ describe('Importer', function () {
                 });
 
                 it('throws noContentToImport', async function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-empty');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     await assert.rejects(ImportManager.processZip(testZip), /not include any content/);
@@ -346,31 +357,31 @@ describe('Importer', function () {
 
             describe('Get Base Dir', function () {
                 it('returns string for base directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir');
 
                     assert.equal(ImportManager.getBaseDirectory(testDir), 'basedir');
                 });
 
                 it('returns string for double base directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-double-base-dir');
 
                     assert.equal(ImportManager.getBaseDirectory(testDir), 'basedir');
                 });
 
                 it('returns empty for no base directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-without-base-dir');
 
                     assert.equal(ImportManager.getBaseDirectory(testDir), undefined);
                 });
 
                 it('returns empty for content handler directories', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-image-dir');
 
                     assert.equal(ImportManager.getBaseDirectory(testDir), undefined);
                 });
 
                 it('throws invalidZipFileBaseDirectory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-empty');
 
                     assert.throws(() => ImportManager.getBaseDirectory(testDir), /invalid zip file/i);
                 });
@@ -380,7 +391,7 @@ describe('Importer', function () {
                 it('can call extract and error correctly', async function () {
                     // Deliberately pass something that can't be extracted just to check this method signature is working
                     await assert.rejects(
-                        ImportManager.extractZip('test/utils/fixtures/import/zips/zip-with-base-dir'),
+                        ImportManager.extractZip(path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir')),
                         (err) => {
                             assert.match(err.message, /EISDIR/);
                             assert.match(err.code, /EISDIR/);
@@ -680,6 +691,49 @@ describe('Importer', function () {
             assert.deepEqual(inputData.data.data.posts[0], outputData.data.data.posts[0]);
             assert.deepEqual(inputData.data.data.tags[0], outputData.data.data.tags[0]);
             assert.deepEqual(inputData.data.data.users[0], outputData.data.data.users[0]);
+        });
+
+        it('rejects with a DataImportError carrying the importer errors when the import fails', async function () {
+            const importError = new errors.ValidationError({
+                message: 'Value in [posts.title] exceeds maximum length of 2000 characters.',
+                context: '{"title":"..."}'
+            });
+
+            [
+                UsersImporter,
+                RolesImporter,
+                TagsImporter,
+                NewslettersImporter,
+                SettingsImporter,
+                ProductsImporter,
+                StripeProductsImporter,
+                StripePricesImporter,
+                CustomThemeSettingsImporter,
+                RevueSubscriberImporter
+            ].forEach((Importer) => {
+                sinon.stub(Importer.prototype, 'fetchExisting').resolves();
+                sinon.stub(Importer.prototype, 'beforeImport').resolves();
+                sinon.stub(Importer.prototype, 'replaceIdentifiers').resolves();
+                sinon.stub(Importer.prototype, 'doImport').resolves();
+            });
+
+            sinon.stub(PostsImporter.prototype, 'fetchExisting').resolves();
+            sinon.stub(PostsImporter.prototype, 'beforeImport').resolves();
+            sinon.stub(PostsImporter.prototype, 'replaceIdentifiers').resolves();
+            sinon.stub(PostsImporter.prototype, 'doImport').callsFake(function () {
+                this.errors.push(importError);
+            });
+
+            sinon.stub(Base, 'transaction').callsFake(fn => fn({fake: 'transacting'}));
+
+            await assert.rejects(DataImporter.doImport({meta: {version: '4.0.0'}, data: {}}, {}), (err) => {
+                assert(err instanceof Error);
+                assert(err instanceof errors.DataImportError);
+                assert.equal(err.message, importError.message);
+                assert.equal(err.context, importError.context);
+                assert.deepEqual(err.errorDetails, [importError]);
+                return true;
+            });
         });
     });
 });

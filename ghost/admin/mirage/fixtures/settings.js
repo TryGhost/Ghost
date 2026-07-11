@@ -105,9 +105,7 @@ export default [
     setting('pintura', 'pintura_css_url', null),
 
     // LABS
-    setting('labs', 'labs', JSON.stringify({
-        // Keep the GA flags that are not yet cleaned up in frontend code here
-    })),
+    setting('labs', 'labs', JSON.stringify({})),
 
     // SLACK
     setting('slack', 'slack_url', ''),

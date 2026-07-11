@@ -48,7 +48,7 @@ describe('e2e {{#get}} helper', function () {
     let locals = {};
     let publicPost, membersPost, paidPost, basicTierPost;
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost({
             backend: true,
             frontend: false

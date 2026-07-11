@@ -16,7 +16,8 @@
         }
     },
     "logging": {
-        "level": "error"
+        "level": "error",
+        "logClientErrorsAsError": false
     },
     "adapters": {
         "Redis": {
@@ -81,6 +82,18 @@
             "maxWait": 360000,
             "lifetime": 3600,
             "freeRetries": 10
+        },
+        "checkout_session_global": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "checkout_session_email": {
+            "minWait": 600000,
+            "maxWait": 43200000,
+            "lifetime": 43200,
+            "freeRetries": 8
         },
         "otc_verification_enumeration": {
             "minWait": 600000,

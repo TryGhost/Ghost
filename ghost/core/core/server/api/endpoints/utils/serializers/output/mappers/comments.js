@@ -51,6 +51,7 @@ const countFieldsAdmin = [
     'replies',
     'direct_replies',
     'likes',
+    'dislikes',
     'reports'
 ];
 
@@ -134,8 +135,13 @@ const commentMapper = (model, frame) => {
         response.liked = jsonModel.count.liked > 0;
     }
 
+    if (jsonModel.count && jsonModel.count.disliked !== undefined) {
+        response.disliked = jsonModel.count.disliked > 0;
+    }
+
     if (jsonModel.count) {
-        response.count = _.pick(jsonModel.count, isPublicRequest ? countFields : countFieldsAdmin);
+        const countFieldsForRequest = isPublicRequest ? countFields : countFieldsAdmin;
+        response.count = _.pick(jsonModel.count, countFieldsForRequest);
     }
 
     if (includesHtml && isPublicRequest && jsonModel.status !== 'published') {

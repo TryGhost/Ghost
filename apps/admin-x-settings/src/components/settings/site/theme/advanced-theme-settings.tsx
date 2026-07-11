@@ -4,7 +4,7 @@ import React from 'react';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
 import {Button, type ButtonProps, ConfirmationModal, LimitModal, List, ListItem, Menu, ModalPage, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {type Theme, isActiveTheme, isDefaultOrLegacyTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
+import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useCheckThemeLimitError} from '../../../../hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -27,14 +27,14 @@ function getThemeLabel(theme: Theme): React.ReactNode {
         label += ' (legacy)';
     } else if (theme.package?.name !== theme.name) {
         label =
-            <span className='text-sm md:text-base'>
+            <span className='md:text-base'>
                 {label} <span className='text-grey-600'>({theme.name})</span>
             </span>;
     }
 
     if (isActiveTheme(theme)) {
         label =
-            <span className="text-sm font-bold md:text-base">
+            <span className="font-bold md:text-base">
                 {label} &mdash; <span className='text-green'> Active</span>
             </span>;
     }
@@ -72,8 +72,8 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             } else {
                 handleError(e);
             }
-            let title = 'Invalid Theme';
-            let prompt = <>This theme is invalid and cannot be activated. Fix the following errors and re-upload the theme</>;
+            const title = 'Theme not activated';
+            const prompt = <>This theme couldn&apos;t be activated because Ghost found a blocking validation error. Fix the issue below and try again.</>;
 
             if (fatalErrors) {
                 NiceModal.show(InvalidThemeModal, {
@@ -127,7 +127,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     };
 
     const handleEditCode = async () => {
-        const limitError = await checkThemeLimitError(isDefaultOrLegacyTheme(theme) ? '.' : theme.name);
+        const limitError = await checkThemeLimitError('.');
 
         if (limitError) {
             NiceModal.show(LimitModal, {
@@ -140,7 +140,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         updateRoute(`theme/edit/${encodeURIComponent(theme.name)}?from=${encodeURIComponent(route ?? '')}`);
     };
 
-    let actions = [];
+    const actions = [];
 
     if (!isActiveTheme(theme)) {
         actions.push(
@@ -155,7 +155,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         );
     }
 
-    let menuItems = [
+    const menuItems = [
         {
             id: 'edit-code',
             label: 'Edit code',

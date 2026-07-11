@@ -11,6 +11,7 @@ import {
     type Post,
     type ReplyChainResponse,
     type SearchResults,
+    type SocialWebDomain,
     isApiError
 } from '../api/activitypub';
 import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -76,6 +77,7 @@ const QUERY_KEYS = {
     },
     account: (handle: string) => ['account', handle],
     accountAliases: (handle: string) => ['account_aliases', handle],
+    accountDomain: (handle: string) => ['account_domain', handle],
     accountFollows: (handle: string, type: AccountFollowsType) => ['account_follows', handle, type],
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (handle: string, limit: number) => ['suggested_profiles', handle, limit],
@@ -1668,6 +1670,48 @@ export function useAccountAliasesForUser(handle: string) {
     });
 }
 
+export function useAccountDomainForUser(handle: string) {
+    return useQuery({
+        queryKey: QUERY_KEYS.accountDomain(handle),
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getDomain();
+        }
+    });
+}
+
+export function useUpdateAccountDomainMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(domain: string | null) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.updateDomain(domain);
+        },
+        onSuccess(response: SocialWebDomain) {
+            queryClient.setQueryData(QUERY_KEYS.accountDomain(handle), response);
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEYS.account(handle)
+            });
+        }
+    });
+}
+
+export function useValidateAccountDomainMutationForUser(handle: string) {
+    return useMutation({
+        async mutationFn(domain: string) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.validateDomain(domain);
+        }
+    });
+}
+
 export function useAddAccountAliasMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
@@ -2401,6 +2445,9 @@ export function useUpdateAccountMutationForUser(handle: string) {
         onSuccess() {
             queryClient.invalidateQueries({
                 queryKey: QUERY_KEYS.account('index')
+            });
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEYS.accountDomain('index')
             });
         }
     });

@@ -75,8 +75,7 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            const result = await commentsService.controller.adminBrowse(frame);
-            return result;
+            return await commentsService.controller.adminBrowse(frame);
         }
     },
     browseAll: {
@@ -95,8 +94,7 @@ const controller = {
             method: 'browse'
         },
         async query(frame) {
-            const result = await commentsService.controller.adminBrowseAll(frame);
-            return result;
+            return await commentsService.controller.adminBrowseAll(frame);
         }
     },
     add: {

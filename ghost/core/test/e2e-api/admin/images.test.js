@@ -4,10 +4,12 @@ const p = require('path');
 const fsExtra = require('fs-extra');
 const {promises: fs} = require('fs');
 const assert = require('node:assert/strict');
+const {Blob} = require('node:buffer');
 const config = require('../../../core/shared/config');
 const urlUtils = require('../../../core/shared/url-utils');
 const imageTransform = require('@tryghost/image-transform');
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 const storage = require('../../../core/server/adapters/storage');
 const {anyErrorId} = matchers;
 const {imageSize} = require('../../../core/server/lib/image');
@@ -142,7 +144,7 @@ const uploadImageCheck = async ({path, filename, contentType, expectedFileName, 
 };
 
 describe('Images API', function () {
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsWithFrontend();
         agent = agents.adminAgent;
         frontendAgent = agents.frontendAgent;
@@ -151,9 +153,9 @@ describe('Images API', function () {
         await agent.loginAsOwner();
     });
 
-    after(function () {
-        configUtils.restore();
-        ghostServer.stop();
+    afterAll(async function () {
+        await configUtils.restore();
+        await ghostServer.stop();
     });
 
     afterEach(async function () {
@@ -245,7 +247,7 @@ describe('Images API', function () {
     it('Will error when filename is too long', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: `${'a'.repeat(300)}.png`, contentType: 'image/png'})
             .expectStatus(400)
             .matchBodySnapshot({
@@ -259,7 +261,7 @@ describe('Images API', function () {
     it('Can not upload a json file', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'redirects.json', contentType: 'application/json'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -273,7 +275,7 @@ describe('Images API', function () {
     it('Can not upload a file without extension', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'redirects', contentType: 'image/png'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -287,7 +289,7 @@ describe('Images API', function () {
     it('Can not upload a json file with image mime type', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'redirects.json', contentType: 'image/gif'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -301,7 +303,7 @@ describe('Images API', function () {
     it('Can not upload a json file with image file extension', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'redirects.png', contentType: 'application/json'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -336,7 +338,7 @@ describe('Images API', function () {
     });
 
     it('Can upload around midnight of month change', async function () {
-        const clock = sinon.useFakeTimers({now: new Date(2022, 0, 31, 23, 59, 59), shouldAdvanceTime: true});
+        const clock = mockSystemTime(new Date(2022, 0, 31, 23, 59, 59));
         assert.equal(new Date().getMonth(), 0);
 
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
@@ -394,10 +396,9 @@ describe('Images API', function () {
 
     it('Errors when image request body is broken', async function () {
         // Manually construct a broken request body
-        const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+        const blob = new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==', 'base64')], {type: 'image/png'});
         const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n\r\n';
 
-        // eslint-disable-next-line no-undef
         const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
             type: 'multipart/form-data; boundary=boundary'
         })).text();
@@ -417,12 +418,11 @@ describe('Images API', function () {
 
     it('Errors when image request body is broken #2', async function () {
         // Manually construct a broken request body
-        const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+        const blob = new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==', 'base64')], {type: 'image/png'});
 
         // Note: this differs from above test by not including the boundary at the end of the payload
         const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n';
 
-        // eslint-disable-next-line no-undef
         const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
             type: 'multipart/form-data; boundary=boundary'
         })).text();
@@ -465,7 +465,7 @@ describe('Images API', function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
         const fileContents = await fs.readFile(originalFilePath);
 
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await uploadImageRequest({fileContents, filename: 'test.png', contentType: 'image/png'})
             .expectStatus(400)
             .matchBodySnapshot({

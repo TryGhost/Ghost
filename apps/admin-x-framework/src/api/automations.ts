@@ -26,9 +26,6 @@ export type AutomationSendEmailAction = {
     data: {
         email_subject: string;
         email_lexical: string;
-        email_sender_name: string | null;
-        email_sender_email: string | null;
-        email_sender_reply_to: string | null;
         email_design_setting_id: string;
     };
 }
@@ -63,6 +60,16 @@ export interface AutomationDetailResponseType {
     automations: AutomationDetail[];
 }
 
+export type AutomationEmailPreview = {
+    html: string;
+    plaintext: string;
+    subject: string;
+}
+
+export interface AutomationEmailPreviewResponseType {
+    automation_email_previews: AutomationEmailPreview[];
+}
+
 const dataType = 'AutomationsResponseType';
 
 export const useBrowseAutomations = createQuery<AutomationsResponseType>({
@@ -90,18 +97,24 @@ export const useEditAutomation = createMutation<AutomationDetailResponseType, Ed
     }
 });
 
-const generateActionId = (): string => ObjectId().toHexString();
+export const usePreviewAutomationEmail = createMutation<AutomationEmailPreviewResponseType, {id: string; subject: string; lexical: string}>({
+    method: 'POST',
+    path: ({id}) => `/automations/${id}/email_preview`,
+    body: ({subject, lexical}) => ({subject, lexical})
+});
 
-// TODO NY-1253: replace this placeholder when email content can be edited.
-const PLACEHOLDER_EMAIL_LEXICAL = JSON.stringify({
+export const useSendTestAutomationEmail = createMutation<unknown, {id: string; email: string; subject: string; lexical: string}>({
+    method: 'POST',
+    path: ({id}) => `/automations/${id}/email_test`,
+    body: ({email, subject, lexical}) => ({email, subject, lexical})
+});
+
+const generateActionId = (): string => ObjectId().toHexString();
+const DEFAULT_EMAIL_DESIGN_SETTING_SLUG = 'default-automated-email';
+
+const EMPTY_EMAIL_LEXICAL = JSON.stringify({
     root: {
-        children: [{
-            type: 'paragraph',
-            children: [{
-                type: 'text',
-                text: 'Untitled email body.'
-            }]
-        }],
+        children: [],
         direction: null,
         format: '',
         indent: 0,
@@ -120,13 +133,9 @@ const buildSendEmailAction = (): AutomationSendEmailAction => ({
     id: generateActionId(),
     type: 'send_email',
     data: {
-        email_subject: 'Untitled email',
-        email_lexical: PLACEHOLDER_EMAIL_LEXICAL,
-        email_sender_name: null,
-        email_sender_email: null,
-        email_sender_reply_to: null,
-        // TODO NY-1252: replace this placeholder when email design settings are available.
-        email_design_setting_id: 'placeholder'
+        email_subject: '',
+        email_lexical: EMPTY_EMAIL_LEXICAL,
+        email_design_setting_id: DEFAULT_EMAIL_DESIGN_SETTING_SLUG
     }
 });
 
@@ -198,3 +207,102 @@ export const insertWaitAction = ({detail, anchor}: InsertActionArgs): Automation
 export const insertSendEmailAction = ({detail, anchor}: InsertActionArgs): AutomationDetail => (
     spliceAction({detail, action: buildSendEmailAction(), anchor})
 );
+
+type RemoveActionArgs = ReadonlyDeep<{
+    detail: AutomationDetail;
+    actionId: string;
+}>;
+
+type UpdateWaitActionArgs = ReadonlyDeep<{
+    detail: AutomationDetail;
+    actionId: string;
+    waitHours: number;
+}>;
+
+type UpdateSendEmailActionArgs = ReadonlyDeep<{
+    detail: AutomationDetail;
+    actionId: string;
+    emailSubject: string;
+    emailLexical: string;
+}>;
+
+export const updateWaitAction = ({detail, actionId, waitHours}: UpdateWaitActionArgs): AutomationDetail => {
+    if (!Number.isSafeInteger(waitHours) || waitHours <= 0) {
+        throw new Error(`updateWaitAction: waitHours must be a safe positive integer, received "${waitHours}"`);
+    }
+
+    let hasUpdated = false;
+    const actions = detail.actions.map((action) => {
+        if (action.id === actionId) {
+            if (action.type !== 'wait') {
+                throw new Error(`updateWaitAction: action "${actionId}" is not a wait action`);
+            }
+            hasUpdated = true;
+            return {
+                ...action,
+                data: {
+                    ...action.data,
+                    wait_hours: waitHours
+                }
+            };
+        }
+        return action;
+    });
+
+    if (!hasUpdated) {
+        throw new Error(`updateWaitAction: unknown action id "${actionId}"`);
+    }
+
+    return {...detail, actions, edges: [...detail.edges]};
+};
+
+export const updateSendEmailAction = ({detail, actionId, emailSubject, emailLexical}: UpdateSendEmailActionArgs): AutomationDetail => {
+    let hasUpdated = false;
+    const actions = detail.actions.map((action) => {
+        if (action.id === actionId) {
+            if (action.type !== 'send_email') {
+                throw new Error(`updateSendEmailAction: action "${actionId}" is not a send_email action`);
+            }
+            hasUpdated = true;
+            return {
+                ...action,
+                data: {
+                    ...action.data,
+                    email_subject: emailSubject,
+                    email_lexical: emailLexical
+                }
+            };
+        }
+        return action;
+    });
+
+    if (!hasUpdated) {
+        throw new Error(`updateSendEmailAction: unknown action id "${actionId}"`);
+    }
+
+    return {...detail, actions, edges: [...detail.edges]};
+};
+
+export const removeAction = ({detail, actionId}: RemoveActionArgs): AutomationDetail => {
+    const remainingActions = detail.actions.filter(action => action.id !== actionId);
+
+    const wasActionFound = remainingActions.length < detail.actions.length;
+    if (!wasActionFound) {
+        throw new Error(`removeAction: unknown action id "${actionId}"`);
+    }
+
+    const incoming = detail.edges.find(edge => edge.target_action_id === actionId);
+    const outgoing = detail.edges.find(edge => edge.source_action_id === actionId);
+
+    const remainingEdges = detail.edges.filter(
+        edge => edge.source_action_id !== actionId && edge.target_action_id !== actionId
+    );
+    if (incoming && outgoing) {
+        remainingEdges.push({
+            source_action_id: incoming.source_action_id,
+            target_action_id: outgoing.target_action_id
+        });
+    }
+
+    return {...detail, actions: remainingActions, edges: remainingEdges};
+};

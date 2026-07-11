@@ -5,7 +5,7 @@ const settingsCache = require('../../../core/shared/settings-cache');
 describe('Announcement', function () {
     let membersAgent;
 
-    before(async function () {
+    beforeAll(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
 
         await fixtureManager.init('members');

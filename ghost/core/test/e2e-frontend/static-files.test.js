@@ -5,13 +5,13 @@ describe('Static files', function () {
     let frontendAgent;
     let ghostServer;
 
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsWithFrontend();
         frontendAgent = agents.frontendAgent;
         ghostServer = agents.ghostServer;
     });
 
-    after(async function () {
+    afterAll(async function () {
         await ghostServer.stop();
     });
 

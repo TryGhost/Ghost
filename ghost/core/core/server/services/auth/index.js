@@ -17,5 +17,9 @@ module.exports = {
 
     get passwordreset() {
         return require('./passwordreset');
+    },
+
+    get resetAuthentication() {
+        return require('./reset-authentication').default;
     }
 };

@@ -242,10 +242,10 @@ export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) 
 
 // Get range for date
 export const getRangeForStartDate = (startDate: string) => {
-    const publishedDate = new Date(startDate);
-    const today = new Date();
-    const diffInTime = today.getTime() - publishedDate.getTime();
-    const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const publishedDate = moment(startDate).tz(timezone).startOf('day');
+    const today = moment().tz(timezone).startOf('day');
+    const diffInDays = today.diff(publishedDate, 'days') + 1;
 
     // Ensure minimum of 1 day to avoid issues with same-day publications
     return Math.max(diffInDays, 1);
@@ -266,115 +266,6 @@ export const getRangeDates = (range: number) => {
     }
 
     return {startDate, endDate, timezone};
-};
-
-/**
- * Sanitizes chart data based on the date range
- * - For ranges between 91-356 days: shows weekly changes
- * - For ranges above 356 days: shows monthly changes
- * - For other ranges: keeps data as is
- * @param data The chart data to sanitize
- * @param range The date range in days
- * @param fieldName The name of the field to use for calculations
- * @param aggregationType The type of aggregation to use: 'sum', 'avg', or 'exact'
- */
-export const sanitizeChartData = <T extends {date: string}>(data: T[], range: number, fieldName: keyof T = 'value' as keyof T, aggregationType: 'sum' | 'avg' | 'exact' = 'avg'): T[] => {
-    if (!data.length) {
-        return [];
-    }
-
-    if (range >= 91 && range <= 356) {
-        // Weekly changes
-        const weeklyData: T[] = [];
-        let currentWeek = moment(data[0].date).startOf('week');
-        let weekTotal = 0;
-        let weekCount = 0;
-        let lastValue = 0;
-
-        data.forEach((item, index) => {
-            const itemDate = moment(item.date);
-            if (itemDate.isSame(currentWeek, 'week')) {
-                weekTotal += Number(item[fieldName]);
-                weekCount += 1;
-                lastValue = Number(item[fieldName]);
-            } else {
-                // Add the value for the previous week
-                weeklyData.push({
-                    ...data[index - 1],
-                    date: currentWeek.format('YYYY-MM-DD'),
-                    [fieldName]: aggregationType === 'sum' ? weekTotal :
-                        aggregationType === 'avg' ? (weekCount > 0 ? weekTotal / weekCount : 0) :
-                            lastValue
-                } as T);
-
-                // Start new week
-                currentWeek = itemDate.startOf('week');
-                weekTotal = Number(item[fieldName]);
-                weekCount = 1;
-                lastValue = Number(item[fieldName]);
-            }
-
-            // Handle the last item
-            if (index === data.length - 1) {
-                weeklyData.push({
-                    ...item,
-                    date: currentWeek.format('YYYY-MM-DD'),
-                    [fieldName]: aggregationType === 'sum' ? weekTotal :
-                        aggregationType === 'avg' ? (weekCount > 0 ? weekTotal / weekCount : 0) :
-                            lastValue
-                } as T);
-            }
-        });
-
-        return weeklyData;
-    } else if (range > 356) {
-        // Monthly changes
-        const monthlyData: T[] = [];
-        let currentMonth = moment(data[0].date).startOf('month');
-        let monthTotal = 0;
-        let monthCount = 0;
-        let lastValue = 0;
-
-        data.forEach((item, index) => {
-            const itemDate = moment(item.date);
-            if (itemDate.isSame(currentMonth, 'month')) {
-                monthTotal += Number(item[fieldName]);
-                monthCount += 1;
-                lastValue = Number(item[fieldName]);
-            } else {
-                // Add the value for the previous month
-                monthlyData.push({
-                    ...data[index - 1],
-                    date: currentMonth.format('YYYY-MM-DD'),
-                    [fieldName]: aggregationType === 'sum' ? monthTotal :
-                        aggregationType === 'avg' ? (monthCount > 0 ? monthTotal / monthCount : 0) :
-                            lastValue
-                } as T);
-
-                // Start new month
-                currentMonth = itemDate.startOf('month');
-                monthTotal = Number(item[fieldName]);
-                monthCount = 1;
-                lastValue = Number(item[fieldName]);
-            }
-
-            // Handle the last item
-            if (index === data.length - 1) {
-                monthlyData.push({
-                    ...item,
-                    date: currentMonth.format('YYYY-MM-DD'),
-                    [fieldName]: aggregationType === 'sum' ? monthTotal :
-                        aggregationType === 'avg' ? (monthCount > 0 ? monthTotal / monthCount : 0) :
-                            lastValue
-                } as T);
-            }
-        });
-
-        return monthlyData;
-    }
-
-    // Return original data for ranges < 91 days
-    return data;
 };
 
 /**

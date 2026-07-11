@@ -1,106 +1,154 @@
 {
-  "name": "@tryghost/admin",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "test": "pnpm test:unit",
-    "test:unit": "vitest run",
-    "typecheck": "tsc -b"
-  },
-  "dependencies": {
-    "@tryghost/activitypub": "workspace:*",
-    "@tryghost/admin-x-framework": "workspace:*",
-    "@tryghost/admin-x-settings": "workspace:*",
-    "@tryghost/kg-unsplash-selector": "0.4.1",
-    "@tryghost/koenig-lexical": "catalog:",
-    "@tryghost/posts": "workspace:*",
-    "@tryghost/shade": "workspace:*",
-    "@tryghost/stats": "workspace:*",
-    "mingo": "2.5.3",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@eslint/js": "catalog:eslint9",
-    "@tailwindcss/vite": "4.2.1",
-    "@tanstack/react-query": "catalog:",
-    "@testing-library/jest-dom": "6.9.1",
-    "@testing-library/react": "14.3.1",
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react-swc": "4.1.0",
-    "eslint": "catalog:eslint9",
-    "eslint-plugin-no-relative-import-paths": "1.6.1",
-    "eslint-plugin-react-hooks": "5.2.0",
-    "eslint-plugin-react-refresh": "catalog:",
-    "eslint-plugin-tailwindcss": "4.0.0-beta.0",
-    "globals": "17.4.0",
-    "jest-extended": "7.0.0",
-    "jsdom": "catalog:",
-    "msw": "catalog:",
-    "sirv": "3.0.2",
-    "tailwindcss": "4.2.2",
-    "typescript": "catalog:",
-    "typescript-eslint": "8.58.0",
-    "vite": "catalog:",
-    "vite-tsconfig-paths": "5.1.4",
-    "vitest": "catalog:"
-  },
-  "nx": {
-    "targets": {
-      "dev": {
-        "dependsOn": [
-          "ghost-admin:dev",
-          "@tryghost/admin-x-framework:dev",
-          "@tryghost/admin-x-design-system:dev",
-          "@tryghost/shade:dev"
-        ]
-      },
-      "build:dev": {
-        "dependsOn": [
-          "build",
-          {
-            "projects": [
-              "ghost-admin"
-            ],
-            "target": "build:dev"
-          }
-        ]
-      },
-      "build": {
-        "outputs": [
-          "{projectRoot}/dist",
-          "{workspaceRoot}/ghost/core/core/built/admin"
+    "name": "@tryghost/admin",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc -b && vite build",
+        "lint": "eslint .",
+        "preview": "vite preview",
+        "test": "pnpm test:unit",
+        "test:unit": "vitest run",
+        "test:acceptance": "vitest run -c vitest.acceptance.config.ts",
+        "test:acceptance:watch": "vitest -c vitest.acceptance.config.ts",
+        "typecheck": "tsc -b"
+    },
+    "dependencies": {
+        "@svg-maps/world": "2.0.0",
+        "@tanstack/react-virtual": "catalog:",
+        "@tryghost/activitypub": "workspace:*",
+        "@tryghost/admin-x-framework": "workspace:*",
+        "@tryghost/admin-x-settings": "workspace:*",
+        "@tryghost/kg-unsplash-selector": "workspace:*",
+        "@tryghost/koenig-lexical": "workspace:*",
+        "@tryghost/nql-lang": "catalog:",
+        "@tryghost/shade": "workspace:*",
+        "@xyflow/react": "12.11.1",
+        "dequal": "catalog:",
+        "i18n-iso-countries": "7.14.0",
+        "mingo": "catalog:",
+        "moment": "catalog:",
+        "moment-timezone": "catalog:",
+        "papaparse": "5.5.4",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "react-router": "catalog:",
+        "react-svg-map": "2.2.0",
+        "sonner": "catalog:",
+        "temporal-polyfill": "catalog:",
+        "use-debounce": "10.1.1",
+        "validator": "catalog:",
+        "zod": "catalog:"
+    },
+    "devDependencies": {
+        "@eslint/js": "catalog:",
+        "@internal/cfg-eslint": "workspace:*",
+        "@tailwindcss/vite": "catalog:",
+        "@tanstack/react-query": "catalog:",
+        "@testing-library/jest-dom": "catalog:",
+        "@testing-library/react": "catalog:",
+        "@tryghost/test-data": "workspace:*",
+        "@types/node": "catalog:",
+        "@types/papaparse": "5.5.2",
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+        "@types/react-svg-map": "2.1.4",
+        "@types/validator": "catalog:",
+        "@vitejs/plugin-react": "catalog:",
+        "@vitest/browser-playwright": "catalog:",
+        "eslint": "catalog:",
+        "eslint-plugin-ghost": "catalog:",
+        "eslint-plugin-no-relative-import-paths": "1.6.1",
+        "eslint-plugin-react-hooks": "catalog:",
+        "eslint-plugin-react-refresh": "catalog:",
+        "eslint-plugin-tailwindcss": "catalog:",
+        "globals": "catalog:",
+        "jest-extended": "7.0.0",
+        "jsdom": "catalog:",
+        "msw": "catalog:",
+        "sirv": "3.0.2",
+        "tailwindcss": "catalog:",
+        "typescript": "catalog:",
+        "typescript-eslint": "catalog:",
+        "vite": "catalog:",
+        "vite-tsconfig-paths": "6.1.1",
+        "vitest": "catalog:",
+        "vitest-browser-react": "catalog:"
+    },
+    "nx": {
+        "tags": [
+            "playwright"
         ],
-        "dependsOn": [
-          "build",
-          {
-            "projects": [
-              "ghost-admin"
-            ],
-            "target": "build"
-          }
-        ]
-      },
-      "lint": {
-        "dependsOn": [
-          {
-            "projects": [
-              "@tryghost/admin-x-framework",
-              "@tryghost/admin-x-design-system",
-              "@tryghost/shade"
-            ],
-            "target": "build"
-          }
-        ]
-      }
+        "targets": {
+            "test:acceptance": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "dev": {
+                "continuous": true,
+                "executor": "nx:run-commands",
+                "options": {
+                    "cwd": "apps/admin",
+                    "command": "vite"
+                },
+                "dependsOn": [
+                    "ghost-monorepo:docker:up",
+                    "ghost-admin:dev",
+                    "@tryghost/admin-x-framework:dev",
+                    "@tryghost/admin-x-design-system:dev",
+                    "@tryghost/shade:dev"
+                ]
+            },
+            "build:dev": {
+                "dependsOn": [
+                    "build",
+                    {
+                        "projects": [
+                            "ghost-admin"
+                        ],
+                        "target": "build:dev"
+                    }
+                ]
+            },
+            "build": {
+                "inputs": [
+                    {
+                        "env": "GHOST_CDN_URL"
+                    },
+                    {
+                        "env": "IS_SHIPPING"
+                    },
+                    "default",
+                    "^default"
+                ],
+                "outputs": [
+                    "{projectRoot}/dist",
+                    "{workspaceRoot}/ghost/core/core/built/admin"
+                ],
+                "dependsOn": [
+                    "build",
+                    {
+                        "projects": [
+                            "ghost-admin"
+                        ],
+                        "target": "build"
+                    }
+                ]
+            },
+            "lint": {
+                "dependsOn": [
+                    {
+                        "projects": [
+                            "@tryghost/admin-x-framework",
+                            "@tryghost/admin-x-design-system",
+                            "@tryghost/shade"
+                        ],
+                        "target": "build"
+                    }
+                ]
+            }
+        }
     }
-  }
 }

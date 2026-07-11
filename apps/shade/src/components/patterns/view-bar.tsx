@@ -14,7 +14,7 @@ function ViewBarNav({className, children}: PropsWithChildrenAndClassName) {
     return (
         <Inline
             align='center'
-            className={cn('flex-1 min-w-0', className)}
+            className={cn('min-w-0 flex-1', className)}
             data-slot='view-bar-nav'
             gap='sm'
         >

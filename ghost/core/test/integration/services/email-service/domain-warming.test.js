@@ -7,12 +7,15 @@ const configUtils = require('../../../utils/config-utils');
 const ObjectId = require('bson-objectid').default;
 const crypto = require('crypto');
 const db = require('../../../../core/server/data/db');
+const {mockSystemTime} = require('../../../utils/clock-utils');
+
+const isMySQL = (process.env.NODE_ENV || '').includes('mysql');
 
 describe('Domain Warming Integration Tests', function () {
     let agent;
     let clock;
 
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsWithFrontend();
         agent = agents.adminAgent;
 
@@ -76,20 +79,30 @@ describe('Domain Warming Integration Tests', function () {
     }
 
     // Helper: Set fake time to specific day
-    // Uses fixed 24-hour increments from a normalized base to avoid DST drift
+    // Uses fixed 24-hour increments from a normalized base to avoid DST drift.
+    // Member fixtures are created with the real clock (createMembers() runs
+    // before setDay()), then batch-sending-service.js's recipient query
+    // deliberately excludes any member whose ObjectId timestamp isn't strictly
+    // before the email's (createBatches() comment: "we'll only fetch members
+    // that are created before the email"). Day 0 must therefore land strictly
+    // after "now" at file-load time, or members created moments earlier in the
+    // real clock look like they were created after the (now fake-backdated)
+    // email whenever this file happens to load after 12:00 UTC — anchor to a
+    // UTC midnight instead of "today at noon", which is only safe before noon.
+    // +2 days (not +1) so a file load landing right at a UTC midnight boundary
+    // still leaves a full day of margin, rather than a few-second window where
+    // createMembers() could tick past into the anchor day itself.
     const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
     const baseDate = new Date();
-    baseDate.setUTCHours(12, 0, 0, 0);
+    baseDate.setUTCDate(baseDate.getUTCDate() + 2);
+    baseDate.setUTCHours(0, 0, 0, 0);
 
     function setDay(daysFromNow = 0) {
         if (clock) {
             clock.restore();
         }
         const time = new Date(baseDate.getTime() + (daysFromNow * MILLISECONDS_IN_DAY));
-        clock = sinon.useFakeTimers({
-            now: time.getTime(),
-            shouldAdvanceTime: true
-        });
+        clock = mockSystemTime(time.getTime());
     }
 
     // Helper: Count recipients by domain type
@@ -306,17 +319,9 @@ describe('Domain Warming Integration Tests', function () {
             assert.equal(uniqueValues[0], false, 'All batches should use primary domain when warmup disabled');
         });
 
-        it('handles maximum limit scenarios', async function () {
-            if (process.env.NODE_ENV !== 'testing-mysql') {
-                // This test fails on SQLite because of its small parameter limit
-                return this.skip();
-            }
-
-            // Creates 800 members and processes 5 days of batch sends; well over the
-            // 10s suite default. CI was never reaching this test before mocha bailed
-            // on the poll.test.js failure earlier in the run.
-            this.timeout(60000);
-
+        // mysql-only: SQLite's small bound-parameter limit can't take the 800-member
+        // bulk insert. 60s timeout: 800 members across 5 days of batch sends.
+        it.runIf(isMySQL)('handles maximum limit scenarios', {timeout: 60000}, async function () {
             await createMembers(800, 'maxlimit');
 
             let previousCsdCount = 0;

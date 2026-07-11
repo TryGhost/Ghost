@@ -30,7 +30,7 @@ export const LimitModalContent: React.FC<LimitModalProps> = ({
             width={540}
             onOk={onOk}
         >
-            <div className='py-4 leading-9'>
+            <div className='py-4 leading-9 text-pretty'>
                 {typeof prompt === 'string' && prompt.includes('<') ? (
                     <div dangerouslySetInnerHTML={{__html: prompt}} />
                 ) : (

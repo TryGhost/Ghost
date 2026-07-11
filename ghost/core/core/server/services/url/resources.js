@@ -3,8 +3,8 @@ const debug = require('@tryghost/debug')('services:url:resources');
 const DomainEvents = require('@tryghost/domain-events');
 const {URLResourceUpdatedEvent} = require('../../../shared/events');
 const Resource = require('./resource');
-const config = require('../../../shared/config');
 const models = require('../../models');
+const DatabaseInfo = require('@tryghost/database-info');
 
 // This listens to all manner of model events to find new content that needs a URL...
 const events = require('../../lib/common/events');
@@ -122,7 +122,7 @@ class Resources {
         debug('_fetch', resourceConfig.type, resourceConfig.modelOptions);
 
         let modelOptions = _.cloneDeep(resourceConfig.modelOptions);
-        const isSQLite = config.get('database:client') === 'sqlite3';
+        const isSQLite = DatabaseInfo.isSQLite(models.Base.knex);
 
         // CASE: prevent "too many SQL variables" error on SQLite3 (https://github.com/TryGhost/Ghost/issues/5810)
         if (isSQLite) {

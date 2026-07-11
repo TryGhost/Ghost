@@ -7,9 +7,11 @@ import UnschedulePostsModal from './modals/unschedule-posts';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import nql from '@tryghost/nql';
 import {action} from '@ember/object';
+import {canCopyGiftLink} from 'ghost-admin/utils/gift-link';
 import {capitalizeFirstLetter} from 'ghost-admin/helpers/capitalize-first-letter';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
+import {trackEvent} from 'ghost-admin/utils/analytics';
 
 /**
  * @tryghost/tpl doesn't work in admin yet (Safari)
@@ -66,9 +68,23 @@ export default class PostsContextMenu extends Component {
     @service store;
     @service notifications;
     @service membersUtils;
+    @service stateBridge;
 
     get menu() {
         return this.args.menu;
+    }
+
+    // Gift links apply to a single published, gated (non-public) post/page, and
+    // only for users who can manage them. Eligibility and URL shape live in
+    // app/utils/gift-link.js (shared with the React modal's expectations).
+    get canCopyGiftLink() {
+        if (!this.selectionList.isSingle) {
+            return false;
+        }
+        return canCopyGiftLink({
+            user: this.session.user,
+            post: this.selectionList.first
+        });
     }
 
     get selectionList() {
@@ -86,6 +102,21 @@ export default class PostsContextMenu extends Component {
         return tpl(messages[type].multiple, {count: this.selectionList.count, type: this.type, Type: capitalizeFirstLetter(this.type)});
     }
 
+    // Fired via {{did-update}} on the menu's openCount, which bumps on every
+    // open request — including right-clicking another post while the menu is
+    // already open, where isOpen alone wouldn't change.
+    @action
+    trackMenuOpened() {
+        if (!this.menu.isOpen) {
+            return;
+        }
+        trackEvent('Posts Context Menu Opened', {
+            giftLinkShown: this.canCopyGiftLink,
+            postType: this.type,
+            selection: this.selectionList.isSingle ? 'single' : 'multiple'
+        });
+    }
+
     @action
     async copyPostLink() {
         this.menu.performTask(this.copyPostLinkTask);
@@ -94,6 +125,17 @@ export default class PostsContextMenu extends Component {
     @action
     async copyPreviewLink() {
         this.menu.performTask(this.copyPreviewLinkTask);
+    }
+
+    // The gift-link modal lives in React; hand off to it over the state bridge
+    // rather than duplicating the modal in Ember.
+    @action
+    openGiftLink() {
+        this.stateBridge.triggerOpenGiftLinkModal({
+            id: this.selectionList.first.id,
+            resource: this.type === 'page' ? 'pages' : 'posts'
+        });
+        this.menu.close();
     }
 
     @action

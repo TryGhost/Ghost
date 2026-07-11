@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`sanitizeEmailHtml preserves safe formatting and neutralises dangerous content 1 1`] = `
+Object {
+  "output": "
+    <h2>Ghost 6.50.0 is now available</h2>
+    <p>This release includes a <strong>critical</strong> fix for an authentication issue. Please update <em>as soon as possible</em>.</p>
+    <ul>
+        <li><a href=\\"https://github.com/TryGhost/Ghost/releases/tag/v6.50.0\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Release notes</a></li>
+        <li><a href=\\"https://ghost.org/docs/update/\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Upgrade guide</a></li>
+    </ul>
+    <p><a href=\\"mailto:security@ghost.org\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">Contact security</a> if you have questions.</p>
+    
+    <p><a target=\\"_blank\\" rel=\\"noopener noreferrer\\">do not click</a></p>
+",
+}
+`;

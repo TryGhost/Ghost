@@ -14,7 +14,7 @@ const {setupEmailVerificationUtils, restoreEmailVerificationUtils} = require('..
 let request;
 
 describe('Members Importer API', function () {
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'members');

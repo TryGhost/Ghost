@@ -11,7 +11,7 @@ const Mention = require('../../../core/server/services/mentions/mention');
 describe('Incoming Recommendation Emails', function () {
     let emailMockReceiver;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
         await agent.loginAsAdmin();

@@ -6,6 +6,18 @@ const {
 } = require('../../../lib/member-signup-contexts');
 /** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
+function isStripeMetadataTrue(value) {
+    return value === true || value === 'true';
+}
+
+function hasStripeMetadataKey(metadata, key) {
+    return Object.prototype.hasOwnProperty.call(metadata || {}, key);
+}
+
+function hasConflictingCheckoutFlowMetadata(metadata) {
+    return hasStripeMetadataKey(metadata, 'ghost_donation') && hasStripeMetadataKey(metadata, 'ghost_gift');
+}
+
 /**
  * Handles `checkout.session.completed` webhook events
  *
@@ -51,10 +63,17 @@ module.exports = class CheckoutSessionEventService {
             await this.handleSubscriptionEvent(session);
         }
 
-        if (session.mode === 'payment' && session.metadata?.ghost_donation) {
-            await this.handleDonationEvent(session);
-        } else if (session.mode === 'payment' && session.metadata?.ghost_gift) {
-            await this.handleGiftEvent(session);
+        if (session.mode === 'payment') {
+            if (hasConflictingCheckoutFlowMetadata(session.metadata)) {
+                logging.warn('Ignoring checkout session with conflicting payment flow metadata');
+                return;
+            }
+
+            if (isStripeMetadataTrue(session.metadata?.ghost_donation)) {
+                await this.handleDonationEvent(session);
+            } else if (isStripeMetadataTrue(session.metadata?.ghost_gift)) {
+                await this.handleGiftEvent(session);
+            }
         }
     }
 

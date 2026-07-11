@@ -34,10 +34,10 @@ module.exports = class ChargeRefundedEventService {
             return;
         }
 
-        // One-time payments (gifts, donations) have no invoice
-        if (charge.invoice === null) {
-            await this.handleGiftRefundEvent(paymentIntentId);
-        }
+        // Gifts are identified by a payment_intent_id match in the gift
+        // repository; non-matching charges (subscription renewals, donations,
+        // unrelated one-time payments) are no-ops.
+        await this.handleGiftRefundEvent(paymentIntentId);
     }
 
     /**

@@ -511,7 +511,7 @@ describe('StaffService', function () {
             let tier;
             let offer;
             let subscription;
-            before(function () {
+            beforeAll(function () {
                 member = {
                     name: 'Ghost',
                     email: 'member@example.com',
@@ -715,7 +715,7 @@ describe('StaffService', function () {
             let expiryAt;
             let canceledAt;
             let cancelNow;
-            before(function () {
+            beforeAll(function () {
                 member = {
                     name: 'Ghost',
                     email: 'member@example.com',

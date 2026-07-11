@@ -38,11 +38,11 @@ test.describe('Admin moderation', async () => {
         });
     }
 
-    test('skips rendering the auth frame with no comments', async ({page}) => {
+    test('renders the auth frame when there are no comments', async ({page}) => {
         await initializeTest(page);
 
         const iframeElement = page.locator('iframe[data-frame="admin-auth"]');
-        await expect(iframeElement).toHaveCount(0);
+        await expect(iframeElement).toHaveCount(1);
     });
 
     test('renders the auth frame when there are comments', async ({page}) => {
@@ -51,6 +51,30 @@ test.describe('Admin moderation', async () => {
 
         const iframeElement = page.locator('iframe[data-frame="admin-auth"]');
         await expect(iframeElement).toHaveCount(1);
+    });
+
+    test('does not request an auth frame when no admin URL is configured', async ({page}) => {
+        mockedApi.addComment({html: '<p>This is comment 1</p>'});
+
+        const requestedUrls: string[] = [];
+        page.on('request', req => requestedUrls.push(req.url()));
+
+        // No `admin` option, so the app has no admin URL to authenticate against
+        await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly',
+            title: 'Member discussion',
+            count: true
+        });
+
+        // give any erroneous auth-frame request time to fire
+        await page.waitForTimeout(250);
+
+        // Regression: the app previously rendered an auth frame with src "undefinedauth-frame/",
+        // firing a broken request. With no admin URL it should request no auth frame at all.
+        expect(requestedUrls.filter(url => url.includes('undefined'))).toEqual([]);
+        expect(requestedUrls.filter(url => url.includes('auth-frame'))).toEqual([]);
     });
 
     test('has no admin options when not signed in to Ghost admin or as member', async ({page}) => {
@@ -264,6 +288,17 @@ test.describe('Admin moderation', async () => {
         await expect(replyToHide).not.toContainText('Hidden for members');
     });
 
+    test('admin can see comments hidden from members even when all comments are hidden', async ({page}) => {
+        mockedApi.addComment({html: '<p>This is comment 1</p>', status: 'hidden'});
+
+        const {frame} = await initializeTest(page);
+
+        const comments = frame.getByTestId('comment-component');
+        await expect(comments).toHaveCount(1);
+        await expect(comments.nth(0)).toContainText('This is comment 1');
+        await expect(comments.nth(0)).toContainText('Hidden for members');
+    });
+
     test('updates in-reply-to snippets when hiding', async ({page}) => {
         mockedApi.addComment({
             id: '1',
@@ -304,7 +339,7 @@ test.describe('Admin moderation', async () => {
     });
 
     test.describe('View in admin link', () => {
-        test('shows View in admin link when commentModeration flag is enabled', async ({page}) => {
+        test('shows View in admin link for admins', async ({page}) => {
             mockedApi.addComment({id: 'test-comment-id', html: '<p>This is a comment</p>'});
 
             await mockAdminAuthFrame({page, admin});
@@ -315,10 +350,7 @@ test.describe('Admin moderation', async () => {
                 publication: 'Publisher Weekly',
                 title: 'Member discussion',
                 count: true,
-                admin,
-                labs: {
-                    commentModeration: true
-                }
+                admin
             });
 
             const moreButtons = frame.getByTestId('more-button');
@@ -328,27 +360,6 @@ test.describe('Admin moderation', async () => {
             await expect(viewInAdminLink).toBeVisible();
             await expect(viewInAdminLink).toHaveAttribute('href', `${admin}#/comments/?id=is:test-comment-id`);
             await expect(viewInAdminLink).toHaveAttribute('target', '_blank');
-        });
-
-        test('hides View in admin link when commentModeration flag is not set', async ({page}) => {
-            mockedApi.addComment({html: '<p>This is a comment</p>'});
-
-            await mockAdminAuthFrame({page, admin});
-
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                title: 'Member discussion',
-                count: true,
-                admin,
-                labs: {}
-            });
-
-            const moreButtons = frame.getByTestId('more-button');
-            await moreButtons.nth(0).click();
-
-            await expect(frame.getByTestId('view-in-admin-button')).not.toBeVisible();
         });
     });
 });

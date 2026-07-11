@@ -5,6 +5,102 @@ const fsExtra = require('fs-extra');
 const i18n = require('../');
 
 describe('i18n', function () {
+    describe('ESM/browser entries (per-namespace static registries)', function () {
+        // The real browser path: each public app imports '@tryghost/i18n/registry/<ns>',
+        // resolved here from the actual shipped registry entries (lib/registry/*.mjs).
+        // There is no root ESM entry and no CJS "browser" entry any more — apps must use
+        // the per-namespace subpaths. These import()s cover ESM locale resolution, the
+        // English fallback and the theme-stub behaviour public apps rely on.
+        let portalI18n;
+        let ghostI18n;
+
+        beforeAll(async function () {
+            portalI18n = (await import('../lib/registry/portal.mjs')).default;
+            ghostI18n = (await import('../lib/registry/ghost.mjs')).default;
+        });
+
+        it('loads bundled public app translations without server-only helpers', function () {
+            const t = portalI18n('nl', 'portal').t;
+
+            assert.equal(t('Name'), 'Naam');
+        });
+
+        it('uses the default locale', function () {
+            const t = portalI18n().t;
+
+            assert.equal(t('Name'), 'Name');
+        });
+
+        it('uses single curly braces for browser interpolation', function () {
+            const portalT = portalI18n('en', 'portal').t;
+            const ghostT = ghostI18n('en', 'ghost').t;
+
+            assert.equal(portalT('Welcome, {name}', {name: '<b>John O\'Nolan</b>'}), 'Welcome, <b>John O\'Nolan</b>');
+            assert.equal(ghostT('Welcome, {name}', {name: 'John'}), 'Welcome, John');
+        });
+
+        it('falls back to English for missing bundled locales', function () {
+            const resources = portalI18n.generateResources(['xx'], 'portal');
+            const englishResources = portalI18n.generateResources(['en'], 'portal');
+
+            assert.deepEqual(resources.xx, englishResources.en);
+        });
+
+        it('uses empty theme resources in browser builds', function () {
+            const instance = portalI18n('en', 'theme');
+
+            assert.deepEqual(instance.store.data.en.theme, {});
+            assert.equal(instance.t('Read more'), 'Read more');
+        });
+    });
+
+    describe('CJS/ESM core parity', function () {
+        // lib/i18n-core.js (Node) and lib/i18n-core.mjs (browser) are deliberate
+        // twins: the browser path must be pure ESM (a CJS file leaks require()/
+        // module.exports into the UMD bundle and throws at load), while Ghost core
+        // require()s the package synchronously. This test guards against drift.
+        let cjsCore;
+        let esmCore;
+
+        beforeAll(async function () {
+            cjsCore = require('../lib/i18n-core');
+            esmCore = await import('../lib/i18n-core.mjs');
+        });
+
+        it('exposes identical locale data and supported locales', function () {
+            assert.deepEqual(esmCore.SUPPORTED_LOCALES, cjsCore.SUPPORTED_LOCALES);
+            assert.deepEqual(esmCore.LOCALE_DATA, cjsCore.LOCALE_DATA);
+        });
+
+        it('mergeDefaultExport behaves identically', function () {
+            const input = {Name: 'Direct', default: {Name: 'FromDefault', Extra: 'x'}};
+
+            assert.deepEqual(esmCore.mergeDefaultExport(input), cjsCore.mergeDefaultExport(input));
+        });
+
+        it('createGenerateResources produces identical output for the same loader', function () {
+            const loader = locale => (locale === 'en' ? {Name: 'English'} : {Name: locale});
+            const esmGen = esmCore.createGenerateResources(loader);
+            const cjsGen = cjsCore.createGenerateResources(loader);
+
+            assert.deepEqual(esmGen(['de', 'xx'], 'portal'), cjsGen(['de', 'xx'], 'portal'));
+        });
+
+        it('createI18n produces instances that translate identically', function () {
+            const generateResources = locales => locales.reduce((acc, l) => {
+                acc[l] = {portal: {Hello: l === 'nl' ? 'Hallo' : 'Hello'}};
+                return acc;
+            }, {});
+            const generateThemeResources = lng => ({[lng]: {theme: {}}});
+
+            const esm = esmCore.createI18n({generateResources, generateThemeResources})('nl', 'portal');
+            const cjs = cjsCore.createI18n({generateResources, generateThemeResources})('nl', 'portal');
+
+            assert.equal(esm.t('Hello'), 'Hallo');
+            assert.equal(esm.t('Hello'), cjs.t('Hello'));
+        });
+    });
+
     it('does not have too-long strings for the Stripe personal note label', async function () {
         for (const locale of i18n.SUPPORTED_LOCALES) {
             const translationFile = require(path.join(`../locales/`, locale, 'portal.json'));
@@ -26,11 +122,63 @@ describe('i18n', function () {
         assert.equal(t('Name'), 'Naam');
     });
 
+    it('generateResources (CJS require path) resolves locales and falls back to English', function () {
+        const resources = i18n.generateResources(['nl', 'xx'], 'portal');
+
+        assert.equal(resources.nl.portal.Name, 'Naam');
+        // 'xx' is not a bundled locale — the require loader falls back to English.
+        assert.equal(resources.xx.portal.Name, i18n.generateResources(['en'], 'portal').en.portal.Name);
+    });
+
+    describe('createGenerateResources', function () {
+        // Unit-tests the injectable-loader factory directly (the shape the static ESM
+        // registry uses), covering the English fallback + floor without a bundler.
+        const {createGenerateResources} = require('../lib/i18n-core');
+
+        it('uses the loaded resource when present', function () {
+            const gen = createGenerateResources((locale, ns) => ({[`${locale}.${ns}`]: 'hit'}));
+            const res = gen(['de'], 'ghost');
+
+            assert.equal(res.de.ghost['de.ghost'], 'hit');
+        });
+
+        it('falls back to English when a locale is missing (undefined)', function () {
+            const gen = createGenerateResources(locale => (locale === 'en' ? {Name: 'English'} : undefined));
+            const res = gen(['xx'], 'portal');
+
+            assert.equal(res.xx.portal.Name, 'English');
+        });
+
+        it('floors to an empty object when even English is missing', function () {
+            // Loader always returns undefined — the English floor must prevent
+            // mergeDefaultExport(undefined) from throwing.
+            const gen = createGenerateResources(() => undefined);
+
+            assert.doesNotThrow(() => gen(['xx'], 'portal'));
+            const res = gen(['xx'], 'portal');
+            assert.deepEqual(res.xx.portal, {});
+        });
+
+        it('merges an object default export onto the resource', function () {
+            const gen = createGenerateResources(() => ({Name: 'Direct', default: {Name: 'FromDefault'}}));
+            const res = gen(['de'], 'portal');
+
+            assert.equal(res.de.portal.Name, 'FromDefault');
+        });
+
+        it('ignores a non-object default export', function () {
+            const gen = createGenerateResources(() => ({Name: 'Direct', default: 'not-an-object'}));
+            const res = gen(['de'], 'portal');
+
+            assert.equal(res.de.portal.Name, 'Direct');
+        });
+    });
+
     describe('Can use Portal resources', function () {
         describe('Dutch', function () {
             let t;
 
-            before(function () {
+            beforeAll(function () {
                 t = i18n('nl', 'portal').t;
             });
 
@@ -44,7 +192,7 @@ describe('i18n', function () {
         describe('Afrikaans', function () {
             let t;
 
-            before(function () {
+            beforeAll(function () {
                 t = i18n('af', 'signup-form').t;
             });
 
@@ -57,7 +205,7 @@ describe('i18n', function () {
     describe('Fallback when no language is chosen will be english', function () {
         describe('English fallback', function () {
             let t;
-            before(function () {
+            beforeAll(function () {
                 t = i18n().t;
             });
             it('can translate with english when no language selected', function () {
@@ -69,7 +217,7 @@ describe('i18n', function () {
     describe('Fallback will be nb when no is chosen', function () {
         describe('Norwegian bokmål fallback', function () {
             let t;
-            before(function () {
+            beforeAll(function () {
                 t = i18n('no', 'portal').t;
             });
             it('Norwegian bokmål used when no is chosen', function () {
@@ -81,7 +229,7 @@ describe('i18n', function () {
     describe('Language will be nb when nb is chosen', function () {
         describe('Norwegian bokmål', function () {
             let t;
-            before(function () {
+            beforeAll(function () {
                 t = i18n('nb', 'portal').t;
             });
             it('Norwegian bokmål used when "nb" is chosen', function () {
@@ -93,7 +241,7 @@ describe('i18n', function () {
     describe('Language is properly "nn" when "nn" is chosen', function () {
         describe('Norwegian Nynorsk', function () {
             let t;
-            before(function () {
+            beforeAll(function () {
                 t = i18n('nn', 'portal').t;
             });
             it('Norwegian Nynorsk used when selected', function () {

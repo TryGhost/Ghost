@@ -14,7 +14,7 @@ class PostsTagsImporter extends TableImporter {
         const posts = await this.transaction.select('id').from('posts').where('type', 'post');
         this.tags = await this.transaction.select('id').from('tags');
 
-        await this.importForEach(posts, quantity ? quantity / posts.length : () => faker.datatype.number({
+        await this.importForEach(posts, quantity ? quantity / posts.length : () => faker.number.int({
             min: 0,
             max: 3
         }));
@@ -30,7 +30,7 @@ class PostsTagsImporter extends TableImporter {
         this.sortOrder = this.sortOrder + 1;
         let tagIndex = 0;
         do {
-            tagIndex = faker.datatype.number(this.tags.length - 1);
+            tagIndex = faker.number.int(this.tags.length - 1);
         } while (this.notIndex.includes(tagIndex));
         this.notIndex.push(tagIndex);
 

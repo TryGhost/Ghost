@@ -25,14 +25,14 @@ class NewslettersImporter extends TableImporter {
 
         return {
             id: this.fastFakeObjectId(),
-            uuid: faker.datatype.uuid(),
+            uuid: faker.string.uuid(),
             name: name,
-            slug: `${slugify(name)}-${faker.random.numeric(3)}`,
+            slug: `${slugify(name)}-${faker.string.numeric(3)}`,
             sender_reply_to: 'newsletter',
             status: 'active',
             subscribe_on_signup: faker.datatype.boolean(),
             sort_order: sortOrder,
-            created_at: faker.date.between(blogStartDate, weekAfter)
+            created_at: faker.date.between({from: blogStartDate, to: weekAfter})
         };
     }
 }

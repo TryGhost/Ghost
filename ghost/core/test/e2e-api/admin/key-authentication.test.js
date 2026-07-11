@@ -11,7 +11,7 @@ const logging = require('@tryghost/logging');
 describe('Admin API key authentication', function () {
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await testUtils.initFixtures('api_keys');
@@ -22,7 +22,7 @@ describe('Admin API key authentication', function () {
     });
 
     it('Can not access endpoint without a token header', async function () {
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Authorization', `Ghost`)
             .expect('Content-Type', /json/)
@@ -32,7 +32,7 @@ describe('Admin API key authentication', function () {
     });
 
     it('Can not access endpoint with a wrong endpoint token', async function () {
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await request.get(localUtils.API.getApiQuery('posts/'))
             .set('Authorization', `Ghost ${localUtils.getValidAdminToken('https://wrong.com')}`)
             .expect('Content-Type', /json/)
@@ -109,7 +109,7 @@ describe('Admin API key authentication', function () {
             await testUtils.initFixtures('integrations');
             await testUtils.initFixtures('api_keys');
 
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
 
             const firstResponse = await request.get(localUtils.API.getApiQuery('posts/'))
                 .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)

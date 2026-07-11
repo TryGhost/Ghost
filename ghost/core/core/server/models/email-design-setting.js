@@ -18,7 +18,10 @@ const EmailDesignSetting = ghostBookshelf.Model.extend({
             title_font_category: 'sans_serif',
             title_font_weight: 'bold',
             image_corners: 'square',
-            show_badge: true
+            show_badge: true,
+            sender_name: null,
+            sender_email: null,
+            sender_reply_to: null
         };
     }
 });

@@ -34,6 +34,13 @@ describe('Badge Component', () => {
         assert.ok(badge.className.includes('bg-green'), 'Should have success variant class');
     });
 
+    it('applies warning variant correctly', () => {
+        render(<Badge variant="warning">Warning Badge</Badge>);
+        const badge = screen.getByText('Warning Badge');
+        
+        assert.ok(badge.className.includes('bg-state-warning'), 'Should have warning variant class');
+    });
+
     it('applies outline variant correctly', () => {
         render(<Badge variant="outline">Outline Badge</Badge>);
         const badge = screen.getByText('Outline Badge');

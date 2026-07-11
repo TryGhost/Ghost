@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const mailService = require('../../../core/server/services/mail');
 const SingleUseTokenProvider = require('../../../core/server/services/members/single-use-token-provider');
+const emailAddressService = require('../../../core/server/services/email-address');
 const models = require('../../../core/server/models');
 
 const matchAutomatedEmail = {
@@ -20,7 +21,7 @@ describe('Automated Emails API', function () {
         const {body} = await agent
             .post('automated_emails')
             .body({automated_emails: [{
-                name: 'Welcome Email (Free)',
+                name: 'Free member welcome flow',
                 slug: 'member-welcome-email-free',
                 status: 'inactive',
                 subject: 'Welcome to the site!',
@@ -31,7 +32,37 @@ describe('Automated Emails API', function () {
         return body.automated_emails[0];
     };
 
-    before(async function () {
+    const getSenderStorage = async (automatedEmailId) => {
+        const email = await models.Base.knex('welcome_email_automated_emails')
+            .where('welcome_email_automation_id', automatedEmailId)
+            .first('sender_name', 'sender_email', 'sender_reply_to', 'email_design_setting_id');
+
+        const designSettings = await models.Base.knex('email_design_settings')
+            .where('id', email.email_design_setting_id)
+            .first('sender_name', 'sender_email', 'sender_reply_to');
+
+        return {email, designSettings};
+    };
+
+    const updateSenderStorage = async (automatedEmailId, {email = {}, designSettings = {}} = {}) => {
+        const welcomeEmail = await models.Base.knex('welcome_email_automated_emails')
+            .where('welcome_email_automation_id', automatedEmailId)
+            .first('id', 'email_design_setting_id');
+
+        if (Object.keys(email).length > 0) {
+            await models.Base.knex('welcome_email_automated_emails')
+                .where('id', welcomeEmail.id)
+                .update(email);
+        }
+
+        if (Object.keys(designSettings).length > 0) {
+            await models.Base.knex('email_design_settings')
+                .where('id', welcomeEmail.email_design_setting_id)
+                .update(designSettings);
+        }
+    };
+
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
         await agent.loginAsOwner();
@@ -41,6 +72,17 @@ describe('Automated Emails API', function () {
         await dbUtils.truncate('brute');
         await dbUtils.truncate('welcome_email_automated_emails');
         await dbUtils.truncate('automations');
+        await models.Base.knex('email_design_settings')
+            .where('slug', 'default-automated-email')
+            .update({
+                sender_name: null,
+                sender_email: null,
+                sender_reply_to: null
+            });
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     describe('Browse', function () {
@@ -69,6 +111,56 @@ describe('Automated Emails API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('Returns sender details from email design settings before welcome email automated email fields', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            await updateSenderStorage(automatedEmail.id, {
+                email: {
+                    sender_name: 'Welcome Sender',
+                    sender_email: 'welcome@example.com',
+                    sender_reply_to: 'welcome-reply@example.com'
+                },
+                designSettings: {
+                    sender_name: 'Design Sender',
+                    sender_email: 'design@example.com',
+                    sender_reply_to: 'design-reply@example.com'
+                }
+            });
+
+            await agent
+                .get('automated_emails')
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails[0].sender_name, 'Design Sender');
+                    assert.equal(body.automated_emails[0].sender_email, 'design@example.com');
+                    assert.equal(body.automated_emails[0].sender_reply_to, 'design-reply@example.com');
+                });
+        });
+
+        it('Does not return welcome email sender details when email design sender details are empty', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            await updateSenderStorage(automatedEmail.id, {
+                email: {
+                    sender_name: 'Welcome Sender',
+                    sender_email: 'welcome@example.com',
+                    sender_reply_to: 'welcome-reply@example.com'
+                },
+                designSettings: {
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null
+                }
+            });
+
+            await agent
+                .get('automated_emails')
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails[0].sender_name, null);
+                    assert.equal(body.automated_emails[0].sender_email, null);
+                    assert.equal(body.automated_emails[0].sender_reply_to, null);
+                });
+        });
     });
 
     describe('Read', function () {
@@ -88,6 +180,56 @@ describe('Automated Emails API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('Returns sender details from email design settings before welcome email automated email fields', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            await updateSenderStorage(automatedEmail.id, {
+                email: {
+                    sender_name: 'Welcome Sender',
+                    sender_email: 'welcome@example.com',
+                    sender_reply_to: 'welcome-reply@example.com'
+                },
+                designSettings: {
+                    sender_name: 'Design Sender',
+                    sender_email: 'design@example.com',
+                    sender_reply_to: 'design-reply@example.com'
+                }
+            });
+
+            await agent
+                .get(`automated_emails/${automatedEmail.id}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails[0].sender_name, 'Design Sender');
+                    assert.equal(body.automated_emails[0].sender_email, 'design@example.com');
+                    assert.equal(body.automated_emails[0].sender_reply_to, 'design-reply@example.com');
+                });
+        });
+
+        it('Does not return welcome email sender details when email design sender details are empty', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            await updateSenderStorage(automatedEmail.id, {
+                email: {
+                    sender_name: 'Welcome Sender',
+                    sender_email: 'welcome@example.com',
+                    sender_reply_to: 'welcome-reply@example.com'
+                },
+                designSettings: {
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null
+                }
+            });
+
+            await agent
+                .get(`automated_emails/${automatedEmail.id}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails[0].sender_name, null);
+                    assert.equal(body.automated_emails[0].sender_email, null);
+                    assert.equal(body.automated_emails[0].sender_reply_to, null);
+                });
+        });
     });
 
     describe('Add', function () {
@@ -95,7 +237,7 @@ describe('Automated Emails API', function () {
             await agent
                 .post('automated_emails')
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     status: 'inactive',
                     subject: 'Welcome to the site!',
@@ -112,11 +254,105 @@ describe('Automated Emails API', function () {
                 });
         });
 
+        it('Writes sender settings to email design settings on add', async function () {
+            const automatedEmail = await createAutomatedEmail({
+                sender_name: 'Custom Sender',
+                sender_email: 'sender@example.com',
+                sender_reply_to: 'reply@example.com'
+            });
+
+            const {email, designSettings} = await getSenderStorage(automatedEmail.id);
+
+            assert.deepEqual({
+                sender_name: email.sender_name,
+                sender_email: email.sender_email,
+                sender_reply_to: email.sender_reply_to
+            }, {
+                sender_name: null,
+                sender_email: null,
+                sender_reply_to: null
+            });
+            assert.deepEqual(designSettings, {
+                sender_name: 'Custom Sender',
+                sender_email: 'sender@example.com',
+                sender_reply_to: 'reply@example.com'
+            });
+        });
+
+        it('Rejects disallowed sender email on add', async function () {
+            emailAddressService.init();
+            const validateStub = sinon.stub(emailAddressService.service, 'validate')
+                .returns({allowed: false, verificationEmailRequired: false});
+
+            await agent
+                .post('automated_emails')
+                .body({automated_emails: [{
+                    name: 'Free member welcome flow',
+                    slug: 'member-welcome-email-free',
+                    status: 'inactive',
+                    subject: 'Welcome to the site!',
+                    lexical: JSON.stringify({root: {children: []}}),
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                }]})
+                .expectStatus(422);
+
+            sinon.assert.calledOnceWithExactly(validateStub, 'sender@example.com', 'from');
+
+            const designSettings = await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .first('sender_name', 'sender_email', 'sender_reply_to');
+
+            assert.deepEqual(designSettings, {
+                sender_name: null,
+                sender_email: null,
+                sender_reply_to: null
+            });
+        });
+
+        it('Rejects sender reply-to that requires verification on add', async function () {
+            emailAddressService.init();
+            const validateStub = sinon.stub(emailAddressService.service, 'validate')
+                .callsFake((email, type) => {
+                    if (email === 'reply@example.com' && type === 'replyTo') {
+                        return {allowed: true, verificationEmailRequired: true};
+                    }
+
+                    return {allowed: true, verificationEmailRequired: false};
+                });
+
+            await agent
+                .post('automated_emails')
+                .body({automated_emails: [{
+                    name: 'Free member welcome flow',
+                    slug: 'member-welcome-email-free',
+                    status: 'inactive',
+                    subject: 'Welcome to the site!',
+                    lexical: JSON.stringify({root: {children: []}}),
+                    sender_name: 'Custom Sender',
+                    sender_reply_to: 'reply@example.com'
+                }]})
+                .expectStatus(422);
+
+            sinon.assert.calledOnceWithExactly(validateStub, 'reply@example.com', 'replyTo');
+
+            const designSettings = await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .first('sender_name', 'sender_email', 'sender_reply_to');
+
+            assert.deepEqual(designSettings, {
+                sender_name: null,
+                sender_email: null,
+                sender_reply_to: null
+            });
+        });
+
         it('Validates status on add', async function () {
             await agent
                 .post('automated_emails')
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     status: 'invalid-status',
                     subject: 'Test'
@@ -157,7 +393,7 @@ describe('Automated Emails API', function () {
             await agent
                 .post('automated_emails')
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     status: 'active',
                     subject: 'Test',
@@ -182,15 +418,11 @@ describe('Automated Emails API', function () {
                 infoStub = sinon.stub(logging, 'info');
             });
 
-            afterEach(function () {
-                sinon.restore();
-            });
-
             it('Logs when a welcome email is created as active', async function () {
                 const {body} = await agent
                     .post('automated_emails')
                     .body({automated_emails: [{
-                        name: 'Welcome Email (Free)',
+                        name: 'Free member welcome flow',
                         slug: 'member-welcome-email-free',
                         status: 'active',
                         subject: 'Welcome to the site!',
@@ -213,7 +445,7 @@ describe('Automated Emails API', function () {
                 await agent
                     .post('automated_emails')
                     .body({automated_emails: [{
-                        name: 'Welcome Email (Free)',
+                        name: 'Free member welcome flow',
                         slug: 'member-welcome-email-free',
                         status: 'inactive',
                         subject: 'Welcome to the site!',
@@ -240,7 +472,7 @@ describe('Automated Emails API', function () {
             await agent
                 .put(`automated_emails/${id}`)
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     subject: 'Updated subject',
                     status: 'active'
                 }]})
@@ -254,6 +486,177 @@ describe('Automated Emails API', function () {
                 });
         });
 
+        it('Writes sender settings to email design settings on edit', async function () {
+            const automatedEmail = await createAutomatedEmail();
+
+            await agent
+                .put(`automated_emails/${automatedEmail.id}`)
+                .body({automated_emails: [{
+                    name: 'Free member welcome flow',
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                }]})
+                .expectStatus(200);
+
+            const {email, designSettings} = await getSenderStorage(automatedEmail.id);
+
+            assert.deepEqual({
+                sender_name: email.sender_name,
+                sender_email: email.sender_email,
+                sender_reply_to: email.sender_reply_to
+            }, {
+                sender_name: null,
+                sender_email: null,
+                sender_reply_to: null
+            });
+            assert.deepEqual(designSettings, {
+                sender_name: 'Custom Sender',
+                sender_email: 'sender@example.com',
+                sender_reply_to: 'reply@example.com'
+            });
+        });
+
+        it('Rejects disallowed sender email on edit', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            await updateSenderStorage(automatedEmail.id, {
+                designSettings: {
+                    sender_name: 'Existing Sender',
+                    sender_email: 'existing@example.com',
+                    sender_reply_to: 'existing-reply@example.com'
+                }
+            });
+
+            emailAddressService.init();
+            const validateStub = sinon.stub(emailAddressService.service, 'validate')
+                .returns({allowed: false, verificationEmailRequired: false});
+
+            await agent
+                .put(`automated_emails/${automatedEmail.id}`)
+                .body({automated_emails: [{
+                    name: 'Free member welcome flow',
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                }]})
+                .expectStatus(422);
+
+            sinon.assert.calledOnceWithExactly(validateStub, 'sender@example.com', 'from');
+
+            const {designSettings} = await getSenderStorage(automatedEmail.id);
+            assert.deepEqual(designSettings, {
+                sender_name: 'Existing Sender',
+                sender_email: 'existing@example.com',
+                sender_reply_to: 'existing-reply@example.com'
+            });
+        });
+
+        it('Rejects sender reply-to that requires verification on edit', async function () {
+            const automatedEmail = await createAutomatedEmail();
+
+            emailAddressService.init();
+            const validateStub = sinon.stub(emailAddressService.service, 'validate')
+                .returns({allowed: true, verificationEmailRequired: true});
+
+            await agent
+                .put(`automated_emails/${automatedEmail.id}`)
+                .body({automated_emails: [{
+                    name: 'Free member welcome flow',
+                    sender_reply_to: 'reply@example.com'
+                }]})
+                .expectStatus(422);
+
+            sinon.assert.calledOnceWithExactly(validateStub, 'reply@example.com', 'replyTo');
+
+            const {designSettings} = await getSenderStorage(automatedEmail.id);
+            assert.deepEqual(designSettings, {
+                sender_name: null,
+                sender_email: null,
+                sender_reply_to: null
+            });
+        });
+
+        it('Does not validate unchanged sender fields on edit', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            await updateSenderStorage(automatedEmail.id, {
+                designSettings: {
+                    sender_name: 'Existing Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                }
+            });
+
+            emailAddressService.init();
+            const validateStub = sinon.stub(emailAddressService.service, 'validate')
+                .callsFake((email, type) => {
+                    if (email === 'reply@example.com' && type === 'replyTo') {
+                        return {allowed: true, verificationEmailRequired: true};
+                    }
+
+                    return {allowed: true, verificationEmailRequired: false};
+                });
+
+            await agent
+                .put(`automated_emails/${automatedEmail.id}`)
+                .body({automated_emails: [{
+                    ...automatedEmail,
+                    status: 'active',
+                    subject: 'Updated subject',
+                    sender_name: 'Existing Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                }]})
+                .expectStatus(200);
+
+            sinon.assert.notCalled(validateStub);
+
+            const {designSettings} = await getSenderStorage(automatedEmail.id);
+            assert.deepEqual(designSettings, {
+                sender_name: 'Existing Sender',
+                sender_email: 'sender@example.com',
+                sender_reply_to: 'reply@example.com'
+            });
+
+            const email = await models.Base.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automatedEmail.id)
+                .first('subject');
+            assert.equal(email.subject, 'Updated subject');
+
+            const automation = await models.Base.knex('automations')
+                .where('id', automatedEmail.id)
+                .first('status');
+            assert.equal(automation.status, 'active');
+        });
+
+        it('Can enable a legacy automated email without a welcome email content row', async function () {
+            const automatedEmail = await createAutomatedEmail({status: 'inactive'});
+            await models.Base.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automatedEmail.id)
+                .del();
+
+            const {body} = await agent
+                .get(`automated_emails/${automatedEmail.id}`)
+                .expectStatus(200);
+
+            await agent
+                .put(`automated_emails/${automatedEmail.id}`)
+                .body({automated_emails: [{
+                    ...body.automated_emails[0],
+                    status: 'active'
+                }]})
+                .expectStatus(200);
+
+            const welcomeEmailRow = await models.Base.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automatedEmail.id)
+                .first('id');
+            assert.equal(welcomeEmailRow, undefined);
+
+            const automation = await models.Base.knex('automations')
+                .where('id', automatedEmail.id)
+                .first('status');
+            assert.equal(automation.status, 'active');
+        });
+
         it('Validates status on edit', async function () {
             const automatedEmail = await createAutomatedEmail();
 
@@ -262,7 +665,7 @@ describe('Automated Emails API', function () {
             await agent
                 .put(`automated_emails/${id}`)
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     status: 'invalid-status'
                 }]})
                 .expectStatus(422)
@@ -329,7 +732,7 @@ describe('Automated Emails API', function () {
             await agent
                 .put(`automated_emails/${id}`)
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     lexical: 'not-valid-json'
                 }]})
                 .expectStatus(422)
@@ -351,17 +754,13 @@ describe('Automated Emails API', function () {
                 infoStub = sinon.stub(logging, 'info');
             });
 
-            afterEach(function () {
-                sinon.restore();
-            });
-
             it('Logs when a welcome email is enabled', async function () {
                 const automatedEmail = await createAutomatedEmail({status: 'inactive'});
 
                 await agent
                     .put(`automated_emails/${automatedEmail.id}`)
                     .body({automated_emails: [{
-                        name: 'Welcome Email (Free)',
+                        name: 'Free member welcome flow',
                         status: 'active'
                     }]})
                     .expectStatus(200);
@@ -381,7 +780,7 @@ describe('Automated Emails API', function () {
                 await agent
                     .put(`automated_emails/${automatedEmail.id}`)
                     .body({automated_emails: [{
-                        name: 'Welcome Email (Free)',
+                        name: 'Free member welcome flow',
                         status: 'inactive'
                     }]})
                     .expectStatus(200);
@@ -401,7 +800,7 @@ describe('Automated Emails API', function () {
                 await agent
                     .put(`automated_emails/${automatedEmail.id}`)
                     .body({automated_emails: [{
-                        name: 'Welcome Email (Free)',
+                        name: 'Free member welcome flow',
                         subject: 'Updated subject only'
                     }]})
                     .expectStatus(200);
@@ -428,13 +827,120 @@ describe('Automated Emails API', function () {
         beforeEach(async function () {
             await createAutomatedEmail();
             await createAutomatedEmail({
-                name: 'Welcome Email (Paid)',
+                name: 'Paid member welcome flow',
                 slug: 'member-welcome-email-paid',
                 subject: 'Welcome paid member'
             });
         });
 
         it('Can edit sender settings for free and paid welcome emails', async function () {
+            await agent
+                .put('automated_emails/senders/')
+                .body({
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails.length, 2);
+                    for (const automatedEmail of body.automated_emails) {
+                        assert.equal(automatedEmail.sender_name, 'Custom Sender');
+                        assert.equal(automatedEmail.sender_email, 'sender@example.com');
+                        assert.equal(automatedEmail.sender_reply_to, 'reply@example.com');
+                    }
+                });
+
+            const automatedEmails = await models.Base.knex('welcome_email_automated_emails')
+                .select('sender_name', 'sender_email', 'sender_reply_to');
+            assert.equal(automatedEmails.length, 2);
+            for (const automatedEmail of automatedEmails) {
+                assert.deepEqual(automatedEmail, {
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null
+                });
+            }
+
+            const designSettings = await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .first('sender_name', 'sender_email', 'sender_reply_to');
+            assert.deepEqual(designSettings, {
+                sender_name: 'Custom Sender',
+                sender_email: 'sender@example.com',
+                sender_reply_to: 'reply@example.com'
+            });
+        });
+
+        it('Can edit shared sender settings without welcome email content rows', async function () {
+            await models.Base.knex('welcome_email_automated_emails').del();
+
+            await agent
+                .put('automated_emails/senders/')
+                .body({
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails.length, 2);
+                    for (const automatedEmail of body.automated_emails) {
+                        assert.equal(automatedEmail.sender_name, 'Custom Sender');
+                        assert.equal(automatedEmail.sender_email, 'sender@example.com');
+                        assert.equal(automatedEmail.sender_reply_to, 'reply@example.com');
+                    }
+                });
+
+            const welcomeEmailRows = await models.Base.knex('welcome_email_automated_emails')
+                .select('welcome_email_automation_id');
+            assert.equal(welcomeEmailRows.length, 0);
+
+            const designSettings = await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .first('sender_name', 'sender_email', 'sender_reply_to');
+            assert.deepEqual(designSettings, {
+                sender_name: 'Custom Sender',
+                sender_email: 'sender@example.com',
+                sender_reply_to: 'reply@example.com'
+            });
+        });
+
+        it('Can edit shared sender settings without automation rows', async function () {
+            await models.Base.knex('welcome_email_automated_emails').del();
+            await models.Base.knex('automations').del();
+
+            await agent
+                .put('automated_emails/senders/')
+                .body({
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails.length, 0);
+                });
+
+            const designSettings = await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .first('sender_name', 'sender_email', 'sender_reply_to');
+            assert.deepEqual(designSettings, {
+                sender_name: 'Custom Sender',
+                sender_email: 'sender@example.com',
+                sender_reply_to: 'reply@example.com'
+            });
+        });
+
+        it('Returns sender details from email design settings after editing shared sender settings', async function () {
+            await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .update({
+                    sender_name: 'Design Sender',
+                    sender_email: 'design@example.com',
+                    sender_reply_to: 'design-reply@example.com'
+                });
+
             await agent
                 .put('automated_emails/senders/')
                 .body({
@@ -467,6 +973,26 @@ describe('Automated Emails API', function () {
                         assert.equal(automatedEmail.sender_reply_to, 'verified-reply@example.com');
                     }
                 });
+
+            const automatedEmails = await models.Base.knex('welcome_email_automated_emails')
+                .select('sender_name', 'sender_email', 'sender_reply_to');
+            assert.equal(automatedEmails.length, 2);
+            for (const automatedEmail of automatedEmails) {
+                assert.deepEqual(automatedEmail, {
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null
+                });
+            }
+
+            const designSettings = await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .first('sender_name', 'sender_email', 'sender_reply_to');
+            assert.deepEqual(designSettings, {
+                sender_name: null,
+                sender_email: null,
+                sender_reply_to: 'verified-reply@example.com'
+            });
         });
     });
 
@@ -512,10 +1038,6 @@ describe('Automated Emails API', function () {
             automatedEmailId = automatedEmail.id;
         });
 
-        afterEach(function () {
-            sinon.restore();
-        });
-
         it('Can render preview', async function () {
             await agent
                 .post(`automated_emails/${automatedEmailId}/preview/`)
@@ -531,9 +1053,32 @@ describe('Automated Emails API', function () {
                 });
         });
 
+        it('Cannot render legacy preview without a welcome email content row', async function () {
+            await models.Base.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automatedEmailId)
+                .del();
+
+            const welcomeEmailRow = await models.Base.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automatedEmailId)
+                .first('id');
+            assert.equal(welcomeEmailRow, undefined);
+
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(404)
+                .expect(({body}) => {
+                    assert.equal(body.errors.length, 1);
+                    assert.equal(typeof body.errors[0].id, 'string');
+                });
+        });
+
         it('Can preview inactive automated email', async function () {
             const automatedEmail = await createAutomatedEmail({
-                name: 'Welcome Email (Paid)',
+                name: 'Paid member welcome flow',
                 slug: 'member-welcome-email-paid',
                 status: 'inactive',
                 lexical: validLexical
@@ -704,10 +1249,6 @@ describe('Automated Emails API', function () {
                 lexical: validLexical
             });
             automatedEmailId = automatedEmail.id;
-        });
-
-        afterEach(function () {
-            sinon.restore();
         });
 
         it('Can send test email', async function () {

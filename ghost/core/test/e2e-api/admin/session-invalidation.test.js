@@ -22,7 +22,7 @@ describe('Session invalidation on password change', function () {
     let ownerId;
     let adminId;
 
-    before(async function () {
+    beforeAll(async function () {
         agentA = await agentProvider.getAdminAPIAgent();
         agentB = await agentProvider.getAdminAPIAgent();
         ownerAgent = await agentProvider.getAdminAPIAgent();

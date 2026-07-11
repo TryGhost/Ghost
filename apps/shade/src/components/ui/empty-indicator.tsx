@@ -10,7 +10,7 @@ const EmptyBadge = React.forwardRef<HTMLDivElement, EmptyBadgeProps>(({children,
     return (
         <div
             ref={ref}
-            className={cn('flex items-center justify-center rounded-full bg-muted w-12 h-12 max-w-12 max-h-12 [&_svg]:size-4 [&_svg]:text-muted-foreground [&_svg]:shrink-0', className)}
+            className={cn('flex size-12 max-h-12 max-w-12 items-center justify-center rounded-full bg-muted [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground', className)}
             {...props}
         >
             {children}
@@ -32,11 +32,11 @@ interface EmptyIndicatorProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const EmptyIndicator = React.forwardRef<HTMLDivElement, EmptyIndicatorProps>(({children, className, title, description, actions, ...props}, ref) => {
     return (
-        <div ref={ref} className={cn('flex flex-col items-center justify-center space-y-3 text-center', className)} {...props}>
+        <div ref={ref} className={cn('flex flex-col items-center justify-center gap-3 text-center', className)} {...props}>
             <EmptyBadge>
                 {children}
             </EmptyBadge>
-            <div className='max-w-[320px] space-y-1.5'>
+            <div className='flex max-w-[320px] flex-col gap-1.5'>
                 <h3 className='text-md font-medium tracking-normal text-pretty text-foreground'>
                     {title}
                 </h3>

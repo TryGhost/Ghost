@@ -24,7 +24,7 @@ export class AutomatedEmailFactory extends Factory<Partial<AutomatedEmail>, Auto
         const defaults: AutomatedEmail = {
             id: generateId(),
             status: 'active',
-            name: 'Welcome Email (Free)',
+            name: 'Free member welcome flow',
             slug: 'member-welcome-email-free',
             subject: 'Welcome to {site_title}!',
             lexical: JSON.stringify(this.defaultLexicalContent()),

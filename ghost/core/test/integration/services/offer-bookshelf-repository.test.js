@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const testUtils = require('../../utils');
 const {Product} = require('../../../core/server/models/product');
 const {Offer} = require('../../../core/server/models/offer');
@@ -11,8 +13,11 @@ const {StripePrice} = require('../../../core/server/models/stripe-price');
 const OfferBookshelfRepository = require('../../../core/server/services/offers/offer-bookshelf-repository');
 
 describe('OfferBookshelfRepository', function () {
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles'));
+    afterEach(function () {
+        sinon.restore();
+    });
     afterEach(testUtils.teardownDb);
 
     let context, product, repository;
@@ -158,10 +163,16 @@ describe('OfferBookshelfRepository', function () {
             // Remove the product so the offer has no tier
             await offerModel.save({product_id: null}, {patch: true, context: {internal: true}});
 
+            // mapToOffer() logs the resulting validation error before filtering the
+            // offer out. Stub the logger so we can assert that path fired instead
+            // of spamming stdout.
+            const errorLog = sinon.stub(logging, 'error');
+
             const offers = await repository.getAll({});
             const offer = offers.find(o => o.id === offerModel.get('id'));
 
             assert.equal(offer, undefined);
+            sinon.assert.calledOnce(errorLog);
         });
 
         it('skips redemption stats when withRedemptionStats is false', async function () {

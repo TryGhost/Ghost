@@ -56,5 +56,7 @@ export const getOfferPortalPreviewUrl = (overrides:offerPortalPreviewUrlTypes, b
         settingsParam.append('disableBackground', 'true');
     }
 
+    settingsParam.append('admin_toolbar', '0');
+
     return `${baseUrl}${portalBase}?${settingsParam.toString()}`;
 };

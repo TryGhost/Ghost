@@ -14,7 +14,6 @@
 // The output state checker is responsible for checking the response from the app after performing a request.
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('test');
-const {sequence} = require('@tryghost/promise');
 const {any, stringMatching} = require('@tryghost/express-test').snapshot;
 const {AsymmetricMatcher} = require('expect');
 const fs = require('fs-extra');
@@ -25,7 +24,7 @@ const crypto = require('crypto');
 const assert = require('node:assert/strict');
 
 const fixtureUtils = require('./fixture-utils');
-const cacheRules = require('./fixtures/cache-rules');
+const {cacheRules} = require('./fixtures/cache-rules');
 const redirectsUtils = require('./redirects');
 const configUtils = require('./config-utils');
 const urlServiceUtils = require('./url-service-utils');
@@ -161,7 +160,12 @@ const initFixtures = async (...options) => {
 
     const fixtureOps = fixtureUtils.getFixtureOps(options);
 
-    return sequence(fixtureOps);
+    const results = [];
+    for (const fixtureOp of fixtureOps) {
+        results.push(await fixtureOp());
+    }
+
+    return results;
 };
 
 const getFixture = (type, index = 0) => {
@@ -175,6 +179,18 @@ const resetRateLimits = async () => {
     // Reset rate limiting instances
     const {spamPrevention} = require('../../core/server/web/shared/middleware/api');
     spamPrevention.reset();
+};
+
+/**
+ * Reset the image-size cache. core/server/lib/image captures its cache adapter
+ * at module load and never refreshes it, so under the shared boot (isolate:false)
+ * the first file to probe an image (e.g. the test content folder's test.jpg)
+ * caches a result that every later file reads — flaking email previews, whose
+ * committed snapshot expects the un-resized URL (a fresh probe of the 1x1 fixture
+ * yields no dimensions). Clear it between boots so each file probes fresh.
+ */
+const resetImageSizeCache = () => {
+    require('../../core/server/lib/image').cachedImageSizeFromUrl.cache.reset();
 };
 
 /**
@@ -192,6 +208,8 @@ const resetData = async () => {
 
     // Reset rate limiting instances (resetting the table is not enough!)
     await resetRateLimits();
+
+    resetImageSizeCache();
 };
 
 /**

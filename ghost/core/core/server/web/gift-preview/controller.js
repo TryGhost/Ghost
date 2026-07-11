@@ -38,17 +38,12 @@ function escapeHtml(str) {
 }
 
 async function giftPreview(req, res) {
-    const labs = require('../../../shared/labs');
     const giftService = require('../../services/gifts').service;
     const tiersService = require('../../services/tiers');
     const urlUtils = require('../../../shared/url-utils');
     const settingsCache = require('../../../shared/settings-cache');
 
     const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
-
-    if (!labs.isSet('giftSubscriptions')) {
-        return res.redirect(302, siteUrl + '/');
-    }
 
     const {token} = req.params;
     const siteTitle = settingsCache.get('title') || 'Ghost';
@@ -123,14 +118,9 @@ async function giftPreview(req, res) {
 }
 
 async function giftPreviewImage(req, res) {
-    const labs = require('../../../shared/labs');
     const giftService = require('../../services/gifts').service;
     const settingsCache = require('../../../shared/settings-cache');
     const tiersService = require('../../services/tiers');
-
-    if (!labs.isSet('giftSubscriptions')) {
-        return res.sendStatus(404);
-    }
 
     const accentColor = settingsCache.get('accent_color') || '#15171A';
     const siteTitle = settingsCache.get('title') || 'Ghost';

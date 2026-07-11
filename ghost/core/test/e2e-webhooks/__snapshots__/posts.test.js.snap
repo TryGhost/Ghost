@@ -2,8 +2,9 @@
 
 exports[`post.* events post.added event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -12,11 +13,12 @@ Object {
 
 exports[`post.* events post.added event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.added",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -79,7 +81,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -175,8 +177,9 @@ Object {
 
 exports[`post.* events post.deleted event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -185,12 +188,13 @@ Object {
 
 exports[`post.* events post.deleted event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.deleted",
   "post": Object {
     "current": Object {},
     "previous": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -262,8 +266,9 @@ Object {
 
 exports[`post.* events post.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -272,11 +277,12 @@ Object {
 
 exports[`post.* events post.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.edited",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -353,7 +359,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -499,8 +505,9 @@ Object {
 
 exports[`post.* events post.published event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -509,11 +516,12 @@ Object {
 
 exports[`post.* events post.published event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.published",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -583,7 +591,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "feature_image_caption": null,
       "featured": false,
       "frontmatter": null,
-      "html": "<!--kg-card-begin: markdown--><h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->",
+      "html": "<h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
@@ -611,7 +619,7 @@ Header Level 3
 #header h1 a{display: block;width: 300px;height: 80px;}",
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -759,8 +767,9 @@ Header Level 3
 
 exports[`post.* events post.published.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -769,11 +778,12 @@ Object {
 
 exports[`post.* events post.published.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.published.edited",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -850,7 +860,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -996,8 +1006,9 @@ Object {
 
 exports[`post.* events post.rescheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -1006,11 +1017,12 @@ Object {
 
 exports[`post.* events post.rescheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.rescheduled",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1087,7 +1099,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1233,8 +1245,9 @@ Object {
 
 exports[`post.* events post.scheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -1243,11 +1256,12 @@ Object {
 
 exports[`post.* events post.scheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.scheduled",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1324,7 +1338,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1471,8 +1485,9 @@ Object {
 
 exports[`post.* events post.tag.attached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -1481,11 +1496,12 @@ Object {
 
 exports[`post.* events post.tag.attached event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.tag.attached",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1555,7 +1571,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "feature_image_caption": null,
       "featured": false,
       "frontmatter": null,
-      "html": "<!--kg-card-begin: markdown--><h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->",
+      "html": "<h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
@@ -1583,7 +1599,7 @@ Header Level 3
 #header h1 a{display: block;width: 300px;height: 80px;}",
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1775,8 +1791,9 @@ Header Level 3
 
 exports[`post.* events post.tag.detached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -1785,11 +1802,12 @@ Object {
 
 exports[`post.* events post.tag.detached event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.tag.detached",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1859,7 +1877,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "feature_image_caption": null,
       "featured": false,
       "frontmatter": null,
-      "html": "<!--kg-card-begin: markdown--><h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->",
+      "html": "<h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
@@ -1887,7 +1905,7 @@ Header Level 3
 #header h1 a{display: block;width: 300px;height: 80px;}",
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -2019,8 +2037,9 @@ Header Level 3
 
 exports[`post.* events post.unpublished event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -2029,11 +2048,12 @@ Object {
 
 exports[`post.* events post.unpublished event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.unpublished",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -2103,7 +2123,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "feature_image_caption": null,
       "featured": false,
       "frontmatter": null,
-      "html": "<!--kg-card-begin: markdown--><h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->",
+      "html": "<h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
@@ -2131,7 +2151,7 @@ Header Level 3
 #header h1 a{display: block;width: 300px;height: 80px;}",
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -2180,7 +2200,7 @@ Header Level 3
       "primary_tag": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 1,
-      "slug": "webhookz-2",
+      "slug": "webhookz-unpublished",
       "status": "draft",
       "tags": Array [],
       "tiers": Array [
@@ -2221,7 +2241,7 @@ Header Level 3
           "yearly_price_id": null,
         },
       ],
-      "title": "webhookz",
+      "title": "webhookz unpublished",
       "twitter_description": null,
       "twitter_image": null,
       "twitter_title": null,
@@ -2278,8 +2298,9 @@ Header Level 3
 
 exports[`post.* events post.unscheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -2288,11 +2309,12 @@ Object {
 
 exports[`post.* events post.unscheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.unscheduled",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -2369,7 +2391,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,

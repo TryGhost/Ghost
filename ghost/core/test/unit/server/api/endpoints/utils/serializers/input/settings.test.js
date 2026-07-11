@@ -1,14 +1,27 @@
 const assert = require('node:assert/strict');
-const rewire = require('rewire');
+const sinon = require('sinon');
 
-const settingsSerializer = rewire('../../../../../../../../core/server/api/endpoints/utils/serializers/input/settings');
+const settingsSerializer = require('../../../../../../../../core/server/api/endpoints/utils/serializers/input/settings');
+const settingsCache = require('../../../../../../../../core/shared/settings-cache');
 
 describe('Settings input serializer', function () {
+    afterEach(function () {
+        sinon.restore();
+    });
+
     describe('editable settings', function () {
         it('allows spacer image provider settings through Admin API edits', function () {
-            const editableSettings = settingsSerializer.__get__('EDITABLE_SETTINGS');
+            sinon.stub(settingsCache, 'getAll').returns({});
+            const frame = {
+                data: {
+                    settings: [{key: 'spacer_image_url_template', value: ''}]
+                },
+                options: {}
+            };
 
-            assert.ok(editableSettings.includes('spacer_image_url_template'));
+            settingsSerializer.edit({}, frame);
+
+            assert.deepEqual(frame.data.settings, [{key: 'spacer_image_url_template', value: ''}]);
         });
     });
 });

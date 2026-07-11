@@ -98,13 +98,41 @@ const getContentPath = function getContentPath(type) {
 };
 
 /**
+ * @callback isTestEnvFn
+ * @returns {boolean}
+ */
+const isTestEnv = function isTestEnv() {
+    return this.get('env').startsWith('test');
+};
+
+/**
+ * env defaults to 'development' when NODE_ENV is unset (see getNodeEnv() in
+ * ./utils.js), matching ghost.js's own `process.env.NODE_ENV = process.env.NODE_ENV
+ * || 'development'` at the real CLI entry point — so in any Ghost boot via the
+ * normal entry point, this and a raw `process.env.NODE_ENV` check agree. They
+ * only diverge for programmatic embedders that require core modules directly
+ * without going through ghost.js and never set NODE_ENV themselves — those now
+ * count as 'development' (e.g. explore-ping/update-check will phone home)
+ * rather than being silently skipped.
+ * @callback isProductionOrDevelopmentFn
+ * @returns {boolean}
+ */
+const isProductionOrDevelopment = function isProductionOrDevelopment() {
+    return ['development', 'production'].includes(this.get('env'));
+};
+
+/**
  * @typedef ConfigHelpers
  * @property {isPrivacyDisabledFn} isPrivacyDisabled
  * @property {getContentPathFn} getContentPath
+ * @property {isTestEnvFn} isTestEnv
+ * @property {isProductionOrDevelopmentFn} isProductionOrDevelopment
  */
 module.exports.bindAll = (nconf) => {
     nconf.isPrivacyDisabled = isPrivacyDisabled.bind(nconf);
     nconf.getContentPath = getContentPath.bind(nconf);
     nconf.getBackendMountPath = getBackendMountPath.bind(nconf);
     nconf.getFrontendMountPath = getFrontendMountPath.bind(nconf);
+    nconf.isTestEnv = isTestEnv.bind(nconf);
+    nconf.isProductionOrDevelopment = isProductionOrDevelopment.bind(nconf);
 };

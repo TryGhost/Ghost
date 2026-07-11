@@ -11,7 +11,7 @@ const config = require('../../../../core/shared/config');
 describe('api/endpoints/content/posts', function () {
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await testUtils.initFixtures('users', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
@@ -319,7 +319,7 @@ describe('api/endpoints/content/posts', function () {
         let paidPost;
         let membersPostWithPaywallCard;
 
-        before (function () {
+        beforeAll(function () {
             publicPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'free-to-see',
                 visibility: 'public',

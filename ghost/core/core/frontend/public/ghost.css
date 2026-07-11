@@ -716,6 +716,10 @@ h2 {
     margin-bottom: 20px;
 }
 
+.gh-flow-content.private h1 {
+    text-align: center;
+}
+
 .gh-private-dialog {
     width: min(92vw, 440px);
     padding: 0;

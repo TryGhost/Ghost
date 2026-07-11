@@ -93,6 +93,73 @@ test.describe('User invitations', async () => {
         });
     });
 
+    test('Shows an existing-user validation error when the user is not in the loaded page', async ({page}) => {
+        const firstPageUsers = {
+            ...responseFixtures.users,
+            meta: {
+                pagination: {
+                    page: 1,
+                    limit: 100,
+                    pages: 2,
+                    total: 101,
+                    next: 2,
+                    prev: null
+                }
+            }
+        };
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: firstPageUsers},
+            browseInvites: {method: 'GET', path: '/invites/?limit=100&include=roles', response: responseFixtures.invites},
+            browseRoles: {method: 'GET', path: '/roles/?limit=100', response: responseFixtures.roles},
+            browseAssignableRoles: {method: 'GET', path: '/roles/?limit=100&permissions=assign', response: responseFixtures.roles},
+            addInvite: {
+                method: 'POST',
+                path: '/invites/',
+                responseStatus: 422,
+                responseHeaders: {
+                    'content-type': 'application/json'
+                },
+                response: {
+                    errors: [{
+                        id: 'validation-error',
+                        type: 'ValidationError',
+                        message: 'Validation error, cannot save invite.',
+                        context: 'User is already registered.',
+                        details: null,
+                        property: 'email',
+                        help: null,
+                        code: 'USER_ALREADY_REGISTERED',
+                        ghostErrorCode: null
+                    }]
+                }
+            }
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        await section.getByRole('button', {name: 'Invite people'}).click();
+
+        const modal = page.getByTestId('invite-user-modal');
+        await modal.getByLabel('Email address').fill('existing-user-page-2@test.com');
+        await modal.locator('button[value=author]').click();
+        await modal.getByRole('button', {name: 'Send invitation'}).click();
+
+        await expect.poll(() => lastApiRequests.addInvite?.body).toEqual({
+            invites: [{
+                email: 'existing-user-page-2@test.com',
+                expires: null,
+                role_id: '645453f3d254799990dd0e18',
+                status: null,
+                token: null
+            }]
+        });
+        await expect(modal).toContainText('A user with that email address already exists.');
+        await expect(page.getByTestId('toast-error')).not.toBeVisible();
+    });
+
     test('Supports resending invitations', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,

@@ -46,9 +46,9 @@ describe('Theme upload size limit reporter', function () {
 
         sinon.assert.calledOnce(loggingStub);
         sinon.assert.calledWith(loggingStub, {
-            system: {
-                event: 'theme_upload.entry_too_large',
-                theme_name: 'large-theme',
+            event: {name: 'theme_upload.entry_too_large'},
+            theme: {
+                name: 'large-theme',
                 entry_name: 'assets/big.jpg',
                 observed_bytes: 101,
                 limit_bytes: 100,
@@ -60,7 +60,7 @@ describe('Theme upload size limit reporter', function () {
         sinon.assert.calledOnceWithExactly(sentryStub, err, {
             tags: {source: 'theme_upload.entry_too_large'},
             extra: {
-                theme_name: 'large-theme',
+                name: 'large-theme',
                 entry_name: 'assets/big.jpg',
                 observed_bytes: 101,
                 limit_bytes: 100,

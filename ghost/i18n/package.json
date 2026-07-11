@@ -6,20 +6,28 @@
   "private": true,
   "main": "index.js",
   "exports": {
-    ".": "./index.js",
-    "./lib/locale-data.json": "./lib/locale-data.json"
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.js",
+      "default": "./index.js"
+    },
+    "./registry/*": {
+      "types": "./registry.d.ts",
+      "default": "./lib/registry/*.mjs"
+    },
+    "./lib/locale-data.json": "./lib/locale-data.json",
+    "./package.json": "./package.json"
   },
-  "types": "./build/i18n.d.ts",
+  "types": "./index.d.ts",
   "scripts": {
-    "dev": "echo \"Implement me!\"",
-    "test:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
+    "test:base": "NODE_ENV=testing vitest run --coverage",
     "test": "pnpm test:base && pnpm translate",
-    "lint:code": "eslint *.js lib/ --ext .js --cache",
-    "lint": "pnpm lint:code && pnpm lint:test && pnpm lint:translations",
-    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
+    "lint:code": "eslint *.js *.mjs lib/ --cache",
+    "lint": "pnpm run '/^lint:/'",
+    "lint:test": "eslint test/ --cache",
     "lint:translations": "node ./test/i18n.lint.js",
     "translate": "pnpm translate:ghost && pnpm translate:portal && pnpm translate:signup-form && pnpm translate:comments && pnpm translate:search && node generate-context.js",
-    "translate:ghost": "NAMESPACE=ghost i18next '../core/core/{frontend,server,shared}/**/*.{js,jsx}' '!../core/core/frontend/public/*.min.js' '../core/core/server/services/email-rendering/partials/**/*.hbs' '../core/core/server/services/email-service/email-templates/**/*.hbs' '../core/core/server/services/comments/email-templates/**/*.hbs' '../core/core/server/services/member-welcome-emails/email-templates/**/*.hbs' '../core/core/server/services/gifts/**/*.{ts,hbs}'",
+    "translate:ghost": "NAMESPACE=ghost i18next '../core/core/{frontend,server,shared}/**/*.{js,jsx,ts}' '!../core/core/frontend/public/*.min.js' '../core/core/server/services/email-rendering/partials/**/*.hbs' '../core/core/server/services/email-service/email-templates/**/*.hbs' '../core/core/server/services/comments/email-templates/**/*.hbs' '../core/core/server/services/member-welcome-emails/email-templates/**/*.hbs' '../core/core/server/services/gifts/**/*.{ts,hbs}'",
     "translate:portal": "NAMESPACE=portal i18next '../../apps/portal/src/**/*.{js,jsx}'",
     "translate:signup-form": "NAMESPACE=signup-form i18next '../../apps/signup-form/src/**/*.{ts,tsx}'",
     "translate:comments": "NAMESPACE=comments i18next '../../apps/comments-ui/src/**/*.{ts,tsx}'",
@@ -27,16 +35,19 @@
   },
   "files": [
     "index.js",
+    "index.d.ts",
+    "registry.d.ts",
     "lib",
     "locales"
   ],
   "devDependencies": {
-    "c8": "catalog:",
+    "@internal/cfg-eslint": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "fs-extra": "catalog:",
     "glob": "catalog:",
-    "i18next-parser": "9.3.0",
-    "mocha": "catalog:"
+    "i18next-parser": "9.4.0",
+    "vitest": "catalog:"
   },
   "dependencies": {
     "@tryghost/debug": "catalog:",

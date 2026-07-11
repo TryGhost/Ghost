@@ -10,11 +10,11 @@ const urlService = require('../../../core/server/services/url');
 describe('Snippet Model', function () {
     const siteUrl = configUtils.config.get('url');
 
-    before(testUtils.teardownDb);
-    before(testUtils.stopGhost);
-    after(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
+    beforeAll(testUtils.stopGhost);
+    afterAll(testUtils.teardownDb);
 
-    before(testUtils.setup('users:roles', 'snippets'));
+    beforeAll(testUtils.setup('users:roles', 'snippets'));
 
     beforeEach(function () {
         sinon.stub(urlService, 'getUrlByResourceId').returns('/test-url/');
@@ -29,7 +29,7 @@ describe('Snippet Model', function () {
         describe('Mobiledoc', function () {
             let snippet, mobiledoc;
 
-            before(async function () {
+            beforeAll(async function () {
                 const snippets = await models.Snippet.findAll();
                 snippet = snippets.models.find(s => s.get('name') === 'Snippet with all media types - Mobiledoc');
                 assertExists(snippet, 'Mobiledoc snippet should exist');
@@ -72,7 +72,7 @@ describe('Snippet Model', function () {
         describe('Lexical', function () {
             let snippet, lexicalString;
 
-            before(async function () {
+            beforeAll(async function () {
                 const snippets = await models.Snippet.findAll();
                 snippet = snippets.models.find(s => s.get('name') === 'Snippet with all media types - Lexical');
                 assertExists(snippet, 'Lexical snippet should exist');

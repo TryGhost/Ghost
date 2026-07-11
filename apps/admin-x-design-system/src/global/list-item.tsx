@@ -47,7 +47,7 @@ const ListItem: React.FC<ListItemProps> = ({
         separator ? 'border-b border-grey-100 last-of-type:border-b-transparent dark:border-grey-900' : 'border-y border-transparent',
         onClick && 'cursor-pointer before:absolute before:inset-0 before:content-[""]',
         'hover:z-10 hover:border-b-transparent',
-        '-mb-px pb-px', 
+        '-mb-px pb-px',
         className
     );
 
@@ -62,7 +62,7 @@ const ListItem: React.FC<ListItemProps> = ({
                         {avatar && avatar}
                         <div className={`flex grow flex-col py-3 pr-6`} id={id}>
                             <span>{title}</span>
-                            {detail && <span className='text-xs text-grey-700'>{detail}</span>}
+                            {detail && <span className='text-sm text-grey-700'>{detail}</span>}
                         </div>
                     </div>
                 }

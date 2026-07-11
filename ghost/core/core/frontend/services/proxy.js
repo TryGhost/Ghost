@@ -2,6 +2,7 @@
 const settingsCache = require('../../shared/settings-cache');
 const config = require('../../shared/config');
 const settingsHelpers = require('../../server/services/settings-helpers');
+const storageUtils = require('../../server/adapters/storage/utils');
 const internalKeys = require('../../server/services/internal-keys').default;
 const logging = require('@tryghost/logging');
 
@@ -26,9 +27,11 @@ module.exports = {
      * Section two: data manipulation
      * Stuff that modifies API data (SDK layer)
      */
-    metaData: require('../meta'),
     socialUrls: require('@tryghost/social-urls'),
     blogIcon: require('../../server/lib/image').blogIcon,
+    cachedImageSizeFromUrl: require('../../server/lib/image').cachedImageSizeFromUrl,
+    // bound because isInternalImage relies on `this` to reach sibling helpers in storage utils
+    isInternalImage: storageUtils.isInternalImage.bind(storageUtils),
     // Used by router service and {{get}} helper to prepare data for optimal usage in themes
     prepareContextResource(data) {
         (Array.isArray(data) ? data : [data]).forEach((resource) => {

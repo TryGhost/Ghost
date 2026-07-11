@@ -13,7 +13,7 @@ describe('Unit: posts CSV export serializer', function () {
         const chunks: Buffer[] = [];
         const nextCalls: unknown[] = [];
 
-        postsSerializer.exportCSV({data: source}, null, frame);
+        postsSerializer.exportCSV({data: source, filename: 'test-blog.ghost.analytics.2026-06-02.csv'}, null, frame);
 
         const response: any = new Writable({
             write(chunk: Buffer, _encoding: string, callback: Function) {
@@ -39,7 +39,7 @@ describe('Unit: posts CSV export serializer', function () {
 
         assert.equal(Buffer.concat(chunks).toString(), expected);
         assert.equal(headers['Content-Type'], 'text/csv; charset=utf-8');
-        assert.match(headers['Content-Disposition'], /^Attachment; filename="post-analytics\.\d{4}-\d{2}-\d{2}\.csv"$/);
+        assert.equal(headers['Content-Disposition'], 'Attachment; filename="test-blog.ghost.analytics.2026-06-02.csv"');
         assert.equal(headers['Cache-Control'], 'no-transform');
         assert.deepEqual(nextCalls, []);
     });
@@ -49,7 +49,7 @@ describe('Unit: posts CSV export serializer', function () {
         const frame: {response?: Function} = {};
         const headers: Record<string, string> = {};
 
-        postsSerializer.exportCSV({data: source}, null, frame);
+        postsSerializer.exportCSV({data: source, filename: 'test-blog.ghost.analytics.2026-06-02.csv'}, null, frame);
 
         const response: any = new Writable({
             write(_chunk: Buffer, _encoding: string, callback: Function) {
@@ -75,7 +75,7 @@ describe('Unit: posts CSV export serializer', function () {
         const frame: {response?: Function} = {};
         const headers: Record<string, string> = {};
 
-        postsSerializer.exportCSV({data: source}, null, frame);
+        postsSerializer.exportCSV({data: source, filename: 'test-blog.ghost.analytics.2026-06-02.csv'}, null, frame);
 
         const response: any = new Writable({
             write(_chunk: Buffer, _encoding: string, callback: Function) {
@@ -101,7 +101,7 @@ describe('Unit: posts CSV export serializer', function () {
         const source = Readable.from([{id: '1', title: 'Post'}], {objectMode: true});
         const frame: {response?: Function} = {};
 
-        postsSerializer.exportCSV({data: source}, null, frame);
+        postsSerializer.exportCSV({data: source, filename: 'test-blog.ghost.analytics.2026-06-02.csv'}, null, frame);
 
         const response: any = new Writable({
             write(_chunk: unknown, _encoding: string, callback: Function) {
@@ -117,5 +117,29 @@ describe('Unit: posts CSV export serializer', function () {
         });
 
         assert.equal(err, sourceError);
+    });
+
+    it('Passes missing filenames to next', async function () {
+        const source = Readable.from([{id: '1', title: 'Post'}], {objectMode: true});
+        const frame: {response?: Function} = {};
+        const response: any = new Writable({
+            write(_chunk: unknown, _encoding: string, callback: Function) {
+                callback();
+            }
+        });
+        const headers: Record<string, string> = {};
+        response.setHeader = (key: string, value: string) => {
+            headers[key] = value;
+        };
+        response.getHeader = () => undefined;
+
+        postsSerializer.exportCSV({data: source}, null, frame);
+
+        const err = await new Promise((resolve) => {
+            frame.response!(null, response, resolve);
+        });
+
+        assert.equal((err as Error).message, 'Missing CSV export filename');
+        assert.deepEqual(headers, {});
     });
 });

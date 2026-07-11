@@ -38,7 +38,7 @@ describe('UrlTranslator', function () {
 
     describe('getResourceDetails', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new UrlTranslator({
                 urlUtils: {
                     relativeToAbsolute: (t) => {
@@ -123,7 +123,7 @@ describe('UrlTranslator', function () {
 
     describe('getUrlTitle', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new UrlTranslator({});
         });
 
@@ -138,7 +138,7 @@ describe('UrlTranslator', function () {
 
     describe('getTypeAndIdFromPath', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new UrlTranslator({
                 urlService: {
                     facade: {
@@ -191,7 +191,7 @@ describe('UrlTranslator', function () {
 
     describe('getResourceById', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new UrlTranslator({
                 urlService: {
                     facade: {
@@ -308,7 +308,7 @@ describe('UrlTranslator', function () {
 
     describe('relativeToAbsolute', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new UrlTranslator({
                 urlUtils: {
                     relativeToAbsolute: (t) => {
@@ -325,7 +325,7 @@ describe('UrlTranslator', function () {
 
     describe('stripSubdirectoryFromPath', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new UrlTranslator({
                 urlUtils: {
                     relativeToAbsolute: (t) => {

@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 
 import {IncomingRecommendationEmailRenderer} from './incoming-recommendation-email-renderer';
 import {RecommendationService} from './recommendation-service';

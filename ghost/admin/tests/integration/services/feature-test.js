@@ -2,6 +2,7 @@ import EmberError from '@ember/error';
 import FeatureService, {feature} from 'ghost-admin/services/feature';
 import Pretender from 'pretender';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
@@ -81,14 +82,29 @@ describe('Integration: Service: feature', function () {
     setupTest();
 
     let server;
+    let originalMatchMedia;
 
     beforeEach(function () {
         server = new Pretender();
+        originalMatchMedia = window.matchMedia;
     });
 
     afterEach(function () {
+        sinon.restore();
+        document.documentElement.classList.remove('dark');
+        Object.defineProperty(window, 'matchMedia', {
+            configurable: true,
+            value: originalMatchMedia
+        });
         server.shutdown();
     });
+
+    function stubMatchMedia(mediaQuery) {
+        Object.defineProperty(window, 'matchMedia', {
+            configurable: true,
+            value: sinon.stub().returns(mediaQuery)
+        });
+    }
 
     it('loads labs and user settings correctly', async function () {
         stubSettings(server, {testFlag: true});
@@ -204,6 +220,94 @@ describe('Integration: Service: feature', function () {
         await service.fetch();
         expect(service.get('accessibility.testUserFlag')).to.be.true;
         expect(service.get('testUserFlag')).to.be.true;
+    });
+
+    it('resolves system night shift from OS preference', async function () {
+        stubSettings(server, {});
+        stubUser(server, {nightShift: 'system'});
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
+
+        let service = this.owner.lookup('service:feature');
+        sinon.stub(service.lazyLoader, 'loadStyle').resolves();
+        stubMatchMedia({
+            matches: true,
+            addEventListener: sinon.stub(),
+            removeEventListener: sinon.stub()
+        });
+
+        await service.fetch();
+
+        expect(service.get('_nightShiftPref')).to.equal('system');
+        expect(service.get('nightShift')).to.be.true;
+        expect(document.documentElement.classList.contains('dark')).to.be.true;
+    });
+
+    it('updates resolved night shift when OS preference changes in system mode', async function () {
+        stubSettings(server, {});
+        stubUser(server, {nightShift: 'system'});
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
+
+        let service = this.owner.lookup('service:feature');
+        let changeHandler;
+        sinon.stub(service.lazyLoader, 'loadStyle').resolves();
+        stubMatchMedia({
+            matches: true,
+            addEventListener: (event, handler) => {
+                changeHandler = handler;
+            },
+            removeEventListener: sinon.stub()
+        });
+
+        await service.fetch();
+        expect(service.get('nightShift')).to.be.true;
+
+        changeHandler({matches: false});
+
+        expect(service.get('nightShift')).to.be.false;
+        expect(document.documentElement.classList.contains('dark')).to.be.false;
+    });
+
+    it('resolves missing night shift preference to light mode', async function () {
+        stubSettings(server, {});
+        stubUser(server, {});
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
+
+        let service = this.owner.lookup('service:feature');
+        sinon.stub(service.lazyLoader, 'loadStyle').resolves();
+        stubMatchMedia({
+            matches: true,
+            addEventListener: sinon.stub(),
+            removeEventListener: sinon.stub()
+        });
+
+        await service.fetch();
+
+        expect(service.get('_nightShiftPref')).to.be.undefined;
+        expect(service.get('nightShift')).to.be.false;
+        expect(document.documentElement.classList.contains('dark')).to.be.false;
+    });
+
+    it('migrates legacy boolean night shift values when resolving theme', async function () {
+        stubSettings(server, {});
+        stubUser(server, {nightShift: true});
+
+        let session = this.owner.lookup('service:session');
+        await session.populateUser();
+
+        let service = this.owner.lookup('service:feature');
+        sinon.stub(service.lazyLoader, 'loadStyle').resolves();
+
+        await service.fetch();
+
+        expect(service.get('_nightShiftPref')).to.be.true;
+        expect(service.get('nightShift')).to.be.true;
+        expect(document.documentElement.classList.contains('dark')).to.be.true;
     });
 
     it('saves labs setting correctly', async function () {

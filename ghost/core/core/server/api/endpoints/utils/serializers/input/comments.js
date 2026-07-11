@@ -1,10 +1,12 @@
+const urlService = require('../../../../../services/url');
+
 module.exports = {
     all(_apiConfig, frame) {
         if (!frame.options.withRelated || frame.options.withRelated.length === 0) {
             return;
         }
 
-        // Map the 'liked' relation to 'count.liked'
+        // Map reaction shortcut relations to count relations
         frame.options.withRelated = frame.options.withRelated.map((relation) => {
             if (relation === 'liked') {
                 return 'count.liked';
@@ -12,19 +14,21 @@ module.exports = {
             if (relation === 'replies.liked') {
                 return 'replies.count.liked';
             }
+            if (relation === 'disliked') {
+                return 'count.disliked';
+            }
+            if (relation === 'replies.disliked') {
+                return 'replies.count.disliked';
+            }
             return relation;
         });
 
-        // If the caller asked for `post`, also load post.tags / post.authors
-        // — the comments output mapper calls url.forPost on the embedded
-        // post, which needs the relations to resolve tag/author-filtered
-        // routes under lazyRouting.
         if (frame.options.withRelated.includes('post')) {
-            if (!frame.options.withRelated.includes('post.tags')) {
-                frame.options.withRelated.push('post.tags');
-            }
-            if (!frame.options.withRelated.includes('post.authors')) {
-                frame.options.withRelated.push('post.authors');
+            for (const relation of urlService.facade.getRequiredRelations()) {
+                const prefixed = `post.${relation}`;
+                if (!frame.options.withRelated.includes(prefixed)) {
+                    frame.options.withRelated.push(prefixed);
+                }
             }
         }
     },

@@ -32,6 +32,7 @@ test.describe('Lazy loading', async () => {
             count: true,
             title: 'Title',
             ghostComments: MOCKED_SITE_URL,
+            admin: MOCKED_SITE_URL + '/ghost/',
             postId: mockedApi.postId
         };
 

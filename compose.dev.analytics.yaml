@@ -5,7 +5,7 @@
 
 services:
   analytics:
-    image: ghost/traffic-analytics:1.0.233@sha256:94ceb3ab54b3143ba6b5312120e2e0f7422013495ada1da136d554f12921e9df
+    image: ghost/traffic-analytics:1.0.265@sha256:14121127f23440f64e725bec2370d9de0d64ba956c8d3001478ce922e94348d7
     container_name: ghost-dev-analytics
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
@@ -14,8 +14,10 @@ services:
       - "3000"
     healthcheck:
       test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))\""]
-      interval: 1s
-      retries: 120
+      interval: 30s
+      retries: 5
+      start_period: 120s
+      start_interval: 1s
     volumes:
       - ./docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
       - shared-config:/mnt/shared-config:ro
@@ -29,7 +31,7 @@ services:
         condition: service_completed_successfully
 
   tinybird-local:
-    image: tinybirdco/tinybird-local:latest@sha256:39209d37844d613b57d499052341fc457da62cc1770fe0c5efaee94a88e5399a
+    image: tinybirdco/tinybird-local:latest@sha256:942cb8a703806bedc39a5ca77bc9cd36dd813ddad1556d46022ce9492f5acdb8
     container_name: ghost-dev-tinybird
     platform: linux/amd64
     stop_grace_period: 2s
@@ -37,9 +39,11 @@ services:
       - "7181:7181"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health"]
-      interval: 1s
+      interval: 30s
       timeout: 5s
-      retries: 120
+      retries: 5
+      start_period: 120s
+      start_interval: 1s
 
   tb-cli:
     build:

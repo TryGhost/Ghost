@@ -18,13 +18,13 @@ const context = testUtils.context.admin;
 describe('User Model', function run() {
     let eventsTriggered = {};
 
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
     afterEach(testUtils.teardownDb);
     afterEach(function () {
         sinon.restore();
     });
 
-    before(function () {
+    beforeAll(function () {
         assertExists(UserModel);
     });
 

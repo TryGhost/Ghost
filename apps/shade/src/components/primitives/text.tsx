@@ -18,7 +18,7 @@ type TextElement =
 
 type TextSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 type TextWeight = 'regular' | 'medium' | 'semibold' | 'bold';
-type TextTone = 'primary' | 'secondary' | 'tertiary' | 'inverse';
+type TextTone = 'primary' | 'secondary' | 'tertiary';
 type TextLeading = 'none' | 'snug' | 'normal' | 'relaxed' | 'tight' | 'tighter' | 'supertight' | 'body' | 'heading';
 
 const TEXT_SIZE_CLASSES: Record<TextSize, string> = {
@@ -42,8 +42,7 @@ const TEXT_WEIGHT_CLASSES: Record<TextWeight, string> = {
 const TEXT_TONE_CLASSES: Record<TextTone, string> = {
     primary: 'text-text-primary',
     secondary: 'text-text-secondary',
-    tertiary: 'text-text-tertiary',
-    inverse: 'text-text-inverse'
+    tertiary: 'text-text-tertiary'
 };
 
 const TEXT_LEADING_CLASSES: Record<TextLeading, string> = {

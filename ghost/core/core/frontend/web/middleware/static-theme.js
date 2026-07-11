@@ -58,6 +58,10 @@ function isAllowedFile(normalizedPath) {
  */
 function isFallthroughFile(filePath) {
     const fallthroughFiles = [
+        '/.well-known/llms-full.txt',
+        '/.well-known/llms.txt',
+        '/llms-full.txt',
+        '/llms.txt',
         '/robots.txt',
         '/sitemap.xml',
         '/sitemap.xsl'

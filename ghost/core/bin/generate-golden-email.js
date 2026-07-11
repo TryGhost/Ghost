@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // @ts-check
 
-/* eslint-disable no-console */
 
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

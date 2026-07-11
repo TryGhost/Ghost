@@ -21,6 +21,9 @@ const messages = {
         context: 'Too many login attempts.'
     },
     tooManyAttempts: 'Too many attempts.',
+    tooManyCheckoutAttempts: {
+        context: 'Too many checkout attempts.'
+    },
     tooManyOTCVerificationAttempts: {
         error: 'Too many attempts for this verification code.',
         context: 'Too many verification code attempts.'
@@ -36,6 +39,8 @@ let spamUserLogin = spam.user_login || {};
 let spamSendVerificationCode = spam.send_verification_code || {};
 let spamUserVerification = spam.user_verification || {};
 let spamMemberLogin = spam.member_login || {};
+let spamCheckoutSessionGlobal = spam.checkout_session_global || {};
+let spamCheckoutSessionEmail = spam.checkout_session_email || {};
 let spamContentApiKey = spam.content_api_key || {};
 let spamWebmentionsBlock = spam.webmentions_block || {};
 let spamEmailPreviewBlock = spam.email_preview_block || {};
@@ -51,6 +56,8 @@ let webmentionsBlockInstance;
 let userLoginInstance;
 let membersAuthInstance;
 let membersAuthEnumerationInstance;
+let checkoutSessionGlobalInstance;
+let checkoutSessionEmailInstance;
 let userResetInstance;
 let sendVerificationCodeInstance;
 let userVerificationInstance;
@@ -85,7 +92,7 @@ const handleStoreError = (err) => {
 // Defaults to 50 attempts per hour and locks the endpoint for an hour
 const globalBlock = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -114,7 +121,7 @@ const globalBlock = () => {
 
 const globalReset = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -143,7 +150,7 @@ const globalReset = () => {
 
 const webmentionsBlock = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -169,7 +176,7 @@ const webmentionsBlock = () => {
 
 const emailPreviewBlock = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -195,7 +202,7 @@ const emailPreviewBlock = () => {
 
 const membersAuth = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -228,7 +235,7 @@ const membersAuth = () => {
  */
 const membersAuthEnumeration = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -256,9 +263,69 @@ const membersAuthEnumeration = () => {
     return membersAuthEnumerationInstance;
 };
 
+const checkoutSessionGlobal = () => {
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('@tryghost/brute-knex');
+    const db = require('../../../../data/db');
+
+    store = store || new BruteKnex({
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
+
+    if (!checkoutSessionGlobalInstance) {
+        checkoutSessionGlobalInstance = new ExpressBrute(store,
+            extend({
+                attachResetToRequest: true,
+                failCallback(req, res, next, nextValidRequestDate) {
+                    return next(new errors.TooManyRequestsError({
+                        message: `Too many checkout attempts, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
+                        context: tpl(messages.tooManyCheckoutAttempts.context),
+                        help: tpl(messages.tooManyCheckoutAttempts.context)
+                    }));
+                },
+                handleStoreError: handleStoreError
+            }, pick(spamCheckoutSessionGlobal, spamConfigKeys))
+        );
+    }
+
+    return checkoutSessionGlobalInstance;
+};
+
+const checkoutSessionEmail = () => {
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('@tryghost/brute-knex');
+    const db = require('../../../../data/db');
+
+    store = store || new BruteKnex({
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
+
+    if (!checkoutSessionEmailInstance) {
+        checkoutSessionEmailInstance = new ExpressBrute(store,
+            extend({
+                attachResetToRequest: true,
+                failCallback(req, res, next, nextValidRequestDate) {
+                    return next(new errors.TooManyRequestsError({
+                        message: `Too many checkout attempts for this email, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
+                        context: tpl(messages.tooManyCheckoutAttempts.context),
+                        help: tpl(messages.tooManyCheckoutAttempts.context)
+                    }));
+                },
+                handleStoreError: handleStoreError
+            }, pick(spamCheckoutSessionEmail, spamConfigKeys))
+        );
+    }
+
+    return checkoutSessionEmailInstance;
+};
+
 const otcVerificationEnumeration = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -289,7 +356,7 @@ const otcVerificationEnumeration = () => {
 
 const otcVerification = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -324,7 +391,7 @@ const otcVerification = () => {
 // Default value of 5 attempts per user+IP pair
 const userLogin = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -355,7 +422,7 @@ const userLogin = () => {
 // The endpoint is then locked for an hour
 const userReset = function userReset() {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -384,7 +451,7 @@ const userReset = function userReset() {
 
 const userVerification = function userVerification() {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -410,7 +477,7 @@ const userVerification = function userVerification() {
 
 const sendVerificationCode = function sendVerificationCode() {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -438,7 +505,7 @@ const sendVerificationCode = function sendVerificationCode() {
 // The endpoint is then locked for an hour
 const privateBlog = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -502,6 +569,8 @@ module.exports = {
     userVerification: userVerification,
     membersAuth: membersAuth,
     membersAuthEnumeration: membersAuthEnumeration,
+    checkoutSessionGlobal: checkoutSessionGlobal,
+    checkoutSessionEmail: checkoutSessionEmail,
     otcVerification: otcVerification,
     otcVerificationEnumeration: otcVerificationEnumeration,
     userReset: userReset,
@@ -518,6 +587,8 @@ module.exports = {
         userLoginInstance = undefined;
         membersAuthInstance = undefined;
         membersAuthEnumerationInstance = undefined;
+        checkoutSessionGlobalInstance = undefined;
+        checkoutSessionEmailInstance = undefined;
         userResetInstance = undefined;
         sendVerificationCodeInstance = undefined;
         userVerificationInstance = undefined;
@@ -534,6 +605,8 @@ module.exports = {
         spamSendVerificationCode = spam.send_verification_code || {};
         spamUserVerification = spam.user_verification || {};
         spamMemberLogin = spam.member_login || {};
+        spamCheckoutSessionGlobal = spam.checkout_session_global || {};
+        spamCheckoutSessionEmail = spam.checkout_session_email || {};
         spamContentApiKey = spam.content_api_key || {};
         spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
         spamOtcVerification = spam.otc_verification || {};

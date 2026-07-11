@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const labs = require('../../../../../core/shared/labs');
 const urlUtils = require('../../../../../core/shared/url-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const giftServiceWrapper = require('../../../../../core/server/services/gifts');
@@ -54,17 +53,7 @@ describe('Gift Preview Controller', function () {
     });
 
     describe('giftPreview', function () {
-        it('redirects to homepage when lab flag is disabled', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(false);
-
-            await controller.giftPreview(req, res);
-
-            sinon.assert.calledOnce(res.redirect);
-            sinon.assert.calledWith(res.redirect, 302, 'https://example.com/');
-        });
-
         it('redirects to homepage when gift token is invalid', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
             giftServiceWrapper.service = {
                 getByToken: sinon.stub().rejects(new Error('Not found'))
             };
@@ -76,7 +65,6 @@ describe('Gift Preview Controller', function () {
         });
 
         it('redirects to homepage when gift token is not found (null)', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
             giftServiceWrapper.service = {
                 getByToken: sinon.stub().resolves(null)
             };
@@ -88,7 +76,6 @@ describe('Gift Preview Controller', function () {
         });
 
         it('returns HTML with OG tags for a valid gift', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
             giftServiceWrapper.service = {
                 getByToken: sinon.stub().resolves({
                     tierId: 'tier_1',
@@ -117,7 +104,6 @@ describe('Gift Preview Controller', function () {
         });
 
         it('escapes HTML in site title', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
             settingsCache.get.withArgs('title').returns('Blog <script>alert("xss")</script>');
             giftServiceWrapper.service = {
                 getByToken: sinon.stub().resolves({
@@ -136,7 +122,6 @@ describe('Gift Preview Controller', function () {
         });
 
         it('uses monthly cadence label', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
             giftServiceWrapper.service = {
                 getByToken: sinon.stub().resolves({
                     tierId: 'tier_1',
@@ -154,7 +139,6 @@ describe('Gift Preview Controller', function () {
         });
 
         it('defaults site title to Ghost', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
             settingsCache.get.withArgs('title').returns(null);
             giftServiceWrapper.service = {
                 getByToken: sinon.stub().resolves({
@@ -173,17 +157,7 @@ describe('Gift Preview Controller', function () {
     });
 
     describe('giftPreviewImage', function () {
-        it('returns 404 when lab flag is disabled', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(false);
-
-            await controller.giftPreviewImage(req, res);
-
-            sinon.assert.calledOnce(res.sendStatus);
-            sinon.assert.calledWith(res.sendStatus, 404);
-        });
-
         it('returns a PNG image for a valid gift', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
             giftServiceWrapper.service = {
                 getByToken: sinon.stub().resolves({
                     token: 'test-token-123',

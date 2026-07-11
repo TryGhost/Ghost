@@ -2,7 +2,8 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
+const {settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
+const metaData = require('../meta');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
 // BAD REQUIRE
@@ -21,6 +22,34 @@ const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-app
 
 const {get: getMetaData, getAssetUrl} = metaData;
 
+/**
+ * Escape a serialized JSON string for safe inclusion inside an inline
+ * `<script type="application/ld+json">` block.
+ *
+ * A `<script>` element is HTML *raw text*: the parser stops only at the literal
+ * substring `</script`, and it never decodes HTML character references. So
+ * HTML-entity escaping (e.g. `&lt;`) is the wrong tool here — worse than
+ * unnecessary, it corrupts the data, because JSON-LD consumers (Google's
+ * structured-data parser and friends) read the block as JSON and never
+ * HTML-decode it, so `Tom & Jerry` would be indexed as the literal
+ * `Tom &amp; Jerry`.
+ *
+ * Instead we escape only the breakout-relevant characters as JSON `\u` escapes.
+ * `JSON.parse` — and every conformant structured-data parser — decodes them
+ * back to the original character, so the data round-trips exactly while
+ * `</script>` / `<!--` sequences can no longer form (both begin with `<`).
+ *
+ * @param {string} json - the output of `JSON.stringify`
+ * @returns {string}
+ */
+function escapeJsonLd(json) {
+    return json
+        .replace(/</g, '\\u003c')
+        .replace(/>/g, '\\u003e')
+        .replace(/\u2028/g, '\\u2028')
+        .replace(/\u2029/g, '\\u2029');
+}
+
 function writeMetaTag(property, content, type) {
     type = type || property.substring(0, 7) === 'twitter' ? 'name' : 'property';
     return '<meta ' + type + '="' + property + '" content="' + content + '">';
@@ -34,8 +63,7 @@ function finaliseStructuredData(meta) {
             _.each(meta.keywords, function (keyword) {
                 if (keyword !== '') {
                     keyword = escapeExpression(keyword);
-                    head.push(writeMetaTag(property,
-                        escapeExpression(keyword)));
+                    head.push(writeMetaTag(property, keyword));
                 }
             });
             head.push('');
@@ -57,19 +85,21 @@ function getMembersHelper(data, frontendKey, excludeList) {
     if (!excludeList.has('portal')) {
         const {scriptUrl} = getFrontendAppConfig('portal');
 
-        const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
-        const attributes = {
-            i18n: true,
-            ghost: urlUtils.getSiteUrl(),
-            key: frontendKey,
-            api: urlUtils.urlFor('api', {type: 'content'}, true),
-            locale: settingsCache.get('locale') || 'en'
-        };
-        if (colorString) {
-            attributes['accent-color'] = colorString;
+        if (scriptUrl) {
+            const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
+            const attributes = {
+                i18n: true,
+                ghost: urlUtils.getSiteUrl(),
+                key: frontendKey,
+                api: urlUtils.urlFor('api', {type: 'content'}, true),
+                locale: settingsCache.get('locale') || 'en'
+            };
+            if (colorString) {
+                attributes['accent-color'] = colorString;
+            }
+            const dataAttributes = getDataAttributes(attributes);
+            membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
         }
-        const dataAttributes = getDataAttributes(attributes);
-        membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     }
     if (!excludeList.has('cta_styles')) {
         membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
@@ -123,7 +153,7 @@ function getAnnouncementBarHelper(data) {
         const announcementVisibility = searchParam.has('announcement_vis');
 
         if (!announcement || !announcementVisibility) {
-            return;
+            return '';
         }
         attrs.announcement = escapeExpression(announcement);
         attrs['announcement-background'] = escapeExpression(announcementBackground);
@@ -134,6 +164,42 @@ function getAnnouncementBarHelper(data) {
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 
     return helper;
+}
+
+function getAdminToolbarHelper(dataRoot, siteTitle, excludeList) {
+    if (!dataRoot._locals?.staffFrontendToolsEnabled || excludeList.has('admin_toolbar')) {
+        return '';
+    }
+
+    const {scriptUrl} = getFrontendAppConfig('adminToolbar');
+    const context = dataRoot._locals?.context || dataRoot.context || [];
+    const entry = dataRoot.post || dataRoot.page;
+    const resourceId = entry?.id;
+    const resourceSlug = context.includes('tag') ? dataRoot.tag?.slug : '';
+    const isHome = context.includes('home');
+    let resourceType = '';
+
+    if (resourceId) {
+        resourceType = context.includes('page') || entry.type === 'page' ? 'page' : 'post';
+    } else if (resourceSlug) {
+        resourceType = 'tag';
+    }
+
+    const attrs = {
+        'ghost-admin-toolbar': escapeExpression(urlUtils.urlFor('admin', true)),
+        'site-title': escapeExpression(siteTitle || settingsCache.get('title') || 'Ghost'),
+        'resource-type': resourceType || undefined,
+        'resource-id': resourceId ? escapeExpression(resourceId) : undefined,
+        'resource-slug': resourceSlug ? escapeExpression(resourceSlug) : undefined,
+        'page-context': isHome ? 'home' : undefined,
+        'site-analytics-enabled': isHome && settingsCache.get('web_analytics_enabled') === true ? 'true' : undefined,
+        'activitypub-enabled': isHome && settingsCache.get('social_web_enabled') === true ? 'true' : undefined,
+        'members-enabled': isHome && settingsCache.get('members_enabled') === true ? 'true' : undefined,
+        'comments-enabled': resourceType === 'post' && settingsCache.get('comments_enabled') === 'off' ? 'false' : undefined
+    };
+    const dataAttrs = getDataAttributes(attrs);
+
+    return `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 }
 
 function getWebmentionDiscoveryLink() {
@@ -170,7 +236,8 @@ function getTinybirdTrackerScript(dataRoot) {
         post_uuid: dataRoot.post?.uuid,
         post_type: dataRoot.context?.includes('post') ? 'post' : dataRoot.context?.includes('page') ? 'page' : null,
         member_uuid: dataRoot.member?.uuid,
-        member_status: dataRoot.member?.status
+        member_status: dataRoot.member?.status,
+        gift_link: dataRoot._giftLink || ''
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
 
     return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" ${token && env !== 'production' ? `data-token="${token}"` : ''} ${tbParams}></script>`;
@@ -288,7 +355,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
                 if (!excludeList.has('schema') && meta.schema) {
                     head.push('<script type="application/ld+json">\n' +
-                        JSON.stringify(meta.schema, null, '    ') +
+                        escapeJsonLd(JSON.stringify(meta.schema, null, '    ')) +
                         '\n    </script>\n');
                 }
             }
@@ -305,6 +372,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         }
         if (!excludeList.has('announcement')) {
             head.push(getAnnouncementBarHelper(options.data));
+        }
+        const adminToolbarHelper = getAdminToolbarHelper(dataRoot, meta.site.title, excludeList);
+        if (adminToolbarHelper) {
+            head.push(adminToolbarHelper);
         }
         try {
             head.push(getWebmentionDiscoveryLink());
@@ -343,7 +414,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (options.data.site.accent_color) {
             const accentColor = escapeExpression(options.data.site.accent_color);
             const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
-            const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
+            const existingScriptIndex = _.findLastIndex(head, str => typeof str === 'string' && /<\/(style|script)>/.test(str));
 
             if (existingScriptIndex !== -1) {
                 head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
@@ -397,3 +468,6 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 };
 
 module.exports.async = true;
+
+// Exported for unit testing.
+module.exports.escapeJsonLd = escapeJsonLd;

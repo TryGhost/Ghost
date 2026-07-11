@@ -33,7 +33,7 @@ import {cn} from '@/lib/utils';
  *   )} />
  */
 export const inputSurfaceClasses = {
-    base: 'rounded-md border border-border-default bg-surface-elevated transition-colors',
+    base: 'rounded-md border border-control-border bg-surface-elevated transition-colors dark:bg-transparent',
     focusSelf:
         'focus-visible:outline-hidden focus-visible:bg-transparent focus-visible:border-focus-ring focus-visible:ring-2 focus-visible:ring-focus-ring/25',
     focusWithin:

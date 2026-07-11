@@ -1,8 +1,11 @@
 import {AnalyticsOverviewPage, LoginPage, PasswordResetPage, SettingsPage} from '@/admin-pages';
 import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
-import {Page} from '@playwright/test';
 import {expect, test} from '@/helpers/playwright';
 import {extractPasswordResetLink} from '@/helpers/services/email/utils';
+import {usePerTestIsolation} from '@/helpers/playwright/isolation';
+import type {Page} from '@playwright/test';
+
+usePerTestIsolation();
 
 test.describe('Ghost Admin - Reset Password', () => {
     const emailClient: EmailClient = new MailPit();

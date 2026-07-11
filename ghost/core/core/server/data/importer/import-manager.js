@@ -25,7 +25,7 @@ const mediaStorage = require('../../adapters/storage').getStorage('media');
 const imageStorage = require('../../adapters/storage').getStorage('images');
 const fileStorage = require('../../adapters/storage').getStorage('files');
 
-const emailTemplate = require('./email-template');
+const {emailTemplate} = require('./email-template');
 const ghostMailer = new GhostMailer();
 
 const messages = {
@@ -529,7 +529,8 @@ class ImportManager {
             return importResult;
         } catch (err) {
             logging.error(err, 'Content import was unsuccessful');
-            importResult = {data: {errors: [err]}};
+            const errorDetails = err.errorDetails || [err];
+            importResult = {data: {errors: errorDetails}};
         } finally {
             // Step 5: Cleanup any files
             await this.cleanUp();

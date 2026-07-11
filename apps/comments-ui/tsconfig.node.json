@@ -2,9 +2,12 @@
   "compilerOptions": {
     "composite": true,
     "skipLibCheck": true,
+    "target": "ESNext",
+    "lib": ["ESNext"],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.node.tsbuildinfo"
   },
   "include": ["vite.config.mts", "vite-plugin-strip-fingerprinting.ts", "package.json"]
 }

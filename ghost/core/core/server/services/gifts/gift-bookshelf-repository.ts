@@ -148,6 +148,16 @@ export class GiftBookshelfRepository implements GiftRepository {
         return collection.models.map(model => this.toGift(model));
     }
 
+    async findUnsentReminders(): Promise<Gift[]> {
+        const now = new Date().toISOString();
+
+        const collection = await this.model.findAll({
+            filter: `status:redeemed+consumes_at:>'${now}'+consumes_soon_reminder_sent_at:null`
+        });
+
+        return collection.models.map(model => this.toGift(model));
+    }
+
     async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
         await this.model.add(this.toRow(gift), options);
     }

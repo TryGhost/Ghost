@@ -53,9 +53,7 @@ describe('lib/lexical', function () {
         });
 
         it('passes disabled spacer image settings to video rendering', async function () {
-            sinon.stub(settingsCache, 'get').callsFake((key) => {
-                return key === 'spacer_image_url_template' ? '' : undefined;
-            });
+            sinon.stub(settingsCache, 'get').callsFake((key) => key === 'spacer_image_url_template' ? '' : undefined);
 
             const lexicalState = JSON.stringify({
                 root: {
@@ -84,20 +82,18 @@ describe('lib/lexical', function () {
             assert.doesNotMatch(rendered, /\sposter="/);
         });
 
-        it(`calls custom renderers`, async function () {
+        it(`calls custom renderers passed via options`, async function () {
             const {JSDOM} = jsdom;
             const dom = new JSDOM();
             const document = dom.window.document;
 
-            const customNodeRenderers = {
+            const nodeRenderers = {
                 image: () => {
                     const element = document.createElement('div');
                     element.innerHTML = '<span>CUSTOM</span>';
                     return {element, type: 'inner'};
                 }
             };
-
-            sinon.stub(lexicalLib, 'customNodeRenderers').get(() => customNodeRenderers);
 
             const lexicalState = JSON.stringify({
                 root: {
@@ -119,9 +115,35 @@ describe('lib/lexical', function () {
                 }
             });
 
-            const rendered = await lexicalLib.render(lexicalState);
+            const rendered = await lexicalLib.render(lexicalState, {nodeRenderers});
 
             assert(rendered.includes('<span>CUSTOM</span>'));
+        });
+    });
+
+    describe('validate()', function () {
+        it('returns true for well-formed lexical', async function () {
+            const lexical = `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Lexical is valid.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`;
+
+            assert.equal(await lexicalLib.validate(lexical), true);
+        });
+
+        it('returns false for malformed lexical', async function () {
+            const lexical = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'unknown-node',
+                        version: 1
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            assert.equal(await lexicalLib.validate(lexical), false);
         });
     });
 });

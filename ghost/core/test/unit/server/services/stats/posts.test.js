@@ -220,9 +220,9 @@ describe('PostsStatsService', function () {
         });
     }
 
-    before(async function () {
+    beforeAll(async function () {
         db = knex({
-            client: 'sqlite3',
+            client: 'better-sqlite3',
             useNullAsDefault: true,
             connection: {
                 filename: ':memory:'
@@ -358,7 +358,7 @@ describe('PostsStatsService', function () {
         await db('posts_authors').truncate();
     });
 
-    after(async function () {
+    afterAll(async function () {
         await db.destroy();
     });
 

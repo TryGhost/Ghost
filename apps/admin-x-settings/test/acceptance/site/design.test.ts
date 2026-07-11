@@ -138,6 +138,7 @@ test.describe('Design settings', async () => {
 
         const matchingHeader = previewHeaders.headers()['x-ghost-preview'];
         expect(matchingHeader).toContain('cd5786');
+        expect(previewHeaders.headers().accept).toBe('text/html');
         await expect(modal.getByTestId('toggle-unsplash-button')).toBeVisible();
         await modal.getByRole('button', {name: 'Save'}).click();
 
@@ -478,7 +479,7 @@ test.describe('Design settings', async () => {
 
         await modal.getByRole('button', {name: 'Install Headline'}).click();
 
-        await expect(page.getByTestId('confirmation-modal')).toHaveText(/installed/);
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/uploaded/i);
 
         await page.getByRole('button', {name: 'Activate'}).click();
 

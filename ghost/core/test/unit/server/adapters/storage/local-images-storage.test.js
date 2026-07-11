@@ -8,6 +8,11 @@ const path = require('path');
 const LocalImagesStorage = require('../../../../../core/server/adapters/storage/LocalImagesStorage');
 const configUtils = require('../../../../utils/config-utils');
 
+// Resolve content paths from the ghost/core package root so assertions do not
+// assume process.cwd() === ghost/core (the unified `pnpm test:watch` runs from
+// the repo root).
+const ghostCoreRoot = path.join(__dirname, '../../../../..');
+
 describe('Local Images Storage', function () {
     let image;
     let momentStub;
@@ -78,42 +83,42 @@ describe('Local Images Storage', function () {
     it('should create month and year directory', async function () {
         await localFileStore.save(image);
         sinon.assert.calledOnce(fsMkdirsStub);
-        assert.equal(fsMkdirsStub.args[0][0], path.resolve('./content/images/2013/09'));
+        assert.equal(fsMkdirsStub.args[0][0], path.resolve(ghostCoreRoot, './content/images/2013/09'));
     });
 
     it('should copy temp file to new location', async function () {
         await localFileStore.save(image);
         sinon.assert.calledOnce(fsCopyStub);
         assert.equal(fsCopyStub.args[0][0], 'tmp/123456.jpg');
-        assert.equal(fsCopyStub.args[0][1], path.resolve('./content/images/2013/09/IMAGE.jpg'));
+        assert.equal(fsCopyStub.args[0][1], path.resolve(ghostCoreRoot, './content/images/2013/09/IMAGE.jpg'));
     });
 
     it('can upload two different images with the same name without overwriting the first', async function () {
-        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).resolves();
-        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).rejects();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, './content/images/2013/09/IMAGE.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, './content/images/2013/09/IMAGE-1.jpg')).rejects();
 
         // if on windows need to setup with back slashes
         // doesn't hurt for the test to cope with both
-        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
-        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).rejects();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, '.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, '.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).rejects();
 
         const url = await localFileStore.save(image);
         assert.equal(url, '/content/images/2013/09/IMAGE-1.jpg');
     });
 
     it('can upload five different images with the same name without overwriting the first', async function () {
-        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).resolves();
-        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).resolves();
-        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE-2.jpg')).resolves();
-        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE-3.jpg')).resolves();
-        fsStatStub.withArgs(path.resolve('./content/images/2013/09/IMAGE-4.jpg')).rejects();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, './content/images/2013/09/IMAGE.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, './content/images/2013/09/IMAGE-1.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, './content/images/2013/09/IMAGE-2.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, './content/images/2013/09/IMAGE-3.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, './content/images/2013/09/IMAGE-4.jpg')).rejects();
 
         // windows setup
-        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
-        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).resolves();
-        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-2.jpg')).resolves();
-        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-3.jpg')).resolves();
-        fsStatStub.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-4.jpg')).rejects();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, '.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, '.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, '.\\content\\images\\2013\\Sep\\IMAGE-2.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, '.\\content\\images\\2013\\Sep\\IMAGE-3.jpg')).resolves();
+        fsStatStub.withArgs(path.resolve(ghostCoreRoot, '.\\content\\images\\2013\\Sep\\IMAGE-4.jpg')).rejects();
 
         const url = await localFileStore.save(image);
         assert.equal(url, '/content/images/2013/09/IMAGE-4.jpg');

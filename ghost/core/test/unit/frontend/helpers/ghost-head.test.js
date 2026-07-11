@@ -34,6 +34,21 @@ async function testGhostHead(options) {
     const sodoSearchVersion = /sodo-search@~\d+\.\d+(\.\d+)?\//g;
     rendered = rendered.replace(sodoSearchVersion, 'sodo-search@~[[VERSION]]/');
 
+    const adminToolbarResourceId = /data-resource-id="[^"]+"/g;
+    rendered = rendered.replace(adminToolbarResourceId, 'data-resource-id="[[RESOURCE_ID]]"');
+
+    const adminToolbarTagMetadata = / data-resource-type="tag" data-resource-slug="[^"]+"/g;
+    rendered = rendered.replace(adminToolbarTagMetadata, '');
+
+    const adminToolbarPageContext = / data-page-context="home"/g;
+    rendered = rendered.replace(adminToolbarPageContext, '');
+
+    const adminToolbarHomepageFeatures = / data-(site-analytics|activitypub|members)-enabled="true"/g;
+    rendered = rendered.replace(adminToolbarHomepageFeatures, '');
+
+    const adminToolbarCommentsDisabled = / data-comments-enabled="false"/g;
+    rendered = rendered.replace(adminToolbarCommentsDisabled, '');
+
     assertExists(rendered);
     // Note: we need to convert the string to an object in order to use the snapshot feature
     assertMatchSnapshot({rendered});
@@ -250,7 +265,7 @@ describe('{{ghost_head}} helper', function () {
 
         posts.push(createPost({// Post 4
             title: 'Welcome to Ghost',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('This is a short post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('This is a short post'),
             excerpt: 'This is a short post',
             authors: [
                 authors[3]
@@ -331,7 +346,7 @@ describe('{{ghost_head}} helper', function () {
 
         posts.push(createPost({// Post 9
             title: 'Welcome to Ghost',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('This is a short post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('This is a short post'),
             excerpt: 'This is a short post',
             tags: [
                 createTag({name: 'tag1'}),
@@ -350,7 +365,22 @@ describe('{{ghost_head}} helper', function () {
             title: 'Testing stats',
             uuid: 'post_uuid',
             excerpt: 'Creating stats for the site',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('Creating stats for the site'),
+            lexical: testUtils.DataGenerator.markdownToLexical('Creating stats for the site'),
+            authors: [
+                authors[3]
+            ],
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
+        }));
+
+        posts.push(createPost({ // Post 11
+            meta_description: 'site description',
+            title: 'Welcome to Ghost',
+            feature_image: '/content/images/test-image.png',
+            tags: [
+                createTag({name: 'Tom & Jerry'})
+            ],
             authors: [
                 authors[3]
             ],
@@ -580,6 +610,27 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+        });
+
+        it('single-escapes special characters in article:tag meta values', async function () {
+            const renderObject = {
+                post: posts[11]
+            };
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+
+            // The tag name "Tom & Jerry" must be HTML-escaped exactly once, so that
+            // consumers decode it back to the original "Tom & Jerry".
+            assert.match(rendered, /<meta property="article:tag" content="Tom &amp; Jerry">/);
+            // Guard against the double-escaping regression (&amp;amp;).
+            assert.doesNotMatch(rendered, /&amp;amp;/);
         });
 
         it('returns structured data without tags if there are no tags', async function () {
@@ -1019,6 +1070,30 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
 
+        it('includes style tag in design preview when announcement bar renders nothing', async function () {
+            const loggingErrorStub = sinon.stub(logging, 'error');
+            getStub.withArgs('members_track_sources').returns(false);
+
+            const templateOptions = {
+                site: {
+                    accent_color: '#123456',
+                    _preview: 'test'
+                }
+            };
+
+            const rendered = await testGhostHead({hash: {exclude: 'card_assets,comment_counts'}, ...testUtils.createHbsResponse({
+                templateOptions,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+
+            assert.match(rendered, /--ghost-accent-color: #123456/);
+            sinon.assert.notCalled(loggingErrorStub);
+        });
+
         it('does not override code injection', async function () {
             getStub.withArgs('codeinjection_head').returns('<style>:root {--ghost-accent-color: #site-code-injection}</style>');
 
@@ -1256,6 +1331,22 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
         });
+        it('does not inject the portal script when portal url is disabled', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
+            configUtils.set({'portal:url': false});
+
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }))).toString();
+
+            assert.doesNotMatch(rendered, /src="false"/);
+            assert.doesNotMatch(rendered, /data-ghost=/);
+        });
     });
 
     describe('search scripts', function () {
@@ -1457,6 +1548,43 @@ describe('{{ghost_head}} helper', function () {
             assert.match(rendered, /data-datasource="analytics_events"/);
         });
 
+        // These call ghost_head directly rather than via testGhostHead so they
+        // assert the tb_gift_link value without taking a snapshot — keeping them
+        // out of the shared tracker snapshots.
+        it('sets tb_gift_link to the token on a verified gift read', async function () {
+            // The gift reader path sets the verified token as `_giftLink` on
+            // res.locals, which merges onto the render context root — the same
+            // place ghost_foot reads it for the toast. The tracker reads
+            // `dataRoot._giftLink` and forwards it so analytics can segment gift
+            // traffic and count per-link usage. Inject it via locals here (which
+            // createHbsResponse merges into data.root) so this guards the real
+            // production data path.
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                renderObject: {post: posts[10]},
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '4.3',
+                    _giftLink: 'gift_token_abc'
+                }
+            }))).toString();
+
+            assert.match(rendered, /tb_gift_link="gift_token_abc"/);
+        });
+
+        it('sets an empty tb_gift_link on a normal read', async function () {
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                renderObject: {post: posts[10]},
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '4.3'
+                }
+            }))).toString();
+
+            assert.match(rendered, /tb_gift_link=""/);
+        });
+
         it('does not include tracker script when preview is set', async function () {
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1642,6 +1770,153 @@ describe('{{ghost_head}} helper', function () {
                 }
             })});
             assert.doesNotMatch(rendered, /comment-counts.min.js/);
+        });
+
+        it('does not load the admin toolbar script without the frontend marker', async function () {
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            }))).toString();
+
+            assert.doesNotMatch(rendered, /admin-toolbar\.min\.js/);
+        });
+
+        it('loads the admin toolbar script with public site and post metadata', async function () {
+            getStub.withArgs('comments_enabled').returns('all');
+
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/welcome/',
+                    context: ['post'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                },
+                renderObject: {
+                    post: posts[2]
+                }
+            }))).toString();
+
+            assert.match(rendered, /admin-toolbar\.min\.js/);
+            assert.match(rendered, /data-ghost-admin-toolbar="http:\/\/(?:localhost:65530|127\.0\.0\.1:\d+)\/ghost\/"/);
+            assert.match(rendered, /data-site-title="Ghost"/);
+            assert.match(rendered, /data-resource-type="post"/);
+            assert.match(rendered, new RegExp(`data-resource-id="${posts[2].id}"`));
+            assert.doesNotMatch(rendered, /data-comments-enabled/);
+            assert.doesNotMatch(rendered, /Jane Staff/);
+            assert.doesNotMatch(rendered, /ghost-admin-api-session/);
+        });
+
+        it('marks the admin toolbar script when comments are disabled', async function () {
+            getStub.withArgs('comments_enabled').returns('off');
+
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/welcome/',
+                    context: ['post'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                },
+                renderObject: {
+                    post: posts[2]
+                }
+            }))).toString();
+
+            assert.match(rendered, /admin-toolbar\.min\.js/);
+            assert.match(rendered, /data-comments-enabled="false"/);
+        });
+
+        it('loads the admin toolbar script with homepage feature metadata', async function () {
+            getStub.withArgs('web_analytics_enabled').returns(true);
+            getStub.withArgs('social_web_enabled').returns(true);
+            getStub.withArgs('members_enabled').returns(true);
+
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                }
+            }))).toString();
+
+            assert.match(rendered, /admin-toolbar\.min\.js/);
+            assert.match(rendered, /data-page-context="home"/);
+            assert.match(rendered, /data-site-analytics-enabled="true"/);
+            assert.match(rendered, /data-activitypub-enabled="true"/);
+            assert.match(rendered, /data-members-enabled="true"/);
+        });
+
+        it('omits disabled homepage feature metadata', async function () {
+            getStub.withArgs('web_analytics_enabled').returns(false);
+            getStub.withArgs('social_web_enabled').returns(false);
+            getStub.withArgs('members_enabled').returns(false);
+
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                }
+            }))).toString();
+
+            assert.match(rendered, /admin-toolbar\.min\.js/);
+            assert.match(rendered, /data-page-context="home"/);
+            assert.doesNotMatch(rendered, /data-site-analytics-enabled/);
+            assert.doesNotMatch(rendered, /data-activitypub-enabled/);
+            assert.doesNotMatch(rendered, /data-members-enabled/);
+        });
+
+        it('loads the admin toolbar script with tag metadata', async function () {
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/tag/tagtitle/',
+                    context: ['tag'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                },
+                renderObject: {
+                    tag: tags[0]
+                }
+            }))).toString();
+
+            assert.match(rendered, /admin-toolbar\.min\.js/);
+            assert.match(rendered, /data-resource-type="tag"/);
+            assert.match(rendered, new RegExp(`data-resource-slug="${tags[0].slug}"`));
+        });
+
+        it('loads the admin toolbar script with page metadata', async function () {
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/about/',
+                    context: ['page'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                },
+                renderObject: {
+                    post: posts[0]
+                }
+            }))).toString();
+
+            assert.match(rendered, /admin-toolbar\.min\.js/);
+            assert.match(rendered, /data-resource-type="page"/);
+            assert.match(rendered, new RegExp(`data-resource-id="${posts[0].id}"`));
+        });
+
+        it('can exclude the admin toolbar script', async function () {
+            const rendered = (await ghost_head({hash: {exclude: 'admin_toolbar'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                }
+            })})).toString();
+
+            assert.doesNotMatch(rendered, /admin-toolbar\.min\.js/);
         });
 
         it('loads card assets when not excluded', async function () {

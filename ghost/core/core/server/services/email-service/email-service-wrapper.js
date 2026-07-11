@@ -10,7 +10,7 @@ class EmailServiceWrapper {
         return jsonModel.url;
     }
 
-    init() {
+    init({ghostServer} = {}) {
         if (this.service) {
             return;
         }
@@ -25,6 +25,8 @@ class EmailServiceWrapper {
         const {DomainWarmingService} = require('./domain-warming-service');
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
+        const urlService = require('../url');
+        const getRequiredUrlRelations = () => urlService.facade.getRequiredRelations();
         const MailgunClient = require('../lib/mailgun-client');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
@@ -38,7 +40,6 @@ class EmailServiceWrapper {
         const labs = require('../../../shared/labs');
         const emailAddressService = require('../email-address');
         const i18nLib = require('@tryghost/i18n');
-        const mobiledocLib = require('../../lib/mobiledoc');
         const lexicalLib = require('../../lib/lexical');
         const urlUtils = require('../../../shared/url-utils');
         const memberAttribution = require('../member-attribution');
@@ -76,13 +77,13 @@ class EmailServiceWrapper {
             settingsCache,
             settingsHelpers,
             renderers: {
-                mobiledoc: mobiledocLib,
                 lexical: lexicalLib
             },
             imageSize: cachedImageSizeFromUrl,
             urlUtils,
             storageUtils,
             getPostUrl: this.getPostUrl,
+            getRequiredUrlRelations,
             linkReplacer,
             linkTracking,
             memberAttributionService: memberAttribution.service,
@@ -124,8 +125,13 @@ class EmailServiceWrapper {
             domainWarmingService,
             db,
             sentry,
+            getRequiredUrlRelations,
             debugStorageFilePath: configService.getContentPath('data')
         });
+
+        if (ghostServer) {
+            ghostServer.registerCleanupTask(() => batchSendingService.onShutdown());
+        }
 
         this.renderer = emailRenderer;
 
@@ -133,7 +139,8 @@ class EmailServiceWrapper {
             batchSendingService,
             sendingService,
             models: {
-                Email
+                Email,
+                EmailBatch
             },
             settingsCache,
             emailRenderer,
@@ -151,7 +158,8 @@ class EmailServiceWrapper {
                 Post,
                 Newsletter,
                 Email
-            }
+            },
+            getRequiredUrlRelations
         });
     }
 }

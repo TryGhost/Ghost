@@ -1,0 +1,12 @@
+# CoreDNS config for the egress-monitor sidecar.
+#
+# Ghost's resolver is pointed at this server, which makes it the upstream of
+# Docker's embedded DNS — so internal service names (mysql, redis, …) are
+# resolved by Docker itself and only EXTERNAL lookups reach CoreDNS. Those are
+# forwarded on to Docker's embedded resolver (127.0.0.11) and logged with an
+# `EGRESS` sentinel the host side greps for.
+.:53 {
+    forward . 127.0.0.11
+    log . "EGRESS {remote} {type} {name}"
+    errors
+}

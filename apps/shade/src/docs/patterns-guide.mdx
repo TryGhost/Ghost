@@ -6,7 +6,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Patterns
 
-<p className="excerpt">Product-shaped compositions. `PageHeader`, `ListPage`, `KpiCard`, `Filters`, `GhAreaChart`. Patterns compose primitives, components, and recipes with knowledge of how Ghost actually uses them.</p>
+<p className="excerpt">Product-shaped compositions. `PageHeader`, `KpiCard`, `Filters`, `GhAreaChart`. Patterns compose primitives, components, and recipes with knowledge of how Ghost actually uses them. Page-level wrappers like `ListPage` live in the separate [Page templates](?path=/docs/page-templates-page-types--docs) layer.</p>
 
 ## Use a pattern when
 
@@ -30,25 +30,22 @@ Promotion rules and the full decision flow: [Layers](?path=/docs/overview-layers
 ## Example
 
 ```tsx
-import {PageHeader, ListPage} from '@tryghost/shade/patterns';
-import {Button, Table} from '@tryghost/shade/components';
+import {PageHeader} from '@tryghost/shade/patterns';
+import {Button} from '@tryghost/shade/components';
 
-<ListPage>
-  <PageHeader>
-    <PageHeader.Left>
-      <PageHeader.Title>Members<PageHeader.Count>{count}</PageHeader.Count></PageHeader.Title>
-    </PageHeader.Left>
-    <PageHeader.Actions>
-      <PageHeader.ActionGroup>
-        <Button>Add member</Button>
-      </PageHeader.ActionGroup>
-    </PageHeader.Actions>
-  </PageHeader>
-  <ListPage.Body>
-    <Table>...</Table>
-  </ListPage.Body>
-</ListPage>
+<PageHeader>
+  <PageHeader.Left>
+    <PageHeader.Title>Members<PageHeader.Count>{count}</PageHeader.Count></PageHeader.Title>
+  </PageHeader.Left>
+  <PageHeader.Actions>
+    <PageHeader.ActionGroup>
+      <Button>Add member</Button>
+    </PageHeader.ActionGroup>
+  </PageHeader.Actions>
+</PageHeader>
 ```
+
+For the full list-page wrapper (`ListPage` composing `PageHeader` + body), see [Page templates / Page types](?path=/docs/page-templates-page-types--docs).
 
 Browse the sidebar for the live list of patterns.
 

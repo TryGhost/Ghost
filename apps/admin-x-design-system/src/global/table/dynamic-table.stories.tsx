@@ -64,7 +64,7 @@ export const testRows = (noOfRows: number) => {
                     alert('Clicked on row: ' + i);
                 },
                 cells: [
-                    (<div className='flex items-center gap-2'>
+                    (<div key='member' className='flex items-center gap-2'>
                         {i % 3 === 0 && <Avatar bgColor='green' label='JL' labelColor='white' />}
                         {i % 3 === 1 && <Avatar bgColor='orange' label='GS' labelColor='white' />}
                         {i % 3 === 2 && <Avatar bgColor='black' label='ZB' labelColor='white' />}
@@ -83,7 +83,7 @@ export const testRows = (noOfRows: number) => {
                     'Subscribed',
                     'Monthly',
                     '1,303',
-                    <Button color='green' label='Edit' link onClick={() => {
+                    <Button key='edit' color='green' label='Edit' link onClick={() => {
                         alert('Clicked Edit in row:' + i);
                     }} />
                 ]

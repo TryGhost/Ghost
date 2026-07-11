@@ -4,7 +4,7 @@ import SettingImg from '../../../assets/images/ghost-explore.png';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Button, Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {type Setting, getSettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {abbreviateNumber} from '@tryghost/shade/utils';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -35,8 +35,8 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [accentColor, icon] = getSettingValues<string>(settings, ['accent_color', 'icon']);
     const {localSettings, siteData} = useSettingGroup();
     const [title, description] = getSettingValues(localSettings, ['title', 'description']) as string[];
-    const [exploreEnabled] = getSettingValues<boolean>(settings, ['explore_ping']);
-    const [shareGrowthData] = getSettingValues<boolean>(settings, ['explore_ping_growth']);
+    const exploreEnabled = Boolean(getSettingValue<boolean>(settings, 'explore_ping'));
+    const shareGrowthData = Boolean(getSettingValue<boolean>(settings, 'explore_ping_growth'));
 
     const url = siteData?.url;
     const siteDomain = url?.replace(/^https?:\/\//, '').replace(/\/?$/, '');
@@ -85,9 +85,9 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     testId='explore-growth-toggle'
                     onChange={event => toggleSetting('explore_ping_growth', event)}
                 />
-                <div className='-mx-5 -mb-5 flex flex-col items-center bg-grey-75 px-7 py-10 md:-mx-7 md:-mb-7' data-testid='explore-preview'>
+                <div className='-mx-5 -mb-5 flex flex-col items-center bg-grey-50 px-7 py-10 md:-mx-7 md:-mb-7' data-testid='explore-preview'>
                     <div className='relative w-full max-w-[320px] rounded-lg bg-white p-6 text-black shadow-lg'>
-                        <div className='absolute top-2.5 right-3 text-xs text-grey-300 uppercase'>Preview</div>
+                        <div className='absolute top-2.5 right-3 text-sm text-grey-300 uppercase'>Preview</div>
                         {icon ?
                             <div className='size-9 rounded-sm bg-cover bg-center' style={{
                                 backgroundImage: `url(${icon})`
@@ -101,12 +101,12 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         }
                         <div className='mt-3 text-lg font-semibold tracking-tight'>{title}</div>
                         {description &&
-                            <div className='mt-1.5 text-sm leading-tight text-grey-700'>{description}</div>
+                            <div className='mt-0.5 leading-tight text-grey-700'>{description}</div>
                         }
                         <a className='group mt-8 flex h-6 w-full items-center justify-between gap-5 hover:cursor-pointer' href={url} rel="noopener noreferrer" target="_blank">
-                            <span className='text-sm font-semibold'>{siteDomain}</span>
+                            <span className='font-semibold'>{siteDomain}</span>
                             {shareGrowthData ?
-                                <span className='rounded-sm bg-black px-2 py-0.5 text-xs font-semibold text-white' data-testid='explore-members-count'>
+                                <span className='rounded-sm bg-black px-2 py-0.5 text-sm font-semibold text-white' data-testid='explore-members-count'>
                                     {abbreviateNumber(membersCount)}&nbsp;{membersCount === 1 ? 'member' : 'members'}
                                 </span>
                                 :
@@ -120,7 +120,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className='-mx-5 -mb-5 flex items-center justify-between gap-4 rounded-b-xl border-t border-[rgba(142,66,255,0.1)] bg-gradient-to-tr from-[rgba(142,66,255,0.07)] to-[rgba(142,66,255,0.02)] p-6 px-7 md:-mx-7 md:-mb-7'>
                     <div className='flex flex-col'>
                         <span className='font-medium'>Get featured on the Ghost.org homepage</span>
-                        <span className='text-sm text-pretty text-black/80 dark:text-white/80'>Send us a quote we can use to highlight your site</span>
+                        <span className='text-pretty text-black/80 dark:text-white/80'>Send us a quote we can use to highlight your site</span>
                     </div>
                     <Button className='border border-purple bg-white text-purple hover:bg-purple/5 hover:text-purple dark:bg-transparent' icon="send" label="Send testimonial" onClick={() => {
                         updateRoute('explore/testimonial');

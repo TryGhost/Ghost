@@ -70,7 +70,8 @@ async function sendEmail(agent, settings, email_recipient_filter) {
 
     assert.ok(emailModel.get('subject'));
     assert.ok(emailModel.get('from'));
-    assert.equal(emailModel.get('source_type'), settings && settings.mobiledoc ? 'mobiledoc' : 'lexical');
+    // posts created with mobiledoc are converted to lexical on save
+    assert.equal(emailModel.get('source_type'), 'lexical');
 
     // Await sending job
     await completedPromise;
@@ -95,7 +96,8 @@ async function sendFailedEmail(agent, settings, email_recipient_filter) {
 
     assert.ok(emailModel.get('subject'));
     assert.ok(emailModel.get('from'));
-    assert.equal(emailModel.get('source_type'), settings && settings.mobiledoc ? 'mobiledoc' : 'lexical');
+    // posts created with mobiledoc are converted to lexical on save
+    assert.equal(emailModel.get('source_type'), 'lexical');
 
     // Await sending job
     await completedPromise;
@@ -165,6 +167,12 @@ async function matchEmailSnapshot() {
         {
             match: /\d{1,2}\s\w+\s\d{4}/g,
             replacement: 'date'
+        },
+        {
+            // Footer year is rendered live (new Date().getFullYear()); normalise
+            // it so snapshots don't rot at every year boundary.
+            match: new RegExp(`©\\s*${new Date().getFullYear()}`, 'g'),
+            replacement: '© YYYY'
         },
         {
             match: defaultNewsletter.get('uuid'),

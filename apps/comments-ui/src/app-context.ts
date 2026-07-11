@@ -23,10 +23,12 @@ export type Comment = {
     status: string,
     pinned: boolean,
     liked: boolean,
+    disliked?: boolean,
+    votePending?: boolean,
     count: {
         replies: number,
-        total_replies?: number,
-        likes: number,
+        direct_replies?: number,
+        likes: number
     },
     member: Member | null,
     edited_at: string,
@@ -45,6 +47,8 @@ export type OpenCommentForm = {
 
 export type AddComment = {
     post_id: string,
+    parent_id?: string,
+    in_reply_to_id?: string,
     status: string,
     html: string
 }
@@ -91,7 +95,6 @@ export type EditableAppContext = {
     commentIdToScrollTo: string | null,
     commentIdFromHash: string | null,
     showMissingCommentNotice: boolean,
-    pageUrl: string,
     supportEmail: string | null,
     isMember: boolean,
     isAdmin: boolean,

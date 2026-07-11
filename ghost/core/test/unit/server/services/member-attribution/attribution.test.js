@@ -8,7 +8,7 @@ describe('AttributionBuilder', function () {
     let urlTranslator;
     let now;
 
-    before(function () {
+    beforeAll(function () {
         now = Date.now();
         urlTranslator = {
             getResourceDetails(item) {

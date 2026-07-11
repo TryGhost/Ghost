@@ -15,7 +15,6 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
         comments: [],
         openCommentForms: [],
         member: null,
-        pageUrl: 'https://example.com/post',
         commentIdToScrollTo: null,
         t: str => str,
         ...appContext
@@ -67,6 +66,22 @@ describe('<CommentComponent>', function () {
 
         const {container} = contextualRender(<CommentComponent comment={comment} />, {appContext});
         expect(container.querySelector('[data-member-uuid="123"]')).not.toBeInTheDocument();
+    });
+
+    it('renders an icon-only dislike control', function () {
+        const comment = buildComment({
+            disliked: true,
+            count: {
+                likes: 3
+            }
+        });
+        const appContext = {comments: [comment], dispatchAction: () => {}};
+
+        contextualRender(<CommentComponent comment={comment} />, {appContext});
+
+        expect(screen.getByTestId('dislike-button')).toBeInTheDocument();
+        expect(screen.getByTestId('dislike-button')).toHaveAccessibleName('Remove dislike');
+        expect(screen.getByTestId('dislike-button')).not.toHaveTextContent(/\d/);
     });
 
     it('renders nested reply threads when commentsThreads is enabled', function () {
@@ -255,7 +270,7 @@ describe('<CommentComponent>', function () {
 
         const label = screen.getByTestId('pinned-comment-label');
         expect(label.parentElement).toHaveClass('ml-2');
-        expect(label.parentElement?.parentElement?.querySelector('a')).toHaveAttribute('href', `https://example.com/post#ghost-comments-${comment.id}`);
+        expect(label.parentElement?.parentElement?.querySelector('a')).toHaveAttribute('href', `#ghost-comments-${comment.id}`);
     });
 
     it('renders pinned badge as an unpin button for admins', function () {

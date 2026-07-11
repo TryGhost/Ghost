@@ -11,13 +11,11 @@ import {render} from '../../utils/test-utils';
 describe('ColorPicker Component', () => {
     beforeAll(() => {
         // Radix Slider uses ResizeObserver internally — not available in jsdom
-        /* eslint-disable no-undef */
         global.ResizeObserver = class {
             observe() {}
             unobserve() {}
             disconnect() {}
         } as unknown as typeof ResizeObserver;
-        /* eslint-enable no-undef */
     });
 
     describe('initial color', () => {

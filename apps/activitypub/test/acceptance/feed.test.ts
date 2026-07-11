@@ -1,5 +1,5 @@
-import activityPubUser from '../utils/responses/activitypub/users.json';
-import feedFixture from '../utils/responses/activitypub/feed.json';
+import activityPubUser from '../utils/responses/activitypub/users.json' with {type: 'json'};
+import feedFixture from '../utils/responses/activitypub/feed.json' with {type: 'json'};
 import {expect, test} from '@playwright/test';
 import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 import {mockInitialApiRequests} from '../utils/initial-api-requests';

@@ -68,11 +68,9 @@ describe('storage: index_spec', function () {
         configUtils.set({
             storage: {
                 active: 'broken-storage'
-            },
-            paths: {
-                storage: __dirname + '/broken-storage.js'
             }
         });
+        configUtils.set('paths:storage', __dirname + '/broken-storage.js');
 
         const jsFile = '' +
             '\'use strict\';' +

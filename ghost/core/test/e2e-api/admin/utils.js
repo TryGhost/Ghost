@@ -39,7 +39,7 @@ const expectedProperties = {
         'useGravatar',
         'stripeDirect',
         'emailAnalytics',
-        'tenor',
+        'klipy',
         'mailgunIsConfigured',
         'signupForm'
     ],

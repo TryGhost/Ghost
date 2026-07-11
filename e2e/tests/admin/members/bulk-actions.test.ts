@@ -1,14 +1,13 @@
 import {MemberFactory, createMemberFactory} from '@/data-factory';
 import {MembersListPage} from '@/admin-pages';
+import {MembersService} from '@/helpers/services/members';
 import {expect, test} from '@/helpers/playwright';
-import {usePerTestIsolation} from '@/helpers/playwright/isolation';
-
-usePerTestIsolation();
 
 test.describe('Ghost Admin - Members Bulk Actions', () => {
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
+        await new MembersService(page.request).deleteAll();
         memberFactory = createMemberFactory(page.request);
     });
 

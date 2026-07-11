@@ -1,6 +1,7 @@
 import {useRef} from 'react';
 import {apiUrl, useFetchApi} from '../utils/api/fetch-api';
 import {Meta} from '../utils/api/hooks';
+import {escapeNqlString} from '../utils/nql';
 
 const filterData = <
     Data extends {[k in FilterKey]: string},
@@ -10,10 +11,6 @@ const filterData = <
         return data;
     }
     return data.filter(item => item[filterKey]?.toLowerCase().includes(input.toLowerCase()));
-};
-
-const escapeNqlString = (value: string) => {
-    return '\'' + value.replace(/'/g, '\\\'') + '\'';
 };
 
 const useFilterableApi = <

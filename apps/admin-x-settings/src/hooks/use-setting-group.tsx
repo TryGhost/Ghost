@@ -62,7 +62,6 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
         if (!isEditing || saveState === 'saving') {
             setFormState(() => settings);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [settings]);
 
     const changedSettings = () => {
@@ -114,7 +113,6 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
                     return cleanSetting;
                 }));
                 setEditing(false);
-            } else {
             }
             return result;
         },

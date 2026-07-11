@@ -47,7 +47,7 @@ const matchSettingsArray = (length) => {
 describe('Settings API', function () {
     let agent;
     let emailMockReceiver;
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
@@ -260,6 +260,35 @@ describe('Settings API', function () {
             emailMockReceiver.assertSentEmailCount(0);
         });
 
+        it('can disable llms_enabled', async function () {
+            try {
+                await agent.put('settings/')
+                    .body({
+                        settings: [{key: 'llms_enabled', value: false}]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                    })
+                    .matchHeaderSnapshot({
+                        etag: anyEtag,
+                        // Special rule for this test, as the labs setting changes a lot
+                        'content-length': anyContentLength,
+                        'content-version': anyContentVersion
+                    })
+                    .expect(({body}) => {
+                        const llmsEnabled = body.settings.find(setting => setting.key === 'llms_enabled');
+                        assert.equal(llmsEnabled.value, false);
+                    });
+
+                assert.equal(settingsCache.get('llms_enabled'), false);
+                emailMockReceiver.assertSentEmailCount(0);
+            } finally {
+                // Restore so later tests see the default value
+                await models.Settings.edit({key: 'llms_enabled', value: true});
+            }
+        });
+
         it('does not trigger email verification flow if members_support_address remains the same', async function () {
             await models.Settings.edit({
                 key: 'members_support_address',
@@ -291,7 +320,7 @@ describe('Settings API', function () {
         });
 
         it('fails to edit setting with unsupported announcement_visibility value', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             const settingsToChange = [
                 {
                     key: 'announcement_visibility',
@@ -320,7 +349,7 @@ describe('Settings API', function () {
         });
 
         it('fails to edit setting with unsupported announcement_background value', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             const settingsToChange = [
                 {
                     key: 'announcement_background',
@@ -454,7 +483,7 @@ describe('Settings API', function () {
         });
 
         it('cannot update invalid keys via token', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             const token = await (new SingleUseTokenProvider({
                 SingleUseTokenModel: models.SingleUseToken,
                 validityPeriod: 24 * 60 * 60 * 1000,
@@ -548,7 +577,7 @@ describe('Settings API', function () {
     });
 
     describe('Managed email without custom sending domain', function () {
-        this.beforeEach(function () {
+        beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', true);
             configUtils.set('hostSettings:managedEmail:sendingDomain', null);
             configUtils.set('mail:from', 'default@email.com');
@@ -609,7 +638,7 @@ describe('Settings API', function () {
     });
 
     describe('Managed email with custom sending domain', function () {
-        this.beforeEach(function () {
+        beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', true);
             configUtils.set('hostSettings:managedEmail:sendingDomain', 'sendingdomain.com');
             configUtils.set('mail:from', 'default@email.com');
@@ -692,7 +721,7 @@ describe('Settings API', function () {
     });
 
     describe('Self hoster without managed email', function () {
-        this.beforeEach(function () {
+        beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', false);
             configUtils.set('hostSettings:managedEmail:sendingDomain', '');
         });
@@ -801,7 +830,7 @@ describe('Settings API', function () {
 
                 const byKey = Object.fromEntries(response.body.settings.map(s => [s.key, s]));
                 assert.equal(typeof byKey.password.value, 'string');
-                assert.match(byKey.password.value, /^fake-\d{3}$/);
+                assert.match(byKey.password.value, /^[a-z]+\d{3}$/);
                 assert.notEqual(byKey.password.value, 'caller-chosen-code');
                 assert.equal(byKey.password.is_read_only, true);
 
@@ -825,7 +854,7 @@ describe('Settings API', function () {
     });
 
     describe('Settings overrides', function () {
-        this.beforeEach(async function () {
+        beforeEach(async function () {
             const settingsOverrides = {
                 email_track_clicks: false
             };

@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const models = require('../../../../core/server/models');
+const {Integration} = require('../../../../core/server/models/integration');
+const Base = require('../../../../core/server/models/base');
 const {knex} = require('../../../../core/server/data/db');
 
 describe('Unit: models/integration', function () {
@@ -13,23 +14,23 @@ describe('Unit: models/integration', function () {
 
         beforeEach(function () {
             basePermittedOptionsReturnVal = ['super', 'doopa'];
-            sinon.stub(models.Base.Model, 'permittedOptions')
+            sinon.stub(Base.Model, 'permittedOptions')
                 .returns(basePermittedOptionsReturnVal);
         });
 
         it('returns the base permittedOptions result', function () {
-            const returnedOptions = models.Integration.permittedOptions();
+            const returnedOptions = Integration.permittedOptions();
             assert.deepEqual(returnedOptions, basePermittedOptionsReturnVal);
         });
 
         it('returns the base permittedOptions result plus "filter" when methodName is findOne', function () {
-            const returnedOptions = models.Integration.permittedOptions('findOne');
+            const returnedOptions = Integration.permittedOptions('findOne');
             assert.deepEqual(returnedOptions, basePermittedOptionsReturnVal.concat('filter'));
         });
     });
 
     describe('findOne', function () {
-        const mockDb = require('mock-knex');
+        const mockDb = require('../../../utils/mock-knex');
         let tracker;
 
         beforeAll(function () {
@@ -50,7 +51,7 @@ describe('Unit: models/integration', function () {
                 query.response([]);
             });
 
-            return models.Integration.findOne({
+            return Integration.findOne({
                 id: '123'
             }, {
                 filter: 'type:[custom,builtin,core]'
@@ -63,7 +64,7 @@ describe('Unit: models/integration', function () {
     });
 
     describe('getApiKeyBySlug', function () {
-        const mockDb = require('mock-knex');
+        const mockDb = require('../../../utils/mock-knex');
         let tracker;
 
         beforeAll(function () {
@@ -83,7 +84,7 @@ describe('Unit: models/integration', function () {
                 query.response([{id: 'key-admin', secret: 'admin-secret'}]);
             });
 
-            const apiKey = await models.Integration.getApiKeyBySlug('ghost-scheduler', 'admin');
+            const apiKey = await Integration.getApiKeyBySlug('ghost-scheduler', 'admin');
             assert.deepEqual(apiKey, {id: 'key-admin', secret: 'admin-secret'});
             assert.equal(queries.length, 1);
             assert.equal(queries[0].sql, 'select `api_keys`.`id`, `api_keys`.`secret` from `api_keys` inner join `integrations` on `api_keys`.`integration_id` = `integrations`.`id` where `integrations`.`slug` = ? and `api_keys`.`type` = ? limit ?');
@@ -98,7 +99,7 @@ describe('Unit: models/integration', function () {
 
             const errors = require('@tryghost/errors');
             await assert.rejects(
-                models.Integration.getApiKeyBySlug('ghost-scheduler', 'admin'),
+                Integration.getApiKeyBySlug('ghost-scheduler', 'admin'),
                 err => err instanceof errors.NotFoundError
             );
         });

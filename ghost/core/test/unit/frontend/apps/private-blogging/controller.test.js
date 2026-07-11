@@ -13,7 +13,7 @@ const color_to_rgba = require('../../../../../core/frontend/helpers/color_to_rgb
 const contrast_text_color = require('../../../../../core/frontend/helpers/contrast_text_color');
 const json = require('../../../../../core/frontend/helpers/json');
 const {setupI18nTest, initLocale} = require('../../../../utils/i18n-test-utils');
-const deferred = require('../../../../utils/deferred');
+const {deferred} = require('../../../../utils/deferred')
 
 describe('Private Controller', function () {
     let res;

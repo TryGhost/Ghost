@@ -13,8 +13,12 @@ type Feature = {
 
 const features: Feature[] = [{
     title: 'Automations',
-    description: 'Enable automations management interface.',
+    description: 'Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.',
     flag: 'automations'
+}, {
+    title: 'Automations analytics',
+    description: 'Show analytics for automations. Assumes the "automations" flag is also on.',
+    flag: 'automationAnalytics'
 }, {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
@@ -27,6 +31,10 @@ const features: Feature[] = [{
     title: 'Import Member Tier',
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
+}, {
+    title: 'CSV Content Importer',
+    description: 'Enables importing posts from CSV files in the Universal Importer',
+    flag: 'csvContentImporter'
 }, {
     title: 'Admin UI Refresh',
     description: 'Enable Admin UI refresh (exploration)',
@@ -48,10 +56,6 @@ const features: Feature[] = [{
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
 }, {
-    title: 'IndexNow',
-    description: 'Automatically notify search engines when content is published or updated for faster indexing.',
-    flag: 'indexnow'
-}, {
     title: 'Featurebase Feedback',
     description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
     flag: 'featurebaseFeedback'
@@ -64,17 +68,9 @@ const features: Feature[] = [{
     description: 'Use optimized COUNT queries for API pagination when safe',
     flag: 'smarterCounts'
 }, {
-    title: 'Gift Subscriptions',
-    description: 'Allow site visitors to purchase gift subscriptions for others',
-    flag: 'giftSubscriptions'
-}, {
-    title: 'Comments Threads',
-    description: 'Enable deeper threading view in Comments-UI',
-    flag: 'commentsThreads'
-}, {
-    title: 'Comments Pinning',
-    description: 'Allow staff to pin top-level comments in Comments-UI and Admin',
-    flag: 'commentsPinning'
+    title: 'Get helper deduplication',
+    description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
+    flag: 'getHelperDeduplication'
 }];
 
 const AlphaFeatures: React.FC = () => {

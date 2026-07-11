@@ -31,7 +31,6 @@ type PostRevisionsDeps = {
         max_revisions: number;
         revision_interval_ms: number;
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     model: any
 }
 
@@ -44,7 +43,6 @@ type RevisionResult = {
 
 export class PostRevisions {
     config: PostRevisionsDeps['config'];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     model: any;
 
     constructor(deps: PostRevisionsDeps) {
@@ -128,7 +126,6 @@ export class PostRevisions {
         };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async removeAuthorFromRevisions(authorId: string, options: any): Promise<void> {
         const revisions = await this.model.findAll({
             filter: `author_id:'${authorId}'`,

@@ -5,6 +5,8 @@ import {defineConfig} from 'vitest/config';
 export interface VitestConfigOptions {
     /** Custom setup files (defaults to ['./test/setup.ts']) */
     setupFiles?: string[];
+    /** Project root for resolving the @src/@test aliases (defaults to process.cwd()) */
+    root?: string;
     /** Additional path aliases beyond the defaults (@src, @test) */
     aliases?: Record<string, string>;
     /** Test file patterns to include */
@@ -26,6 +28,9 @@ export interface VitestConfigOptions {
 export function createVitestConfig(options: VitestConfigOptions = {}) {
     const {
         setupFiles = ['./test/setup.ts'],
+        // process.cwd() is correct when an app runs its own tests; the unified
+        // root watcher passes an explicit root so aliases stay package-local.
+        root = process.cwd(),
         aliases = {},
         include = [
             './test/unit/**/*.{test,spec}.{js,ts,jsx,tsx}',
@@ -68,8 +73,8 @@ export function createVitestConfig(options: VitestConfigOptions = {}) {
         },
         resolve: {
             alias: {
-                '@src': path.resolve(process.cwd(), './src'),
-                '@test': path.resolve(process.cwd(), './test'),
+                '@src': path.resolve(root, './src'),
+                '@test': path.resolve(root, './test'),
                 ...aliases
             }
         }

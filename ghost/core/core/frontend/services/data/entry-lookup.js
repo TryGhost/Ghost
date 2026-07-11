@@ -1,30 +1,31 @@
 const _ = require('lodash');
 const url = require('url');
 const debug = require('@tryghost/debug')('services:data:entry-lookup');
-const routeMatch = require('path-match')();
+const matchPermalinkParams = require('./match-permalink-params');
 
 /**
  * Query API for a single entry/resource.
  * @param {string} postUrl
  * @param {Object} routerOptions
  * @param {Object} locals
+ * @param {Object} [lookupOptions]
+ * @param {string} [lookupOptions.giftToken] verified by the API read: unlocks
+ * gated content, or rejects with `code: 'INVALID_GIFT_TOKEN'`
  * @returns {*}
  */
-function entryLookup(postUrl, routerOptions, locals) {
+function entryLookup(postUrl, routerOptions, locals, {giftToken} = {}) {
     debug(postUrl);
 
     const api = require('../proxy').api;
     const targetPath = url.parse(postUrl).path;
-    const permalinks = routerOptions.permalinks;
     let isEditURL = false;
 
     // CASE: e.g. /:slug/ -> { slug: 'value' }
-    const matchFunc = routeMatch(permalinks);
-    const params = matchFunc(targetPath);
+    const params = matchPermalinkParams(routerOptions.permalinks, targetPath);
 
     debug(targetPath);
     debug(params);
-    debug(permalinks);
+    debug(routerOptions.permalinks);
 
     // CASE 1: no matches, resolve
     // CASE 2: params can be empty e.g. permalink is /featured/:options(edit)?/ and path is /featured/
@@ -42,6 +43,10 @@ function entryLookup(postUrl, routerOptions, locals) {
     };
 
     options.context = {member: locals.member};
+
+    if (giftToken) {
+        options.context.giftToken = giftToken;
+    }
 
     return (api[routerOptions.query.controller] || api[routerOptions.query.resource])
         .read(_.extend(_.pick(params, 'slug', 'id'), options))

@@ -28,8 +28,8 @@ export type Config = {
         id?: string;
     };
     emailAnalytics?: boolean;
-    tenor?: {
-        googleApiKey?: string | null;
+    klipy?: {
+        apiKey?: string | null;
         contentFilter?: string;
     };
     hostSettings?: {

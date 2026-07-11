@@ -36,7 +36,7 @@ class MembersClickEventsImporter extends TableImporter {
 
     setReferencedModel(model) {
         this.model = model;
-        this.amount = model.opened_at === null ? 0 : luck(40) ? faker.datatype.number({
+        this.amount = model.opened_at === null ? 0 : luck(40) ? faker.number.int({
             min: 0,
             max: this.quantity
         }) : 0;
@@ -52,12 +52,12 @@ class MembersClickEventsImporter extends TableImporter {
 
         const openedAt = dateToDatabaseString.parse(this.model.opened_at);
         const laterOn = new Date(openedAt.getTime() + 1000 * 60 * 15);
-        const clickTime = faker.date.between(openedAt.getTime(), laterOn.getTime()); //added getTime here because it threw random errors
+        const clickTime = faker.date.between({from: openedAt.getTime(), to: laterOn.getTime()}); //added getTime here because it threw random errors
 
         return {
             id: this.fastFakeObjectId(),
             member_id: this.model.member_id,
-            redirect_id: this.redirectList[this.redirectList.length === 1 ? 0 : (faker.datatype.number({
+            redirect_id: this.redirectList[this.redirectList.length === 1 ? 0 : (faker.number.int({
                 min: 0,
                 max: this.redirectList.length - 1
             }))].id,

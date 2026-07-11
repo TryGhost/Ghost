@@ -135,6 +135,45 @@ test.describe('Analytics settings', async () => {
         expect(hasDownloadUrl).toBe(true);
     });
 
+    test('Disables post analytics export button and shows loading state while downloading', async ({page}) => {
+        await mockApi({page, requests: createMockApiConfig({})});
+
+        let exportRequestCount = 0;
+        let resolveExportRequest: (() => void) | undefined;
+
+        await page.route(/\/ghost\/api\/admin\/posts\/export\/\?limit=1000$/, async (route) => {
+            exportRequestCount += 1;
+            await new Promise<void>((resolve) => {
+                resolveExportRequest = resolve;
+            });
+            await route.fulfill({
+                status: 200,
+                body: 'csv data',
+                headers: {
+                    'content-type': 'text/csv'
+                }
+            });
+        });
+
+        await page.goto('/');
+
+        const section = page.getByTestId('migrationtools');
+
+        await section.getByRole('tab', {name: 'Export'}).click();
+
+        const postAnalyticsButton = section.getByTestId('post-analytics-export-button');
+        await postAnalyticsButton.click();
+
+        await expect.poll(() => exportRequestCount).toBe(1);
+        await expect(postAnalyticsButton).toBeDisabled();
+        await expect(postAnalyticsButton).toContainText('Loading...');
+
+        resolveExportRequest?.();
+
+        await expect(postAnalyticsButton).toBeEnabled();
+        expect(exportRequestCount).toBe(1);
+    });
+
     test('Supports read only settings', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,

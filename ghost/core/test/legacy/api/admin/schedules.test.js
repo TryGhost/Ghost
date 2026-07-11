@@ -9,22 +9,21 @@ const models = require('../../../../core/server/models');
 const config = require('../../../../core/shared/config');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
-const {sequence} = require('@tryghost/promise');
 
 describe('Schedules API', function () {
     const resources = [];
     let request;
 
-    before(function () {
+    beforeAll(function () {
         // @NOTE: mock the post scheduler, otherwise it will auto publish the post
         sinon.stub(SchedulingDefault.prototype, '_pingUrl').resolves();
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
 
         request = supertest.agent(config.get('url'));
@@ -80,7 +79,7 @@ describe('Schedules API', function () {
             }]
         }));
 
-        const result = await sequence(resources.map(post => async () => {
+        const result = await Promise.all(resources.map((post) => {
             return models.Post.add(post, {context: {internal: true}});
         }));
 
@@ -90,7 +89,7 @@ describe('Schedules API', function () {
     describe('publish', function () {
         let token;
 
-        before(function () {
+        beforeAll(function () {
             const schedulerKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-scheduler'}});
 
             token = localUtils.getValidAdminToken('/admin/', schedulerKey);

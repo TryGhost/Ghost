@@ -115,14 +115,14 @@ test.describe('Portal - Member Actions', () => {
 
         const newsletterManagement = new PortalNewsletterManagementPage(page);
         await expect(newsletterManagement.newsletterToggles).toHaveCount(2);
-        await expect(newsletterManagement.newsletterToggleCheckbox(0)).toBeChecked();
-        await expect(newsletterManagement.newsletterToggleCheckbox(1)).toBeChecked();
+        await expect(newsletterManagement.newsletterToggle(0)).toHaveAttribute('aria-pressed', 'true');
+        await expect(newsletterManagement.newsletterToggle(1)).toHaveAttribute('aria-pressed', 'true');
 
         await newsletterManagement.unsubscribeFromAllButton.click();
         await expect(newsletterManagement.successNotification).toBeVisible();
 
-        await expect(newsletterManagement.newsletterToggleCheckbox(0)).not.toBeChecked();
-        await expect(newsletterManagement.newsletterToggleCheckbox(1)).not.toBeChecked();
+        await expect(newsletterManagement.newsletterToggle(0)).toHaveAttribute('aria-pressed', 'false');
+        await expect(newsletterManagement.newsletterToggle(1)).toHaveAttribute('aria-pressed', 'false');
 
         await expect(async () => {
             const memberNewsletters = await getMemberNewsletters(page.request, member.id);

@@ -103,14 +103,6 @@ describe('Private Blogging', function () {
         });
 
         describe('Logged Out behavior', function () {
-            it('authenticatePrivateSession should redirect', function () {
-                req.path = req.url = '/welcome/';
-                privateBlogging.authenticatePrivateSession(req, res, next);
-                sinon.assert.notCalled(next);
-                sinon.assert.called(res.redirect);
-                sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome%2F');
-            });
-
             it('handle404 should redirect', function () {
                 req.path = req.url = '/welcome/';
                 privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
@@ -387,11 +379,21 @@ describe('Private Blogging', function () {
                     sinon.assert.called(next);
                 });
 
-                it('authenticatePrivateSession should redirect', function () {
-                    req.url = '/welcome';
+                it('filterPrivateRoutes should redirect', function () {
+                    req.path = req.url = '/welcome';
 
-                    privateBlogging.authenticatePrivateSession(req, res, next);
-                    sinon.assert.called(res.redirect);
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    sinon.assert.notCalled(next);
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome');
+                });
+
+                it('handle404 should redirect', function () {
+                    req.path = req.url = '/welcome';
+
+                    privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
+                    sinon.assert.notCalled(next);
+                    sinon.assert.calledOnce(res.redirect);
                     sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome');
                 });
             });
@@ -407,23 +409,33 @@ describe('Private Blogging', function () {
                 };
             });
 
-            it('authenticatePrivateSession should return next', function () {
-                privateBlogging.authenticatePrivateSession(req, res, next);
-                sinon.assert.called(next);
-            });
-
-            it('authenticatePrivateSession should redirect when stored access code is empty', function () {
+            it('filterPrivateRoutes should redirect when stored access code is empty', function () {
                 const salt = Date.now().toString();
                 settingsStub.withArgs('password').returns('');
-                req.url = '/welcome';
+                req.path = req.url = '/welcome';
                 req.session = {
                     token: hash('', salt),
                     salt
                 };
 
-                privateBlogging.authenticatePrivateSession(req, res, next);
+                privateBlogging.filterPrivateRoutes(req, res, next);
                 sinon.assert.notCalled(next);
-                sinon.assert.called(res.redirect);
+                sinon.assert.calledOnce(res.redirect);
+                sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome');
+            });
+
+            it('handle404 should redirect when stored access code is empty', function () {
+                const salt = Date.now().toString();
+                settingsStub.withArgs('password').returns('');
+                req.path = req.url = '/welcome';
+                req.session = {
+                    token: hash('', salt),
+                    salt
+                };
+
+                privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
+                sinon.assert.notCalled(next);
+                sinon.assert.calledOnce(res.redirect);
                 sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome');
             });
 

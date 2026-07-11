@@ -95,20 +95,10 @@ class RouteSettings {
         await this.createBackupFile(this.settingsPath, this.backupPath);
         await this.saveFile(filePath, this.settingsPath);
 
-        const isLazy = urlService.facade.isLazy();
-        const resetUrlState = () => {
-            if (isLazy) {
-                // Drop registered router configs; reloadFrontend re-registers them.
-                urlService.facade.reset();
-            } else {
-                urlService.resetGenerators({releaseResourcesOnly: true});
-            }
-        };
-
-        resetUrlState();
+        urlService.resetGenerators({releaseResourcesOnly: true});
 
         const bringBackValidRoutes = async () => {
-            resetUrlState();
+            urlService.resetGenerators({releaseResourcesOnly: true});
 
             await this.restoreBackupFile(this.settingsPath, this.backupPath);
 
@@ -122,12 +112,6 @@ class RouteSettings {
                 .finally(() => {
                     throw err;
                 });
-        }
-
-        // The lazy URL service has nothing to precompute, so the readiness
-        // poll below is unnecessary; hasFinished() returns true immediately.
-        if (isLazy) {
-            return;
         }
 
         // @TODO: how can we get rid of this from here?

@@ -1,8 +1,8 @@
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
+const adapterManager = require('../adapter-manager');
 
 const DynamicRedirectManager = require('../lib/dynamic-redirect-manager');
-const {FileStore} = require('./file-store');
 const {RedirectsService} = require('./redirects-service');
 const validation = require('./validation');
 
@@ -18,9 +18,7 @@ module.exports = {
     init() {
         redirectManager = makeRedirectManager();
 
-        const store = new FileStore({
-            basePath: config.getContentPath('data')
-        });
+        const store = adapterManager.getAdapter('redirects');
 
         redirectsService = new RedirectsService({
             store,

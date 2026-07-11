@@ -1,0 +1,56 @@
+{
+  "name": "@tryghost/admin-toolbar",
+  "type": "module",
+  "version": "0.1.11",
+  "license": "MIT",
+  "repository": "https://github.com/TryGhost/Ghost",
+  "author": "Ghost Foundation",
+  "files": [
+    "umd/",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "preact": "catalog:"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch --mode development",
+    "lint": "eslint src test --cache",
+    "test": "pnpm test:unit",
+    "test:unit": "pnpm run build && vitest run",
+    "preship": "pnpm lint",
+    "ship": "node ../../.github/scripts/release-apps.js",
+    "prepublishOnly": "pnpm build"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@internal/cfg-eslint": "workspace:*",
+    "concurrently": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
+    "globals": "catalog:",
+    "jsdom": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/admin-toolbar",
+          "command": "vite build --watch --mode development"
+        }
+      }
+    },
+    "tags": [
+      "public-app"
+    ]
+  }
+}

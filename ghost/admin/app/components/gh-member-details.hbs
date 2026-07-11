@@ -50,7 +50,7 @@
                         <span>Not seen yet</span>
                     {{/if}}
                 </p>
-                {{#if (and this.feature.commentModeration (eq @member.canComment false))}}
+                {{#if (eq @member.canComment false)}}
                     <p class="gh-member-commenting-disabled">
                         {{svg-jar "comment-disabled"}}
                         Comments disabled

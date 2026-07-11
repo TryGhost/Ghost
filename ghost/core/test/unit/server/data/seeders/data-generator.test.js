@@ -22,7 +22,7 @@ describe('Data Generator', function () {
 
     beforeEach(async function () {
         db = knex({
-            client: 'sqlite3',
+            client: 'better-sqlite3',
             useNullAsDefault: true,
             connection: {
                 filename: ':memory:'
@@ -43,6 +43,9 @@ describe('Data Generator', function () {
                         for (const indexes of row) {
                             table.index(indexes);
                         }
+                        break;
+                    } else if (rowName === '@@PRIMARY_KEY@@') {
+                        table.primary(row);
                         break;
                     }
 
@@ -83,7 +86,8 @@ describe('Data Generator', function () {
             schemaTables,
             logger: {
                 info: () => { },
-                ok: () => { }
+                ok: () => { },
+                warn: () => { }
             },
             tables: [{
                 name: 'members',
@@ -104,7 +108,8 @@ describe('Data Generator', function () {
             schemaTables,
             logger: {
                 info: () => {},
-                ok: () => {}
+                ok: () => {},
+                warn: () => {}
             },
             tables: [{
                 name: 'offers',
@@ -138,7 +143,7 @@ describe('Importer', function () {
 
     beforeEach(async function () {
         db = knex({
-            client: 'sqlite3',
+            client: 'better-sqlite3',
             useNullAsDefault: true,
             connection: {
                 filename: ':memory:'

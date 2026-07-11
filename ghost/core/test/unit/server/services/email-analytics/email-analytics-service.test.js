@@ -119,9 +119,9 @@ describe('EmailAnalyticsService', function () {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    providers: [{
+                    provider: {
                         fetchLatest: fetchLatestSpy
-                    }]
+                    }
                 });
                 await service.fetchLatestOpenedEvents();
                 sinon.assert.calledOnce(fetchLatestSpy);
@@ -137,9 +137,9 @@ describe('EmailAnalyticsService', function () {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    providers: [{
+                    provider: {
                         fetchLatest: fetchLatestSpy
-                    }]
+                    }
                 });
                 await service.fetchLatestOpenedEvents();
                 sinon.assert.notCalled(fetchLatestSpy);
@@ -156,9 +156,9 @@ describe('EmailAnalyticsService', function () {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    providers: [{
+                    provider: {
                         fetchLatest: fetchLatestSpy
-                    }]
+                    }
                 });
                 await service.fetchLatestNonOpenedEvents();
                 sinon.assert.calledOnce(fetchLatestSpy);
@@ -174,9 +174,9 @@ describe('EmailAnalyticsService', function () {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    providers: [{
+                    provider: {
                         fetchLatest: fetchLatestSpy
-                    }]
+                    }
                 });
                 await service.fetchLatestNonOpenedEvents();
                 sinon.assert.notCalled(fetchLatestSpy);
@@ -201,12 +201,12 @@ describe('EmailAnalyticsService', function () {
                         setJobStatus: setJobStatusStub,
                         setJobMetadata: setJobMetadataStub
                     },
-                    providers: [{
+                    provider: {
                         fetchLatest: (fn) => {
                             const events = [1,2,3,4,5,6,7,8,9,10];
                             fn(events);
                         }
-                    }]
+                    }
                 });
                 processEventBatchStub = sinon.stub(service, 'processEventBatch').resolves();
                 aggregateStatsStub = sinon.stub(service, 'aggregateStats').resolves({emailAggregationTimeMs: 0, memberAggregationTimeMs: 0});
@@ -265,11 +265,11 @@ describe('EmailAnalyticsService', function () {
                         setJobStatus: sinon.stub().resolves(),
                         setJobMetadata: sinon.stub().resolves()
                     },
-                    providers: [{
+                    provider: {
                         fetchLatest: (fn) => {
                             fn([]);
                         }
-                    }]
+                    }
                 });
 
                 await service.schedule({
@@ -294,11 +294,11 @@ describe('EmailAnalyticsService', function () {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves()
                     },
-                    providers: [{
+                    provider: {
                         fetchLatest: (fn) => {
                             fn([]);
                         }
-                    }]
+                    }
                 });
             });
 
@@ -499,9 +499,9 @@ describe('EmailAnalyticsService', function () {
                         setJobStatus: sinon.stub().resolves(),
                         getLastJobRunTimestamp: sinon.stub().resolves(new Date(Date.now() - 2.5 * 60 * 60 * 1000))
                     },
-                    providers: [{
+                    provider: {
                         fetchLatest: fetchLatestSpy
-                    }]
+                    }
                 });
                 await service.fetchMissing();
                 sinon.assert.calledOnce(fetchLatestSpy);

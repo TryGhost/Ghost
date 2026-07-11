@@ -21,6 +21,7 @@ export type ExternalLink = {
 export type InternalLink = {
     isExternal?: false;
     route: string;
+    replace?: boolean;
 }
 
 export type RoutingModalProps = {
@@ -125,13 +126,17 @@ export const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modal
         }
 
         const newPath = options.route.replace(/^\//, '');
+        const newHash = newPath ? `/${basePath}/${newPath}` : `/${basePath}`;
 
         if (newPath === route) {
             // No change
-        } else if (newPath) {
-            window.location.hash = `/${basePath}/${newPath}`;
+        } else if (options.replace) {
+            // Replace the current history entry so back/refresh use the new
+            // path, then fire hashchange manually since replaceState doesn't
+            window.history.replaceState(window.history.state, '', `#${newHash}`);
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
         } else {
-            window.location.hash = `/${basePath}`;
+            window.location.hash = newHash;
         }
 
         eventTarget.dispatchEvent(new CustomEvent('routeChange', {detail: {newPath, oldPath: route}}));
@@ -142,7 +147,7 @@ export const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modal
         setTimeout(() => {
             modals?.load();
         }, 1000);
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);  
 
     useEffect(() => {
         const handleHashChange = () => {
@@ -165,7 +170,7 @@ export const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modal
         return () => {
             window.removeEventListener('hashchange', handleHashChange);
         };
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);  
 
     if (route === undefined) {
         return null;
@@ -192,7 +197,6 @@ export function useRouting() {
 export function useRouteChangeCallback(callback: (newPath: string, oldPath: string) => void, deps: React.DependencyList) {
     const {eventTarget} = useRouting();
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const stableCallback = useCallback(callback, deps);
 
     useEffect(() => {

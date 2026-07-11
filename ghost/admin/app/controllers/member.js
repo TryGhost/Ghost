@@ -77,6 +77,14 @@ export default class MemberController extends Controller {
         return this.model;
     }
 
+    get memberTitle() {
+        if (this.member.isNew) {
+            return 'New member';
+        }
+
+        return this.member.name || this.member.email;
+    }
+
     set member(member) {
         this.model = member;
     }

@@ -22,6 +22,7 @@ interface MembersApi {
 interface MembersService {
     init(): Promise<void>;
     api: MembersApi;
+    createPaidMemberShim(): Promise<{status: 'paid'; products: Array<{slug: string}>}>;
 }
 
 declare const membersService: MembersService;

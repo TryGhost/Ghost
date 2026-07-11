@@ -38,6 +38,7 @@ export function buildComment(override: any = {}) {
         html: '<p>Empty</p>',
         replies: [],
         liked: false,
+        disliked: false,
         created_at: '2022-08-11T09:26:34.000Z',
         edited_at: null,
         member: buildMember(),
@@ -60,6 +61,7 @@ export function buildReply(override: any = {}) {
             likes: 0
         },
         liked: false,
+        disliked: false,
         created_at: '2022-08-11T09:26:34.000Z',
         edited_at: null,
         member: buildMember(),

@@ -48,7 +48,7 @@ const UniversalImportModal: React.FC = () => {
                         }
                     }}
                 >
-                    <div className="-mb-4 cursor-pointer bg-grey-75 p-10 text-center dark:bg-grey-950">
+                    <div className="-mb-4 cursor-pointer bg-grey-50 p-10 text-center dark:bg-grey-950">
                         {uploading ? 'Uploading...' : <>
                         Select any JSON or zip file that contains <br />posts and settings
                         </>}

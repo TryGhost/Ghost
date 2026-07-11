@@ -1,5 +1,4 @@
 const mime = require('mime-types');
-const FileType = require('file-type');
 const request = require('../../lib/request-external');
 const urlUtils = require('../../../shared/url-utils');
 const errors = require('@tryghost/errors');
@@ -7,6 +6,16 @@ const logging = require('@tryghost/logging');
 const string = require('@tryghost/string');
 const path = require('path');
 const convert = require('heic-convert');
+
+let fileTypeFromBuffer;
+
+async function getFileTypeFromBuffer(buffer) {
+    if (!fileTypeFromBuffer) {
+        ({fileTypeFromBuffer} = await import('file-type'));
+    }
+
+    return fileTypeFromBuffer(buffer);
+}
 
 class ExternalMediaInliner {
     /** @type {object} */
@@ -83,7 +92,7 @@ class ExternalMediaInliner {
         // Attempt to get the file extension from the file itself
         // If that fails, or if `.ext` is undefined, get the extension from the file path in the catch
         try {
-            const fileInfo = await FileType.fromBuffer(body);
+            const fileInfo = await getFileTypeFromBuffer(body);
             extension = fileInfo.ext;
         } catch {
             const headers = response.headers;

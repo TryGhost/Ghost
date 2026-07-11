@@ -8,13 +8,13 @@ describe('Images API', function () {
     const images = [];
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request);
     });
 
-    after(function () {
+    afterAll(function () {
         images.forEach(function (image) {
             fs.removeSync(config.get('paths').appRoot + image);
         });

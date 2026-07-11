@@ -74,7 +74,7 @@ const TrendBadge = React.forwardRef<HTMLDivElement, TrendBadgeProps>(
             <TooltipProvider delayDuration={0}>
                 <Tooltip>
                     <TooltipTrigger asChild>{badge}</TooltipTrigger>
-                    <TooltipContent className='max-w-[240px] bg-background text-sm text-pretty text-foreground shadow-md'>
+                    <TooltipContent className='max-w-[240px] bg-background text-sm text-pretty text-foreground shadow-md dark:bg-popover'>
                         {tooltip}
                     </TooltipContent>
                 </Tooltip>

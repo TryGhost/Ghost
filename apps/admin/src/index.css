@@ -1,12 +1,16 @@
 @source "../../shade/src/**/*.{ts,tsx}";
-@source "../../posts/src/**/*.{ts,tsx}";
-@source "../../stats/src/**/*.{ts,tsx}";
 @source "../../activitypub/src/**/*.{ts,tsx}";
 @source "../../admin-x-settings/src/**/*.{ts,tsx}";
 @source "../../admin-x-design-system/src/**/*.{ts,tsx}";
 @source "../node_modules/@tryghost/kg-unsplash-selector/dist/**/*.js";
 
 @import "@tryghost/shade/styles.css";
+
+/* Koenig mounts floating toolbars to document.body. Radix modal dialogs disable
+   body pointer events, so body-level Koenig portals need to opt back in. */
+[data-kg-portal] {
+    pointer-events: auto;
+}
 
 /* Legacy utility compatibility (Spirit/Tachyons-style percentages). */
 .w-100 {
@@ -131,12 +135,15 @@ body.react-admin .safe-area-inset-bottom {
 body.react-admin #ember-app {
     width: 100%;
     height: 100%;
+    /* Contain legacy Ember z-indexes (e.g. the billing overlay at 9999) so they can't
+       paint over React shell chrome like the mobile sidebar drawer (z-50). */
+    isolation: isolate;
 }
 
 /* Temporary overrides until Ember transition is finished */
 body.react-admin .gh-canvas-header {
-    padding-top: 24px;
-    padding-bottom: 24px;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 body.react-admin .gh-canvas-breadcrumb+.gh-canvas-title {
@@ -146,17 +153,20 @@ body.react-admin .gh-canvas-breadcrumb+.gh-canvas-title {
 
 body.react-admin .gh-canvas-title,
 body.react-admin [data-header="header-title"] {
-    font-size: 25px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0;
 }
 
 body.react-admin [data-header="header"] {
-    padding-top: 24px;
+    padding-top: 20px;
+    min-height: 32px;
     /* padding-bottom: 18px; */
 }
 
 body.react-admin [data-navbar="navbar"] {
-    padding-top: 24px;
-    padding-bottom: 24px;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 body.react-admin #ember-app .gh-viewport {

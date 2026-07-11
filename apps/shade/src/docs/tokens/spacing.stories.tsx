@@ -53,12 +53,12 @@ export const SemanticGaps: Story = {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr className="border-b border-border-subtle"><td className="py-2 pr-6"><code>none</code></td><td><code>0</code></td></tr>
-                    <tr className="border-b border-border-subtle"><td className="py-2 pr-6"><code>xs</code></td><td><code>p-1</code></td></tr>
-                    <tr className="border-b border-border-subtle"><td className="py-2 pr-6"><code>sm</code></td><td><code>p-2</code></td></tr>
-                    <tr className="border-b border-border-subtle"><td className="py-2 pr-6"><code>md</code></td><td><code>p-4</code></td></tr>
-                    <tr className="border-b border-border-subtle"><td className="py-2 pr-6"><code>lg</code></td><td><code>p-6</code></td></tr>
-                    <tr className="border-b border-border-subtle"><td className="py-2 pr-6"><code>xl</code></td><td><code>p-8</code></td></tr>
+                    <tr className="border-b border-border-default"><td className="py-2 pr-6"><code>none</code></td><td><code>0</code></td></tr>
+                    <tr className="border-b border-border-default"><td className="py-2 pr-6"><code>xs</code></td><td><code>p-1</code></td></tr>
+                    <tr className="border-b border-border-default"><td className="py-2 pr-6"><code>sm</code></td><td><code>p-2</code></td></tr>
+                    <tr className="border-b border-border-default"><td className="py-2 pr-6"><code>md</code></td><td><code>p-4</code></td></tr>
+                    <tr className="border-b border-border-default"><td className="py-2 pr-6"><code>lg</code></td><td><code>p-6</code></td></tr>
+                    <tr className="border-b border-border-default"><td className="py-2 pr-6"><code>xl</code></td><td><code>p-8</code></td></tr>
                     <tr><td className="py-2 pr-6"><code>2xl</code></td><td><code>p-12</code></td></tr>
                 </tbody>
             </table>

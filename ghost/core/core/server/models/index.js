@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 
 /**
  * Dependencies
@@ -49,7 +48,6 @@ const {MobiledocRevision} = require('./mobiledoc-revision');
 const {Newsletter} = require('./newsletter');
 const {OfferRedemption} = require('./offer-redemption');
 const {Offer} = require('./offer');
-const {Outbox} = require('./outbox');
 const {Permission, Permissions} = require('./permission');
 const {PostRevision} = require('./post-revision');
 const {Post, Posts} = require('./post');
@@ -147,7 +145,6 @@ exports.MobiledocRevision = MobiledocRevision;
 exports.Newsletter = Newsletter;
 exports.OfferRedemption = OfferRedemption;
 exports.Offer = Offer;
-exports.Outbox = Outbox;
 exports.Permission = Permission;
 exports.Permissions = Permissions;
 exports.PostRevision = PostRevision;
@@ -189,16 +186,3 @@ exports.Webhook = Webhook;
 exports.Webhooks = Webhooks;
 exports.WelcomeEmailAutomatedEmail = WelcomeEmailAutomatedEmail;
 exports.WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
-
-function init() {
-    // `init` used to be a necessary call, but now it's unnecessary.
-    // Ghost(Pro) still calls it, though, so we define a no-op.
-    // Once Ghost(Pro) stops calling it, we can remove this function.
-    // See the relevant PR in Ghost-Moya.
-}
-
-/**
- * Expose `init`
- */
-
-exports.init = init;

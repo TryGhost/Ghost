@@ -34,6 +34,20 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const [errors, setErrors] = useState<Partial<Record<SocialPlatformKey, string>>>({});
     const [urls, setUrls] = useState<Record<SocialPlatformKey, string>>(() => getSocialUrls(localSettings));
+    const [focusedKey, setFocusedKey] = useState<SocialPlatformKey | null>(null);
+    // tracks which fields the user has attempted to change this session,
+    // independent of the settings' own `dirty` flag: `dirty` is only set on a
+    // *successful* normalise+commit, so a field whose first edit is invalid
+    // never becomes dirty even though the user is actively trying to change
+    // it. Falling back to `dirty` for the save-time validation gate would
+    // silently skip that invalid, in-progress edit instead of blocking save.
+    const [touchedKeys, setTouchedKeys] = useState<Partial<Record<SocialPlatformKey, boolean>>>({});
+
+    useEffect(() => {
+        if (!isEditing) {
+            setTouchedKeys({});
+        }
+    }, [isEditing]);
 
     const handles = getSettingValues<string | null>(localSettings, [...SOCIAL_PLATFORM_KEYS]);
     const backendSupportsNewPlatforms = NEW_PLATFORM_KEYS.some(key => localSettings?.some(s => s.key === key));
@@ -46,12 +60,15 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     // Depend on stored values, not the localSettings reference (which churns on every updateSetting).
     useEffect(() => {
+        if (focusedKey) {
+            return;
+        }
         setUrls(getSocialUrls(localSettings));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [handles.map(value => value ?? '').join('|')]);
 
     const handleSocialChange = (key: SocialPlatformKey, value: string) => {
         setUrls(current => ({...current, [key]: value}));
+        setTouchedKeys(current => ({...current, [key]: true}));
 
         if (!isEditing) {
             handleEditingChange(true);
@@ -69,8 +86,27 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
     };
 
+    const handleSocialBlur = (key: SocialPlatformKey) => {
+        setFocusedKey(current => (current === key ? null : current));
+
+        if (getSocialValidationError(key, urls[key])) {
+            return;
+        }
+
+        const {displayValue} = normalizeSocialInput(key, urls[key]);
+        setUrls(current => ({...current, [key]: displayValue}));
+    };
+
     const handleSaveClick = () => {
         const formErrors = visiblePlatforms.reduce<Partial<Record<SocialPlatformKey, string>>>((current, config) => {
+            // a stored handle that predates a validation-rule tightening (see
+            // ONC-1856 follow-ups) must not block saving the rest of the form —
+            // only re-validate a platform the user actually attempted to
+            // change this session, whether or not that attempt was valid
+            if (!touchedKeys[config.key]) {
+                return current;
+            }
+
             const error = getSocialValidationError(config.key, urls[config.key]);
             if (error) {
                 current[config.key] = error;
@@ -109,7 +145,9 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         placeholder={config.placeholder}
                         title={config.publicationTitle}
                         value={urls[config.key]}
+                        onBlur={() => handleSocialBlur(config.key)}
                         onChange={event => handleSocialChange(config.key, event.target.value)}
+                        onFocus={() => setFocusedKey(config.key)}
                     />
                 ))}
             </SettingGroupContent>

@@ -39,7 +39,11 @@ export const NavigationPreferencesSchema = z.looseObject({
 
 const PreferencesSchema = z.looseObject({
     whatsNew: WhatsNewPreferencesSchema.optional().catch(undefined),
-    nightShift: z.boolean().optional(),
+    // Optional (not defaulted) so an absent preference stays absent and isn't
+    // eagerly written back on unrelated preference saves. The display fallback to
+    // "light" lives at the read site (see useTheme). New users get "system" from
+    // the server default; legacy booleans are migrated to strings in the queryFn.
+    nightShift: z.enum(["light", "dark", "system"]).optional().catch("light"),
     onboarding: OnboardingPreferencesSchema.default(DEFAULT_ONBOARDING_PREFERENCES).catch(DEFAULT_ONBOARDING_PREFERENCES),
     navigation: NavigationPreferencesSchema.default(DEFAULT_NAVIGATION_PREFERENCES).catch(DEFAULT_NAVIGATION_PREFERENCES),
 });
@@ -65,7 +69,17 @@ export function useUserPreferences<TData = Preferences>(
             }
 
             const raw = user.accessibility || "{}";
-            const parsed = JSON.parse(raw) as unknown;
+            const parsedRaw: unknown = JSON.parse(raw);
+            const parsed: Record<string, unknown> =
+                parsedRaw && typeof parsedRaw === "object" && !Array.isArray(parsedRaw)
+                    ? parsedRaw as Record<string, unknown>
+                    : {};
+
+            if (parsed.nightShift === true) {
+                parsed.nightShift = "dark";
+            } else if (parsed.nightShift === false) {
+                parsed.nightShift = "light";
+            }
 
             return PreferencesSchema.parse(parsed);
         },

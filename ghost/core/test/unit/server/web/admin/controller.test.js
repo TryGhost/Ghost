@@ -15,7 +15,7 @@ describe('Admin App', function () {
             };
 
             await configUtils.restore();
-            configUtils.set('paths:adminAssets', path.resolve('test/utils/fixtures/admin-build'));
+            configUtils.set('paths:adminAssets', path.resolve(__dirname, '../../../../utils/fixtures/admin-build'));
         });
 
         afterEach(function () {

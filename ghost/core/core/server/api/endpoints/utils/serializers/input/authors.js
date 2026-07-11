@@ -1,4 +1,5 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:authors');
+const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const utils = require('../../index');
 
@@ -16,6 +17,8 @@ module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
 
+        url.forceUrlColumnsWhenLazy(frame, 'authors');
+
         if (utils.isContentAPI(frame)) {
             setDefaultOrder(frame);
         }
@@ -23,6 +26,8 @@ module.exports = {
 
     read(apiConfig, frame) {
         debug('read');
+
+        url.forceUrlColumnsWhenLazy(frame, 'authors');
 
         if (utils.isContentAPI(frame)) {
             setDefaultOrder(frame);

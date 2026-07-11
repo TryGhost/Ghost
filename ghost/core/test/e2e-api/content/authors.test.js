@@ -18,7 +18,7 @@ const authorMatcherWithCount = {
 describe('Authors Content API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('owner:post', 'users', 'user:inactive', 'posts', 'api_keys');
         await agent.authenticate();

@@ -29,7 +29,7 @@ describe('useSortableIndexedList', () => {
 
     it('should add a new item', () => {
         let items = initialItems;
-        const setItems = (newItems: any[]) => {
+        const setItems = (newItems: {name: string}[]) => {
             items = newItems;
         };
 
@@ -52,7 +52,7 @@ describe('useSortableIndexedList', () => {
 
     it('should update an item', () => {
         let items = initialItems;
-        const setItems = (newItems: any[]) => {
+        const setItems = (newItems: {name: string}[]) => {
             items = newItems;
         };
 
@@ -74,7 +74,7 @@ describe('useSortableIndexedList', () => {
 
     it('should remove an item', () => {
         let items = initialItems;
-        const setItems = (newItems: any[]) => {
+        const setItems = (newItems: {name: string}[]) => {
             items = newItems;
         };
 
@@ -96,7 +96,7 @@ describe('useSortableIndexedList', () => {
 
     it('should move an item', () => {
         let items = initialItems;
-        const setItems = (newItems: any[]) => {
+        const setItems = (newItems: {name: string}[]) => {
             items = newItems;
         };
 

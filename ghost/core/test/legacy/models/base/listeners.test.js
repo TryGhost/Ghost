@@ -1,10 +1,10 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const moment = require('moment-timezone');
-const rewire = require('rewire');
 const _ = require('lodash');
 const events = require('../../../../core/server/lib/common/events');
 const models = require('../../../../core/server/models');
+const listeners = require('../../../../core/server/models/base/listeners');
 const testUtils = require('../../../utils');
 
 describe('Models: listeners', function () {
@@ -18,7 +18,7 @@ describe('Models: listeners', function () {
         publishedAtFutureMoment3: moment().add(10, 'hours').startOf('hour')
     };
 
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
 
     beforeEach(testUtils.setup('owner:pre', 'settings'));
 
@@ -27,7 +27,7 @@ describe('Models: listeners', function () {
             eventsToRemember[eventName] = callback;
         });
 
-        rewire('../../../../core/server/models/base/listeners');
+        listeners.registerListeners(events);
     });
 
     afterEach(function () {
@@ -41,7 +41,7 @@ describe('Models: listeners', function () {
         let posts;
 
         describe('db has scheduled posts', function () {
-            beforeEach(function (done) {
+            beforeEach(async function () {
                 scope.posts.push(testUtils.DataGenerator.forKnex.createPost({
                     published_at: scope.publishedAtFutureMoment1.toDate(),
                     status: 'scheduled',
@@ -63,18 +63,15 @@ describe('Models: listeners', function () {
                     slug: '3'
                 }));
 
-                Promise.all(scope.posts.map(function (post) {
+                const result = await Promise.all(scope.posts.map(function (post) {
                     return models.Post.add(post, testUtils.context.owner);
-                })).then(function (result) {
-                    assert.equal(result.length, 3);
-                    posts = result;
-                    done();
-                }).catch(function (err) {
-                    return done(err);
-                });
+                }));
+
+                assert.equal(result.length, 3);
+                posts = result;
             });
 
-            it('timezone changes from London to Los Angeles', function (done) {
+            it('timezone changes from London to Los Angeles', async function () {
                 let timeout;
 
                 /**
@@ -103,39 +100,41 @@ describe('Models: listeners', function () {
                     _previousAttributes: {value: scope.oldTimezone}
                 });
 
-                (function retry() {
-                    models.Post.findAll({context: {internal: true}})
-                        .then(function (results) {
-                            const post1 = _.find(results.models, function (post) {
-                                return post.get('title') === '1';
-                            });
+                await new Promise(function (resolve, reject) {
+                    (function retry() {
+                        models.Post.findAll({context: {internal: true}})
+                            .then(function (results) {
+                                const post1 = _.find(results.models, function (post) {
+                                    return post.get('title') === '1';
+                                });
 
-                            const post2 = _.find(results.models, function (post) {
-                                return post.get('title') === '2';
-                            });
+                                const post2 = _.find(results.models, function (post) {
+                                    return post.get('title') === '2';
+                                });
 
-                            const post3 = _.find(results.models, function (post) {
-                                return post.get('title') === '3';
-                            });
+                                const post3 = _.find(results.models, function (post) {
+                                    return post.get('title') === '3';
+                                });
 
-                            if (results.models.length === posts.length &&
-                            post1.get('status') === 'scheduled' &&
-                            post2.get('status') === 'scheduled' &&
-                            post3.get('status') === 'scheduled' &&
-                            moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
-                            moment(post2.get('published_at')).diff(scope.publishedAtFutureMoment2.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
-                            moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
-                                return done();
-                            }
+                                if (results.models.length === posts.length &&
+                                post1.get('status') === 'scheduled' &&
+                                post2.get('status') === 'scheduled' &&
+                                post3.get('status') === 'scheduled' &&
+                                moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
+                                moment(post2.get('published_at')).diff(scope.publishedAtFutureMoment2.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
+                                moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
+                                    return resolve();
+                                }
 
-                            clearTimeout(timeout);
-                            timeout = setTimeout(retry, 500);
-                        })
-                        .catch(done);
-                })();
+                                clearTimeout(timeout);
+                                timeout = setTimeout(retry, 500);
+                            })
+                            .catch(reject);
+                    })();
+                });
             });
 
-            it('timezone changes from Baghdad to UTC', function (done) {
+            it('timezone changes from Baghdad to UTC', async function () {
                 let timeout;
 
                 /**
@@ -162,39 +161,41 @@ describe('Models: listeners', function () {
                     _previousAttributes: {value: scope.oldTimezone}
                 });
 
-                (function retry() {
-                    models.Post.findAll({context: {internal: true}})
-                        .then(function (results) {
-                            const post1 = _.find(results.models, function (post) {
-                                return post.get('title') === '1';
-                            });
+                await new Promise(function (resolve, reject) {
+                    (function retry() {
+                        models.Post.findAll({context: {internal: true}})
+                            .then(function (results) {
+                                const post1 = _.find(results.models, function (post) {
+                                    return post.get('title') === '1';
+                                });
 
-                            const post2 = _.find(results.models, function (post) {
-                                return post.get('title') === '2';
-                            });
+                                const post2 = _.find(results.models, function (post) {
+                                    return post.get('title') === '2';
+                                });
 
-                            const post3 = _.find(results.models, function (post) {
-                                return post.get('title') === '3';
-                            });
+                                const post3 = _.find(results.models, function (post) {
+                                    return post.get('title') === '3';
+                                });
 
-                            if (results.models.length === posts.length &&
-                            post1.get('status') === 'scheduled' &&
-                            post2.get('status') === 'scheduled' &&
-                            post3.get('status') === 'scheduled' &&
-                            moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
-                            moment(post2.get('published_at')).diff(scope.publishedAtFutureMoment2.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
-                            moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
-                                return done();
-                            }
+                                if (results.models.length === posts.length &&
+                                post1.get('status') === 'scheduled' &&
+                                post2.get('status') === 'scheduled' &&
+                                post3.get('status') === 'scheduled' &&
+                                moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
+                                moment(post2.get('published_at')).diff(scope.publishedAtFutureMoment2.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
+                                moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
+                                    return resolve();
+                                }
 
-                            clearTimeout(timeout);
-                            timeout = setTimeout(retry, 500);
-                        })
-                        .catch(done);
-                })();
+                                clearTimeout(timeout);
+                                timeout = setTimeout(retry, 500);
+                            })
+                            .catch(reject);
+                    })();
+                });
             });
 
-            it('timezone changes from Amsterdam to Seoul', function (done) {
+            it('timezone changes from Amsterdam to Seoul', async function () {
                 let timeout;
 
                 /**
@@ -221,57 +222,55 @@ describe('Models: listeners', function () {
                     _previousAttributes: {value: scope.oldTimezone}
                 });
 
-                (function retry() {
-                    models.Post.findAll({context: {internal: true}})
-                        .then(function (results) {
-                            const post1 = _.find(results.models, function (post) {
-                                return post.get('title') === '1';
-                            });
+                await new Promise(function (resolve, reject) {
+                    (function retry() {
+                        models.Post.findAll({context: {internal: true}})
+                            .then(function (results) {
+                                const post1 = _.find(results.models, function (post) {
+                                    return post.get('title') === '1';
+                                });
 
-                            const post2 = _.find(results.models, function (post) {
-                                return post.get('title') === '2';
-                            });
+                                const post2 = _.find(results.models, function (post) {
+                                    return post.get('title') === '2';
+                                });
 
-                            const post3 = _.find(results.models, function (post) {
-                                return post.get('title') === '3';
-                            });
+                                const post3 = _.find(results.models, function (post) {
+                                    return post.get('title') === '3';
+                                });
 
-                            if (results.models.length === posts.length &&
-                            post1.get('status') === 'scheduled' &&
-                            post2.get('status') === 'draft' &&
-                            post3.get('status') === 'scheduled' &&
-                            moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
-                            moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
-                                return done();
-                            }
+                                if (results.models.length === posts.length &&
+                                post1.get('status') === 'scheduled' &&
+                                post2.get('status') === 'draft' &&
+                                post3.get('status') === 'scheduled' &&
+                                moment(post1.get('published_at')).diff(scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes')) === 0 &&
+                                moment(post3.get('published_at')).diff(scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes')) === 0) {
+                                    return resolve();
+                                }
 
-                            clearTimeout(timeout);
-                            timeout = setTimeout(retry, 500);
-                        })
-                        .catch(done);
-                })();
+                                clearTimeout(timeout);
+                                timeout = setTimeout(retry, 500);
+                            })
+                            .catch(reject);
+                    })();
+                });
             });
         });
 
         describe('db has no scheduled posts', function () {
-            it('no scheduled posts', function (done) {
+            it('no scheduled posts', async function () {
                 eventsToRemember['settings.timezone.edited']({
                     attributes: {value: scope.newTimezone},
                     _previousAttributes: {value: scope.oldTimezone}
                 });
 
-                models.Post.findAll({context: {internal: true}})
-                    .then(function (results) {
-                        assert.equal(results.length, 0);
-                        done();
-                    })
-                    .catch(done);
+                const results = await models.Post.findAll({context: {internal: true}});
+                assert.equal(results.length, 0);
             });
         });
     });
 
     describe('on notifications changed', function () {
-        it('nothing to delete', function (done) {
+        it('nothing to delete', async function () {
             const notifications = JSON.stringify([
                 {
                     addedAt: moment().subtract(1, 'week').format(),
@@ -287,22 +286,19 @@ describe('Models: listeners', function () {
                 }
             ]);
 
-            models.Settings.edit({key: 'notifications', value: notifications}, testUtils.context.internal)
-                .then(function () {
-                    eventsToRemember['settings.notifications.edited']({
-                        attributes: {
-                            value: notifications
-                        }
-                    });
+            await models.Settings.edit({key: 'notifications', value: notifications}, testUtils.context.internal);
 
-                    return models.Settings.findOne({key: 'notifications'}, testUtils.context.internal);
-                }).then(function (model) {
-                    assert.equal(JSON.parse(model.get('value')).length, 3);
-                    done();
-                }).catch(done);
+            eventsToRemember['settings.notifications.edited']({
+                attributes: {
+                    value: notifications
+                }
+            });
+
+            const model = await models.Settings.findOne({key: 'notifications'}, testUtils.context.internal);
+            assert.equal(JSON.parse(model.get('value')).length, 3);
         });
 
-        it('expect deletion', function (done) {
+        it('expect deletion', async function () {
             const notifications = JSON.stringify([
                 {
                     content: 'keep-1',
@@ -321,18 +317,16 @@ describe('Models: listeners', function () {
                 }
             ]);
 
-            models.Settings.edit({key: 'notifications', value: notifications}, testUtils.context.internal)
-                .then(function () {
-                    setTimeout(function () {
-                        return models.Settings.findOne({key: 'notifications'}, testUtils.context.internal)
-                            .then(function (model) {
-                                assert.equal(JSON.parse(model.get('value')).length, 2);
-                                done();
-                            })
-                            .catch(done);
-                    }, 100);
-                })
-                .catch(done);
+            await models.Settings.edit({key: 'notifications', value: notifications}, testUtils.context.internal);
+
+            // Wait for the fire-and-forget settings.notifications.edited listener to
+            // delete the stale notification before re-reading the value.
+            await new Promise(function (resolve) {
+                setTimeout(resolve, 100);
+            });
+
+            const model = await models.Settings.findOne({key: 'notifications'}, testUtils.context.internal);
+            assert.equal(JSON.parse(model.get('value')).length, 2);
         });
     });
 });

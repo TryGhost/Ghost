@@ -15,7 +15,7 @@ let sandbox;
 const userId = DataGenerator.Content.users[0].id;
 
 describe('Update User Last Seen', function () {
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
 
@@ -35,7 +35,7 @@ describe('Update User Last Seen', function () {
         );*/
     });
 
-    after(function () {
+    afterAll(function () {
         clock.restore();
         sandbox.restore();
     });

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const configUtils = require('../../../../utils/config-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const logging = require('@tryghost/logging');
-const models = require('../../../../../core/server/models');
+const {Settings} = require('../../../../../core/server/models/settings');
 const adapterManager = require('../../../../../core/server/services/adapter-manager');
 const limits = require('../../../../../core/server/services/limits');
 
@@ -103,8 +103,8 @@ describe('UNIT: Settings Service', function () {
             configUtils.set('hostSettings:limits:customIntegrations:disabled', true);
 
             sinon.stub(adapterManager, 'getAdapter').withArgs('cache:settings').returns(cacheStore);
-            sinon.stub(models.Settings, 'populateDefaults').resolves();
-            sinon.stub(models.Settings, 'findAll').resolves(settingsCollection);
+            sinon.stub(Settings, 'populateDefaults').resolves();
+            sinon.stub(Settings, 'findAll').resolves(settingsCollection);
             const initStub = sinon.stub(settingsCache, 'init');
 
             await settingsService.init();
@@ -126,8 +126,8 @@ describe('UNIT: Settings Service', function () {
             });
 
             sinon.stub(adapterManager, 'getAdapter').withArgs('cache:settings').returns(cacheStore);
-            sinon.stub(models.Settings, 'populateDefaults').resolves();
-            sinon.stub(models.Settings, 'findAll').resolves(settingsCollection);
+            sinon.stub(Settings, 'populateDefaults').resolves();
+            sinon.stub(Settings, 'findAll').resolves(settingsCollection);
             const initStub = sinon.stub(settingsCache, 'init');
 
             await settingsService.init();
@@ -148,13 +148,13 @@ describe('UNIT: Settings Service', function () {
         beforeEach(function () {
             sinon.stub(adapterManager, 'getAdapter').withArgs('cache:settings').returns({});
             sinon.stub(settingsCache, 'init');
-            sinon.stub(models.Settings, 'populateDefaults').resolves();
-            sinon.stub(models.Settings, 'findAll').resolves({});
+            sinon.stub(Settings, 'populateDefaults').resolves();
+            sinon.stub(Settings, 'findAll').resolves({});
         });
 
         it('is a no-op when the limit is not disabled', async function () {
             sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(false);
-            const editStub = sinon.stub(models.Settings, 'edit').resolves();
+            const editStub = sinon.stub(Settings, 'edit').resolves();
 
             await settingsService.init();
 
@@ -163,10 +163,10 @@ describe('UNIT: Settings Service', function () {
 
         it('persists is_private = true and a generated access code when both are missing', async function () {
             sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(true);
-            const findOneStub = sinon.stub(models.Settings, 'findOne');
+            const findOneStub = sinon.stub(Settings, 'findOne');
             findOneStub.withArgs({key: 'is_private'}).resolves(fakeSettingRow(false));
             findOneStub.withArgs({key: 'password'}).resolves(fakeSettingRow(''));
-            const editStub = sinon.stub(models.Settings, 'edit').resolves();
+            const editStub = sinon.stub(Settings, 'edit').resolves();
 
             await settingsService.init();
 
@@ -174,16 +174,16 @@ describe('UNIT: Settings Service', function () {
             const writes = editStub.firstCall.args[0];
             const writesByKey = Object.fromEntries(writes.map(w => [w.key, w.value]));
             assert.equal(writesByKey.is_private, true);
-            assert.match(writesByKey.password, /^fake-\d{3}$/);
+            assert.match(writesByKey.password, /^[a-z]+\d{3}$/);
             assert.deepEqual(editStub.firstCall.args[1], {context: {internal: true}});
         });
 
         it('only writes the missing values when one is already enforced', async function () {
             sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(true);
-            const findOneStub = sinon.stub(models.Settings, 'findOne');
+            const findOneStub = sinon.stub(Settings, 'findOne');
             findOneStub.withArgs({key: 'is_private'}).resolves(fakeSettingRow(true));
             findOneStub.withArgs({key: 'password'}).resolves(fakeSettingRow(''));
-            const editStub = sinon.stub(models.Settings, 'edit').resolves();
+            const editStub = sinon.stub(Settings, 'edit').resolves();
 
             await settingsService.init();
 
@@ -194,10 +194,10 @@ describe('UNIT: Settings Service', function () {
 
         it('does not write when both values are already enforced', async function () {
             sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(true);
-            const findOneStub = sinon.stub(models.Settings, 'findOne');
+            const findOneStub = sinon.stub(Settings, 'findOne');
             findOneStub.withArgs({key: 'is_private'}).resolves(fakeSettingRow(true));
-            findOneStub.withArgs({key: 'password'}).resolves(fakeSettingRow('fake-042'));
-            const editStub = sinon.stub(models.Settings, 'edit').resolves();
+            findOneStub.withArgs({key: 'password'}).resolves(fakeSettingRow('anchor042'));
+            const editStub = sinon.stub(Settings, 'edit').resolves();
 
             await settingsService.init();
 
@@ -206,30 +206,16 @@ describe('UNIT: Settings Service', function () {
 
         it('treats a whitespace-only access code as missing', async function () {
             sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(true);
-            const findOneStub = sinon.stub(models.Settings, 'findOne');
+            const findOneStub = sinon.stub(Settings, 'findOne');
             findOneStub.withArgs({key: 'is_private'}).resolves(fakeSettingRow(true));
             findOneStub.withArgs({key: 'password'}).resolves(fakeSettingRow('   '));
-            const editStub = sinon.stub(models.Settings, 'edit').resolves();
+            const editStub = sinon.stub(Settings, 'edit').resolves();
 
             await settingsService.init();
 
             const writes = editStub.firstCall.args[0];
             assert.equal(writes.length, 1);
             assert.equal(writes[0].key, 'password');
-        });
-    });
-
-    describe('regeneratePrivateSiteAccessCode', function () {
-        it('generates a new access code server-side and writes with internal context', async function () {
-            const editStub = sinon.stub(models.Settings, 'edit').resolves();
-
-            await settingsService.regeneratePrivateSiteAccessCode();
-
-            sinon.assert.calledOnce(editStub);
-            assert.equal(editStub.firstCall.args[0].length, 1);
-            assert.equal(editStub.firstCall.args[0][0].key, 'password');
-            assert.match(editStub.firstCall.args[0][0].value, /^fake-\d{3}$/);
-            assert.deepEqual(editStub.firstCall.args[1], {context: {internal: true}});
         });
     });
 });

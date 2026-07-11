@@ -56,24 +56,37 @@ class Users {
         this.assignTagToUserPosts = this.assignTagToUserPosts.bind(this);
     }
 
-    async resetAllPasswords(frameOptions) {
-        return this.models.Base.transaction(async (t) => {
-            frameOptions.transacting = t;
-
-            // Reset all passwords
-            const users = await this.models.User.findAll(frameOptions);
-            for (const user of users) {
-                await user.save({
-                    status: 'locked' // Prevent signins before password reset
-                }, frameOptions);
+    /**
+     * Lock every user and invalidate their password.
+     *
+     * Locked users hit `PasswordResetRequiredError` on their next signin
+     * attempt; the session endpoint catches that, generates a reset token,
+     * and emails the user *in context of their own signin*. That avoids
+     * blasting unsolicited "your password has been reset" emails to people
+     * who are not actively signing in, while still funnelling everyone
+     * through a fresh password before they regain access.
+     *
+     * @param {Object} frameOptions
+     * @returns {Promise<{count: number}>}
+     */
+    async lockAll(frameOptions) {
+        const lockUsers = async (txOptions) => {
+            // Every staff user has their password rotated. user.lock()
+            // preserves `inactive` status for suspended users so they remain
+            // on the suspended-signin path; everyone else transitions to
+            // `locked` and hits the reset-on-signin flow.
+            const users = await this.models.User.findAll(txOptions);
+            for (const user of users.models) {
+                await user.lock(txOptions);
             }
+            return users.models;
+        };
 
-            //Send all password resets
-            for (const user of users) {
-                const token = await this.auth.passwordreset.generateToken(user.get('email'), this.apiSettings, t);
-                await this.auth.passwordreset.sendResetNotification(token, this.apiMail);
-            }
-        });
+        const users = frameOptions.transacting
+            ? await lockUsers(frameOptions)
+            : await this.models.Base.transaction(t => lockUsers({...frameOptions, transacting: t}));
+
+        return {count: users.length};
     }
 
     async assignTagToUserPosts({id, context, transacting}) {

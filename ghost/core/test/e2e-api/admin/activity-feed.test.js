@@ -82,7 +82,7 @@ async function testPagination(skippedTypes, postId, totalExpected, limit) {
 }
 
 describe('Activity Feed API', function () {
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments', 'redirects', 'clicks', 'feedback', 'members:emails');
         await agent.loginAsOwner();
@@ -120,7 +120,7 @@ describe('Activity Feed API', function () {
 
         it('Cannot combine type filter with OR filter', async function () {
             // This query is not allowed because we need to split the filter in two AND filters
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             await agent
                 .get(`/members/events?filter=type:comment_event,data.post_id:123`)
                 .expectStatus(400)
@@ -139,7 +139,7 @@ describe('Activity Feed API', function () {
         });
 
         it('Can only combine type and other filters at the root level', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             await agent
                 .get(`/members/events?filter=${encodeURIComponent('(type:comment_event+data.post_id:123)+data.post_id:123')}`)
                 .expectStatus(400)

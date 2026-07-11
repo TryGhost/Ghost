@@ -22,7 +22,7 @@ const matchSubscriptionStats = {
 };
 
 describe('Stats API', function () {
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'members');
         await agent.loginAsOwner();

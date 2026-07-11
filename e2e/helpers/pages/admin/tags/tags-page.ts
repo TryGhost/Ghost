@@ -1,5 +1,6 @@
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
+import {tagsSelectors} from '@tryghost/test-data';
 
 export class TagsPage extends AdminPage {
     readonly pageContent: Locator;
@@ -19,15 +20,15 @@ export class TagsPage extends AdminPage {
         super(page);
 
         this.pageUrl = '/ghost/#/tags';
-        this.pageContent = page.getByTestId('tags-page');
-        this.tagList = page.getByTestId('tags-list');
-        this.tagListRow = this.tagList.getByTestId('tag-list-row');
+        this.pageContent = page.getByTestId(tagsSelectors.testIds.page);
+        this.tagList = page.getByTestId(tagsSelectors.testIds.list);
+        this.tagListRow = this.tagList.getByTestId(tagsSelectors.testIds.listRow);
         this.tagNames = page.locator('[data-test-tag-name]');
 
-        this.tabs = page.getByTestId('tags-header-tabs');
+        this.tabs = page.getByTestId(tagsSelectors.testIds.headerTabs);
         this.activeTab = this.tabs.locator('[data-state="on"]');
-        this.newTagButton = page.getByRole('link', {name: 'New tag'});
-        this.createNewTagButton = this.pageContent.getByRole('link', {name: 'Create a new tag'});
+        this.newTagButton = page.getByRole('link', {name: tagsSelectors.names.newTagLink});
+        this.createNewTagButton = this.pageContent.getByRole('link', {name: tagsSelectors.names.createNewTagLink});
 
         this.loadingPlaceholder = page.getByTestId('loading-placeholder');
     }

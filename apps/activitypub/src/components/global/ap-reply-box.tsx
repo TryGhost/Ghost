@@ -2,7 +2,7 @@ import React, {HTMLProps, useState} from 'react';
 
 import APAvatar from './ap-avatar';
 import NewNoteModal from '@components/modals/new-note-modal';
-import getUsername from '../../utils/get-username';
+import getHandle from '../../utils/get-handle';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {useUserDataForUser} from '@hooks/use-activity-pub-queries';
 
@@ -29,7 +29,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     const attributedTo = object.attributedTo as ActorProperties | undefined;
     let placeholder = 'Reply...';
     if (attributedTo?.preferredUsername && attributedTo?.id) {
-        placeholder = `Reply to ${getUsername(attributedTo)}...`;
+        placeholder = `Reply to ${getHandle(attributedTo)}...`;
     }
 
     return (
@@ -41,7 +41,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
             >
                 <APAvatar author={user as ActorProperties} />
                 <div className='flex w-full items-center'>
-                    <div className='w-full text-[1.5rem] text-gray-500 transition-colors dark:text-gray-400'>
+                    <div className='w-full text-[1.5rem] text-gray-500 transition-colors dark:text-gray-700'>
                         {placeholder}
                     </div>
                 </div>

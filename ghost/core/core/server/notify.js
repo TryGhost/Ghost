@@ -14,6 +14,13 @@ let notified = {
     ready: false
 };
 
+function resetNotifications() {
+    notified = {
+        started: false,
+        ready: false
+    };
+}
+
 const debugInfo = {
     versions: process.versions,
     platform: process.platform,
@@ -65,3 +72,5 @@ module.exports.notifyServerStarted = async function (error = null) {
 module.exports.notifyServerReady = async function (error = null) {
     return await notify('ready', error);
 };
+
+module.exports.resetNotifications = resetNotifications;

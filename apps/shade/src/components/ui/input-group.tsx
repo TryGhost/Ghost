@@ -28,7 +28,7 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
                 // Focus state — scoped to the input-group control specifically so that
                 // focusing an InputGroupButton inside the group does NOT trigger the surface
                 // focus ring. This is why we don't use inputSurface('within') here.
-                'has-[[data-slot=input-group-control]:focus-visible]:outline-hidden has-[[data-slot=input-group-control]:focus-visible]:bg-transparent has-[[data-slot=input-group-control]:focus-visible]:border-focus-ring has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-focus-ring/25',
+                'has-[[data-slot=input-group-control]:focus-visible]:border-focus-ring has-[[data-slot=input-group-control]:focus-visible]:bg-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-focus-ring/25 has-[[data-slot=input-group-control]:focus-visible]:outline-hidden',
 
                 className
             )}
@@ -40,7 +40,7 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
 }
 
 const inputGroupAddonVariants = cva(
-    `flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--input-group-radius)-5px)] [&>svg:not([class*='size-'])]:size-4`,
+    `flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-control font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--input-group-radius)-5px)] [&>svg:not([class*='size-'])]:size-4`,
     {
         variants: {
             align: {
@@ -82,7 +82,7 @@ function InputGroupAddon({
 }
 
 const inputGroupButtonVariants = cva(
-    'flex items-center gap-2 text-sm shadow-none',
+    'flex items-center gap-2 text-control shadow-none',
     {
         variants: {
             size: {
@@ -120,7 +120,7 @@ function InputGroupText({className, ...props}: React.ComponentProps<'span'>) {
     return (
         <span
             className={cn(
-                'text-muted-foreground flex items-center gap-2 text-sm [&_svg:not([class*=\'size-\'])]:size-4 [&_svg]:pointer-events-none',
+                'flex items-center gap-2 text-control text-muted-foreground [&_svg]:pointer-events-none [&_svg:not([class*=\'size-\'])]:size-4',
                 className
             )}
             {...props}
@@ -135,7 +135,7 @@ function InputGroupInput({
     return (
         <Input
             className={cn(
-                'flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:outline-hidden focus-visible:shadow-none dark:bg-transparent',
+                'flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:shadow-none focus-visible:ring-0 focus-visible:outline-hidden dark:bg-transparent',
                 className
             )}
             data-slot="input-group-control"
@@ -151,7 +151,7 @@ function InputGroupTextarea({
     return (
         <Textarea
             className={cn(
-                'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus-visible:ring-0 focus-visible:outline-hidden focus-visible:shadow-none dark:bg-transparent',
+                'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus-visible:shadow-none focus-visible:ring-0 focus-visible:outline-hidden dark:bg-transparent',
                 className
             )}
             data-slot="input-group-control"

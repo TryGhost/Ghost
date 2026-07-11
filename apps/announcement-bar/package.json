@@ -1,92 +1,78 @@
 {
-  "name": "@tryghost/announcement-bar",
-  "version": "1.1.21",
-  "license": "MIT",
-  "repository": "https://github.com/TryGhost/Ghost",
-  "author": "Ghost Foundation",
-  "files": [
-    "umd/",
-    "LICENSE",
-    "README.md"
-  ],
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "dependencies": {
-    "react": "17.0.2",
-    "react-dom": "17.0.2"
-  },
-  "scripts": {
-    "dev": "concurrently --kill-others --names preview,build \"vite preview -l silent\" \"pnpm build:watch\"",
-    "build": "vite build",
-    "build:watch": "vite build --watch",
-    "test": "vitest run",
-    "test:ci": "pnpm test --coverage",
-    "test:unit": "pnpm test:ci",
-    "lint": "eslint src --ext .js --cache",
-    "preship": "pnpm lint",
-    "ship": "node ../../.github/scripts/release-apps.js",
-    "prepublishOnly": "pnpm build"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "jest": true
-    },
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2022
-    },
-    "extends": [
-      "plugin:ghost/browser",
-      "plugin:react/recommended"
+    "name": "@tryghost/announcement-bar",
+    "type": "module",
+    "version": "1.1.28",
+    "license": "MIT",
+    "repository": "https://github.com/TryGhost/Ghost",
+    "author": "Ghost Foundation",
+    "files": [
+        "umd/",
+        "LICENSE",
+        "README.md"
     ],
-    "plugins": [
-      "ghost"
-    ],
-    "rules": {
-      "react/prop-types": "off",
-      "ghost/filenames/match-regex": [
-        "error",
-        "^[a-z0-9.-]+$",
-        false
-      ]
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
     },
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
+    "dependencies": {
+        "react": "catalog:react17",
+        "react-dom": "catalog:react17"
+    },
+    "scripts": {
+        "dev": "vite build --watch --mode development",
+        "build": "vite build",
+        "test": "vitest run",
+        "test:ci": "pnpm test --coverage",
+        "test:unit": "pnpm test:ci",
+        "lint": "eslint src test --cache",
+        "preship": "pnpm lint",
+        "ship": "node ../../.github/scripts/release-apps.js",
+        "prepublishOnly": "pnpm build"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "jest": {
+        "coverageReporters": [
+            "cobertura",
+            "text-summary",
+            "html"
+        ]
+    },
+    "devDependencies": {
+        "@internal/cfg-eslint-react": "workspace:*",
+        "@vitejs/plugin-react": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
+        "concurrently": "catalog:",
+        "cross-fetch": "catalog:",
+        "eslint": "catalog:",
+        "jsdom": "catalog:",
+        "vite": "catalog:",
+        "vite-plugin-svgr": "catalog:",
+        "vitest": "catalog:"
+    },
+    "nx": {
+        "targets": {
+            "dev": {
+                "continuous": true,
+                "executor": "nx:run-commands",
+                "options": {
+                    "cwd": "apps/announcement-bar",
+                    "command": "vite build --watch --mode development"
+                }
+            }
+        },
+        "tags": [
+            "public-app"
+        ]
     }
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "jest": {
-    "coverageReporters": [
-      "cobertura",
-      "text-summary",
-      "html"
-    ]
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
-    "concurrently": "catalog:",
-    "cross-fetch": "catalog:",
-    "eslint": "catalog:",
-    "jsdom": "catalog:",
-    "vite": "catalog:",
-    "vite-plugin-svgr": "catalog:",
-    "vitest": "catalog:"
-  }
 }

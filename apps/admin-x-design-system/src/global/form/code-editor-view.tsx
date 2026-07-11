@@ -24,11 +24,11 @@ const codeMirrorClasses = [
     '[&_.cm-scroller]:border-transparent',
     '[&_.cm-activeLine]:bg-transparent',
     '[&_.cm-activeLineGutter]:bg-transparent',
-    '[&_.cm-gutters]:bg-grey-75 dark:[&_.cm-gutters]:bg-grey-950',
+    '[&_.cm-gutters]:bg-grey-50 dark:[&_.cm-gutters]:bg-grey-950',
     '[&_.cm-gutters]:text-grey-600 dark:[&_.cm-gutters]:text-grey-500',
     '[&_.cm-gutters]:border-grey-500 dark:[&_.cm-gutters]:border-grey-800',
-    '[&_.cm-cursor]:border-grey-900 dark:[&_.cm-cursor]:border-grey-75',
-    'dark:[&_.cm-tooltip-autocomplete.cm-tooltip_ul_li:not([aria-selected])]:bg-grey-975'
+    '[&_.cm-cursor]:border-grey-900 dark:[&_.cm-cursor]:border-grey-50',
+    'dark:[&_.cm-tooltip-autocomplete.cm-tooltip_ul_li:not([aria-selected])]:bg-grey-950'
 ].join(' ');
 
 // Meant to be imported asynchronously to avoid including CodeMirror in the main bundle
@@ -82,7 +82,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
 
     const styles = clsx(
         'peer order-2 w-full max-w-full overflow-hidden rounded-sm border',
-        clearBg ? 'bg-transparent' : 'bg-grey-75',
+        clearBg ? 'bg-transparent' : 'bg-grey-50',
         error ? 'border-red' : 'border-grey-500 dark:border-grey-800',
         title && 'mt-2',
         height === 'full' && 'h-full',

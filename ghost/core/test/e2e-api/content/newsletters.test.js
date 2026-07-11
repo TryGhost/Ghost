@@ -10,7 +10,7 @@ const newsletterSnapshot = {
 describe('Newsletters Content API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('api_keys', 'newsletters');
         await agent.authenticate();

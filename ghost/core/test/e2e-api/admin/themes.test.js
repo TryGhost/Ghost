@@ -26,7 +26,7 @@ describe('Themes API', function () {
             .attach(fieldName, themePath);
     };
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost({
             copyThemes: true
         });
@@ -34,7 +34,7 @@ describe('Themes API', function () {
         await localUtils.doAuth(ownerRequest);
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 

@@ -95,17 +95,17 @@ describe('MrrStatsService', function () {
             };
         }
 
-        before(function () {
+        beforeAll(function () {
             // Set fake timers to our test "today"
             sinon.useFakeTimers(testToday.toDate().getTime());
         });
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
         });
 
         beforeEach(async function () {
-            db = knex({client: 'sqlite3', connection: {filename: ':memory:'}, useNullAsDefault: true});
+            db = knex({client: 'better-sqlite3', connection: {filename: ':memory:'}, useNullAsDefault: true});
             mrrStatsService = new MrrStatsService({knex: db});
 
             await db.schema.createTable('members_paid_subscription_events', function (table) {

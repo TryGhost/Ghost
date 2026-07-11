@@ -15,7 +15,8 @@ apps/shade/src/
 ├── components/
 │   ├── ui/              Generic controls + recipes
 │   ├── primitives/      Layout primitives (Stack, Inline, …)
-│   ├── patterns/        Product compositions (PageHeader, ListPage, …)
+│   ├── patterns/        Product compositions (PageHeader, KpiCard, …)
+│   ├── page-templates/  Top-level page wrappers (ListPage)
 │   └── posts-stats/     Interim shared between Posts and Stats
 ├── docs/                MDX + showcase stories rendered in Storybook
 ├── hooks/               Generic React hooks
@@ -23,7 +24,7 @@ apps/shade/src/
 └── providers/           Context providers
 ```
 
-Each entrypoint barrel (`components.ts`, `primitives.ts`, `patterns.ts`) re-exports from its folder.
+Each entrypoint barrel (`components.ts`, `primitives.ts`, `patterns.ts`, `page-templates.ts`) re-exports from its folder.
 
 ## Naming
 

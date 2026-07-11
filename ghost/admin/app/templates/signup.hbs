@@ -39,7 +39,7 @@
                             class="gh-input"
                             placeholder="jamie@example.com"
                             autocorrect="off"
-                            autocomplete="username email"
+                            autocomplete="username"
                             value={{this.signupDetails.email}}
                             {{on "input" (fn this.setSignupProperty "email")}}
                             {{on "blur" (fn this.validate "email")}}

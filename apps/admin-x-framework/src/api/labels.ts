@@ -1,5 +1,9 @@
 import {InfiniteData} from '@tanstack/react-query';
 import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {apiUrl, useFetchApi} from '../utils/api/fetch-api';
+import {escapeNqlString} from '../utils/nql';
+import {useCallback} from 'react';
+import {useQueryClient} from '@tanstack/react-query';
 
 export type Label = {
     id: string;
@@ -60,6 +64,23 @@ export const useCreateLabel = createMutation<LabelsResponseType, Pick<Label, 'na
         dataType
     }
 });
+
+export const useFindLabelByName = () => {
+    const fetchApi = useFetchApi();
+
+    return useCallback(async (name: string): Promise<Label | undefined> => {
+        const data = await fetchApi<LabelsResponseType>(apiUrl('/labels/', {filter: `name:${escapeNqlString(name)}`, limit: '1'}));
+        return data.labels?.[0];
+    }, [fetchApi]);
+};
+
+export const useInvalidateLabels = () => {
+    const queryClient = useQueryClient();
+
+    return useCallback(() => {
+        queryClient.invalidateQueries([dataType]);
+    }, [queryClient]);
+};
 
 export const useEditLabel = createMutation<LabelsResponseType, Pick<Label, 'id' | 'name'>>({
     method: 'PUT',

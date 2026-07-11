@@ -23,8 +23,10 @@ export type {HttpClient, HttpResponse} from './persistence/adapters/http-client'
 export {GhostAdminApiAdapter} from './persistence/adapters/ghost-api';
 export type {PersistenceAdapter} from './persistence/adapter';
 
-// Utilities
-export {generateId, generateUuid, generateSlug} from './utils';
+// Utilities (shared with the admin acceptance harness via @tryghost/test-data)
+export {generateId, generateUuid, generateSlug} from '@tryghost/test-data';
+export {buildLexical, buildLexicalParagraph} from '@tryghost/test-data';
+export type {CardSpec} from '@tryghost/test-data';
 
 // Factory Setup Helpers
 export {createPostFactory} from './setup';

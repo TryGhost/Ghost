@@ -4,7 +4,7 @@ import AuthFrame from './auth-frame';
 import ContentBox from './components/content-box';
 import PopupBox from './components/popup-box';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import i18nLib from '@tryghost/i18n';
+import i18nLib from '@tryghost/i18n/registry/comments';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
 import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';
@@ -15,10 +15,16 @@ import {useOptions} from './utils/options';
 type AppProps = {
     scriptTag: HTMLElement;
     initialCommentId: string | null;
-    pageUrl: string;
+};
+
+type AdminUser = {
+    roles: {
+        name: string;
+    }[];
 };
 
 const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
+const NET_SCORE_ORDER = 'count__net_score desc, created_at desc';
 
 /**
  * Check if a comment ID exists in the comments array (either as a top-level comment or reply)
@@ -27,7 +33,7 @@ function isCommentLoaded(comments: Comment[], targetId: string): boolean {
     return comments.some(c => c.id === targetId || c.replies?.some(r => r.id === targetId));
 }
 
-const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
+const App: React.FC<AppProps> = ({scriptTag, initialCommentId}) => {
     const options = useOptions(scriptTag);
     const [state, setFullState] = useState<EditableAppContext>({
         initStatus: 'running',
@@ -39,14 +45,13 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         openCommentForms: [],
         popup: null,
         labs: {},
-        order: 'count__likes desc, created_at desc',
+        order: NET_SCORE_ORDER,
         adminApi: null,
         commentsIsLoading: false,
         commentIdToHighlight: null,
         commentIdToScrollTo: initialCommentId,
         commentIdFromHash: initialCommentId,
         showMissingCommentNotice: false,
-        pageUrl,
         supportEmail: null,
         isMember: false,
         isAdmin: false,
@@ -130,7 +135,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 adminUrl: options.adminUrl
             });
 
-            let admin = null;
+            let admin: AdminUser | null = null;
             try {
                 admin = await adminApi.getUser();
 
@@ -179,8 +184,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     };
 
     /** Fetch first few comments  */
-    const fetchComments = async () => {
-        const dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
+    const fetchComments = async (order = state.order) => {
+        const dataPromise = api.comments.browse({page: 1, postId: options.postId, order});
         const countPromise = api.comments.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
@@ -213,7 +218,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         targetId: string,
         parentId: string | undefined,
         initialComments: Comment[],
-        initialPagination: {page: number; pages: number}
+        initialPagination: {page: number; pages: number},
+        order = state.order
     ): Promise<{comments: Comment[]; pagination: typeof initialPagination}> => {
         let comments = initialComments;
         let pagination = initialPagination;
@@ -226,7 +232,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             const nextPage = await api.comments.browse({
                 page: pagination.page + 1,
                 postId: options.postId,
-                order: state.order
+                order
             });
             comments = [...comments, ...nextPage.comments];
             pagination = nextPage.meta.pagination;
@@ -245,11 +251,12 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         targetId: string,
         targetComment: Comment,
         initialComments: Comment[],
-        initialPagination: {page: number; pages: number}
+        initialPagination: {page: number; pages: number},
+        order = state.order
     ): Promise<{comments: Comment[]; pagination: typeof initialPagination; found: boolean}> => {
         const parentId = targetComment.parent_id;
 
-        const {comments: paginatedComments, pagination} = await paginateToComment(targetId, parentId, initialComments, initialPagination);
+        const {comments: paginatedComments, pagination} = await paginateToComment(targetId, parentId, initialComments, initialPagination, order);
         let comments = paginatedComments;
 
         if (parentId && !isCommentLoaded(comments, targetId)) {
@@ -264,7 +271,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     const initSetup = async () => {
         try {
             const {member, labs, supportEmail} = await api.init();
-            const {count, comments: initialComments, pagination: initialPagination} = await fetchComments();
+            const {count, comments: initialComments, pagination: initialPagination} = await fetchComments(NET_SCORE_ORDER);
+            const defaultOrder = NET_SCORE_ORDER;
 
             let comments = initialComments;
             let pagination = initialPagination;
@@ -274,7 +282,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             if (shouldFindScrollTarget) {
                 const targetComment = await fetchScrollTarget(initialCommentId);
                 if (targetComment) {
-                    const result = await loadScrollTarget(initialCommentId, targetComment, comments, pagination);
+                    const result = await loadScrollTarget(initialCommentId, targetComment, comments, pagination, defaultOrder);
                     comments = result.comments;
                     pagination = result.pagination;
                     scrollTargetFound = result.found;
@@ -293,7 +301,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 comments,
                 pagination,
                 commentCount: count,
-                order: 'count__likes desc, created_at desc',
+                order: defaultOrder,
                 labs: labs,
                 commentsIsLoading: false,
                 commentIdToHighlight: null,
@@ -356,7 +364,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             <CommentsFrame ref={iframeRef}>
                 <ContentBox done={done} />
             </CommentsFrame>
-            {state.comments.length > 0 ? <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/> : null}
+            {done && options.adminUrl && <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/>}
             <PopupBox />
         </AppContext.Provider>
     );

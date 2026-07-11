@@ -21,7 +21,6 @@ describe('Apps', function () {
 
             assertExists(appProxy.helperService);
             assertExists(appProxy.helperService.registerAlias);
-            assertExists(appProxy.helperService.registerDir);
             assertExists(appProxy.helperService.registerHelper);
         });
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* eslint-disable no-console, ghost/ghost-custom/no-native-error */
+/* eslint-disable ghost/ghost-custom/no-native-error */
 
 const path = require('path');
 const fs = require('fs');

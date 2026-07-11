@@ -33,7 +33,7 @@ const buildApiOptions = function buildApiOptions(options, post) {
         skipPagination: true,
         // This line deliberately uses double quotes because GQL cannot handle either double quotes
         // or escaped singles, see TryGhost/GQL#34
-        filter: "slug:-" + slug + "+published_at:" + op + "'" + publishedAt + "'", // eslint-disable-line quotes
+        filter: "slug:-" + slug + "+published_at:" + op + "'" + publishedAt + "'",  
         context: {member: options.data.member}
     };
 

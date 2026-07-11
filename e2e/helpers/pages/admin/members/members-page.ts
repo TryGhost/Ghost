@@ -1,5 +1,6 @@
 import {AdminPage} from '@/admin-pages';
 import {JSHandle, Locator, Page} from '@playwright/test';
+import {membersSelectors} from '@tryghost/test-data';
 
 export class MembersPage extends AdminPage {
     readonly newMemberButton: Locator;
@@ -15,7 +16,7 @@ export class MembersPage extends AdminPage {
 
         this.loadMoreButton = page.getByRole('button', {name: 'Load more'});
         this.membersListScrollRoot = page.getByTestId('members-list-scroll-root');
-        this.memberListItems = page.getByTestId('members-list-item');
+        this.memberListItems = page.getByTestId(membersSelectors.testIds.listItem);
     }
 
     async clickMemberByEmail(email: string): Promise<void> {
@@ -78,11 +79,11 @@ export class MembersPage extends AdminPage {
 
         for (let i = 0; i < 30 && maxRenderedIndex < targetIndex; i += 1) {
             await this.scrollScrollParentBy(4000);
-            await this.page.waitForFunction((previousMaxIndex) => {
-                const rows = Array.from(document.querySelectorAll('[data-testid="members-list-item"]'));
+            await this.page.waitForFunction(({previousMaxIndex, listItemTestId}) => {
+                const rows = Array.from(document.querySelectorAll(`[data-testid="${listItemTestId}"]`));
 
                 return rows.some(row => Number(row.getAttribute('data-index') || '-1') > previousMaxIndex);
-            }, maxRenderedIndex);
+            }, {previousMaxIndex: maxRenderedIndex, listItemTestId: membersSelectors.testIds.listItem});
             maxRenderedIndex = await this.getMaxRenderedIndex();
         }
 

@@ -4,17 +4,39 @@ import React, {useState} from 'react';
 import {Button, FileUpload, List, showToast} from '@tryghost/admin-x-design-system';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
+import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
+import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
+const IS_AUTOMATIONS_BETA_ACTIVE = true;
+
 const BetaFeatures: React.FC = () => {
+    const {settings} = useGlobalData();
     const {mutateAsync: uploadRedirects} = useUploadRedirects();
     const {mutateAsync: uploadRoutes} = useUploadRoutes();
     const handleError = useHandleError();
     const [redirectsUploading, setRedirectsUploading] = useState<boolean>(false);
     const [routesUploading, setRoutesUploading] = useState<boolean>(false);
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
+    const isAutomationsEnabled = !!labs.automations;
 
     return (
         <List titleSeparator={false}>
+            {IS_AUTOMATIONS_BETA_ACTIVE ? (
+                <LabItem
+                    action={<FeatureToggle
+                        confirmation={{
+                            title: 'Automations (beta)',
+                            prompt: 'This is a one-way street. Once enabled, the automations beta can\'t be turned off. Existing welcome emails will move into your automations automatically.',
+                            okLabel: 'Enable',
+                            okRunningLabel: 'Enabling...'
+                        }}
+                        disabled={isAutomationsEnabled}
+                        flag="automations"
+                        label='Automations (beta)' />}
+                    detail={<>Build automated email flows for your members, and get early access to new automation features as they ship. <a className='text-green' href="https://ghost.org/help/automations-beta" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
+                    title='Automations (beta)' />
+            ) : null}
             <LabItem
                 action={<FeatureToggle flag="superEditors" />}
                 detail={<>Allows newly-assigned editors to manage members and comments in addition to regular roles.</>}

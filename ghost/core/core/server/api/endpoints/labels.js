@@ -9,6 +9,21 @@ const messages = {
 
 const ALLOWED_INCLUDES = ['count.members'];
 
+// SQLITE_CONSTRAINT covers more than unique violations, but schema validation
+// rejects null/oversize names before the database, so only the unique
+// constraint on name/slug can reach this catch
+const isUniqueConstraintViolation = (error) => {
+    return error.code === 'ER_DUP_ENTRY' || error.code === 'SQLITE_CONSTRAINT';
+};
+
+const handleDuplicateNameError = (error) => {
+    if (isUniqueConstraintViolation(error)) {
+        throw new errors.ValidationError({message: tpl(messages.labelAlreadyExists)});
+    }
+
+    throw error;
+};
+
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
     docName: 'labels',
@@ -89,13 +104,7 @@ const controller = {
         permissions: true,
         query(frame) {
             return models.Label.add(frame.data.labels[0], frame.options)
-                .catch((error) => {
-                    if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                        throw new errors.ValidationError({message: tpl(messages.labelAlreadyExists)});
-                    }
-
-                    throw error;
-                });
+                .catch(handleDuplicateNameError);
         }
     },
 
@@ -119,7 +128,9 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            const model = await models.Label.edit(frame.data.labels[0], frame.options);
+            const model = await models.Label.edit(frame.data.labels[0], frame.options)
+                .catch(handleDuplicateNameError);
+
             if (!model) {
                 throw new errors.NotFoundError({
                     message: tpl(messages.labelNotFound)

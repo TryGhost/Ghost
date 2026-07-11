@@ -84,7 +84,9 @@ describe('RouterController', function () {
             get: sinon.stub().withArgs('all_blocked_email_domains').returns(['spam.xyz'])
         };
         settingsHelpers = {
-            getMembersSupportAddress: sinon.stub().returns('noreply@example.com')
+            getMembersSupportAddress: sinon.stub().returns('noreply@example.com'),
+            arePaidMembersEnabled: sinon.stub().returns(true),
+            areDonationsEnabled: sinon.stub().returns(true)
         };
     });
 
@@ -695,6 +697,43 @@ describe('RouterController', function () {
                     }
                 }));
             });
+
+            it('throws DisabledFeatureError when donations are not enabled', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    settingsHelpers: {
+                        ...settingsHelpers,
+                        areDonationsEnabled: sinon.stub().returns(false)
+                    },
+                    urlUtils,
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    }
+                });
+
+                try {
+                    await routerController.createCheckoutSession({
+                        body: {
+                            type: 'donation',
+                            successUrl: 'https://example.com/?type=success',
+                            cancelUrl: 'https://example.com/?type=cancel',
+                            metadata: {}
+                        }
+                    }, {
+                        writeHead: () => {},
+                        end: () => {}
+                    });
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.DisabledFeatureError);
+                    sinon.assert.notCalled(getDonationLinkSpy);
+                }
+            });
         });
 
         describe('gift checkout', function () {
@@ -790,21 +829,6 @@ describe('RouterController', function () {
                 }));
             });
 
-            it('rejects when giftSubscriptions labs flag is disabled', async function () {
-                labsService.isSet = sinon.stub().returns(false);
-                const controller = createGiftController();
-
-                try {
-                    await controller.createCheckoutSession({
-                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
-                    }, mockRes);
-
-                    assert.fail('Should have thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                }
-            });
-
             it('rejects when offerId is provided', async function () {
                 const controller = createGiftController();
 
@@ -816,6 +840,26 @@ describe('RouterController', function () {
                 } catch (error) {
                     assert(error instanceof errors.BadRequestError);
                     assert.equal(error.context, 'Offers cannot be applied to gift subscriptions');
+                }
+            });
+
+            it('throws DisabledFeatureError when paid members are not enabled', async function () {
+                const controller = createGiftController({
+                    tiersService: paidTierService(),
+                    settingsHelpers: {
+                        ...settingsHelpers,
+                        arePaidMembersEnabled: sinon.stub().returns(false)
+                    }
+                });
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.DisabledFeatureError);
+                    sinon.assert.notCalled(getGiftLinkSpy);
                 }
             });
 

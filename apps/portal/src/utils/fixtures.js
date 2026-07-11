@@ -96,7 +96,7 @@ export const site = getSiteData({
     membersSignupAccess: 'all',
     freePriceName: 'Free',
     freePriceDescription: 'Free preview',
-    isStripeConfigured: true,
+    paidMembersEnabled: true,
     portalButton: true,
     portalName: true,
     portalPlans: ['free', 'monthly', 'yearly'],
@@ -232,4 +232,3 @@ export function paidMemberOnTier() {
         member: updatedMember
     };
 }
-/* eslint-enable no-unused-vars*/

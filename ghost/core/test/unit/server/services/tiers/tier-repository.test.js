@@ -5,7 +5,7 @@ const TierRepository = require('../../../../../core/server/services/tiers/tier-r
 const Tier = require('../../../../../core/server/services/tiers/tier');
 
 describe('TierRepository', function () {
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 

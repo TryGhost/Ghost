@@ -61,7 +61,7 @@ const Step1: React.FC = () => {
                                 }}
                                 size='md'
                             />
-                            <span className='flex h-5 items-center gap-1 rounded-full bg-gray-100 px-3 text-[11px] font-medium text-gray-700 uppercase dark:bg-gray-925/70 dark:text-gray-500'>
+                            <span className='flex h-5 items-center gap-1 rounded-full bg-gray-100 px-3 text-[11px] font-medium text-gray-700 uppercase dark:bg-gray-950/70 dark:text-gray-500'>
                                 <LucideIcon.Check className='ml-[-2px]' size={14} />
                             Following
                             </span>
