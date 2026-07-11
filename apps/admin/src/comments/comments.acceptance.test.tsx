@@ -3,10 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
     browseResponse,
     comment,
+    commentThread,
     currentRoute,
     fakeAdminEndpoint,
     fakeComments,
     renderAdminApp,
+    reply,
     type Comment,
 } from "@test-utils/acceptance";
 import { commentsScreen } from "./comments.screen";
@@ -41,20 +43,9 @@ describe("Comments deep linking", () => {
 
 describe("Comments thread sidebar", () => {
     it("navigates within threads and shows the replied-to context", async () => {
-        const root = comment({ html: "<p>Root comment</p>", count: { replies: 1, direct_replies: 1, likes: 0, dislikes: 0, reports: 0 } });
-        const firstReply = comment({
-            html: "<p>First level reply</p>",
-            parent_id: root.id,
-            in_reply_to_id: root.id,
-            in_reply_to_snippet: "Root comment",
-            count: { replies: 1, direct_replies: 1, likes: 0, dislikes: 0, reports: 0 },
-        });
-        const nestedReply = comment({
-            html: "<p>Nested reply to first level</p>",
-            parent_id: root.id,
-            in_reply_to_id: firstReply.id,
-            in_reply_to_snippet: "First level reply",
-        });
+        const [root, firstReply, nestedReply] = commentThread({ html: "<p>Root comment</p>" }, [
+            reply({ html: "<p>First level reply</p>" }, [reply({ html: "<p>Nested reply to first level</p>" })]),
+        ]).all;
         fakeCommentRead(root);
         fakeCommentRead(firstReply);
         // Thread queries filter on the thread root's id; the main list sends no filter.
@@ -81,22 +72,18 @@ describe("Comments thread sidebar", () => {
     });
 
     it("opens threads from the main comment list", async () => {
-        const root = comment({ html: "<p>Comment with replies</p>", count: { replies: 1, direct_replies: 1, likes: 0, dislikes: 0, reports: 0 } });
-        const reply = comment({
-            html: "<p>A reply to the comment</p>",
-            parent_id: root.id,
-            in_reply_to_id: root.id,
-            in_reply_to_snippet: "Comment with replies",
-        });
+        const [root, rootReply] = commentThread({ html: "<p>Comment with replies</p>" }, [
+            reply({ html: "<p>A reply to the comment</p>" }),
+        ]).all;
         fakeCommentRead(root);
-        fakeComments(({ filter }) => (filter ? [reply] : [root, reply]));
+        fakeComments(({ filter }) => (filter ? [rootReply] : [root, rootReply]));
         await renderAdminApp("/comments");
 
         await commentsScreen.repliesMetric(commentsScreen.commentRow("Comment with replies")).click();
 
         await expect.poll(currentRoute).toContain(`thread=is%3A${root.id}`);
         await expect.element(commentsScreen.threadRow(root.id)).toBeVisible();
-        await expect.element(commentsScreen.threadRow(reply.id)).toBeVisible();
+        await expect.element(commentsScreen.threadRow(rootReply.id)).toBeVisible();
 
         // Back on the list, the reply's replied-to link is the other thread entry point.
         await commentsScreen.closeThreadSidebar();
@@ -109,12 +96,10 @@ describe("Comments thread sidebar", () => {
     });
 
     it("loads more replies from the load more button", async () => {
-        const root = comment({ html: "<p>Root comment for pagination test</p>", count: { replies: 5, direct_replies: 5, likes: 0, dislikes: 0, reports: 0 } });
-        const replies = Array.from({ length: 5 }, (_, i) => comment({
-            html: `<p>Reply number ${i + 1}</p>`,
-            parent_id: root.id,
-            in_reply_to_id: root.id,
-        }));
+        const [root, ...replies] = commentThread(
+            { html: "<p>Root comment for pagination test</p>" },
+            Array.from({ length: 5 }, (_, i) => reply({ html: `<p>Reply number ${i + 1}</p>` })),
+        ).all;
         fakeCommentRead(root);
         fakeComments([root]);
         // The thread query (the only filtered browse here) pages at 3 replies per request.
