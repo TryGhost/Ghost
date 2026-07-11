@@ -12,7 +12,7 @@ export class MembersPage extends AdminPage {
         super(page);
         this.pageUrl = `/ghost/#/${route}`;
 
-        this.newMemberButton = page.getByRole('link', {name: 'New member'});
+        this.newMemberButton = page.getByRole('link', {name: membersSelectors.names.newMemberLink});
 
         this.loadMoreButton = page.getByRole('button', {name: 'Load more'});
         this.membersListScrollRoot = page.getByTestId('members-list-scroll-root');
