@@ -11,10 +11,22 @@ export const membersScreen = {
 
     /** Add a text filter through the filters UI: Filter button → field option → fill the value input. */
     async addFilter(field: keyof typeof membersSelectors.textFilterFields, value: string): Promise<void> {
+        await membersScreen.openFilterField(field);
+        await page.getByRole("textbox", { name: membersSelectors.textFilterFields[field] }).fill(value);
+    },
+
+    /** Add a searchable multiselect filter: Filter button → field option → search → pick an option. */
+    async addSearchableFilter(field: string, searchText: string, optionName: string): Promise<void> {
+        await membersScreen.openFilterField(field);
+        // The search placeholder derives from the field label.
+        await page.getByPlaceholder(`Search ${field.toLowerCase()}...`).fill(searchText);
+        await page.getByRole("option", { name: optionName }).click();
+    },
+
+    async openFilterField(field: string): Promise<void> {
         // The trigger relabels from "Filter" to "Add filter" once a filter exists.
         const buttonName = new RegExp(`^(${membersSelectors.names.filterButton}|${membersSelectors.names.addFilterButton})$`);
         await page.getByRole("button", { name: buttonName }).click();
         await page.getByRole("option", { name: field, exact: true }).click();
-        await page.getByRole("textbox", { name: membersSelectors.textFilterFields[field] }).fill(value);
     },
 };

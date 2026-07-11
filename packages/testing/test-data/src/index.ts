@@ -7,6 +7,12 @@ export {member} from "./builders/member";
 export type {Member, MemberNewsletter, MemberTier} from "./builders/member";
 export {label} from "./builders/label";
 export type {Label} from "./builders/label";
+export {tier} from "./builders/tier";
+export type {Tier} from "./builders/tier";
+export {automation} from "./builders/automation";
+export type {Automation} from "./builders/automation";
+export {comment} from "./builders/comment";
+export type {Comment, CommentPost} from "./builders/comment";
 export {defaultThemesResponse, theme} from "./builders/theme";
 export type {Theme, ThemePackage, ThemesResponse} from "./builders/theme";
 export {post} from "./builders/post";
@@ -21,6 +27,8 @@ export type {BrowseResponse, BrowseResponseOptions, Pagination} from "./envelope
 
 export {generateId, generateSlug, generateUuid} from "./utils";
 
+export {automationsSelectors} from "./selectors/automations";
+export {commentsSelectors} from "./selectors/comments";
 export {membersSelectors} from "./selectors/members";
 export {sidebarSelectors} from "./selectors/sidebar";
 export {tagsSelectors} from "./selectors/tags";

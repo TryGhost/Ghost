@@ -1,4 +1,4 @@
-import {buildLexical, buildLexicalParagraph, defaultThemesResponse, label, member, post, tag, theme} from "../src/index";
+import {automation, buildLexical, buildLexicalParagraph, comment, defaultThemesResponse, label, member, post, tag, theme, tier} from "../src/index";
 import {describe, expect, it} from "vitest";
 
 describe("builders", () => {
@@ -52,6 +52,29 @@ describe("builders", () => {
         expect(built.labels).toEqual([vip]);
         expect(built.email).toContain("@");
         expect(member.many([{name: "A"}, {name: "B"}]).map(m => m.name)).toEqual(["A", "B"]);
+    });
+
+    it("builds paid tiers", () => {
+        const built = tier({name: "Silver Tier"});
+
+        expect(built).toMatchObject({name: "Silver Tier", type: "paid", active: true});
+        expect(built.slug).toBeTruthy();
+    });
+
+    it("builds automations", () => {
+        expect(automation({status: "active"}).status).toBe("active");
+        expect(automation().slug).toBeTruthy();
+    });
+
+    it("builds comments with linked member and post embeds", () => {
+        const built = comment({html: "<p>Hello</p>"});
+
+        expect(built.html).toBe("<p>Hello</p>");
+        expect(built.member_id).toBe(built.member.id);
+        expect(built.post_id).toBe(built.post.id);
+        expect(built.status).toBe("published");
+        expect(built.parent_id).toBeNull();
+        expect(built.count.direct_replies).toBe(0);
     });
 
     it("builds themes and the canned casper+edition list", () => {

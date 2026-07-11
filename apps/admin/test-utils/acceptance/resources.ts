@@ -1,5 +1,5 @@
 import { HttpResponse } from "msw";
-import { browseResponse, type Label, type Member, type Tag } from "@tryghost/test-data";
+import { browseResponse, type Automation, type Comment, type Label, type Member, type Tag, type Tier } from "@tryghost/test-data";
 
 import { record418, registerAdminApiHandler, registerRoute } from "./worker";
 
@@ -157,6 +157,24 @@ export const fakeTags = defineResource<Tag>({
     },
 });
 
+/** Automations list fake: the browse request carries no query the fake would need to interpret. */
+export const fakeAutomations = defineResource<Automation>({
+    resource: "automations",
+    semantics: { kind: "passthrough" },
+});
+
+/**
+ * Comments list fake (passthrough): the main list and the thread sidebar's
+ * reply queries share this browse endpoint, differing only in the NQL filter
+ * — declare per-request responses with a function of the query. The
+ * single-comment read (`GET /comments/<id>/`) is not a browse path; declare
+ * it with `fakeAdminEndpoint` when the thread sidebar is under test.
+ */
+export const fakeComments = defineResource<Comment>({
+    resource: "comments",
+    semantics: { kind: "passthrough" },
+});
+
 /** The sidebar's global member-count probe — shell chrome, served by the boot table. */
 const MEMBER_COUNT_PROBE_PATH = "/members/?limit=1";
 
@@ -170,7 +188,7 @@ const membersResource = defineResource<Member>({
 
 // Members-page chrome: the filter bar mounts with the page and probes these lookups.
 const labelsResource = defineResource<Label>({ resource: "labels", semantics: { kind: "passthrough" } });
-const tiersResource = defineResource({ resource: "tiers", semantics: { kind: "passthrough" } });
+const tiersResource = defineResource<Tier>({ resource: "tiers", semantics: { kind: "passthrough" } });
 const offersResource = defineResource({ resource: "offers", semantics: { kind: "passthrough" } });
 const newslettersResource = defineResource({ resource: "newsletters", semantics: { kind: "passthrough" } });
 
@@ -181,20 +199,22 @@ export interface FakeMembersOptions {
      * function form.
      */
     labels?: Label[];
+    /** Tiers for the filter-bar lookup; the tier filter appears once >1 paid tier is served. */
+    tiers?: Tier[];
 }
 
 /**
  * Members list fake (passthrough): serves the declared members and captures
  * every browse request for outgoing-NQL assertions. Also serves the page's
  * filter-bar lookups — labels from the declared members plus
- * `options.labels`; tiers/offers/newsletters empty.
+ * `options.labels`, tiers from `options.tiers`; offers/newsletters empty.
  */
-export function fakeMembers(members: RespondWith<Member>, { labels = [] }: FakeMembersOptions = {}): ResourceCapture {
+export function fakeMembers(members: RespondWith<Member>, { labels = [], tiers = [] }: FakeMembersOptions = {}): ResourceCapture {
     const embeddedLabels = Array.isArray(members) ? members.flatMap((m) => m.labels) : [];
     const labelsById = new Map([...embeddedLabels, ...labels].map((l) => [l.id, l]));
 
     labelsResource([...labelsById.values()]);
-    tiersResource([]);
+    tiersResource(tiers);
     offersResource([]);
     newslettersResource([]);
     return membersResource(members);
