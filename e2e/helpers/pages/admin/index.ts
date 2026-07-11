@@ -7,7 +7,6 @@ export * from './login-verify-page';
 export * from './settings';
 export * from './whats-new';
 export * from './analytics';
-export * from './automations';
 export * from './onboarding';
 export * from './posts';
 export * from './tags';

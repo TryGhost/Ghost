@@ -1,5 +1,5 @@
 import { HttpResponse } from "msw";
-import { browseResponse, type Label, type Member, type Tag, type Tier } from "@tryghost/test-data";
+import { browseResponse, type Automation, type Label, type Member, type Tag, type Tier } from "@tryghost/test-data";
 
 import { record418, registerAdminApiHandler, registerRoute } from "./worker";
 
@@ -155,6 +155,12 @@ export const fakeTags = defineResource<Tag>({
             return visibility ? tags.filter((t) => t.visibility === visibility) : tags;
         },
     },
+});
+
+/** Automations list fake: the browse request carries no query the fake would need to interpret. */
+export const fakeAutomations = defineResource<Automation>({
+    resource: "automations",
+    semantics: { kind: "passthrough" },
 });
 
 /** The sidebar's global member-count probe — shell chrome, served by the boot table. */

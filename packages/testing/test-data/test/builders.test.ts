@@ -1,4 +1,4 @@
-import {buildLexical, buildLexicalParagraph, defaultThemesResponse, label, member, post, tag, theme, tier} from "../src/index";
+import {automation, buildLexical, buildLexicalParagraph, defaultThemesResponse, label, member, post, tag, theme, tier} from "../src/index";
 import {describe, expect, it} from "vitest";
 
 describe("builders", () => {
@@ -59,6 +59,11 @@ describe("builders", () => {
 
         expect(built).toMatchObject({name: "Silver Tier", type: "paid", active: true});
         expect(built.slug).toBeTruthy();
+    });
+
+    it("builds automations", () => {
+        expect(automation({status: "active"}).status).toBe("active");
+        expect(automation().slug).toBeTruthy();
     });
 
     it("builds themes and the canned casper+edition list", () => {
