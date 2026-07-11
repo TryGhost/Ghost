@@ -23,7 +23,7 @@
         "test:unit": "pnpm test:ci",
         "lint:code": "eslint src test --cache",
         "lint:types": "tsc --noEmit",
-        "lint": "pnpm lint:code && pnpm lint:types",
+        "lint": "pnpm run '/^lint:/'",
         "preship": "pnpm lint",
         "ship": "node ../../.github/scripts/release-apps.js",
         "prepublishOnly": "pnpm build"

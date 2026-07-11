@@ -34,9 +34,9 @@
     "build": "pnpm clean && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
     "test:types": "tsc --noEmit",
-    "test": "pnpm test:types && pnpm test:unit",
+    "test": "pnpm run '/^test:/'",
     "lint:code": "eslint src/ --cache",
-    "lint": "pnpm lint:code && pnpm lint:test",
+    "lint": "pnpm run '/^lint:/'",
     "lint:test": "eslint test/ --cache"
   },
   "files": [

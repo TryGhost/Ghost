@@ -22,7 +22,7 @@
     "test": "ember exam --split 2 --parallel",
     "lint:js": "eslint . --cache",
     "lint:hbs": "ember-template-lint .",
-    "lint": "pnpm lint:js && pnpm lint:hbs"
+    "lint": "pnpm run '/^lint:/'"
   },
   "engines": {
     "node": "^22.18.0"

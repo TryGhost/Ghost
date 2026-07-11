@@ -22,7 +22,7 @@
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "build": "tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
-    "test": "pnpm test:types && pnpm test:unit",
+    "test": "pnpm run '/^test:/'",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
     "test:types": "tsc -p tsconfig.test.json",
     "lint": "eslint --cache .",
