@@ -1,5 +1,6 @@
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
+import {sidebarSelectors, whatsNewSelectors} from '@tryghost/test-data';
 
 export type UserRole = 'Administrator' | 'Editor' | 'Author' | 'Contributor';
 
@@ -52,23 +53,21 @@ export class SidebarPage extends AdminPage {
     constructor(page: Page) {
         super(page);
         this.sidebar = page.getByRole('navigation');
-        this.postsToggle = this.sidebar.getByRole('button', {name: /toggle post views/i});
-        this.userDropdownTrigger = page.locator('[data-test-nav="arrow-down"]');
-        this.appearanceMenuItem = page.getByRole('menuitem', {name: /appearance/i});
-        this.themeLightOption = page.getByRole('menuitem', {name: /light appearance/i});
-        this.themeSystemOption = page.getByRole('menuitem', {name: /system appearance/i});
-        this.themeDarkOption = page.getByRole('menuitem', {name: /dark appearance/i});
-        this.whatsNewButton = page.getByRole('menuitem', {name: /what's new/i});
-        this.userProfileLink = page.getByRole('menuitem', {name: /your profile/i});
-        this.signOutLink = page.getByRole('menuitem', {name: /sign out/i});
+        this.postsToggle = this.sidebar.getByRole('button', {name: sidebarSelectors.names.postsToggle});
+        this.userDropdownTrigger = page.getByRole('button', {name: sidebarSelectors.names.userMenuTrigger});
+        this.appearanceMenuItem = page.getByRole('menuitem', {name: sidebarSelectors.names.appearanceMenuItem});
+        this.themeLightOption = page.getByRole('menuitem', {name: sidebarSelectors.names.lightAppearanceOption});
+        this.themeSystemOption = page.getByRole('menuitem', {name: sidebarSelectors.names.systemAppearanceOption});
+        this.themeDarkOption = page.getByRole('menuitem', {name: sidebarSelectors.names.darkAppearanceOption});
+        this.whatsNewButton = page.getByRole('menuitem', {name: whatsNewSelectors.names.menuItem});
+        this.userProfileLink = page.getByRole('menuitem', {name: sidebarSelectors.names.profileMenuItem});
+        this.signOutLink = page.getByRole('menuitem', {name: sidebarSelectors.names.signOutMenuItem});
 
-        this.networkNotificationBadge = this.sidebar
-            .getByRole('listitem').filter({hasText: /network/i})
-            .locator('[data-sidebar="menu-badge"]');
-        this.ghostProLink = this.sidebar.getByRole('link', {name: 'Ghost(Pro)'});
-        this.upgradeNowLink = this.sidebar.getByRole('link', {name: /upgrade/i});
-        this.themeErrorBanner = page.getByRole('status').filter({hasText: /your theme has errors/i});
-        this.themeErrorDialog = page.getByRole('dialog').filter({hasText: /theme errors/i});
+        this.networkNotificationBadge = this.sidebar.getByTestId(sidebarSelectors.testIds.networkBadge);
+        this.ghostProLink = this.sidebar.getByRole('link', {name: sidebarSelectors.names.ghostProLink});
+        this.upgradeNowLink = this.sidebar.getByRole('link', {name: sidebarSelectors.names.upgradeNowLink});
+        this.themeErrorBanner = page.getByRole('status').filter({hasText: sidebarSelectors.text.themeErrorsBanner});
+        this.themeErrorDialog = page.getByRole('dialog', {name: sidebarSelectors.names.themeErrorsDialog});
     }
 
     getNavLink(name: string): Locator {

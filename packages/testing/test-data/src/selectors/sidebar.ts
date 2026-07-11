@@ -16,7 +16,9 @@ export const sidebarSelectors = {
         darkAppearanceOption: "Dark appearance",
         lightAppearanceOption: "Light appearance",
         systemAppearanceOption: "System appearance",
-        themeErrorsDialog: "Theme errors"
+        themeErrorsDialog: "Theme errors",
+        ghostProLink: "Ghost(Pro)",
+        upgradeNowLink: "Upgrade now"
     },
     text: {
         themeErrorsBanner: "Your theme has errors"
