@@ -43,9 +43,9 @@ describe("Comments deep linking", () => {
 
 describe("Comments thread sidebar", () => {
     it("navigates within threads and shows the replied-to context", async () => {
-        const [root, firstReply, nestedReply] = commentThread({ html: "<p>Root comment</p>" }, [
-            reply({ html: "<p>First level reply</p>" }, [reply({ html: "<p>Nested reply to first level</p>" })]),
-        ]).all;
+        const [root, firstReply, nestedReply] = commentThread("Root comment", [
+            reply("First level reply", ["Nested reply to first level"]),
+        ]);
         fakeCommentRead(root);
         fakeCommentRead(firstReply);
         // Thread queries filter on the thread root's id; the main list sends no filter.
@@ -60,26 +60,24 @@ describe("Comments thread sidebar", () => {
         await expect.element(commentsScreen.threadRow(root.id)).toBeVisible();
         await expect.element(commentsScreen.threadRow(firstReply.id)).toBeVisible();
         // Direct children carry no replied-to context in their parent's thread.
-        await expect.element(commentsScreen.repliedToLink(commentsScreen.threadRow(firstReply.id))).not.toBeInTheDocument();
+        await expect.element(commentsScreen.threadRow(firstReply.id).repliedToLink()).not.toBeInTheDocument();
 
-        await commentsScreen.repliesMetric(commentsScreen.threadRow(firstReply.id)).click();
+        await commentsScreen.threadRow(firstReply.id).repliesMetric().click();
 
         await expect.poll(currentRoute).toContain(`thread=is%3A${firstReply.id}`);
         await expect.element(commentsScreen.threadRow(firstReply.id)).toBeVisible();
         await expect.element(commentsScreen.threadRow(nestedReply.id)).toBeVisible();
         // The thread root — itself a reply — shows what it replied to.
-        await expect.element(commentsScreen.repliedToLink(commentsScreen.threadRow(firstReply.id))).toBeVisible();
+        await expect.element(commentsScreen.threadRow(firstReply.id).repliedToLink()).toBeVisible();
     });
 
     it("opens threads from the main comment list", async () => {
-        const [root, rootReply] = commentThread({ html: "<p>Comment with replies</p>" }, [
-            reply({ html: "<p>A reply to the comment</p>" }),
-        ]).all;
+        const [root, rootReply] = commentThread("Comment with replies", ["A reply to the comment"]);
         fakeCommentRead(root);
         fakeComments(({ filter }) => (filter ? [rootReply] : [root, rootReply]));
         await renderAdminApp("/comments");
 
-        await commentsScreen.repliesMetric(commentsScreen.commentRow("Comment with replies")).click();
+        await commentsScreen.commentRow("Comment with replies").repliesMetric().click();
 
         await expect.poll(currentRoute).toContain(`thread=is%3A${root.id}`);
         await expect.element(commentsScreen.threadRow(root.id)).toBeVisible();
@@ -89,17 +87,14 @@ describe("Comments thread sidebar", () => {
         await commentsScreen.closeThreadSidebar();
         await expect.element(commentsScreen.threadSidebar()).not.toBeInTheDocument();
 
-        await commentsScreen.repliedToLink(commentsScreen.commentRow("A reply to the comment")).click();
+        await commentsScreen.commentRow("A reply to the comment").repliedToLink().click();
 
         await expect.poll(currentRoute).toContain(`thread=is%3A${root.id}`);
         await expect.element(commentsScreen.threadSidebar()).toBeVisible();
     });
 
     it("loads more replies from the load more button", async () => {
-        const [root, ...replies] = commentThread(
-            { html: "<p>Root comment for pagination test</p>" },
-            Array.from({ length: 5 }, (_, i) => reply({ html: `<p>Reply number ${i + 1}</p>` })),
-        ).all;
+        const [root, ...replies] = commentThread("Root comment for pagination test", 5);
         fakeCommentRead(root);
         fakeComments([root]);
         // The thread query (the only filtered browse here) pages at 3 replies per request.

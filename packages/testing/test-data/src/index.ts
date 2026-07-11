@@ -14,7 +14,7 @@ export type {Automation} from "./builders/automation";
 export {comment} from "./builders/comment";
 export type {Comment, CommentPost} from "./builders/comment";
 export {commentThread, reply} from "./builders/comment-thread";
-export type {ReplySpec} from "./builders/comment-thread";
+export type {CommentThread, ReplySpec} from "./builders/comment-thread";
 export {defaultThemesResponse, theme} from "./builders/theme";
 export type {Theme, ThemePackage, ThemesResponse} from "./builders/theme";
 export {post} from "./builders/post";

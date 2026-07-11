@@ -89,14 +89,17 @@ describe("builders", () => {
     });
 
     it("builds flat comment threads with reply linkage and counts derived", () => {
-        const {root, all} = commentThread({html: "<p>Root comment</p>"}, [
-            reply({html: "<p>First reply</p>"}, [reply({html: "<p>Nested reply</p>"})]),
+        const thread = commentThread("Root comment", [
+            reply("First reply", ["Nested reply"]),
             reply()
         ]);
 
-        expect(all).toHaveLength(4);
-        expect(all[0]).toBe(root);
-        const [, first, nested, second] = all;
+        expect(thread).toHaveLength(4);
+        const [root, first, nested, second] = thread;
+        expect(thread.root).toBe(root);
+        expect(thread.all).toBe(thread);
+        expect(root.html).toBe("<p>Root comment</p>");
+        expect(first.html).toBe("<p>First reply</p>");
 
         for (const descendant of [first, nested, second]) {
             expect(descendant.parent_id).toBe(root.id);
@@ -115,8 +118,16 @@ describe("builders", () => {
         expect(nested.count).toMatchObject({replies: 0, direct_replies: 0});
     });
 
+    it("expands a reply count into default replies", () => {
+        const [root, ...replies] = commentThread("Root comment", 3);
+
+        expect(replies.map(r => r.html)).toEqual(["<p>Reply 1</p>", "<p>Reply 2</p>", "<p>Reply 3</p>"]);
+        expect(replies.map(r => r.in_reply_to_snippet)).toEqual(["Root comment", "Root comment", "Root comment"]);
+        expect(root.count).toMatchObject({replies: 3, direct_replies: 3});
+    });
+
     it("derives thread snippets from html text content and lets overrides win", () => {
-        const {all} = commentThread({html: "<p>Hello <strong>world</strong>!</p>"}, [
+        const [, first, second] = commentThread({html: "<p>Hello <strong>world</strong>!</p>"}, [
             reply(),
             reply({
                 parent_id: "custom-parent",
@@ -125,10 +136,10 @@ describe("builders", () => {
             })
         ]);
 
-        expect(all[1].in_reply_to_snippet).toBe("Hello world!");
-        expect(all[2].parent_id).toBe("custom-parent");
-        expect(all[2].in_reply_to_snippet).toBe("Custom snippet");
-        expect(all[2].count).toEqual({replies: 9, direct_replies: 9, likes: 1, dislikes: 0, reports: 0});
+        expect(first.in_reply_to_snippet).toBe("Hello world!");
+        expect(second.parent_id).toBe("custom-parent");
+        expect(second.in_reply_to_snippet).toBe("Custom snippet");
+        expect(second.count).toEqual({replies: 9, direct_replies: 9, likes: 1, dislikes: 0, reports: 0});
     });
 
     it("builds themes and the canned casper+edition list", () => {

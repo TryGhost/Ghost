@@ -7,9 +7,29 @@ export interface ReplySpec {
     replies: ReplySpec[];
 }
 
-/** Declare one reply in a `commentThread`, optionally with nested replies of its own. */
-export function reply(overrides: Partial<Comment> = {}, replies: ReplySpec[] = []): ReplySpec {
-    return {overrides, replies};
+/** A reply may be declared as a spec or as a string — just its paragraph text. */
+export type ReplyInput = ReplySpec | string;
+
+/** Replies may be declared as a list of specs/strings, or a count of default replies ("Reply 1..n"). */
+export type RepliesInput = ReplyInput[] | number;
+
+/** The built thread: the `[root, ...descendants]` array (depth-first) with named access. */
+export type CommentThread = Comment[] & {root: Comment; all: Comment[]};
+
+function toOverrides(input: Partial<Comment> | string): Partial<Comment> {
+    return typeof input === "string" ? {html: `<p>${input}</p>`} : input;
+}
+
+function toReplySpecs(input: RepliesInput): ReplySpec[] {
+    if (typeof input === "number") {
+        return Array.from({length: input}, (_, index) => reply(`Reply ${index + 1}`));
+    }
+    return input.map(item => (typeof item === "string" ? reply(item) : item));
+}
+
+/** Declare one reply in a `commentThread`: `reply("text")`, or overrides, with nested replies. */
+export function reply(overrides: Partial<Comment> | string = {}, replies: RepliesInput = []): ReplySpec {
+    return {overrides: toOverrides(overrides), replies: toReplySpecs(replies)};
 }
 
 /** Ghost derives the snippet from the replied-to comment's html text content. */
@@ -30,11 +50,17 @@ function countDescendants(specs: ReplySpec[]): number {
  * replies share the root's post. Explicit overrides win over every
  * derivation.
  *
- * Returns `{root, all}`: `all` lists every built comment depth-first with
- * the root first, so `const [root, first, nested] = thread.all` follows the
- * declaration order.
+ * Wherever text is all that matters, pass strings: the root and each reply
+ * accept a string as their paragraph text, and the replies argument accepts
+ * a number meaning that many default replies ("Reply 1..n").
+ *
+ * Returns the built comments as an array — depth-first in declaration order,
+ * root first, so `const [root, first, nested] = commentThread(...)` — with
+ * `.root` and `.all` named access.
  */
-export function commentThread(rootOverrides: Partial<Comment> = {}, replies: ReplySpec[] = []): {root: Comment; all: Comment[]} {
+export function commentThread(rootInput: Partial<Comment> | string = {}, replies: RepliesInput = []): CommentThread {
+    const replySpecs = toReplySpecs(replies);
+
     const buildNode = (specReplies: ReplySpec[], overrides: Partial<Comment>): Comment => comment({
         count: {
             replies: countDescendants(specReplies),
@@ -46,7 +72,7 @@ export function commentThread(rootOverrides: Partial<Comment> = {}, replies: Rep
         ...overrides
     });
 
-    const root = buildNode(replies, rootOverrides);
+    const root = buildNode(replySpecs, toOverrides(rootInput));
     const all: Comment[] = [root];
 
     const buildReplies = (specs: ReplySpec[], repliedTo: Comment): void => {
@@ -63,7 +89,7 @@ export function commentThread(rootOverrides: Partial<Comment> = {}, replies: Rep
             buildReplies(spec.replies, built);
         }
     };
-    buildReplies(replies, root);
+    buildReplies(replySpecs, root);
 
-    return {root, all};
+    return Object.assign(all, {root, all});
 }

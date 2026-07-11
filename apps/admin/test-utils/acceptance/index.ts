@@ -8,4 +8,4 @@ export type { CapturedEndpointRequest, EndpointCapture, FakeAdminEndpointRespons
 
 // Test-data re-exports, so a spec needs a single import surface.
 export { activeThemeResponse, automation, browseResponse, changelogEntry, comment, commentThread, currentUserResponse, label, member, reply, settingsResponse, tag, tier } from "@tryghost/test-data";
-export type { ActiveThemeResponse, Automation, ChangelogEntry, Comment, CurrentUserResponse, Label, Member, ReplySpec, SettingsResponse, Tag, Tier } from "@tryghost/test-data";
+export type { ActiveThemeResponse, Automation, ChangelogEntry, Comment, CommentThread, CurrentUserResponse, Label, Member, ReplySpec, SettingsResponse, Tag, Tier } from "@tryghost/test-data";

@@ -69,6 +69,8 @@ For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec
 
 Per-area locator vocabulary lives in `src/<area>/<area>.screen.ts` (e.g. `membersScreen`): locator factories + multi-step gestures, **no assertions**. Selector strings come from the shared registry in `@tryghost/test-data` (`membersSelectors`, `tagsSelectors`, `whatsNewSelectors`) — the same strings the e2e page objects use, so both tiers break together when the UI changes.
 
+**Row scopes.** A helper that identifies a repeated row returns a *scope*: the row locator itself, augmented with factories for the row's parts — `commentsScreen.threadRow(id).repliedToLink()`. Never write a helper that takes another helper's locator as an argument; scopes keep call sites at one nesting level, reading left-to-right, and the scope is still a locator, so all three assertion idioms work on it unchanged (`await expect.element(commentsScreen.commentRow("…")).toBeVisible()`).
+
 Adding a new screen:
 
 1. Give the component semantic roles/labels; add `data-testid` attributes only where no accessible locator exists.
