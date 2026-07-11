@@ -309,7 +309,7 @@ export const localFilenamesPlugin = {
  * @returns {import('eslint').Linter.Config[]}
  *
  * @example
- * // ghost/parse-email-address/eslint.config.mjs — TS Node lib
+ * // packages/parse-email-address/eslint.config.mjs — TS Node lib
  * import {nodeLibConfig} from '@internal/cfg-eslint';
  * export default nodeLibConfig();
  */
