@@ -712,7 +712,7 @@ test.describe('Member emails settings', async () => {
             await expect.poll(() => lastApiRequests.fetchOembed?.url || '').toContain('url=https%3A%2F%2Fghost.org%2F');
         });
 
-        test.skip('welcome email editor bookmark card fetches bookmark metadata', async ({page}) => {
+        test('welcome email editor bookmark card fetches bookmark metadata', async ({page}) => {
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 ...newslettersRequest,
@@ -746,8 +746,9 @@ test.describe('Member emails settings', async () => {
             await expect(modal).toBeVisible();
 
             const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
-            await editor.fill('');
-            await expect(editor).toBeEmpty();
+            await editor.click({timeout: 5000});
+            await page.keyboard.press('ControlOrMeta+a');
+            await page.keyboard.press('Backspace');
             await openSlashMenu(page, 'bookmark');
             await page.keyboard.press('Enter');
 
@@ -756,9 +757,7 @@ test.describe('Member emails settings', async () => {
             await bookmarkUrlInput.fill('https://ghost.org/');
             await expect(bookmarkUrlInput).toHaveValue('https://ghost.org/');
 
-            const urlSuggestion = modal.getByTestId('bookmark-url-listOption').filter({hasText: 'https://ghost.org/'});
-            await expect(urlSuggestion).toBeVisible();
-            await urlSuggestion.click();
+            await bookmarkUrlInput.press('Enter');
 
             await expect.poll(() => lastApiRequests.fetchOembed?.url || '').toContain('type=bookmark');
             await expect(modal.getByTestId('bookmark-title')).toContainText('Ghost: The Creator Economy Platform');
