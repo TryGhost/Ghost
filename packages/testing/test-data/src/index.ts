@@ -15,6 +15,8 @@ export {comment} from "./builders/comment";
 export type {Comment, CommentPost} from "./builders/comment";
 export {commentThread, reply} from "./builders/comment-thread";
 export type {CommentThread, ReplySpec} from "./builders/comment-thread";
+export {offer, retentionOffer} from "./builders/offer";
+export type {Offer} from "./builders/offer";
 export {defaultThemesResponse, theme} from "./builders/theme";
 export type {Theme, ThemePackage, ThemesResponse} from "./builders/theme";
 export {post} from "./builders/post";
