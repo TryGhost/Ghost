@@ -86,7 +86,7 @@ export class EmailAnalyticsJobScheduler {
         // processor usage from many sites spinning up threads can be high.
         // Mega service will re-run this scheduling task when an email is sent
         const emailCount = skipNewsletterEmailCheck ? 1 : Number(await this.#models.Email
-            .where('created_at', '>', moment.utc().subtract(30, 'days').toISOString())
+            .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
             .where('status', '<>', 'failed')
             .count());
 
