@@ -16,6 +16,46 @@ export type MemberCustomField = {
 // clears a value.
 export type MemberCustomFieldValues = Record<string, string | null>;
 
+/**
+ * The user-type catalog: the presentation layer over the API's storage types.
+ *
+ * The API stores one `type` string per field; this catalog owns what each type
+ * means in the UI - label, icon, and which control collects a value. Admin
+ * surfaces (settings list/modal, member detail) render from here so every
+ * surface presents fields identically. The backend never sees any of this.
+ *
+ * Today the API only stores 'text', presented as "Short text". Offering more
+ * user types (long text, email, ...) needs the backend to store which one a
+ * field is (a wider type enum or a format column) - a field's record is the
+ * pointer into this catalog, so anything that changes rendering must round-trip
+ * through it.
+ */
+export type MemberCustomFieldUserType = {
+    id: string;
+    label: string;
+    // The literal glyph shown in icon tiles (future types may need real icons;
+    // keep this a plain string so apps decide how to render it)
+    iconText: string;
+    // The API storage type this user type maps to
+    apiType: MemberCustomFieldType;
+    // Which control collects/edits a value of this type
+    input: 'text' | 'textarea';
+    // Client-side cap for value inputs. Provisional until the server codec
+    // enforces the same number - today the API accepts any length and only the
+    // TEXT column (~64KB) bounds it, with a raw DB error rather than a 422.
+    maxLength: number;
+};
+
+export const memberCustomFieldUserTypes: MemberCustomFieldUserType[] = [
+    {id: 'text', label: 'Short text', iconText: 'Aa', apiType: 'text', input: 'text', maxLength: 255}
+];
+
+// Resolve the user type for a field loaded from the API. Falls back to the
+// first entry so an unknown future type degrades to a rendered row, not a crash.
+export const userTypeForField = (field: MemberCustomField): MemberCustomFieldUserType => {
+    return memberCustomFieldUserTypes.find(userType => userType.apiType === field.type) || memberCustomFieldUserTypes[0];
+};
+
 export interface MemberCustomFieldsResponseType {
     meta?: Meta;
     member_custom_fields: MemberCustomField[];
