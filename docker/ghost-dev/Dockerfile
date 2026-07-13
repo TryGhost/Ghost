@@ -38,7 +38,7 @@ COPY --parents \
     ghost/*/package.json \
     koenig/*/package.json \
     configs/*/package.json \
-    packages/*/package.json \
+    packages/**/package.json \
     ./
 
 # Copy root lifecycle scripts/hooks needed by `pnpm install`
