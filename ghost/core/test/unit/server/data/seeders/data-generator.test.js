@@ -36,7 +36,11 @@ describe('Data Generator', function () {
 
                     if (rowName === '@@UNIQUE_CONSTRAINTS@@') {
                         for (const constraints of row) {
-                            table.unique(constraints);
+                            if (Array.isArray(constraints)) {
+                                table.unique(constraints);
+                            } else {
+                                table.unique(constraints.columns, {indexName: constraints.indexName});
+                            }
                         }
                         break;
                     } else if (rowName === '@@INDEXES@@') {
