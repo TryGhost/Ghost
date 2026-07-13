@@ -8,6 +8,7 @@ import {
     COMMAND_PRIORITY_LOW,
     KEY_ENTER_COMMAND
 } from 'lexical';
+import {getParentEditor} from '../utils/lexical-internals';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
@@ -76,7 +77,7 @@ function KoenigNestedEditorPlugin({
                     // let the parent editor handle the edit mode product
                     if (event.metaKey || event.ctrlKey) {
                         event._fromNested = true;
-                        editor._parentEditor?.dispatchCommand(KEY_ENTER_COMMAND, event);
+                        getParentEditor(editor)?.dispatchCommand(KEY_ENTER_COMMAND, event);
                         return true;
                     }
 
@@ -99,7 +100,7 @@ function KoenigNestedEditorPlugin({
                         // - with ctrl/cmd+enter toggles edit mode
                         // - or creates paragraph after card and moves cursor
                         event._fromNested = true;
-                        editor._parentEditor.dispatchCommand(KEY_ENTER_COMMAND, event);
+                        getParentEditor(editor)?.dispatchCommand(KEY_ENTER_COMMAND, event);
 
                         // prevent normal/KoenigBehaviourPlugin enter key behaviour
                         return true;
@@ -113,9 +114,10 @@ function KoenigNestedEditorPlugin({
                 () => {
                     // when the nested editor is selected, the parent editor clears its selection so we need to
                     //   return parent editor selection to the card when the nested editor loses focus
-                    if (hasSettingsPanel && editor._parentEditor) {
-                        editor._parentEditor.getEditorState().read(() => {
-                            editor._parentEditor.update(() => {
+                    const parentEditor = getParentEditor(editor);
+                    if (hasSettingsPanel && parentEditor) {
+                        parentEditor.getEditorState().read(() => {
+                            parentEditor.update(() => {
                                 if (!$getSelection()) {
                                     const selection = $createNodeSelection();
                                     selection.add(parentCardNodeKey);
