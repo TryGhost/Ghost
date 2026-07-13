@@ -269,6 +269,7 @@
     "@types/on-headers": "1.0.4",
     "@types/papaparse": "5.5.2",
     "@types/sanitize-html": "catalog:",
+    "@types/semver": "7.7.1",
     "@types/sinon": "21.0.1",
     "@types/supertest": "6.0.3",
     "@typescript-eslint/parser": "catalog:",
