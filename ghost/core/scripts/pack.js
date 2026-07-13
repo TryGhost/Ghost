@@ -107,19 +107,19 @@ console.log('Wrote trimmed pnpm-workspace.yaml (catalogs + overrides + allowBuil
 const componentsDir = path.join(DEPLOY_DIR, 'components');
 fs.mkdirSync(componentsDir, {recursive: true});
 
-// name → source dir for every package in the root workspace
+// name → source dir for every package in the root workspace.
+// `pnpm list` resolves the workspace globs in pnpm-workspace.yaml for us, so we
+// don't have to reimplement pattern matching (including negations like
+// `!packages/_template`) against the config.
 const workspacePackageDirs = new Map();
-for (const pattern of rootWorkspace.packages || []) {
-    const candidates = pattern.endsWith('/*')
-        ? fs.readdirSync(path.join(ROOT_DIR, pattern.slice(0, -2)), {withFileTypes: true})
-            .filter(entry => entry.isDirectory())
-            .map(entry => path.join(ROOT_DIR, pattern.slice(0, -2), entry.name))
-        : [path.join(ROOT_DIR, pattern)];
-    for (const dir of candidates) {
-        const pkgJsonPath = path.join(dir, 'package.json');
-        if (fs.existsSync(pkgJsonPath)) {
-            workspacePackageDirs.set(fsExtra.readJsonSync(pkgJsonPath).name, dir);
-        }
+const listOutput = execFileSync(
+    'pnpm',
+    ['list', '--recursive', '--depth', '-1', '--json'],
+    {cwd: ROOT_DIR, encoding: 'utf8'}
+);
+for (const entry of JSON.parse(listOutput)) {
+    if (entry.name && entry.path) {
+        workspacePackageDirs.set(entry.name, entry.path);
     }
 }
 
