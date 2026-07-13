@@ -2819,6 +2819,9 @@ importers:
       '@types/sanitize-html':
         specifier: 'catalog:'
         version: 2.16.1
+      '@types/semver':
+        specifier: 7.7.1
+        version: 7.7.1
       '@types/sinon':
         specifier: 21.0.1
         version: 21.0.1
