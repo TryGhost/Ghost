@@ -388,6 +388,21 @@ describe('automations poll', function () {
         }));
     });
 
+    it('does not enable open tracking for the send and recipient when the setting is disabled', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_opens').returns(false);
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackOpens: false
+        }));
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            trackOpens: false
+        }));
+    });
+
     it('records the automated email recipient without a Mailgun message ID after an SMTP send', async function () {
         const step = buildEmailStep({
             automation_action_revision_id: 'revision-id'
