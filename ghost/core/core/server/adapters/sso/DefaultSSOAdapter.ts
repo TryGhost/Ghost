@@ -1,10 +1,6 @@
-const Base = require('./SSOBase');
+import {SSOBase} from '@tryghost/adapter-base-sso'
 
-module.exports = class DefaultSSOAdapter extends Base {
-    constructor() {
-        super();
-    }
-
+export default class DefaultSSOAdapter extends SSOBase<null, null> {
     async getRequestCredentials() {
         return null;
     }
