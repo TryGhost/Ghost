@@ -1,3 +1,5 @@
+import MemberRepository from './members-api/repositories/member-repository';
+
 interface MemberBREADService {
     disableCommenting(
         memberId: string,
@@ -17,6 +19,7 @@ interface MemberBREADService {
 
 interface MembersApi {
     memberBREADService: MemberBREADService;
+    members: MemberRepository;
 }
 
 interface MembersService {
