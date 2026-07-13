@@ -101,8 +101,8 @@ describe('Utils: generateDecoratorNode', function () {
                 properties: [{name: 'version', default: 1}],
                 version: 1,
                 defaultRenderFn: {
-                    1: () => createRenderResult('div', 'version 1'),
-                    2: () => createRenderResult('div', 'version 2')
+                    1: node => createRenderResult('div', `version ${node.version}`),
+                    2: node => createRenderResult('div', `version ${node.version}`)
                 }
             });
 

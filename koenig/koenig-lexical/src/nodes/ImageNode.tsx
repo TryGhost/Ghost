@@ -2,7 +2,7 @@ import GIFIcon from '../assets/icons/kg-card-type-gif.svg?react';
 import ImageCardIcon from '../assets/icons/kg-card-type-image.svg?react';
 import UnsplashIcon from '../assets/icons/kg-card-type-unsplash.svg?react';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {ImageNode as BaseImageNode} from '@tryghost/kg-default-nodes';
+import {ImageNode as BaseImageNode, normalizeCardWidth} from '@tryghost/kg-default-nodes';
 import {ImageNodeComponent} from './ImageNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {OPEN_GIF_SELECTOR_COMMAND, OPEN_UNSPLASH_SELECTOR_COMMAND} from '../plugins/KoenigSelectorPlugin.jsx';
@@ -144,7 +144,7 @@ export class ImageNode extends BaseImageNode {
         const Selector = this.__selector;
 
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth}>
+            <KoenigCardWrapper nodeKey={this.getKey()} width={normalizeCardWidth(this.__cardWidth)}>
                 {this.__selector && <Selector nodeKey={this.getKey()} />}
 
                 {
