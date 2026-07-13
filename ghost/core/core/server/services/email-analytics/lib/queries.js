@@ -34,10 +34,10 @@ module.exports = {
     /**
      * Retrieves the timestamp of the last seen event for the specified email analytics events.
      * @param {EmailAnalyticsJobName} jobName - The name of the job to update.
-     * @param {EmailAnalyticsEvent[]} [events=['delivered', 'opened', 'failed']] - The email analytics events to consider.
+     * @param {EmailAnalyticsEvent[]} events - The email analytics events to consider.
      * @returns {Promise<Date|null>} The timestamp of the last seen event, or null if no events are found.
      */
-    async getLastEventTimestamp(jobName, events = ['delivered', 'opened', 'failed']) {
+    async getLastEventTimestamp(jobName, events) {
         const startDate = new Date();
         
         let maxOpenedAt;
