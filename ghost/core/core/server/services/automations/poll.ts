@@ -220,7 +220,14 @@ const processStep = async ({
             try {
                 await scheduleAutomationEmailAnalyticsJob();
             } catch (err) {
-                logging.error(err);
+                logging.error({
+                    err,
+                    system: {
+                        event: 'automations.poll.analytics_scheduling_failed',
+                        member_id: step.member_id,
+                        step_id: step.id
+                    }
+                }, `[AUTOMATIONS] Failed to schedule email analytics job for step ${step.id}`);
             }
             break;
         }
