@@ -168,7 +168,7 @@ const processStep = async ({
         switch (step.type) {
         case 'wait':
             break;
-        case 'send_email':
+        case 'send_email': {
             if (!hasUpdatesAndAnnouncementsEnabled(member)) {
                 logging.info({
                     system: {
@@ -216,6 +216,7 @@ const processStep = async ({
                 }, `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`);
             }
             break;
+        }
         default: {
             const _exhaustive: never = step;
             throw new errors.InternalServerError({
