@@ -12,7 +12,7 @@ import type {
     DataShortFormResource,
     DataReadEntry,
     DataBrowseEntry
-} from './route-settings-parser';
+} from '@tryghost/adapter-base-route-settings';
 
 interface ExpandedData {
     query: Record<string, any>;
