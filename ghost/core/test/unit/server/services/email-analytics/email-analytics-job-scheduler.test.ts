@@ -210,6 +210,25 @@ describe('EmailAnalyticsJobScheduler', function () {
         sinon.assert.notCalled(newsletterQuery.count);
     });
 
+    it('can skip the automation email recipient lookup', async function () {
+        const {scheduler, jobManager, automationsQuery} = buildScheduler({
+            emailCount: 0,
+            automationAnalyticsEnabled: true,
+            automatedEmailRecipient: null
+        });
+
+        await scheduler.scheduleRecurringJobs({skipAutomationEmailCheck: true});
+
+        sinon.assert.calledOnceWithMatch(jobManager.addJob, {
+            job: sinon.match((value: unknown) => (
+                typeof value === 'string' &&
+                value.endsWith('automation-fetch-latest/index.js')
+            )),
+            name: 'email-analytics-automation-fetch-latest'
+        });
+        sinon.assert.notCalled(automationsQuery.first);
+    });
+
     it('adds an automation job when automation analytics is enabled and recipients exist', async function () {
         sinon.stub(Math, 'random')
             .onFirstCall().returns(0.2)
