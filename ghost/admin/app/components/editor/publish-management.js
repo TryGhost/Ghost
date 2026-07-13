@@ -1,5 +1,7 @@
 import Component from '@glimmer/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
+import PaywallContentWarningModal from './modals/paywall-content-warning';
+import PaywallPublicWarningModal from './modals/paywall-public-warning';
 import PreviewModal from './modals/preview';
 import PublishFlowModal from './modals/publish-flow';
 import PublishOptionsResource from 'ghost-admin/helpers/publish-options';
@@ -54,6 +56,24 @@ export default class PublishManagement extends Component {
             });
 
             if (ignoreTks !== true) {
+                return;
+            }
+        }
+
+        // warn when a public post still contains a paywall (nothing will be gated)
+        if (this.args.paywallPublicWarning) {
+            const proceed = await this.modals.open(PaywallPublicWarningModal);
+
+            if (proceed !== true) {
+                return;
+            }
+        }
+
+        // warn when the paywall has no content above and/or below it
+        if (this.args.paywallContentWarning) {
+            const proceed = await this.modals.open(PaywallContentWarningModal);
+
+            if (proceed !== true) {
                 return;
             }
         }

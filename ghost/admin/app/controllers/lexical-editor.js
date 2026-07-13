@@ -308,6 +308,44 @@ export default class LexicalEditorController extends Controller {
         return titleTk + excerptTk + this.postTkCount + this.featureImageTkCount;
     }
 
+    // Inspect the post's editor content for a paywall card and whether it has
+    // content on both sides (a paywall wants a public preview above and gated
+    // content below). Drives the publish-flow warnings.
+    _getPaywallInfo() {
+        try {
+            const lexicalString = this.post.lexicalScratch || this.post.lexical;
+            if (!lexicalString) {
+                return {hasPaywall: false, missingContent: false};
+            }
+
+            const children = JSON.parse(lexicalString)?.root?.children || [];
+            const paywallIndex = children.findIndex(child => child?.type === 'paywall');
+            if (paywallIndex === -1) {
+                return {hasPaywall: false, missingContent: false};
+            }
+
+            // a blank paragraph (no children) doesn't count as real content
+            const isEmpty = node => !node || (node.type === 'paragraph' && !(node.children && node.children.length));
+            const hasContentBefore = children.slice(0, paywallIndex).some(node => !isEmpty(node));
+            const hasContentAfter = children.slice(paywallIndex + 1).some(node => !isEmpty(node));
+
+            return {hasPaywall: true, missingContent: !hasContentBefore || !hasContentAfter};
+        } catch (e) {
+            // malformed lexical — treat as no paywall
+            return {hasPaywall: false, missingContent: false};
+        }
+    }
+
+    @computed('post.{lexicalScratch,lexical,visibility}')
+    get paywallPublicWarning() {
+        return this._getPaywallInfo().hasPaywall && this.post.visibility === 'public';
+    }
+
+    @computed('post.{lexicalScratch,lexical}')
+    get paywallContentWarning() {
+        return this._getPaywallInfo().missingContent;
+    }
+
     @action
     updateScratch(lexical) {
         const lexicalString = JSON.stringify(lexical);

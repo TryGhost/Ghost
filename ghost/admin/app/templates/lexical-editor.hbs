@@ -11,6 +11,8 @@
                     @post={{this.post}}
                     @hasUnsavedChanges={{this.hasDirtyAttributes}}
                     @tkCount={{this.tkCount}}
+                    @paywallPublicWarning={{this.paywallPublicWarning}}
+                    @paywallContentWarning={{this.paywallContentWarning}}
                     @beforePublish={{perform this.beforeSaveTask}}
                     @afterPublish={{this.afterSave}}
                     @saveTask={{this.saveTask}}
@@ -115,6 +117,8 @@
                 <Editor::PublishManagement
                     @post={{this.post}}
                     @hasUnsavedChanges={{this.hasDirtyAttributes}}
+                    @paywallPublicWarning={{this.paywallPublicWarning}}
+                    @paywallContentWarning={{this.paywallContentWarning}}
                     @beforePublish={{perform this.beforeSaveTask}}
                     @afterPublish={{this.afterSave}}
                     @saveTask={{this.saveTask}}

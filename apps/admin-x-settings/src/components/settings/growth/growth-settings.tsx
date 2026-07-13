@@ -2,6 +2,7 @@ import EmbedSignupForm from './embed-signup/embed-signup-form';
 import Explore from './explore';
 import Network from './network';
 import Offers from './offers';
+import Paywalls from './paywalls';
 import React from 'react';
 import Recommendations from './recommendations';
 import SearchableSection from '../../searchable-section';
@@ -13,7 +14,8 @@ export const searchKeywords = {
     explore: ['ghost explore', 'explore', 'growth', 'share', 'list', 'listing'],
     recommendations: ['growth', 'recommendations', 'recommend', 'blogroll'],
     embedSignupForm: ['growth', 'embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
-    offers: ['growth', 'offers', 'discounts', 'coupons', 'promotions']
+    offers: ['growth', 'offers', 'discounts', 'coupons', 'promotions'],
+    paywalls: ['growth', 'paywalls', 'paywall', 'gated content', 'gating', 'call to action', 'cta', 'upgrade', 'subscribe']
 };
 
 const GrowthSettings: React.FC = () => {
@@ -24,6 +26,7 @@ const GrowthSettings: React.FC = () => {
         searchKeywords.explore,
         searchKeywords.recommendations,
         searchKeywords.embedSignupForm,
+        searchKeywords.paywalls,
         ...(hasStripeEnabled ? [searchKeywords.offers] : [])
     ].flat();
 
@@ -33,6 +36,7 @@ const GrowthSettings: React.FC = () => {
             <Explore keywords={searchKeywords.explore} />
             <Recommendations keywords={searchKeywords.recommendations} />
             <EmbedSignupForm keywords={searchKeywords.embedSignupForm} />
+            <Paywalls keywords={searchKeywords.paywalls} />
             {hasStripeEnabled && <Offers keywords={searchKeywords.offers} />}
         </SearchableSection>
     );

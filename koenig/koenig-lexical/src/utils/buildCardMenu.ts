@@ -1,7 +1,7 @@
 import SnippetCardIcon from '../assets/icons/kg-card-type-snippet.svg?react';
 import {INSERT_SNIPPET_COMMAND} from '../plugins/KoenigSnippetPlugin';
 
-export function buildCardMenu(nodes, {query, config} = {}) {
+export function buildCardMenu(nodes, {query, config, hasPaywall} = {}) {
     let menu = new Map();
 
     query = query?.toLowerCase();
@@ -9,8 +9,9 @@ export function buildCardMenu(nodes, {query, config} = {}) {
     let maxItemIndex = -1;
 
     function addMenuItem(item) {
-        // items hidden based on missing config (e.g. GIF provider API key)
-        if (!!item.isHidden && item.isHidden?.({config})) {
+        // items hidden based on missing config (e.g. GIF provider API key) or
+        // editor state (e.g. paywall, which is limited to one per post)
+        if (!!item.isHidden && item.isHidden?.({config, hasPaywall})) {
             return;
         }
 

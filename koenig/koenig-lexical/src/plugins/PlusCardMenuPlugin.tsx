@@ -1,6 +1,6 @@
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
-import {$getSelection, $isParagraphNode, $isRangeSelection, $setSelection} from 'lexical';
+import {$getRoot, $getSelection, $isParagraphNode, $isRangeSelection, $setSelection} from 'lexical';
 import {CardMenu} from '../components/ui/CardMenu';
 import {PlusButton, PlusMenu} from '../components/ui/PlusMenu';
 import {buildCardMenu} from '../utils/buildCardMenu';
@@ -231,11 +231,14 @@ function usePlusCardMenu(editor) {
         };
     });
 
-    // build up the card menu based on registered nodes and current search
+    // build up the card menu based on registered nodes and current search.
+    // recompute on open (isShowingMenu) so single-instance cards like the
+    // paywall are hidden once one already exists in the post.
     React.useEffect(() => {
         const cardNodes = getEditorCardNodes(editor);
-        setCardMenu(buildCardMenu(cardNodes, {config: cardConfig}));
-    }, [cardConfig, editor, setCardMenu]);
+        const hasPaywall = editor.getEditorState().read(() => $getRoot().getChildren().some(node => node.getType() === 'paywall'));
+        setCardMenu(buildCardMenu(cardNodes, {config: cardConfig, hasPaywall}));
+    }, [cardConfig, editor, setCardMenu, isShowingMenu]);
 
     const style = {
         top: `${topPosition}px`

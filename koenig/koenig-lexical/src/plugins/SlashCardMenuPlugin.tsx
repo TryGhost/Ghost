@@ -1,6 +1,6 @@
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
-import {$createParagraphNode, $getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_HIGH, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
+import {$createParagraphNode, $getRoot, $getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_HIGH, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
 import {CardMenu} from '../components/ui/CardMenu';
 import {SlashMenu} from '../components/ui/SlashMenu';
 import {buildCardMenu} from '../utils/buildCardMenu';
@@ -318,7 +318,8 @@ function useSlashCardMenu(editor) {
     // build up the card menu based on registered nodes and current search
     React.useEffect(() => {
         const cardNodes = getEditorCardNodes(editor);
-        setCardMenu(buildCardMenu(cardNodes, {insert, query, config: cardConfig}));
+        const hasPaywall = editor.getEditorState().read(() => $getRoot().getChildren().some(node => node.getType() === 'paywall'));
+        setCardMenu(buildCardMenu(cardNodes, {insert, query, config: cardConfig, hasPaywall}));
         setSelectedItemIndex(0);
     }, [editor, query, insert, setCardMenu, setSelectedItemIndex, cardConfig]);
 

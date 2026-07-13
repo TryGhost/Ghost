@@ -1,8 +1,11 @@
-import {$createParagraphNode, $getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_EDITOR} from 'lexical';
-import {$createPaywallNode, INSERT_PAYWALL_COMMAND} from '../nodes/PaywallNode';
+import {$createParagraphNode, $getRoot, $getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_EDITOR} from 'lexical';
+import {$createPaywallNode, $isPaywallNode, INSERT_PAYWALL_COMMAND} from '../nodes/PaywallNode';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {useEffect} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+
+// a post can only have one paywall — used to block a second insert
+const $hasPaywall = () => $getRoot().getChildren().some(node => $isPaywallNode(node));
 
 export const PaywallPlugin = () => {
     const [editor] = useLexicalComposerContext();
@@ -15,6 +18,11 @@ export const PaywallPlugin = () => {
         return editor.registerCommand(
             INSERT_PAYWALL_COMMAND,
             () => {
+                // only one paywall per post — swallow the command if one exists
+                if ($hasPaywall()) {
+                    return true;
+                }
+
                 const selection = $getSelection();
 
                 if (!$isRangeSelection(selection)) {
@@ -52,6 +60,11 @@ export const PaywallPlugin = () => {
             editor.update(() => {
                 // don't do anything when using IME input
                 if (editor.isComposing()) {
+                    return;
+                }
+
+                // only one paywall per post — ignore the shortcut if one exists
+                if ($hasPaywall()) {
                     return;
                 }
 

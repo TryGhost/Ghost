@@ -83,6 +83,7 @@ const Sidebar: React.FC = () => {
         growthSearchKeywords.explore,
         growthSearchKeywords.recommendations,
         growthSearchKeywords.embedSignupForm,
+        growthSearchKeywords.paywalls,
         ...(hasStripeEnabled ? [growthSearchKeywords.offers] : [])
     ].flat(), [hasStripeEnabled]);
 
@@ -253,6 +254,7 @@ const Sidebar: React.FC = () => {
                     <NavItem icon='globe-simple' keywords={growthSearchKeywords.explore} navid='explore' title="Ghost Explore" onClick={handleSectionClick} />
                     <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
                     <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Signup forms" onClick={handleSectionClick} />
+                    <NavItem icon='lock-locked' keywords={growthSearchKeywords.paywalls} navid='paywalls' title="Paywalls" onClick={handleSectionClick} />
                     {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
                 </SettingNavSection>
 

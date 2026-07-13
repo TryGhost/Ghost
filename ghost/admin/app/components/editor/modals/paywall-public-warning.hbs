@@ -1,0 +1,18 @@
+<div class="modal-content gh-tk-reminder" data-test-modal="paywall-public-warning">
+    <header class="modal-header">
+        <h1>This post is public</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            This post has a <strong>paywall</strong>, but its visibility is set to <strong>public</strong>.
+            Everyone will be able to read the whole post, so nothing will actually be gated.
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="gh-btn" {{on "click" (fn @close true)}}><span>Continue to publish</span></button>
+        <button type="button" class="gh-btn gh-btn-black" {{on "click" @close}}><span>Back to editor</span></button>
+    </div>
+</div>
