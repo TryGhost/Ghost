@@ -4,11 +4,17 @@
  * Architectural boundary rules for the monorepo, enforced on the resolved
  * module graph (require AND import). Two sections:
  *
- *   ghost/core  — replaces the custom `ghost/node/no-restricted-require` ESLint
- *                 rule so it can be dropped when migrating off ESLint. Paths
- *                 are anchored on `^ghost/core/core/`.
+ *   ghost/core  — layer separation inside the Ghost server: shared/ must stay
+ *                 dependency-free, frontend/ crosses to server/ only via the
+ *                 proxy seam, and server/ must not reach into the frontend
+ *                 rendering layer. Paths are anchored on `^ghost/core/core/`.
  *
- *   apps/       — design system layer hierarchy and library/app boundaries.
+ *   apps/       — design system layer hierarchy and public/admin separation.
+ *                 shade/ and admin-x-design-system/ are leaf packages that
+ *                 nothing above them may pull back into. admin-x-framework/
+ *                 sits above them but below feature apps. Public UMD bundles
+ *                 (portal, comments-ui, etc.) must not depend on admin libs.
+ *
  *                 Workspace packages appear as unresolved `@tryghost/*` module
  *                 specifiers in the graph (pnpm workspace symlinks are stopped
  *                 by doNotFollow:node_modules), so `to.path` matches on
