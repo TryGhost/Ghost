@@ -713,8 +713,8 @@ jobs:
       - name: Legacy tests
         # Bounded so a vitest run that completes its suites but hangs in
         # teardown fails fast instead of wedging the job until the 6h runner
-        # limit. A normal run takes ~15min.
-        timeout-minutes: 30
+        # limit. A normal run takes ~2-3min; 10m leaves ample headroom.
+        timeout-minutes: 10
         run: pnpm nx run ghost:test:legacy
 
       - name: Check for unexpected file changes
