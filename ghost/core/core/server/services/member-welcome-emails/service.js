@@ -368,7 +368,7 @@ class MemberWelcomeEmailService {
      * @param {null | object} options.email.designSettings
      * @param {'welcome' | 'automation'} options.emailType
      * @param {null | {url: string, oneClickUrl: string}} [options.unsubscribe] - When set, the footer links to an unsubscribe URL and the email carries one-click List-Unsubscribe headers
-     * @returns {Promise<void>}
+     * @returns {Promise<unknown>}
      */
     async #sendEmail({member, memberStatus, email, emailType, unsubscribe = null}) {
         if (!member.email) {
@@ -423,7 +423,7 @@ class MemberWelcomeEmailService {
         }
         }
 
-        await this.#mailer.send({
+        return await this.#mailer.send({
             to: member.email,
             subject,
             html,
@@ -471,7 +471,7 @@ class MemberWelcomeEmailService {
      * @param {null | string} options.member.name
      * @param {string} options.member.uuid
      * @param {'free' | 'paid'} options.memberStatus
-     * @returns {Promise<void>}
+     * @returns {Promise<unknown>}
      */
     async sendAutomationEmail({email, member, memberStatus}) {
         const designSettings = email.designSettingId ?
@@ -489,7 +489,7 @@ class MemberWelcomeEmailService {
             null;
         const unsubscribe = unsubscribeUrl ? {url: unsubscribeUrl, oneClickUrl: unsubscribeUrl} : null;
 
-        await this.#sendEmail({
+        return await this.#sendEmail({
             member,
             memberStatus,
             emailType: 'automation',

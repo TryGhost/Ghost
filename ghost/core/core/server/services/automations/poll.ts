@@ -1,5 +1,6 @@
 import type {AutomationStepToRun, AutomationsRepository} from './automations-repository';
 import type {RecordEmailSentOptions} from './automations-api';
+import {getMailgunMessageId} from './mailgun-message-id';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import {MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
@@ -179,7 +180,7 @@ const processStep = async ({
                 break;
             }
             memberWelcomeEmailService.init();
-            await memberWelcomeEmailService.api.sendAutomationEmail({
+            const sendResult = await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
                     designSettingId: step.email_design_setting_id,
                     lexical: step.email_lexical,
@@ -192,9 +193,11 @@ const processStep = async ({
                 },
                 memberStatus
             });
+            const mailgunMessageId = getMailgunMessageId(sendResult);
             try {
                 await automationsApi.recordEmailSent({
                     automationActionRevisionId: step.automation_action_revision_id,
+                    ...(mailgunMessageId ? {mailgunMessageId} : {}),
                     memberEmail: member.get('email'),
                     memberId: step.member_id,
                     memberName: member.get('name'),
