@@ -1228,6 +1228,7 @@ function buildEmailStats(row: ActionStatsRow): AutomationEmailStats {
         opened_rate: row.email_tracked_sent_count
             ? Math.round((emailOpenedCount ?? 0) / row.email_tracked_sent_count * 100)
             : null,
+        // TODO(NY-1387) Populate clicked_rate once click tracking is implemented.
         clicked_rate: null
     };
 }
