@@ -365,6 +365,7 @@ export async function retryStep(...args: Parameters<AutomationsRepository['retry
 
 export type RecordEmailSentOptions = Readonly<{
     automationActionRevisionId: string;
+    mailgunMessageId?: string;
     memberEmail: string;
     memberId: string;
     memberName: string | null;
@@ -380,6 +381,7 @@ export async function recordEmailSent(options: RecordEmailSentOptions): Promise<
             member_email: options.memberEmail,
             member_name: options.memberName,
             automation_action_revision_id: options.automationActionRevisionId,
+            ...(options.mailgunMessageId ? {mailgun_message_id: options.mailgunMessageId} : {}),
             track_opens: options.trackOpens
         }, {transacting});
 

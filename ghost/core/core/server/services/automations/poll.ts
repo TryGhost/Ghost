@@ -26,6 +26,15 @@ type MemberWelcomeEmailService = {
     };
 };
 
+const getMailgunMessageId = (sendResult: unknown): string | undefined => {
+    if (!sendResult || typeof sendResult !== 'object') {
+        return undefined;
+    }
+
+    const {id} = sendResult as {id?: unknown};
+    return typeof id === 'string' ? id.trim().replace(/^<|>$/g, '') : undefined;
+};
+
 type MemberModel = {
     get(key: 'name'): string | null;
     get(key: 'email' | 'status' | 'uuid'): string;
@@ -179,7 +188,7 @@ const processStep = async ({
                 break;
             }
             memberWelcomeEmailService.init();
-            await memberWelcomeEmailService.api.sendAutomationEmail({
+            const sendResult = await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
                     designSettingId: step.email_design_setting_id,
                     lexical: step.email_lexical,
@@ -192,9 +201,11 @@ const processStep = async ({
                 },
                 memberStatus
             });
+            const mailgunMessageId = getMailgunMessageId(sendResult);
             try {
                 await automationsApi.recordEmailSent({
                     automationActionRevisionId: step.automation_action_revision_id,
+                    ...(mailgunMessageId ? {mailgunMessageId} : {}),
                     memberEmail: member.get('email'),
                     memberId: step.member_id,
                     memberName: member.get('name'),

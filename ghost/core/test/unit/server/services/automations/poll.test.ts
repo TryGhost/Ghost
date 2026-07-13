@@ -343,6 +343,37 @@ describe('automations poll', function () {
             automation_action_revision_id: 'revision-id'
         });
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+            id: ' <mailgun-message-id> '
+        });
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
+            automationActionRevisionId: 'revision-id',
+            mailgunMessageId: 'mailgun-message-id',
+            memberEmail: 'member@example.com',
+            memberId: 'member-id',
+            memberName: 'Test Member',
+            memberUuid: '00000000-0000-4000-8000-000000000001',
+            trackOpens: false
+        });
+        sinon.assert.callOrder(
+            memberWelcomeEmailService.api.sendAutomationEmail,
+            automationsApi.recordEmailSent,
+            automationsApi.finishStepAndEnqueueNext
+        );
+    });
+
+    it('records the automated email recipient without a Mailgun message ID after an SMTP send', async function () {
+        const step = buildEmailStep({
+            automation_action_revision_id: 'revision-id'
+        });
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+            messageId: '<smtp-message-id>',
+            response: '250 Message accepted'
+        });
 
         await poll(options);
 

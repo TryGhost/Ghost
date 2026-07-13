@@ -37,6 +37,7 @@ describe('automations API', function () {
 
             await automationsApi.recordEmailSent({
                 automationActionRevisionId: 'revision-id',
+                mailgunMessageId: 'mailgun-message-id',
                 memberEmail: 'member@example.com',
                 memberId: 'member-id',
                 memberName: 'Test Member',
@@ -51,6 +52,7 @@ describe('automations API', function () {
                 member_email: 'member@example.com',
                 member_name: 'Test Member',
                 automation_action_revision_id: 'revision-id',
+                mailgun_message_id: 'mailgun-message-id',
                 track_opens: false
             }, {transacting});
             sinon.assert.calledOnceWithExactly(whereRevision, 'id', 'revision-id');
