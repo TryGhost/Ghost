@@ -67,6 +67,7 @@ function createMessage(message) {
     const cleanMessage = {...message};
     delete cleanMessage.tags;
     delete cleanMessage.forceTextContent;
+    delete cleanMessage.trackOpens;
 
     const addresses = getFromAddress(message.from, message.replyTo);
 
@@ -130,6 +131,7 @@ module.exports = class GhostMailer {
      * @param {string} [message.from] - sender email address
      * @param {string} [message.text] - text version of this message
      * @param {string[]} [message.tags] - optional additional Mailgun tags
+     * @param {boolean} [message.trackOpens] - per-message override for Mailgun open tracking
      * @param {Record<string, string>} [message.headers] - optional additional email headers (merged with defaults)
      * @param {boolean} [message.forceTextContent] - maps to generateTextFromHTML nodemailer option
      * which is: "if set to true uses HTML to generate plain text body part from the HTML if the text is not defined"
@@ -150,7 +152,10 @@ module.exports = class GhostMailer {
             if (tags.length > 0) {
                 messageToSend['o:tag'] = tags;
             }
-            if (settingsCache.get('email_track_opens')) {
+            const trackOpens = typeof message.trackOpens === 'boolean' ?
+                message.trackOpens :
+                settingsCache.get('email_track_opens');
+            if (trackOpens) {
                 messageToSend['o:tracking-opens'] = true;
             }
             if (messageToSend.headers) {

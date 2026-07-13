@@ -7,6 +7,8 @@ import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../../../core/server/services/me
 // @ts-expect-error Models currently lack type definitions.
 import {Member} from '../../../../../core/server/models';
 
+const settingsCache = require('../../../../../core/shared/settings-cache');
+
 const MAX_STEPS_PER_BATCH = 100;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 
@@ -120,6 +122,7 @@ describe('automations poll', function () {
     let automationsApi: AutomationsApiStubs;
     let memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
     let options: PollOptionsStubs;
+    let settingsCacheGet: sinon.SinonStub;
 
     beforeEach(function () {
         sinon.useFakeTimers({now: new Date('2026-01-01T12:00:00.000Z'), shouldAdvanceTime: true});
@@ -146,6 +149,8 @@ describe('automations poll', function () {
             memberWelcomeEmailService
         };
 
+        settingsCacheGet = sinon.stub(settingsCache, 'get');
+        settingsCacheGet.withArgs('email_track_opens').returns(false);
         sinon.stub(Member, 'findOne').resolves(buildMember());
     });
 
@@ -349,6 +354,9 @@ describe('automations poll', function () {
 
         await poll(options);
 
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackOpens: false
+        }));
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
             automationActionRevisionId: 'revision-id',
             mailgunMessageId: 'mailgun-message-id',
@@ -363,6 +371,21 @@ describe('automations poll', function () {
             automationsApi.recordEmailSent,
             automationsApi.finishStepAndEnqueueNext
         );
+    });
+
+    it('enables open tracking for the send and recipient when the setting is enabled', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_opens').returns(true);
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackOpens: true
+        }));
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            trackOpens: true
+        }));
     });
 
     it('records the automated email recipient without a Mailgun message ID after an SMTP send', async function () {
