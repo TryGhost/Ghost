@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const jsdom = require('jsdom');
+const urlUtils = require('../../../../core/shared/url-utils');
 const lexicalLib = require('../../../../core/server/lib/lexical');
 
 describe('lib/lexical', function () {
@@ -87,6 +88,85 @@ describe('lib/lexical', function () {
             const rendered = await lexicalLib.render(lexicalState, {nodeRenderers});
 
             assert(rendered.includes('<span>CUSTOM</span>'));
+        });
+    });
+
+    describe('urlTransformMap (write path) with scheme-less card URLs', function () {
+        // A button card URL entered without a scheme (e.g. `www.example.com/post/#/share`)
+        // must be coerced to an absolute URL so it collapses to `__GHOST_URL__`. Otherwise
+        // it's stored verbatim and later doubled when resolved against the post URL during
+        // email rendering.
+        //
+        // The url-type transforms resolve against urlUtils.getSiteUrl() internally, so stub
+        // it to a fixed domain for deterministic fixtures.
+        const siteUrl = 'https://www.example.com/';
+
+        beforeEach(function () {
+            sinon.stub(urlUtils, 'getSiteUrl').returns(siteUrl);
+        });
+
+        function toTransformReady(lexical) {
+            return urlUtils.lexicalToTransformReady(lexical, siteUrl, {
+                nodes: lexicalLib.nodes,
+                transformMap: lexicalLib.urlTransformMap
+            });
+        }
+
+        it('collapses a scheme-less same-site button URL to __GHOST_URL__', function () {
+            const siteHost = new URL(siteUrl).host; // www.example.com
+            const lexical = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'button',
+                        buttonText: 'Share',
+                        buttonUrl: `${siteHost}/my-post/#/share`,
+                        alignment: 'center'
+                    }],
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const result = JSON.parse(toTransformReady(lexical));
+            const button = result.root.children[0];
+
+            assert.equal(button.buttonUrl, '__GHOST_URL__/my-post/#/share');
+        });
+
+        it('leaves a pure relative hash button URL untouched', function () {
+            const lexical = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'button',
+                        buttonText: 'Share',
+                        buttonUrl: '#/share',
+                        alignment: 'center'
+                    }],
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const result = JSON.parse(toTransformReady(lexical));
+            assert.equal(result.root.children[0].buttonUrl, '#/share');
+        });
+
+        it('collapses an already-absolute same-site button URL to __GHOST_URL__', function () {
+            const lexical = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'button',
+                        buttonText: 'Share',
+                        buttonUrl: `${siteUrl.replace(/\/$/, '')}/my-post/#/share`, // https://www.example.com/my-post/#/share
+                        alignment: 'center'
+                    }],
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const result = JSON.parse(toTransformReady(lexical));
+            assert.equal(result.root.children[0].buttonUrl, '__GHOST_URL__/my-post/#/share');
         });
     });
 

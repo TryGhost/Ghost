@@ -5,6 +5,7 @@ const config = require('../../shared/config');
 const labs = require('../../shared/labs');
 const settingsCache = require('../../shared/settings-cache');
 const storage = require('../adapters/storage');
+const ensureUrlScheme = require('./ensure-url-scheme');
 
 let nodes;
 let lexicalHtmlRenderer;
@@ -15,6 +16,12 @@ let serializePosts;
 function populateNodes() {
     const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
     nodes = DEFAULT_NODES;
+}
+
+// Wrap a url-type transform so scheme-less domain-like values are coerced to an
+// absolute https:// URL before the underlying transform runs.
+function withUrlSchemeCoercion(transformFn) {
+    return (value, ...args) => transformFn(ensureUrlScheme(value), ...args);
 }
 
 function createLexicalHtmlRenderer(onError) {
@@ -139,7 +146,10 @@ module.exports = {
                     markdown: urlUtils.markdownRelativeToAbsolute.bind(urlUtils)
                 },
                 toTransformReady: {
-                    url: urlUtils.toTransformReady.bind(urlUtils),
+                    // Coerce scheme-less domain-like URLs (e.g. `www.example.com/x`)
+                    // to absolute so they collapse to __GHOST_URL__ rather than being
+                    // stored verbatim and doubled during email rendering.
+                    url: withUrlSchemeCoercion(urlUtils.toTransformReady.bind(urlUtils)),
                     html: urlUtils.htmlToTransformReady.bind(urlUtils),
                     markdown: urlUtils.markdownToTransformReady.bind(urlUtils)
                 }
