@@ -1,11 +1,11 @@
-const assert = require('node:assert/strict');
-const fs = require('fs');
-const path = require('path');
-const semver = require('semver');
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import semver from 'semver';
 
 describe('Migration version consistency', function () {
     it('all migration folders should be runnable at current package.json version', function () {
-        const pkg = require('../../../../../package.json');
+        const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../../../package.json'), 'utf8'));
         const safeVersion = pkg.version.match(/^(\d+\.)?(\d+)/)[0];
 
         const migrationsDir = path.join(
@@ -18,7 +18,7 @@ describe('Migration version consistency', function () {
 
         const orphaned = folders.filter((folder) => {
             // Same comparison knex-migrator uses: folder > currentVersion
-            return semver.gt(semver.coerce(folder), semver.coerce(safeVersion));
+            return semver.gt(semver.coerce(folder)!, semver.coerce(safeVersion)!);
         });
 
         assert.equal(
