@@ -38,6 +38,13 @@
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
+    // Keep every open Renovate branch current, including updates that require
+    // human review. The shared preset uses `rebaseWhen: automerging`, which
+    // Renovate resolves to `never` whenever a package rule disables automerge.
+    // Those PRs then conflict with main indefinitely and occupy the open-PR cap
+    // until somebody manually requests a rebase. Runner scheduling below still
+    // limits when the resulting branch updates and CI runs can happen.
+    "rebaseWhen": "behind-base-branch",
     // Soak every dependency update for 72 hours before opening a PR. This guards
     // against compromised publishes (malicious version yanked within a few hours)
     // and against unstable releases that get hotfixed shortly after publish.
@@ -422,6 +429,57 @@
                 "knex-migrator"
             ],
             "minimumReleaseAge": "0 days"
+        },
+
+        // The shared preset's automerge rule only matches traditional package
+        // dependency types. pnpm catalogs use `pnpm.catalog` (default catalog)
+        // and `pnpm.catalog.<name>` (named catalogs), so catalog updates were
+        // opening with automerge disabled even when the same package in a
+        // package.json would automerge. Apply the same default here.
+        {
+            "description": "Automerge pnpm catalog updates after CI passes",
+            "matchDepTypes": [
+                "/^pnpm\\.catalog(?:\\..+)?$/"
+            ],
+            "automerge": true,
+            "automergeType": "pr"
+        },
+
+        // The catalog rule above is local, so it is evaluated after package
+        // rules inherited from the shared preset. Repeat the shared CSS/style
+        // exclusion for catalog entries so adding catalog support does not turn
+        // intentionally human-reviewed build-pipeline updates into automerges.
+        {
+            "description": "Do not automerge CSS preprocessors from pnpm catalogs",
+            "matchDepTypes": [
+                "/^pnpm\\.catalog(?:\\..+)?$/"
+            ],
+            "matchPackageNames": [
+                "/^postcss/",
+                "/^css/",
+                "/^sass/",
+                "/^less/",
+                "/^styl/",
+                "autoprefixer",
+                "cssnano",
+                "postcss",
+                "postcss-cli",
+                "postcss-import",
+                "postcss-custom-media",
+                "postcss-custom-properties",
+                "postcss-color-mod-function",
+                "postcss-easy-import",
+                "ember-cli-postcss",
+                "gulp-postcss",
+                "sass",
+                "node-sass",
+                "sass-embedded",
+                "less",
+                "stylus",
+                "stylelint",
+                "tailwindcss"
+            ],
+            "automerge": false
         },
 
         // Group each pinned-version pnpm catalog into a single PR per catalog.
