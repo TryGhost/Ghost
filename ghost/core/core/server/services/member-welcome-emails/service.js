@@ -450,7 +450,7 @@ class MemberWelcomeEmailService {
             });
         }
 
-        return await this.#sendEmail({
+        await this.#sendEmail({
             member,
             memberStatus,
             emailType: 'welcome',

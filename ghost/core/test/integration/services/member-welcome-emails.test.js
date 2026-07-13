@@ -207,7 +207,7 @@ describe('Member Welcome Emails Integration', function () {
             memberWelcomeEmailService.api = null;
             memberWelcomeEmailService.init();
             await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
-            return await memberWelcomeEmailService.api.send({
+            await memberWelcomeEmailService.api.send({
                 member,
                 memberStatus
             });
