@@ -35,8 +35,8 @@ export type AutomationSendEmailAction = {
         email_subject: string;
         email_lexical: string;
         email_design_setting_id: string;
-        stats?: AutomationEmailStats;
     };
+    stats?: AutomationEmailStats;
 }
 
 export type AutomationAction = AutomationWaitAction | AutomationSendEmailAction;
@@ -96,15 +96,7 @@ const serializeEditableAction = (action: AutomationAction): AutomationAction => 
     case 'wait':
         return action;
     case 'send_email':
-        return {
-            id: action.id,
-            type: action.type,
-            data: {
-                email_subject: action.data.email_subject,
-                email_lexical: action.data.email_lexical,
-                email_design_setting_id: action.data.email_design_setting_id
-            }
-        };
+        return {id: action.id, type: action.type, data: action.data};
     default: {
         const _exhaustive: never = action;
         throw new Error(`Unknown automation action type: ${_exhaustive}`);

@@ -935,7 +935,7 @@ function shouldInsertActionRevision(action: AutomationAction, latestRevision: Ac
         return true;
     }
 
-    return !dequal(buildRevisionActionData(action, latestRevision), buildActionRevisionData(action));
+    return !dequal(buildRevisionActionData(action, latestRevision), action.data);
 }
 
 function buildRevisionActionData(action: AutomationAction, revision: ActionRevisionRow): ExclusifyUnion<WaitRevisionData | SendEmailRevisionData> {
@@ -949,27 +949,6 @@ function buildRevisionActionData(action: AutomationAction, revision: ActionRevis
             email_subject: revision.email_subject,
             email_lexical: revision.email_lexical,
             email_design_setting_id: revision.email_design_setting_id
-        };
-    default: {
-        const _exhaustive: never = action;
-        throw new errors.InternalServerError({
-            message: `Unhandled action type: ${_exhaustive}`
-        });
-    }
-    }
-}
-
-function buildActionRevisionData(action: AutomationAction): ExclusifyUnion<WaitActionData | SendEmailActionData> {
-    switch (action.type) {
-    case 'wait':
-        return {
-            wait_hours: action.data.wait_hours
-        };
-    case 'send_email':
-        return {
-            email_subject: action.data.email_subject,
-            email_lexical: action.data.email_lexical,
-            email_design_setting_id: action.data.email_design_setting_id
         };
     default: {
         const _exhaustive: never = action;
@@ -1221,9 +1200,9 @@ function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null):
             data: {
                 email_subject: requireValue(row, 'email_subject'),
                 email_lexical: requireValue(row, 'email_lexical'),
-                email_design_setting_id: requireValue(row, 'email_design_setting_id'),
-                stats: stats ?? EMPTY_EMAIL_STATS
-            }
+                email_design_setting_id: requireValue(row, 'email_design_setting_id')
+            },
+            stats: stats ?? EMPTY_EMAIL_STATS
         };
     }
 }

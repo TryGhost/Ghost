@@ -39,8 +39,8 @@ export interface SendEmailAction {
         email_subject: string;
         email_lexical: string;
         email_design_setting_id: string;
-        stats?: AutomationEmailStats;
     };
+    stats?: AutomationEmailStats;
 }
 
 export type AutomationAction = WaitAction | SendEmailAction;
