@@ -119,6 +119,7 @@ function buildEmailStep(attrs: Partial<SendEmailStep> = {}): SendEmailStep {
 describe('automations poll', function () {
     let automationsApi: AutomationsApiStubs;
     let memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
+    let scheduleAutomationEmailAnalyticsJob: sinon.SinonStub;
     let options: PollOptionsStubs;
 
     beforeEach(function () {
@@ -140,9 +141,12 @@ describe('automations poll', function () {
             }
         };
 
+        scheduleAutomationEmailAnalyticsJob = sinon.stub().resolves();
+
         options = {
             automationsApi,
             enqueueAnotherPollAt: fake<PollOptions['enqueueAnotherPollAt']>(),
+            scheduleAutomationEmailAnalyticsJob,
             memberWelcomeEmailService
         };
 
@@ -361,6 +365,7 @@ describe('automations poll', function () {
         sinon.assert.callOrder(
             memberWelcomeEmailService.api.sendAutomationEmail,
             automationsApi.recordEmailSent,
+            scheduleAutomationEmailAnalyticsJob,
             automationsApi.finishStepAndEnqueueNext
         );
     });
@@ -401,6 +406,20 @@ describe('automations poll', function () {
 
         sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
         sinon.assert.calledOnce(automationsApi.recordEmailSent);
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.notCalled(automationsApi.retryStep);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+    });
+
+    it('does not retry the email send when scheduling email analytics fails', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        scheduleAutomationEmailAnalyticsJob.rejects(new Error('email analytics scheduling failed'));
+
+        await poll(options);
+
+        sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.calledOnce(scheduleAutomationEmailAnalyticsJob);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.notCalled(automationsApi.retryStep);
         sinon.assert.notCalled(automationsApi.markStepTerminal);

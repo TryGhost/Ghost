@@ -62,23 +62,19 @@ export class EmailAnalyticsJobScheduler {
         this.#jobManager = jobManager;
     }
 
-    async scheduleRecurringJobs(skipNewsletterEmailCheck = false): Promise<void> {
-        const isConfigured = (
+    #isConfigured(): boolean {
+        return Boolean(
             this.#config.get('emailAnalytics:enabled') &&
             this.#config.get('backgroundJobs:emailAnalytics')
         );
-        if (!isConfigured) {
+    };
+
+    async scheduleRecurringNewslettersJob(skipNewsletterEmailCheck: boolean = false): Promise<void> {
+        if (this.#hasScheduledNewslettersJob) {
             return;
         }
 
-        await Promise.all([
-            this.#scheduleRecurringNewslettersJob(skipNewsletterEmailCheck),
-            this.#scheduleRecurringAutomationsJob()
-        ]);
-    }
-
-    async #scheduleRecurringNewslettersJob(skipNewsletterEmailCheck: boolean): Promise<void> {
-        if (this.#hasScheduledNewslettersJob) {
+        if (!this.#isConfigured()) {
             return;
         }
 
@@ -101,8 +97,12 @@ export class EmailAnalyticsJobScheduler {
         }
     }
 
-    async #scheduleRecurringAutomationsJob(): Promise<void> {
+    async scheduleRecurringAutomationsJob(skipAutomationEmailCheck: boolean = false): Promise<void> {
         if (this.#hasScheduledAutomationsJob) {
+            return;
+        }
+
+        if (!this.#isConfigured()) {
             return;
         }
 
@@ -110,12 +110,17 @@ export class EmailAnalyticsJobScheduler {
             return;
         }
 
-        const automatedEmailRecipient = await this.#models.AutomatedEmailRecipient
-            .query()
-            .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
-            .whereNotNull('mailgun_message_id')
-            .first('id');
-        if (!automatedEmailRecipient || this.#hasScheduledAutomationsJob) {
+        const hasAutomatedEmailRecipient = (
+            skipAutomationEmailCheck ||
+            Boolean(
+                await this.#models.AutomatedEmailRecipient
+                    .query()
+                    .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
+                    .whereNotNull('mailgun_message_id')
+                    .first('id')
+            )
+        );
+        if (!hasAutomatedEmailRecipient || this.#hasScheduledAutomationsJob) {
             return;
         }
 

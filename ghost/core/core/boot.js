@@ -444,7 +444,10 @@ async function initBackgroundServices({config}) {
     // Load email analytics recurring jobs
     if (config.get('backgroundJobs:emailAnalytics')) {
         const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
-        await emailAnalyticsJobs.scheduleRecurringJobs();
+        await Promise.all([
+            emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
+            emailAnalyticsJobs.scheduleRecurringAutomationsJob()
+        ]);
     }
 
     const updateCheck = require('./server/services/update-check');

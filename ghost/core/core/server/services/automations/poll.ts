@@ -46,6 +46,7 @@ type PollOptions = {
         recordEmailSent(options: RecordEmailSentOptions): Promise<void>;
     };
     enqueueAnotherPollAt: (date: Readonly<Date>) => unknown;
+    scheduleAutomationEmailAnalyticsJob: () => Promise<void>;
     memberWelcomeEmailService: MemberWelcomeEmailService;
 };
 
@@ -107,8 +108,9 @@ const handleStepExecutionFailure = async ({
 const processStep = async ({
     automationsApi,
     memberWelcomeEmailService,
+    scheduleAutomationEmailAnalyticsJob,
     step
-}: Readonly<Pick<PollOptions, 'automationsApi' | 'memberWelcomeEmailService'> & {
+}: Readonly<Pick<PollOptions, 'automationsApi' | 'memberWelcomeEmailService' | 'scheduleAutomationEmailAnalyticsJob'> & {
     step: AutomationStepToRun;
 }>): Promise<Date | null> => {
     if (step.automation_status !== 'active') {
@@ -215,6 +217,18 @@ const processStep = async ({
                     }
                 }, `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`);
             }
+            try {
+                await scheduleAutomationEmailAnalyticsJob();
+            } catch (err) {
+                logging.error({
+                    err,
+                    system: {
+                        event: 'automations.poll.analytics_scheduling_failed',
+                        member_id: step.member_id,
+                        step_id: step.id
+                    }
+                }, `[AUTOMATIONS] Failed to schedule email analytics job for step ${step.id}`);
+            }
             break;
         }
         default: {
@@ -250,6 +264,7 @@ const dateMin = (a: Date | null, b: Date | null): Date | null => {
 export const poll = async ({
     automationsApi,
     enqueueAnotherPollAt,
+    scheduleAutomationEmailAnalyticsJob,
     memberWelcomeEmailService
 }: Readonly<PollOptions>): Promise<void> => {
     const {steps, nextStepReadyAt} = await automationsApi.fetchAndLockSteps(MAX_STEPS_PER_BATCH);
@@ -272,6 +287,7 @@ export const poll = async ({
             const stepNextPollAt = await processStep({
                 automationsApi,
                 memberWelcomeEmailService,
+                scheduleAutomationEmailAnalyticsJob,
                 step
             });
             nextPollAt = dateMin(nextPollAt, stepNextPollAt);
