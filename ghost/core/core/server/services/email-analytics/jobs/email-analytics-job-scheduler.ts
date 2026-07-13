@@ -62,29 +62,19 @@ export class EmailAnalyticsJobScheduler {
         this.#jobManager = jobManager;
     }
 
-    async scheduleRecurringJobs({
-        skipNewsletterEmailCheck = false,
-        skipAutomationEmailCheck = false
-    }: Readonly<{
-        skipNewsletterEmailCheck?: boolean;
-        skipAutomationEmailCheck?: boolean;
-    }> = {}): Promise<void> {
-        const isConfigured = (
+    #isConfigured(): boolean {
+        return Boolean(
             this.#config.get('emailAnalytics:enabled') &&
             this.#config.get('backgroundJobs:emailAnalytics')
         );
-        if (!isConfigured) {
+    };
+
+    async scheduleRecurringNewslettersJob(skipNewsletterEmailCheck: boolean = false): Promise<void> {
+        if (this.#hasScheduledNewslettersJob) {
             return;
         }
 
-        await Promise.all([
-            this.#scheduleRecurringNewslettersJob(skipNewsletterEmailCheck),
-            this.#scheduleRecurringAutomationsJob(skipAutomationEmailCheck)
-        ]);
-    }
-
-    async #scheduleRecurringNewslettersJob(skipNewsletterEmailCheck: boolean): Promise<void> {
-        if (this.#hasScheduledNewslettersJob) {
+        if (!this.#isConfigured()) {
             return;
         }
 
@@ -107,8 +97,12 @@ export class EmailAnalyticsJobScheduler {
         }
     }
 
-    async #scheduleRecurringAutomationsJob(skipAutomationEmailCheck: boolean): Promise<void> {
+    async scheduleRecurringAutomationsJob(skipAutomationEmailCheck: boolean = false): Promise<void> {
         if (this.#hasScheduledAutomationsJob) {
+            return;
+        }
+
+        if (!this.#isConfigured()) {
             return;
         }
 

@@ -35,7 +35,9 @@ type AutomationsServiceOptions = {
     schedulerAdapter: SchedulerAdapter;
 };
 
-const scheduleAutomationEmailAnalyticsJob = () => emailAnalyticsJobs.scheduleRecurringJobs({skipAutomationEmailCheck: true});
+const scheduleAutomationEmailAnalyticsJob = () => (
+    emailAnalyticsJobs.scheduleRecurringAutomationsJob(true)
+);
 
 export class AutomationsService {
     #enqueuePollAt: undefined | ((date: Readonly<Date>) => Promise<void>);

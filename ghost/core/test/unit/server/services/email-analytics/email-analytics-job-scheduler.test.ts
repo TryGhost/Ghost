@@ -90,7 +90,7 @@ describe('EmailAnalyticsJobScheduler', function () {
 
         const {scheduler, jobManager} = buildScheduler({emailCount: '3'});
 
-        await scheduler.scheduleRecurringJobs();
+        await scheduler.scheduleRecurringNewslettersJob();
 
         sinon.assert.calledOnceWithExactly(jobManager.addJob, {
             at: '6 3/5 * * * *',
@@ -110,7 +110,8 @@ describe('EmailAnalyticsJobScheduler', function () {
         ]) {
             const {scheduler, jobManager, newsletterQuery, automationsQuery, models} = buildScheduler(options);
 
-            await scheduler.scheduleRecurringJobs();
+            await scheduler.scheduleRecurringNewslettersJob();
+            await scheduler.scheduleRecurringAutomationsJob();
 
             sinon.assert.notCalled(jobManager.addJob);
             sinon.assert.notCalled(newsletterQuery.count);
@@ -122,8 +123,8 @@ describe('EmailAnalyticsJobScheduler', function () {
     it('does not add another job when called twice', async function () {
         const {scheduler, jobManager, newsletterQuery} = buildScheduler();
 
-        await scheduler.scheduleRecurringJobs();
-        await scheduler.scheduleRecurringJobs();
+        await scheduler.scheduleRecurringNewslettersJob();
+        await scheduler.scheduleRecurringNewslettersJob();
 
         sinon.assert.calledOnce(jobManager.addJob);
         sinon.assert.calledOnce(newsletterQuery.count);
@@ -134,10 +135,10 @@ describe('EmailAnalyticsJobScheduler', function () {
         const emailCount = deferred();
         newsletterQuery.count.returns(emailCount.promise.then(() => 1));
 
-        const firstSchedule = scheduler.scheduleRecurringJobs();
+        const firstSchedule = scheduler.scheduleRecurringNewslettersJob();
         sinon.assert.calledOnce(newsletterQuery.count);
 
-        const secondSchedule = scheduler.scheduleRecurringJobs({skipNewsletterEmailCheck: true});
+        const secondSchedule = scheduler.scheduleRecurringNewslettersJob(true);
         emailCount.done();
 
         await Promise.all([firstSchedule, secondSchedule]);
@@ -153,8 +154,8 @@ describe('EmailAnalyticsJobScheduler', function () {
             automatedEmailRecipient: {id: 'recipient-id'}
         });
 
-        await scheduler.scheduleRecurringJobs();
-        await scheduler.scheduleRecurringJobs();
+        await scheduler.scheduleRecurringAutomationsJob();
+        await scheduler.scheduleRecurringAutomationsJob();
 
         sinon.assert.calledOnce(jobManager.addJob);
         sinon.assert.calledOnce(automationsQuery.first);
@@ -168,8 +169,8 @@ describe('EmailAnalyticsJobScheduler', function () {
         const automatedEmailRecipient = deferred();
         automationsQuery.first.returns(automatedEmailRecipient.promise.then(() => ({id: 'recipient-id'})));
 
-        const firstSchedule = scheduler.scheduleRecurringJobs();
-        const secondSchedule = scheduler.scheduleRecurringJobs();
+        const firstSchedule = scheduler.scheduleRecurringAutomationsJob();
+        const secondSchedule = scheduler.scheduleRecurringAutomationsJob();
 
         sinon.assert.calledTwice(automationsQuery.first);
         automatedEmailRecipient.done();
@@ -182,7 +183,7 @@ describe('EmailAnalyticsJobScheduler', function () {
     it('does not add a job when no emails are found', async function () {
         const {scheduler, jobManager, newsletterQuery} = buildScheduler({emailCount: 0});
 
-        await scheduler.scheduleRecurringJobs();
+        await scheduler.scheduleRecurringNewslettersJob();
 
         sinon.assert.notCalled(jobManager.addJob);
         sinon.assert.calledOnce(newsletterQuery.count);
@@ -193,8 +194,8 @@ describe('EmailAnalyticsJobScheduler', function () {
         newsletterQuery.count.onFirstCall().resolves(0);
         newsletterQuery.count.onSecondCall().resolves(1);
 
-        await scheduler.scheduleRecurringJobs();
-        await scheduler.scheduleRecurringJobs();
+        await scheduler.scheduleRecurringNewslettersJob();
+        await scheduler.scheduleRecurringNewslettersJob();
 
         sinon.assert.calledOnce(jobManager.addJob);
         sinon.assert.calledTwice(newsletterQuery.count);
@@ -203,30 +204,11 @@ describe('EmailAnalyticsJobScheduler', function () {
     it('can skip the email lookup', async function () {
         const {scheduler, jobManager, newsletterQuery} = buildScheduler({emailCount: 0});
 
-        await scheduler.scheduleRecurringJobs({skipNewsletterEmailCheck: true});
+        await scheduler.scheduleRecurringNewslettersJob(true);
 
         sinon.assert.calledOnce(jobManager.addJob);
         sinon.assert.notCalled(newsletterQuery.where);
         sinon.assert.notCalled(newsletterQuery.count);
-    });
-
-    it('can skip the automation email recipient lookup', async function () {
-        const {scheduler, jobManager, automationsQuery} = buildScheduler({
-            emailCount: 0,
-            automationAnalyticsEnabled: true,
-            automatedEmailRecipient: null
-        });
-
-        await scheduler.scheduleRecurringJobs({skipAutomationEmailCheck: true});
-
-        sinon.assert.calledOnceWithMatch(jobManager.addJob, {
-            job: sinon.match((value: unknown) => (
-                typeof value === 'string' &&
-                value.endsWith('automation-fetch-latest/index.js')
-            )),
-            name: 'email-analytics-automation-fetch-latest'
-        });
-        sinon.assert.notCalled(automationsQuery.first);
     });
 
     it('adds an automation job when automation analytics is enabled and recipients exist', async function () {
@@ -240,7 +222,7 @@ describe('EmailAnalyticsJobScheduler', function () {
             automatedEmailRecipient: {id: 'recipient-id'}
         });
 
-        await scheduler.scheduleRecurringJobs();
+        await scheduler.scheduleRecurringAutomationsJob();
 
         sinon.assert.calledOnceWithExactly(jobManager.addJob, {
             at: '12 4/5 * * * *',
@@ -250,11 +232,29 @@ describe('EmailAnalyticsJobScheduler', function () {
             )),
             name: 'email-analytics-automation-fetch-latest'
         });
-        sinon.assert.calledOnce(newsletterQuery.count);
         sinon.assert.calledOnce(models.AutomatedEmailRecipient.query);
         sinon.assert.calledOnceWithExactly(automationsQuery.where, 'created_at', '>', sinon.match.date);
         sinon.assert.calledOnceWithExactly(automationsQuery.whereNotNull, 'mailgun_message_id');
         sinon.assert.calledOnceWithExactly(automationsQuery.first, 'id');
+    });
+
+    it('can skip the automation email recipient lookup', async function () {
+        const {scheduler, jobManager, automationsQuery} = buildScheduler({
+            emailCount: 0,
+            automationAnalyticsEnabled: true,
+            automatedEmailRecipient: null
+        });
+
+        await scheduler.scheduleRecurringAutomationsJob(true);
+
+        sinon.assert.calledOnceWithMatch(jobManager.addJob, {
+            job: sinon.match((value: unknown) => (
+                typeof value === 'string' &&
+                value.endsWith('automation-fetch-latest/index.js')
+            )),
+            name: 'email-analytics-automation-fetch-latest'
+        });
+        sinon.assert.notCalled(automationsQuery.first);
     });
 
     it('adds both newsletter and automation jobs when conditions are met', async function () {
@@ -264,7 +264,8 @@ describe('EmailAnalyticsJobScheduler', function () {
             automatedEmailRecipient: {id: 'recipient-id'}
         });
 
-        await scheduler.scheduleRecurringJobs();
+        await scheduler.scheduleRecurringNewslettersJob();
+        await scheduler.scheduleRecurringAutomationsJob();
 
         sinon.assert.calledTwice(jobManager.addJob);
         sinon.assert.calledWithMatch(jobManager.addJob, {
@@ -290,7 +291,7 @@ describe('EmailAnalyticsJobScheduler', function () {
             automatedEmailRecipient: {id: 'recipient-id'}
         });
 
-        await scheduler.scheduleRecurringJobs();
+        await scheduler.scheduleRecurringAutomationsJob();
 
         sinon.assert.notCalled(jobManager.addJob);
         sinon.assert.notCalled(models.AutomatedEmailRecipient.query);
@@ -304,7 +305,7 @@ describe('EmailAnalyticsJobScheduler', function () {
             automatedEmailRecipient: null
         });
 
-        await scheduler.scheduleRecurringJobs();
+        await scheduler.scheduleRecurringAutomationsJob();
 
         sinon.assert.notCalled(jobManager.addJob);
         sinon.assert.calledOnce(automationsQuery.first);

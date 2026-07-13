@@ -12,11 +12,21 @@ const emailAnalyticsJobScheduler = new EmailAnalyticsJobScheduler({
 });
 
 /**
- * @param {Parameters<typeof EmailAnalyticsJobScheduler.prototype.scheduleRecurringJobs>} args
+ * @param {Parameters<typeof EmailAnalyticsJobScheduler.prototype.scheduleRecurringNewslettersJob>} args
  * @returns {Promise<void>}
  */
-exports.scheduleRecurringJobs = async (...args) => {
+exports.scheduleRecurringNewslettersJob = async (...args) => {
     if (!process.env.NODE_ENV.startsWith('test')) {
-        await emailAnalyticsJobScheduler.scheduleRecurringJobs(...args);
+        await emailAnalyticsJobScheduler.scheduleRecurringNewslettersJob(...args);
+    }
+};
+
+/**
+ * @param {Parameters<typeof EmailAnalyticsJobScheduler.prototype.scheduleRecurringAutomationsJob>} args
+ * @returns {Promise<void>}
+ */
+exports.scheduleRecurringAutomationsJob = async (...args) => {
+    if (!process.env.NODE_ENV.startsWith('test')) {
+        await emailAnalyticsJobScheduler.scheduleRecurringAutomationsJob(...args);
     }
 };
