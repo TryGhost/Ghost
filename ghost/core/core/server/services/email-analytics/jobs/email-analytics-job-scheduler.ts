@@ -62,7 +62,13 @@ export class EmailAnalyticsJobScheduler {
         this.#jobManager = jobManager;
     }
 
-    async scheduleRecurringJobs(skipNewsletterEmailCheck = false): Promise<void> {
+    async scheduleRecurringJobs({
+        skipNewsletterEmailCheck = false,
+        skipAutomationEmailCheck = false
+    }: Readonly<{
+        skipNewsletterEmailCheck?: boolean;
+        skipAutomationEmailCheck?: boolean;
+    }> = {}): Promise<void> {
         const isConfigured = (
             this.#config.get('emailAnalytics:enabled') &&
             this.#config.get('backgroundJobs:emailAnalytics')
@@ -73,7 +79,7 @@ export class EmailAnalyticsJobScheduler {
 
         await Promise.all([
             this.#scheduleRecurringNewslettersJob(skipNewsletterEmailCheck),
-            this.#scheduleRecurringAutomationsJob()
+            this.#scheduleRecurringAutomationsJob(skipAutomationEmailCheck)
         ]);
     }
 
@@ -101,7 +107,7 @@ export class EmailAnalyticsJobScheduler {
         }
     }
 
-    async #scheduleRecurringAutomationsJob(): Promise<void> {
+    async #scheduleRecurringAutomationsJob(skipAutomationEmailCheck: boolean): Promise<void> {
         if (this.#hasScheduledAutomationsJob) {
             return;
         }
@@ -110,12 +116,17 @@ export class EmailAnalyticsJobScheduler {
             return;
         }
 
-        const automatedEmailRecipient = await this.#models.AutomatedEmailRecipient
-            .query()
-            .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
-            .whereNotNull('mailgun_message_id')
-            .first('id');
-        if (!automatedEmailRecipient || this.#hasScheduledAutomationsJob) {
+        const hasAutomatedEmailRecipient = (
+            skipAutomationEmailCheck ||
+            Boolean(
+                await this.#models.AutomatedEmailRecipient
+                    .query()
+                    .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
+                    .whereNotNull('mailgun_message_id')
+                    .first('id')
+            )
+        );
+        if (!hasAutomatedEmailRecipient || this.#hasScheduledAutomationsJob) {
             return;
         }
 

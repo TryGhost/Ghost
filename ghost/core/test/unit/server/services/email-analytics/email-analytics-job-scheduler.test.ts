@@ -137,7 +137,7 @@ describe('EmailAnalyticsJobScheduler', function () {
         const firstSchedule = scheduler.scheduleRecurringJobs();
         sinon.assert.calledOnce(newsletterQuery.count);
 
-        const secondSchedule = scheduler.scheduleRecurringJobs(true);
+        const secondSchedule = scheduler.scheduleRecurringJobs({skipNewsletterEmailCheck: true});
         emailCount.done();
 
         await Promise.all([firstSchedule, secondSchedule]);
@@ -203,7 +203,7 @@ describe('EmailAnalyticsJobScheduler', function () {
     it('can skip the email lookup', async function () {
         const {scheduler, jobManager, newsletterQuery} = buildScheduler({emailCount: 0});
 
-        await scheduler.scheduleRecurringJobs(true);
+        await scheduler.scheduleRecurringJobs({skipNewsletterEmailCheck: true});
 
         sinon.assert.calledOnce(jobManager.addJob);
         sinon.assert.notCalled(newsletterQuery.where);
