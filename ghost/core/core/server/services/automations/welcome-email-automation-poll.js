@@ -1,6 +1,5 @@
 const logging = require('@tryghost/logging');
 const db = require('../../data/db');
-const {getMailgunMessageId} = require('./mailgun-message-id');
 const {MEMBER_WELCOME_EMAIL_SLUGS, MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES} = require('../member-welcome-emails/constants');
 const {AutomatedEmailRecipient, Member, WelcomeEmailAutomationRun} = require('../../models');
 /** @import {Knex} from 'knex' */
@@ -220,7 +219,7 @@ async function processRun({
             return;
         }
 
-        const sendResult = await memberWelcomeEmailService.api.send({
+        await memberWelcomeEmailService.api.send({
             member: {
                 name: member.get('name'),
                 email: member.get('email'),
@@ -228,7 +227,6 @@ async function processRun({
             },
             memberStatus
         });
-        const mailgunMessageId = getMailgunMessageId(sendResult);
 
         await db.knex.transaction(async (transacting) => {
             await AutomatedEmailRecipient.add({
@@ -237,7 +235,6 @@ async function processRun({
                 member_uuid: member.get('uuid'),
                 member_email: member.get('email'),
                 member_name: member.get('name'),
-                ...(mailgunMessageId ? {mailgun_message_id: mailgunMessageId} : {}),
                 track_opens: false
             }, {transacting});
 
