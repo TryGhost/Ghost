@@ -9,6 +9,7 @@
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test:unit": "NODE_ENV=testing c8 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test": "yarn test:unit",
@@ -18,6 +19,7 @@
   },
   "files": [
     "index.js",
+    "index.d.ts",
     "lib"
   ],
   "publishConfig": {
