@@ -1216,12 +1216,17 @@ const EMPTY_EMAIL_STATS: AutomationEmailStats = {
 };
 
 function buildEmailStats(row: ActionStatsRow): AutomationEmailStats {
+    // Opened counts are only written once open events land, so with tracked sends a null opened
+    // count means "no opens yet" rather than "unknown" — report it as 0.
+    const emailOpenedCount = row.email_tracked_sent_count
+        ? (row.email_opened_count ?? 0)
+        : row.email_opened_count;
     return {
         email_sent_count: row.email_sent_count,
         email_tracked_sent_count: row.email_tracked_sent_count,
-        email_opened_count: row.email_opened_count,
+        email_opened_count: emailOpenedCount,
         opened_rate: row.email_tracked_sent_count
-            ? Math.round((row.email_opened_count ?? 0) / row.email_tracked_sent_count * 100)
+            ? Math.round((emailOpenedCount ?? 0) / row.email_tracked_sent_count * 100)
             : null,
         clicked_rate: null
     };

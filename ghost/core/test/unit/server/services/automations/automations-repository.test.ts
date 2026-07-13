@@ -660,6 +660,53 @@ describe('automations repository', function () {
         });
     });
 
+    describe('email stats', function () {
+        it('reports the opened count as 0 when there are tracked sends but no recorded opens', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(emailAction);
+
+            await knex('automation_action_revisions')
+                .where('action_id', emailAction.id)
+                .update({
+                    email_sent_count: 3,
+                    email_tracked_sent_count: 2,
+                    email_opened_count: null
+                });
+
+            const result = await repo.getById(automation.id);
+            assert(result);
+            const action = result.actions.find(candidate => candidate.id === emailAction.id);
+            assert(action);
+            if (action.type !== 'send_email') {
+                assert.fail('Expected a send_email action');
+            }
+            assert.deepEqual(action.stats, {
+                email_sent_count: 3,
+                email_tracked_sent_count: 2,
+                email_opened_count: 0,
+                opened_rate: 0,
+                clicked_rate: null
+            });
+        });
+
+        it('keeps the opened count null when there are no tracked sends', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = automation.actions.find(candidate => candidate.type === 'send_email');
+            assert(action);
+            if (action.type !== 'send_email') {
+                assert.fail('Expected a send_email action');
+            }
+            assert.deepEqual(action.stats, {
+                email_sent_count: null,
+                email_tracked_sent_count: null,
+                email_opened_count: null,
+                opened_rate: null,
+                clicked_rate: null
+            });
+        });
+    });
+
     describe('trigger', function () {
         it('can trigger an automation for a free member', async function () {
             await repo.trigger({
