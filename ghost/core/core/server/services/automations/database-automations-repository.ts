@@ -64,9 +64,9 @@ interface ActionRow {
 
 type ActionStatsRow = {
     action_id: string;
-    email_sent_count: number | string | null;
-    email_tracked_sent_count: number | string | null;
-    email_opened_count: number | string | null;
+    email_sent_count: number | null;
+    email_tracked_sent_count: number | null;
+    email_opened_count: number | null;
 };
 
 type ActionRevisionRow = {
@@ -1216,30 +1216,15 @@ const EMPTY_EMAIL_STATS: AutomationEmailStats = {
 };
 
 function buildEmailStats(row: ActionStatsRow): AutomationEmailStats {
-    const emailSentCount = normalizeSummedCount(row.email_sent_count);
-    const emailTrackedSentCount = normalizeSummedCount(row.email_tracked_sent_count);
-    const emailOpenedCount = normalizeSummedCount(row.email_opened_count);
-
     return {
-        email_sent_count: emailSentCount,
-        email_tracked_sent_count: emailTrackedSentCount,
-        email_opened_count: emailOpenedCount,
-        opened_rate: emailTrackedSentCount
-            ? Math.round((emailOpenedCount ?? 0) / emailTrackedSentCount * 100)
+        email_sent_count: row.email_sent_count,
+        email_tracked_sent_count: row.email_tracked_sent_count,
+        email_opened_count: row.email_opened_count,
+        opened_rate: row.email_tracked_sent_count
+            ? Math.round((row.email_opened_count ?? 0) / row.email_tracked_sent_count * 100)
             : null,
         clicked_rate: null
     };
-}
-
-function normalizeSummedCount(value: number | string | null): number | null {
-    if (value === null) {
-        return null;
-    }
-    if (typeof value === 'number') {
-        return value;
-    }
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
 }
 
 function requireValue<
