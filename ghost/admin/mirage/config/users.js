@@ -1,3 +1,4 @@
+import nql from '@tryghost/nql';
 import {Response} from 'miragejs';
 import {paginateModelCollection} from '../utils';
 
@@ -17,22 +18,27 @@ export default function mockUsers(server) {
 
     server.get('/users/', function ({users}, {queryParams}) {
         let page = +queryParams.page || 1;
+        let filter = queryParams.filter || '';
 
         // NOTE: this is naive and only set up to work with queries that are
         // actually used - if you use a different filter in the app, add it here!
-        let collection = users.where(function (user) {
-            let statusMatch = true;
+        let collection = users.all();
 
-            if (queryParams.filter === 'status:-inactive') {
-                statusMatch = user.status !== 'inactive';
-            } else if (queryParams.filter === 'status:inactive') {
-                statusMatch = user.status === 'inactive';
-            } else if (queryParams.status && queryParams.status !== 'all') {
-                statusMatch = user.status === queryParams.status;
+        if (filter) {
+            try {
+                const nqlFilter = nql(filter);
+                collection = collection.filter((user) => {
+                    return nqlFilter.queryJSON(user.attrs);
+                });
+            } catch (err) {
+                console.error(err); // eslint-disable-line
+                throw err;
             }
-
-            return statusMatch;
-        });
+        } else if (queryParams.status && queryParams.status !== 'all') {
+            collection = collection.filter((user) => {
+                return user.status === queryParams.status;
+            });
+        }
 
         return paginateModelCollection('users', collection, page, queryParams.limit);
     });

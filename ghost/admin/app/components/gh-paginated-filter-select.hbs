@@ -1,0 +1,19 @@
+<PowerSelect
+    @selected={{@selected}}
+    @options={{this.availableOptions}}
+    @onOpen={{this.loadInitialOptions}}
+    @onChange={{@onChange}}
+    @search={{perform this.searchOptionsTask}}
+    @searchEnabled={{true}}
+    @searchPlaceholder={{@searchPlaceholder}}
+    @triggerComponent={{component "gh-power-select/trigger"}}
+    @triggerClass={{@triggerClass}}
+    @dropdownClass={{@dropdownClass}}
+    @matchTriggerWidth={{false}}
+    @optionsComponent={{component "power-select-vertical-collection-options" lastReached=(perform this.loadMoreOptionsTask)}}
+    @registerAPI={{this.registerPowerSelectAPI}}
+    aria-label={{@ariaLabel}}
+    as |option|
+>
+    {{yield option}}
+</PowerSelect>
