@@ -10,11 +10,10 @@ import {
 } from '@aws-sdk/client-s3';
 import tpl from '@tryghost/tpl';
 import * as errors from '@tryghost/errors';
+import {RedirectsStoreBase, type RedirectConfig} from '@tryghost/adapter-base-redirects';
 
-import RedirectsStoreBase from './RedirectsStoreBase';
 import {parseJson} from '../../services/custom-redirects/redirect-config-parser';
 import {getBackupRedirectsFilePath} from '../../services/custom-redirects/utils';
-import type {RedirectConfig, RedirectsStore} from '../../services/custom-redirects/types';
 
 const DEFAULT_FILENAME = 'redirects.json';
 
@@ -45,7 +44,7 @@ export interface S3RedirectsStoreOptions {
  * timestamped server-side copy of the previous contents on each
  * overwrite.
  */
-export default class S3RedirectsStore extends RedirectsStoreBase implements RedirectsStore {
+export default class S3RedirectsStore extends RedirectsStoreBase {
     private readonly client: S3Client;
     private readonly bucket: string;
     private readonly staticFileURLPrefix: string;
