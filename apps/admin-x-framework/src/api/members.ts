@@ -2,6 +2,7 @@ import {InfiniteData, useQueryClient} from '@tanstack/react-query';
 import {useEffect} from 'react';
 import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {apiUrl} from '../utils/api/fetch-api';
+import type {MemberCustomFieldValues} from './member-custom-fields';
 
 export type MemberLabel = {
     id: string;
@@ -88,6 +89,9 @@ export type Member = {
             timestamp: string;
         };
     };
+    // Only present with ?include=custom_fields and the membersCustomFields labs
+    // flag on. Sparse: only fields with a stored value appear.
+    custom_fields?: MemberCustomFieldValues;
     last_seen_at: string | null;
     last_commented_at: string | null;
     can_comment?: boolean;
