@@ -2287,6 +2287,9 @@ importers:
       '@tryghost/adapter-base-cache':
         specifier: 0.1.26
         version: 0.1.26
+      '@tryghost/adapter-base-sso':
+        specifier: workspace:*
+        version: link:../../packages/adapters/sso-base
       '@tryghost/admin-api-schema':
         specifier: 4.7.5
         version: 4.7.5
@@ -3827,6 +3830,36 @@ importers:
       yjs:
         specifier: 13.6.31
         version: 13.6.31
+
+  packages/adapters/sso-base:
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../../configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../../configs/typescript
+      '@internal/cfg-vitest':
+        specifier: workspace:*
+        version: link:../../../configs/vitest
+      '@types/express':
+        specifier: 'catalog:'
+        version: 4.17.25
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.0
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.9(@vitest/browser@4.1.9)(vitest@4.1.9)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@22.20.0)(@vitest/browser-playwright@4.1.9)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.0)(typescript@5.9.3))(vite@8.1.3(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
 
   packages/parse-email-address:
     dependencies:
