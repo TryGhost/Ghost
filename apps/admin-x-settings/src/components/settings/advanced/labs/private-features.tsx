@@ -71,6 +71,10 @@ const features: Feature[] = [{
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
+}, {
+    title: 'Member custom fields',
+    description: 'Enables defining, storing and displaying custom member fields',
+    flag: 'membersCustomFields'
 }];
 
 const AlphaFeatures: React.FC = () => {
