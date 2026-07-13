@@ -33,6 +33,7 @@ Object {
       "lexicalIndicators": true,
       "llmsTxt": true,
       "members": true,
+      "membersCustomFields": true,
       "pictureImageFormats": true,
       "smarterCounts": true,
       "stripeAutomaticTax": true,
