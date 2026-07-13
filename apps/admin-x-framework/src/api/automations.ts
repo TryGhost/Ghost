@@ -20,6 +20,14 @@ export type AutomationWaitAction = {
     };
 }
 
+export type AutomationEmailStats = {
+    email_sent_count: number | null;
+    email_tracked_sent_count: number | null;
+    email_opened_count: number | null;
+    opened_rate: number | null;
+    clicked_rate: number | null;
+}
+
 export type AutomationSendEmailAction = {
     id: string;
     type: 'send_email';
@@ -27,6 +35,7 @@ export type AutomationSendEmailAction = {
         email_subject: string;
         email_lexical: string;
         email_design_setting_id: string;
+        stats?: AutomationEmailStats;
     };
 }
 
@@ -82,13 +91,34 @@ export const useReadAutomation = createQueryWithId<AutomationDetailResponseType>
     path: id => `/automations/${id}/`
 });
 
+const serializeEditableAction = (action: AutomationAction): AutomationAction => {
+    switch (action.type) {
+    case 'wait':
+        return action;
+    case 'send_email':
+        return {
+            id: action.id,
+            type: action.type,
+            data: {
+                email_subject: action.data.email_subject,
+                email_lexical: action.data.email_lexical,
+                email_design_setting_id: action.data.email_design_setting_id
+            }
+        };
+    default: {
+        const _exhaustive: never = action;
+        throw new Error(`Unknown automation action type: ${_exhaustive}`);
+    }
+    }
+};
+
 export const useEditAutomation = createMutation<AutomationDetailResponseType, EditAutomationPayload>({
     method: 'PUT',
     path: ({id}) => `/automations/${id}/`,
     body: ({status, actions, edges}) => ({
         automations: [{
             status,
-            actions,
+            actions: actions.map(serializeEditableAction),
             edges
         }]
     }),

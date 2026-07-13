@@ -10,6 +10,7 @@ import type {
     Automation,
     AutomationAction,
     AutomationEdge,
+    AutomationEmailStats,
     AutomationSummary,
     AutomationStepTerminalStatus,
     AutomationStepToRun,
@@ -60,6 +61,13 @@ interface ActionRow {
     email_lexical: string | null;
     email_design_setting_id: string | null;
 }
+
+type ActionStatsRow = {
+    action_id: string;
+    email_sent_count: number | string | null;
+    email_tracked_sent_count: number | string | null;
+    email_opened_count: number | string | null;
+};
 
 type ActionRevisionRow = {
     action_id: string;
@@ -927,7 +935,7 @@ function shouldInsertActionRevision(action: AutomationAction, latestRevision: Ac
         return true;
     }
 
-    return !dequal(buildRevisionActionData(action, latestRevision), action.data);
+    return !dequal(buildRevisionActionData(action, latestRevision), buildActionRevisionData(action));
 }
 
 function buildRevisionActionData(action: AutomationAction, revision: ActionRevisionRow): ExclusifyUnion<WaitRevisionData | SendEmailRevisionData> {
@@ -941,6 +949,27 @@ function buildRevisionActionData(action: AutomationAction, revision: ActionRevis
             email_subject: revision.email_subject,
             email_lexical: revision.email_lexical,
             email_design_setting_id: revision.email_design_setting_id
+        };
+    default: {
+        const _exhaustive: never = action;
+        throw new errors.InternalServerError({
+            message: `Unhandled action type: ${_exhaustive}`
+        });
+    }
+    }
+}
+
+function buildActionRevisionData(action: AutomationAction): ExclusifyUnion<WaitActionData | SendEmailActionData> {
+    switch (action.type) {
+    case 'wait':
+        return {
+            wait_hours: action.data.wait_hours
+        };
+    case 'send_email':
+        return {
+            email_subject: action.data.email_subject,
+            email_lexical: action.data.email_lexical,
+            email_design_setting_id: action.data.email_design_setting_id
         };
     default: {
         const _exhaustive: never = action;
@@ -1085,10 +1114,11 @@ function requireAutomation(automation: AutomationRow | null, id: string): Automa
 
 async function buildAutomation(trx: Knex.Transaction, automation: AutomationRow): Promise<Automation> {
     const actionRows = await loadActionRows(trx, automation.id);
+    const actionStats = await loadActionStats(trx, actionRows.map(row => row.id));
     const edgeRows = await loadEdgeRows(trx, automation.id);
     return {
         ...buildAutomationSummary(automation),
-        actions: actionRows.map(row => buildActionPayload(row)),
+        actions: actionRows.map(row => buildActionPayload(row, actionStats.get(row.id) ?? null)),
         edges: edgeRows.map(row => buildEdgePayload(row))
     };
 }
@@ -1132,6 +1162,27 @@ async function loadActionRows(trx: Knex.Transaction, automationId: string): Prom
         ]);
 }
 
+async function loadActionStats(
+    trx: Knex.Transaction,
+    actionIds: ReadonlyArray<string>
+): Promise<Map<string, AutomationEmailStats>> {
+    if (actionIds.length === 0) {
+        return new Map();
+    }
+
+    const rows: ActionStatsRow[] = await trx('automation_action_revisions')
+        .select('action_id')
+        .sum({
+            email_sent_count: 'email_sent_count',
+            email_tracked_sent_count: 'email_tracked_sent_count',
+            email_opened_count: 'email_opened_count'
+        })
+        .whereIn('action_id', actionIds)
+        .groupBy('action_id');
+
+    return new Map(rows.map(row => [row.action_id, buildEmailStats(row)]));
+}
+
 async function loadEdgeRows(trx: Knex.Transaction, automationId: string): Promise<EdgeRow[]> {
     return await trx('automation_action_edges as e')
         .select('e.source_action_id', 'e.target_action_id')
@@ -1153,7 +1204,7 @@ async function loadEdgeRows(trx: Knex.Transaction, automationId: string): Promis
         ]);
 }
 
-function buildActionPayload(row: ActionRow): AutomationAction {
+function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null): AutomationAction {
     switch (row.type) {
     case 'wait':
         return {
@@ -1170,10 +1221,46 @@ function buildActionPayload(row: ActionRow): AutomationAction {
             data: {
                 email_subject: requireValue(row, 'email_subject'),
                 email_lexical: requireValue(row, 'email_lexical'),
-                email_design_setting_id: requireValue(row, 'email_design_setting_id')
+                email_design_setting_id: requireValue(row, 'email_design_setting_id'),
+                stats: stats ?? EMPTY_EMAIL_STATS
             }
         };
     }
+}
+
+const EMPTY_EMAIL_STATS: AutomationEmailStats = {
+    email_sent_count: null,
+    email_tracked_sent_count: null,
+    email_opened_count: null,
+    opened_rate: null,
+    clicked_rate: null
+};
+
+function buildEmailStats(row: ActionStatsRow): AutomationEmailStats {
+    const emailSentCount = normalizeSummedCount(row.email_sent_count);
+    const emailTrackedSentCount = normalizeSummedCount(row.email_tracked_sent_count);
+    const emailOpenedCount = normalizeSummedCount(row.email_opened_count);
+
+    return {
+        email_sent_count: emailSentCount,
+        email_tracked_sent_count: emailTrackedSentCount,
+        email_opened_count: emailOpenedCount,
+        opened_rate: emailTrackedSentCount
+            ? Math.round((emailOpenedCount ?? 0) / emailTrackedSentCount * 100)
+            : null,
+        clicked_rate: null
+    };
+}
+
+function normalizeSummedCount(value: number | string | null): number | null {
+    if (value === null) {
+        return null;
+    }
+    if (typeof value === 'number') {
+        return value;
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
 }
 
 function requireValue<

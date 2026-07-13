@@ -24,6 +24,14 @@ export interface WaitAction {
     };
 }
 
+export interface AutomationEmailStats {
+    email_sent_count: number | null;
+    email_tracked_sent_count: number | null;
+    email_opened_count: number | null;
+    opened_rate: number | null;
+    clicked_rate: number | null;
+}
+
 export interface SendEmailAction {
     id: string;
     type: 'send_email';
@@ -31,6 +39,7 @@ export interface SendEmailAction {
         email_subject: string;
         email_lexical: string;
         email_design_setting_id: string;
+        stats?: AutomationEmailStats;
     };
 }
 

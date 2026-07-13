@@ -85,6 +85,9 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('email_subject');
         table.text('email_lexical');
         table.text('email_design_setting_id').references('id').inTable('email_design_settings');
+        table.integer('email_sent_count');
+        table.integer('email_tracked_sent_count');
+        table.integer('email_opened_count');
         table.unique(['created_at', 'action_id']);
     });
 
