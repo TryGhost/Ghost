@@ -1,5 +1,6 @@
 const logging = require('@tryghost/logging');
 const db = require('../../data/db');
+const {getMailgunMessageId} = require('./mailgun-message-id');
 const {MEMBER_WELCOME_EMAIL_SLUGS, MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES} = require('../member-welcome-emails/constants');
 const {AutomatedEmailRecipient, Member, WelcomeEmailAutomationRun} = require('../../models');
 /** @import {Knex} from 'knex' */
@@ -37,18 +38,6 @@ const MAX_RUNS_PER_BATCH = 100;
 const MAX_ATTEMPTS = 10;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 const LOCK_TIMEOUT = 30 * 60 * 1000;
-
-/**
- * @param {unknown} sendResult
- * @returns {string | undefined}
- */
-function getMailgunMessageId(sendResult) {
-    if (!sendResult || typeof sendResult !== 'object') {
-        return undefined;
-    }
-
-    return typeof sendResult.id === 'string' ? sendResult.id.trim().replace(/^<|>$/g, '') : undefined;
-}
 
 /**
  * @internal
