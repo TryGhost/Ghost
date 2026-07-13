@@ -1,4 +1,5 @@
 import sinon from 'sinon';
+import {deferred} from '../../../../utils/deferred';
 import {EmailAnalyticsJobScheduler} from '../../../../../core/server/services/email-analytics/jobs/email-analytics-job-scheduler';
 
 function buildNewsletterQuery(emailCount: string | number = 1) {
@@ -128,6 +129,23 @@ describe('EmailAnalyticsJobScheduler', function () {
         sinon.assert.calledOnce(newsletterQuery.count);
     });
 
+    it('does not add another newsletter job when called concurrently', async function () {
+        const {scheduler, jobManager, newsletterQuery} = buildScheduler();
+        const emailCount = deferred();
+        newsletterQuery.count.returns(emailCount.promise.then(() => 1));
+
+        const firstSchedule = scheduler.scheduleRecurringJobs();
+        sinon.assert.calledOnce(newsletterQuery.count);
+
+        const secondSchedule = scheduler.scheduleRecurringJobs(true);
+        emailCount.done();
+
+        await Promise.all([firstSchedule, secondSchedule]);
+
+        sinon.assert.calledOnce(jobManager.addJob);
+        sinon.assert.calledOnce(newsletterQuery.count);
+    });
+
     it('does not add another automation job when called twice', async function () {
         const {scheduler, jobManager, automationsQuery} = buildScheduler({
             emailCount: 0,
@@ -140,6 +158,25 @@ describe('EmailAnalyticsJobScheduler', function () {
 
         sinon.assert.calledOnce(jobManager.addJob);
         sinon.assert.calledOnce(automationsQuery.first);
+    });
+
+    it('does not add another automation job when called concurrently', async function () {
+        const {scheduler, jobManager, automationsQuery} = buildScheduler({
+            emailCount: 0,
+            automationAnalyticsEnabled: true
+        });
+        const automatedEmailRecipient = deferred();
+        automationsQuery.first.returns(automatedEmailRecipient.promise.then(() => ({id: 'recipient-id'})));
+
+        const firstSchedule = scheduler.scheduleRecurringJobs();
+        const secondSchedule = scheduler.scheduleRecurringJobs();
+
+        sinon.assert.calledTwice(automationsQuery.first);
+        automatedEmailRecipient.done();
+
+        await Promise.all([firstSchedule, secondSchedule]);
+
+        sinon.assert.calledOnce(jobManager.addJob);
     });
 
     it('does not add a job when no emails are found', async function () {

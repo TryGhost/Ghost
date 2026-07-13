@@ -90,7 +90,7 @@ export class EmailAnalyticsJobScheduler {
             .where('status', '<>', 'failed')
             .count());
 
-        if (emailCount > 0) {
+        if (emailCount > 0 && !this.#hasScheduledNewslettersJob) {
             this.#jobManager.addJob({
                 at: randomFiveMinuteCron(),
                 job: path.resolve(__dirname, 'fetch-latest/index.js'),
@@ -115,7 +115,7 @@ export class EmailAnalyticsJobScheduler {
             .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
             .whereNotNull('mailgun_message_id')
             .first('id');
-        if (!automatedEmailRecipient) {
+        if (!automatedEmailRecipient || this.#hasScheduledAutomationsJob) {
             return;
         }
 
