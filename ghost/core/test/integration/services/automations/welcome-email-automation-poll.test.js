@@ -250,11 +250,12 @@ describe('automations poll', function () {
             next_welcome_email_automated_email_id: paidAutomatedEmail.id,
             ready_at: new Date(Date.now() - 1000)
         });
-        options.memberWelcomeEmailService.api.send.onFirstCall().resolves({
-            id: ' <mailgun-message-id-1> '
-        });
-        options.memberWelcomeEmailService.api.send.onSecondCall().resolves({
-            id: '<mailgun-message-id-2>'
+        options.memberWelcomeEmailService.api.send.callsFake(async ({member}) => {
+            return {
+                id: member.email === 'member1@example.com' ?
+                    ' <mailgun-message-id-1> ' :
+                    '<mailgun-message-id-2>'
+            };
         });
 
         await welcomeEmailAutomationPoll(options);
