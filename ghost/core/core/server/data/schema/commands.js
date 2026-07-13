@@ -503,7 +503,15 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
             tableSpec['@@INDEXES@@'].forEach(index => t.index(index));
         }
         if (tableSpec['@@UNIQUE_CONSTRAINTS@@']) {
-            tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach(unique => t.unique(unique));
+            // An entry is either an array of columns, or {columns, indexName} when
+            // the default generated name would exceed MySQL's 64-char identifier limit
+            tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach((unique) => {
+                if (Array.isArray(unique)) {
+                    t.unique(unique);
+                } else {
+                    t.unique(unique.columns, {indexName: unique.indexName});
+                }
+            });
         }
         if (tableSpec['@@PRIMARY_KEY@@']) {
             t.primary(tableSpec['@@PRIMARY_KEY@@']);

@@ -1011,7 +1011,12 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@UNIQUE_CONSTRAINTS@@': [
-            ['member_custom_field_id', 'member_id']
+            // Named explicitly: the default generated name is 66 chars, over
+            // MySQL's 64-char identifier limit
+            {
+                columns: ['member_custom_field_id', 'member_id'],
+                indexName: 'member_custom_field_values_field_id_member_id_unique'
+            }
         ]
     },
     members_newsletters: {
