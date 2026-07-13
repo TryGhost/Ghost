@@ -11,14 +11,11 @@ import type {RouteSettings} from '../../services/route-settings/route-settings-p
 import type {RouteSettingsStore} from './RouteSettingsStoreBase';
 
 const YAML_FILENAME = 'routes.yaml';
-const JSON_FILENAME = 'routes.json';
 const DEFAULT_SETTINGS_FILENAME = 'default-routes.yaml';
 
 const messages = {
     missingPaths: 'FileStore requires basePath and defaultSettingsBasePath.',
-    ensureSettings: 'Error trying to access settings files in {path}.',
-    corruptJson: `Could not parse route settings JSON from '{path}': {context}.`,
-    invalidJson: `Route settings JSON at '{path}' does not contain valid route settings.`
+    ensureSettings: 'Error trying to access settings files in {path}.'
 };
 
 export const getBackupRouteSettingsFilePath = (filePath: string): string => {
@@ -33,13 +30,13 @@ interface FileStoreOptions {
 }
 
 /**
- * Local-disk store for route settings. Reads existing `routes.yaml`
- * (backward compatible with pre-refactor installs) and `routes.json`,
- * always writes the domain object as `routes.json` — the previous
- * canonical file becomes a timestamped backup on every `replace`.
- * When no canonical file exists the parsed bundled defaults are
- * returned without touching the disk; a real file only materialises
- * on the first `replace`.
+ * Local-disk store for route settings. Reads and writes the user's
+ * original `routes.yaml` verbatim — comments, ordering and formatting are
+ * preserved because we persist `settings.yamlSource` (the exact bytes the
+ * domain model was parsed from) rather than a re-serialised model. Every
+ * `replace` turns the previous file into a timestamped backup. When no
+ * `routes.yaml` exists the parsed bundled defaults are returned without
+ * touching the disk; a real file only materialises on the first `replace`.
  */
 export default class FileStore extends RouteSettingsStoreBase implements RouteSettingsStore {
     private readonly basePath: string;
@@ -62,70 +59,33 @@ export default class FileStore extends RouteSettingsStoreBase implements RouteSe
 
     async get(): Promise<RouteSettings> {
         const yamlPath = path.join(this.basePath, YAML_FILENAME);
-        const yamlContent = await this._readIfExists(yamlPath);
+        const yamlContent = await this.readIfExists(yamlPath);
         if (yamlContent !== null) {
-            return parseRouteSettings(parseYaml(yamlContent));
+            return parseRouteSettings(parseYaml(yamlContent), yamlContent);
         }
 
-        const jsonPath = path.join(this.basePath, JSON_FILENAME);
-        const jsonContent = await this._readIfExists(jsonPath);
-        if (jsonContent !== null) {
-            return this._parseStoredJson(jsonContent, jsonPath);
-        }
-
-        const defaultContent = await this._readDefaultSettings();
-        return parseRouteSettings(parseYaml(defaultContent));
+        const defaultContent = await this.readDefaultSettings();
+        return parseRouteSettings(parseYaml(defaultContent), defaultContent);
     }
 
     async replace(settings: RouteSettings): Promise<void> {
-        const existingPath = await this._findExistingFile();
-        const targetPath = path.join(this.basePath, JSON_FILENAME);
+        const targetPath = path.join(this.basePath, YAML_FILENAME);
 
-        // Same path: backup must happen before the atomic write because
-        // the rename would otherwise clobber the previous content with
-        // no copy elsewhere. Read via _readIfExists so a file that vanished
-        // since _findExistingFile just skips the backup, and real read
+        // Back up the current file before the atomic write clobbers it. The
+        // content is captured up front so the backup holds exactly what was on
+        // disk; a file that isn't there just skips the backup and real read
         // failures surface as typed errors.
-        if (existingPath && existingPath === targetPath) {
-            const backupPath = this.getBackupFilePath(existingPath);
-            const content = await this._readIfExists(existingPath);
-            if (content !== null) {
-                await this._writeAtomic(backupPath, content);
-            }
+        const existing = await this.readIfExists(targetPath);
+        if (existing !== null) {
+            await this.writeAtomic(this.getBackupFilePath(targetPath), existing);
         }
 
-        await this._writeAtomic(targetPath, JSON.stringify(settings, null, 4));
-
-        // Different path (yaml → json): backup must happen AFTER the
-        // write so a failed write doesn't leave nothing at any canonical
-        // path. If the backup itself fails, the legacy yaml takes
-        // precedence over the new json on next read — roll the new json
-        // back so the operator sees a consistent old state.
-        if (existingPath && existingPath !== targetPath) {
-            try {
-                await this._backup(existingPath);
-            } catch (err) {
-                await fs.remove(targetPath).catch(() => {});
-                throw err;
-            }
-        }
+        // Persist the exact YAML the operator authored — never a re-serialised
+        // model — so comments, key order and formatting survive a round-trip.
+        await this.writeAtomic(targetPath, settings.yamlSource);
     }
 
-    private async _findExistingFile(): Promise<string | null> {
-        const yamlPath = path.join(this.basePath, YAML_FILENAME);
-        if (await fs.pathExists(yamlPath)) {
-            return yamlPath;
-        }
-
-        const jsonPath = path.join(this.basePath, JSON_FILENAME);
-        if (await fs.pathExists(jsonPath)) {
-            return jsonPath;
-        }
-
-        return null;
-    }
-
-    private async _readIfExists(filePath: string): Promise<string | null> {
+    private async readIfExists(filePath: string): Promise<string | null> {
         try {
             return await fs.readFile(filePath, 'utf8');
         } catch (err) {
@@ -141,7 +101,7 @@ export default class FileStore extends RouteSettingsStoreBase implements RouteSe
         }
     }
 
-    private async _readDefaultSettings(): Promise<string> {
+    private async readDefaultSettings(): Promise<string> {
         const defaultFilePath = path.join(this.defaultSettingsBasePath, DEFAULT_SETTINGS_FILENAME);
         try {
             return await fs.readFile(defaultFilePath, 'utf8');
@@ -154,41 +114,18 @@ export default class FileStore extends RouteSettingsStoreBase implements RouteSe
         }
     }
 
-    private _parseStoredJson(content: string, filePath: string): RouteSettings {
-        let parsed: unknown;
-        try {
-            parsed = JSON.parse(content);
-        } catch (err) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.corruptJson, {path: filePath, context: (err as Error).message}),
-                err: err as Error
-            });
-        }
-
-        const candidate = parsed as Partial<RouteSettings> | null;
-        const isPlainObject = (value: unknown): boolean => typeof value === 'object' && value !== null && !Array.isArray(value);
-        if (!isPlainObject(candidate) || !Array.isArray(candidate?.routes) || !Array.isArray(candidate?.collections) || !isPlainObject(candidate?.taxonomies)) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.invalidJson, {path: filePath})
-            });
-        }
-
-        return parsed as RouteSettings;
-    }
-
-    private async _backup(existingPath: string): Promise<void> {
-        const backupPath = this.getBackupFilePath(existingPath);
-        await fs.move(existingPath, backupPath, {overwrite: true});
-    }
-
-    private async _writeAtomic(targetPath: string, content: string): Promise<void> {
+    private async writeAtomic(targetPath: string, content: string): Promise<void> {
         const tmpPath = `${targetPath}.tmp.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}`;
-        await fs.writeFile(tmpPath, content, 'utf-8');
         try {
+            await fs.writeFile(tmpPath, content, 'utf-8');
             await fs.move(tmpPath, targetPath, {overwrite: true});
         } catch (err) {
             await fs.remove(tmpPath).catch(() => {});
-            throw err;
+            throw new errors.InternalServerError({
+                message: tpl(messages.ensureSettings, {path: this.basePath}),
+                err: err as Error,
+                context: (err as NodeJS.ErrnoException).path
+            });
         }
     }
 }

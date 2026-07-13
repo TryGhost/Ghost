@@ -7,6 +7,9 @@ import {afterEach, beforeEach, describe, it} from 'vitest';
 
 import FileStore, {getBackupRouteSettingsFilePath} from '../../../../../core/server/adapters/route-settings/FileStore';
 import RouteSettingsStoreBase from '../../../../../core/server/adapters/route-settings/RouteSettingsStoreBase';
+import parseYaml from '../../../../../core/server/services/route-settings/yaml-parser';
+import {parseRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
+import {buildRouteSettings} from '../../services/route-settings/route-settings-fixture';
 import type {RouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
 
 const REAL_DEFAULTS_PATH = path.join(__dirname, '../../../../../core/server/services/route-settings');
@@ -28,11 +31,15 @@ taxonomies:
   author: /author/{slug}/
 `;
 
-const sampleSettings = (): RouteSettings => ({
+const sampleSettings = (): RouteSettings => buildRouteSettings({
     routes: [{type: 'template', path: '/about/', templates: ['about']}],
     collections: [{path: '/', permalink: '/{slug}/', templates: ['index']}],
     taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
 });
+
+// Builds settings from real YAML so yamlSource carries the operator's exact
+// bytes (comments, ordering, formatting) rather than a re-serialised model.
+const fromYaml = (yaml: string): RouteSettings => parseRouteSettings(parseYaml(yaml), yaml);
 
 describe('UNIT: route-settings FileStore', function () {
     let basePath: string;
@@ -95,28 +102,24 @@ describe('UNIT: route-settings FileStore', function () {
             });
         });
 
-        it('reads a routes.json domain object as-is', async function () {
-            await fs.writeFile(path.join(basePath, 'routes.json'), JSON.stringify(sampleSettings()), 'utf8');
-
-            assert.deepEqual(await createStore().get(), sampleSettings());
-        });
-
-        it('prefers routes.yaml over routes.json when both exist', async function () {
+        it('exposes the exact original yaml, comments and all, as yamlSource', async function () {
             await fs.writeFile(path.join(basePath, 'routes.yaml'), SAMPLE_YAML, 'utf8');
-            await fs.writeFile(path.join(basePath, 'routes.json'), JSON.stringify(sampleSettings()), 'utf8');
 
             const settings = await createStore().get();
 
-            assert.equal(settings.routes.length, 2);
+            assert.equal(settings.yamlSource, SAMPLE_YAML);
         });
 
         it('returns parsed defaults without writing to disk when no canonical file exists', async function () {
+            const defaultYaml = await fs.readFile(path.join(defaultsPath, 'default-routes.yaml'), 'utf8');
+
             const settings = await createStore().get();
 
             assert.deepEqual(settings, {
                 routes: [],
                 collections: [{path: '/', permalink: '/{slug}/', templates: ['index']}],
-                taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
+                taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'},
+                yamlSource: defaultYaml
             });
 
             // The empty state stays empty — no seed file materialises.
@@ -137,24 +140,6 @@ describe('UNIT: route-settings FileStore', function () {
 
             await assert.rejects(createStore().get(), (err: {errorType?: string}) => {
                 assert.equal(err.errorType, 'ValidationError');
-                return true;
-            });
-        });
-
-        it('throws IncorrectUsageError for corrupt routes.json instead of falling back to defaults', async function () {
-            await fs.writeFile(path.join(basePath, 'routes.json'), '{not json', 'utf8');
-
-            await assert.rejects(createStore().get(), (err: {errorType?: string}) => {
-                assert.equal(err.errorType, 'IncorrectUsageError');
-                return true;
-            });
-        });
-
-        it('throws IncorrectUsageError for routes.json that is not a route settings object', async function () {
-            await fs.writeFile(path.join(basePath, 'routes.json'), JSON.stringify(['not', 'settings']), 'utf8');
-
-            await assert.rejects(createStore().get(), (err: {errorType?: string}) => {
-                assert.equal(err.errorType, 'IncorrectUsageError');
                 return true;
             });
         });
@@ -182,14 +167,21 @@ describe('UNIT: route-settings FileStore', function () {
     });
 
     describe('replace', function () {
-        it('writes the domain object as JSON to routes.json', async function () {
-            await createStore().replace(sampleSettings());
+        it('writes the original yaml verbatim to routes.yaml', async function () {
+            await createStore().replace(fromYaml(SAMPLE_YAML));
 
-            const onDisk = JSON.parse(await fs.readFile(path.join(basePath, 'routes.json'), 'utf8'));
-            assert.deepEqual(onDisk, sampleSettings());
+            assert.equal(await fs.readFile(path.join(basePath, 'routes.yaml'), 'utf8'), SAMPLE_YAML);
         });
 
-        it('round-trips through get', async function () {
+        it('preserves comments and formatting across a replace → get round-trip', async function () {
+            const store = createStore();
+
+            await store.replace(fromYaml(SAMPLE_YAML));
+
+            assert.equal((await store.get()).yamlSource, SAMPLE_YAML);
+        });
+
+        it('round-trips the domain model through get', async function () {
             const store = createStore();
 
             await store.replace(sampleSettings());
@@ -200,66 +192,34 @@ describe('UNIT: route-settings FileStore', function () {
         it('does not create a backup when no previous file exists', async function () {
             await createStore().replace(sampleSettings());
 
-            assert.deepEqual(await fs.readdir(basePath), ['routes.json']);
+            assert.deepEqual(await fs.readdir(basePath), ['routes.yaml']);
         });
 
-        it('backs up the previous routes.json before overwriting', async function () {
-            const backupPath = path.join(basePath, 'routes-backup.json');
-            const store = createStore({getBackupFilePath: () => backupPath});
-
-            const first = sampleSettings();
-            await store.replace(first);
-
-            const second = sampleSettings();
-            second.taxonomies = {tag: '/topic/{slug}/'};
-            await store.replace(second);
-
-            assert.deepEqual(JSON.parse(await fs.readFile(backupPath, 'utf8')), first);
-            assert.deepEqual(await store.get(), second);
-        });
-
-        it('skips the backup when the previous routes.json vanishes mid-replace', async function () {
-            await fs.writeFile(path.join(basePath, 'routes.json'), JSON.stringify(sampleSettings()), 'utf8');
-
-            // getBackupFilePath runs between the existence check and the
-            // backup read — deleting here reproduces the race deterministically.
-            const store = createStore({getBackupFilePath: (filePath) => {
-                fs.removeSync(path.join(basePath, 'routes.json'));
-                return `${filePath}.bak`;
-            }});
-
-            const second = sampleSettings();
-            second.taxonomies = {tag: '/topic/{slug}/'};
-            await store.replace(second);
-
-            assert.equal(await fs.pathExists(path.join(basePath, 'routes.json.bak')), false);
-            assert.deepEqual(await store.get(), second);
-        });
-
-        it('migrates a legacy routes.yaml to routes.json with a backup', async function () {
-            await fs.writeFile(path.join(basePath, 'routes.yaml'), SAMPLE_YAML, 'utf8');
-
+        it('backs up the previous routes.yaml before overwriting', async function () {
             const backupPath = path.join(basePath, 'routes-backup.yaml');
             const store = createStore({getBackupFilePath: () => backupPath});
 
-            await store.replace(sampleSettings());
+            const first = fromYaml(SAMPLE_YAML);
+            await store.replace(first);
 
-            assert.equal(await fs.readFile(backupPath, 'utf8'), SAMPLE_YAML);
-            assert.equal(await fs.pathExists(path.join(basePath, 'routes.yaml')), false);
-            assert.deepEqual(await store.get(), sampleSettings());
+            const second = buildRouteSettings({
+                routes: [],
+                collections: [],
+                taxonomies: {tag: '/topic/{slug}/'}
+            });
+            await store.replace(second);
+
+            assert.equal(await fs.readFile(backupPath, 'utf8'), first.yamlSource);
+            assert.deepEqual(await store.get(), second);
         });
 
-        it('rolls back routes.json when the yaml backup fails', async function () {
-            await fs.writeFile(path.join(basePath, 'routes.yaml'), SAMPLE_YAML, 'utf8');
+        it('throws InternalServerError when the settings folder is not writable', async function () {
+            const store = createStore({basePath: path.join(basePath, 'missing-dir')});
 
-            const store = createStore({getBackupFilePath: () => {
-                throw new Error('backup exploded');
-            }});
-
-            await assert.rejects(store.replace(sampleSettings()), /backup exploded/);
-
-            assert.equal(await fs.pathExists(path.join(basePath, 'routes.json')), false);
-            assert.equal(await fs.readFile(path.join(basePath, 'routes.yaml'), 'utf8'), SAMPLE_YAML);
+            await assert.rejects(store.replace(sampleSettings()), (err: {errorType?: string}) => {
+                assert.equal(err.errorType, 'InternalServerError');
+                return true;
+            });
         });
     });
 

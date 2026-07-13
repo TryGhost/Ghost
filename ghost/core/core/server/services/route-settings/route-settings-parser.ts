@@ -83,6 +83,7 @@ export interface RouteSettings {
     routes: Route[];
     collections: CollectionConfig[];
     taxonomies: TaxonomyConfig;
+    readonly yamlSource: string;
 }
 
 function validationError(at: string, reason: string, help?: string): errors.ValidationError {
@@ -308,7 +309,7 @@ function toValidationError(error: z.ZodError): errors.ValidationError {
     });
 }
 
-export function parseRouteSettings(raw: unknown): RouteSettings {
+export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSettings {
     const obj = raw ?? {};
 
     const parsed = RouteSettingsSchema.safeParse(obj);
@@ -409,10 +410,10 @@ export function parseRouteSettings(raw: unknown): RouteSettings {
         }
     }
 
-    return {routes, collections, taxonomies};
+    return {routes, collections, taxonomies, yamlSource};
 }
 
-export function serializeRouteSettings(settings: RouteSettings): string {
+export function serializeRouteSettings(settings: Omit<RouteSettings, 'yamlSource'>): string {
     const obj: Record<string, unknown> = {};
 
     const routes: Record<string, unknown> = {};
