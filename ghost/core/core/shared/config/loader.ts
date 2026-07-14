@@ -1,16 +1,20 @@
-const Nconf = require('nconf');
-const path = require('path');
+import Nconf from 'nconf';
+import path from 'node:path';
+import {bindAll as bindUrlHelpers, type BoundHelpers} from '@tryghost/config-url-helpers';
+import * as localUtils from './utils';
+import {bindAll as bindHelpers, type ConfigHelpers} from './helpers';
+
 const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:config');
-const localUtils = require('./utils');
-const helpers = require('./helpers');
-const urlHelpers = require('@tryghost/config-url-helpers');
 
-/**
- * @param {object} options
- * @returns {Nconf.Provider & urlHelpers.BoundHelpers & helpers.ConfigHelpers}
- */
-function loadNconf(options) {
+interface LoadNconfOptions {
+    baseConfigPath?: string;
+    customConfigPath?: string;
+}
+
+type ConfigInstance = Nconf.Provider & BoundHelpers & ConfigHelpers;
+
+function loadNconf(options?: LoadNconfOptions): ConfigInstance {
     debug('config start');
     const env = localUtils.getNodeEnv();
     options = options || {};
@@ -48,8 +52,8 @@ function loadNconf(options) {
     // ## Config Methods
 
     // Expose dynamic utility methods
-    urlHelpers.bindAll(nconf);
-    helpers.bindAll(nconf);
+    bindUrlHelpers(nconf);
+    bindHelpers(nconf);
 
     // ## Sanitization
 
@@ -77,8 +81,7 @@ function loadNconf(options) {
     }
 
     debug('config end');
-    // Assert the type to include the dynamically bound helpers
-    return /** @type {Nconf.Provider & urlHelpers.BoundHelpers & helpers.ConfigHelpers} */ (nconf);
+    return nconf;
 }
 
-module.exports.loadNconf = loadNconf;
+export {loadNconf};
