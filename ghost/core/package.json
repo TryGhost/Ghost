@@ -374,11 +374,6 @@
           "{projectRoot}/coverage-e2e"
         ]
       },
-      "test:ci:e2e:no-coverage": {
-        "dependsOn": [
-          "^build"
-        ]
-      },
       "test:ci:legacy": {
         "dependsOn": [
           "^build"
@@ -390,11 +385,6 @@
         ],
         "outputs": [
           "{projectRoot}/coverage-integration"
-        ]
-      },
-      "test:ci:integration:no-coverage": {
-        "dependsOn": [
-          "^build"
         ]
       }
     }
