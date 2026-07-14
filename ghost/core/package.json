@@ -85,7 +85,7 @@
     "@isaacs/ttlcache": "1.4.1",
     "@sentry/node": "7.120.4",
     "@slack/webhook": "7.1.0",
-    "@tryghost/adapter-base-cache": "0.1.26",
+    "@tryghost/adapter-base-cache": "0.1.27",
     "@tryghost/adapter-base-redirects": "workspace:*",
     "@tryghost/adapter-base-route-settings": "workspace:*",
     "@tryghost/adapter-base-scheduling": "workspace:*",
