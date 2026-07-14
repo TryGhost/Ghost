@@ -2,7 +2,7 @@
 # Minimal Development Dockerfile for Ghost Core
 # Source code is mounted at runtime for hot-reload support
 
-ARG NODE_VERSION=22.18.0
+ARG NODE_VERSION=22.23.1
 
 FROM node:$NODE_VERSION-bullseye-slim
 
