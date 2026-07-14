@@ -22,7 +22,6 @@ export type AutomationWaitAction = {
 
 export type AutomationEmailStats = {
     email_sent_count: number;
-    email_tracked_sent_count: number;
     email_opened_count: number;
     opened_rate: number | null;
     clicked_rate: number | null;

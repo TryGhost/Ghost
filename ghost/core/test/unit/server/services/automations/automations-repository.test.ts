@@ -661,7 +661,7 @@ describe('automations repository', function () {
     });
 
     describe('email stats', function () {
-        it('reports the opened count as 0 when there are tracked sends but no recorded opens', async function () {
+        it('reports the opened count and rate as 0 when there are sends but no recorded opens', async function () {
             const automation = await getAutomationBySlug('member-welcome-email-free');
             const emailAction = automation.actions.find(action => action.type === 'send_email');
             assert(emailAction);
@@ -670,7 +670,6 @@ describe('automations repository', function () {
                 .where('action_id', emailAction.id)
                 .update({
                     email_sent_count: 3,
-                    email_tracked_sent_count: 2,
                     email_opened_count: null
                 });
 
@@ -683,7 +682,6 @@ describe('automations repository', function () {
             }
             assert.deepEqual(action.stats, {
                 email_sent_count: 3,
-                email_tracked_sent_count: 2,
                 email_opened_count: 0,
                 opened_rate: 0,
                 clicked_rate: null
@@ -699,14 +697,13 @@ describe('automations repository', function () {
             }
             assert.deepEqual(action.stats, {
                 email_sent_count: 0,
-                email_tracked_sent_count: 0,
                 email_opened_count: 0,
                 opened_rate: null,
                 clicked_rate: null
             });
         });
 
-        it('reports a null open rate when sends were not tracked', async function () {
+        it('calculates the open rate from the total sent count', async function () {
             const automation = await getAutomationBySlug('member-welcome-email-free');
             const emailAction = automation.actions.find(action => action.type === 'send_email');
             assert(emailAction);
@@ -714,9 +711,8 @@ describe('automations repository', function () {
             await knex('automation_action_revisions')
                 .where('action_id', emailAction.id)
                 .update({
-                    email_sent_count: 3,
-                    email_tracked_sent_count: null,
-                    email_opened_count: null
+                    email_sent_count: 4,
+                    email_opened_count: 3
                 });
 
             const result = await repo.getById(automation.id);
@@ -727,10 +723,9 @@ describe('automations repository', function () {
                 assert.fail('Expected a send_email action');
             }
             assert.deepEqual(action.stats, {
-                email_sent_count: 3,
-                email_tracked_sent_count: 0,
-                email_opened_count: 0,
-                opened_rate: null,
+                email_sent_count: 4,
+                email_opened_count: 3,
+                opened_rate: 75,
                 clicked_rate: null
             });
         });

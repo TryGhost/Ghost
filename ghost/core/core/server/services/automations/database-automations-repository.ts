@@ -65,7 +65,6 @@ interface ActionRow {
 type ActionStatsRow = {
     action_id: string;
     email_sent_count: number | null;
-    email_tracked_sent_count: number | null;
     email_opened_count: number | null;
 };
 
@@ -1153,7 +1152,6 @@ async function loadActionStats(
         .select('action_id')
         .sum({
             email_sent_count: 'email_sent_count',
-            email_tracked_sent_count: 'email_tracked_sent_count',
             email_opened_count: 'email_opened_count'
         })
         .whereIn('action_id', actionIds)
@@ -1209,7 +1207,6 @@ function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null):
 
 const EMPTY_EMAIL_STATS: AutomationEmailStats = {
     email_sent_count: 0,
-    email_tracked_sent_count: 0,
     email_opened_count: 0,
     opened_rate: null,
     clicked_rate: null
@@ -1217,14 +1214,12 @@ const EMPTY_EMAIL_STATS: AutomationEmailStats = {
 
 function buildEmailStats(row: ActionStatsRow): AutomationEmailStats {
     const emailSentCount = row.email_sent_count ?? 0;
-    const emailTrackedSentCount = row.email_tracked_sent_count ?? 0;
     const emailOpenedCount = row.email_opened_count ?? 0;
     return {
         email_sent_count: emailSentCount,
-        email_tracked_sent_count: emailTrackedSentCount,
         email_opened_count: emailOpenedCount,
-        opened_rate: emailTrackedSentCount
-            ? Math.round(emailOpenedCount / emailTrackedSentCount * 100)
+        opened_rate: emailSentCount
+            ? Math.round(emailOpenedCount / emailSentCount * 100)
             : null,
         // TODO(NY-1387) Populate clicked_rate once click tracking is implemented.
         clicked_rate: null
