@@ -1,6 +1,7 @@
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const config = require('../../../shared/config');
+const {NewsletterEmailAnalyticsProcessor} = require('./newsletter-email-analytics-processor');
 
 class EmailAnalyticsServiceWrapper {
     #restoredSchedule = false;
@@ -44,7 +45,7 @@ class EmailAnalyticsServiceWrapper {
 
         // Since this is running in a worker thread, we cant dispatch directly
         // So we post the events as a message to the job manager
-        const eventProcessor = new EmailEventProcessor({
+        const emailEventProcessor = new EmailEventProcessor({
             domainEvents,
             db,
             eventStorage: this.eventStorage,
@@ -52,13 +53,17 @@ class EmailAnalyticsServiceWrapper {
         });
 
         this.service = new EmailAnalyticsService({
-            config,
-            settings,
-            eventProcessor,
             provider: new MailgunProvider({config, settings, tags}),
             queries,
-            domainEvents,
-            prometheusClient
+            prometheusClient,
+            createEventProcessor: () => (
+                new NewsletterEmailAnalyticsProcessor({
+                    config,
+                    emailEventProcessor,
+                    prometheusClient,
+                    queries
+                })
+            )
         });
 
         // Log the processing mode on initialization

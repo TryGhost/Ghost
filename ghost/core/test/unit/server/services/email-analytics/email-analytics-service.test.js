@@ -1,18 +1,16 @@
 const assert = require('node:assert/strict');
 
 const sinon = require('sinon');
-const configUtils = require('../../../../utils/config-utils');
 
 const EmailAnalyticsService = require('../../../../../core/server/services/email-analytics/email-analytics-service');
-const {EventProcessingResult} = require('../../../../../core/server/services/email-analytics/event-processing-result');
 
 /**
- * Create a mock config object that reads from configUtils
- * This allows tests to use configUtils.set() while production code uses this.config.get()
+ * Create a stub implementing the EventProcessor interface.
  */
-function createMockConfig() {
+function createStubEventProcessor() {
     return {
-        get: key => configUtils.config.get(key)
+        processBatch: sinon.stub().resolves(),
+        aggregate: sinon.stub().resolves({emailAggregationTimeMs: 0, memberAggregationTimeMs: 0})
     };
 }
 
@@ -56,7 +54,6 @@ describe('EmailAnalyticsService', function () {
     describe('getLastNonOpenedEventTimestamp', function () {
         it('returns the queried timestamp before the fallback', async function () {
             const service = new EmailAnalyticsService({
-                config: createMockConfig(),
                 queries: {
                     getLastEventTimestamp: sinon.stub().resolves(new Date(1))
                 }
@@ -68,7 +65,6 @@ describe('EmailAnalyticsService', function () {
 
         it('returns the fallback if nothing is found', async function () {
             const service = new EmailAnalyticsService({
-                config: createMockConfig(),
                 queries: {
                     getLastEventTimestamp: sinon.stub().resolves(null)
                 }
@@ -82,7 +78,6 @@ describe('EmailAnalyticsService', function () {
     describe('getLastSeenOpenedEventTimestamp', function () {
         it('returns the queried timestamp before the fallback', async function () {
             const service = new EmailAnalyticsService({
-                config: createMockConfig(),
                 queries: {
                     getLastEventTimestamp: sinon.stub().resolves(new Date(1))
                 }
@@ -94,7 +89,6 @@ describe('EmailAnalyticsService', function () {
 
         it('returns the fallback if nothing is found', async function () {
             const service = new EmailAnalyticsService({
-                config: createMockConfig(),
                 queries: {
                     getLastEventTimestamp: sinon.stub().resolves(null)
                 }
@@ -112,8 +106,8 @@ describe('EmailAnalyticsService', function () {
         describe('fetchLatestOpenedEvents', function () {
             it('fetches only opened events', async function () {
                 const fetchLatestSpy = sinon.spy();
+                const eventProcessor = createStubEventProcessor();
                 const service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(),
                         setJobTimestamp: sinon.stub().resolves(),
@@ -121,17 +115,24 @@ describe('EmailAnalyticsService', function () {
                     },
                     provider: {
                         fetchLatest: fetchLatestSpy
-                    }
+                    },
+                    createEventProcessor: () => eventProcessor
                 });
                 await service.fetchLatestOpenedEvents();
                 sinon.assert.calledOnce(fetchLatestSpy);
                 assert.deepEqual(fetchLatestSpy.getCall(0).args[1].events, ['opened']);
+
+                // The final aggregation is delegated to the event processor
+                sinon.assert.calledOnce(eventProcessor.aggregate);
+                sinon.assert.calledWithMatch(eventProcessor.aggregate, {
+                    includeOpenedEvents: true,
+                    isFinal: true
+                });
             });
 
             it('quits if the end is before the begin', async function () {
                 const fetchLatestSpy = sinon.spy();
                 const service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 24 hours in the future
                         setJobTimestamp: sinon.stub().resolves(),
@@ -139,7 +140,8 @@ describe('EmailAnalyticsService', function () {
                     },
                     provider: {
                         fetchLatest: fetchLatestSpy
-                    }
+                    },
+                    createEventProcessor: createStubEventProcessor
                 });
                 await service.fetchLatestOpenedEvents();
                 sinon.assert.notCalled(fetchLatestSpy);
@@ -149,8 +151,8 @@ describe('EmailAnalyticsService', function () {
         describe('fetchLatestNonOpenedEvents', function () {
             it('fetches only non-opened events', async function () {
                 const fetchLatestSpy = sinon.spy();
+                const eventProcessor = createStubEventProcessor();
                 const service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(),
                         setJobTimestamp: sinon.stub().resolves(),
@@ -158,17 +160,24 @@ describe('EmailAnalyticsService', function () {
                     },
                     provider: {
                         fetchLatest: fetchLatestSpy
-                    }
+                    },
+                    createEventProcessor: () => eventProcessor
                 });
                 await service.fetchLatestNonOpenedEvents();
                 sinon.assert.calledOnce(fetchLatestSpy);
                 assert.deepEqual(fetchLatestSpy.getCall(0).args[1].events, ['delivered', 'failed', 'unsubscribed', 'complained']);
+
+                // The final aggregation is delegated to the event processor
+                sinon.assert.calledOnce(eventProcessor.aggregate);
+                sinon.assert.calledWithMatch(eventProcessor.aggregate, {
+                    includeOpenedEvents: false,
+                    isFinal: true
+                });
             });
 
             it('quits if the end is before the begin', async function () {
                 const fetchLatestSpy = sinon.spy();
                 const service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 24 hours in the future
                         setJobTimestamp: sinon.stub().resolves(),
@@ -176,16 +185,17 @@ describe('EmailAnalyticsService', function () {
                     },
                     provider: {
                         fetchLatest: fetchLatestSpy
-                    }
+                    },
+                    createEventProcessor: createStubEventProcessor
                 });
                 await service.fetchLatestNonOpenedEvents();
                 sinon.assert.notCalled(fetchLatestSpy);
             });
         });
+
         describe('fetchScheduled', function () {
             let service;
-            let processEventBatchStub;
-            let aggregateStatsStub;
+            let eventProcessor;
             let setJobTimestampStub;
             let setJobStatusStub;
             let setJobMetadataStub;
@@ -194,8 +204,8 @@ describe('EmailAnalyticsService', function () {
                 setJobTimestampStub = sinon.stub().resolves();
                 setJobStatusStub = sinon.stub().resolves();
                 setJobMetadataStub = sinon.stub().resolves();
+                eventProcessor = createStubEventProcessor();
                 service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         setJobTimestamp: setJobTimestampStub,
                         setJobStatus: setJobStatusStub,
@@ -206,10 +216,9 @@ describe('EmailAnalyticsService', function () {
                             const events = [1,2,3,4,5,6,7,8,9,10];
                             fn(events);
                         }
-                    }
+                    },
+                    createEventProcessor: () => eventProcessor
                 });
-                processEventBatchStub = sinon.stub(service, 'processEventBatch').resolves();
-                aggregateStatsStub = sinon.stub(service, 'aggregateStats').resolves({emailAggregationTimeMs: 0, memberAggregationTimeMs: 0});
             });
 
             afterEach(function () {
@@ -219,8 +228,8 @@ describe('EmailAnalyticsService', function () {
             it('returns 0 when nothing is scheduled', async function () {
                 const result = await service.fetchScheduled();
                 assert.equal(result.eventCount, 0);
-                sinon.assert.notCalled(processEventBatchStub);
-                sinon.assert.notCalled(aggregateStatsStub);
+                sinon.assert.notCalled(eventProcessor.processBatch);
+                sinon.assert.notCalled(eventProcessor.aggregate);
             });
 
             it('returns 0 when fetch is canceled', async function () {
@@ -231,8 +240,8 @@ describe('EmailAnalyticsService', function () {
                 service.cancelScheduled();
                 const result = await service.fetchScheduled();
                 assert.equal(result.eventCount, 0);
-                sinon.assert.notCalled(processEventBatchStub);
-                sinon.assert.notCalled(aggregateStatsStub);
+                sinon.assert.notCalled(eventProcessor.processBatch);
+                sinon.assert.notCalled(eventProcessor.aggregate);
             });
 
             it('fetches events with correct parameters', async function () {
@@ -245,7 +254,8 @@ describe('EmailAnalyticsService', function () {
 
                 assert.equal(result.eventCount, 10);
                 sinon.assert.calledOnce(setJobStatusStub);
-                sinon.assert.calledOnce(processEventBatchStub);
+                sinon.assert.calledOnce(eventProcessor.processBatch);
+                assert.deepEqual(eventProcessor.processBatch.getCall(0).args[0], [1,2,3,4,5,6,7,8,9,10]);
             });
 
             it('bails when end date is before begin date', async function () {
@@ -259,7 +269,6 @@ describe('EmailAnalyticsService', function () {
 
             it('resets fetchScheduledData when no events are fetched', async function () {
                 service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves(),
@@ -269,7 +278,8 @@ describe('EmailAnalyticsService', function () {
                         fetchLatest: (fn) => {
                             fn([]);
                         }
-                    }
+                    },
+                    createEventProcessor: createStubEventProcessor
                 });
 
                 await service.schedule({
@@ -288,7 +298,6 @@ describe('EmailAnalyticsService', function () {
             beforeEach(function () {
                 setJobMetadataStub = sinon.stub().resolves();
                 service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         setJobMetadata: setJobMetadataStub,
                         setJobTimestamp: sinon.stub().resolves(),
@@ -298,7 +307,8 @@ describe('EmailAnalyticsService', function () {
                         fetchLatest: (fn) => {
                             fn([]);
                         }
-                    }
+                    },
+                    createEventProcessor: createStubEventProcessor
                 });
             });
 
@@ -376,6 +386,49 @@ describe('EmailAnalyticsService', function () {
             });
         });
 
+        describe('aggregation error handling', function () {
+            function createService(eventProcessor) {
+                return new EmailAnalyticsService({
+                    queries: {
+                        getLastEventTimestamp: sinon.stub().resolves(),
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    provider: {
+                        fetchLatest: async (fn) => {
+                            await fn([{type: 'delivered', timestamp: new Date(1)}]);
+                        }
+                    },
+                    createEventProcessor: () => eventProcessor
+                });
+            }
+
+            it('does not fail the fetch when an intermediate aggregation fails', async function () {
+                const eventProcessor = createStubEventProcessor();
+                eventProcessor.aggregate
+                    .withArgs(sinon.match({isFinal: false}))
+                    .rejects(new Error('intermediate aggregation failed'));
+                const service = createService(eventProcessor);
+
+                const result = await service.fetchLatestOpenedEvents();
+
+                assert.equal(result.eventCount, 1);
+                // Both the (failed) intermediate and the final aggregation ran
+                sinon.assert.calledTwice(eventProcessor.aggregate);
+                assert.equal(eventProcessor.aggregate.lastCall.args[0].isFinal, true);
+            });
+
+            it('rejects when the final aggregation fails', async function () {
+                const eventProcessor = createStubEventProcessor();
+                eventProcessor.aggregate
+                    .withArgs(sinon.match({isFinal: true}))
+                    .rejects(new Error('final aggregation failed'));
+                const service = createService(eventProcessor);
+
+                await assert.rejects(service.fetchLatestOpenedEvents(), /final aggregation failed/);
+            });
+        });
+
         describe('restoreScheduled', function () {
             afterEach(function () {
                 sinon.restore();
@@ -387,7 +440,6 @@ describe('EmailAnalyticsService', function () {
                 const finishedAt = new Date(2023, 0, 3);
 
                 const service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         getJobData: sinon.stub().resolves({
                             finished_at: finishedAt,
@@ -411,7 +463,6 @@ describe('EmailAnalyticsService', function () {
 
             it('does nothing when no job data exists', async function () {
                 const service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         getJobData: sinon.stub().resolves(null),
                         setJobMetadata: sinon.stub().resolves()
@@ -426,7 +477,6 @@ describe('EmailAnalyticsService', function () {
 
             it('does nothing when metadata is null', async function () {
                 const service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         getJobData: sinon.stub().resolves({
                             finished_at: null,
@@ -448,7 +498,6 @@ describe('EmailAnalyticsService', function () {
                 const end = new Date(2023, 0, 8);
 
                 const service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         getJobData: sinon.stub().resolves({
                             finished_at: null,
@@ -471,7 +520,6 @@ describe('EmailAnalyticsService', function () {
 
             it('handles corrupt metadata gracefully', async function () {
                 const service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         getJobData: sinon.stub().resolves({
                             finished_at: null,
@@ -493,7 +541,6 @@ describe('EmailAnalyticsService', function () {
             it('fetches missing events', async function () {
                 const fetchLatestSpy = sinon.spy();
                 const service = new EmailAnalyticsService({
-                    config: createMockConfig(),
                     queries: {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves(),
@@ -501,601 +548,12 @@ describe('EmailAnalyticsService', function () {
                     },
                     provider: {
                         fetchLatest: fetchLatestSpy
-                    }
+                    },
+                    createEventProcessor: createStubEventProcessor
                 });
                 await service.fetchMissing();
                 sinon.assert.calledOnce(fetchLatestSpy);
             });
-        });
-    });
-
-    describe('processEventBatch', function () {
-        // Run all processEventBatch tests with both batching modes
-        [true, false].forEach((batchProcessing) => {
-            const modeLabel = batchProcessing ? 'batching enabled' : 'batching disabled';
-
-            describe(`with ${modeLabel}`, function () {
-                beforeEach(function () {
-                    configUtils.set('emailAnalytics:batchProcessing', batchProcessing);
-                });
-
-                afterEach(function () {
-                    configUtils.restore();
-                });
-
-                describe('with functional processor', function () {
-                    let eventProcessor;
-                    beforeEach(function () {
-                        eventProcessor = {};
-                        eventProcessor.batchGetRecipients = sinon.stub().resolves(new Map());
-                        eventProcessor.flushBatchedUpdates = sinon.stub().resolves();
-                        eventProcessor.handleDelivered = sinon.stub().callsFake(({emailId}) => {
-                            return {
-                                emailId,
-                                emailRecipientId: emailId,
-                                memberId: 1
-                            };
-                        });
-                        eventProcessor.handleOpened = sinon.stub().callsFake(({emailId}) => {
-                            return {
-                                emailId,
-                                emailRecipientId: emailId,
-                                memberId: 1
-                            };
-                        });
-                        eventProcessor.handlePermanentFailed = sinon.stub().callsFake(({emailId}) => {
-                            return {
-                                emailId,
-                                emailRecipientId: emailId,
-                                memberId: 1
-                            };
-                        });
-                        eventProcessor.handleTemporaryFailed = sinon.stub().callsFake(({emailId}) => {
-                            return {
-                                emailId,
-                                emailRecipientId: emailId,
-                                memberId: 1
-                            };
-                        });
-                        eventProcessor.handleUnsubscribed = sinon.stub().callsFake(({emailId}) => {
-                            return {
-                                emailId,
-                                emailRecipientId: emailId,
-                                memberId: 1
-                            };
-                        });
-                        eventProcessor.handleComplained = sinon.stub().callsFake(({emailId}) => {
-                            return {
-                                emailId,
-                                emailRecipientId: emailId,
-                                memberId: 1
-                            };
-                        });
-                    });
-
-                    it('uses passed-in event processor', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-                        await service.processEventBatch([{
-                            type: 'delivered',
-                            emailId: 1,
-                            timestamp: new Date(1)
-                        }, {
-                            type: 'delivered',
-                            emailId: 2,
-                            timestamp: new Date(2)
-                        }, {
-                            type: 'opened',
-                            emailId: 1,
-                            timestamp: new Date(3)
-                        }], result, fetchData);
-
-                        sinon.assert.calledTwice(eventProcessor.handleDelivered);
-                        sinon.assert.calledOnce(eventProcessor.handleOpened);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            delivered: 2,
-                            opened: 1,
-                            unprocessable: 0,
-                            emailIds: [1, 2],
-                            memberIds: [1]
-                        }));
-
-                        assert.deepEqual(fetchData, {
-                            lastEventTimestamp: new Date(3)
-                        });
-                    });
-
-                    it('handles opened', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'opened',
-                            emailId: 1,
-                            timestamp: new Date(1)
-                        }], result, fetchData);
-
-                        sinon.assert.calledOnce(eventProcessor.handleOpened);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            delivered: 0,
-                            opened: 1,
-                            unprocessable: 0,
-                            emailIds: [1],
-                            memberIds: [1]
-                        }));
-
-                        assert.deepEqual(fetchData, {
-                            lastEventTimestamp: new Date(1)
-                        });
-                    });
-
-                    it('handles delivered', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'delivered',
-                            emailId: 1,
-                            timestamp: new Date(1)
-                        }], result, fetchData);
-
-                        sinon.assert.calledOnce(eventProcessor.handleDelivered);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            delivered: 1,
-                            opened: 0,
-                            unprocessable: 0,
-                            emailIds: [1],
-                            memberIds: [1]
-                        }));
-
-                        assert.deepEqual(fetchData, {
-                            lastEventTimestamp: new Date(1)
-                        });
-                    });
-
-                    it('handles failed (permanent)', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'failed',
-                            severity: 'permanent',
-                            emailId: 1,
-                            timestamp: new Date(1)
-                        }], result, fetchData);
-
-                        sinon.assert.calledOnce(eventProcessor.handlePermanentFailed);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            permanentFailed: 1,
-                            emailIds: [1],
-                            memberIds: [1]
-                        }));
-
-                        assert.deepEqual(fetchData, {
-                            lastEventTimestamp: new Date(1)
-                        });
-                    });
-
-                    it('handles failed (temporary)', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'failed',
-                            severity: 'temporary',
-                            emailId: 1,
-                            timestamp: new Date(1)
-                        }], result, fetchData);
-
-                        sinon.assert.calledOnce(eventProcessor.handleTemporaryFailed);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            temporaryFailed: 1,
-                            emailIds: [1],
-                            memberIds: [1]
-                        }));
-
-                        assert.deepEqual(fetchData, {
-                            lastEventTimestamp: new Date(1)
-                        });
-                    });
-
-                    it('handles unsubscribed', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'unsubscribed',
-                            emailId: 1,
-                            timestamp: new Date(1)
-                        }], result, fetchData);
-
-                        sinon.assert.calledOnce(eventProcessor.handleUnsubscribed);
-                        sinon.assert.notCalled(eventProcessor.handleDelivered);
-                        sinon.assert.notCalled(eventProcessor.handleOpened);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            unsubscribed: 1,
-                            emailIds: [1],
-                            memberIds: [1]
-                        }));
-
-                        assert.deepEqual(fetchData, {
-                            lastEventTimestamp: new Date(1)
-                        });
-                    });
-
-                    it('handles complained', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'complained',
-                            emailId: 1,
-                            timestamp: new Date(1)
-                        }], result, fetchData);
-
-                        sinon.assert.calledOnce(eventProcessor.handleComplained);
-                        sinon.assert.notCalled(eventProcessor.handleDelivered);
-                        sinon.assert.notCalled(eventProcessor.handleOpened);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            complained: 1,
-                            emailIds: [1],
-                            memberIds: [1]
-                        }));
-
-                        assert.deepEqual(fetchData, {
-                            lastEventTimestamp: new Date(1)
-                        });
-                    });
-
-                    it(`doens't handle other event types`, async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'notstandard',
-                            emailId: 1,
-                            timestamp: new Date(1)
-                        }], result, fetchData);
-
-                        sinon.assert.notCalled(eventProcessor.handleDelivered);
-                        sinon.assert.notCalled(eventProcessor.handleOpened);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            unhandled: 1
-                        }));
-
-                        assert.deepEqual(fetchData, {
-                            lastEventTimestamp: new Date(1)
-                        });
-                    });
-                });
-
-                describe('with null processor results', function () {
-                    let eventProcessor;
-                    beforeEach(function () {
-                        eventProcessor = {};
-                        eventProcessor.batchGetRecipients = sinon.stub().resolves(new Map());
-                        eventProcessor.flushBatchedUpdates = sinon.stub().resolves();
-                        eventProcessor.handleDelivered = sinon.stub().returns(null);
-                        eventProcessor.handleOpened = sinon.stub().returns(null);
-                        eventProcessor.handlePermanentFailed = sinon.stub().returns(null);
-                        eventProcessor.handleTemporaryFailed = sinon.stub().returns(null);
-                        eventProcessor.handleUnsubscribed = sinon.stub().returns(null);
-                        eventProcessor.handleComplained = sinon.stub().returns(null);
-                    });
-
-                    it('delivered returns unprocessable', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'delivered',
-                            emailId: 1,
-                            timestamp: new Date(1)
-                        }], result, fetchData);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            unprocessable: 1
-                        }));
-                    });
-
-                    it('opened returns unprocessable', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'opened',
-                            emailId: 1,
-                            timestamp: new Date(1)
-                        }], result, fetchData);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            unprocessable: 1
-                        }));
-                    });
-
-                    it('failed (permanent) returns unprocessable', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'failed',
-                            emailId: 1,
-                            timestamp: new Date(1),
-                            severity: 'permanent'
-                        }], result, fetchData);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            unprocessable: 1
-                        }));
-                    });
-
-                    it('failed (temporary) returns unprocessable', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'failed',
-                            emailId: 1,
-                            timestamp: new Date(1),
-                            severity: 'temporary'
-                        }], result, fetchData);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            unprocessable: 1
-                        }));
-                    });
-
-                    it('unsubscribed returns unprocessable', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'unsubscribed',
-                            emailId: 1,
-                            timestamp: new Date(1)
-                        }], result, fetchData);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            unprocessable: 1
-                        }));
-                    });
-
-                    it('complained returns unprocessable', async function () {
-                        const service = new EmailAnalyticsService({
-                            config: createMockConfig(),
-                            eventProcessor
-                        });
-
-                        const result = new EventProcessingResult();
-                        const fetchData = {};
-
-                        await service.processEventBatch([{
-                            type: 'complained',
-                            emailId: 1,
-                            timestamp: new Date(1)
-                        }], result, fetchData);
-
-                        assert.deepEqual(result, new EventProcessingResult({
-                            unprocessable: 1
-                        }));
-                    });
-                });
-
-                it(`verifies batch methods called correctly in ${modeLabel} mode`, async function () {
-                    const eventProcessor = {
-                        batchGetRecipients: sinon.stub().resolves(new Map()),
-                        flushBatchedUpdates: sinon.stub().resolves(),
-                        handleDelivered: sinon.stub().resolves({emailId: 1, emailRecipientId: 1, memberId: 1})
-                    };
-
-                    const service = new EmailAnalyticsService({
-                        config: createMockConfig(),
-                        eventProcessor
-                    });
-                    const result = new EventProcessingResult();
-                    const fetchData = {};
-
-                    await service.processEventBatch([{
-                        type: 'delivered',
-                        emailId: 1,
-                        timestamp: new Date(1)
-                    }], result, fetchData);
-
-                    if (batchProcessing) {
-                        // In batched mode, should call batchGetRecipients and flushBatchedUpdates
-                        sinon.assert.calledOnce(eventProcessor.batchGetRecipients);
-                        sinon.assert.calledOnce(eventProcessor.flushBatchedUpdates);
-                    } else {
-                        // In sequential mode, should not call batch methods
-                        sinon.assert.notCalled(eventProcessor.batchGetRecipients);
-                        sinon.assert.notCalled(eventProcessor.flushBatchedUpdates);
-                    }
-                });
-            });
-        });
-    });
-
-    describe('aggregateStats', function () {
-        describe('with batching enabled', function () {
-            let service;
-
-            beforeEach(function () {
-                configUtils.set('emailAnalytics:batchProcessing', true);
-                service = new EmailAnalyticsService({
-                    config: createMockConfig(),
-                    queries: {
-                        aggregateEmailStats: sinon.spy(),
-                        aggregateMemberStats: sinon.spy(),
-                        aggregateMemberStatsBatch: sinon.spy()
-                    }
-                });
-            });
-
-            afterEach(function () {
-                configUtils.restore();
-            });
-
-            it('calls batched query for member stats', async function () {
-                await service.aggregateStats({
-                    emailIds: ['e-1', 'e-2'],
-                    memberIds: ['m-1', 'm-2']
-                });
-
-                sinon.assert.calledTwice(service.queries.aggregateEmailStats);
-                sinon.assert.calledWith(service.queries.aggregateEmailStats, 'e-1');
-                sinon.assert.calledWith(service.queries.aggregateEmailStats, 'e-2');
-
-                // In batched mode, aggregateMemberStatsBatch should be called
-                sinon.assert.calledOnce(service.queries.aggregateMemberStatsBatch);
-                sinon.assert.calledWith(service.queries.aggregateMemberStatsBatch, ['m-1', 'm-2']);
-
-                // Sequential method should not be called
-                sinon.assert.notCalled(service.queries.aggregateMemberStats);
-            });
-        });
-
-        describe('with batching disabled', function () {
-            let service;
-
-            beforeEach(function () {
-                configUtils.set('emailAnalytics:batchProcessing', false);
-                service = new EmailAnalyticsService({
-                    config: createMockConfig(),
-                    queries: {
-                        aggregateEmailStats: sinon.spy(),
-                        aggregateMemberStats: sinon.spy(),
-                        aggregateMemberStatsBatch: sinon.spy()
-                    }
-                });
-            });
-
-            afterEach(function () {
-                configUtils.restore();
-            });
-
-            it('calls sequential query for member stats', async function () {
-                await service.aggregateStats({
-                    emailIds: ['e-1', 'e-2'],
-                    memberIds: ['m-1', 'm-2']
-                });
-
-                sinon.assert.calledTwice(service.queries.aggregateEmailStats);
-                sinon.assert.calledWith(service.queries.aggregateEmailStats, 'e-1');
-                sinon.assert.calledWith(service.queries.aggregateEmailStats, 'e-2');
-
-                // In sequential mode, aggregateMemberStats should be called for each member
-                sinon.assert.calledTwice(service.queries.aggregateMemberStats);
-                sinon.assert.calledWith(service.queries.aggregateMemberStats, 'm-1');
-                sinon.assert.calledWith(service.queries.aggregateMemberStats, 'm-2');
-
-                // Batch method should not be called
-                sinon.assert.notCalled(service.queries.aggregateMemberStatsBatch);
-            });
-        });
-    });
-
-    describe('aggregateEmailStats', function () {
-        it('returns the query result', async function () {
-            const service = new EmailAnalyticsService({
-                config: createMockConfig(),
-                queries: {
-                    aggregateEmailStats: sinon.stub().resolves()
-                }
-            });
-
-            await service.aggregateEmailStats('memberId');
-
-            sinon.assert.calledOnce(service.queries.aggregateEmailStats);
-            sinon.assert.calledWith(service.queries.aggregateEmailStats, 'memberId');
-        });
-    });
-
-    describe('aggregateMemberStats', function () {
-        it('returns the query result', async function () {
-            const service = new EmailAnalyticsService({
-                config: createMockConfig(),
-                queries: {
-                    aggregateMemberStats: sinon.stub().resolves()
-                }
-            });
-
-            await service.aggregateMemberStats('memberId');
-
-            sinon.assert.calledOnce(service.queries.aggregateMemberStats);
-            sinon.assert.calledWith(service.queries.aggregateMemberStats, 'memberId');
         });
     });
 });

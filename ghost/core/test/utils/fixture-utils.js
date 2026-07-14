@@ -715,9 +715,8 @@ const fixtures = {
     },
 
     insertEmailsAndRecipients: async function insertEmailsAndRecipients(withFailed = false) {
-        // NOTE: This require results in the jobs service being loaded prematurely, which breaks any tests relevant to it.
-        //  This MUST be done in here and not at the top of the file to prevent that from happening as test setup is being performed.
-        const emailAnalyticsService = require('../../core/server/services/email-analytics');
+        // NOTE: This require touches the database, so it can't be done at the top of the file as test setup is being performed.
+        const emailAnalyticsQueries = require('../../core/server/services/email-analytics/lib/queries');
 
         for (const email of _.cloneDeep(DataGenerator.forKnex.emails)) {
             await models.Email.add(email, context.internal);
@@ -741,12 +740,12 @@ const fixtures = {
             }
         }
 
-        const toAggregate = {
-            emailIds: DataGenerator.forKnex.emails.map(email => email.id),
-            memberIds: DataGenerator.forKnex.members.map(member => member.id)
-        };
-
-        return emailAnalyticsService.service.aggregateStats(toAggregate);
+        for (const email of DataGenerator.forKnex.emails) {
+            await emailAnalyticsQueries.aggregateEmailStats(email.id, true);
+        }
+        for (const member of DataGenerator.forKnex.members) {
+            await emailAnalyticsQueries.aggregateMemberStats(member.id);
+        }
     },
 
     insertNewsletters: async function insertNewsletters() {
