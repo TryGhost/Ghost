@@ -137,8 +137,8 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const verifyEmailToken = useQueryParams().getParam('verifyEmail');
 
     const {data: automatedEmailsData, isLoading} = useBrowseAutomatedEmails();
-    const {mutateAsync: addAutomatedEmail, isLoading: isAddingAutomatedEmail} = useAddAutomatedEmail();
-    const {mutateAsync: editAutomatedEmail, isLoading: isEditingAutomatedEmail} = useEditAutomatedEmail();
+    const {mutateAsync: addAutomatedEmail, isPending: isAddingAutomatedEmail} = useAddAutomatedEmail();
+    const {mutateAsync: editAutomatedEmail, isPending: isEditingAutomatedEmail} = useEditAutomatedEmail();
     const {mutateAsync: verifySenderUpdate} = useVerifyAutomatedEmailSender();
     const handleError = useHandleError();
 

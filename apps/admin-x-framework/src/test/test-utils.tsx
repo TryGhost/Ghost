@@ -11,20 +11,13 @@ export function createTestQueryClient(): QueryClient {
         defaultOptions: {
             queries: {
                 retry: false,
-                suspense: false,
                 // Disable cache time for tests to avoid stale data
-                cacheTime: 0,
+                gcTime: 0,
                 staleTime: 0
             },
             mutations: {
                 retry: false
             }
-        },
-        // Disable logging in tests
-        logger: {
-            log: () => {},
-            warn: () => {},
-            error: () => {}
         }
     });
 }

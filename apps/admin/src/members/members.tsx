@@ -10,6 +10,7 @@ import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/componen
 import {FilterBar, PageHeader} from '@tryghost/shade/patterns';
 import {Box, Container} from '@tryghost/shade/primitives';
 import {ListPage} from '@tryghost/shade/page-templates';
+import {keepPreviousData} from '@tanstack/react-query';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
@@ -87,7 +88,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
         hasNextPage
     } = useBrowseMembersInfinite({
         searchParams,
-        keepPreviousData: true
+        placeholderData: keepPreviousData
     });
 
     const shouldShowLoading = shouldShowMembersLoading({

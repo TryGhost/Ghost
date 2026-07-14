@@ -115,7 +115,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
         // Set the new order in local state and cache first so that the UI updates immediately
         setNewsletters(newsletters.map(newsletter => orderUpdatedNewsletters.find(n => n.id === newsletter.id) || newsletter));
-        queryClient.setQueriesData<InfiniteData<NewslettersResponseType>>([newslettersDataType], (currentData) => {
+        queryClient.setQueriesData<InfiniteData<NewslettersResponseType>>({queryKey: [newslettersDataType]}, (currentData) => {
             if (!currentData) {
                 return;
             }

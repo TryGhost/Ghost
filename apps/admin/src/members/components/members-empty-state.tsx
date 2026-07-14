@@ -13,7 +13,7 @@ interface MembersEmptyStateProps {
 
 const MembersEmptyState: React.FC<MembersEmptyStateProps> = ({membershipsEnabled, onMemberCreated}) => {
     const {data: currentUser, isLoading: isCurrentUserLoading} = useCurrentUser();
-    const {mutateAsync: addMember, isLoading: isAdding} = useAddMember();
+    const {mutateAsync: addMember, isPending: isAdding} = useAddMember();
     const handleError = useHandleError();
 
     const handleAddYourself = useCallback(async () => {
