@@ -25,12 +25,6 @@ async function createJobIfNotExists(jobName) {
 }
 
 module.exports = {
-    async shouldFetchStats() {
-        // don't fetch stats from Mailgun if we haven't sent any emails
-        const [emailCount] = await db.knex('emails').count('id as count');
-        return emailCount && emailCount.count > 0;
-    },
-
     /**
      * Retrieves the timestamp of the last seen event for the specified email analytics events.
      * @param {EmailAnalyticsJobName} jobName - The name of the job to update.
