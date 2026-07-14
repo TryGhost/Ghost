@@ -119,19 +119,25 @@ export function CardCaptionEditor({
     const isCaptionEmpty = isEditorEmpty(captionEditor);
     const showAltToggle = setAltText && isSelected;
 
+    const showInlineButtons = showAltToggle && isEditingAlt && generateAltText && imageUrl;
+
     return (
         ((isSelected || !isCaptionEmpty) &&
-            <figcaption className="relative flex min-h-[40px] w-full p-2">
-                {isEditingAlt
-                    ? <AltTextInput dataTestId={dataTestId} placeholder={altTextPlaceholder} readOnly={readOnly} value={altText} onChange={setAltText} />
-                    : <CaptionInput captionEditor={captionEditor} captionEditorInitialState={captionEditorInitialState} dataTestId={dataTestId} placeholder={captionPlaceholder} /> }
+            <figcaption className="relative flex min-h-[40px] w-full items-center p-2">
+                <div className="flex-1 overflow-hidden">
+                    {isEditingAlt
+                        ? <AltTextInput dataTestId={dataTestId} placeholder={altTextPlaceholder} readOnly={readOnly} value={altText} onChange={setAltText} />
+                        : <CaptionInput captionEditor={captionEditor} captionEditorInitialState={captionEditorInitialState} dataTestId={dataTestId} placeholder={captionPlaceholder} />}
+                </div>
                 {generationError && <span className="absolute left-2 top-full font-sans text-xs text-red" role="alert">{generationError}</span>}
-                {showAltToggle && (isEditingAlt && generateAltText && imageUrl
-                    ? <div className="absolute bottom-0 right-0 m-2 flex gap-1">
+                {showAltToggle && (showInlineButtons
+                    ? <div className="ml-1 flex shrink-0 gap-1">
                         <GenerateAltTextButton isGenerating={isGeneratingAlt} onClick={generateImageAltText} />
                         <AltToggleButton isEditingAlt={isEditingAlt} grouped onClick={toggleIsEditingAlt} />
                     </div>
-                    : <AltToggleButton isEditingAlt={isEditingAlt} onClick={toggleIsEditingAlt} />
+                    : <div className="absolute bottom-0 right-0 m-2">
+                        <AltToggleButton isEditingAlt={isEditingAlt} onClick={toggleIsEditingAlt} />
+                    </div>
                 )}
             </figcaption>
         )
