@@ -231,6 +231,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                 captionEditorInitialState={captionEditorInitialState}
                 cardWidth={cardWidth}
                 fileInputRef={fileInputRef}
+                generateAltText={cardConfig.generateAltText}
                 imageCardDragHandler={imageCardDragHandler}
                 imageFileDragHandler={imageFileDragHandler}
                 imageUploader={imageUploader}
