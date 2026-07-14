@@ -264,6 +264,12 @@ jobs:
       # changed file could affect a running Ghost instance (see the `e2e` path
       # filter above). A test-only / docs-only change keeps this false.
       run_e2e: ${{ env.IS_TAG == 'true' || steps.changed.outputs.e2e == 'true' }}
+      # Coverage instrumentation (c8 for core, ember-cli-code-coverage for
+      # admin) and the Codecov upload only happen on the canonical repo. Forks
+      # — including TryGhost's private ones — don't report to Ghost's Codecov
+      # project, so instrumenting their test runs just slows CI down to produce
+      # a report nothing consumes.
+      coverage_enabled: ${{ github.repository == 'TryGhost/Ghost' }}
       is_main: ${{ env.IS_MAIN }}
       is_tag: ${{ env.IS_TAG }}
       is_development: ${{ env.IS_DEVELOPMENT }}
@@ -389,7 +395,7 @@ jobs:
       MOZ_HEADLESS: 1
       JOBS: 1
       CI: true
-      COVERAGE: true
+      COVERAGE: ${{ needs.job_setup.outputs.coverage_enabled }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
@@ -407,9 +413,11 @@ jobs:
 
       # Merge coverage reports and upload
       - name: Merge Admin test coverage
+        if: needs.job_setup.outputs.coverage_enabled == 'true'
         run: pnpm ember coverage-merge
         working-directory: ghost/admin
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: needs.job_setup.outputs.coverage_enabled == 'true'
         with:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
@@ -542,6 +550,10 @@ jobs:
     env:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
+      # The `test:ci:*` targets wrap the suites in c8. Only the sqlite leg is
+      # instrumented (mysql covers the same code), and only on the canonical
+      # repo — see job_setup's coverage_enabled output.
+      COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled == 'true' && matrix.env.DB == 'better-sqlite3' }}
     name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -586,7 +598,7 @@ jobs:
 
       - name: E2E tests
         run: |
-          if [ "${{ matrix.env.DB }}" = "better-sqlite3" ]; then
+          if [ "$COVERAGE_ENABLED" = "true" ]; then
             pnpm nx run ghost:test:ci:e2e
           else
             pnpm nx run ghost:test:e2e
@@ -613,7 +625,7 @@ jobs:
 
       - name: Integration tests
         run: |
-          if [ "${{ matrix.env.DB }}" = "better-sqlite3" ]; then
+          if [ "$COVERAGE_ENABLED" = "true" ]; then
             pnpm nx run ghost:test:ci:integration
           else
             pnpm nx run ghost:test:integration
@@ -629,7 +641,7 @@ jobs:
           fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'sqlite')
+        if: env.COVERAGE_ENABLED == 'true' && matrix.node == env.NODE_VERSION
         with:
           name: e2e-coverage
           path: |
@@ -1660,10 +1672,12 @@ jobs:
   job_coverage:
     name: Coverage
     needs: [
+      job_setup,
       job_admin-tests,
       job_acceptance-tests,
       job_unit-tests
     ]
+    if: always() && needs.job_setup.outputs.coverage_enabled == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3

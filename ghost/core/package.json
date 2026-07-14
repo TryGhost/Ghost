@@ -71,7 +71,7 @@
     "lint:frontend": "eslint 'core/frontend/**/*.js' --cache",
     "lint:test": "eslint 'test/**/*.js' --cache",
     "lint:code": "pnpm run '/^lint:(server|shared|frontend)$/'",
-    "lint:types": "pnpm --filter @tryghost/parse-email-address build && eslint '**/*.ts' --cache && tsc --noEmit",
+    "lint:types": "eslint '**/*.ts' --cache && tsc --noEmit",
     "lint": "pnpm run '/^lint:(server|shared|frontend|test|types)$/'"
   },
   "engines": {
@@ -88,13 +88,14 @@
     "@tryghost/adapter-base-cache": "0.1.26",
     "@tryghost/adapter-base-redirects": "workspace:*",
     "@tryghost/adapter-base-route-settings": "workspace:*",
+    "@tryghost/adapter-base-scheduling": "workspace:*",
     "@tryghost/adapter-base-sso": "workspace:*",
     "@tryghost/admin-api-schema": "4.7.5",
     "@tryghost/api-framework": "catalog:",
     "@tryghost/bookshelf-plugins": "2.2.4",
     "@tryghost/brute-knex": "catalog:",
     "@tryghost/color-utils": "catalog:",
-    "@tryghost/config-url-helpers": "1.0.26",
+    "@tryghost/config-url-helpers": "1.0.27",
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/database-info": "2.3.1",
     "@tryghost/debug": "catalog:",
@@ -264,6 +265,7 @@
     "@types/lodash": "4.17.24",
     "@types/lodash-es": "4.17.12",
     "@types/mime-types": "3.0.1",
+    "@types/nconf": "catalog:",
     "@types/node": "catalog:",
     "@types/node-fetch": "2.6.13",
     "@types/node-jose": "1.1.13",
@@ -272,7 +274,7 @@
     "@types/papaparse": "5.5.2",
     "@types/sanitize-html": "catalog:",
     "@types/semver": "7.7.1",
-    "@types/sinon": "21.0.1",
+    "@types/sinon": "catalog:",
     "@types/supertest": "6.0.3",
     "@typescript-eslint/parser": "catalog:",
     "@vitest/coverage-v8": "catalog:",
@@ -373,11 +375,6 @@
           "{projectRoot}/coverage-e2e"
         ]
       },
-      "test:ci:e2e:no-coverage": {
-        "dependsOn": [
-          "^build"
-        ]
-      },
       "test:ci:legacy": {
         "dependsOn": [
           "^build"
@@ -389,11 +386,6 @@
         ],
         "outputs": [
           "{projectRoot}/coverage-integration"
-        ]
-      },
-      "test:ci:integration:no-coverage": {
-        "dependsOn": [
-          "^build"
         ]
       }
     }

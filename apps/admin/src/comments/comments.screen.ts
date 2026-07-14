@@ -2,6 +2,7 @@ import { page, type Locator } from "vitest/browser";
 import {
     commentListRow,
     commentThreadRowPrefix,
+    commentingDisabledIndicator,
     filterButton,
     loadMoreRepliesButton,
     repliedToLink,
@@ -12,12 +13,16 @@ import {
 
 /** A row locator augmented with factories for the row's parts — still a locator for expect.element. */
 export type CommentRowScope = Locator & {
+    commentingDisabledIndicator(): Locator;
+    moreMenuButton(): Locator;
     repliesMetric(): Locator;
     repliedToLink(): Locator;
 };
 
 function rowScope(row: Locator): CommentRowScope {
     return Object.assign(row, {
+        commentingDisabledIndicator: () => row.getByTestId(commentingDisabledIndicator),
+        moreMenuButton: () => row.getByRole("button").last(),
         repliesMetric: () => row.getByTestId(repliesMetric).first(),
         repliedToLink: () => row.getByTestId(repliedToLink),
     });
@@ -32,6 +37,9 @@ export const commentsScreen = {
         rowScope(commentsScreen.commentRows().filter({ has: page.getByRole("paragraph").filter({ hasText: text }) })),
     filterButton: () => page.getByRole("button", { name: filterButton, exact: true }),
     showAllButton: () => page.getByRole("button", { name: showAllCommentsButton }),
+    disableCommentingMenuItem: () => page.getByRole("menuitem", { name: "Disable commenting" }),
+    enableCommentingMenuItem: () => page.getByRole("menuitem", { name: "Enable commenting" }),
+    disableCommentsDialog: () => page.getByRole("dialog", { name: "Disable comments" }),
 
     threadSidebar: () => page.getByRole("dialog", { name: threadSidebarLabel }),
     threadRow: (commentId: string) => rowScope(page.getByTestId(`${commentThreadRowPrefix}${commentId}`)),
