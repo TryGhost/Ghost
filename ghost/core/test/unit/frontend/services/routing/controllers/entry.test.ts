@@ -5,7 +5,7 @@ import type {Entry, RouterOptions} from '../../../../../../core/frontend/service
 const {assertExists} = require('../../../../../utils/assertions');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/config-utils');
-const deferred = require('../../../../../utils/deferred');
+const {deferred} = require('../../../../../utils/deferred')
 const urlUtils = require('../../../../../../core/shared/url-utils');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const renderer = require('../../../../../../core/frontend/services/rendering');
@@ -15,6 +15,7 @@ const EDITOR_URL = `/#/editor/post/`;
 interface MockRequest {
     path: string;
     originalUrl: string;
+    query: Record<string, unknown>;
     params: object;
     route: object;
     app: {get: sinon.SinonStub};
@@ -66,6 +67,7 @@ describe('Unit - services/routing/controllers/entry', function () {
         req = {
             path: '/',
             originalUrl: '/',
+            query: {},
             params: {},
             route: {},
             app: {get: sinon.stub()},

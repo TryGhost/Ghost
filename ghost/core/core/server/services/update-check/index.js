@@ -1,6 +1,4 @@
 
-const _ = require('lodash');
-
 const api = require('../../api').endpoints;
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
@@ -25,10 +23,8 @@ module.exports = async ({
     updateCheckUrl = config.get('updateCheck:url')
 } = {}) => {
     if (!forceUpdate) {
-        const allowedCheckEnvironments = ['development', 'production'];
-
-        // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments
-        if (_.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
+        // CASE: The check will not happen if your env is not in the allowed defined environments
+        if (!config.isProductionOrDevelopment()) {
             return;
         }
     }

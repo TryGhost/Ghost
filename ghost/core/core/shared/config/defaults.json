@@ -72,6 +72,7 @@
     },
     "logging": {
         "level": "info",
+        "logClientErrorsAsError": true,
         "useLocalTime": false,
         "rotation": {
             "enabled": false,
@@ -303,10 +304,6 @@
         "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
         "version": "0.3"
     },
-    "tenor": {
-        "googleApiKey": null,
-        "contentFilter": "off"
-    },
     "klipy": {
         "apiKey": null,
         "contentFilter": "off"
@@ -356,5 +353,6 @@
         "batchSize": 1000,
         "captureLinkClickBadMemberUuid": false
     },
-    "disableJSBackups": false
+    "disableJSBackups": false,
+    "disableMigrationBackups": false
 }

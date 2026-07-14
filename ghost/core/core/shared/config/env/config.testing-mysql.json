@@ -16,7 +16,8 @@
         }
     },
     "logging": {
-        "level": "error"
+        "level": "error",
+        "logClientErrorsAsError": false
     },
     "adapters": {
         "Redis": {

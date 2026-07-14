@@ -28,6 +28,21 @@ const initialActivityPubRequests = {
         method: 'GET',
         path: '/users/index',
         response: activityPubUser
+    },
+    getActivityPubAccount: {
+        method: 'GET',
+        path: '/v1/account/me',
+        response: {
+            id: 'index',
+            handle: '@index@example.com',
+            name: 'Test User',
+            url: 'https://example.com/@index',
+            avatarUrl: null,
+            bannerImageUrl: null,
+            followingCount: 0,
+            followerCount: 0,
+            likedCount: 0
+        }
     }
 };
 

@@ -18,13 +18,17 @@ class EmailAnalyticsServiceWrapper {
         const StartEmailAnalyticsJobEvent = require('./events/start-email-analytics-job-event');
         const domainEvents = require('@tryghost/domain-events');
         const settings = require('../../../shared/settings-cache');
-        const labs = require('../../../shared/labs');
         const db = require('../../data/db');
         const queries = require('./lib/queries');
         const membersService = require('../members');
         const membersRepository = membersService.api.members;
         const emailSuppressionList = require('../email-suppression-list');
         const prometheusClient = require('../../../shared/prometheus-client');
+
+        const tags = ['bulk-email'];
+        if (config.get('bulkEmail:mailgun:tag')) {
+            tags.push(config.get('bulkEmail:mailgun:tag'));
+        }
 
         this.eventStorage = new EmailEventStorage({
             db,
@@ -51,9 +55,7 @@ class EmailAnalyticsServiceWrapper {
             config,
             settings,
             eventProcessor,
-            providers: [
-                new MailgunProvider({config, settings, labs})
-            ],
+            provider: new MailgunProvider({config, settings, tags}),
             queries,
             domainEvents,
             prometheusClient

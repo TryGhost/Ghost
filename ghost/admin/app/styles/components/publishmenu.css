@@ -139,7 +139,7 @@
 
 .gh-publish-send-to-option .for-checkbox .input-toggle-component {
     position: absolute;
-    top: calc(50%-9px);
+    top: calc(50% - 9px);
     left: 14px;
     margin: 0;
     border-color: transparent;

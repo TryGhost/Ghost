@@ -217,7 +217,7 @@ describe('Member Welcome Emails Integration', function () {
             memberWelcomeEmailService.api = null;
             memberWelcomeEmailService.init();
 
-            await memberWelcomeEmailService.api.sendAutomationEmail({
+            return await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
                     designSettingId: defaultEmailDesignSettingId,
                     lexical: JSON.stringify({
@@ -473,6 +473,23 @@ describe('Member Welcome Emails Integration', function () {
                 from: '"Newsletter Sender" <newsletter@example.com>',
                 replyTo: 'newsletter-reply@example.com'
             }));
+        });
+
+        it('tags automation emails for automation analytics', async function () {
+            await sendAutomationEmail();
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.deepEqual(sendCall.args[0].tags, ['automation-email']);
+        });
+
+        it('returns the mail transport response for automation emails', async function () {
+            const sendResponse = {id: '<mailgun-message-id>'};
+            mailService.GhostMailer.prototype.send.resolves(sendResponse);
+
+            const result = await sendAutomationEmail();
+
+            assert.equal(result, sendResponse);
         });
 
         it('uses email design sender details for automation emails', async function () {

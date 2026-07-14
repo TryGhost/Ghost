@@ -6,21 +6,13 @@ export default publicAppViteConfig({
     packageRoot: import.meta.dirname,
     packageName: pkg.name,
     entry: 'src/index.jsx',
-    i18nNamespace: 'portal',
     cssCodeSplit: false,
     overrides: {
         define: {
-            REACT_APP_VERSION: JSON.stringify(process.env.npm_package_version)
+            REACT_APP_VERSION: JSON.stringify(pkg.version)
         },
         resolve: {
             dedupe: ['@tryghost/debug']
-        },
-        build: {
-            rollupOptions: {
-                output: {
-                    manualChunks: false
-                }
-            }
         },
         test: {
             setupFiles: './test/setup-tests.js',

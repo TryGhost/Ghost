@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const deferred = require('../../../../../utils/deferred');
+const {deferred} = require('../../../../../utils/deferred')
 const SessionStore = require('../../../../../../core/server/services/auth/session/session-store');
 const {Session} = require('../../../../../../core/server/models/session');
 const EventEmitter = require('events');

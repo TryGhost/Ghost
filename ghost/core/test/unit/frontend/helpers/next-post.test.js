@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
+const markdownToLexical = require('../../../utils/fixtures/data-generator').markdownToLexical;
 const next_post = require('../../../../core/frontend/helpers/prev_post');
 const api = require('../../../../core/frontend/services/proxy').api;
 const logging = require('@tryghost/logging');
@@ -48,7 +48,7 @@ describe('{{next_post}} helper', function () {
                 .call({
                     html: 'content',
                     status: 'published',
-                    mobiledoc: markdownToMobiledoc('ff'),
+                    lexical: markdownToLexical('ff'),
                     title: 'post2',
                     slug: 'current',
                     published_at: new Date(0),
@@ -97,7 +97,7 @@ describe('{{next_post}} helper', function () {
                 .call({
                     html: 'content',
                     status: 'published',
-                    mobiledoc: markdownToMobiledoc('ff'),
+                    lexical: markdownToLexical('ff'),
                     title: 'post2',
                     slug: 'current',
                     published_at: new Date(0),
@@ -165,7 +165,7 @@ describe('{{next_post}} helper', function () {
                 .call({
                     html: 'content',
                     status: 'published',
-                    mobiledoc: markdownToMobiledoc('ff'),
+                    lexical: markdownToLexical('ff'),
                     title: 'post2',
                     slug: 'current',
                     published_at: new Date(0),
@@ -202,7 +202,7 @@ describe('{{next_post}} helper', function () {
                 .call({
                     html: 'content',
                     status: 'draft',
-                    mobiledoc: markdownToMobiledoc('ff'),
+                    lexical: markdownToLexical('ff'),
                     title: 'post2',
                     slug: 'current',
                     created_at: new Date(0),
@@ -234,7 +234,7 @@ describe('{{next_post}} helper', function () {
                 .call({
                     html: 'content',
                     status: 'published',
-                    mobiledoc: markdownToMobiledoc('ff'),
+                    lexical: markdownToLexical('ff'),
                     title: 'post2',
                     slug: 'current',
                     published_at: new Date(0),
@@ -272,7 +272,7 @@ describe('{{next_post}} helper', function () {
                 .call({
                     html: 'content',
                     status: 'published',
-                    mobiledoc: markdownToMobiledoc('ff'),
+                    lexical: markdownToLexical('ff'),
                     title: 'post2',
                     slug: 'current',
                     published_at: new Date(0),
@@ -310,7 +310,7 @@ describe('{{next_post}} helper', function () {
                 .call({
                     html: 'content',
                     status: 'published',
-                    mobiledoc: markdownToMobiledoc('ff'),
+                    lexical: markdownToLexical('ff'),
                     title: 'post2',
                     slug: 'current',
                     published_at: new Date(0),
@@ -348,7 +348,7 @@ describe('{{next_post}} helper', function () {
                 .call({
                     html: 'content',
                     status: 'published',
-                    mobiledoc: markdownToMobiledoc('ff'),
+                    lexical: markdownToLexical('ff'),
                     title: 'post2',
                     slug: 'current',
                     published_at: new Date(0),
@@ -385,7 +385,7 @@ describe('{{next_post}} helper', function () {
                 .call({
                     html: 'content',
                     status: 'published',
-                    mobiledoc: markdownToMobiledoc('ff'),
+                    lexical: markdownToLexical('ff'),
                     title: 'post2',
                     slug: 'current',
                     published_at: new Date(0),
@@ -432,7 +432,7 @@ describe('{{next_post}} helper', function () {
                 .call({
                     html: 'content',
                     status: 'published',
-                    mobiledoc: markdownToMobiledoc('ff'),
+                    lexical: markdownToLexical('ff'),
                     title: 'post2',
                     slug: 'current',
                     published_at: new Date(0),
@@ -498,7 +498,7 @@ describe('{{next_post}} helper', function () {
                 .call({
                     html: 'content',
                     status: 'published',
-                    mobiledoc: markdownToMobiledoc('ff'),
+                    lexical: markdownToLexical('ff'),
                     title: 'post2',
                     slug: 'current',
                     published_at: new Date(0),

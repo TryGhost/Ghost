@@ -39,6 +39,15 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     </DialogContent>
                 </Dialog>
             </SettingItem>
+            <SettingItem to='/preferences/handle' withHover>
+                <SettingHeader>
+                    <SettingTitle>Social web handle</SettingTitle>
+                    <SettingDescription>Set your account username and domain</SettingDescription>
+                </SettingHeader>
+                <SettingAction className='flex items-center gap-2'>
+                    <LucideIcon.ChevronRight size={20} />
+                </SettingAction>
+            </SettingItem>
             <SettingItem withHover onClick={() => navigate('/preferences/moderation')}>
                 <SettingHeader>
                     <SettingTitle>Moderation</SettingTitle>

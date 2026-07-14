@@ -1,3 +1,5 @@
+import MemberRepository from './members-api/repositories/member-repository';
+
 interface MemberBREADService {
     disableCommenting(
         memberId: string,
@@ -17,11 +19,13 @@ interface MemberBREADService {
 
 interface MembersApi {
     memberBREADService: MemberBREADService;
+    members: MemberRepository;
 }
 
 interface MembersService {
     init(): Promise<void>;
     api: MembersApi;
+    createPaidMemberShim(): Promise<{status: 'paid'; products: Array<{slug: string}>}>;
 }
 
 declare const membersService: MembersService;

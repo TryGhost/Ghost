@@ -101,8 +101,19 @@ export class EmailAddressService {
      */
     getAddress(preferred: EmailAddresses, options: GetAddressOptions = {useFallbackAddress: false}): EmailAddresses {
         if (preferred.replyTo && !this.#isValidEmailAddress(preferred.replyTo.address)) {
+            // The default from-address itself is allowed to fail generic email validation
+            // (e.g. noreply@127.0.0.1 on an IP-only install — see the same carve-out in
+            // validate() below), so don't error-log when the replyTo just happens to match
+            // it (case-insensitively — members_support_address is user-entered, so a case
+            // variant of the same address shouldn't defeat the carve-out). This also
+            // silences a genuinely malformed mail:from, not just the known IP-domain case —
+            // demote to warn instead of dropping the signal entirely.
+            if (preferred.replyTo.address.toLowerCase() !== this.defaultFromEmail.address.toLowerCase()) {
+                logging.error(`[EmailAddresses] Invalid replyTo address: ${preferred.replyTo.address}`);
+            } else {
+                logging.warn(`[EmailAddresses] replyTo address ${preferred.replyTo.address} matches the default from-address and failed generic validation; removing it`);
+            }
             // Remove invalid replyTo addresses
-            logging.error(`[EmailAddresses] Invalid replyTo address: ${preferred.replyTo.address}`);
             preferred.replyTo = undefined;
         }
 
@@ -153,8 +164,10 @@ export class EmailAddressService {
                 return preferred;
             }
 
-            // Invalid configuration: don't allow to send from this sending domain
-            logging.error(`[EmailAddresses] Invalid configuration: cannot send emails from ${preferred.from.address} when sending domain is ${this.sendingDomain}`);
+            // Not an error: this is the expected, handled fallback for any sender address that
+            // doesn't match the sending domain (staff/member/newsletter senders routinely don't) —
+            // we fall through to the default from-address below. Warn-level, not error-level.
+            logging.warn(`[EmailAddresses] Cannot send emails from ${preferred.from.address} when sending domain is ${this.sendingDomain} — falling back to the default from-address`);
         }
 
         // Only allow to send from the configured from address

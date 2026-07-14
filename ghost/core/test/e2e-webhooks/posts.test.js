@@ -142,7 +142,7 @@ describe('post.* events', function () {
                 posts: [{
                     title: 'webhookz',
                     status: 'draft',
-                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    lexical: fixtureManager.get('posts', 1).lexical
                 }]
             })
             .expectStatus(201);
@@ -194,7 +194,7 @@ describe('post.* events', function () {
                     {
                         title: 'webhookz unpublished',
                         status: 'published',
-                        mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                        lexical: fixtureManager.get('posts', 1).lexical
                     }
                 ]
             })
@@ -431,7 +431,7 @@ describe('post.* events', function () {
                 posts: [{
                     title: 'test post tag attached webhook',
                     status: 'draft',
-                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    lexical: fixtureManager.get('posts', 1).lexical
                 }]
             })
             .expectStatus(201);
@@ -484,7 +484,7 @@ describe('post.* events', function () {
                 posts: [{
                     title: 'test post tag detached webhook',
                     status: 'draft',
-                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    lexical: fixtureManager.get('posts', 1).lexical
                 }]
             })
             .expectStatus(201);

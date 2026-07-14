@@ -13,29 +13,24 @@ class PostsWithAnalytics extends InfinityModel {
     @service feature;
     @service settings;
 
-    async afterInfinityModel(posts) {
+    afterInfinityModel(posts) {
         const publishedPosts = posts.filter(post => ['published', 'sent'].includes(post.status));
         if (publishedPosts.length === 0) {
             return posts;
         }
 
-        const promises = [];
-        
-        // Fetch visitor counts if web analytics is enabled
+        // Analytics loads are deliberately not awaited so a slow or
+        // unavailable analytics service can't block rendering the list -
+        // counts fill in reactively when the requests complete
         if (this.settings.webAnalyticsEnabled) {
             const postUuids = publishedPosts.map(post => post.uuid);
-            promises.push(this.postAnalytics.loadVisitorCounts(postUuids));
-        }
-        
-        // Fetch member counts if member tracking is enabled
-        if (this.settings.membersTrackSources) {
-            promises.push(this.postAnalytics.loadMemberCounts(publishedPosts));
+            this.postAnalytics.loadVisitorCounts(postUuids);
         }
 
-        if (promises.length > 0) {
-            await Promise.all(promises);
+        if (this.settings.membersTrackSources) {
+            this.postAnalytics.loadMemberCounts(publishedPosts);
         }
-        
+
         return posts;
     }
 }
@@ -132,14 +127,13 @@ export default class PostsRoute extends AuthenticatedRoute {
         return RSVP.hash(models);
     }
 
-    // trigger a background load of all tags and authors for use in filter dropdowns
+    // trigger a background load of any filtered tag/author that isn't already
+    // in the store so the filter dropdown triggers can display their names
     setupController(controller, model) {
         super.setupController(...arguments);
 
-        if (!this.session.user.isAuthorOrContributor && !controller._hasLoadedAuthors) {
-            this.store.query('user', {limit: 'all'}).then(() => {
-                controller._hasLoadedAuthors = true;
-            });
+        if (!this.session.user.isAuthorOrContributor && controller.selectedAuthor?.slug === '!unknown') {
+            this.store.queryRecord('user', {slug: controller.author});
         }
 
         if (controller.tag && !controller.selectedTag?.slug || controller.selectedTag?.slug === '!unknown') {

@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
+    "@internal/cfg-eslint": "workspace:*",
     "concurrently": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
@@ -38,6 +39,16 @@
     "vitest": "catalog:"
   },
   "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/admin-toolbar",
+          "command": "vite build --watch --mode development"
+        }
+      }
+    },
     "tags": [
       "public-app"
     ]

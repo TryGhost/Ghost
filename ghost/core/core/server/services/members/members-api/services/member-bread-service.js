@@ -502,9 +502,14 @@ module.exports = class MemberBREADService {
 
         if (this.stripeService.configured) {
             const hasCompedSubscription = !!model.related('stripeSubscriptions').find(sub => sub.get('plan_nickname') === 'Complimentary' && sub.get('status') === 'active');
+            // `comped` is derived from status and round-tripped on every edit, even for members
+            // comped without a Stripe subscription (e.g. via the API or an import), so only create
+            // a subscription on an actual transition. The model returned by update() still holds
+            // the pre-update status. Ref: https://github.com/TryGhost/Ghost/issues/25735
+            const wasComped = model.previous('status') === 'comped';
 
             if (typeof data.comped === 'boolean') {
-                if (data.comped && !hasCompedSubscription) {
+                if (data.comped && !hasCompedSubscription && !wasComped) {
                     await this.memberRepository.setComplimentarySubscription(model, {
                         context: options.context,
                         transacting: options.transacting

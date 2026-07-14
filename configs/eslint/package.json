@@ -1,0 +1,20 @@
+{
+    "name": "@internal/cfg-eslint",
+    "version": "0.0.0",
+    "description": "Shared ESLint atoms + Node-library config for internal Ghost packages",
+    "private": true,
+    "type": "module",
+    "license": "MIT",
+    "exports": {
+        ".": "./index.mjs"
+    },
+    "files": [
+        "index.mjs"
+    ],
+    "dependencies": {
+        "@eslint/js": "catalog:",
+        "eslint-plugin-ghost": "catalog:",
+        "globals": "catalog:",
+        "typescript-eslint": "catalog:"
+    }
+}

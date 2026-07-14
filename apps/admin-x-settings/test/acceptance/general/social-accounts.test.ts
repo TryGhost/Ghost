@@ -211,14 +211,15 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             twitterInput,
             'http://github.com/username',
-            'https://x.com/username'
+            'http://github.com/username',
+            'The URL must be in a format like https://x.com/yourUsername'
         );
 
         await testUrlValidation(
             twitterInput,
             '*(&*(%%))',
             '*(&*(%%))',
-            'The URL must be in a format like https://x.com/yourUsername'
+            'Your Username is not a valid Twitter Username'
         );
 
         await testUrlValidation(
@@ -335,5 +336,67 @@ test.describe('Social account settings', async () => {
         await mastodonInput.blur();
         await expect(mastodonInput).toHaveValue('https://mastodon.social/@ghost@example.com');
         await expect(mastodonInput.locator('xpath=../..')).not.toContainText('The URL must be in a format');
+    });
+
+    test('Saving an unrelated field does not block on a stale stored value that predates a rule tightening', async ({page}) => {
+        // Threads' username rule was tightened after this handle could have
+        // been stored (trailing period, previously accepted). Editing an
+        // untouched Threads field must not be re-validated on save, or a
+        // legacy value like this would lock the whole form.
+        const settingsWithStaleThreads = {
+            ...responseFixtures.settings,
+            settings: responseFixtures.settings.settings.map(s => (
+                s.key === 'threads' ? {...s, value: '@ghost.tld.'} : s
+            ))
+        };
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {method: 'GET', path: /^\/settings\/\?group=/, response: settingsWithStaleThreads},
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([{key: 'facebook', value: 'fb'}])}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('social-accounts');
+
+        // the stale value displays raw rather than crashing, and shows no error
+        await expect(section.getByLabel('Threads')).toHaveValue('@ghost.tld.');
+        await expect(section).not.toContainText('The URL must be in a format like https://www.threads.net/@yourUsername');
+
+        await section.getByLabel('Facebook').fill('fb');
+        await section.getByRole('button', {name: 'Save'}).click();
+
+        await expect(section).not.toContainText('The URL must be in a format like https://www.threads.net/@yourUsername');
+        expect((lastApiRequests.editSettings?.body as {settings: Array<{key: string; value: string}>} | undefined)?.settings)
+            .toEqual([{key: 'facebook', value: 'fb'}]);
+    });
+
+    test('Blocks save when a field the user just edited is invalid, even on its first edit', async ({page}) => {
+        // A field's first-ever edit this session never becomes `dirty` if
+        // it's invalid (normalizeSocialInput throws before updateSetting is
+        // called), so save-time validation must track "did the user attempt
+        // to change this" separately from the settings' own dirty flag —
+        // otherwise, as long as some *other* field is validly dirty (enabling
+        // the Save button), this invalid, in-progress edit is silently
+        // skipped and the rest of the form saves as if nothing were wrong.
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([{key: 'facebook', value: 'fb'}])}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('social-accounts');
+
+        // Facebook is validly dirty, so the Save button is enabled
+        await section.getByLabel('Facebook').fill('fb');
+        // Instagram's first-ever edit this session is invalid and never committed
+        await section.getByLabel('Instagram').fill('john..smith'); // consecutive periods
+
+        await section.getByRole('button', {name: 'Save'}).click();
+
+        await expect(section).toContainText('Your Username is not a valid Instagram Username');
+        expect(lastApiRequests.editSettings).toBeUndefined();
     });
 });

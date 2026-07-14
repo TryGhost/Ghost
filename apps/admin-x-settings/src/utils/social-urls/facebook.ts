@@ -1,31 +1,23 @@
-import validator from 'validator';
+import {createPlatformValidator} from './platform-validator';
 
-export function validateFacebookUrl(newUrl: string) {
-    const errMessage = 'The URL must be in a format like https://www.facebook.com/yourPage';
-    if (!newUrl) {
-        return '';
+const ERROR_MESSAGE = 'The URL must be in a format like https://www.facebook.com/yourPage';
+
+// Facebook is deliberately the loosest platform: pages, groups, people/… and
+// profile.php?id=… are all valid profile locations, so the whole path (query
+// string included) is the stored handle and the only rule is "no whitespace".
+const facebook = createPlatformValidator({
+    domains: ['facebook.com'],
+    www: true,
+    fullPath: true,
+    pathTypes: [
+        {urlPrefix: '', storagePrefix: '', rule: {patterns: [/^\S+$/]}}
+    ],
+    errors: {
+        invalidUrl: ERROR_MESSAGE,
+        invalidUsername: ERROR_MESSAGE
     }
+});
 
-    // strip any facebook URLs out
-    newUrl = newUrl.replace(/(https?:\/\/)?(www\.)?facebook\.com/i, '');
-
-    // don't allow any non-facebook urls
-    if (newUrl.match(/^(http|\/\/)/i)) {
-        throw new Error(errMessage);
-    }
-
-    // strip leading / if we have one then concat to full facebook URL
-    newUrl = newUrl.replace(/^\//, '');
-    newUrl = `https://www.facebook.com/${newUrl}`;
-
-    // don't allow URL if it's not valid
-    if (!validator.isURL(newUrl)) {
-        throw new Error(errMessage);
-    }
-
-    return newUrl;
-}
-
-export const facebookHandleToUrl = (handle: string) => `https://www.facebook.com/${handle}`;
-
-export const facebookUrlToHandle = (url: string) => url.match(/(?:https:\/\/)(?:www\.)(?:facebook\.com)\/(?:#!\/)?(\w+\/?\S+)/i)?.[1] || null; 
+export const validateFacebookUrl = facebook.validate;
+export const facebookHandleToUrl = facebook.handleToUrl;
+export const facebookUrlToHandle = facebook.urlToHandle;

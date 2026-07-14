@@ -28,7 +28,6 @@ Object {
       "explore": true,
       "featurebaseFeedback": true,
       "getHelperDeduplication": true,
-      "giftLinks": true,
       "importMemberTier": true,
       "indexnow": true,
       "lexicalIndicators": true,
@@ -53,10 +52,6 @@ Object {
       "version": "0.3",
     },
     "stripeDirect": false,
-    "tenor": Object {
-      "contentFilter": "off",
-      "googleApiKey": null,
-    },
     "useGravatar": false,
     "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+/,
   },

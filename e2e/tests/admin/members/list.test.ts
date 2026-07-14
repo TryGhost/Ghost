@@ -11,32 +11,6 @@ test.describe('Ghost Admin - Members List', () => {
         memberFactory = createMemberFactory(page.request);
     });
 
-    test('displays members with name, email, status, and created date', async ({page}) => {
-        await memberFactory.createMany([
-            {name: 'Alice Anderson', email: 'alice@example.com'},
-            {name: 'Bob Baker', email: 'bob@example.com'},
-            {name: 'Charlie Clark', email: 'charlie@example.com'}
-        ]);
-
-        const membersPage = new MembersListPage(page);
-        await membersPage.goto();
-
-        await expect(membersPage.memberRows).toHaveCount(3);
-        await expect(membersPage.getMemberByName('Alice Anderson')).toBeVisible();
-        await expect(membersPage.getMemberByName('Bob Baker')).toBeVisible();
-        await expect(membersPage.getMemberByName('Charlie Clark')).toBeVisible();
-        await expect(membersPage.getMemberByName('Alice Anderson')).toContainText('alice@example.com');
-        await expect(membersPage.getMemberByName('Alice Anderson')).toContainText('Free');
-    });
-
-    test('shows empty state when there are no members', async ({page}) => {
-        const membersPage = new MembersListPage(page);
-        await membersPage.goto();
-
-        await expect(membersPage.emptyState).toBeVisible();
-        await expect(membersPage.memberRows).toHaveCount(0);
-    });
-
     test('add yourself from empty state - creates a member for the current user', async ({page, ghostAccountOwner}) => {
         const membersPage = new MembersListPage(page);
         await membersPage.goto();

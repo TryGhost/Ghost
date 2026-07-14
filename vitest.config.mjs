@@ -15,7 +15,8 @@ export default defineConfig({
         projects: [
             'ghost/core',
             'ghost/i18n',
-            'ghost/parse-email-address',
+            'packages/**',
+            '!packages/_template',
             'apps/*',
             '!apps/admin-x-activitypub',
             '!apps/signup-form'

@@ -1,9 +1,14 @@
+import assert from 'node:assert/strict';
 import type {InternalKeys} from '../internal-keys';
 // @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import type DomainEvents from '@tryghost/domain-events';
 import {oneAtATime} from '../../../shared/one-at-a-time';
 import {poll} from './poll';
 import * as automationsApi from './automations-api';
+import {setImmediate as flushEventLoop} from 'node:timers/promises';
+import {SoonestTimer} from '../../lib/soonest-timer';
+// @ts-expect-error This module currently lacks type definitions.
+import emailAnalyticsJobs from '../email-analytics/jobs';
 
 const urlUtils = require('../../../shared/url-utils');
 const logging = require('@tryghost/logging');
@@ -30,26 +35,48 @@ type AutomationsServiceOptions = {
     schedulerAdapter: SchedulerAdapter;
 };
 
+const scheduleAutomationEmailAnalyticsJob = () => (
+    emailAnalyticsJobs.scheduleRecurringAutomationsJob(true)
+);
+
 export class AutomationsService {
-    #enqueuePollNow: undefined | (() => void);
+    #enqueuePollAt: undefined | ((date: Readonly<Date>) => Promise<void>);
 
     init({domainEvents, apiUrl, schedulerAdapter, internalKeys}: AutomationsServiceOptions): void {
-        const isInitialized = Boolean(this.#enqueuePollNow);
+        const isInitialized = Boolean(this.#enqueuePollAt);
         if (isInitialized) {
             return;
         }
 
         const enqueuePollNow = () => domainEvents.dispatch(StartAutomationsPollEvent.create());
 
+        const soonestTimer = new SoonestTimer(enqueuePollNow);
+
+        /**
+         * Enqueue an automations poll at a given time.
+         *
+         * If the poll is in the future, we schedule an in-memory timer *and*
+         * tell the scheduler.
+         *
+         * The in-memory timer can be more precise than the scheduler, and
+         * avoids reliance on an external service. The scheduler will wake up
+         * the server if it's stopped.
+         *
+         * (In an upcoming change (NY-1396), we plan to make the scheduler less
+         * precise to reduce load--that will make the in-memory timer more
+         * useful, but it's still useful now.)
+         */
         const enqueuePollAt = async (date: Readonly<Date>): Promise<void> => {
             const isRequestedDateInTheFuture = new Date() < date;
             if (!isRequestedDateInTheFuture) {
-                // Dispatch a task instead of calling immediately to resolve issues with better-sqlite3
-                // being synchronous and blocking the schedulerAdapter.schedule call below, which can
-                // cause a deadlock in some cases.
-                setImmediate(() => enqueuePollNow());
+                // If you're using synchronous SQLite, we want to finish unwinding the call stack
+                // before dispatching another poll event.
+                await flushEventLoop();
+                enqueuePollNow();
                 return;
             }
+
+            soonestTimer.scheduleAt(date);
 
             try {
                 const key = await internalKeys.get('ghost-scheduler');
@@ -65,6 +92,7 @@ export class AutomationsService {
         domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => poll({
             automationsApi,
             memberWelcomeEmailService,
+            scheduleAutomationEmailAnalyticsJob,
             enqueueAnotherPollAt: enqueuePollAt
         })));
 
@@ -77,7 +105,7 @@ export class AutomationsService {
 
         enqueuePollAt(new Date());
 
-        this.#enqueuePollNow = enqueuePollNow;
+        this.#enqueuePollAt = enqueuePollAt;
     }
 
     /**
@@ -85,7 +113,12 @@ export class AutomationsService {
      * key fails JWT verification when fired; this dispatches a fresh in-process
      * poll that re-schedules the next callback under the current key.
      */
-    rescheduleAll(): void {
-        this.#enqueuePollNow?.();
+    async rescheduleAll(): Promise<void> {
+        await this.#enqueuePollAt?.(new Date());
+    }
+
+    async __testOnlyEnqueuePollAt(date: Readonly<Date>): Promise<void> {
+        assert(this.#enqueuePollAt, 'Tests should not call this before initialization');
+        return await this.#enqueuePollAt(date);
     }
 }

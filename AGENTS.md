@@ -36,6 +36,45 @@ Two categories of apps:
 - `admin-x-design-system` - Legacy design system (being phased out)
 - `shade` - New design system (shadcn/ui + Radix UI + react-hook-form + zod)
 
+### koenig/* - Ghost editor (Koenig) packages
+Merged from the former TryGhost/Koenig repo with full git history:
+
+- **koenig-lexical** - The Lexical-based rich text editor UI. Bundled into
+  Ghost Admin at build time (`ghost/admin` copies its UMD build into admin
+  assets; `apps/posts` and `apps/admin` import it directly)
+- **kg-*** - Editor support packages: server-side renderers and converters
+  consumed by `ghost/core` (kg-default-nodes, kg-lexical-html-renderer,
+  kg-html-to-lexical, ...) plus frontend helpers (kg-unsplash-selector)
+
+All Koenig packages resolve via `workspace:` — nothing in dev, CI, or the
+release archive installs them from npm. They are published to npm for
+external consumers only, automatically as part of the Ghost release lane
+(see `publish_koenig_packages` in ci.yml).
+
+**Zero-build dev via the `source` export condition.** The `kg-*` libraries
+consumed by `ghost/core` (and `ghost/parse-email-address`) declare a `source`
+condition in their `package.json` `exports` that points at the raw
+`src/*.ts`, listed *before* `types`/`import`/`require`:
+
+```jsonc
+".": {
+  "source": "./src/index.ts",     // dev/test: read raw TS
+  "types": "./build/esm/index.d.ts",
+  "import": "./build/esm/index.js",
+  "require": "./build/cjs/index.js" // prod/published: compiled JS
+}
+```
+
+`ghost/core`'s dev runner (`nodemon.json`: `node --conditions=source --import=tsx`)
+and its Vitest configs (`resolve.conditions: ['source', 'node']` +
+`--import tsx --conditions=source`) activate this condition, so a source change
+in a `kg-*` package is picked up with **no `tsc` rebuild**. Production and the
+published npm tarball run plain `node`, which ignores `source` and uses
+`build/` — and `src/` is excluded from each package's `files` array, so it is
+never shipped. When adding a new backend-consumed TS workspace package, copy
+this `exports` shape (see `ghost/parse-email-address`) so it works build-free
+in dev from day one; keep the `^build` graph for `tsc`/type-checking and prod.
+
 ### e2e/ - End-to-end tests
 - Playwright-based E2E tests with Docker container isolation
 - See `e2e/CLAUDE.md` for detailed testing guidance
@@ -117,19 +156,30 @@ The `pnpm dev` command uses a **hybrid Docker + host development** setup:
 - MySQL, Redis, Mailpit
 - Caddy gateway/reverse proxy
 
-**What runs on host:**
-- Frontend dev servers (Admin, Portal, Comments UI, etc.) in watch mode with HMR
-- Foundation libraries (shade, admin-x-framework, etc.)
+**What runs on host by default:**
+- Admin, legacy Ember admin, Portal, and foundation library dev watchers
+- Optional public UMD app watchers can be added when needed
 
 **Setup:**
 ```bash
-# Start everything (Docker + frontend dev servers)
+# Start Ghost backend, Admin, Portal, and Docker services
 pnpm dev
+
+# Add optional public apps (comments-ui, sodo-search, signup-form, admin-toolbar)
+pnpm dev:public
+
+# Develop the Koenig editor against Ghost Admin (adds a koenig-lexical rebuild
+# watcher + preview server; Admin loads the editor from your local build)
+pnpm dev:lexical
 
 # With optional services (uses Docker Compose file composition)
 pnpm dev:analytics             # Include Tinybird analytics
 pnpm dev:storage               # Include MinIO S3-compatible object storage
-pnpm dev:all                   # Include all optional services
+pnpm dev:stripe                # Include Stripe webhook forwarding
+pnpm dev:full                  # Include analytics, storage, Stripe, and public app watchers
+
+# Everything available
+pnpm dev:all                   #
 ```
 
 **Accessing Services:**
@@ -255,13 +305,13 @@ Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `anno
 When the user asks you to create a commit or draft a commit message, load and follow the `commit` skill from `.agents/skills/commit`.
 
 ### ESLint Config
-Source of truth: [eslint.shared.mjs](eslint.shared.mjs) at the repo root. Two factories cover most workspaces — `reactAppConfig` (every `apps/*` workspace) and `nodeLibConfig` (Node libs in `ghost/`). Each factory has full JSDoc with `@example`s; hover the call site in your editor.
+Source of truth: two internal config packages — [`@internal/cfg-eslint`](configs/eslint/index.mjs) (shared rule atoms + the `nodeLibConfig` factory for Node libs) and [`@internal/cfg-eslint-react`](configs/eslint-react/index.mjs) (the `reactAppConfig` factory for every `apps/*` workspace). Both factories are synchronous and have full JSDoc with `@example`s; hover the call site in your editor. Consume them by name — declare the package as a `workspace:*` devDependency.
 
 Minimal example for a new admin React app (`apps/new-feature/eslint.config.js`):
 
 ```js
-import {reactAppConfig} from '../../eslint.shared.mjs';
-export default await reactAppConfig({
+import {reactAppConfig} from '@internal/cfg-eslint-react';
+export default reactAppConfig({
     tailwindCssPath: `${import.meta.dirname}/../admin/src/index.css`,
     shadeRestricted: true
 });
@@ -270,8 +320,11 @@ export default await reactAppConfig({
 Conventions:
 - **Rules are `'error'` or `'off'` — never `'warn'`.** Warnings get ignored and pollute output. Applies to every workspace covered by the factories above + the standalones; `e2e/` has its own setup (see [e2e/CLAUDE.md](e2e/CLAUDE.md)) and currently still uses warn-level Playwright rules — a separate cleanup.
 - **Params prefixed `legacy*`** (`legacyTailwindV3ConfigPath`, `legacyJsTsSplit`) are escape hatches for migrations that haven't shipped yet. Intentional and visible — PRs to remove them are scoped.
-- **Standalone configs** (`ghost/core`, `ghost/admin`, `apps/admin`, `apps/admin-toolbar`) exist because their rule sets genuinely don't fit a factory — read the file directly. They import shared atoms (`correctnessRules`, `nodeLibRules`, `localFilenamesPlugin`, `strictLinterOptions`) where applicable.
-- **Plugin deps**: workspaces that use Tailwind must list `tailwindcss` as a (dev)Dependency themselves; other eslint plugins are root devDeps because the factory imports them dynamically.
+- **Standalone configs** (`ghost/core`, `ghost/admin`, `apps/admin`, `apps/admin-toolbar`) exist because their rule sets genuinely don't fit a factory — read the file directly. They import shared atoms (`correctnessRules`, `nodeLibRules`, `localFilenamesPlugin`, `strictLinterOptions`) from `@internal/cfg-eslint`.
+- **Plugin deps**: a workspace must declare every eslint plugin its config resolves. Two cases:
+  - *Factory consumers* only import a factory, which supplies its plugins as objects from the config package — so they need just the config package (`@internal/cfg-eslint` / `@internal/cfg-eslint-react`) as a `workspace:*` devDependency, not the individual plugins.
+  - *Hand-rolled configs* (the standalones above, plus the inline configs in `koenig/kg-*` and `e2e/`) `import` plugins directly, so each must list those plugins in its own `devDependencies` — most commonly `eslint-plugin-ghost: catalog:`. Don't rely on the root hoisting a plugin for you; there are no eslint plugins left in the root `package.json` (only `eslint` itself and `globals`, which the root config uses).
+  - Exception: Tailwind — a workspace that uses it must list `tailwindcss` as its own (dev)Dependency regardless (the settings-based resolver requires it locally), and the legacy v3 apps pin `eslint-plugin-tailwindcss` via `catalog:tailwind3`.
 
 ### When Working on Admin UI
 - **New features:** Build in React (`apps/admin-x-*` or `apps/posts`)

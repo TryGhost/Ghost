@@ -30,5 +30,8 @@
         "admin": {
             "maxAge": 0
         }
+    },
+    "security": {
+        "staffDeviceVerification": false
     }
 }

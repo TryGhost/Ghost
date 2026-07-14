@@ -71,10 +71,6 @@ const features: Feature[] = [{
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
-}, {
-    title: 'Gift links',
-    description: 'Tokenized links that let anyone read a single gated post or page in full, no account required',
-    flag: 'giftLinks'
 }];
 
 const AlphaFeatures: React.FC = () => {

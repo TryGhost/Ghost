@@ -1,10 +1,10 @@
 import {AdminPage} from '@/helpers/pages';
 import {Locator, Page} from '@playwright/test';
+import {commentListRow, commentsList} from '@tryghost/test-data/selectors/comments';
 
 export class CommentsPage extends AdminPage {
     readonly commentsList: Locator;
     readonly commentRows: Locator;
-    readonly viewPostMenuItem: Locator;
     readonly viewOnPostMenuItem: Locator;
     readonly viewMemberMenuItem: Locator;
     readonly disableCommentingMenuItem: Locator;
@@ -16,17 +16,12 @@ export class CommentsPage extends AdminPage {
     readonly commentingDisabledIndicator = (row: Locator) => row.getByTestId('commenting-disabled-indicator');
     readonly hideCommentsCheckbox: Locator;
 
-    readonly threadSidebar: Locator;
-    readonly threadSidebarTitle: Locator;
-    readonly threadCommentRows: Locator;
-
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/comments';
 
-        this.commentsList = page.getByTestId('comments-list');
-        this.commentRows = page.getByTestId('comment-list-row');
-        this.viewPostMenuItem = page.getByRole('menuitem', {name: 'View post'});
+        this.commentsList = page.getByTestId(commentsList);
+        this.commentRows = page.getByTestId(commentListRow);
         this.viewOnPostMenuItem = page.getByRole('menuitem', {name: 'View on post'});
         this.viewMemberMenuItem = page.getByRole('menuitem', {name: 'View member'});
         this.disableCommentingMenuItem = page.getByRole('menuitem', {name: 'Disable commenting'});
@@ -36,10 +31,6 @@ export class CommentsPage extends AdminPage {
         this.disableCommentsButton = this.disableCommentsModal.getByRole('button', {name: 'Disable comments'});
         this.cancelButton = this.disableCommentsModal.getByRole('button', {name: 'Cancel'});
         this.hideCommentsCheckbox = this.disableCommentsModal.getByRole('checkbox', {name: 'Hide all previous comments'});
-
-        this.threadSidebar = page.getByRole('dialog', {name: 'Thread'});
-        this.threadSidebarTitle = this.threadSidebar.getByRole('heading', {name: 'Thread'});
-        this.threadCommentRows = page.getByTestId(/^comment-thread-row-/);
     }
 
     async waitForComments(): Promise<void> {
@@ -68,31 +59,5 @@ export class CommentsPage extends AdminPage {
 
     async confirmDisableCommenting(): Promise<void> {
         await this.disableCommentsButton.click();
-    }
-
-    getRepliesButton(row: Locator): Locator {
-        // Use first() because nested replies also have their own replies-metric
-        return row.getByTestId('replies-metric').first();
-    }
-
-    async openThread(row: Locator): Promise<void> {
-        await this.getRepliesButton(row).click();
-        await this.threadSidebar.waitFor({state: 'visible'});
-    }
-
-    async waitForThreadSidebar(): Promise<void> {
-        await this.threadSidebar.waitFor({state: 'visible'});
-    }
-
-    getThreadCommentByText(text: string): Locator {
-        return this.threadCommentRows.filter({hasText: text});
-    }
-
-    getThreadCommentById(commentId: string): Locator {
-        return this.page.getByTestId(`comment-thread-row-${commentId}`);
-    }
-
-    getRepliedToLink(row: Locator): Locator {
-        return row.getByTestId('replied-to-link');
     }
 }

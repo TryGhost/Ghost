@@ -1325,7 +1325,7 @@ describe('Members API', function () {
         const newMember = await createMemberThroughApi({member, agent});
 
         // Cannot add same member twice
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await agent
             .post(`/members/`)
             .body({members: [member]})

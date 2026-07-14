@@ -2,6 +2,7 @@ const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e
 const models = require('../../../../core/server/models');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
+const logging = require('@tryghost/logging');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const configUtils = require('../../../utils/config-utils');
 const emailService = require('../../../../core/server/services/email-service');
@@ -105,6 +106,11 @@ describe('Resume interrupted sends', function () {
         const mailgunStub = mockManager.getMailgunCreateMessageStub();
         mailgunStub.resetHistory();
 
+        // The orphan batch is an expected, deliberately-triggered failure path (see the
+        // "orphan from a crashed worker" guard in batch-sending-service.js) — stub the
+        // logger so we can assert that guard fired instead of spamming stdout.
+        const errorLog = sinon.stub(logging, 'error');
+
         const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
         await emailService.service.resumeInterruptedSends();
         await completedPromise;
@@ -114,6 +120,12 @@ describe('Resume interrupted sends', function () {
         // so an operator can reconcile it against the Mailgun dashboard before retrying.
         await emailModel.refresh();
         assert.equal(emailModel.get('status'), 'failed', 'email should promote to failed when an orphan submitting batch is present');
+
+        // The orphan-batch guard logs a string; the outer emailJob catch (which also fires,
+        // since the partial failure propagates up) logs an EmailError object — only check
+        // for the specific guard message we're testing here, not every call's shape.
+        const orphanLogs = errorLog.getCalls().filter(call => typeof call.args[0] === 'string' && /is stuck in status=submitting \(orphan from a crashed worker\)/.test(call.args[0]));
+        assert.ok(orphanLogs.length > 0, 'expected the "orphan from a crashed worker" guard to log an error');
 
         batches = (await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`})).models;
         const refreshedA = batches.find(b => b.id === batchA.id);

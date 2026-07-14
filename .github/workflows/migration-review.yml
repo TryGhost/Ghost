@@ -9,7 +9,7 @@ permissions:
   contents: read
 jobs:
   createComment:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: github.repository_owner == 'TryGhost'
     name: Add migration review requirements
     permissions:
