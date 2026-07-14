@@ -57,6 +57,14 @@ export function getCardVisibilitySettings(cardConfig = {}) {
     return isPage ? 'web only' : 'web and email';
 }
 
+export function getGenerateAltText(settings, ai) {
+    if (!settings.aiIsConfigured) {
+        return undefined;
+    }
+
+    return imageUrl => ai.generateImageAltText(imageUrl);
+}
+
 /**
  * Fetches the URLs of all active offers
  * @returns {Promise<{label: string, value: string}[]>}
@@ -132,6 +140,7 @@ const TKCountPlugin = ({editorResource, ...props}) => {
 };
 
 export default class KoenigLexicalEditor extends Component {
+    @service ai;
     @service ajax;
     @service feature;
     @service ghostPaths;
@@ -429,6 +438,7 @@ export default class KoenigLexicalEditor extends Component {
             fetchAutocompleteLinks,
             fetchEmbed,
             fetchLabels,
+            generateAltText: getGenerateAltText(this.settings, this.ai),
             renderLabels: !this.session.user.isContributor,
             feature: {
                 transistor: this.settings.transistor

@@ -93,7 +93,9 @@ const EDITABLE_SETTINGS = [
     'transistor_portal_heading',
     'transistor_portal_description',
     'transistor_portal_button_text',
-    'transistor_portal_url_template'
+    'transistor_portal_url_template',
+    'ai_provider',
+    'ai_anthropic_api_key'
 ];
 
 module.exports = {

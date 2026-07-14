@@ -1,5 +1,7 @@
 // NOTE: mapping is based on maping present in migration - 3.22/04-populate-settings-groups-and-flags
 const keyGroupMapping = {
+    ai_provider: 'ai',
+    ai_anthropic_api_key: 'ai',
     members_public_key: 'core',
     members_private_key: 'core',
     members_email_auth_secret: 'core',

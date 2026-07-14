@@ -300,6 +300,37 @@ test.describe('Image card', async () => {
         `, {ignoreCardToolbarContents: true});
     });
 
+    test('can generate and replace alt text when configured', async function () {
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'image',
+                    src: '/content/images/2022/11/koenig-lexical.jpg',
+                    width: 3840,
+                    height: 2160,
+                    alt: 'Existing alt text',
+                    caption: ''
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}&generateAltText=true`});
+
+        await page.click('[data-kg-card="image"]');
+        await page.getByTestId('alt-toggle-button').click();
+        await page.getByTestId('generate-alt-text-button').click();
+
+        await expect(page.getByTestId('image-caption-editor')).toHaveValue('A lighthouse above rough seas.');
+
+        const editorState = JSON.parse(await getEditorStateJSON(page));
+        expect(editorState.root.children[0].alt).toEqual('A lighthouse above rough seas.');
+    });
+
     test('renders caption if present', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 

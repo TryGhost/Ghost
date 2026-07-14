@@ -62,4 +62,21 @@ describe('Unit: Validator: post', function () {
             expect(error.message).to.equal('Canonical URL is too long, max 2000 chars');
         });
     });
+
+    describe('featureImageAlt', function () {
+        it('accepts 2000 characters', async function () {
+            let post = Post.create({featureImageAlt: 'a'.repeat(2000)});
+            let passed = await post.validate({property: 'featureImageAlt'}).then(() => true).catch(() => false);
+
+            expect(passed, 'passed').to.be.true;
+        });
+
+        it('rejects more than 2000 characters', async function () {
+            let post = Post.create({featureImageAlt: 'a'.repeat(2001)});
+            let passed = await post.validate({property: 'featureImageAlt'}).then(() => true).catch(() => false);
+
+            expect(passed, 'passed').to.be.false;
+            expect(post.errors.errorsFor('featureImageAlt').get(0).message).to.equal('Feature image alt text cannot be longer than 2000 characters.');
+        });
+    });
 });

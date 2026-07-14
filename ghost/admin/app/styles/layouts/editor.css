@@ -797,6 +797,13 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     align-items: center;
     padding: .8rem 0;
 }
+.gh-editor-feature-image-caption-actions {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    z-index: 1;
+}
+
 .gh-editor-feature-image-alttext,
 .gh-editor-feature-image-caption {
     width: 100%;

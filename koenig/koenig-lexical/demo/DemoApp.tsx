@@ -319,6 +319,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
             transistor: searchParams.get('labs')?.includes('transistor') || defaultCardConfig.feature.transistor
         },
         searchLinks: searchParams.get('searchLinks') === 'false' ? undefined : defaultCardConfig.searchLinks,
+        generateAltText: searchParams.get('generateAltText') === 'true' ? async () => 'A lighthouse above rough seas.' : undefined,
         stripeEnabled: searchParams.get('stripe') === 'false' ? false : defaultCardConfig.stripeEnabled,
         deprecated: {
             headerV1: hideDeprecatedCardInMenu(searchParams),

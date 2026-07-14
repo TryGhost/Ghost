@@ -87,6 +87,21 @@ describe('SettingsImporter', function () {
             assert.equal(emailVerificationRequired, undefined);
         });
 
+        it('Does not import the ai_anthropic_api_key setting', function () {
+            const fakeSettings = [{
+                key: 'ai_anthropic_api_key',
+                value: 'sk-ant-imported'
+            }];
+
+            const importer = new SettingsImporter({settings: fakeSettings}, {dataKeyToImport: 'settings'});
+
+            importer.beforeImport();
+
+            const aiApiKey = find(importer.dataToImport, {key: 'ai_anthropic_api_key'});
+
+            assert.equal(aiApiKey, undefined);
+        });
+
         it('Does not overwrite site_uuid setting', function () {
             const fakeSettings = [{
                 key: 'site_uuid',

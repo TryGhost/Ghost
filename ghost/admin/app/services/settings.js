@@ -45,13 +45,20 @@ export default class SettingsService extends Service.extend(ValidationEngine) {
         return this.mailgunApiKey && this.mailgunDomain && this.mailgunBaseUrl;
     }
 
+    // true when any supported AI provider has a configured API key, regardless
+    // of which provider is currently selected - keeps editor callers from
+    // needing to know about individual provider settings
+    get aiIsConfigured() {
+        return Boolean(this.aiAnthropicApiKey);
+    }
+
     // the settings API endpoint is a little weird as it's singular and we have
     // to pass in all types - if we ever fetch settings without all types then
     // save we have problems with the missing settings being removed or reset
     _loadSettings() {
         if (!this._loadingPromise) {
             this._loadingPromise = this.store
-                .queryRecord('setting', {group: 'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,recommendations,security,social_web,explore,transistor'})
+                .queryRecord('setting', {group: 'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,recommendations,security,social_web,explore,transistor,ai'})
                 .then((settings) => {
                     this._loadingPromise = null;
                     return settings;
