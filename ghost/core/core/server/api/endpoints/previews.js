@@ -2,6 +2,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const membersService = require('../../services/members');
+const urlSerializerUtils = require('./utils/serializers/input/utils/url');
 const ALLOWED_INCLUDES = ['authors', 'tags', 'tiers'];
 const ALLOWED_MEMBER_STATUSES = ['anonymous', 'free', 'paid'];
 
@@ -69,6 +70,12 @@ const controller = {
         },
         async query(frame) {
             await _addMemberContextToFrame(frame);
+
+            // The previews response serializes `url` through the same posts
+            // mapper as the other endpoints, so the relations the lazy URL
+            // service reads must be loaded here too; the mapper strips the
+            // forced ones from the response after the URL is built.
+            urlSerializerUtils.forceUrlRelationsWhenLazy(frame, 'posts');
 
             const model = await models.Post.findOne(Object.assign({status: 'all'}, frame.data), frame.options);
             if (!model) {
