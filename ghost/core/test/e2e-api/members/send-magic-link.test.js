@@ -12,12 +12,33 @@ const spamPrevention = require('../../../core/server/web/shared/middleware/api/s
 
 let membersAgent, membersService;
 
+const addIntegrityTokenToPostRequests = (agent) => {
+    const post = agent.post.bind(agent);
+    agent.post = (url, options) => {
+        const request = post(url, options);
+        const setBody = request.body.bind(request);
+
+        request.body = body => {
+            const integrityToken = Object.hasOwn(body, 'integrityToken')
+                ? body.integrityToken
+                : membersService.requestIntegrityTokenProvider.create();
+
+            return setBody({...body, integrityToken});
+        };
+
+        return request;
+    };
+
+    return agent;
+};
+
 describe('sendMagicLink', function () {
     beforeAll(async function () {
         const agents = await agentProvider.getAgentsForMembers();
         membersAgent = agents.membersAgent;
 
         membersService = require('../../../core/server/services/members');
+        membersAgent = addIntegrityTokenToPostRequests(membersAgent);
 
         await fixtureManager.init('members');
     });
@@ -34,6 +55,26 @@ describe('sendMagicLink', function () {
 
     afterEach(function () {
         mockManager.restore();
+    });
+
+    it('Errors when the integrity token is missing', async function () {
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email: 'test@example.com',
+                emailType: 'signup',
+                integrityToken: undefined
+            })
+            .expectStatus(400);
+    });
+
+    it('Errors when the integrity token is invalid', async function () {
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email: 'test@example.com',
+                emailType: 'signup',
+                integrityToken: 'invalid'
+            })
+            .expectStatus(400);
     });
 
     it('Errors when passed multiple emails', async function () {
@@ -350,7 +391,7 @@ describe('sendMagicLink', function () {
 
         it('blocks signups from email domains blocked in config', async function () {
             const blockedEmail = 'hello@blocked-domain-config.com';
-            membersAgent = membersAgent.duplicate();
+            membersAgent = addIntegrityTokenToPostRequests(membersAgent.duplicate());
             await membersAgent.post('/api/send-magic-link')
                 .body({
                     email: blockedEmail,
@@ -369,7 +410,7 @@ describe('sendMagicLink', function () {
             settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
 
             const blockedEmail = 'hello@blocked-domain-setting.com';
-            membersAgent = membersAgent.duplicate();
+            membersAgent = addIntegrityTokenToPostRequests(membersAgent.duplicate());
             await membersAgent.post('/api/send-magic-link')
                 .body({
                     email: blockedEmail,
