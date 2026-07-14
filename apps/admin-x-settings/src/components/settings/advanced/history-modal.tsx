@@ -4,6 +4,7 @@ import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, type LoadS
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type User} from '@tryghost/admin-x-framework/api/users';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
+import {keepPreviousData} from '@tanstack/react-query';
 import {useCallback, useState} from 'react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
@@ -189,7 +190,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
             ...otherParams,
             filter: [otherParams.filter, lastPage.actions.length && `created_at:<'${formatDateForFilter(new Date(lastPage.actions[lastPage.actions.length - 1].created_at))}'`].join('+')
         }),
-        keepPreviousData: true
+        placeholderData: keepPreviousData
     });
 
     const fetchNext = useCallback(() => {

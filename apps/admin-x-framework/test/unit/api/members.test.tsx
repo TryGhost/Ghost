@@ -23,7 +23,7 @@ function membersInfiniteResponse(total: number): MembersInfiniteResponseType {
 }
 
 function seedMemberCount(queryClient: ReturnType<typeof createTestQueryClient>, total = 10, options?: {updatedAt?: number}) {
-    queryClient.setQueryDefaults(memberCountKey, {cacheTime: Infinity});
+    queryClient.setQueryDefaults(memberCountKey, {gcTime: Infinity});
     queryClient.setQueryData(memberCountKey, membersResponse(total), options);
 }
 
@@ -31,7 +31,7 @@ function createQueryClientWithCurrentUser() {
     const queryClient = createTestQueryClient();
 
     queryClient.setQueryDefaults(currentUserQueryKey, {staleTime: Infinity});
-    queryClient.setQueryDefaults(memberCountKey, {cacheTime: Infinity});
+    queryClient.setQueryDefaults(memberCountKey, {gcTime: Infinity});
     queryClient.setQueryData(currentUserQueryKey, {
         users: [{
             id: 'user-1',
@@ -240,7 +240,7 @@ describe('members api', () => {
         const queryClient = createQueryClientWithCurrentUser();
         const memberDetailKey = ['MembersResponseType', 'http://localhost:3000/ghost/api/admin/members/member-1/'];
 
-        queryClient.setQueryDefaults(memberDetailKey, {cacheTime: Infinity});
+        queryClient.setQueryDefaults(memberDetailKey, {gcTime: Infinity});
         seedMemberCount(queryClient, 102466);
 
         queryClient.setQueryData(memberDetailKey, {

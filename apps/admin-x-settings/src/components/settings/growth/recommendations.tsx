@@ -4,6 +4,7 @@ import RecommendationList from './recommendations/recommendation-list';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Button, type ShowMoreData, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {keepPreviousData} from '@tanstack/react-query';
 import {useBrowseIncomingRecommendations, useBrowseRecommendations} from '@tryghost/admin-x-framework/api/recommendations';
 import {useReferrerHistory} from '@tryghost/admin-x-framework/api/referrers';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -40,7 +41,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 limit: '100'
             };
         },
-        keepPreviousData: true
+        placeholderData: keepPreviousData
     });
 
     const showMoreRecommendations: ShowMoreData = {
@@ -73,7 +74,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 limit: '100'
             };
         },
-        keepPreviousData: true
+        placeholderData: keepPreviousData
     });
 
     const {data: {stats} = {}, isLoading: areStatsLoading} = useReferrerHistory({});

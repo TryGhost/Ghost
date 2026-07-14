@@ -15,6 +15,7 @@ const createMockApiReturn = <T>(
     error: Error | null = null
 ): UseQueryResult<T> => ({
         data,
+        isPending: isLoading,
         isLoading,
         error,
         refetch: vi.fn(),
@@ -22,8 +23,8 @@ const createMockApiReturn = <T>(
         isLoadingError: false,
         isRefetchError: false,
         isSuccess: !isLoading && !error && data !== undefined,
-        isIdle: false,
-        status: isLoading ? 'loading' : error ? 'error' : 'success',
+        status: isLoading ? 'pending' : error ? 'error' : 'success',
+        fetchStatus: isLoading ? 'fetching' : 'idle',
         dataUpdatedAt: Date.now(),
         errorUpdatedAt: error ? Date.now() : 0,
         failureCount: error ? 1 : 0,
@@ -31,16 +32,15 @@ const createMockApiReturn = <T>(
         isFetchedAfterMount: true,
         isFetching: isLoading,
         isPlaceholderData: false,
-        isPreviousData: false,
         isStale: false,
-        remove: vi.fn(),
         // Add missing properties for TypeScript compatibility
         failureReason: null,
         errorUpdateCount: 0,
         isInitialLoading: isLoading,
         isPaused: false,
         isRefetching: false,
-        isStaleByTime: false
+        isEnabled: true,
+        promise: Promise.resolve(data as T)
     } as unknown as UseQueryResult<T>);
 
 /**

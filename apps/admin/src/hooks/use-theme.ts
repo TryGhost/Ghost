@@ -38,7 +38,7 @@ function applyAdminTheme(mode: ThemeMode, resolvedTheme: ResolvedThemeMode) {
 
 export function useTheme() {
     const {data: preferences} = useUserPreferences();
-    const {mutateAsync: editPreferences, isLoading: isEditingPreferences} = useEditUserPreferences();
+    const {mutateAsync: editPreferences, isPending: isEditingPreferences} = useEditUserPreferences();
     const [systemTheme, setSystemTheme] = useState<ResolvedThemeMode>(getSystemTheme);
     const [pendingTheme, setPendingTheme] = useState<ThemeMode | null>(null);
     const [isPendingTheme, setIsPendingTheme] = useState(false);
