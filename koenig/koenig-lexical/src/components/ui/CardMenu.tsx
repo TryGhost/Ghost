@@ -117,7 +117,7 @@ export const CardSnippetItem = ({label, isSelected, scrollToItem, Icon, onRemove
     );
 };
 
-export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex, scrollToSelectedItem, closeMenu}) => {
+export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex, scrollToSelectedItem, closeMenu, source, searchTerm}) => {
     // build up the children arrays from the passed in menu Map
     const CardMenuSections = [];
 
@@ -132,7 +132,11 @@ export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex
                 event.stopPropagation();
                 insert?.(item.insertCommand, {insertParams: item.insertParams, queryParams: item.queryParams});
                 const cardIdentifier = item.type === 'snippet' ? 'Snippet' : item.label;
-                trackEvent('Card Added', {card: cardIdentifier});
+                trackEvent('Card Added', {
+                    card: cardIdentifier,
+                    source,
+                    ...(searchTerm && {searchTerm})
+                });
             };
 
             if (!item.type || item.type === 'card') {
