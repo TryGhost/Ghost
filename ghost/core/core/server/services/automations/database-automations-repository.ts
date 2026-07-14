@@ -10,6 +10,7 @@ import type {
     Automation,
     AutomationAction,
     AutomationEdge,
+    AutomationEmailStats,
     AutomationSummary,
     AutomationStepTerminalStatus,
     AutomationStepToRun,
@@ -60,6 +61,12 @@ interface ActionRow {
     email_lexical: string | null;
     email_design_setting_id: string | null;
 }
+
+type ActionStatsRow = {
+    action_id: string;
+    email_sent_count: number | null;
+    email_opened_count: number | null;
+};
 
 type ActionRevisionRow = {
     action_id: string;
@@ -1085,10 +1092,11 @@ function requireAutomation(automation: AutomationRow | null, id: string): Automa
 
 async function buildAutomation(trx: Knex.Transaction, automation: AutomationRow): Promise<Automation> {
     const actionRows = await loadActionRows(trx, automation.id);
+    const actionStats = await loadActionStats(trx, actionRows.map(row => row.id));
     const edgeRows = await loadEdgeRows(trx, automation.id);
     return {
         ...buildAutomationSummary(automation),
-        actions: actionRows.map(row => buildActionPayload(row)),
+        actions: actionRows.map(row => buildActionPayload(row, actionStats.get(row.id) ?? null)),
         edges: edgeRows.map(row => buildEdgePayload(row))
     };
 }
@@ -1132,6 +1140,26 @@ async function loadActionRows(trx: Knex.Transaction, automationId: string): Prom
         ]);
 }
 
+async function loadActionStats(
+    trx: Knex.Transaction,
+    actionIds: ReadonlyArray<string>
+): Promise<Map<string, AutomationEmailStats>> {
+    if (actionIds.length === 0) {
+        return new Map();
+    }
+
+    const rows: ActionStatsRow[] = await trx('automation_action_revisions')
+        .select('action_id')
+        .sum({
+            email_sent_count: 'email_sent_count',
+            email_opened_count: 'email_opened_count'
+        })
+        .whereIn('action_id', actionIds)
+        .groupBy('action_id');
+
+    return new Map(rows.map(row => [row.action_id, buildEmailStats(row)]));
+}
+
 async function loadEdgeRows(trx: Knex.Transaction, automationId: string): Promise<EdgeRow[]> {
     return await trx('automation_action_edges as e')
         .select('e.source_action_id', 'e.target_action_id')
@@ -1153,7 +1181,7 @@ async function loadEdgeRows(trx: Knex.Transaction, automationId: string): Promis
         ]);
 }
 
-function buildActionPayload(row: ActionRow): AutomationAction {
+function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null): AutomationAction {
     switch (row.type) {
     case 'wait':
         return {
@@ -1171,9 +1199,31 @@ function buildActionPayload(row: ActionRow): AutomationAction {
                 email_subject: requireValue(row, 'email_subject'),
                 email_lexical: requireValue(row, 'email_lexical'),
                 email_design_setting_id: requireValue(row, 'email_design_setting_id')
-            }
+            },
+            stats: stats ?? EMPTY_EMAIL_STATS
         };
     }
+}
+
+const EMPTY_EMAIL_STATS: AutomationEmailStats = {
+    email_sent_count: 0,
+    email_opened_count: 0,
+    opened_rate: null,
+    clicked_rate: null
+};
+
+function buildEmailStats(row: ActionStatsRow): AutomationEmailStats {
+    const emailSentCount = row.email_sent_count ?? 0;
+    const emailOpenedCount = row.email_opened_count ?? 0;
+    return {
+        email_sent_count: emailSentCount,
+        email_opened_count: emailOpenedCount,
+        opened_rate: emailSentCount
+            ? Math.round(emailOpenedCount / emailSentCount * 100)
+            : null,
+        // TODO(NY-1387) Populate clicked_rate once click tracking is implemented.
+        clicked_rate: null
+    };
 }
 
 function requireValue<
