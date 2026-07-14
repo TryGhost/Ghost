@@ -22,13 +22,14 @@ class SiteMapManager {
         this.index = options.index || this.createIndexGenerator(options);
 
         events.on('router.created', (router) => {
-            if (router.name === 'StaticRoutesRouter') {
-                this.pages.addUrl(router.getRoute({absolute: true}), {id: router.identifier, staticRoute: true});
+            if (router.name !== 'StaticRoutesRouter' && router.name !== 'CollectionRouter') {
+                return;
             }
-
-            if (router.name === 'CollectionRouter') {
-                this.pages.addUrl(router.getRoute({absolute: true}), {id: router.identifier, staticRoute: false});
-            }
+            const entry = {
+                url: router.getRoute({absolute: true}),
+                datum: {id: router.identifier, staticRoute: router.name === 'StaticRoutesRouter'}
+            };
+            this.pages.addUrl(entry.url, entry.datum);
         });
 
         DomainEvents.subscribe(URLResourceUpdatedEvent, (event) => {
