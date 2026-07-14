@@ -135,9 +135,7 @@ export function CardCaptionEditor({
                         <GenerateAltTextButton isGenerating={isGeneratingAlt} onClick={generateImageAltText} />
                         <AltToggleButton isEditingAlt={isEditingAlt} grouped onClick={toggleIsEditingAlt} />
                     </div>
-                    : <div className="absolute bottom-0 right-0 m-2">
-                        <AltToggleButton isEditingAlt={isEditingAlt} onClick={toggleIsEditingAlt} />
-                    </div>
+                    : <AltToggleButton isEditingAlt={isEditingAlt} onClick={toggleIsEditingAlt} />
                 )}
             </figcaption>
         )
