@@ -81,6 +81,52 @@ describe('Unit: utils/serializers/output/mappers', function () {
             assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', {id: 'id3', feature_image: 'value'}, frame.options]);
             assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id4', {name: 'Ghosty', id: 'id4'}, frame.options]);
         });
+
+        it('strips relations force-loaded for the URL after the URL is computed', async function () {
+            const frame = {
+                original: {
+                    context: {}
+                },
+                options: {
+                    withRelated: ['tags', 'authors'],
+                    context: {}
+                },
+                // input serializer recorded: caller asked for authors only,
+                // tags were force-loaded for the URL computation
+                forcedUrlRelations: ['tags'],
+                apiType: 'content'
+            };
+
+            const post = createJsonModel(testUtils.DataGenerator.forKnex.createPost({
+                id: 'id1',
+                tags: [{
+                    id: 'id3'
+                }],
+                authors: [{
+                    id: 'id4',
+                    name: 'Ghosty'
+                }]
+            }));
+
+            // the mapper mutates the model in place, so capture at call time
+            let tagsPresentAtUrlTime = false;
+            urlUtil.forPost.callsFake((id, attrs) => {
+                tagsPresentAtUrlTime = Array.isArray(attrs.tags);
+                return attrs;
+            });
+
+            const result = await mappers.posts(post, frame);
+
+            // url computed while tags were still on the model
+            sinon.assert.calledOnce(urlUtil.forPost);
+            assert.ok(tagsPresentAtUrlTime, 'tags must still be present when the URL is computed');
+
+            // ...but the response does not leak the unrequested relation
+            assert.equal(result.tags, undefined);
+            assert.ok(result.authors, 'requested relation must survive');
+            sinon.assert.notCalled(urlUtil.forTag);
+            sinon.assert.calledOnce(urlUtil.forUser);
+        });
     });
 
     describe('User Mapper', function () {
