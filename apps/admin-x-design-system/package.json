@@ -25,8 +25,8 @@
         "types"
     ],
     "devDependencies": {
-        "@codemirror/lang-html": "6.4.11",
-        "@codemirror/state": "6.7.1",
+        "@codemirror/lang-html": "catalog:",
+        "@codemirror/state": "catalog:",
         "@dnd-kit/utilities": "3.2.2",
         "@internal/cfg-eslint-react": "workspace:*",
         "@storybook/addon-docs": "catalog:",
@@ -75,7 +75,7 @@
         "@radix-ui/react-tooltip": "catalog:",
         "@sentry/react": "catalog:",
         "@tryghost/shade": "workspace:*",
-        "@uiw/react-codemirror": "4.25.10",
+        "@uiw/react-codemirror": "catalog:",
         "clsx": "catalog:",
         "react-colorful": "5.7.0",
         "react-hot-toast": "catalog:",
