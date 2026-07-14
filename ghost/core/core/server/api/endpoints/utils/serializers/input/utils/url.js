@@ -1,5 +1,6 @@
 const urlUtils = require('../../../../../../../shared/url-utils');
 const urlService = require('../../../../../../services/url');
+const localUtils = require('../../../index');
 
 const handleImageUrl = (imageUrl) => {
     try {
@@ -84,8 +85,33 @@ const forceUrlColumnsWhenLazy = (frame, routerType) => {
     }
 };
 
+// `url` is computed for every serialized post/page unless `?fields` narrows it
+// away, so the relations the lazy URL service reads (e.g. tags for a
+// tag-filtered collection) must be loaded whenever the URL will be serialized
+// — not only for the `?fields=url` case. No-op under the eager service
+// (getRequiredRelations → []).
+const forceUrlRelationsWhenLazy = (frame, routerType) => {
+    if (!localUtils.willSerializeUrl(frame)) {
+        return;
+    }
+    const relations = urlService.facade.getRequiredRelations();
+    if (relations.length) {
+        const requested = frame.options.withRelated || [];
+        const forced = relations.filter(relation => !requested.includes(relation));
+        if (forced.length) {
+            // Record what was forced (not what the caller asked for) so the
+            // output mapper can strip it from the response after the URL is
+            // built — the response shape must match the query.
+            frame.forcedUrlRelations = forced;
+            frame.options.withRelated = [...requested, ...forced];
+        }
+    }
+    forceUrlColumnsWhenLazy(frame, routerType);
+};
+
 module.exports.forPost = forPost;
 module.exports.forUser = forUser;
 module.exports.forTag = forTag;
 module.exports.forSetting = forSetting;
 module.exports.forceUrlColumnsWhenLazy = forceUrlColumnsWhenLazy;
+module.exports.forceUrlRelationsWhenLazy = forceUrlRelationsWhenLazy;
