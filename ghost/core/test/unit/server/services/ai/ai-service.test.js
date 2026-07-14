@@ -47,27 +47,6 @@ describe('AIService', function () {
         sinon.restore();
     });
 
-    describe('isConfigured', function () {
-        it('is true when a provider that supports the capability has an API key set', function () {
-            assert.equal(service.isConfigured, true);
-        });
-
-        it('is false when no configured provider has an API key', function () {
-            settingsCache.get.withArgs('ai_anthropic_api_key').returns(null);
-            assert.equal(service.isConfigured, false);
-        });
-
-        it('is false when no registered provider advertises the required capability', function () {
-            FakeProvider.capabilities = new Set(['text-generation']);
-            assert.equal(service.isConfigured, false);
-        });
-
-        it('skips providers whose capabilities set is missing', function () {
-            delete FakeProvider.capabilities;
-            assert.equal(service.isConfigured, false);
-        });
-    });
-
     describe('generateImageAltText', function () {
         it('requires a configured provider', async function () {
             settingsCache.get.withArgs('ai_anthropic_api_key').returns(null);

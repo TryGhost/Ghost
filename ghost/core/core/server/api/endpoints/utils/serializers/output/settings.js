@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const utils = require('../../index');
 const mappers = require('./mappers');
+const aiService = require('../../../../../services/ai');
 
 /** @typedef {import('@tryghost/api-framework').Frame} Frame */
 
@@ -49,6 +50,19 @@ function serializeSettings(models, apiConfig, frame) {
         const icon = filteredSettings.find(setting => setting.key === 'icon');
         if (icon && icon.value) {
             icon.value = icon.value.replace(/\/content\/images\//, '/content/images/size/w256h256/');
+        }
+
+        // Inject virtual (computed, never stored) AI capability flags so the
+        // admin UI can gate features on actual server-side capability rather
+        // than inferring it from which provider keys are present.
+        const requestedGroups = frame.options.group ? frame.options.group.split(',') : [];
+        if (requestedGroups.length === 0 || requestedGroups.includes('ai')) {
+            filteredSettings.push({
+                key: 'ai_vision_to_text_available',
+                value: aiService.hasCapability('vision-to-text'),
+                group: 'ai',
+                is_read_only: true
+            });
         }
     }
 

@@ -49,16 +49,16 @@ module.exports = class AIService {
     }
 
     /**
-     * @returns {boolean} whether a provider is configured for image alt text
+     * Returns whether any configured provider supports the given capability.
+     * Intended for system-level checks (e.g. serializing derived settings for
+     * the admin UI) — not for feature code, which should just call the
+     * relevant method and let it throw if nothing is available.
      *
-     * Retained as the single admin-facing "is AI usable?" signal because
-     * image alt text is currently the only AI-backed feature. When a second
-     * feature is added, this getter should be replaced by capability-specific
-     * getters (e.g. `hasVisionToText`, `hasTextGeneration`) so the admin UI
-     * can enable each feature independently.
+     * @param {string} capability  e.g. 'vision-to-text'
+     * @returns {boolean}
      */
-    get isConfigured() {
-        return Boolean(this.#resolveProviderForCapability(VISION_TO_TEXT));
+    hasCapability(capability) {
+        return Boolean(this.#resolveProviderForCapability(capability));
     }
 
     /**

@@ -58,7 +58,7 @@ export function getCardVisibilitySettings(cardConfig = {}) {
 }
 
 export function getGenerateAltText(settings, ai) {
-    if (!settings.aiIsConfigured) {
+    if (!settings.aiVisionToTextAvailable) {
         return undefined;
     }
 

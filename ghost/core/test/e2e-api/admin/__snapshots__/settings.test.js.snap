@@ -389,6 +389,11 @@ Object {
       "value": null,
     },
     Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1292,6 +1297,11 @@ Object {
       "value": null,
     },
     Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1746,6 +1756,11 @@ Object {
       "value": null,
     },
     Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -2198,6 +2213,11 @@ Object {
     Object {
       "key": "ai_anthropic_api_key",
       "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -2699,6 +2719,11 @@ Object {
       "value": null,
     },
     Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -3150,6 +3175,11 @@ Object {
     Object {
       "key": "ai_anthropic_api_key",
       "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -4092,6 +4122,11 @@ Object {
       "value": null,
     },
     Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -4546,6 +4581,11 @@ Object {
       "value": null,
     },
     Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -4998,6 +5038,11 @@ Object {
     Object {
       "key": "ai_anthropic_api_key",
       "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -5458,6 +5503,11 @@ Object {
       "value": null,
     },
     Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -5909,6 +5959,11 @@ Object {
     Object {
       "key": "ai_anthropic_api_key",
       "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -6367,6 +6422,11 @@ Object {
     Object {
       "key": "ai_anthropic_api_key",
       "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -7215,6 +7275,11 @@ Object {
       "value": null,
     },
     Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -7667,6 +7732,11 @@ Object {
     Object {
       "key": "ai_anthropic_api_key",
       "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -8124,6 +8194,11 @@ Object {
       "value": null,
     },
     Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -8577,6 +8652,11 @@ Object {
     Object {
       "key": "ai_anthropic_api_key",
       "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -9130,6 +9210,11 @@ Object {
     Object {
       "key": "ai_anthropic_api_key",
       "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",

@@ -153,7 +153,7 @@ describe('Unit: Component: koenig-lexical-editor', function () {
     });
 
     describe('getGenerateAltText()', function () {
-        it('returns no callback when no AI provider is configured', function () {
+        it('returns no callback when vision-to-text is not available', function () {
             const ai = {generateImageAltText: sinon.stub()};
 
             expect(getGenerateAltText({}, ai)).to.be.undefined;
@@ -163,7 +163,7 @@ describe('Unit: Component: koenig-lexical-editor', function () {
             const generateImageAltText = sinon.stub().resolves('A lighthouse above rough seas.');
             const ai = {generateImageAltText};
 
-            const generateAltText = getGenerateAltText({aiIsConfigured: true}, ai);
+            const generateAltText = getGenerateAltText({aiVisionToTextAvailable: true}, ai);
             const result = await generateAltText('/content/images/lighthouse.jpg');
 
             expect(result).to.equal('A lighthouse above rough seas.');

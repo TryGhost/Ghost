@@ -28,6 +28,7 @@ export default Model.extend(ValidationEngine, {
     firstpromoterId: attr('string'),
     unsplash: attr('boolean'),
     aiAnthropicApiKey: attr('string'),
+    aiVisionToTextAvailable: attr('boolean'),
     metaTitle: attr('string'),
     metaDescription: attr('string'),
     twitterTitle: attr('string'),
