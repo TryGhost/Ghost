@@ -20,7 +20,7 @@ function _formatAttrs(attributes) {
         let value = attributes[key];
 
         // @TODO handle non-string attributes?
-        attributeString += `${key}="${value}"`;
+        attributeString += ` ${key}="${value}"`;
     });
 
     return attributeString;
@@ -61,7 +61,7 @@ module.exports = function link(options) {
     let classString = classes.length > 0 ? `class="${classes.join(' ')}"` : '';
     let hrefString = `href="${href}"`;
     let attributeString = _.size(attributes) > 0 ? _formatAttrs(attributes) : '';
-    let openingTag = `<a ${classString} ${hrefString} ${attributeString}>`;
+    let openingTag = `<a ${classString} ${hrefString}${attributeString}>`;
     let closingTag = `</a>`;
 
     // Clean up any extra spaces

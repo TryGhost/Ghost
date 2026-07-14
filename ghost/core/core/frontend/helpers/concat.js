@@ -7,5 +7,5 @@ module.exports = function concat(...args) {
     // Flatten arrays - if an argument is an array, spread its elements
     const flattenedArgs = args.flat();
 
-    return new SafeString(flattenedArgs.join(separator));
+    return (args[0] instanceof SafeString) ? new SafeString(flattenedArgs.join(separator)) : new String(flattenedArgs.join(separator));
 };

@@ -31,10 +31,13 @@ module.exports = function split(...args) {
     }
     
     // Filter out all empty strings
-    const result = string.split(separator)
+    const result = (args[0] instanceof SafeString) ? string.split(separator)
         .filter(item => item !== '')
-        .map(item => new SafeString(item));
-
+        .map(item => new SafeString(item)) :
+        string.split(separator)
+            .filter(item => item !== '')
+            .map(item => new String(item));
+    
     if (result.length === 0) {
         return renderResult([], options, data);
     }
