@@ -31,5 +31,24 @@ module.exports = function getAdapterServiceConfig(config) {
         adapterServiceConfig.redirects.FileStore.basePath ||= config.getContentPath('data');
     }
 
+    if (adapterServiceConfig['route-settings']?.FileStore) {
+        // Resolve into fresh objects rather than mutating the stored config:
+        // config.get('adapters') returns a live reference, so a `||=` here
+        // would bake the first caller's content path into the singleton and
+        // ignore later contentPath changes (test boots swap it per instance).
+        const fileStoreConfig = adapterServiceConfig['route-settings'].FileStore;
+        return {
+            ...adapterServiceConfig,
+            'route-settings': {
+                ...adapterServiceConfig['route-settings'],
+                FileStore: {
+                    ...fileStoreConfig,
+                    basePath: fileStoreConfig.basePath || config.getContentPath('settings'),
+                    defaultSettingsBasePath: fileStoreConfig.defaultSettingsBasePath || config.get('paths').defaultRouteSettings
+                }
+            }
+        };
+    }
+
     return adapterServiceConfig;
 };

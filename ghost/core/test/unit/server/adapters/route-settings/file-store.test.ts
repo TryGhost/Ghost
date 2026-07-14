@@ -5,12 +5,12 @@ import path from 'node:path';
 import fs from 'fs-extra';
 import {afterEach, beforeEach, describe, it} from 'vitest';
 
+import {RouteSettingsStoreBase, type RouteSettings} from '@tryghost/adapter-base-route-settings';
+
 import FileStore, {getBackupRouteSettingsFilePath} from '../../../../../core/server/adapters/route-settings/FileStore';
-import RouteSettingsStoreBase from '../../../../../core/server/adapters/route-settings/RouteSettingsStoreBase';
 import parseYaml from '../../../../../core/server/services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
 import {buildRouteSettings} from '../../services/route-settings/route-settings-fixture';
-import type {RouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
 
 const REAL_DEFAULTS_PATH = path.join(__dirname, '../../../../../core/server/services/route-settings');
 

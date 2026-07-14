@@ -51,6 +51,10 @@
             "active": "FileStore",
             "FileStore": {},
             "S3RedirectsStore": {}
+        },
+        "route-settings": {
+            "active": "FileStore",
+            "FileStore": {}
         }
     },
     "storage": {

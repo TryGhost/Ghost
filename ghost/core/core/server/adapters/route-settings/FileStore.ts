@@ -4,11 +4,10 @@ import {format} from 'date-fns';
 import * as errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 
-import RouteSettingsStoreBase from './RouteSettingsStoreBase';
+import {RouteSettingsStoreBase, type RouteSettings} from '@tryghost/adapter-base-route-settings';
+
 import parseYaml from '../../services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../services/route-settings/route-settings-parser';
-import type {RouteSettings} from '../../services/route-settings/route-settings-parser';
-import type {RouteSettingsStore} from './RouteSettingsStoreBase';
 
 const YAML_FILENAME = 'routes.yaml';
 const DEFAULT_SETTINGS_FILENAME = 'default-routes.yaml';
@@ -38,7 +37,7 @@ interface FileStoreOptions {
  * `routes.yaml` exists the parsed bundled defaults are returned without
  * touching the disk; a real file only materialises on the first `replace`.
  */
-export default class FileStore extends RouteSettingsStoreBase implements RouteSettingsStore {
+export default class FileStore extends RouteSettingsStoreBase {
     private readonly basePath: string;
     private readonly defaultSettingsBasePath: string;
     private readonly getBackupFilePath: (filePath: string) => string;

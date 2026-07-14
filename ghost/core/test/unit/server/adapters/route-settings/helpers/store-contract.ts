@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 
+import type {RouteSettings, RouteSettingsStore} from '@tryghost/adapter-base-route-settings';
+
 import {buildRouteSettings} from '../../../services/route-settings/route-settings-fixture';
-import type {RouteSettings} from '../../../../../../core/server/services/route-settings/route-settings-parser';
-import type {RouteSettingsStore} from '../../../../../../core/server/adapters/route-settings/RouteSettingsStoreBase';
 
 interface ContractOptions {
     createStore: () => RouteSettingsStore | Promise<RouteSettingsStore>;

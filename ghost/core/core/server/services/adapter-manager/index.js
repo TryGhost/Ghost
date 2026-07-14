@@ -17,6 +17,7 @@ adapterManager.registerAdapter('scheduling', require('@tryghost/adapter-base-sch
 adapterManager.registerAdapter('sso', require('@tryghost/adapter-base-sso').SSOBase);
 adapterManager.registerAdapter('cache', require('@tryghost/adapter-base-cache'));
 adapterManager.registerAdapter('redirects', require('@tryghost/adapter-base-redirects').RedirectsStoreBase);
+adapterManager.registerAdapter('route-settings', require('@tryghost/adapter-base-route-settings').RouteSettingsStoreBase);
 
 module.exports = {
     /**

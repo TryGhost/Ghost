@@ -1,8 +1,8 @@
-import {buildRouteSettings} from '../../../services/route-settings/route-settings-fixture';
-import type {RouteSettings} from '../../../../../../core/server/services/route-settings/route-settings-parser';
-import type {RouteSettingsStore} from '../../../../../../core/server/adapters/route-settings/RouteSettingsStoreBase';
+import {RouteSettingsStoreBase, type RouteSettings} from '@tryghost/adapter-base-route-settings';
 
-export class InMemoryStore implements RouteSettingsStore {
+import {buildRouteSettings} from '../../../services/route-settings/route-settings-fixture';
+
+export class InMemoryStore extends RouteSettingsStoreBase {
     private settings: RouteSettings = buildRouteSettings({routes: [], collections: [], taxonomies: {}});
 
     async get(): Promise<RouteSettings> {
