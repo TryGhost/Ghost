@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react';
 import {useCallback} from 'react';
 import {useFramework} from '../../providers/framework-provider';
-import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '../errors';
+import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError, UnauthorizedError} from '../errors';
 import {getGhostPaths} from '../helpers';
 import handleResponse from './handle-response';
 
@@ -49,6 +49,24 @@ const xhrToFetchResponse = (xhr: Readonly<XMLHttpRequest>): Response => (
         headers: xhrHeadersToFetchHeaders(xhr)
     })
 );
+
+const GHOST_API_REQUEST = /\/ghost\/api\//;
+const SESSION_API_REQUEST = /\/ghost\/api\/admin\/session(\/|$)/;
+
+let sessionExpiryHandled = false;
+
+// A 401 outside the session endpoint means the cookie session expired. Mirrors
+// Ember's handling: replace to the admin root, which reboots Admin onto signin.
+const redirectOnSessionExpiry = (endpoint: string | URL) => {
+    const url = endpoint.toString();
+
+    if (sessionExpiryHandled || !GHOST_API_REQUEST.test(url) || SESSION_API_REQUEST.test(url)) {
+        return;
+    }
+
+    sessionExpiryHandled = true;
+    window.location.replace(getGhostPaths().adminRoot);
+};
 
 const fetchWithXhr = (
     onUploadProgress: (progress: number) => void,
@@ -187,7 +205,8 @@ export const useFetchApi = () => {
             while (attempts === 0 || retry) {
                 try {
                     const response = await fetchFn(endpoint, requestInit);
-                    return handleResponse(response) as ResponseData;
+                    // Awaited so response errors reject inside the try/catch
+                    return await handleResponse(response) as ResponseData;
                 } catch (error) {
                     retryingMs = Date.now() - startTime;
 
@@ -205,6 +224,10 @@ export const useFetchApi = () => {
 
                     if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
                         throw new TimeoutError();
+                    }
+
+                    if (error instanceof UnauthorizedError) {
+                        redirectOnSessionExpiry(endpoint);
                     }
 
                     let newError = error;

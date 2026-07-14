@@ -2,7 +2,7 @@ import {renderHook} from '@testing-library/react';
 import React, {ReactNode} from 'react';
 import useHandleError from '../../../src/hooks/use-handle-error';
 import {FrameworkProvider} from '../../../src/providers/framework-provider';
-import {APIError, ValidationError} from '../../../src/utils/errors';
+import {APIError, UnauthorizedError, ValidationError} from '../../../src/utils/errors';
 
 // Mock external dependencies
 vi.mock('@sentry/react', () => ({
@@ -187,6 +187,21 @@ describe('useHandleError', () => {
 
         // A stale toast can cover UI and block clicks in tests, so the
         // unmocked-request path must clear toasts even without showing one
+        expect(toast.remove).toHaveBeenCalled();
+    });
+
+    it('does not show toast for unauthorized errors', () => {
+        const wrapper = createWrapper();
+        const {result} = renderHook(() => useHandleError(), {wrapper});
+
+        const mockResponse = new Response(null, {status: 401});
+        const error = new UnauthorizedError(mockResponse, '');
+
+        result.current(error);
+
+        // The fetch layer redirects to signin on session expiry, so the
+        // error handler must not flash a toast over the unloading page
+        expect(showToast).not.toHaveBeenCalled();
         expect(toast.remove).toHaveBeenCalled();
     });
 
