@@ -33,7 +33,7 @@ module.exports = class AIService {
     /**
      * @param {object} deps
      * @param {{get: (key: string) => string | null | undefined}} deps.settingsCache
-     * @param {(url: string, options: object) => Promise<{body: Buffer | string, statusCode?: number}>} deps.request
+     * @param {import('got').Got} deps.request
      * @param {(buffer: Buffer) => Promise<{mime: string} | undefined>} deps.getFileTypeFromBuffer
      * @param {() => string} deps.getSiteUrl
      * @param {() => string | undefined} [deps.getLocale]
@@ -142,30 +142,44 @@ module.exports = class AIService {
 
     /** @private */
     async #downloadImage(imageUrl) {
-        let response;
+        const stream = this.request.stream(imageUrl, {
+            followRedirect: true,
+            retry: {limit: 0},
+            timeout: {request: 10000}
+        });
+
+        let downloaded = 0;
+        let tooLarge = false;
+        const chunks = [];
+
         try {
-            response = await this.request(imageUrl, {
-                followRedirect: true,
-                responseType: 'buffer',
-                retry: {limit: 0},
-                timeout: {request: 10000}
-            });
+            for await (const chunk of stream) {
+                downloaded += chunk.length;
+                if (downloaded > MAX_IMAGE_BYTES) {
+                    tooLarge = true;
+                    stream.destroy();
+                    break;
+                }
+                chunks.push(chunk);
+            }
         } catch (err) {
-            throw new errors.BadRequestError({
-                message: 'Ghost could not download the image.',
-                err
-            });
+            if (!tooLarge) {
+                throw new errors.BadRequestError({
+                    message: 'Ghost could not download the image.',
+                    err
+                });
+            }
         }
 
-        const buffer = response.body;
-
-        if (Buffer.isBuffer(buffer) && buffer.length > MAX_IMAGE_BYTES) {
+        if (tooLarge) {
             throw new errors.BadRequestError({
                 message: 'The image is too large to generate alt text for.'
             });
         }
 
-        const fileType = Buffer.isBuffer(buffer) ? await this.getFileTypeFromBuffer(buffer) : undefined;
+        const buffer = Buffer.concat(chunks);
+
+        const fileType = await this.getFileTypeFromBuffer(buffer);
         if (!fileType || !SUPPORTED_IMAGE_TYPES.has(fileType.mime)) {
             throw new errors.BadRequestError({
                 message: 'The URL did not return a supported image.'

@@ -193,5 +193,17 @@ module.exports = {
                 return _next('preview_email_blocked');
             }
         })(req, res, next);
+    },
+
+    /**
+     * Limits AI generation calls to prevent quota exhaustion on the configured provider
+     */
+    aiGenerationLimiter(req, res, next) {
+        return spamPrevention.aiGenerationBlock().getMiddleware({
+            ignoreIP: true,
+            key(_req, _res, _next) {
+                return _next('ai_generation_blocked');
+            }
+        })(req, res, next);
     }
 };

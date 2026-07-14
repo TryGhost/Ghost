@@ -166,6 +166,12 @@
             "lifetime": 3600,
             "freeRetries": 10
         },
+        "ai_generation_block": {
+            "minWait": 60000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 50
+        },
         "otc_verification_enumeration": {
             "minWait": 600000,
             "maxWait": 43200000,

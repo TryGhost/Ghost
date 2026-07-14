@@ -329,7 +329,7 @@ module.exports = function apiRoutes() {
     );
 
     // ## AI
-    router.post('/ai/alt-text', mw.authAdminApi, http(api.ai.generateImageAltText));
+    router.post('/ai/alt-text', shared.middleware.brute.aiGenerationLimiter, mw.authAdminApi, http(api.ai.generateImageAltText));
 
     // ## media
     router.post('/media/upload',

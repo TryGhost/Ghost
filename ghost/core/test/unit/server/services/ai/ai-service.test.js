@@ -4,6 +4,45 @@ const errors = require('@tryghost/errors');
 
 const AIService = require('../../../../../core/server/services/ai/ai-service');
 
+/**
+ * Returns a mock got-style stream that yields the provided Buffer chunks
+ * and has a no-op destroy() so the streaming download path can call it.
+ */
+function makeStream(chunks) {
+    return {
+        [Symbol.asyncIterator]() {
+            let i = 0;
+            return {
+                async next() {
+                    if (i < chunks.length) {
+                        const value = chunks[i];
+                        i += 1;
+                        return {value, done: false};
+                    }
+                    return {value: undefined, done: true};
+                }
+            };
+        },
+        destroy() {}
+    };
+}
+
+/**
+ * Returns a mock stream that immediately throws on the first iteration.
+ */
+function makeErrorStream(err) {
+    return {
+        [Symbol.asyncIterator]() {
+            return {
+                async next() {
+                    throw err;
+                }
+            };
+        },
+        destroy() {}
+    };
+}
+
 describe('AIService', function () {
     let request;
     let settingsCache;
@@ -15,6 +54,7 @@ describe('AIService', function () {
 
     beforeEach(function () {
         request = sinon.stub();
+        request.stream = sinon.stub();
         describeImage = sinon.stub().resolves('A person riding a bicycle beside the sea.');
 
         FakeProvider = function (deps) {
@@ -56,7 +96,7 @@ describe('AIService', function () {
                 err => err instanceof errors.ValidationError && err.message === 'An AI provider is not configured.'
             );
 
-            assert.equal(request.called, false);
+            assert.equal(request.stream.called, false);
         });
 
         it('routes to the first configured provider that advertises the required capability', async function () {
@@ -71,7 +111,7 @@ describe('AIService', function () {
                 {slug: 'anthropic', ProviderClass: FakeProvider}
             ]);
             settingsCache.get.withArgs('ai_text-only_api_key').returns('key');
-            request.resolves({body: Buffer.from('image')});
+            request.stream.returns(makeStream([Buffer.from('image')]));
 
             await service.generateImageAltText('https://ghost.example/content/images/photo.png');
 
@@ -81,38 +121,37 @@ describe('AIService', function () {
 
         it('normalizes a site-relative image path, downloads it, and delegates to the provider', async function () {
             const image = Buffer.from('image-bytes');
-            request.resolves({body: image});
+            request.stream.returns(makeStream([image]));
 
             const result = await service.generateImageAltText('/content/images/2026/07/photo.png');
 
             assert.equal(result, 'A person riding a bicycle beside the sea.');
-            assert.equal(request.firstCall.firstArg, 'https://ghost.example/content/images/2026/07/photo.png');
-            assert.deepEqual(request.firstCall.args[1], {
+            assert.equal(request.stream.firstCall.firstArg, 'https://ghost.example/content/images/2026/07/photo.png');
+            assert.deepEqual(request.stream.firstCall.args[1], {
                 followRedirect: true,
-                responseType: 'buffer',
                 retry: {limit: 0},
                 timeout: {request: 10000}
             });
 
-            assert.equal(getFileTypeFromBuffer.calledOnceWithExactly(image), true);
+            assert.equal(getFileTypeFromBuffer.calledOnce, true);
             assert.equal(describeImage.calledOnce, true);
             const [{image: sentImage, mediaType, prompt}] = describeImage.firstCall.args;
-            assert.equal(sentImage, image);
+            assert.ok(sentImage.equals(image));
             assert.equal(mediaType, 'image/png');
             assert.match(prompt, /alt text/i);
         });
 
         it('accepts an absolute CDN image URL', async function () {
-            request.resolves({body: Buffer.from('image')});
+            request.stream.returns(makeStream([Buffer.from('image')]));
 
             await service.generateImageAltText('https://cdn.example/content/images/photo.png');
 
-            assert.equal(request.firstCall.firstArg, 'https://cdn.example/content/images/photo.png');
+            assert.equal(request.stream.firstCall.firstArg, 'https://cdn.example/content/images/photo.png');
         });
 
         it('asks the provider to reply in the site locale when non-English', async function () {
             service.getLocale = () => 'fr';
-            request.resolves({body: Buffer.from('image')});
+            request.stream.returns(makeStream([Buffer.from('image')]));
 
             await service.generateImageAltText('https://ghost.example/content/images/photo.png');
 
@@ -132,12 +171,12 @@ describe('AIService', function () {
                     err => err instanceof errors.ValidationError
                 );
 
-                assert.equal(request.called, false);
+                assert.equal(request.stream.called, false);
             });
         }
 
         it('rejects unsupported image data', async function () {
-            request.resolves({body: Buffer.from('<html>not an image</html>')});
+            request.stream.returns(makeStream([Buffer.from('<html>not an image</html>')]));
             getFileTypeFromBuffer.resolves({mime: 'text/html'});
 
             await assert.rejects(
@@ -145,23 +184,23 @@ describe('AIService', function () {
                 err => err instanceof errors.BadRequestError && err.message === 'The URL did not return a supported image.'
             );
 
-            assert.equal(request.callCount, 1);
+            assert.equal(request.stream.callCount, 1);
         });
 
         it('rejects images larger than the size limit', async function () {
-            request.resolves({body: Buffer.alloc(7500001)});
+            request.stream.returns(makeStream([Buffer.alloc(7500001)]));
 
             await assert.rejects(
                 service.generateImageAltText('https://ghost.example/content/images/photo.png'),
                 err => err instanceof errors.BadRequestError && err.message === 'The image is too large to generate alt text for.'
             );
 
-            assert.equal(request.callCount, 1);
+            assert.equal(request.stream.callCount, 1);
             assert.equal(getFileTypeFromBuffer.called, false);
         });
 
         it('wraps image download failures in a clean error', async function () {
-            request.rejects(new Error('socket details'));
+            request.stream.returns(makeErrorStream(new Error('socket details')));
 
             await assert.rejects(
                 service.generateImageAltText('https://ghost.example/content/images/photo.png'),
@@ -170,7 +209,7 @@ describe('AIService', function () {
         });
 
         it('propagates provider failures', async function () {
-            request.resolves({body: Buffer.from('image')});
+            request.stream.returns(makeStream([Buffer.from('image')]));
             describeImage.rejects(new errors.NoPermissionError({message: 'Invalid API key.'}));
 
             await assert.rejects(

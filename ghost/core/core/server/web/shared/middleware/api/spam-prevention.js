@@ -29,7 +29,8 @@ const messages = {
         context: 'Too many verification code attempts.'
     },
     webmentionsBlock: 'Too many mention attempts',
-    emailPreviewBlock: 'Only 10 test emails can be sent per hour'
+    emailPreviewBlock: 'Only 10 test emails can be sent per hour',
+    aiGenerationBlock: 'Too many AI generation requests. Please try again later.'
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -44,6 +45,7 @@ let spamCheckoutSessionEmail = spam.checkout_session_email || {};
 let spamContentApiKey = spam.content_api_key || {};
 let spamWebmentionsBlock = spam.webmentions_block || {};
 let spamEmailPreviewBlock = spam.email_preview_block || {};
+let spamAiGenerationBlock = spam.ai_generation_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
@@ -63,6 +65,7 @@ let sendVerificationCodeInstance;
 let userVerificationInstance;
 let contentApiKeyInstance;
 let emailPreviewBlockInstance;
+let aiGenerationBlockInstance;
 let otcVerificationEnumerationInstance;
 let otcVerificationInstance;
 
@@ -198,6 +201,32 @@ const emailPreviewBlock = () => {
     );
 
     return emailPreviewBlockInstance;
+};
+
+const aiGenerationBlock = () => {
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('@tryghost/brute-knex');
+    const db = require('../../../../data/db');
+
+    store = store || new BruteKnex({
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
+
+    aiGenerationBlockInstance = aiGenerationBlockInstance || new ExpressBrute(store,
+        extend({
+            attachResetToRequest: false,
+            failCallback(req, res, next) {
+                return next(new errors.TooManyRequestsError({
+                    message: messages.aiGenerationBlock
+                }));
+            },
+            handleStoreError: handleStoreError
+        }, pick(spamAiGenerationBlock, spamConfigKeys))
+    );
+
+    return aiGenerationBlockInstance;
 };
 
 const membersAuth = () => {
@@ -578,6 +607,7 @@ module.exports = {
     contentApiKey: contentApiKey,
     webmentionsBlock: webmentionsBlock,
     emailPreviewBlock: emailPreviewBlock,
+    aiGenerationBlock: aiGenerationBlock,
     reset: () => {
         store = undefined;
         memoryStore = undefined;
@@ -593,6 +623,7 @@ module.exports = {
         sendVerificationCodeInstance = undefined;
         userVerificationInstance = undefined;
         contentApiKeyInstance = undefined;
+        aiGenerationBlockInstance = undefined;
         otcVerificationEnumerationInstance = undefined;
         otcVerificationInstance = undefined;
 
@@ -608,6 +639,7 @@ module.exports = {
         spamCheckoutSessionGlobal = spam.checkout_session_global || {};
         spamCheckoutSessionEmail = spam.checkout_session_email || {};
         spamContentApiKey = spam.content_api_key || {};
+        spamAiGenerationBlock = spam.ai_generation_block || {};
         spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
         spamOtcVerification = spam.otc_verification || {};
     }
