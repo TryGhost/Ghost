@@ -202,7 +202,7 @@ module.exports = {
         return spamPrevention.aiGenerationBlock().getMiddleware({
             ignoreIP: true,
             key(_req, _res, _next) {
-                return _next('ai_generation_blocked');
+                return _next(`${_req.user?.id}_ai_generation_blocked`);
             }
         })(req, res, next);
     }
