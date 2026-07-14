@@ -57,7 +57,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.newsletters.fetchLatestOpenedEvents();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -85,7 +85,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.newsletters.fetchLatestOpenedEvents();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -113,7 +113,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.newsletters.fetchLatestOpenedEvents();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -141,7 +141,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.newsletters.fetchLatestOpenedEvents();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -176,7 +176,7 @@ describe('MailgunEmailSuppressionList', function () {
             timestamp: Math.round(timestamp.getTime() / 1000)
         }];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.newsletters.fetchLatestOpenedEvents();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -214,7 +214,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await emailAnalytics.fetchLatestOpenedEvents();
+        await emailAnalytics.newsletters.fetchLatestOpenedEvents();
         await DomainEvents.allSettled();
 
         const memberAfter = await models.Member.findOne({id: memberId}, {require: true});

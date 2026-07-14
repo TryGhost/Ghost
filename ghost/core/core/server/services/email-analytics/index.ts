@@ -1,4 +1,8 @@
 // @ts-expect-error This module lacks type definitions.
 import EmailAnalyticsServiceWrapper from './email-analytics-service-wrapper';
 
-module.exports = new EmailAnalyticsServiceWrapper();
+export const newsletters = new EmailAnalyticsServiceWrapper();
+
+export const init = () => {
+    newsletters.init();
+};
