@@ -5,6 +5,7 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhKoenigEditorLexical extends Component {
+    @service imageAltText;
     @service settings;
     @service feature;
 
@@ -35,6 +36,11 @@ export default class GhKoenigEditorLexical extends Component {
 
     get excerpt() {
         return this.args.excerpt || '';
+    }
+
+    @action
+    generateAltText(imageUrl) {
+        return this.imageAltText.generate(imageUrl);
     }
 
     @action

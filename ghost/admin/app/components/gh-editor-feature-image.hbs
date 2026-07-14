@@ -74,12 +74,25 @@
                         @registerAPI={{this.registerEditorAPI}}
                     />
                 {{/if}}
-                <button
-                    title="Toggle between editing alt text and caption"
-                    class="h-100 pl1 pr1 ba br3 f8 sans-serif fw4 lh-title tracked-2 {{if this.isEditingAlt "bg-green b--green white" "bg-transparent b--midlightgrey midlightgrey"}}" type="button" {{on "click" this.toggleAltEditing passive=true}}
-                >
-                    Alt
-                </button>
+                <div class="gh-editor-feature-image-caption-actions">
+                    {{#if (and this.isEditingAlt @generateAlt @image)}}
+                        <button
+                            type="button"
+                            class="h-100 pl2 pr2 ba br3 f8 sans-serif fw4 lh-title bg-transparent b--midlightgrey midgrey"
+                            disabled={{this.isGeneratingAlt}}
+                            data-test-button="generate-feature-image-alt"
+                            {{on "click" this.generateAlt}}
+                        >
+                            {{if this.isGeneratingAlt "Generating…" "Generate"}}
+                        </button>
+                    {{/if}}
+                    <button
+                        title="Toggle between editing alt text and caption"
+                        class="h-100 pl1 pr1 ba br3 f8 sans-serif fw4 lh-title tracked-2 {{if this.isEditingAlt "bg-green b--green white" "bg-transparent b--midlightgrey midlightgrey"}}" type="button" {{on "click" this.toggleAltEditing passive=true}}
+                    >
+                        Alt
+                    </button>
+                </div>
 
                 {{#if (and this.tkCount (not this.isEditingAlt))}}
                     <div class="tk-indicator" data-testid="feature-image-tk-indicator" role="button" {{on "click" this.focusCaptionEditor}}>
