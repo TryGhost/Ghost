@@ -5,6 +5,7 @@ import TopLevelGroup from '../../top-level-group';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroupHeader, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -94,12 +95,13 @@ const BuiltInIntegrations: React.FC = () => {
     const pinturaEditor = usePinturaEditor();
 
     const {settings} = useGlobalData();
-    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername, transistorEnabled] = getSettingValues<boolean>(settings, [
+    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername, transistorEnabled, claudeApiKey] = getSettingValues(settings, [
         'unsplash',
         'firstpromoter',
         'slack_url',
         'slack_username',
-        'transistor'
+        'transistor',
+        'claude_api_key'
     ]);
 
     const items: BuiltInIntegrationItem[] = [
@@ -151,6 +153,14 @@ const BuiltInIntegrations: React.FC = () => {
             modal: 'integrations/transistor',
             testId: 'transistor-integration',
             title: 'Transistor.fm'
+        },
+        {
+            active: !!claudeApiKey,
+            detail: 'Generate accessible image descriptions',
+            icon: <LucideIcon.Sparkles className='size-8 text-foreground' strokeWidth={1.5} />,
+            modal: 'integrations/claude',
+            testId: 'claude-integration',
+            title: 'Claude'
         },
         {
             detail: 'Access your content programmatically',
