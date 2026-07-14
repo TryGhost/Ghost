@@ -169,8 +169,8 @@ const useBrowseMemberCount = createQuery<MembersResponseType>({
     defaultSearchParams: memberCountSearchParams
 });
 
-export function useMemberCount() {
-    const {data} = useBrowseMemberCount();
+export function useMemberCount(options?: {enabled?: boolean}) {
+    const {data} = useBrowseMemberCount(options);
 
     return data?.meta?.pagination.total;
 }

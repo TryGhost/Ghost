@@ -226,13 +226,28 @@ describe('members api', () => {
         await withMockFetch({
             json: membersResponse(102466)
         }, async (mockFetch) => {
-            const {result} = renderHookWithProviders(() => useMemberCount(), {queryClient});
+            const {result} = renderHookWithProviders(() => useMemberCount({enabled: true}), {queryClient});
 
             await waitFor(() => {
                 expect(result.current).toBe(102466);
             });
 
             expect(mockFetch.calls[0][0].toString()).toBe('http://localhost:3000/ghost/api/admin/members/?limit=1');
+        });
+    });
+
+    it('does not fetch the member count when disabled', async () => {
+        const queryClient = createQueryClientWithCurrentUser();
+
+        await withMockFetch({}, async (mockFetch) => {
+            const {result} = renderHookWithProviders(() => useMemberCount({enabled: false}), {queryClient});
+
+            await act(async () => {
+                await Promise.resolve();
+            });
+
+            expect(result.current).toBeUndefined();
+            expect(mockFetch.calls).toHaveLength(0);
         });
     });
 
