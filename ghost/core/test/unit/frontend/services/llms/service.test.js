@@ -109,6 +109,7 @@ describe('Unit: frontend/services/llms/service', function () {
             urlUtils: opts.urlUtils || createFakeUrlUtils(),
             routing: opts.routing || createFakeRouting(),
             api: opts.api || createFakeApi(pages, posts, urlMap),
+            machinePaymentsService: opts.machinePaymentsService || {isEnabled: () => false},
             fullTxtBudget: opts.fullTxtBudget
         });
     }
@@ -415,11 +416,11 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.equal(pageCall.options.limit, 20);
         assert.equal(postCall.options.limit, 100);
         assert.equal(pageCall.options.order, 'id asc');
-        assert.equal(postCall.options.order, undefined);
+        assert.equal(postCall.options.order, 'published_at desc');
         assert.deepEqual(pageCall.options.context, {member: null});
         assert.deepEqual(postCall.options.context, {member: null});
         assert.equal(postCall.options.formats, 'plaintext');
-        assert.equal(postCall.options.fields, 'id,title,slug,custom_excerpt,featured,published_at,url');
+        assert.equal(postCall.options.fields, 'id,title,slug,custom_excerpt,featured,published_at,url,visibility');
     });
 
     it('requests narrow fields and html for llms-full.txt entries', async function () {
@@ -493,8 +494,48 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.match(llmsTxt, /\[Members Post\]\(https:\/\/example\.com\/members-post\.md\) - Public teaser/);
     });
 
+    it('omits paid posts when machine payments are disabled', async function () {
+        const service = createService({
+            pages: [],
+            posts: [{
+                id: 'post-p',
+                title: 'Paid Post',
+                slug: 'paid-post',
+                custom_excerpt: 'Public teaser',
+                visibility: 'paid',
+                type: 'post'
+            }],
+            urlMap: {'post-p': 'https://example.com/paid-post/'}
+        });
+
+        const llmsTxt = await service.getLlmsTxt();
+
+        assert.doesNotMatch(llmsTxt, /Paid Post/);
+    });
+
+    it('includes paid posts when machine payments are enabled', async function () {
+        const service = createService({
+            machinePaymentsService: {isEnabled: () => true},
+            pages: [],
+            posts: [{
+                id: 'post-p',
+                title: 'Paid Post',
+                slug: 'paid-post',
+                custom_excerpt: 'Public teaser',
+                visibility: 'paid',
+                type: 'post'
+            }],
+            urlMap: {'post-p': 'https://example.com/paid-post/'}
+        });
+
+        const llmsTxt = await service.getLlmsTxt();
+
+        assert.match(llmsTxt, /\[Paid Post\]\(https:\/\/example\.com\/paid-post\.md\) - Public teaser/);
+    });
+
     it('cuts members-only post bodies off in llms-full.txt with a subscriber notice', async function () {
         const service = createService({
+            machinePaymentsService: {isEnabled: () => true},
             pages: [],
             posts: [
                 {

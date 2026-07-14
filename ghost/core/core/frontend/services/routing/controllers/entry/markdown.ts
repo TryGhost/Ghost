@@ -8,9 +8,23 @@ const {getAcceptedMarkdownContentType, getMarkdownPath, renderEntryMarkdown} = r
 
 const MEMBERS_ONLY_MARKDOWN = '# Members-only content\n\nThis post requires a subscription and is not available for public access.\n';
 
+interface MachinePaymentsService {
+    isEnabled(): boolean;
+    getPaidContent(resourceType: 'posts' | 'pages', id: string): Promise<Entry | null>;
+    handlePaidMarkdownRequest(req: Request, res: Response, responseData: {
+        body: string;
+        description?: string;
+        headers: Record<string, string>;
+    }): Promise<Response>;
+}
+
 function llmsEnabled(req: Request): boolean {
     const llmsService = req.app.get('llmsService') || null;
     return Boolean(llmsService && llmsService.isEnabled());
+}
+
+function getMachinePaymentsService(req: Request): MachinePaymentsService | null {
+    return req.app.get('machinePaymentsService') || null;
 }
 
 /**
@@ -29,6 +43,36 @@ function serveMarkdown(res: Response, entry: Entry) {
     return res.send(renderEntryMarkdown(entry, {llmsIndexUrl}));
 }
 
+function refuseMembersOnlyMarkdown(res: Response) {
+    return res.status(403).type('text/markdown').send(MEMBERS_ONLY_MARKDOWN);
+}
+
+async function servePaidMarkdown(req: Request, res: EntryResponse, entry: Entry) {
+    const machinePaymentsService = getMachinePaymentsService(req);
+
+    if (!machinePaymentsService?.isEnabled()) {
+        return refuseMembersOnlyMarkdown(res);
+    }
+
+    const resourceType = res.routerOptions.resourceType === 'pages' ? 'pages' : 'posts';
+    const paidEntry = await machinePaymentsService.getPaidContent(resourceType, entry.id);
+
+    if (!paidEntry) {
+        return refuseMembersOnlyMarkdown(res);
+    }
+
+    const llmsIndexUrl = urlUtils.urlFor({relativeUrl: '/llms.txt'}, true);
+    const contentLocation = getMarkdownPath(new URL(paidEntry.url).pathname);
+
+    return await machinePaymentsService.handlePaidMarkdownRequest(req, res, {
+        body: renderEntryMarkdown(paidEntry, {llmsIndexUrl}),
+        description: typeof paidEntry.title === 'string' ? paidEntry.title : undefined,
+        headers: {
+            'Content-Location': contentLocation
+        }
+    });
+}
+
 /**
  * Whether this is a `.md` URL request (the scoped suffix route sets the flag).
  */
@@ -41,13 +85,17 @@ export function isMdRequest(res: EntryResponse): boolean {
  * disabled we redirect to the canonical (html) url; members-only content is
  * refused.
  */
-export function serveMdRequest(req: Request, res: Response, entry: Entry) {
+export async function serveMdRequest(req: Request, res: EntryResponse, entry: Entry) {
     if (!llmsEnabled(req)) {
         return res.redirect(302, buildCanonicalUrl(req, entry));
     }
 
     if (!isPublic(entry)) {
-        return res.status(403).type('text/markdown').send(MEMBERS_ONLY_MARKDOWN);
+        if (entry.visibility === 'paid' || entry.visibility === 'tiers') {
+            return await servePaidMarkdown(req, res, entry);
+        }
+
+        return refuseMembersOnlyMarkdown(res);
     }
 
     return serveMarkdown(res, entry);

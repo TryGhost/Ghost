@@ -249,12 +249,23 @@ describe('Unit - services/routing/controllers/entry', function () {
 
     describe('markdown requests (llms.txt)', function () {
         let llmsService: {isEnabled: sinon.SinonStub};
+        let machinePaymentsService: {
+            isEnabled: sinon.SinonStub;
+            getPaidContent: sinon.SinonStub;
+            handlePaidMarkdownRequest: sinon.SinonStub;
+        };
 
         beforeEach(function () {
             llmsService = {
                 isEnabled: sinon.stub()
             };
             req.app.get.withArgs('llmsService').returns(llmsService);
+            machinePaymentsService = {
+                isEnabled: sinon.stub().returns(false),
+                getPaidContent: sinon.stub(),
+                handlePaidMarkdownRequest: sinon.stub().resolves(res)
+            };
+            req.app.get.withArgs('machinePaymentsService').returns(machinePaymentsService);
 
             res.routerOptions.isMarkdownRequest = true;
 
@@ -318,6 +329,51 @@ describe('Unit - services/routing/controllers/entry', function () {
             sinon.assert.calledWith(res.type, 'text/markdown');
             sinon.assert.calledOnce(res.send);
             sinon.assert.notCalled(res.redirect);
+        });
+
+        it('serves a machine payment flow for paid markdown posts', async function () {
+            post.url = 'http://127.0.0.1:2369/does-exist/';
+            post.visibility = 'paid';
+            llmsService.isEnabled.returns(true);
+            machinePaymentsService.isEnabled.returns(true);
+            machinePaymentsService.getPaidContent.resolves({
+                id: post.id,
+                title: 'Paid post',
+                type: 'post',
+                url: post.url,
+                visibility: 'paid',
+                html: '<p>Premium body</p>'
+            });
+
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
+                .resolves({entry: post});
+
+            await controllers.entry(req, res, sinon.stub());
+
+            sinon.assert.calledOnceWithExactly(machinePaymentsService.getPaidContent, 'posts', post.id);
+            sinon.assert.calledOnce(machinePaymentsService.handlePaidMarkdownRequest);
+            sinon.assert.calledWith(machinePaymentsService.handlePaidMarkdownRequest, req, res, sinon.match({
+                description: 'Paid post',
+                headers: {
+                    'Content-Location': '/does-exist.md'
+                }
+            }));
+            sinon.assert.notCalled(res.redirect);
+        });
+
+        it('returns 403 when tier-restricted content is not paid-only', async function () {
+            post.visibility = 'tiers';
+            llmsService.isEnabled.returns(true);
+            machinePaymentsService.isEnabled.returns(true);
+            machinePaymentsService.getPaidContent.resolves(null);
+
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
+                .resolves({entry: post});
+
+            await controllers.entry(req, res, sinon.stub());
+
+            sinon.assert.calledWith(res.status, 403);
+            sinon.assert.notCalled(machinePaymentsService.handlePaidMarkdownRequest);
         });
     });
 

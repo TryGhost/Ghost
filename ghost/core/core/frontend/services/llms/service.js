@@ -22,10 +22,10 @@ const LLMS_FULL_TXT_RECENT_POSTS_FOOTER = '\n_Includes the latest 500 public pos
 // Narrow field lists stop the content API selecting every column (e.g. the full
 // html of every post). The requested `formats` columns are appended to the
 // select by the input serializer, and `url` is resolved at serialization time.
-const LLMS_TXT_FIELDS = 'id,title,slug,custom_excerpt,featured,published_at,url';
+const LLMS_TXT_FIELDS = 'id,title,slug,custom_excerpt,featured,published_at,url,visibility';
 const LLMS_FULL_TXT_FIELDS = 'id,title,slug,featured,published_at,updated_at,created_at,url,visibility,custom_excerpt';
 
-function createLlmsService({settingsCache, labs, config, urlUtils, routing, api, fullTxtBudget}) {
+function createLlmsService({settingsCache, labs, config, urlUtils, routing, api, machinePaymentsService, fullTxtBudget}) {
     const footerBudget = Math.max(
         Buffer.byteLength(LLMS_FULL_TXT_TRUNCATION_FOOTER, 'utf8'),
         Buffer.byteLength(LLMS_FULL_TXT_RECENT_POSTS_FOOTER, 'utf8')
@@ -34,6 +34,21 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
 
     function isEnabled() {
         return labs.isSet('llmsTxt') && !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
+    }
+
+    function isDiscoverable(entry) {
+        if (entry.visibility === 'paid') {
+            return machinePaymentsService?.isEnabled() === true;
+        }
+
+        if (entry.visibility === 'tiers') {
+            return machinePaymentsService?.isEnabled() === true &&
+                Array.isArray(entry.tiers) &&
+                entry.tiers.length > 0 &&
+                entry.tiers.every(tier => tier.type === 'paid');
+        }
+
+        return true;
     }
 
     async function fetchPublicEntry(resourceType, id, member = null) {
@@ -290,11 +305,12 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
             ...options,
             context: {member: null},
             filter: 'status:published',
-            ...(type === 'page' ? {order: 'id asc'} : {})
+            order: type === 'page' ? 'id asc' : 'published_at desc'
         });
 
         const entries = (response?.[responseKey] || [])
-            .filter(entry => entry.url && !entry.url.endsWith('/404/'));
+            .filter(entry => entry.url && !entry.url.endsWith('/404/'))
+            .filter(isDiscoverable);
 
         return {entries, pagination: response?.meta?.pagination};
     }
