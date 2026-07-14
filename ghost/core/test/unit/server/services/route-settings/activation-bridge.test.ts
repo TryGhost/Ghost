@@ -5,13 +5,17 @@ import path from 'node:path';
 import {describe, it} from 'vitest';
 import {expandRouteSettings} from '../../../../../core/server/services/route-settings/activation-bridge';
 import {parseRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
-import type {RouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
+import {buildRouteSettings} from './route-settings-fixture';
 
 const validate = require('../../../../../core/server/services/route-settings/validate');
 const parseYaml = require('../../../../../core/server/services/route-settings/yaml-parser');
 
-function empty(): RouteSettings {
-    return {routes: [], collections: [], taxonomies: {}};
+// The bridge only reads structural fields — raw objects built inline have no
+// YAML text behind them, so an empty source is attached.
+const parse = (raw: unknown) => parseRouteSettings(raw, '');
+
+function empty() {
+    return buildRouteSettings({routes: [], collections: [], taxonomies: {}});
 }
 
 describe('activation-bridge', function () {
@@ -35,7 +39,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -54,7 +58,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -74,7 +78,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -94,7 +98,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -113,7 +117,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -135,7 +139,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -160,7 +164,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -186,7 +190,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -205,7 +209,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -226,7 +230,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -243,7 +247,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -282,7 +286,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -302,7 +306,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -321,7 +325,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -335,7 +339,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -361,7 +365,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -386,7 +390,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -408,7 +412,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -428,7 +432,7 @@ describe('activation-bridge', function () {
                 };
 
                 const legacy = validate(structuredClone(raw));
-                const domain = parseRouteSettings(raw);
+                const domain = parse(raw);
                 const expanded = expandRouteSettings(domain);
 
                 assert.deepEqual(expanded, legacy);
@@ -437,33 +441,33 @@ describe('activation-bridge', function () {
 
         describe('slug conversion', function () {
             it('converts {slug} to :slug in collection permalinks', function () {
-                const settings: RouteSettings = {
+                const settings = buildRouteSettings({
                     routes: [],
                     collections: [{path: '/', permalink: '/{slug}/', templates: []}],
                     taxonomies: {}
-                };
+                });
 
                 const result = expandRouteSettings(settings);
                 assert.equal(result.collections['/'].permalink, '/:slug/');
             });
 
             it('converts {primary_author} to :primary_author in permalinks', function () {
-                const settings: RouteSettings = {
+                const settings = buildRouteSettings({
                     routes: [],
                     collections: [{path: '/', permalink: '/{primary_author}/{slug}/', templates: []}],
                     taxonomies: {}
-                };
+                });
 
                 const result = expandRouteSettings(settings);
                 assert.equal(result.collections['/'].permalink, '/:primary_author/:slug/');
             });
 
             it('converts {slug} to :slug in taxonomy paths', function () {
-                const settings: RouteSettings = {
+                const settings = buildRouteSettings({
                     routes: [],
                     collections: [],
                     taxonomies: {tag: '/tag/{slug}/'}
-                };
+                });
 
                 const result = expandRouteSettings(settings);
                 assert.equal(result.taxonomies.tag, '/tag/:slug/');
@@ -472,22 +476,22 @@ describe('activation-bridge', function () {
 
         describe('route expansion', function () {
             it('sets controller to channel for channel routes', function () {
-                const settings: RouteSettings = {
+                const settings = buildRouteSettings({
                     routes: [{type: 'channel', path: '/featured/', templates: [], filter: 'featured:true', rss: true}],
                     collections: [],
                     taxonomies: {}
-                };
+                });
 
                 const result = expandRouteSettings(settings);
                 assert.equal(result.routes['/featured/'].controller, 'channel');
             });
 
             it('maps contentType back to content_type', function () {
-                const settings: RouteSettings = {
+                const settings = buildRouteSettings({
                     routes: [{type: 'template', path: '/api/', templates: ['api'], contentType: 'application/json'}],
                     collections: [],
                     taxonomies: {}
-                };
+                });
 
                 const result = expandRouteSettings(settings);
                 assert.equal(result.routes['/api/'].content_type, 'application/json');
@@ -495,11 +499,11 @@ describe('activation-bridge', function () {
             });
 
             it('omits data when no data specified', function () {
-                const settings: RouteSettings = {
+                const settings = buildRouteSettings({
                     routes: [{type: 'template', path: '/about/', templates: ['about']}],
                     collections: [],
                     taxonomies: {}
-                };
+                });
 
                 const result = expandRouteSettings(settings);
                 assert.equal(result.routes['/about/'].data, undefined);
@@ -508,11 +512,11 @@ describe('activation-bridge', function () {
 
         describe('data expansion', function () {
             it('expands shortform data with redirect enabled by default', function () {
-                const settings: RouteSettings = {
+                const settings = buildRouteSettings({
                     routes: [{type: 'template', path: '/food/', templates: ['food'], data: 'tag.food'}],
                     collections: [],
                     taxonomies: {}
-                };
+                });
 
                 const result = expandRouteSettings(settings);
                 const data = result.routes['/food/'].data;
@@ -523,7 +527,7 @@ describe('activation-bridge', function () {
             });
 
             it('expands longform read data with default options', function () {
-                const settings: RouteSettings = {
+                const settings = buildRouteSettings({
                     routes: [{
                         type: 'template', path: '/food/', templates: ['food'],
                         data: {
@@ -532,7 +536,7 @@ describe('activation-bridge', function () {
                     }],
                     collections: [],
                     taxonomies: {}
-                };
+                });
 
                 const result = expandRouteSettings(settings);
                 const data = result.routes['/food/'].data;
@@ -544,7 +548,7 @@ describe('activation-bridge', function () {
             });
 
             it('expands longform browse data without default slug option', function () {
-                const settings: RouteSettings = {
+                const settings = buildRouteSettings({
                     routes: [{
                         type: 'template', path: '/food/', templates: ['food'],
                         data: {
@@ -553,7 +557,7 @@ describe('activation-bridge', function () {
                     }],
                     collections: [],
                     taxonomies: {}
-                };
+                });
 
                 const result = expandRouteSettings(settings);
                 const data = result.routes['/food/'].data;
@@ -590,7 +594,7 @@ describe('activation-bridge', function () {
         });
 
         it('bridge output serializes to the same hash as validate.js for default routes', function () {
-            const domain = parseRouteSettings(parseYaml(defaultRoutesYaml));
+            const domain = parseRouteSettings(parseYaml(defaultRoutesYaml), defaultRoutesYaml);
             const expanded = expandRouteSettings(domain);
 
             assert.equal(hash(expanded), DEFAULT_ROUTES_HASH);
