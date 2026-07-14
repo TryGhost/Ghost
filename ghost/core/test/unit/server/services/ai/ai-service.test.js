@@ -21,15 +21,15 @@ describe('AIService', function () {
             this.deps = deps;
             this.describeImage = describeImage;
         };
+        FakeProvider.capabilities = new Set(['vision-to-text']);
 
         providers = {
-            getProviderClass: sinon.stub().withArgs('anthropic').returns(FakeProvider)
+            listProviders: sinon.stub().returns([{slug: 'anthropic', ProviderClass: FakeProvider}])
         };
 
         settingsCache = {
             get: sinon.stub()
         };
-        settingsCache.get.withArgs('ai_provider').returns('anthropic');
         settingsCache.get.withArgs('ai_anthropic_api_key').returns('sk-ant-test');
 
         getFileTypeFromBuffer = sinon.stub().resolves({mime: 'image/png'});
@@ -48,30 +48,29 @@ describe('AIService', function () {
     });
 
     describe('isConfigured', function () {
-        it('is true when a provider slug and matching API key are set', function () {
+        it('is true when a provider that supports the capability has an API key set', function () {
             assert.equal(service.isConfigured, true);
         });
 
-        it('is false when no provider is selected', function () {
-            settingsCache.get.withArgs('ai_provider').returns(null);
-            assert.equal(service.isConfigured, false);
-        });
-
-        it('is false when the selected provider has no API key configured', function () {
+        it('is false when no configured provider has an API key', function () {
             settingsCache.get.withArgs('ai_anthropic_api_key').returns(null);
             assert.equal(service.isConfigured, false);
         });
 
-        it('is false when the selected provider slug is unknown', function () {
-            settingsCache.get.withArgs('ai_provider').returns('openai');
-            providers.getProviderClass = sinon.stub().returns(undefined);
+        it('is false when no registered provider advertises the required capability', function () {
+            FakeProvider.capabilities = new Set(['text-generation']);
+            assert.equal(service.isConfigured, false);
+        });
+
+        it('skips providers whose capabilities set is missing', function () {
+            delete FakeProvider.capabilities;
             assert.equal(service.isConfigured, false);
         });
     });
 
     describe('generateImageAltText', function () {
         it('requires a configured provider', async function () {
-            settingsCache.get.withArgs('ai_provider').returns(null);
+            settingsCache.get.withArgs('ai_anthropic_api_key').returns(null);
 
             await assert.rejects(
                 service.generateImageAltText('https://ghost.example/content/images/photo.png'),
@@ -79,6 +78,26 @@ describe('AIService', function () {
             );
 
             assert.equal(request.called, false);
+        });
+
+        it('routes to the first configured provider that advertises the required capability', async function () {
+            const textOnlyDescribe = sinon.stub().rejects(new Error('should not be called'));
+            const TextOnlyProvider = function () {
+                this.describeImage = textOnlyDescribe;
+            };
+            TextOnlyProvider.capabilities = new Set(['text-generation']);
+
+            providers.listProviders.returns([
+                {slug: 'text-only', ProviderClass: TextOnlyProvider},
+                {slug: 'anthropic', ProviderClass: FakeProvider}
+            ]);
+            settingsCache.get.withArgs('ai_text-only_api_key').returns('key');
+            request.resolves({body: Buffer.from('image')});
+
+            await service.generateImageAltText('https://ghost.example/content/images/photo.png');
+
+            assert.equal(textOnlyDescribe.called, false);
+            assert.equal(describeImage.calledOnce, true);
         });
 
         it('normalizes a site-relative image path, downloads it, and delegates to the provider', async function () {

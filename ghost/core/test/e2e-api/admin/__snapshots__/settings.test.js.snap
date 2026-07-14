@@ -385,10 +385,6 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
-      "key": "ai_provider",
-      "value": null,
-    },
-    Object {
       "key": "ai_anthropic_api_key",
       "value": null,
     },
@@ -1292,10 +1288,6 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
-      "key": "ai_provider",
-      "value": null,
-    },
-    Object {
       "key": "ai_anthropic_api_key",
       "value": null,
     },
@@ -1750,10 +1742,6 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
-      "key": "ai_provider",
-      "value": null,
-    },
-    Object {
       "key": "ai_anthropic_api_key",
       "value": null,
     },
@@ -2206,10 +2194,6 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
-    },
-    Object {
-      "key": "ai_provider",
-      "value": null,
     },
     Object {
       "key": "ai_anthropic_api_key",
@@ -2711,10 +2695,6 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
-      "key": "ai_provider",
-      "value": null,
-    },
-    Object {
       "key": "ai_anthropic_api_key",
       "value": null,
     },
@@ -3166,10 +3146,6 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
-    },
-    Object {
-      "key": "ai_provider",
-      "value": null,
     },
     Object {
       "key": "ai_anthropic_api_key",
@@ -4112,10 +4088,6 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
-      "key": "ai_provider",
-      "value": null,
-    },
-    Object {
       "key": "ai_anthropic_api_key",
       "value": null,
     },
@@ -4570,10 +4542,6 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
-      "key": "ai_provider",
-      "value": null,
-    },
-    Object {
       "key": "ai_anthropic_api_key",
       "value": null,
     },
@@ -5026,10 +4994,6 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
-    },
-    Object {
-      "key": "ai_provider",
-      "value": null,
     },
     Object {
       "key": "ai_anthropic_api_key",
@@ -5490,10 +5454,6 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
-      "key": "ai_provider",
-      "value": null,
-    },
-    Object {
       "key": "ai_anthropic_api_key",
       "value": null,
     },
@@ -5945,10 +5905,6 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
-    },
-    Object {
-      "key": "ai_provider",
-      "value": null,
     },
     Object {
       "key": "ai_anthropic_api_key",
@@ -6407,10 +6363,6 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
-    },
-    Object {
-      "key": "ai_provider",
-      "value": null,
     },
     Object {
       "key": "ai_anthropic_api_key",
@@ -7259,10 +7211,6 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
-      "key": "ai_provider",
-      "value": null,
-    },
-    Object {
       "key": "ai_anthropic_api_key",
       "value": null,
     },
@@ -7715,10 +7663,6 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
-    },
-    Object {
-      "key": "ai_provider",
-      "value": null,
     },
     Object {
       "key": "ai_anthropic_api_key",
@@ -8176,10 +8120,6 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
-      "key": "ai_provider",
-      "value": null,
-    },
-    Object {
       "key": "ai_anthropic_api_key",
       "value": null,
     },
@@ -8633,10 +8573,6 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
-    },
-    Object {
-      "key": "ai_provider",
-      "value": null,
     },
     Object {
       "key": "ai_anthropic_api_key",
@@ -9190,10 +9126,6 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
-    },
-    Object {
-      "key": "ai_provider",
-      "value": null,
     },
     Object {
       "key": "ai_anthropic_api_key",

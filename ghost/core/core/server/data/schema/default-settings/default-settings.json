@@ -726,10 +726,6 @@
         }
     },
     "ai": {
-        "ai_provider": {
-            "defaultValue": null,
-            "type": "string"
-        },
         "ai_anthropic_api_key": {
             "defaultValue": null,
             "type": "string"

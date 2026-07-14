@@ -27,7 +27,6 @@ export default Model.extend(ValidationEngine, {
     firstpromoter: attr('boolean'),
     firstpromoterId: attr('string'),
     unsplash: attr('boolean'),
-    aiProvider: attr('string'),
     aiAnthropicApiKey: attr('string'),
     metaTitle: attr('string'),
     metaDescription: attr('string'),

@@ -1,6 +1,5 @@
 // NOTE: mapping is based on maping present in migration - 3.22/07-update-type-for-settings
 const keyTypeMapping = {
-    ai_provider: 'string',
     ai_anthropic_api_key: 'string',
     db_hash: 'string',
     admin_session_secret: 'string',

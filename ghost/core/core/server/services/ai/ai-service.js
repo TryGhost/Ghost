@@ -9,15 +9,25 @@ const SUPPORTED_IMAGE_TYPES = new Set([
     'image/webp'
 ]);
 
+const VISION_TO_TEXT = 'vision-to-text';
+
 /**
  * Orchestrates AI-backed editor features (today: image alt text). Knows
- * nothing about any specific vendor - it resolves whichever provider is
- * configured via settings and delegates the actual model call to it.
+ * nothing about any specific vendor - it resolves a provider by the
+ * capability the feature needs and delegates the actual model call to it.
  *
- * Adding a new AI-driven feature (e.g. excerpt generation) means adding a
- * method here that calls `this.#getProvider()` and a capability method on
- * the provider - it does not require a new service, settings group, or API
- * shape.
+ * Capability-based routing (rather than a global "active provider" setting)
+ * means multiple providers can be connected simultaneously: each provider is
+ * "active" whenever its own `ai_<slug>_api_key` setting is populated, and
+ * different features can be served by different providers. When multiple
+ * configured providers advertise the same capability, the first one in
+ * `providers.listProviders()` wins - a per-feature override could be layered
+ * on top later without changing this contract.
+ *
+ * Adding a new AI-driven feature (e.g. excerpt generation) means: (1) adding
+ * a method here that resolves a provider for the required capability, and
+ * (2) declaring that capability on any provider that supports it. It does
+ * not require a new service, settings group, or API shape.
  */
 module.exports = class AIService {
     /**
@@ -39,10 +49,16 @@ module.exports = class AIService {
     }
 
     /**
-     * @returns {boolean} whether an AI provider is configured and usable
+     * @returns {boolean} whether a provider is configured for image alt text
+     *
+     * Retained as the single admin-facing "is AI usable?" signal because
+     * image alt text is currently the only AI-backed feature. When a second
+     * feature is added, this getter should be replaced by capability-specific
+     * getters (e.g. `hasVisionToText`, `hasTextGeneration`) so the admin UI
+     * can enable each feature independently.
      */
     get isConfigured() {
-        return Boolean(this.#getConfiguredProvider());
+        return Boolean(this.#resolveProviderForCapability(VISION_TO_TEXT));
     }
 
     /**
@@ -50,7 +66,7 @@ module.exports = class AIService {
      * @returns {Promise<string>}
      */
     async generateImageAltText(imageUrl) {
-        const provider = this.#getProvider();
+        const provider = this.#getProviderForCapability(VISION_TO_TEXT);
 
         const normalizedUrl = this.#normalizeImageUrl(imageUrl);
         const {buffer, mediaType} = await this.#downloadImage(normalizedUrl);
@@ -60,30 +76,33 @@ module.exports = class AIService {
         return provider.describeImage({image: buffer, mediaType, prompt});
     }
 
-    /** @private */
-    #getConfiguredProvider() {
-        const slug = this.settingsCache.get('ai_provider');
-        if (!slug) {
-            return null;
+    /**
+     * Resolves the first configured provider that advertises the requested
+     * capability, or `null` if none is available.
+     * @private
+     * @param {string} capability
+     */
+    #resolveProviderForCapability(capability) {
+        for (const {slug, ProviderClass} of this.providers.listProviders()) {
+            if (!ProviderClass.capabilities?.has(capability)) {
+                continue;
+            }
+
+            // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
+            const apiKey = this.settingsCache.get(`ai_${slug}_api_key`);
+            if (!apiKey) {
+                continue;
+            }
+
+            return new ProviderClass({apiKey, request: this.request});
         }
 
-        const ProviderClass = this.providers.getProviderClass(slug);
-        if (!ProviderClass) {
-            return null;
-        }
-
-        // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
-        const apiKey = this.settingsCache.get(`ai_${slug}_api_key`);
-        if (!apiKey) {
-            return null;
-        }
-
-        return new ProviderClass({apiKey, request: this.request});
+        return null;
     }
 
     /** @private */
-    #getProvider() {
-        const provider = this.#getConfiguredProvider();
+    #getProviderForCapability(capability) {
+        const provider = this.#resolveProviderForCapability(capability);
 
         if (!provider) {
             throw new errors.ValidationError({

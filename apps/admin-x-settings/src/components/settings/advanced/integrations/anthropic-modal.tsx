@@ -10,29 +10,23 @@ import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
-const PROVIDER_SLUG = 'anthropic';
-
 const AnthropicModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
     const {settings} = useGlobalData();
-    const [selectedProvider, configuredApiKey] = getSettingValues<string>(settings, ['ai_provider', 'ai_anthropic_api_key']);
+    const [configuredApiKey] = getSettingValues<string>(settings, ['ai_anthropic_api_key']);
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
     const [apiKey, setApiKey] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [okLabel, setOkLabel] = useState('Save');
-    const isConfigured = Boolean(configuredApiKey) && selectedProvider === PROVIDER_SLUG;
+    const isConfigured = Boolean(configuredApiKey);
 
     useEffect(() => {
         setApiKey('');
     }, [configuredApiKey]);
 
     const saveApiKey = async () => {
-        // Anthropic is currently the only supported provider, so configuring
-        // its key also selects it. Once more providers exist, this should
-        // become an explicit choice in the UI rather than an implicit one.
         const updates: Setting[] = [
-            {key: 'ai_provider', value: PROVIDER_SLUG},
             {key: 'ai_anthropic_api_key', value: apiKey.trim()}
         ];
 
@@ -52,10 +46,7 @@ const AnthropicModal = NiceModal.create(() => {
     const clearApiKey = async () => {
         try {
             setIsSaving(true);
-            await editSettings([
-                {key: 'ai_provider', value: null},
-                {key: 'ai_anthropic_api_key', value: null}
-            ]);
+            await editSettings([{key: 'ai_anthropic_api_key', value: null}]);
             setApiKey('');
         } catch (error) {
             handleError(error);
@@ -74,7 +65,7 @@ const AnthropicModal = NiceModal.create(() => {
             dirty={Boolean(apiKey)}
             leftButtonProps={isConfigured ? {
                 color: 'red',
-                label: 'Clear API key',
+                label: 'Disconnect',
                 link: true,
                 onClick: clearApiKey
             } : undefined}
@@ -102,7 +93,7 @@ const AnthropicModal = NiceModal.create(() => {
                     onChange={event => setApiKey(event.target.value)}
                 />
                 <Text size='sm' tone='secondary'>
-                    This key enables alt-text generation for feature and inline images in the editor. It stays server-side and is hidden after saving.
+                    Powers alt-text generation for feature and inline images in the editor. Your key stays server-side and is hidden after saving.
                 </Text>
             </Stack>
         </Modal>

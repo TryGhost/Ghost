@@ -40,7 +40,6 @@ describe('Acceptance: Feature Image', function () {
             featureImage: '/content/images/feature-image.jpg',
             featureImageAlt: 'Existing alt text'
         });
-        this.server.create('setting', {key: 'ai_provider', value: 'anthropic', group: 'ai'});
         this.server.create('setting', {key: 'ai_anthropic_api_key', value: '••••••••', group: 'ai'});
         let requestBody;
         this.server.post('/ai/alt-text/', function (schema, request) {
