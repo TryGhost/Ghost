@@ -3,10 +3,14 @@ const Manager = require('./site-map-manager');
 const manager = new Manager();
 
 // Responsible for handling requests for sitemap files
+// The sitemap names a request may address. Checking own-properties on the
+// manager would accept any field the class happens to carry.
+const RESOURCE_TYPES = new Set(['posts', 'pages', 'tags', 'authors', 'users', 'index']);
+
 module.exports = function handler(siteApp) {
     const verifyResourceType = function verifyResourceType(req, res, next) {
         const resourceWithoutPage = req.params.resource.replace(/-\d+$/, '');
-        if (!Object.prototype.hasOwnProperty.call(manager, resourceWithoutPage)) {
+        if (!RESOURCE_TYPES.has(resourceWithoutPage)) {
             return res.sendStatus(404);
         }
 
