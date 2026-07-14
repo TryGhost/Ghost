@@ -5,10 +5,43 @@ const imageTransform = require('@tryghost/image-transform');
 
 const storage = require('../../adapters/storage');
 const config = require('../../../shared/config');
+const imageAltTextService = require('../../services/image-alt-text');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
     docName: 'images',
+    generateAltText: {
+        headers: {
+            cacheInvalidate: false
+        },
+        data: [
+            'image_url'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'edit'
+        },
+        validation: {
+            data: {
+                image_url: {
+                    required: true
+                }
+            }
+        },
+        async query(frame) {
+            if (!frame.data.image_url) {
+                throw new errors.ValidationError({
+                    message: 'A valid Ghost image URL is required.'
+                });
+            }
+
+            const altText = await imageAltTextService.generate(frame.data.image_url);
+
+            return {
+                alt_text: altText
+            };
+        }
+    },
     upload: {
         statusCode: 201,
         headers: {

@@ -2,6 +2,12 @@ const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output
 const mappers = require('./mappers');
 
 module.exports = {
+    generateAltText(response, apiConfig, frame) {
+        debug('generateAltText');
+
+        frame.response = response;
+    },
+
     upload(path, apiConfig, frame) {
         debug('upload');
 

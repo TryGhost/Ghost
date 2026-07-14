@@ -328,6 +328,7 @@ module.exports = function apiRoutes() {
         apiMw.upload.validation({type: 'images'}),
         http(api.images.upload)
     );
+    router.post('/images/alt-text', mw.authAdminApi, http(api.images.generateAltText));
 
     // ## media
     router.post('/media/upload',
