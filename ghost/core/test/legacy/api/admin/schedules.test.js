@@ -125,6 +125,10 @@ describe('Schedules API', function () {
         });
 
         it('no access', function () {
+            // Also guards the missing-resource tolerance in the `permissions`
+            // handler: this key lacks publish permission and the post exists, so
+            // it must get a 403 — proving only NotFoundError is swallowed there,
+            // never NoPermissionError.
             const zapierKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-backup'}});
             const zapierToken = localUtils.getValidAdminToken('/admin/', zapierKey);
 
@@ -151,12 +155,37 @@ describe('Schedules API', function () {
                 .expect(200);
         });
 
-        it('not found', function () {
-            return request
+        it('firing ahead of the scheduled time is a no-op, not an error', async function () {
+            // resources[2] is scheduled 10 minutes out, beyond tolerance.
+            const res = await request
                 .put(localUtils.API.getApiQuery(`schedules/posts/${resources[2].id}/?token=${token}`))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            assert.deepEqual(res.body.posts, []);
+        });
+
+        it('firing well after the scheduled time without force stays an error', function () {
+            // resources[3] is scheduled 10 minutes in the past, beyond tolerance.
+            return request
+                .put(localUtils.API.getApiQuery(`schedules/posts/${resources[3].id}/?token=${token}`))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404);
+        });
+
+        it('a deleted resource is a no-op, not an error', async function () {
+            // A scheduler that can't invalidate its jobs may fire one for a post
+            // that has since been deleted. That should be a 2xx no-op it won't
+            // retry, not a 404. (The id below is well-formed but does not exist.)
+            const res = await request
+                .put(localUtils.API.getApiQuery(`schedules/posts/619000000000000000000000/?token=${token}`))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            assert.deepEqual(res.body.posts, []);
         });
 
         it('force publish', function () {
