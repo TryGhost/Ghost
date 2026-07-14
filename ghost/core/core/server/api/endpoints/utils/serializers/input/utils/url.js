@@ -97,7 +97,14 @@ const forceUrlRelationsWhenLazy = (frame, routerType) => {
     const relations = urlService.facade.getRequiredRelations();
     if (relations.length) {
         const requested = frame.options.withRelated || [];
-        const forced = relations.filter(relation => !requested.includes(relation));
+        // A nested include covers its parent: `authors.roles` eager-loads
+        // authors with roles nested, so the resource already carries the
+        // relation — forcing (and then stripping) the parent would delete
+        // the very data the caller asked for.
+        const covers = (requestedRelation, relation) => {
+            return requestedRelation === relation || requestedRelation.startsWith(`${relation}.`);
+        };
+        const forced = relations.filter(relation => !requested.some(requestedRelation => covers(requestedRelation, relation)));
         if (forced.length) {
             // Record what was forced (not what the caller asked for) so the
             // output mapper can strip it from the response after the URL is

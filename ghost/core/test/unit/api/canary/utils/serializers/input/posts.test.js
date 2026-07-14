@@ -231,6 +231,28 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             assert.equal(frame.forcedUrlRelations, undefined);
         });
 
+        it('lazyRouting: treats a nested include as covering its parent relation', function () {
+            sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
+
+            // `authors.roles` eager-loads authors with roles nested, so the
+            // resource is not thin — forcing (and then stripping) `authors`
+            // would delete the very data the caller asked for.
+            const frame = {
+                apiType: 'admin',
+                options: {
+                    context: {user: 1},
+                    withRelated: ['authors.roles'],
+                    columns: ['id', 'url']
+                }
+            };
+
+            serializers.input.posts.browse({}, frame);
+
+            assert.ok(frame.options.withRelated.includes('authors.roles'));
+            assert.ok(!frame.options.withRelated.includes('authors'), 'authors is already covered by authors.roles');
+            assert.deepEqual(frame.forcedUrlRelations, ['tags']);
+        });
+
         it('lazyRouting: records nothing for stripping when the caller already requested the relations', function () {
             sinon.stub(urlService.facade, 'getRequiredRelations').returns(['tags', 'authors']);
 
