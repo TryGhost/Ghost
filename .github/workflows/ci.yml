@@ -15,7 +15,7 @@ on:
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
-  NODE_VERSION: 22.18.0
+  NODE_VERSION: 22.23.1
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
   # files. The cache lives in /tmp and is discarded after each run anyway,
@@ -184,7 +184,7 @@ jobs:
       - name: Define Node test matrix
         id: node_matrix
         run: |
-          echo 'matrix=["22.18.0"]' >> $GITHUB_OUTPUT
+          echo 'matrix=["22.23.1"]' >> $GITHUB_OUTPUT
 
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - name: Set up Node

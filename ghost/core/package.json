@@ -75,7 +75,7 @@
     "lint": "pnpm run '/^lint:(server|shared|frontend|test|types)$/'"
   },
   "engines": {
-    "node": "^22.18.0",
+    "node": "^22.23.1",
     "cli": "^1.29.1"
   },
   "dependencies": {
