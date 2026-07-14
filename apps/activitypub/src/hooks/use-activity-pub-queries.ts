@@ -2244,7 +2244,9 @@ export function useDeleteMutationForUser(handle: string) {
 
             queryClient.setQueryData(context.previousOutbox.key, context.previousOutbox.data);
             queryClient.setQueryData(context.previousLiked.key, context.previousLiked.data);
-            queryClient.setQueriesData({queryKey: context.previousProfilePosts.key}, context.previousProfilePosts.data);
+            context.previousProfilePosts.data.forEach(([queryKey, data]) => {
+                queryClient.setQueryData(queryKey, data);
+            });
 
             if (context.previousAccount) {
                 queryClient.setQueryData(context.previousAccount.key, context.previousAccount.data);
