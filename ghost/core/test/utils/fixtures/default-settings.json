@@ -471,6 +471,12 @@
             "flags": "RO"
         }
     },
+    "claude": {
+        "claude_api_key": {
+            "defaultValue": null,
+            "type": "string"
+        }
+    },
     "firstpromoter": {
         "firstpromoter": {
             "defaultValue": "false",

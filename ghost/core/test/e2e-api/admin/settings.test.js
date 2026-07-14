@@ -12,7 +12,7 @@ const limits = require('../../../core/server/services/limits');
 const {anyErrorId} = matchers;
 
 // Updated to reflect current total based on test output
-const CURRENT_SETTINGS_COUNT = 107;
+const CURRENT_SETTINGS_COUNT = 108;
 
 const settingsMatcher = {};
 
@@ -35,10 +35,10 @@ const matchSettingsArray = (length) => {
         settingsArray[34] = publicHashSettingMatcher;
     }
 
-    if (length > 68) {
+    if (length > 69) {
         // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
         // Item at index x is the lab settings, which changes as we add and remove features
-        settingsArray[68] = labsSettingMatcher;
+        settingsArray[69] = labsSettingMatcher;
     }
 
     return settingsArray;
@@ -107,15 +107,7 @@ describe('Settings API', function () {
         it('Can edit the Claude API key', async function () {
             const internalContext = {context: {internal: true}};
             const existingSetting = await models.Settings.findOne({key: 'claude_api_key'}, internalContext);
-            let temporarySetting;
-            if (!existingSetting) {
-                temporarySetting = await models.Settings.add({
-                    key: 'claude_api_key',
-                    value: null,
-                    type: 'string',
-                    group: 'claude'
-                }, internalContext);
-            }
+            assert.ok(existingSetting);
 
             try {
                 await agent.put('settings/')
@@ -129,11 +121,11 @@ describe('Settings API', function () {
                         assert.equal(settingsCache.get('claude_api_key'), 'sk-ant-test');
                     });
             } finally {
-                if (existingSetting) {
-                    await models.Settings.edit({key: 'claude_api_key', value: null}, internalContext);
-                } else {
-                    await temporarySetting.destroy(internalContext);
-                }
+                await agent.put('settings/')
+                    .body({
+                        settings: [{key: 'claude_api_key', value: null}]
+                    })
+                    .expectStatus(200);
             }
         });
 
