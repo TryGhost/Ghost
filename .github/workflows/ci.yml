@@ -350,7 +350,7 @@ jobs:
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
 
-      - uses: tryghost/actions/actions/slack-build@6fbe82c6461eee866b1995631d1fb30d6ce9515d # main
+      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -414,7 +414,7 @@ jobs:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@6fbe82c6461eee866b1995631d1fb30d6ce9515d # main
+      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -491,7 +491,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@6fbe82c6461eee866b1995631d1fb30d6ce9515d # main
+      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -636,7 +636,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@6fbe82c6461eee866b1995631d1fb30d6ce9515d # main
+      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -726,7 +726,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@6fbe82c6461eee866b1995631d1fb30d6ce9515d # main
+      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -804,7 +804,7 @@ jobs:
           path: ${{ steps.app_name.outputs.root }}/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@6fbe82c6461eee866b1995631d1fb30d6ce9515d # main
+      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -903,7 +903,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@6fbe82c6461eee866b1995631d1fb30d6ce9515d # main
+      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1562,7 +1562,7 @@ jobs:
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@6fbe82c6461eee866b1995631d1fb30d6ce9515d # main
+      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
