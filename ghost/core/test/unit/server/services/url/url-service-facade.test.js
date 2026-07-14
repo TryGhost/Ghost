@@ -176,6 +176,143 @@ describe('UrlServiceFacade', function () {
         });
     });
 
+    describe('getRoutableResources', function () {
+        const flush = () => new Promise((resolve) => {
+            setImmediate(resolve);
+        });
+
+        beforeEach(function () {
+            urlService.resources = {
+                getAllByType: sinon.stub().returns([
+                    {data: {id: 'a', slug: 'one'}},
+                    {data: {id: 'b', slug: 'two'}}
+                ])
+            };
+        });
+
+        it('returns [] when the eager cache has not initialised the type yet', async function () {
+            urlService.resources.getAllByType.returns(undefined);
+
+            assert.deepEqual(await facade.getRoutableResources('posts'), []);
+        });
+
+        it('answers from the eager cache with no lazy backend', async function () {
+            const rows = await facade.getRoutableResources('posts');
+
+            sinon.assert.calledWith(urlService.resources.getAllByType, 'posts');
+            assert.deepEqual(rows, [{id: 'a', slug: 'one'}, {id: 'b', slug: 'two'}]);
+        });
+
+        it('routes to the injected fetcher in lazy mode', async function () {
+            const fetchRoutableResources = sinon.stub().resolves([{id: 'c'}]);
+            const lazyFacade = new UrlServiceFacade({
+                urlService,
+                lazyUrlService: {},
+                fetchRoutableResources
+            });
+
+            const rows = await lazyFacade.getRoutableResources('posts', {columns: ['feature_image']});
+
+            sinon.assert.calledWith(fetchRoutableResources, 'posts', {columns: ['feature_image']});
+            assert.deepEqual(rows, [{id: 'c'}]);
+        });
+
+        it('throws in lazy mode without an injected fetcher rather than answering from eager', async function () {
+            const lazyFacade = new UrlServiceFacade({urlService, lazyUrlService: {}});
+
+            await assert.rejects(lazyFacade.getRoutableResources('posts'), /fetchRoutableResources/);
+        });
+
+        describe('in compare mode', function () {
+            let fetchRoutableResources;
+            let compareFacade;
+
+            beforeEach(function () {
+                fetchRoutableResources = sinon.stub().resolves([{id: 'a'}, {id: 'b'}]);
+                compareFacade = new UrlServiceFacade({
+                    urlService,
+                    lazyUrlService: {},
+                    compare: true,
+                    fetchRoutableResources
+                });
+                sinon.stub(logging, 'error');
+            });
+
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('returns the eager rows and stays silent when the id sets match', async function () {
+                const rows = await compareFacade.getRoutableResources('posts');
+                await flush();
+
+                assert.deepEqual(rows.map(row => row.id), ['a', 'b']);
+                sinon.assert.calledOnce(fetchRoutableResources);
+                sinon.assert.notCalled(logging.error);
+            });
+
+            it('logs a parity mismatch when the id sets diverge, without dumping the rows', async function () {
+                fetchRoutableResources.resolves([{id: 'a'}, {id: 'c'}]);
+
+                await compareFacade.getRoutableResources('posts');
+                await flush();
+
+                sinon.assert.calledOnce(logging.error);
+                const reported = logging.error.firstCall.args[0];
+                assert.equal(reported.code, 'LAZY_URL_PARITY_MISMATCH');
+                assert.deepEqual(reported.errorDetails.missingFromLazy, ['b']);
+                assert.deepEqual(reported.errorDetails.extraInLazy, ['c']);
+                assert.equal(reported.errorDetails.eagerCount, 2);
+                assert.ok(!JSON.stringify(reported.errorDetails).includes('slug'), 'row bodies must not be logged');
+            });
+
+            it('does not stack concurrent comparison walks for the same type', async function () {
+                let resolveWalk;
+                fetchRoutableResources.onFirstCall().returns(new Promise((resolve) => {
+                    resolveWalk = () => resolve([{id: 'a'}, {id: 'b'}]);
+                }));
+
+                await compareFacade.getRoutableResources('posts');
+                await compareFacade.getRoutableResources('posts');
+
+                sinon.assert.calledOnce(fetchRoutableResources);
+
+                resolveWalk();
+                await flush();
+
+                // Once the walk settles, the next call may compare again.
+                await compareFacade.getRoutableResources('posts');
+                sinon.assert.calledTwice(fetchRoutableResources);
+            });
+
+            it('logs instead of throwing when the lazy fetch fails', async function () {
+                fetchRoutableResources.rejects(new Error('connection lost'));
+
+                const rows = await compareFacade.getRoutableResources('posts');
+                await flush();
+
+                assert.equal(rows.length, 2, 'eager answer unaffected');
+                sinon.assert.calledOnce(logging.error);
+                assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
+            });
+        });
+    });
+
+    describe('getUrlForResource with skipComparison', function () {
+        it('answers from eager without teeing the lazy backend', async function () {
+            const lazyUrlService = {getUrlForResource: sinon.stub()};
+            const compareFacade = new UrlServiceFacade({urlService, lazyUrlService, compare: true});
+
+            const url = compareFacade.getUrlForResource({id: 'abc', type: 'posts'}, {absolute: true, skipComparison: true});
+
+            assert.equal(url, '/hello-world/');
+            await new Promise((resolve) => {
+                setImmediate(resolve);
+            });
+            sinon.assert.notCalled(lazyUrlService.getUrlForResource);
+        });
+    });
+
     describe('compare mode (eager authoritative, lazy teed alongside)', function () {
         let lazyUrlService;
         let compareFacade;

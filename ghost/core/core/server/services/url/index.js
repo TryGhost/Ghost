@@ -27,15 +27,18 @@ const urlService = new UrlService({cache});
 // existing `lazyRouting` flag (unset by default = pure eager, unchanged).
 // models is already loaded via url-service -> resources, so this require is safe.
 let lazyUrlService = null;
+let fetchRoutableResources = null;
 if (config.get('lazyRouting')) {
     const LazyUrlService = require('./lazy-url-service');
     const {createFindResource} = require('./lazy-find-resource');
+    const {createFetchRoutableResources} = require('./routable-resources');
     const models = require('../../models');
     lazyUrlService = new LazyUrlService({findResource: createFindResource(models)});
+    fetchRoutableResources = createFetchRoutableResources({lazyUrlService});
 }
 
 const urlServiceFacade = lazyUrlService
-    ? new UrlServiceFacade({urlService, lazyUrlService, compare: true})
+    ? new UrlServiceFacade({urlService, lazyUrlService, compare: true, fetchRoutableResources})
     : new UrlServiceFacade({urlService});
 
 // Singleton: default export remains the eager UrlService for backwards
