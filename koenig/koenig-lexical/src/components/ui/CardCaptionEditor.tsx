@@ -39,10 +39,10 @@ function AltTextInput({value, placeholder, onChange, readOnly, dataTestId, autoF
     );
 }
 
-function AltToggleButton({isEditingAlt, onClick}) {
+function AltToggleButton({isEditingAlt, onClick, grouped = false}) {
     return (
         <button
-            className={`cursor-pointer rounded-md border px-1 font-sans text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${isEditingAlt ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
+            className={`${grouped ? '' : 'absolute bottom-0 right-0 m-2'} cursor-pointer rounded-md border px-1 font-sans text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${isEditingAlt ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
             data-testid="alt-toggle-button"
             name="alt-toggle-button"
             type="button"
@@ -126,11 +126,12 @@ export function CardCaptionEditor({
                     ? <AltTextInput dataTestId={dataTestId} placeholder={altTextPlaceholder} readOnly={readOnly} value={altText} onChange={setAltText} />
                     : <CaptionInput captionEditor={captionEditor} captionEditorInitialState={captionEditorInitialState} dataTestId={dataTestId} placeholder={captionPlaceholder} /> }
                 {generationError && <span className="absolute left-2 top-full font-sans text-xs text-red" role="alert">{generationError}</span>}
-                {showAltToggle && (
-                    <div className="absolute bottom-0 right-0 m-2 flex gap-1">
-                        {isEditingAlt && generateAltText && imageUrl && <GenerateAltTextButton isGenerating={isGeneratingAlt} onClick={generateImageAltText} />}
-                        <AltToggleButton isEditingAlt={isEditingAlt} onClick={toggleIsEditingAlt} />
+                {showAltToggle && (isEditingAlt && generateAltText && imageUrl
+                    ? <div className="absolute bottom-0 right-0 m-2 flex gap-1">
+                        <GenerateAltTextButton isGenerating={isGeneratingAlt} onClick={generateImageAltText} />
+                        <AltToggleButton isEditingAlt={isEditingAlt} grouped onClick={toggleIsEditingAlt} />
                     </div>
+                    : <AltToggleButton isEditingAlt={isEditingAlt} onClick={toggleIsEditingAlt} />
                 )}
             </figcaption>
         )
