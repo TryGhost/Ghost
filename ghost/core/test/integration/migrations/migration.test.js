@@ -16,7 +16,7 @@ const db = require('../../../core/server/data/db');
 const dbUtils = require('../../utils/db-utils');
 
 const currentVersion = require('@tryghost/version');
-const addClaudeApiKeySetting = require('../../../core/server/data/migrations/versions/6.50/2026-07-14-12-25-50-add-claude-api-key-setting');
+const addClaudeApiKeySetting = require('../../../core/server/data/migrations/versions/6.53/2026-07-14-12-25-50-add-claude-api-key-setting');
 const currentMajor = semver.major(currentVersion.original);
 const previousMinor = semver.minor(currentVersion.original) - 1;
 const previousVersion = `${currentMajor}.${previousMinor}`;
