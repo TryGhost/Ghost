@@ -4,6 +4,30 @@ const sinon = require('sinon');
 
 const EmailAnalyticsService = require('../../../../../core/server/services/email-analytics/email-analytics-service');
 
+const JOB_NAMES = {
+    latestNonOpened: 'email-analytics-latest-others',
+    missing: 'email-analytics-missing',
+    latestOpened: 'email-analytics-latest-opened',
+    scheduled: 'email-analytics-scheduled'
+};
+
+const NEWSLETTER_CURSOR_SEED = {
+    tableName: 'email_recipients',
+    eventColumns: {
+        delivered: 'delivered_at',
+        opened: 'opened_at',
+        failed: 'failed_at'
+    }
+};
+
+function createService(dependencies = {}) {
+    return new EmailAnalyticsService({
+        jobNames: JOB_NAMES,
+        cursorSeed: NEWSLETTER_CURSOR_SEED,
+        ...dependencies
+    });
+}
+
 /**
  * Create a stub implementing the EventProcessor interface.
  */
@@ -25,10 +49,33 @@ describe('EmailAnalyticsService', function () {
         clock.restore();
     });
 
+    describe('constructor', function () {
+        it('registers Prometheus metrics only for services given a client', function () {
+            const prometheusClient = {
+                registerCounter: sinon.stub()
+            };
+
+            createService({prometheusClient});
+            createService({
+                jobNames: {
+                    latestNonOpened: 'email-analytics-automation-latest-others',
+                    missing: 'email-analytics-automation-missing',
+                    latestOpened: 'email-analytics-automation-latest-opened',
+                    scheduled: 'email-analytics-automation-scheduled'
+                }
+            });
+
+            sinon.assert.calledOnceWithExactly(prometheusClient.registerCounter, {
+                name: 'email_analytics_aggregate_member_stats_count',
+                help: 'Count of member stats aggregations'
+            });
+        });
+    });
+
     describe('getStatus', function () {
         it('returns status object', function () {
             // these are null because we're not running them before calling this
-            const service = new EmailAnalyticsService({});
+            const service = createService();
             const result = service.getStatus();
             assert.deepEqual(result, {
                 latest: {
@@ -49,11 +96,52 @@ describe('EmailAnalyticsService', function () {
                 }
             });
         });
+
+        it('uses custom job names', function () {
+            const service = createService({
+                jobNames: {
+                    latestNonOpened: 'custom-latest-others',
+                    latestOpened: 'custom-latest-opened',
+                    missing: 'custom-missing',
+                    scheduled: 'custom-scheduled'
+                }
+            });
+
+            const result = service.getStatus();
+            assert.equal(result.latest.jobName, 'custom-latest-others');
+            assert.equal(result.latestOpened.jobName, 'custom-latest-opened');
+            assert.equal(result.missing.jobName, 'custom-missing');
+            assert.equal(result.scheduled.jobName, 'custom-scheduled');
+        });
+
+        it('uses custom scheduled job name for persistence', async function () {
+            const setJobMetadata = sinon.stub().resolves();
+            const service = createService({
+                queries: {
+                    setJobMetadata
+                },
+                jobNames: {
+                    ...JOB_NAMES,
+                    scheduled: 'custom-scheduled'
+                }
+            });
+
+            const begin = new Date(2023, 0, 1);
+            const end = new Date(2023, 0, 2);
+            await service.schedule({begin, end});
+            service.cancelScheduled();
+
+            assert.deepEqual(setJobMetadata.firstCall.args, ['custom-scheduled', {
+                begin: begin.toISOString(),
+                end: end.toISOString()
+            }]);
+            assert.deepEqual(setJobMetadata.secondCall.args, ['custom-scheduled', null]);
+        });
     });
 
     describe('getLastNonOpenedEventTimestamp', function () {
         it('returns the queried timestamp before the fallback', async function () {
-            const service = new EmailAnalyticsService({
+            const service = createService({
                 queries: {
                     getLastEventTimestamp: sinon.stub().resolves(new Date(1))
                 }
@@ -63,8 +151,34 @@ describe('EmailAnalyticsService', function () {
             assert.deepEqual(result, new Date(1));
         });
 
+        it('passes the configured cursor seed to the query', async function () {
+            const cursorSeed = {
+                tableName: 'automated_email_recipients',
+                eventColumns: {
+                    delivered: 'delivered_at',
+                    opened: 'opened_at'
+                }
+            };
+            const getLastEventTimestamp = sinon.stub().resolves(new Date(1));
+            const service = createService({
+                cursorSeed,
+                queries: {
+                    getLastEventTimestamp
+                }
+            });
+
+            await service.getLastNonOpenedEventTimestamp();
+
+            sinon.assert.calledOnceWithExactly(
+                getLastEventTimestamp,
+                JOB_NAMES.latestNonOpened,
+                ['delivered', 'failed'],
+                cursorSeed
+            );
+        });
+
         it('returns the fallback if nothing is found', async function () {
-            const service = new EmailAnalyticsService({
+            const service = createService({
                 queries: {
                     getLastEventTimestamp: sinon.stub().resolves(null)
                 }
@@ -77,7 +191,7 @@ describe('EmailAnalyticsService', function () {
 
     describe('getLastSeenOpenedEventTimestamp', function () {
         it('returns the queried timestamp before the fallback', async function () {
-            const service = new EmailAnalyticsService({
+            const service = createService({
                 queries: {
                     getLastEventTimestamp: sinon.stub().resolves(new Date(1))
                 }
@@ -87,8 +201,26 @@ describe('EmailAnalyticsService', function () {
             assert.deepEqual(result, new Date(1));
         });
 
+        it('passes the configured cursor seed to the query', async function () {
+            const getLastEventTimestamp = sinon.stub().resolves(new Date(1));
+            const service = createService({
+                queries: {
+                    getLastEventTimestamp
+                }
+            });
+
+            await service.getLastOpenedEventTimestamp();
+
+            sinon.assert.calledOnceWithExactly(
+                getLastEventTimestamp,
+                JOB_NAMES.latestOpened,
+                ['opened'],
+                NEWSLETTER_CURSOR_SEED
+            );
+        });
+
         it('returns the fallback if nothing is found', async function () {
-            const service = new EmailAnalyticsService({
+            const service = createService({
                 queries: {
                     getLastEventTimestamp: sinon.stub().resolves(null)
                 }
@@ -107,7 +239,7 @@ describe('EmailAnalyticsService', function () {
             it('fetches only opened events', async function () {
                 const fetchLatestSpy = sinon.spy();
                 const eventProcessor = createStubEventProcessor();
-                const service = new EmailAnalyticsService({
+                const service = createService({
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(),
                         setJobTimestamp: sinon.stub().resolves(),
@@ -132,7 +264,7 @@ describe('EmailAnalyticsService', function () {
 
             it('quits if the end is before the begin', async function () {
                 const fetchLatestSpy = sinon.spy();
-                const service = new EmailAnalyticsService({
+                const service = createService({
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 24 hours in the future
                         setJobTimestamp: sinon.stub().resolves(),
@@ -152,7 +284,7 @@ describe('EmailAnalyticsService', function () {
             it('fetches only non-opened events', async function () {
                 const fetchLatestSpy = sinon.spy();
                 const eventProcessor = createStubEventProcessor();
-                const service = new EmailAnalyticsService({
+                const service = createService({
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(),
                         setJobTimestamp: sinon.stub().resolves(),
@@ -177,7 +309,7 @@ describe('EmailAnalyticsService', function () {
 
             it('quits if the end is before the begin', async function () {
                 const fetchLatestSpy = sinon.spy();
-                const service = new EmailAnalyticsService({
+                const service = createService({
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 24 hours in the future
                         setJobTimestamp: sinon.stub().resolves(),
@@ -205,7 +337,7 @@ describe('EmailAnalyticsService', function () {
                 setJobStatusStub = sinon.stub().resolves();
                 setJobMetadataStub = sinon.stub().resolves();
                 eventProcessor = createStubEventProcessor();
-                service = new EmailAnalyticsService({
+                service = createService({
                     queries: {
                         setJobTimestamp: setJobTimestampStub,
                         setJobStatus: setJobStatusStub,
@@ -268,7 +400,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             it('resets fetchScheduledData when no events are fetched', async function () {
-                service = new EmailAnalyticsService({
+                service = createService({
                     queries: {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves(),
@@ -297,7 +429,7 @@ describe('EmailAnalyticsService', function () {
 
             beforeEach(function () {
                 setJobMetadataStub = sinon.stub().resolves();
-                service = new EmailAnalyticsService({
+                service = createService({
                     queries: {
                         setJobMetadata: setJobMetadataStub,
                         setJobTimestamp: sinon.stub().resolves(),
@@ -387,8 +519,8 @@ describe('EmailAnalyticsService', function () {
         });
 
         describe('aggregation error handling', function () {
-            function createService(eventProcessor) {
-                return new EmailAnalyticsService({
+            function createServiceWithEventProcessor(eventProcessor) {
+                return createService({
                     queries: {
                         getLastEventTimestamp: sinon.stub().resolves(),
                         setJobTimestamp: sinon.stub().resolves(),
@@ -408,7 +540,7 @@ describe('EmailAnalyticsService', function () {
                 eventProcessor.aggregate
                     .withArgs(sinon.match({isFinal: false}))
                     .rejects(new Error('intermediate aggregation failed'));
-                const service = createService(eventProcessor);
+                const service = createServiceWithEventProcessor(eventProcessor);
 
                 const result = await service.fetchLatestOpenedEvents();
 
@@ -423,7 +555,7 @@ describe('EmailAnalyticsService', function () {
                 eventProcessor.aggregate
                     .withArgs(sinon.match({isFinal: true}))
                     .rejects(new Error('final aggregation failed'));
-                const service = createService(eventProcessor);
+                const service = createServiceWithEventProcessor(eventProcessor);
 
                 await assert.rejects(service.fetchLatestOpenedEvents(), /final aggregation failed/);
             });
@@ -439,7 +571,7 @@ describe('EmailAnalyticsService', function () {
                 const end = new Date(2023, 0, 8);
                 const finishedAt = new Date(2023, 0, 3);
 
-                const service = new EmailAnalyticsService({
+                const service = createService({
                     queries: {
                         getJobData: sinon.stub().resolves({
                             finished_at: finishedAt,
@@ -462,7 +594,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             it('does nothing when no job data exists', async function () {
-                const service = new EmailAnalyticsService({
+                const service = createService({
                     queries: {
                         getJobData: sinon.stub().resolves(null),
                         setJobMetadata: sinon.stub().resolves()
@@ -476,7 +608,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             it('does nothing when metadata is null', async function () {
-                const service = new EmailAnalyticsService({
+                const service = createService({
                     queries: {
                         getJobData: sinon.stub().resolves({
                             finished_at: null,
@@ -497,7 +629,7 @@ describe('EmailAnalyticsService', function () {
                 const begin = new Date(2023, 0, 1);
                 const end = new Date(2023, 0, 8);
 
-                const service = new EmailAnalyticsService({
+                const service = createService({
                     queries: {
                         getJobData: sinon.stub().resolves({
                             finished_at: null,
@@ -519,7 +651,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             it('handles corrupt metadata gracefully', async function () {
-                const service = new EmailAnalyticsService({
+                const service = createService({
                     queries: {
                         getJobData: sinon.stub().resolves({
                             finished_at: null,
@@ -540,7 +672,7 @@ describe('EmailAnalyticsService', function () {
         describe('fetchMissing', function () {
             it('fetches missing events', async function () {
                 const fetchLatestSpy = sinon.spy();
-                const service = new EmailAnalyticsService({
+                const service = createService({
                     queries: {
                         setJobTimestamp: sinon.stub().resolves(),
                         setJobStatus: sinon.stub().resolves(),

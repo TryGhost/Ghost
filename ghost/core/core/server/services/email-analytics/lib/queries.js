@@ -6,8 +6,13 @@ const {default: ObjectID} = require('bson-objectid');
 
 const MIN_EMAIL_COUNT_FOR_OPEN_RATE = 5;
 
-/** @typedef {'email-analytics-latest-opened'|'email-analytics-latest-others'|'email-analytics-missing'|'email-analytics-scheduled'} EmailAnalyticsJobName */
+/** @typedef {string} EmailAnalyticsJobName */
 /** @typedef {'delivered'|'opened'|'failed'} EmailAnalyticsEvent */
+/**
+ * @typedef {object} CursorSeed
+ * @prop {string} tableName
+ * @prop {Partial<Record<EmailAnalyticsEvent, string>>} eventColumns
+ */
 
 /**
  * Creates a job in the jobs table if it does not already exist.
@@ -29,43 +34,42 @@ module.exports = {
      * Retrieves the timestamp of the last seen event for the specified email analytics events.
      * @param {EmailAnalyticsJobName} jobName - The name of the job to update.
      * @param {EmailAnalyticsEvent[]} events - The email analytics events to consider.
+     * @param {CursorSeed} cursorSeed - Recipient table and timestamp columns to read the initial cursor from. Used when the job has no stored timestamp yet.
      * @returns {Promise<Date|null>} The timestamp of the last seen event, or null if no events are found.
      */
-    async getLastEventTimestamp(jobName, events) {
+    async getLastEventTimestamp(jobName, events, cursorSeed) {
         const startDate = new Date();
-        
-        let maxOpenedAt;
-        let maxDeliveredAt;
-        let maxFailedAt;
+
+        let timestamps = [];
         const lastJobRunTimestamp = await this.getLastJobRunTimestamp(jobName);
 
         if (lastJobRunTimestamp) {
             debug(`Using job data for ${jobName}`);
-            maxOpenedAt = events.includes('opened') ? lastJobRunTimestamp : null;
-            maxDeliveredAt = events.includes('delivered') ? lastJobRunTimestamp : null;
-            maxFailedAt = events.includes('failed') ? lastJobRunTimestamp : null;
+            timestamps = [lastJobRunTimestamp];
         } else {
-            debug(`Job data not found for ${jobName}, using email_recipients data`);
-            logging.info(`Job data not found for ${jobName}, using email_recipients data`);
-            if (events.includes('opened')) {
-                maxOpenedAt = (await db.knex('email_recipients').select(db.knex.raw('MAX(opened_at) as maxOpenedAt')).first()).maxOpenedAt;
-            }
-            if (events.includes('delivered')) {
-                maxDeliveredAt = (await db.knex('email_recipients').select(db.knex.raw('MAX(delivered_at) as maxDeliveredAt')).first()).maxDeliveredAt;
-            }
-            if (events.includes('failed')) {
-                maxFailedAt = (await db.knex('email_recipients').select(db.knex.raw('MAX(failed_at) as maxFailedAt')).first()).maxFailedAt;
+            debug(`Job data not found for ${jobName}, using ${cursorSeed.tableName} data`);
+            logging.info(`Job data not found for ${jobName}, using ${cursorSeed.tableName} data`);
+
+            for (const event of events) {
+                const columnName = cursorSeed.eventColumns[event];
+                if (!columnName) {
+                    continue;
+                }
+                const row = await db.knex(cursorSeed.tableName)
+                    .select(db.knex.raw('MAX(??) as maxTimestamp', [columnName]))
+                    .first();
+                timestamps.push(row.maxTimestamp);
             }
 
             await createJobIfNotExists(jobName);
         }
 
         // Convert string dates to Date objects for SQLite compatibility
-        [maxOpenedAt, maxDeliveredAt, maxFailedAt] = [maxOpenedAt, maxDeliveredAt, maxFailedAt].map(date => (
+        timestamps = timestamps.map(date => (
             date && !(date instanceof Date) ? new Date(date) : date
         ));
 
-        const lastSeenEventTimestamp = _.max([maxOpenedAt, maxDeliveredAt, maxFailedAt]);
+        const lastSeenEventTimestamp = _.max(timestamps);
         debug(`getLastEventTimestamp: finished in ${Date.now() - startDate}ms`);
 
         return lastSeenEventTimestamp;

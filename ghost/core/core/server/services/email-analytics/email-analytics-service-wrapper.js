@@ -2,7 +2,9 @@ const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const config = require('../../../shared/config');
 const domainEvents = require('@tryghost/domain-events');
+/** @import {PrometheusClient} from '@tryghost/prometheus-metrics' */
 /** @import {EventProcessor} from './event-processor' */
+/** @import {JobNames, CursorSeed} from './email-analytics-service' */
 
 class EmailAnalyticsServiceWrapper {
     /** @type {string} */ #logName;
@@ -26,12 +28,18 @@ class EmailAnalyticsServiceWrapper {
      * @param {object} options
      * @param {Parameters<typeof domainEvents.subscribe>[0]} options.event
      * @param {string[]} options.mailgunTags
+     * @param {JobNames} options.jobNames
+     * @param {CursorSeed} options.cursorSeed
      * @param {() => EventProcessor} options.createEventProcessor
+     * @param {PrometheusClient} [options.prometheusClient]
      */
     init({
         event,
         mailgunTags,
-        createEventProcessor
+        jobNames,
+        cursorSeed,
+        createEventProcessor,
+        prometheusClient
     }) {
         if (this.service) {
             return;
@@ -41,12 +49,13 @@ class EmailAnalyticsServiceWrapper {
         const MailgunProvider = require('./email-analytics-provider-mailgun');
         const settings = require('../../../shared/settings-cache');
         const queries = require('./lib/queries');
-        const prometheusClient = require('../../../shared/prometheus-client');
 
         this.service = new EmailAnalyticsService({
             provider: new MailgunProvider({config, settings, tags: mailgunTags}),
             queries,
             prometheusClient,
+            jobNames,
+            cursorSeed,
             createEventProcessor
         });
 

@@ -54,6 +54,21 @@ export const init = () => {
     newsletters.init({
         event: StartEmailAnalyticsJobEvent,
         mailgunTags: newsletterMailgunTags,
+        jobNames: {
+            latestNonOpened: 'email-analytics-latest-others',
+            missing: 'email-analytics-missing',
+            latestOpened: 'email-analytics-latest-opened',
+            scheduled: 'email-analytics-scheduled'
+        },
+        cursorSeed: {
+            tableName: 'email_recipients',
+            eventColumns: {
+                delivered: 'delivered_at',
+                opened: 'opened_at',
+                failed: 'failed_at'
+            }
+        },
+        prometheusClient,
         createEventProcessor: () => (
             new NewsletterEmailAnalyticsProcessor({
                 config,
