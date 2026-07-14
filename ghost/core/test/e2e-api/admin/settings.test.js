@@ -104,6 +104,39 @@ describe('Settings API', function () {
     });
 
     describe('Edit', function () {
+        it('Can edit the Claude API key', async function () {
+            const internalContext = {context: {internal: true}};
+            const existingSetting = await models.Settings.findOne({key: 'claude_api_key'}, internalContext);
+            let temporarySetting;
+            if (!existingSetting) {
+                temporarySetting = await models.Settings.add({
+                    key: 'claude_api_key',
+                    value: null,
+                    type: 'string',
+                    group: 'claude'
+                }, internalContext);
+            }
+
+            try {
+                await agent.put('settings/')
+                    .body({
+                        settings: [{key: 'claude_api_key', value: 'sk-ant-test'}]
+                    })
+                    .expectStatus(200)
+                    .expect(({body}) => {
+                        const claudeApiKey = body.settings.find(setting => setting.key === 'claude_api_key');
+                        assert.equal(claudeApiKey.value, '••••••••');
+                        assert.equal(settingsCache.get('claude_api_key'), 'sk-ant-test');
+                    });
+            } finally {
+                if (existingSetting) {
+                    await models.Settings.edit({key: 'claude_api_key', value: null}, internalContext);
+                } else {
+                    await temporarySetting.destroy(internalContext);
+                }
+            }
+        });
+
         it('Can edit a setting', async function () {
             const settingsToChange = [
                 {

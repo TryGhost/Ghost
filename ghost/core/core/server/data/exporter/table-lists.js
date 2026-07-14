@@ -99,6 +99,7 @@ const TABLES_ALLOWLIST = [
 
 // NOTE: these are settings keys which should never end up in the export file
 const SETTING_KEYS_BLOCKLIST = [
+    'claude_api_key',
     'stripe_connect_publishable_key',
     'stripe_connect_secret_key',
     'stripe_connect_account_id',

@@ -340,10 +340,22 @@ describe('Posts API', function () {
                 });
         });
 
-        it('Errors if feature_image_alt is too long', async function () {
+        it('Accepts feature_image_alt up to 2000 characters', async function () {
+            const post = {
+                title: 'Feature image alt at the limit',
+                feature_image_alt: 'a'.repeat(2000)
+            };
+
+            await agent
+                .post('/posts/?formats=mobiledoc,lexical,html')
+                .body({posts: [post]})
+                .expectStatus(201);
+        });
+
+        it('Errors if feature_image_alt exceeds 2000 characters', async function () {
             const post = {
                 title: 'Feature image alt too long',
-                feature_image_alt: 'a'.repeat(201)
+                feature_image_alt: 'a'.repeat(2001)
             };
 
             await agent
@@ -354,7 +366,7 @@ describe('Posts API', function () {
                     errors: [{
                         id: anyErrorId,
                         // TODO: this should be `posts.feature_image_alt` but we're hitting revision errors first
-                        context: stringMatching(/.*post_revisions\.feature_image_alt] exceeds maximum length of 191 characters.*/)
+                        context: stringMatching(/.*post_revisions\.feature_image_alt] exceeds maximum length of 2000 characters.*/)
                     }]
                 });
         });

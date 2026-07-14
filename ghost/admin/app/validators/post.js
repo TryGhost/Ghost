@@ -205,8 +205,8 @@ export default BaseValidator.create({
     },
 
     featureImageAlt(model) {
-        if (!validator.isLength(model.featureImageAlt || '', {max: 191})) {
-            model.errors.add('featureImageAlt', 'Feature image alt text cannot be longer than 191 characters.');
+        if (!validator.isLength(model.featureImageAlt || '', {max: 2000})) {
+            model.errors.add('featureImageAlt', 'Feature image alt text cannot be longer than 2000 characters.');
             this.invalidate();
         }
     }

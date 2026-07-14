@@ -1,5 +1,6 @@
 // NOTE: mapping is based on maping present in migration - 3.22/07-update-type-for-settings
 const keyTypeMapping = {
+    claude_api_key: 'string',
     db_hash: 'string',
     admin_session_secret: 'string',
     theme_session_secret: 'string',
