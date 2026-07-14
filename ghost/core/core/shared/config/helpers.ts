@@ -1,52 +1,64 @@
-const path = require('path');
-const {URL} = require('url');
+import path from 'node:path';
+import {URL} from 'node:url';
+import type {Provider} from 'nconf';
+import type {BoundHelpers} from '@tryghost/config-url-helpers';
 
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/**
+ * The subset of the config instance the helpers read from.
+ */
+type ConfigLike = Pick<Provider, 'get'>;
+
+/**
+ * The config instance once the url helpers have been bound to it.
+ */
+type ConfigWithUrlHelpers = ConfigLike & BoundHelpers;
+
+/**
+ * The set of helper methods that `bindAll` attaches to the config instance.
+ */
+export interface ConfigHelpers {
+    isPrivacyDisabled(privacyFlag: string): boolean;
+    getContentPath(type: string): string;
+    getBackendMountPath(): string | RegExp;
+    getFrontendMountPath(): string | RegExp;
+    isTestEnv(): boolean;
+    isProductionOrDevelopment(): boolean;
 }
 
 const DEFAULT_HOST_ARG = /.*/;
 
-const getHostInfo = (config) => {
+function escapeRegExp(string: string): string {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function getHostInfo(config: ConfigWithUrlHelpers) {
     const frontendHost = new URL(config.getSiteUrl()).hostname;
 
-    const backendHost = config.getAdminUrl() ? (new URL(config.getAdminUrl()).hostname) : '';
+    const adminUrl = config.getAdminUrl();
+    const backendHost = adminUrl ? new URL(adminUrl).hostname : '';
     const hasSeparateBackendHost = backendHost && backendHost !== frontendHost;
 
     return {
         backendHost,
         hasSeparateBackendHost
     };
-};
+}
 
-/**
- *
- * @returns {string|RegExp}
- */
-const getBackendMountPath = function getFrontendMountPath() {
+function getBackendMountPath(this: ConfigWithUrlHelpers): string | RegExp {
     const {backendHost, hasSeparateBackendHost} = getHostInfo(this);
 
     // with a separate admin url only serve on that host, otherwise serve on all hosts
     return (hasSeparateBackendHost) && backendHost ? backendHost : DEFAULT_HOST_ARG;
-};
+}
 
-/**
- *
- * @returns {string|RegExp}
- */
-const getFrontendMountPath = function getFrontendMountPath() {
+function getFrontendMountPath(this: ConfigWithUrlHelpers): string | RegExp {
     const {backendHost, hasSeparateBackendHost} = getHostInfo(this);
 
     // with a separate admin url we adjust the frontend vhost to exclude requests to that host, otherwise serve on all hosts
     return (hasSeparateBackendHost && backendHost) ? new RegExp(`^(?!${escapeRegExp(backendHost)}).*`) : DEFAULT_HOST_ARG;
-};
+}
 
-/**
- * @callback isPrivacyDisabledFn
- * @param {string} privacyFlag - the flag to be looked up
- * @returns {boolean}
- */
-const isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
+function isPrivacyDisabled(this: ConfigLike, privacyFlag: string): boolean {
     if (!this.get('privacy')) {
         return false;
     }
@@ -62,14 +74,9 @@ const isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
     }
 
     return this.get('privacy')[privacyFlag] === false;
-};
+}
 
-/**
- * @callback getContentPathFn
- * @param {string} type - the type of context you want the path for
- * @returns {string}
- */
-const getContentPath = function getContentPath(type) {
+function getContentPath(this: ConfigLike, type: string): string {
     switch (type) {
     case 'images':
         return path.join(this.get('paths:contentPath'), 'images/');
@@ -95,44 +102,32 @@ const getContentPath = function getContentPath(type) {
         // eslint-disable-next-line ghost/ghost-custom/no-native-error
         throw new Error('getContentPath was called with: ' + type);
     }
-};
+}
 
-/**
- * @callback isTestEnvFn
- * @returns {boolean}
- */
-const isTestEnv = function isTestEnv() {
+function isTestEnv(this: ConfigLike): boolean {
     return this.get('env').startsWith('test');
-};
+}
 
 /**
  * env defaults to 'development' when NODE_ENV is unset (see getNodeEnv() in
- * ./utils.js), matching ghost.js's own `process.env.NODE_ENV = process.env.NODE_ENV
+ * ./utils.ts), matching ghost.js's own `process.env.NODE_ENV = process.env.NODE_ENV
  * || 'development'` at the real CLI entry point — so in any Ghost boot via the
  * normal entry point, this and a raw `process.env.NODE_ENV` check agree. They
  * only diverge for programmatic embedders that require core modules directly
  * without going through ghost.js and never set NODE_ENV themselves — those now
  * count as 'development' (e.g. explore-ping/update-check will phone home)
  * rather than being silently skipped.
- * @callback isProductionOrDevelopmentFn
- * @returns {boolean}
  */
-const isProductionOrDevelopment = function isProductionOrDevelopment() {
+function isProductionOrDevelopment(this: ConfigLike): boolean {
     return ['development', 'production'].includes(this.get('env'));
-};
+}
 
-/**
- * @typedef ConfigHelpers
- * @property {isPrivacyDisabledFn} isPrivacyDisabled
- * @property {getContentPathFn} getContentPath
- * @property {isTestEnvFn} isTestEnv
- * @property {isProductionOrDevelopmentFn} isProductionOrDevelopment
- */
-module.exports.bindAll = (nconf) => {
-    nconf.isPrivacyDisabled = isPrivacyDisabled.bind(nconf);
-    nconf.getContentPath = getContentPath.bind(nconf);
-    nconf.getBackendMountPath = getBackendMountPath.bind(nconf);
-    nconf.getFrontendMountPath = getFrontendMountPath.bind(nconf);
-    nconf.isTestEnv = isTestEnv.bind(nconf);
-    nconf.isProductionOrDevelopment = isProductionOrDevelopment.bind(nconf);
-};
+export function bindAll(nconf: Provider & BoundHelpers): asserts nconf is Provider & BoundHelpers & ConfigHelpers {
+    const target = nconf as Provider & BoundHelpers & ConfigHelpers;
+    target.isPrivacyDisabled = isPrivacyDisabled.bind(nconf);
+    target.getContentPath = getContentPath.bind(nconf);
+    target.getBackendMountPath = getBackendMountPath.bind(nconf);
+    target.getFrontendMountPath = getFrontendMountPath.bind(nconf);
+    target.isTestEnv = isTestEnv.bind(nconf);
+    target.isProductionOrDevelopment = isProductionOrDevelopment.bind(nconf);
+}
