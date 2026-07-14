@@ -310,6 +310,9 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
             const threshold = config.get('optimization:getHelper:timeout:threshold');
 
             const apiResponse = makeRequest(options).then(parseResult);
+            // consume rejections that happen after the timeout has already won
+            // the race — they'd otherwise crash the process as unhandled
+            apiResponse.catch(() => {});
 
             const timeout = new Promise((resolve) => {
                 timer = setTimeout(() => {
@@ -354,6 +357,11 @@ function renderResponse(response, resource, options, data) {
         [resource]: _.cloneDeep(response[resource])
     };
 
+    // consume the internal abort marker so it doesn't leak into the template context
+    // (templateResponse is a shallow copy, so the shared `response` object is untouched)
+    const degraded = templateResponse['@@ABORTED_GET_HELPER@@'];
+    delete templateResponse['@@ABORTED_GET_HELPER@@'];
+
     // prepare data properties for use with handlebars
     if (templateResponse[resource] && templateResponse[resource].length) {
         templateResponse[resource].forEach(prepareContextResource);
@@ -373,7 +381,10 @@ function renderResponse(response, resource, options, data) {
         blockParams: blockParams
     });
 
-    if (templateResponse['@@ABORTED_GET_HELPER@@']) {
+    if (degraded) {
+        if (options.data?.root?._locals) {
+            options.data.root._locals.degradedRender = true;
+        }
         return new SafeString(`<span data-aborted-get-helper>Could not load content</span>` + rendered);
     }
     return rendered;
