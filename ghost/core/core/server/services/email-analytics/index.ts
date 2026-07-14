@@ -23,9 +23,17 @@ import prometheusClient from '../../../shared/prometheus-client';
 import queries from './lib/queries';
 // @ts-expect-error This module lacks type definitions.
 import StartEmailAnalyticsJobEvent from './events/start-email-analytics-job-event';
+import {StartAutomationEmailAnalyticsJobEvent} from './events/start-automation-email-analytics-job-event';
+import {AUTOMATION_EMAIL_TAG} from '../member-welcome-emails/constants';
+import * as automationsApi from '../automations/automations-api';
+import {AutomationEmailAnalyticsProcessor} from './automation-email-analytics-processor';
 
 export const newsletters = new EmailAnalyticsServiceWrapper({
     logName: 'newsletters'
+});
+
+export const automations = new EmailAnalyticsServiceWrapper({
+    logName: 'automations',
 });
 
 export const init = () => {
@@ -75,6 +83,29 @@ export const init = () => {
                 emailEventProcessor: newsletterEmailEventProcessor,
                 prometheusClient,
                 queries
+            })
+        )
+    });
+
+    automations.init({
+        event: StartAutomationEmailAnalyticsJobEvent,
+        mailgunTags: [AUTOMATION_EMAIL_TAG],
+        jobNames: {
+            latestNonOpened: 'email-analytics-automation-latest-others',
+            missing: 'email-analytics-automation-missing',
+            latestOpened: 'email-analytics-automation-latest-opened',
+            scheduled: 'email-analytics-automation-scheduled'
+        },
+        cursorSeed: {
+            tableName: 'automated_email_recipients',
+            eventColumns: {
+                delivered: 'delivered_at',
+                opened: 'opened_at'
+            }
+        },
+        createEventProcessor: () => (
+            new AutomationEmailAnalyticsProcessor({
+                automationsApi
             })
         )
     });
