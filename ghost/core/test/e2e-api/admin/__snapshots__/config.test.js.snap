@@ -34,6 +34,7 @@ Object {
       "llmsTxt": true,
       "memberDetailsReact": true,
       "members": true,
+      "membersCustomFields": true,
       "pictureImageFormats": true,
       "smarterCounts": true,
       "stripeAutomaticTax": true,

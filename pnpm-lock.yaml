@@ -2367,6 +2367,9 @@ importers:
       '@tryghost/config-url-helpers':
         specifier: 1.0.27
         version: 1.0.27
+      '@tryghost/custom-field-types':
+        specifier: workspace:*
+        version: link:../../packages/custom-field-types
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
         version: 1.0.11

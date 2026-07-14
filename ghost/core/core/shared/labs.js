@@ -57,7 +57,8 @@ const PRIVATE_FEATURES = [
     'pictureImageFormats',
     'smarterCounts',
     'getHelperDeduplication',
-    'memberDetailsReact'
+    'memberDetailsReact',
+    'membersCustomFields'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

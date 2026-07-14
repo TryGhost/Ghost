@@ -133,6 +133,12 @@ async function initCore({ghostServer, config, frontend}) {
     giftLinksService.init();
     debug('End: Gift Links Service');
 
+    // Member custom fields service: knex-backed, wired once the DB is ready.
+    debug('Begin: Member Custom Fields Service');
+    const memberCustomFieldsService = require('./server/services/members-custom-fields');
+    memberCustomFieldsService.init();
+    debug('End: Member Custom Fields Service');
+
     if (ghostServer) {
         // Job Service allows parts of Ghost to run in the background
         debug('Begin: Job Service');
