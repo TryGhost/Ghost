@@ -1208,25 +1208,23 @@ function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null):
 }
 
 const EMPTY_EMAIL_STATS: AutomationEmailStats = {
-    email_sent_count: null,
-    email_tracked_sent_count: null,
-    email_opened_count: null,
+    email_sent_count: 0,
+    email_tracked_sent_count: 0,
+    email_opened_count: 0,
     opened_rate: null,
     clicked_rate: null
 };
 
 function buildEmailStats(row: ActionStatsRow): AutomationEmailStats {
-    // Opened counts are only written once open events land, so with tracked sends a null opened
-    // count means "no opens yet" rather than "unknown" — report it as 0.
-    const emailOpenedCount = row.email_tracked_sent_count
-        ? (row.email_opened_count ?? 0)
-        : row.email_opened_count;
+    const emailSentCount = row.email_sent_count ?? 0;
+    const emailTrackedSentCount = row.email_tracked_sent_count ?? 0;
+    const emailOpenedCount = row.email_opened_count ?? 0;
     return {
-        email_sent_count: row.email_sent_count,
-        email_tracked_sent_count: row.email_tracked_sent_count,
+        email_sent_count: emailSentCount,
+        email_tracked_sent_count: emailTrackedSentCount,
         email_opened_count: emailOpenedCount,
-        opened_rate: row.email_tracked_sent_count
-            ? Math.round((emailOpenedCount ?? 0) / row.email_tracked_sent_count * 100)
+        opened_rate: emailTrackedSentCount
+            ? Math.round(emailOpenedCount / emailTrackedSentCount * 100)
             : null,
         // TODO(NY-1387) Populate clicked_rate once click tracking is implemented.
         clicked_rate: null

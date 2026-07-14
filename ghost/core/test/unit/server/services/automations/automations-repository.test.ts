@@ -690,7 +690,7 @@ describe('automations repository', function () {
             });
         });
 
-        it('keeps the opened count null when there are no tracked sends', async function () {
+        it('reports zero counts and null rates when there are no sends', async function () {
             const automation = await getAutomationBySlug('member-welcome-email-free');
             const action = automation.actions.find(candidate => candidate.type === 'send_email');
             assert(action);
@@ -698,9 +698,38 @@ describe('automations repository', function () {
                 assert.fail('Expected a send_email action');
             }
             assert.deepEqual(action.stats, {
-                email_sent_count: null,
-                email_tracked_sent_count: null,
-                email_opened_count: null,
+                email_sent_count: 0,
+                email_tracked_sent_count: 0,
+                email_opened_count: 0,
+                opened_rate: null,
+                clicked_rate: null
+            });
+        });
+
+        it('reports a null open rate when sends were not tracked', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(emailAction);
+
+            await knex('automation_action_revisions')
+                .where('action_id', emailAction.id)
+                .update({
+                    email_sent_count: 3,
+                    email_tracked_sent_count: null,
+                    email_opened_count: null
+                });
+
+            const result = await repo.getById(automation.id);
+            assert(result);
+            const action = result.actions.find(candidate => candidate.id === emailAction.id);
+            assert(action);
+            if (action.type !== 'send_email') {
+                assert.fail('Expected a send_email action');
+            }
+            assert.deepEqual(action.stats, {
+                email_sent_count: 3,
+                email_tracked_sent_count: 0,
+                email_opened_count: 0,
                 opened_rate: null,
                 clicked_rate: null
             });
