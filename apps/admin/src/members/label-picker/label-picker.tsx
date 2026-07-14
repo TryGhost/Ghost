@@ -25,6 +25,10 @@ export interface LabelPickerProps {
     // Editing
     onEdit?: (id: string, name: string) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
+    // Placeholder shown in the search input when nothing is selected. Defaults
+    // to 'Search labels...' — pass an empty string on surfaces where the field
+    // itself is already contextualized by a nearby Label element.
+    placeholder?: string;
 }
 
 // --- LabelRow: single label item with overlapping check/edit icon ---
@@ -206,7 +210,8 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
     onCreate,
     isCreating,
     onEdit,
-    onDelete
+    onDelete,
+    placeholder
 }) => {
     const selectedLabels = resolvedSelectedLabels || selectedSlugs
         .map(slug => labels.find(l => l.slug === slug))
@@ -217,6 +222,7 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
             isCreating={isCreating}
             labels={labels}
             optionSource={optionSource}
+            placeholder={placeholder}
             selectedLabels={selectedLabels}
             selectedSlugs={selectedSlugs}
             onCreate={onCreate}
@@ -239,6 +245,7 @@ interface ComboboxPickerProps {
     isCreating?: boolean;
     onEdit?: (id: string, name: string) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
+    placeholder?: string;
 }
 
 const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
@@ -250,7 +257,8 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     onCreate,
     isCreating,
     onEdit,
-    onDelete
+    onDelete,
+    placeholder = 'Search labels...'
 }) => {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
@@ -302,7 +310,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                 <input
                     ref={inputRef}
                     className="min-w-[80px] flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground"
-                    placeholder={selectedLabels.length === 0 ? 'Search labels...' : ''}
+                    placeholder={selectedLabels.length === 0 ? placeholder : ''}
                     value={search}
                     onChange={(e) => {
                         handleSearchChange(e.target.value);
