@@ -199,6 +199,8 @@ const processStep = async ({
                 trackOpens
             });
             const mailgunMessageId = getMailgunMessageId(sendResult);
+            // Only Mailgun sends can produce open events for automation emails
+            const trackOpensForRecipient = trackOpens && Boolean(mailgunMessageId);
             try {
                 await automationsApi.recordEmailSent({
                     automationActionRevisionId: step.automation_action_revision_id,
@@ -207,7 +209,7 @@ const processStep = async ({
                     memberId: step.member_id,
                     memberName: member.get('name'),
                     memberUuid: member.get('uuid'),
-                    trackOpens
+                    trackOpens: trackOpensForRecipient
                 });
             } catch (err) {
                 logging.error({

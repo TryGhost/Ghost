@@ -377,6 +377,7 @@ describe('automations poll', function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
         settingsCacheGet.withArgs('email_track_opens').returns(true);
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({id: '<mailgun-message-id>'});
 
         await poll(options);
 
@@ -392,6 +393,7 @@ describe('automations poll', function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
         settingsCacheGet.withArgs('email_track_opens').returns(false);
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({id: '<mailgun-message-id>'});
 
         await poll(options);
 
@@ -408,6 +410,7 @@ describe('automations poll', function () {
             automation_action_revision_id: 'revision-id'
         });
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_opens').returns(true);
         memberWelcomeEmailService.api.sendAutomationEmail.resolves({
             messageId: '<smtp-message-id>',
             response: '250 Message accepted'
@@ -415,6 +418,9 @@ describe('automations poll', function () {
 
         await poll(options);
 
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackOpens: true
+        }));
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
             automationActionRevisionId: 'revision-id',
             memberEmail: 'member@example.com',
