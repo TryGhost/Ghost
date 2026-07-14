@@ -103,9 +103,6 @@ export const routes: RouteObject[] = [
             },
             membersRoute,
             {
-                // Post analytics folded into the shell table. Its own data provider
-                // (PostAnalyticsProvider) wraps the view; PostsAppContext dissolved —
-                // the header reads appSettings from the framework AppContext directly.
                 path: "/posts/analytics/:postId",
                 lazy: async () => {
                     const [{ default: PostAnalyticsProvider }, { default: PostAnalytics }] = await Promise.all([

@@ -24,7 +24,6 @@ export function useSharedViews(route?: string) {
     const {data: settingsData} = useBrowseSettings();
 
     return useMemo(() => {
-        // TODO: Consolidate shared view parsing once the admin and posts apps are merged.
         const sharedViewsJson = getSettingValue<string>(settingsData?.settings, 'shared_views') ?? '[]';
         const parsed = parseAllSharedViewsJSON(sharedViewsJson);
 
