@@ -299,12 +299,19 @@ export class UrlServiceFacade {
     }
 
     private _reportLazyError(method: string, err: Error, context: Record<string, unknown>): void {
-        this._report(new errors.InternalServerError({
+        const report = new errors.InternalServerError({
             message: 'Lazy URL service threw during comparison',
             code: 'LAZY_URL_COMPARE_ERROR',
             err,
             errorDetails: {method, ...context}
-        }));
+        });
+        // @tryghost/errors copies the wrapped error's enumerable props over the
+        // new error, so a thrown error carrying its own errorDetails (e.g. the
+        // thin-resource report) silently clobbers the compare context passed
+        // above. Re-merge after construction so both survive in the logs.
+        const innerDetails = (err as {errorDetails?: Record<string, unknown>}).errorDetails;
+        report.errorDetails = {method, ...context, ...innerDetails};
+        this._report(report);
     }
 
     private _report(error: Error): void {
