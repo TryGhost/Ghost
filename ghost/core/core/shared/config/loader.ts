@@ -12,7 +12,7 @@ interface LoadNconfOptions {
     customConfigPath?: string;
 }
 
-type ConfigInstance = Nconf.Provider & BoundHelpers & ConfigHelpers;
+export type ConfigInstance = Nconf.Provider & BoundHelpers & ConfigHelpers;
 
 function loadNconf(options?: LoadNconfOptions): ConfigInstance {
     debug('config start');
