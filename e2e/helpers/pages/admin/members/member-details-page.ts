@@ -2,6 +2,8 @@ import {AdminPage} from '@/admin-pages';
 import {BasePage} from '@/helpers/pages';
 import {Locator, Page} from '@playwright/test';
 
+const menuAction = (page: Page, name: string) => page.getByRole('button', {name});
+
 class SettingsSection extends BasePage {
     readonly memberActionsButton: Locator;
 
@@ -17,12 +19,12 @@ class SettingsSection extends BasePage {
         super(page);
         this.memberActionsButton = page.getByTestId('member-actions');
 
-        this.impersonateButton = page.getByRole('button', {name: 'Impersonate'});
-        this.signOutOfAllDevices = page.getByRole('button', {name: 'Sign out of all devices'});
-        this.disableCommentingButton = page.getByRole('button', {name: 'Disable commenting'});
-        this.enableCommentingButton = page.getByRole('button', {name: 'Enable commenting'});
+        this.impersonateButton = menuAction(page, 'Impersonate');
+        this.signOutOfAllDevices = menuAction(page, 'Sign out of all devices');
+        this.disableCommentingButton = menuAction(page, 'Disable commenting');
+        this.enableCommentingButton = menuAction(page, 'Enable commenting');
 
-        this.deleteButton = page.getByRole('button', {name: 'Delete member'});
+        this.deleteButton = menuAction(page, 'Delete member');
         this.confirmDeleteButton = page.getByTestId('confirm-delete-member');
         this.cancelDeleteButton = page.getByTestId('cancel-delete-member');
     }
@@ -56,6 +58,16 @@ export class MemberDetailsPage extends AdminPage {
     readonly commentingDisabledIndicator: Locator;
     readonly enableCommentingLink: Locator;
 
+    readonly screenTitle: Locator;
+    readonly logoutConfirmModal: Locator;
+    readonly newsletterSubscriptionCheckboxes: Locator;
+    readonly engagementSection: Locator;
+    readonly subscriptionActionsButton: Locator;
+    readonly cancelSubscriptionButton: Locator;
+    readonly continueSubscriptionButton: Locator;
+    readonly removeComplimentaryButton: Locator;
+    readonly addComplimentaryButton: Locator;
+
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/members/';
@@ -72,6 +84,8 @@ export class MemberDetailsPage extends AdminPage {
         this.retryButton = page.getByRole('button', {name: 'Retry'});
         this.membersBackLink = page.locator('[data-test-link="members-back"]');
         this.copyLinkButton = page.getByRole('button', {name: 'Copy link'});
+        // The testid resolves to two elements once the modal is open; the
+        // input carrying the value is the last of them.
         this.magicLinkInput = page.getByTestId('member-signin-url').last();
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
         this.settingsSection = new SettingsSection(page);
@@ -84,6 +98,33 @@ export class MemberDetailsPage extends AdminPage {
         this.hideCommentsCheckbox = this.disableCommentingModal.getByText('Hide all previous comments');
         this.commentingDisabledIndicator = page.getByText('Comments disabled');
         this.enableCommentingLink = page.getByRole('button', {name: 'Enable', exact: true});
+
+        this.screenTitle = page.locator('[data-test-screen-title]');
+        this.logoutConfirmModal = page.locator('[data-test-modal="logout-member"]');
+        // The testid marks the styled toggle span, which sits next to the real
+        // checkbox — the checked state has to be read from the input.
+        this.newsletterSubscriptionCheckboxes = this.newsletterSubscriptionToggles
+            .locator('..')
+            .getByRole('checkbox');
+        this.engagementSection = page.getByTestId('member-detail-engagement');
+
+        this.subscriptionActionsButton = page.locator('[data-test-button="subscription-actions"]');
+        this.cancelSubscriptionButton = menuAction(page, 'Cancel subscription');
+        this.continueSubscriptionButton = menuAction(page, 'Continue subscription');
+        this.removeComplimentaryButton = menuAction(page, 'Remove complimentary subscription');
+        this.addComplimentaryButton = menuAction(page, 'Add complimentary subscription');
+    }
+
+    /**
+     * Removes a complimentary subscription from the first subscription row.
+     */
+    async removeComplimentarySubscription(): Promise<void> {
+        await this.subscriptionActionsButton.first().click();
+        await this.removeComplimentaryButton.click();
+        const confirm = this.page.getByRole('button', {name: 'Remove', exact: true});
+        if (await confirm.isVisible().catch(() => false)) {
+            await confirm.click();
+        }
     }
 
     async clickNewsletterSubscriptionToggle(index: number = 0) {
