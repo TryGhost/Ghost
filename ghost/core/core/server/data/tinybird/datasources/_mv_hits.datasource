@@ -1,3 +1,5 @@
+TOKEN "stats_service" READ
+
 SCHEMA >
     `site_uuid` LowCardinality(String),
     `timestamp` DateTime,
