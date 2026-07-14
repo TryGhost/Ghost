@@ -161,4 +161,10 @@ export interface AutomationsRepository {
         step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
         retryAt: Readonly<Date>
     ): Promise<boolean>;
+    /**
+     * Fetch sent emails by their Mailgun IDs.
+     */
+    getAutomatedEmailRecipientsByMailgunIds(
+        mailgunMessageIds: ReadonlyArray<string>
+    ): Promise<AutomationEmailRecipientWithMailgunId[]>;
 }

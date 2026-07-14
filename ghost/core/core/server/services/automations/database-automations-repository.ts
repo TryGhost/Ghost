@@ -221,6 +221,16 @@ export function createDatabaseAutomationsRepository({
 
         async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
             return await knex.transaction(trx => retryStep(trx, step, retryAt));
+        },
+
+        async getAutomatedEmailRecipientsByMailgunIds(mailgunMessageIds) {
+            if (mailgunMessageIds.length === 0) {
+                return [];
+            }
+            return await knex('automated_email_recipients')
+                .select('id', 'mailgun_message_id', 'automation_action_revision_id')
+                .whereNotNull('automation_action_revision_id')
+                .whereIn('mailgun_message_id', mailgunMessageIds);
         }
     };
 }

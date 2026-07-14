@@ -121,6 +121,12 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('locked_at');
     });
 
+    await database.schema.createTable('automated_email_recipients', (table) => {
+        table.text('id').primary();
+        table.text('automation_action_revision_id').references('id').inTable('automation_action_revisions');
+        table.text('mailgun_message_id');
+    });
+
     const freeAutomationId = id();
     const paidAutomationId = id();
     await database('email_design_settings').insert([{
@@ -1835,6 +1841,56 @@ describe('automations repository', function () {
             assert.equal(disabled.started_at, lockedStep.started_at);
             assert.equal(disabled.ready_at, stepRow.ready_at);
             assert.equal(typeof disabled.finished_at, 'string');
+        });
+    });
+
+    describe('getAutomatedEmailRecipientsByMailgunIds', function () {
+        it('returns no recipients for no Mailgun message IDs', async function () {
+            assert.deepEqual(await repo.getAutomatedEmailRecipientsByMailgunIds([]), []);
+        });
+
+        it('returns matching automated recipients', async function () {
+            const revisions = await knex('automation_action_revisions')
+                .select('id')
+                .orderBy('id')
+                .limit(2);
+            const [firstRevision, secondRevision] = revisions;
+            assert(firstRevision);
+            assert(secondRevision);
+
+            await knex('automated_email_recipients').insert([{
+                id: 'matching-recipient-1',
+                automation_action_revision_id: firstRevision.id,
+                mailgun_message_id: 'matching-message-1'
+            }, {
+                id: 'matching-recipient-2',
+                automation_action_revision_id: secondRevision.id,
+                mailgun_message_id: 'matching-message-2'
+            }, {
+                id: 'non-automated-recipient',
+                automation_action_revision_id: null,
+                mailgun_message_id: 'other-message-3'
+            }, {
+                id: 'unmatched-recipient',
+                automation_action_revision_id: firstRevision.id,
+                mailgun_message_id: 'unmatched-message'
+            }]);
+
+            const recipients = await repo.getAutomatedEmailRecipientsByMailgunIds([
+                'matching-message-1',
+                'matching-message-2',
+                'other-message-3'
+            ]);
+
+            assert.deepEqual(recipients.sort((left, right) => left.id.localeCompare(right.id)), [{
+                id: 'matching-recipient-1',
+                automation_action_revision_id: firstRevision.id,
+                mailgun_message_id: 'matching-message-1'
+            }, {
+                id: 'matching-recipient-2',
+                automation_action_revision_id: secondRevision.id,
+                mailgun_message_id: 'matching-message-2'
+            }]);
         });
     });
 });
