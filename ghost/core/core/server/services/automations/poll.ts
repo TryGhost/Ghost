@@ -8,6 +8,8 @@ import {MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS} from './constants';
 // @ts-expect-error Models currently lack type definitions.
 import {Member} from '../../models';
 
+const settingsCache = require('../../../shared/settings-cache');
+
 type MemberWelcomeEmailService = {
     init: () => unknown;
     api: {
@@ -23,6 +25,7 @@ type MemberWelcomeEmailService = {
                 uuid: string;
             };
             memberStatus: 'free' | 'paid';
+            trackOpens: boolean;
         }) => Promise<unknown>;
     };
 };
@@ -182,6 +185,7 @@ const processStep = async ({
                 break;
             }
             memberWelcomeEmailService.init();
+            const trackOpens = Boolean(settingsCache.get('email_track_opens'));
             const sendResult = await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
                     designSettingId: step.email_design_setting_id,
@@ -193,9 +197,12 @@ const processStep = async ({
                     name: member.get('name'),
                     uuid: member.get('uuid')
                 },
-                memberStatus
+                memberStatus,
+                trackOpens
             });
             const mailgunMessageId = getMailgunMessageId(sendResult);
+            // Only Mailgun sends can produce open events for automation emails
+            const trackOpensForRecipient = trackOpens && Boolean(mailgunMessageId);
             try {
                 await automationsApi.recordEmailSent({
                     automationActionRevisionId: step.automation_action_revision_id,
@@ -204,8 +211,7 @@ const processStep = async ({
                     memberId: step.member_id,
                     memberName: member.get('name'),
                     memberUuid: member.get('uuid'),
-                    // TODO(NY-1439) Don't always set this to false.
-                    trackOpens: false
+                    trackOpens: trackOpensForRecipient
                 });
             } catch (err) {
                 logging.error({

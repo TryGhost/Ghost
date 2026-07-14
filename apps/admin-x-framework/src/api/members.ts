@@ -305,7 +305,6 @@ function useSyncMemberCountFromList(result: BrowseMembersInfiniteResult, searchP
         const listTotalIsAuthoritative = listIsUnfiltered
             && !result.isError
             && !result.isPlaceholderData
-            && !result.isPreviousData
             && typeof listTotal === 'number';
 
         if (!listTotalIsAuthoritative) {
@@ -343,7 +342,7 @@ function useSyncMemberCountFromList(result: BrowseMembersInfiniteResult, searchP
                 }
             }
         }, {updatedAt: result.dataUpdatedAt});
-    }, [queryClient, listIsUnfiltered, listTotal, result.dataUpdatedAt, result.isError, result.isPlaceholderData, result.isPreviousData]);
+    }, [queryClient, listIsUnfiltered, listTotal, result.dataUpdatedAt, result.isError, result.isPlaceholderData]);
 }
 
 export function useBrowseMembersInfinite(options: BrowseMembersInfiniteOptions = {}): BrowseMembersInfiniteResult {

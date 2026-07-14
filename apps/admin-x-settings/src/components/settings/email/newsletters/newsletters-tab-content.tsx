@@ -115,7 +115,7 @@ const NewslettersTabContent: React.FC<NewslettersTabContentProps> = ({filter}) =
         const orderUpdatedNewsletters = [...updatedActiveNewsletters, ...updatedArchivedNewsletters].sort((a, b) => a.sort_order - b.sort_order);
 
         setNewsletters(newsletters.map(newsletter => orderUpdatedNewsletters.find(n => n.id === newsletter.id) || newsletter));
-        queryClient.setQueriesData<InfiniteData<NewslettersResponseType>>([newslettersDataType], (currentData) => {
+        queryClient.setQueriesData<InfiniteData<NewslettersResponseType>>({queryKey: [newslettersDataType]}, (currentData) => {
             if (!currentData) {
                 return;
             }

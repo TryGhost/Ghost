@@ -85,6 +85,9 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('email_subject');
         table.text('email_lexical');
         table.text('email_design_setting_id').references('id').inTable('email_design_settings');
+        table.integer('email_sent_count');
+        table.integer('email_tracked_sent_count');
+        table.integer('email_opened_count');
         table.unique(['created_at', 'action_id']);
     });
 
@@ -654,6 +657,77 @@ describe('automations repository', function () {
                 .first();
 
             assert.equal(Number(totalActions?.count), 2);
+        });
+    });
+
+    describe('email stats', function () {
+        it('reports the opened count and rate as 0 when there are sends but no recorded opens', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(emailAction);
+
+            await knex('automation_action_revisions')
+                .where('action_id', emailAction.id)
+                .update({
+                    email_sent_count: 3,
+                    email_opened_count: null
+                });
+
+            const result = await repo.getById(automation.id);
+            assert(result);
+            const action = result.actions.find(candidate => candidate.id === emailAction.id);
+            assert(action);
+            if (action.type !== 'send_email') {
+                assert.fail('Expected a send_email action');
+            }
+            assert.deepEqual(action.stats, {
+                email_sent_count: 3,
+                email_opened_count: 0,
+                opened_rate: 0,
+                clicked_rate: null
+            });
+        });
+
+        it('reports zero counts and null rates when there are no sends', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = automation.actions.find(candidate => candidate.type === 'send_email');
+            assert(action);
+            if (action.type !== 'send_email') {
+                assert.fail('Expected a send_email action');
+            }
+            assert.deepEqual(action.stats, {
+                email_sent_count: 0,
+                email_opened_count: 0,
+                opened_rate: null,
+                clicked_rate: null
+            });
+        });
+
+        it('calculates the open rate from the total sent count', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(emailAction);
+
+            await knex('automation_action_revisions')
+                .where('action_id', emailAction.id)
+                .update({
+                    email_sent_count: 4,
+                    email_opened_count: 3
+                });
+
+            const result = await repo.getById(automation.id);
+            assert(result);
+            const action = result.actions.find(candidate => candidate.id === emailAction.id);
+            assert(action);
+            if (action.type !== 'send_email') {
+                assert.fail('Expected a send_email action');
+            }
+            assert.deepEqual(action.stats, {
+                email_sent_count: 4,
+                email_opened_count: 3,
+                opened_rate: 75,
+                clicked_rate: null
+            });
         });
     });
 

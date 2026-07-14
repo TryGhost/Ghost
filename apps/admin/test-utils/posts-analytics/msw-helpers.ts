@@ -16,8 +16,7 @@ export const createTestWrapper = () => {
     const queryClient = new QueryClient({
         defaultOptions: {
             queries: {
-                retry: false,
-                suspense: false
+                retry: false
             }
         }
     });
