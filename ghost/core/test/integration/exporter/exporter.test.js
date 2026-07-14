@@ -58,6 +58,7 @@ describe('Exporter', function () {
             'members_click_events',
             'members_created_events',
             'members_current_subscription',
+            'members_custom_fields',
             'members_email_change_events',
             'members_feedback',
             'members_labels',
