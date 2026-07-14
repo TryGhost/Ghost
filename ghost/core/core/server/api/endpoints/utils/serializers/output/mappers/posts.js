@@ -52,6 +52,15 @@ module.exports = async (model, frame, options = {}) => {
     const routerType = dbType === 'page' ? 'pages' : 'posts';
     url.forPost(model.id, jsonModel, frame, routerType);
 
+    // Relations the input serializer force-loaded for the URL computation
+    // (frame.forcedUrlRelations) were not requested by the caller — strip
+    // them now that the URL is built so the response shape matches the query.
+    if (frame.forcedUrlRelations) {
+        frame.forcedUrlRelations.forEach((relation) => {
+            delete jsonModel[relation];
+        });
+    }
+
     extraAttrs.forPost(frame.options, model, jsonModel);
 
     const defaultFormats = ['html'];

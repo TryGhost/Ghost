@@ -51,27 +51,39 @@ function selectAllAllowedColumns(frame) {
 }
 
 function forceUrlRelationsWhenLazy(frame) {
-    if (Array.isArray(frame.options.columns) && frame.options.columns.includes('url')) {
-        const relations = urlService.facade.getRequiredRelations();
-        if (relations.length) {
-            frame.options.withRelated = _.union(frame.options.withRelated || [], relations);
+    // `url` is computed for every serialized page unless `?fields` narrows it
+    // away, so the relations the lazy URL service reads (e.g. tags for a
+    // tag-filtered collection) must be loaded whenever no columns were
+    // requested (plain browse/read) — not only for the `?fields=url` case.
+    const computesUrl = !Array.isArray(frame.options.columns) || frame.options.columns.includes('url');
+    if (!computesUrl) {
+        return;
+    }
+    const relations = urlService.facade.getRequiredRelations();
+    if (relations.length) {
+        const requested = frame.options.withRelated || [];
+        const forced = relations.filter(relation => !requested.includes(relation));
+        if (forced.length) {
+            // Record what was forced (not what the caller asked for) so the
+            // output mapper can strip it from the response after the URL is
+            // built — the response shape must match the query.
+            frame.forcedUrlRelations = forced;
+            frame.options.withRelated = _.union(requested, forced);
         }
+    }
+    if (Array.isArray(frame.options.columns)) {
         url.forceUrlColumnsWhenLazy(frame, 'pages');
     }
 }
 
 function defaultRelations(frame) {
+    // Defaults for the admin API. Applied before the URL force-load so a
+    // forced relation can never preempt the full admin default list.
+    if (!frame.options.withRelated && !frame.options.columns) {
+        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions'];
+    }
+
     forceUrlRelationsWhenLazy(frame);
-
-    if (frame.options.withRelated) {
-        return;
-    }
-
-    if (frame.options.columns) {
-        return false;
-    }
-
-    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions'];
 }
 
 function setDefaultOrder(frame) {
