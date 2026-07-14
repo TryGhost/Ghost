@@ -173,10 +173,11 @@ describe("Network notification badge", () => {
         await expect.element(sidebarScreen.networkBadge()).toBeVisible();
 
         await sidebarScreen.navLink("Network").click();
-        await expect.poll(currentRoute).toMatch(/^\/(network|activitypub)/);
+        await expect.poll(currentRoute).toBe("/activitypub/welcome/1");
         await expect.element(sidebarScreen.networkBadge()).not.toBeInTheDocument();
 
         await sidebarScreen.navLink("Posts").click();
+        await expect.poll(currentRoute).toBe("/posts");
         await expect.element(sidebarScreen.networkBadge()).toBeVisible();
     });
 });
