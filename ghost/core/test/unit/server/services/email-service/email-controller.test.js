@@ -143,6 +143,39 @@ describe('Email Controller', function () {
             });
             assert.equal(segment, 'free');
         });
+
+        it('rejects a non-string memberTier from options', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass(),
+                    Newsletter: createModelClass()
+                }
+            });
+            await assert.rejects(controller._getFrameData({
+                options: {
+                    id: 'options-id',
+                    memberTier: ['silver', 'gold']
+                },
+                data: {}
+            }), {errorType: 'ValidationError'});
+        });
+
+        it('rejects a non-string memberTier from data', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass(),
+                    Newsletter: createModelClass()
+                }
+            });
+            await assert.rejects(controller._getFrameData({
+                options: {
+                    id: 'options-id'
+                },
+                data: {
+                    memberTier: {slug: 'gold'}
+                }
+            }), {errorType: 'ValidationError'});
+        });
     });
 
     describe('previewEmail', function () {

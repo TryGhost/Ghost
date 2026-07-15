@@ -11,6 +11,7 @@ const controller = {
         options: [
             'fields',
             'memberSegment',
+            'memberTier',
             'newsletter'
         ],
         validation: {

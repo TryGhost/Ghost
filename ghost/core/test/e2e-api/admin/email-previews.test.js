@@ -343,9 +343,11 @@ describe('Email Preview API', function () {
 
     describe('Tier-restricted posts', function () {
         let post;
+        let paidTierSlug;
 
         beforeAll(async function () {
             const paidTier = await models.Product.findOne({type: 'paid'});
+            paidTierSlug = paidTier.get('slug');
 
             const lexical = JSON.stringify({
                 root: {
@@ -402,6 +404,49 @@ describe('Email Preview API', function () {
                     assert.ok(html.includes('Free preview text'), 'free member preview should include the public preview');
                     assert.ok(!html.includes('Members only tier content'), 'free member preview should not include the gated content');
                     assert.ok(html.includes('Become a paid member'), 'free member preview should include the paywall CTA');
+                });
+        });
+
+        it('renders content access for the specifically selected tier', async function () {
+            await agent
+                .get(`email_previews/posts/${post.id}/?memberSegment=${encodeURIComponent('status:-free')}&memberTier=${paidTierSlug}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const {html} = body.email_previews[0];
+                    assert.ok(html.includes('Members only tier content'), 'selected tier preview should include the gated content');
+                    assert.ok(!html.includes('Become a paid member'), 'selected tier preview should not include the paywall CTA');
+                });
+        });
+
+        it('renders the paywall for a specifically selected tier without access', async function () {
+            await agent
+                .get(`email_previews/posts/${post.id}/?memberSegment=${encodeURIComponent('status:-free')}&memberTier=missing-tier`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const {html} = body.email_previews[0];
+                    assert.ok(!html.includes('Members only tier content'), 'other tier preview should not include the gated content');
+                    assert.ok(html.includes('Become a paid member'), 'other tier preview should include the paywall CTA');
+                });
+        });
+
+        it('rejects a repeated memberTier param', async function () {
+            // repeated query params parse as an array
+            await agent
+                .get(`email_previews/posts/${post.id}/?memberSegment=${encodeURIComponent('status:-free')}&memberTier=${paidTierSlug}&memberTier=other`)
+                .expectStatus(422);
+        });
+
+        it('renders tier access for a raw NQL memberSegment', async function () {
+            // memberSegment remains free-form for API back-compat
+            const memberSegment = `status:-free+product:'${paidTierSlug}'`;
+
+            await agent
+                .get(`email_previews/posts/${post.id}/?memberSegment=${encodeURIComponent(memberSegment)}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const {html} = body.email_previews[0];
+                    assert.ok(html.includes('Members only tier content'), 'selected tier preview should include the gated content');
+                    assert.ok(!html.includes('Become a paid member'), 'selected tier preview should not include the paywall CTA');
                 });
         });
     });

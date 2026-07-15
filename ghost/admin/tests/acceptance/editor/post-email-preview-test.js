@@ -79,7 +79,8 @@ describe('Acceptance: Post email preview', function () {
         expect(find('[data-test-text="newsletter-from"]')).to.contain.rendered.text('noreply@example.com');
     });
 
-    it('can select paid/free member for preview', async function () {
+    it('can select free, paid, or tier member for preview', async function () {
+        this.server.create('tier', {name: 'Archive', slug: 'archive', type: 'paid', active: false});
         await openEmailPreviewModal.call(this);
 
         expect(find('[data-test-email-preview-newsletter-select]'), 'newsletter select').not.to.exist;
@@ -89,9 +90,10 @@ describe('Acceptance: Post email preview', function () {
         await clickTrigger('[data-test-select="preview-segment"]');
 
         const options = findAll('.ember-power-select-option');
-        expect(options.length).to.equal(2);
+        expect(options.length).to.equal(3);
         expect(options[0].textContent.trim()).to.equal('Free member');
         expect(options[1].textContent.trim()).to.equal('Paid member');
+        expect(options[2].textContent.trim()).to.equal('Tier');
 
         // can switch free/paid member in preview
         await selectChoose('[data-test-select="preview-segment"]', 'Paid member');
@@ -102,6 +104,16 @@ describe('Acceptance: Post email preview', function () {
         const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
         const requestBody = JSON.parse(lastRequest.requestBody);
         expect(requestBody.memberSegment).to.equal('status:-free');
+
+        // selecting a specific tier sends the paid segment narrowed to that tier
+        await selectChoose('[data-test-select="preview-segment"]', 'Tier');
+        await selectChoose('[data-test-select="preview-tier"]', 'Archive');
+        await click(find('[data-test-button="post-preview-test-email"]'));
+        await click(find('[data-test-button="send-test-email"]'));
+        const [tierRequest] = this.server.pretender.handledRequests.slice(-1);
+        const tierRequestBody = JSON.parse(tierRequest.requestBody);
+        expect(tierRequestBody.memberSegment).to.equal('status:-free');
+        expect(tierRequestBody.memberTier).to.equal('archive');
     });
 
     it('hides segment dropdown when only one option is available', async function () {

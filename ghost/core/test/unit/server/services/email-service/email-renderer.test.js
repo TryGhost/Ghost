@@ -1384,6 +1384,27 @@ describe('Email renderer', function () {
             const post = createTiersPost([{slug: 'gold'}]);
             assert.equal(emailRenderer.getPreviewSegment(post, null), null);
         });
+
+        it('narrows the paid audience to a selected tier', function () {
+            const post = createTiersPost([{slug: 'gold'}, {slug: 'silver'}]);
+            assert.equal(
+                emailRenderer.getPreviewSegment(post, 'status:-free', 'silver'),
+                'status:-free+product:\'silver\''
+            );
+        });
+
+        it('escapes quotes when narrowing to a tier', function () {
+            const post = createTiersPost([{slug: 'gold'}]);
+            assert.equal(
+                emailRenderer.getPreviewSegment(post, 'status:-free', 'we\'re-fancy'),
+                'status:-free+product:\'we\\\'re-fancy\''
+            );
+        });
+
+        it('ignores a selected tier for the free audience', function () {
+            const post = createTiersPost([{slug: 'gold'}]);
+            assert.equal(emailRenderer.getPreviewSegment(post, 'status:free', 'gold'), 'status:free');
+        });
     });
 
     describe('renderBody', function () {

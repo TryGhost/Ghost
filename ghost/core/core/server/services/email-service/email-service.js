@@ -441,10 +441,11 @@ class EmailService {
      * @param {*} post
      * @param {*} newsletter
      * @param {import('./email-renderer').Segment} segment
+     * @param {string} [memberTier] - narrow the paid audience to a single tier
      * @returns {Promise<{subject: string, html: string, plaintext: string}>} Email preview
      */
-    async previewEmail(post, newsletter, segment) {
-        const renderSegment = this.#emailRenderer.getPreviewSegment(post, segment);
+    async previewEmail(post, newsletter, segment, memberTier) {
+        const renderSegment = this.#emailRenderer.getPreviewSegment(post, segment, memberTier);
         const audience = this.#emailRenderer.describeSegment(post, renderSegment);
         const exampleMember = await this.getExampleMember(null, audience.status);
 
@@ -464,9 +465,10 @@ class EmailService {
      * @param {*} newsletter
      * @param {import('./email-renderer').Segment} segment
      * @param {string[]} emails
+     * @param {string} [memberTier] - narrow the paid audience to a single tier
      */
-    async sendTestEmail(post, newsletter, segment, emails) {
-        const renderSegment = this.#emailRenderer.getPreviewSegment(post, segment);
+    async sendTestEmail(post, newsletter, segment, emails, memberTier) {
+        const renderSegment = this.#emailRenderer.getPreviewSegment(post, segment, memberTier);
         const audience = this.#emailRenderer.describeSegment(post, renderSegment);
 
         const members = [];

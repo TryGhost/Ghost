@@ -469,17 +469,22 @@ class EmailRenderer {
 
     /**
      * Maps the fixed audience choices offered by the editor's email preview and
-     * test-email UI ('status:free' / 'status:-free') onto the segment the send
-     * pipeline renders for that audience, so previews match what members receive.
-     * For a tier-restricted post the paid audience maps to the tier access
-     * segment (the access variant getSegments produces): paid members on the
-     * post's tiers get the full content, and the free choice previews the
-     * no-access variant. Anything else passes through unchanged.
+     * test-email UI ('status:free' / 'status:-free', optionally narrowed to a
+     * single tier) onto the segment the send pipeline renders for that
+     * audience, so previews match what members receive. For a tier-restricted
+     * post the paid audience maps to the tier access segment (the access
+     * variant getSegments produces): paid members on the post's tiers get the
+     * full content, and the free choice previews the no-access variant.
+     * Anything else passes through unchanged.
      * @param {Post} post
      * @param {Segment} segment
+     * @param {string} [tierSlug] - narrow the paid audience to a single tier
      * @returns {Segment}
      */
-    getPreviewSegment(post, segment) {
+    getPreviewSegment(post, segment, tierSlug) {
+        if (tierSlug && segment === 'status:-free') {
+            return `status:-free+product:'${tierSlug.replace(/'/g, '\\\'')}'`;
+        }
         if (segment === 'status:-free' && post.get('visibility') === 'tiers') {
             const accessFilter = getPostAccessFilter(getPostGatingShape(post));
             if (accessFilter) {

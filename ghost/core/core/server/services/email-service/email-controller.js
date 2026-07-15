@@ -5,7 +5,8 @@ const messages = {
     postNotFound: 'Post not found.',
     noEmailsProvided: 'No emails provided.',
     emailNotFound: 'Email not found.',
-    tooManyEmailsProvided: 'Too many emails provided. Maximum of 1 test email can be sent at once.'
+    tooManyEmailsProvided: 'Too many emails provided. Maximum of 1 test email can be sent at once.',
+    invalidMemberTier: 'memberTier must be a single tier slug.'
 };
 
 class EmailController {
@@ -27,6 +28,17 @@ class EmailController {
     async _getFrameData(frame) {
         // Bit absurd situation in email-previews endpoints that one endpoint is using options and other one is using data.
         // So we need to handle both cases.
+
+        // repeated query params / JSON arrays arrive as non-strings — reject
+        // rather than 500 downstream (the api-framework only validates
+        // required/values, so the endpoint can't do this for us)
+        const memberTier = frame.options.memberTier ?? frame.data?.memberTier ?? null;
+        if (memberTier !== null && typeof memberTier !== 'string') {
+            throw new errors.ValidationError({
+                message: tpl(messages.invalidMemberTier)
+            });
+        }
+
         let post;
         // 'tiers' is required by the email tier-gating logic (renderer/segmenter), not for URL generation
         const withRelated = [...new Set(['posts_meta', 'authors', 'tiers', ...this.getRequiredUrlRelations()])];
@@ -52,17 +64,18 @@ class EmailController {
         return {
             post,
             newsletter,
-            segment: frame.options.memberSegment ?? frame.data.memberSegment ?? null
+            segment: frame.options.memberSegment ?? frame.data.memberSegment ?? null,
+            memberTier
         };
     }
 
     async previewEmail(frame) {
-        const {post, newsletter, segment} = await this._getFrameData(frame);
-        return await this.service.previewEmail(post, newsletter, segment);
+        const {post, newsletter, segment, memberTier} = await this._getFrameData(frame);
+        return await this.service.previewEmail(post, newsletter, segment, memberTier);
     }
 
     async sendTestEmail(frame) {
-        const {post, newsletter, segment} = await this._getFrameData(frame);
+        const {post, newsletter, segment, memberTier} = await this._getFrameData(frame);
 
         const emails = frame.data.emails ?? [];
 
@@ -79,7 +92,7 @@ class EmailController {
             });
         }
 
-        await this.service.sendTestEmail(post, newsletter, segment, emails);
+        await this.service.sendTestEmail(post, newsletter, segment, emails, memberTier);
     }
 
     async retryFailedEmail(frame) {
