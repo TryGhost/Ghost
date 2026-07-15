@@ -130,7 +130,7 @@ export const NewsletterRadialChart:React.FC<NewsletterRadialChartProps> = ({
                 >
                     {data.length > 1 &&
                         <Recharts.LabelList
-                            className="fill-black opacity-60"
+                            className="fill-foreground opacity-60"
                             dataKey="datatype"
                             fontSize={11}
                             position="insideStart"
