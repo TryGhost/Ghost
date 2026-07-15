@@ -49,7 +49,8 @@ const defaultCardConfig = {
     klipy: klipyConfig,
     fetchAutocompleteLinks: () => Promise.resolve([
         {label: 'Homepage', value: window.location.origin + '/'},
-        {label: 'Free signup', value: window.location.origin + '/#/portal/signup/free'}
+        {label: 'Free signup', value: window.location.origin + '/#/portal/signup/free'},
+        {label: 'Share post', value: window.location.origin + '/#/share'}
     ]),
     renderLabels: true,
     fetchLabels: () => Promise.resolve(['Label 1', 'Label 2']),
