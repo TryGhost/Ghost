@@ -131,6 +131,7 @@
                     "build",
                     {
                         "projects": [
+                            "@tryghost/admin-x-design-system",
                             "ghost-admin"
                         ],
                         "target": "build"

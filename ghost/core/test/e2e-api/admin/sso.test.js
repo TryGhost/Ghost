@@ -39,7 +39,7 @@ describe('SSO API', function () {
             if (name === 'sso') {
                 return new MockSSOAdapter();
             }
-            return originalGetAdapter.call(this, name);
+            return originalGetAdapter.call(adapterManager, name);
         });
 
         agent = await agentProvider.getGhostAPIAgent();

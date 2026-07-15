@@ -32,15 +32,15 @@ module.exports = {
     },
 
     /**
-     * Methods used in the API — delegate to the service instance so the
-     * legacy callers keep working without any changes.
+     * Methods backing the Admin API settings endpoint — delegate to the
+     * service instance so the endpoint stays decoupled from service wiring.
      */
     api: {
-        get setFromFilePath() {
-            return service.setFromFilePath.bind(service);
+        get upload() {
+            return service.upload.bind(service);
         },
-        get get() {
-            return service.get.bind(service);
+        get download() {
+            return service.download.bind(service);
         },
         get getCurrentHash() {
             return service.getCurrentHash.bind(service);
