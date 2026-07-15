@@ -9,10 +9,12 @@ const supertest = require('supertest');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 const settingsCache = require('../../core/shared/settings-cache');
+const machinePaymentsService = require('../../core/server/services/machine-payments/service');
 
 describe('llms.txt routing', function () {
     let request;
     let siteUrl;
+    let settingOverrides;
 
     beforeAll(async function () {
         await testUtils.startGhost();
@@ -21,8 +23,13 @@ describe('llms.txt routing', function () {
     });
 
     beforeEach(function () {
+        settingOverrides = {};
         const originalGet = settingsCache.get;
         sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+            if (Object.hasOwn(settingOverrides, key)) {
+                return settingOverrides[key];
+            }
+
             if (key === 'labs') {
                 return {llmsTxt: true};
             }
@@ -43,6 +50,7 @@ describe('llms.txt routing', function () {
         // entries are linked via absolute urls resolved by the public API serializer
         assert.ok(res.text.includes(`[About this site](${siteUrl}/about.md)`), 'expected absolute .md link for the about page');
         assert.ok(res.text.includes(`[Start here for a quick overview of everything you need to know](${siteUrl}/welcome.md)`), 'expected absolute .md link for the welcome post');
+        assert.ok(!res.text.includes(`[Selling premium memberships with recurring revenue](${siteUrl}/sell.md)`), 'expected paid post to be hidden while machine payments are disabled');
 
         // descriptions come from plaintext, which is requested via `formats`
         // on top of the narrowed `fields`
@@ -71,5 +79,63 @@ describe('llms.txt routing', function () {
 
         // truncation footer (if present) points at the sitemap, not /llms.txt
         assert.doesNotMatch(res.text, /Use `\/llms\.txt`/);
+    });
+
+    it('outputs a markdown alternate link on public post pages', async function () {
+        const res = await request.get('/welcome/')
+            .expect('Content-Type', /text\/html/)
+            .expect(200);
+
+        assert.match(res.text, new RegExp(`<link rel="alternate" type="text/markdown" href="${siteUrl}/welcome\\.md">`));
+    });
+
+    it('serves a machine payment challenge for paid post markdown URLs', async function () {
+        settingOverrides = {
+            labs: {machinePayments: true},
+            machine_payments_enabled: true,
+            machine_payments_currency: 'USD',
+            machine_payments_amount: 100
+        };
+
+        const originalAddressProvider = machinePaymentsService.x402Adapter.addressProvider;
+        const originalFacilitatorClient = machinePaymentsService.x402Adapter.facilitatorClient;
+        const addressProvider = {
+            getAddress: sinon.stub().resolves('0x0000000000000000000000000000000000000001')
+        };
+
+        machinePaymentsService.x402Adapter.addressProvider = addressProvider;
+        machinePaymentsService.x402Adapter.facilitatorClient = {
+            getSupported: sinon.stub().resolves({
+                kinds: [{
+                    x402Version: 2,
+                    scheme: 'exact',
+                    network: 'eip155:8453'
+                }],
+                extensions: [],
+                signers: {}
+            }),
+            verify: sinon.stub().resolves({isValid: false}),
+            settle: sinon.stub().resolves({success: false, transaction: '0x0', network: 'eip155:8453'})
+        };
+
+        try {
+            const llmsResponse = await request.get('/llms.txt').expect(200);
+            assert.ok(llmsResponse.text.includes(`[Selling premium memberships with recurring revenue](${siteUrl}/sell.md)`), 'expected paid post to be discoverable while machine payments are enabled');
+
+            const res = await request.get('/sell.md')
+                .expect('Content-Type', /application\/problem\+json/)
+                .expect(402);
+
+            assert.match(res.text, /Payment Required/);
+            assert.ok(res.headers['payment-required']);
+            sinon.assert.calledWith(addressProvider.getAddress, sinon.match({
+                amount: 100,
+                currency: 'USD',
+                network: 'base'
+            }));
+        } finally {
+            machinePaymentsService.x402Adapter.addressProvider = originalAddressProvider;
+            machinePaymentsService.x402Adapter.facilitatorClient = originalFacilitatorClient;
+        }
     });
 });

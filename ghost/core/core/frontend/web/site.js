@@ -75,6 +75,7 @@ module.exports = function setupSiteApp(routerConfig) {
     const {createLlmsService} = require('../services/llms/service');
     const {createLlmsHandler} = require('../services/llms/handler');
     const {createLlmsDiscovery} = require('./middleware/llms-discovery');
+    const machinePaymentsService = require('../../server/services/machine-payments/service');
 
     const llmsService = createLlmsService({
         settingsCache,
@@ -82,10 +83,12 @@ module.exports = function setupSiteApp(routerConfig) {
         config,
         urlUtils,
         routing,
-        api
+        api,
+        machinePaymentsService
     });
 
     siteApp.set('llmsService', llmsService);
+    siteApp.set('machinePaymentsService', machinePaymentsService);
 
     const llmsHandler = createLlmsHandler({
         llmsService,

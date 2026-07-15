@@ -217,7 +217,7 @@ export async function waitForApiRequest<Requests extends Record<string, MockRequ
     return lastApiRequests[requestName]!;
 }
 
-export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string | boolean | null, is_read_only?: boolean }>) {
+export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string | boolean | number | null, is_read_only?: boolean }>) {
     return {
         ...responseFixtures.settings,
         settings: responseFixtures.settings.settings.map((setting) => {
