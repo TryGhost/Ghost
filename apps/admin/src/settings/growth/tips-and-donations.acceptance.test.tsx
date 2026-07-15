@@ -28,6 +28,7 @@ describe("Tips and donations settings", () => {
         await renderAdminApp("/settings");
 
         await expect(settingsScreen.tipsAndDonations()).toHaveCount(0);
+        await expect(settingsScreen.navItem("Tips & donations")).toHaveCount(0);
     });
 
     it("shows the suggested amount and shareable link when Stripe is enabled", async () => {
