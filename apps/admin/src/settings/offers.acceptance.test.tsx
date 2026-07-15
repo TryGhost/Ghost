@@ -211,11 +211,13 @@ describe("Offers", () => {
         const updateModal = offersScreen.updateModal();
         await expect.element(updateModal).toBeVisible();
 
-        await updateModal.getByPlaceholder("black-friday").fill("");
+        const codeInput = updateModal.getByPlaceholder("black-friday");
+        await expect.element(codeInput).toHaveValue("first-offer");
+        await codeInput.fill("");
         await updateModal.getByRole("button", { name: "Save" }).click();
         await expect.element(updateModal).toHaveTextContent(/Please enter a code/);
 
-        await updateModal.getByPlaceholder("black-friday").fill("black-friday-offer");
+        await codeInput.fill("black-friday-offer");
         await updateModal.getByRole("button", { name: "Save" }).click();
 
         await expect.poll(() => editApi.lastRequest?.body).toMatchObject({
