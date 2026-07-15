@@ -423,6 +423,33 @@ export default class KoenigLexicalEditor extends Component {
             return hasDirectKeys || hasConnectKeys;
         };
 
+        const fetchPublicPreviewTiers = async () => {
+            const tiers = await this.store.query('tier', {
+                filter: 'type:paid',
+                include: 'monthly_price,yearly_price,benefits',
+                limit: 'all'
+            });
+
+            return tiers.map((tier) => {
+                return {
+                    active: tier.active,
+                    id: tier.id,
+                    name: tier.name,
+                    slug: tier.slug
+                };
+            });
+        };
+
+        const publicPreview = typeof props.cardConfig?.updatePublicPreviewAccess === 'function' ? {
+            canChangeAccess: props.cardConfig.canChangePostAccess,
+            fetchTiers: fetchPublicPreviewTiers,
+            onChange: props.cardConfig.updatePublicPreviewAccess,
+            paidAccessEnabled: checkStripeEnabled(),
+            postId: props.cardConfig.postId,
+            tiers: props.cardConfig.postTiers || [],
+            visibility: props.cardConfig.postVisibility || this.settings.defaultContentVisibility || 'public'
+        } : undefined;
+
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             klipy: this.config.klipy?.apiKey ? this.config.klipy : null,
@@ -443,16 +470,25 @@ export default class KoenigLexicalEditor extends Component {
             siteUrl: this.config.getSiteUrl('/'),
             siteUuid: this.config.site_uuid,
             stripeEnabled: checkStripeEnabled(), // returns a boolean
+            publicPreview,
             visibilitySettings: getCardVisibilitySettings(props.cardConfig)
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig, visibilitySettings: defaultCardConfig.visibilitySettings});
 
         const KGEditorComponent = ({isInitInstance}) => {
+            const instanceCardConfig = isInitInstance && cardConfig.publicPreview ? {
+                ...cardConfig,
+                publicPreview: {
+                    ...cardConfig.publicPreview,
+                    enableSuggestion: false
+                }
+            } : cardConfig;
+
             return (
                 <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
                     <KoenigComposer
                         editorResource={this.editorResource}
-                        cardConfig={cardConfig}
+                        cardConfig={instanceCardConfig}
                         fileUploader={{useFileUpload: useKoenigFileUpload, fileTypes: koenigFileUploadTypes}}
                         initialEditorState={this.args.lexical}
                         onError={this.onError}

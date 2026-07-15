@@ -84,13 +84,61 @@
                     @class="gh-btn gh-btn-icon gh-btn-editor gh-editor-save-trigger contributor-save-button"
                     data-test-preview-contributor-save />
             {{else}}
-                <button
-                    type="button"
-                    class="gh-btn gh-btn-primary"
-                    {{on "click" @data.togglePreviewPublish}}
-                >
-                    <span>Publish</span>
-                </button>
+                <div class="gh-publish-trigger-wrap">
+                    <button
+                        type="button"
+                        class="gh-btn gh-btn-primary"
+                        {{on "click" this.publish}}
+                    >
+                        <span>Publish</span>
+                    </button>
+
+                    <div
+                        class="gh-paid-post-paywall-prompt {{if this.isPaidPostPaywallPromptVisible "is-visible"}}"
+                        role="dialog"
+                        aria-modal="false"
+                        aria-hidden={{not this.isPaidPostPaywallPromptVisible}}
+                        aria-labelledby="preview-paid-post-paywall-prompt-title"
+                        data-test-preview-paid-post-paywall-prompt
+                    >
+                        <div class="gh-paid-post-paywall-prompt-visual" aria-hidden="true">
+                            <div class="gh-paid-post-paywall-prompt-post">
+                                <div class="gh-paid-post-paywall-prompt-lines gh-paid-post-paywall-prompt-lines-top">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                                <div class="gh-paid-post-paywall-prompt-divider">
+                                    <span class="gh-paid-post-paywall-prompt-divider-labels">
+                                        <span class="gh-paid-post-paywall-prompt-divider-arrow">↓</span>
+                                        <span>{{this.paywallPromptAccessLabel}}</span>
+                                        <span class="gh-paid-post-paywall-prompt-divider-arrow">↓</span>
+                                    </span>
+                                </div>
+                                <div class="gh-paid-post-paywall-prompt-lines gh-paid-post-paywall-prompt-lines-bottom">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="gh-paid-post-paywall-prompt-content">
+                            <div class="modal-header">
+                                <h1 id="preview-paid-post-paywall-prompt-title">Add a public preview?</h1>
+                            </div>
+
+                            <div class="modal-body">
+                                <p>This post is for paid members only — right now, everyone else sees none of it. A public preview lets them read the beginning free, up to the point you choose.</p>
+                            </div>
+
+                            <div class="gh-paid-post-paywall-prompt-actions">
+                                <button type="button" class="gh-btn gh-btn-black gh-btn-fullwidth" {{on "click" (fn this.showPaywallGuidance @close)}}><span>Show me how</span></button>
+                                <button type="button" class="gh-btn gh-btn-outline gh-btn-fullwidth" {{on "click" this.continueFromPaywallPrompt}}><span>Publish without it</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             {{/if}}
         </div>
     </header>
@@ -111,6 +159,8 @@
                     @post={{@data.publishOptions.post}}
                     @memberSegment={{this.previewAsSegment}}
                     @newsletter={{@data.publishOptions.newsletter}}
+                    @showMissingPaidPostPaywallWarning={{this.showMissingPaidPostPaywallWarning}}
+                    @addPublicPreview={{fn @close (hash afterTask="showPublicPreviewGuidanceTask")}}
                     @skipAnimation={{this.skipAnimation}}
                     @savePostTask={{@data.saveTask}}
                     @mobile={{eq this.previewSize "mobile"}}

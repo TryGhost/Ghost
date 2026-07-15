@@ -9,6 +9,37 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
+function publicPreviewLexical() {
+    return JSON.stringify({
+        root: {
+            children: [
+                {
+                    children: [],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'paragraph',
+                    version: 1
+                },
+                {type: 'paywall', version: 1},
+                {
+                    children: [],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'paragraph',
+                    version: 1
+                }
+            ],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'root',
+            version: 1
+        }
+    });
+}
+
 describe('Acceptance: Editor / Visibility', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
@@ -86,5 +117,35 @@ describe('Acceptance: Editor / Visibility', function () {
         let lastPut = putRequests[putRequests.length - 1];
         let requestBody = JSON.parse(lastPut.requestBody);
         expect(requestBody.posts[0].visibility, 'visibility in PUT request').to.equal('paid');
+    });
+
+    it('resolves public preview access from inside the editor', async function () {
+        let post = this.server.create('post', {authors: [author], lexical: publicPreviewLexical(), status: 'draft', visibility: 'public'});
+
+        await visit(`/editor/post/${post.id}`);
+
+        expect(find('[data-kg-public-preview-unresolved="true"]'), 'unresolved public preview').to.exist;
+        expect(find('[data-kg-public-preview-access-option="members"]'), 'members access option').to.exist;
+
+        await click('[data-kg-public-preview-access-option="members"]');
+
+        post = this.server.db.posts.find(post.id);
+        expect(post.visibility, 'saved visibility').to.equal('members');
+        expect(find('[data-kg-public-preview-unresolved="true"]'), 'resolved public preview').to.not.exist;
+    });
+
+    it('returns publishing to an unresolved public preview', async function () {
+        const post = this.server.create('post', {authors: [author], lexical: publicPreviewLexical(), status: 'draft', visibility: 'public'});
+
+        await visit(`/editor/post/${post.id}`);
+        await click('[data-test-button="publish-flow"]');
+
+        expect(find('[data-test-modal="publish-flow"]'), 'publish flow before access is chosen').to.not.exist;
+        expect(document.activeElement, 'focused access option').to.equal(find('[data-kg-public-preview-access-option="members"]'));
+
+        await click('[data-kg-public-preview-access-option="members"]');
+        await click('[data-test-button="publish-flow"]');
+
+        expect(find('[data-test-modal="publish-flow"]'), 'publish flow after access is chosen').to.exist;
     });
 });

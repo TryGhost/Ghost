@@ -79,4 +79,19 @@ test.describe('Paywall card', async () => {
             <p dir="ltr"><span data-lexical-text="true">Next paragraph</span></p>
         `, {ignoreCardContents: true});
     });
+
+    test('lets the author resolve post access inside the public preview', async function () {
+        await initialize({page, uri: '/#/?content=false&publicPreview=true'});
+        await focusEditor(page);
+        await insertPaywallCard(page);
+
+        await page.getByText(/This post is public/).waitFor();
+        await page.getByRole('button', {name: 'Members only'}).click();
+
+        await page.getByText('Only visible to members').waitFor();
+        await page.getByRole('button', {name: 'Change access'}).click();
+        await page.getByRole('button', {name: 'Paid members only'}).click();
+
+        await page.getByText('Only visible to paid members').waitFor();
+    });
 });

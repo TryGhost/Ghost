@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import moment from 'moment-timezone';
+import {getPublicPreviewPaywallRecipientFilter} from 'ghost-admin/utils/public-preview';
 import {htmlSafe} from '@ember/template';
 import {isArray} from '@ember/array';
 import {isServerUnreachableError} from 'ghost-admin/services/ajax';
@@ -56,6 +57,42 @@ export default class PublishFlowOptions extends Component {
         } else {
             return 'publish';
         }
+    }
+
+    get publicPreviewPaywallRecipientFilter() {
+        const publishOptions = this.args.publishOptions;
+
+        return getPublicPreviewPaywallRecipientFilter({
+            post: publishOptions.post,
+            publicPreviewStatus: this.args.publicPreviewStatus,
+            fullRecipientFilter: publishOptions.fullRecipientFilter,
+            willEmail: this.willEmail
+        });
+    }
+
+    get hasPublicPreviewWebPaywall() {
+        const post = this.args.publishOptions.post;
+
+        return this.willPublish
+            && this.args.publicPreviewStatus === 'valid'
+            && ['members', 'paid', 'tiers'].includes(post.visibility);
+    }
+
+    get postAccessDescription() {
+        const post = this.args.publishOptions.post;
+        const visibility = post.visibility || this.settings.defaultContentVisibility || 'public';
+
+        if (visibility === 'tiers') {
+            return `${post.displayName} for specific tiers`;
+        }
+
+        const accessLabels = {
+            public: 'public',
+            members: 'members only',
+            paid: 'paid-members only'
+        };
+
+        return `${accessLabels[visibility] || 'public'} ${post.displayName}`;
     }
 
     get confirmButtonText() {

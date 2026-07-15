@@ -31,33 +31,93 @@
             <GhTooltip @shortcut={{array "⌘" "P"}}  />
         </button>
 
-        <button
-            type="button"
-            class="gh-btn gh-btn-editor darkgrey gh-publish-trigger gh-tooltip-trigger tooltip-bottom no-text"
-            {{on "click" @publishManagement.openPublishFlow}}
-            {{on-key "cmd+shift+p"}}
-            disabled={{@publishManagement.publishOptions.isLoading}}
-            data-test-button="publish-flow"
-        >
-            <span>Publish</span>
-            <GhTooltip @shortcut={{array "⌘" "&#8679;" "P"}}  />
-        </button>
+        <div class="gh-publish-trigger-wrap">
+            <button
+                type="button"
+                class="gh-btn gh-btn-editor darkgrey gh-publish-trigger gh-tooltip-trigger tooltip-bottom no-text"
+                {{on "click" @publishManagement.openPublishFlow}}
+                {{on-key "cmd+shift+p"}}
+                disabled={{@publishManagement.publishOptions.isLoading}}
+                data-test-button="publish-flow"
+            >
+                <span>Publish</span>
+                <GhTooltip @shortcut={{array "⌘" "&#8679;" "P"}}  />
+            </button>
+
+            <div
+                class="gh-paid-post-paywall-prompt {{if @publishManagement.isPaidPostPaywallPromptVisible "is-visible"}}"
+                role="dialog"
+                aria-modal="false"
+                aria-hidden={{not @publishManagement.isPaidPostPaywallPromptVisible}}
+                aria-labelledby="paid-post-paywall-prompt-title"
+                data-test-paid-post-paywall-prompt
+            >
+            <div class="gh-paid-post-paywall-prompt-visual" aria-hidden="true">
+                <div class="gh-paid-post-paywall-prompt-post">
+                    <div class="gh-paid-post-paywall-prompt-lines gh-paid-post-paywall-prompt-lines-top">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="gh-paid-post-paywall-prompt-divider">
+                        <span class="gh-paid-post-paywall-prompt-divider-labels">
+                            <span class="gh-paid-post-paywall-prompt-divider-arrow">↓</span>
+                            <span>{{@publishManagement.paywallPromptAccessLabel}}</span>
+                            <span class="gh-paid-post-paywall-prompt-divider-arrow">↓</span>
+                        </span>
+                    </div>
+                    <div class="gh-paid-post-paywall-prompt-lines gh-paid-post-paywall-prompt-lines-bottom">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gh-paid-post-paywall-prompt-content">
+                <header class="modal-header">
+                    <h1 id="paid-post-paywall-prompt-title">Add a public preview?</h1>
+                </header>
+
+                <div class="modal-body">
+                    <p>This post is for paid members only — right now, everyone else sees none of it. A public preview lets them read the beginning free, up to the point you choose.</p>
+                </div>
+
+                <div class="gh-paid-post-paywall-prompt-actions">
+                    <button type="button" class="gh-btn gh-btn-black gh-btn-fullwidth" {{on "click" @publishManagement.showPaywallGuidance}}><span>Show me how</span></button>
+                    <button type="button" class="gh-btn gh-btn-outline gh-btn-fullwidth" {{on "click" @publishManagement.continueFromPaywallPrompt}}><span>Publish without it</span></button>
+                </div>
+            </div>
+            </div>
+        </div>
     {{else}}
-        <GhTaskButton
-            @task={{@publishManagement.saveTask}}
-            @buttonText="Update"
-            @runningText="Updating..."
-            @successText="Updated"
-            @class="gh-btn gh-btn-editor gh-editor-save-trigger"
-            @idleClass="green"
-            @runningClass="midlightgrey"
-            @successClass="midlightgrey"
-            @failureClass="red"
-            @showIcon={{false}}
-            @disabled={{not @publishManagement.hasUnsavedChanges}}
-            @autoReset={{true}}
-            data-test-button="publish-save"
-        />
+        {{#if @publishManagement.hasUnresolvedPublicPreview}}
+            <button
+                type="button"
+                class="gh-btn gh-btn-editor gh-editor-save-trigger green"
+                {{on "click" @publishManagement.focusUnresolvedPublicPreview}}
+                disabled={{not @publishManagement.hasUnsavedChanges}}
+                data-test-button="publish-save"
+            >
+                <span>Update</span>
+            </button>
+        {{else}}
+            <GhTaskButton
+                @task={{@publishManagement.saveTask}}
+                @buttonText="Update"
+                @runningText="Updating..."
+                @successText="Updated"
+                @class="gh-btn gh-btn-editor gh-editor-save-trigger"
+                @idleClass="green"
+                @runningClass="midlightgrey"
+                @successClass="midlightgrey"
+                @failureClass="red"
+                @showIcon={{false}}
+                @disabled={{not @publishManagement.hasUnsavedChanges}}
+                @autoReset={{true}}
+                data-test-button="publish-save"
+            />
+        {{/if}}
 
         {{#if (not (and @publishManagement.post.isSent (not @publishManagement.post.isPublished)))}}
             <button

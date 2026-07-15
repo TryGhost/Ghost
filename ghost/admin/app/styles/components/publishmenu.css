@@ -375,6 +375,10 @@
 }
 
 .gh-publish-settings {
+    --gh-publish-ease-out: cubic-bezier(.23, 1, .32, 1);
+    --gh-publish-ease-in-out: cubic-bezier(.77, 0, .175, 1);
+    --gh-publish-recipient-warning-duration: .3s;
+
     margin: 1rem 0 5.2rem;
     width: 100%;
 }
@@ -401,6 +405,7 @@
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
     padding-bottom: 1.6rem;
 }
 
@@ -415,28 +420,69 @@
     margin-right: 1.4rem;
 }
 
-.gh-publish-setting-title svg path {
-    stroke: var(--black);
-    stroke-width: 2px;
+.gh-publish-setting-title > svg {
+    width: 2rem;
+    height: 2rem;
+    color: var(--black);
+}
+
+.gh-publish-setting-controls {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 1.2rem;
+    margin-left: auto;
 }
 
 .gh-publish-setting-title .icon-expand {
-    position: absolute;
-    right: 0;
     width: 1rem;
     height: auto;
     margin: 0;
     fill: var(--midlightgrey);
-    transition: all 0.2s ease-in-out;
+    transition: transform .2s var(--gh-publish-ease-in-out);
 }
 
 .gh-publish-setting-title .icon-expand path {
     stroke: var(--midlightgrey);
 }
 
+.gh-publish-setting-warning-indicator {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    color: color-mod(var(--yellow) l(-8%) s(+10%));
+    transform-origin: right center;
+    animation: gh-publish-warning-indicator-in .18s var(--gh-publish-ease-out) both;
+}
+
+.gh-publish-setting-title .gh-publish-setting-warning-indicator svg {
+    width: 2rem;
+    height: 2rem;
+    margin: 0;
+}
+
+.gh-publish-setting-title .gh-publish-setting-warning-indicator svg path {
+    fill: currentColor;
+    stroke: none;
+}
+
+@keyframes gh-publish-warning-indicator-in {
+    from {
+        opacity: 0;
+        transform: translateX(.8rem) scale(.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
 .expanded .icon-expand {
     transform: scaleY(-1);
-    transition: all 0.2s ease-in-out;
 }
 
 .gh-publish-setting-trigger {
@@ -482,9 +528,93 @@
     margin-bottom: 0;
 }
 
+.gh-publish-setting-form.has-recipient-warning {
+    padding-bottom: 0;
+}
+
 .gh-publish-setting-form.last fieldset {
     display: flex;
     margin-bottom: 0;
+}
+
+.gh-publish-setting-recipient-warning {
+    margin-top: 1.6rem;
+    padding: 1.2rem 1.4rem 1.4rem;
+    font-size: 1.4rem;
+}
+
+.gh-publish-setting-recipient-warning-action span {
+    font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 1.55em;
+}
+
+.gh-publish-setting-recipient-warning-reveal {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        grid-template-rows var(--gh-publish-recipient-warning-duration) var(--gh-publish-ease-out),
+        opacity var(--gh-publish-recipient-warning-duration) var(--gh-publish-ease-out),
+        visibility 0s linear var(--gh-publish-recipient-warning-duration);
+}
+
+.gh-publish-setting-recipient-warning-reveal.is-visible {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+    transition:
+        grid-template-rows var(--gh-publish-recipient-warning-duration) var(--gh-publish-ease-out),
+        opacity var(--gh-publish-recipient-warning-duration) var(--gh-publish-ease-out),
+        visibility 0s;
+}
+
+.gh-publish-setting-recipient-warning-reveal-inner {
+    min-height: 0;
+    overflow: hidden;
+    transform: translateY(-.8rem);
+    transition: transform var(--gh-publish-recipient-warning-duration) var(--gh-publish-ease-out);
+}
+
+.gh-publish-setting-recipient-warning-reveal.is-visible .gh-publish-setting-recipient-warning-reveal-inner {
+    transform: translateY(0);
+}
+
+@keyframes gh-publish-recipient-warning-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gh-publish-setting-warning-indicator {
+        animation-name: gh-publish-recipient-warning-fade-in;
+        animation-duration: .12s;
+    }
+
+    .gh-publish-setting-recipient-warning-reveal {
+        transition:
+            grid-template-rows 0s,
+            opacity .12s var(--gh-publish-ease-out),
+            visibility 0s linear .12s;
+    }
+
+    .gh-publish-setting-recipient-warning-reveal.is-visible {
+        transition:
+            grid-template-rows 0s,
+            opacity .12s var(--gh-publish-ease-out),
+            visibility 0s;
+    }
+
+    .gh-publish-setting-recipient-warning-reveal-inner,
+    .gh-publish-setting-recipient-warning-reveal.is-visible .gh-publish-setting-recipient-warning-reveal-inner {
+        transform: none;
+        transition: none;
+    }
+}
+
+.gh-publish-setting-recipient-warning strong {
+    font-weight: 600;
 }
 
 .gh-publish-newsletter-trigger {
@@ -749,18 +879,42 @@
     margin-top: -2rem;
     margin-bottom: 5rem;
     color: var(--black);
-    font-size: 1.8rem;
+    font-size: 1.7rem;
     font-weight: 400;
-    line-height: 1.6em;
+    line-height: 1.5em;
+}
+
+.gh-publish-confirmation-intro {
+    margin: 0 0 1.2rem;
+    padding: 0;
+    font-size: 1.8rem;
+}
+
+.gh-publish-confirmation-list {
+    margin: 0;
+    padding-left: 1.2em;
+}
+
+.gh-publish-confirmation-list li {
+    margin-bottom: .8rem;
+}
+
+.gh-publish-confirmation-list li:last-child {
+    margin-bottom: 0;
 }
 
 .gh-publish-confirmation strong {
+    font-weight: 600;
     white-space: nowrap;
 }
 
 @media (max-width: 500px) {
     .gh-publish-confirmation {
         font-size: 1.6rem;
+    }
+
+    .gh-publish-confirmation-intro {
+        font-size: 1.7rem;
     }
 }
 

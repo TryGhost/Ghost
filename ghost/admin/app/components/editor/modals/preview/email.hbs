@@ -1,4 +1,16 @@
 <div class="gh-post-preview-container gh-post-preview-email-container {{if @mobile "gh-pe-mobile-container"}} {{unless @skipAnimation "fade-in"}}">
+    <div
+        class="gh-post-preview-paywall-warning-reveal {{if @mobile "is-mobile"}} {{if @showMissingPaidPostPaywallWarning "is-visible"}}"
+        aria-hidden={{if @showMissingPaidPostPaywallWarning "false" "true"}}
+    >
+        <div class="gh-post-preview-paywall-warning-reveal-inner">
+            <div class="gh-box gh-box-alert gh-post-preview-paywall-warning" role="alert" data-test-email-preview-paywall-warning>
+                <strong>This paid-members only post has no paywall.</strong>
+                If you send it to free members, they’ll receive the full post.
+                <button type="button" class="gh-post-preview-paywall-warning-action" {{on "click" @addPublicPreview}}>Add a public preview</button>
+            </div>
+        </div>
+    </div>
     <div class="gh-post-preview-email {{if @mobile "gh-pe-mobile-bezel"}}">
         <div class="gh-post-preview-email-mockup {{if @mobile "gh-post-preview-email-mockup-mobile gh-pe-mobile-screen"}}">
             <div class="gh-post-preview-email-header {{if (gt this.newslettersList.length 1) "gh-post-preview-multiple-newsletters"}}">

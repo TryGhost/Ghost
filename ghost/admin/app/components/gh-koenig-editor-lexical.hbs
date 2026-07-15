@@ -22,7 +22,11 @@
             @onTKCountChange={{@updateFeatureImageTkCount}}
         />
 
-        <div class="gh-editor-title-container">
+        <div
+            class="gh-editor-title-container"
+            {{did-insert @registerPublicPreviewGuidanceContent}}
+            {{will-destroy @unregisterPublicPreviewGuidanceContent}}
+        >
             {{#if (and (not @cardOptions.post.showTitleAndFeatureImage) (not @featureImage))}}
                 <span class="gh-editor-hidden-indicator" data-tooltip="Post title is hidden on page">
                     {{svg-jar "eye-closed"}}

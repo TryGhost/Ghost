@@ -1,0 +1,23 @@
+<div class="modal-content gh-tk-reminder" data-test-modal="public-preview-reminder">
+    <header class="modal-header">
+        <h1>Check your public preview</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            {{#if (eq @data.publicPreviewStatus "multiple")}}
+                This post has more than one public preview. Keep a single preview where free content should end.
+            {{else if (eq @data.publicPreviewStatus "top")}}
+                The public preview is at the beginning of this post, so visitors won’t see any free content.
+            {{else}}
+                The public preview is at the end of this post, so visitors can already read the whole post.
+            {{/if}}
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="gh-btn" {{on "click" (fn @close true)}}><span>Continue to publish</span></button>
+        <button type="button" class="gh-btn gh-btn-black" {{on "click" @close}}><span>Back to editor</span></button>
+    </div>
+</div>

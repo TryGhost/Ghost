@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action} from '@ember/object';
+import {getPublicPreviewStatus} from 'ghost-admin/utils/public-preview';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -22,6 +23,9 @@ export default class EditorPostPreviewModal extends Component {
     @tracked previewEmailAddress = this.session.user.email;
     @tracked previewAsSegment = 'free';
     @tracked previewAsOptions = [];
+    @tracked isPaidPostPaywallPromptVisible = false;
+
+    paywallPromptOutsideClickFrame = null;
 
     constructor() {
         super(...arguments);
@@ -35,6 +39,11 @@ export default class EditorPostPreviewModal extends Component {
         this.setPreviewAsOptions();
     }
 
+    willDestroy() {
+        super.willDestroy(...arguments);
+        this.hidePaywallPrompt();
+    }
+
     get selectedPreviewAsOption() {
         return this.previewAsOptions.find(option => option.value === this.previewAsSegment);
     }
@@ -46,6 +55,31 @@ export default class EditorPostPreviewModal extends Component {
         }
         // On email tab, only show if there's more than one option
         return this.previewAsOptions.length > 1;
+    }
+
+    get showMissingPaidPostPaywallWarning() {
+        const post = this.args.data.publishOptions.post;
+        const visibility = post.visibility || this.settings.defaultContentVisibility || 'public';
+        const lexical = post.lexicalScratch || post.lexical;
+
+        return this.previewFormat === 'email'
+            && this.previewAsSegment === 'free'
+            && visibility === 'paid'
+            && getPublicPreviewStatus(lexical) === 'none';
+    }
+
+    get shouldShowPaidPostPaywallPrompt() {
+        const post = this.args.data.publishOptions.post;
+        const visibility = post.visibility || this.settings.defaultContentVisibility || 'public';
+        const lexical = post.lexicalScratch || post.lexical;
+
+        return visibility === 'paid'
+            && getPublicPreviewStatus(lexical) === 'none'
+            && !this.args.data.isPublicPreviewGuidanceVisible;
+    }
+
+    get paywallPromptAccessLabel() {
+        return 'Paid-members only';
     }
 
     get skipAnimation() {
@@ -111,6 +145,54 @@ export default class EditorPostPreviewModal extends Component {
     @action
     changePreviewAsOption(option) {
         this.changePreviewAsSegment(option.value);
+    }
+
+    @action
+    publish(event) {
+        event?.preventDefault();
+
+        if (!this.shouldShowPaidPostPaywallPrompt) {
+            return this.args.data.togglePreviewPublish(event);
+        }
+
+        this.isPaidPostPaywallPromptVisible = true;
+        this.paywallPromptOutsideClickFrame = requestAnimationFrame(() => {
+            this.paywallPromptOutsideClickFrame = null;
+            if (this.isPaidPostPaywallPromptVisible) {
+                document.addEventListener('mousedown', this.handlePaywallPromptOutsideClick, true);
+            }
+        });
+    }
+
+    @action
+    showPaywallGuidance(close) {
+        this.hidePaywallPrompt();
+        close({afterTask: 'showPublicPreviewGuidanceTask'});
+    }
+
+    @action
+    continueFromPaywallPrompt() {
+        this.hidePaywallPrompt();
+        return this.args.data.togglePreviewPublish(null, {skipPaywallPrompt: true});
+    }
+
+    @action
+    handlePaywallPromptOutsideClick(event) {
+        if (event.target instanceof Element && event.target.closest('[data-test-preview-paid-post-paywall-prompt]')) {
+            return;
+        }
+
+        this.hidePaywallPrompt();
+    }
+
+    hidePaywallPrompt() {
+        this.isPaidPostPaywallPromptVisible = false;
+        document.removeEventListener('mousedown', this.handlePaywallPromptOutsideClick, true);
+
+        if (this.paywallPromptOutsideClickFrame !== null) {
+            cancelAnimationFrame(this.paywallPromptOutsideClickFrame);
+            this.paywallPromptOutsideClickFrame = null;
+        }
     }
 
     @action

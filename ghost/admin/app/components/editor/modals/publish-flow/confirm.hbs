@@ -2,55 +2,95 @@
     <div class="green">Ready, set, publish.</div>
     <div>Share it with the world.</div>
 </div>
-<p class="gh-publish-confirmation" data-test-text="confirm-details">
-    {{#if @publishOptions.isScheduled}}
-        {{#let (moment-site-tz @publishOptions.scheduledAtUTC) as |scheduledAt|}}
-            On
-            <strong>
-                {{moment-format scheduledAt "D MMM YYYY"}}
-                at
-                {{moment-format scheduledAt "HH:mm"}}
-            </strong>
-            your
-        {{/let}}
-    {{else}}
-        Your
-    {{/if}}
+<div class="gh-publish-confirmation" data-test-text="confirm-details">
+    <p class="gh-publish-confirmation-intro">
+        {{#if @publishOptions.isScheduled}}
+            {{#let (moment-site-tz @publishOptions.scheduledAtUTC) as |scheduledAt|}}
+                On <strong>{{moment-format scheduledAt "D MMM YYYY"}} at {{moment-format scheduledAt "HH:mm"}}</strong>, your {{this.postAccessDescription}} will be:
+            {{/let}}
+        {{else}}
+            Your {{this.postAccessDescription}} will be:
+        {{/if}}
+    </p>
 
-    {{@publishOptions.post.displayName}}
+    <ul class="gh-publish-confirmation-list">
+        {{#if this.willPublish}}
+            <li>Published on your site.</li>
+        {{/if}}
 
-    {{#if this.willPublish}}
-        will be published on your site{{#if this.willEmail}}, and delivered to{{else}}.{{/if}}
-    {{/if}}
-
-    {{#if this.willEmail}}
-        {{#unless this.willPublish}}
-            will be delivered to
-        {{/unless}}
-
-        {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
-            <strong>
-                {{if (eq @recipientType "all") "all"}}
-
-                {{format-number countFetcher.count}}
-
-                {{!-- @recipientType = none/free/paid/all/specific --}}
-                {{if (not-eq @recipientType "all") @recipientType}}
-            </strong>
-
-            {{#if @publishOptions.onlyDefaultNewsletter}}
-                <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>{{#if this.willPublish}}.{{else}},{{/if}}
-            {{else}}
-                <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>
-                of <strong>{{@publishOptions.newsletter.name}}</strong>{{#if this.willPublish}}.{{else}},{{/if}}
-            {{/if}}
-        {{/let}}
+        {{#if this.willEmail}}
+            {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
+                <li>
+                    Emailed to
+                    <strong>
+                        {{if (eq @recipientType "all") "all"}}
+                        {{format-number countFetcher.count}}
+                        {{!-- @recipientType = none/free/paid/all/specific --}}
+                        {{if (not-eq @recipientType "all") @recipientType}}
+                        {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                    </strong>{{#unless @publishOptions.onlyDefaultNewsletter}}
+                        of {{@publishOptions.newsletter.name~}}
+                    {{/unless}}.
+                </li>
+            {{/let}}
+        {{/if}}
 
         {{#unless this.willPublish}}
-            and will <strong>not</strong> be published on your site.
+            <li><strong>Not</strong> published on your site.</li>
         {{/unless}}
-    {{/if}}
-</p>
+
+        {{#if this.publicPreviewPaywallRecipientFilter}}
+            {{#let (members-count-fetcher query=(hash filter=this.publicPreviewPaywallRecipientFilter)) as |countFetcher|}}
+                {{#if countFetcher.count}}
+                    <li data-test-public-preview-confirm-summary>
+                        <strong>
+                            {{format-number countFetcher.count}}
+                            {{#if (eq @publishOptions.post.visibility "paid")}}
+                                {{gh-pluralize countFetcher.count "free subscriber" without-count=true}}
+                            {{else}}
+                                {{gh-pluralize countFetcher.count "subscriber" without-count=true}} without access
+                            {{/if}}
+                        </strong>
+                        {{#if (eq @publishOptions.post.visibility "paid")}}
+                            of {{@publishOptions.newsletter.name}} will see a public preview and a paywall in their email.
+                        {{else}}
+                            will see a paywall in their email,
+                            encouraging them to join an eligible tier.
+                        {{/if}}
+                    </li>
+
+                    {{#if this.hasPublicPreviewWebPaywall}}
+                        <li data-test-public-preview-confirm-web-summary>
+                            Visitors without access will see the same public preview and paywall on your site.
+                        </li>
+                    {{/if}}
+                {{else if this.hasPublicPreviewWebPaywall}}
+                    <li data-test-public-preview-confirm-summary>
+                        Visitors without access will see a paywall on your site,
+                        {{#if (eq @publishOptions.post.visibility "paid")}}
+                            encouraging them to become paid members.
+                        {{else if (eq @publishOptions.post.visibility "tiers")}}
+                            encouraging them to join an eligible tier.
+                        {{else}}
+                            encouraging them to become members.
+                        {{/if}}
+                    </li>
+                {{/if}}
+            {{/let}}
+        {{else if this.hasPublicPreviewWebPaywall}}
+            <li data-test-public-preview-confirm-summary>
+                Visitors without access will see a paywall on your site,
+                {{#if (eq @publishOptions.post.visibility "paid")}}
+                    encouraging them to become paid members.
+                {{else if (eq @publishOptions.post.visibility "tiers")}}
+                    encouraging them to join an eligible tier.
+                {{else}}
+                    encouraging them to become members.
+                {{/if}}
+            </li>
+        {{/if}}
+    </ul>
+</div>
 
 {{#if this.errorMessage}}
     <p class="error gh-box gh-box-error mt3 mb3" data-test-confirm-error>

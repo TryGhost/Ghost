@@ -38,6 +38,7 @@
         {{else if this.isConfirming}}
             <Editor::Modals::PublishFlow::Confirm
                 @publishOptions={{@data.publishOptions}}
+                @publicPreviewStatus={{@data.publicPreviewStatus}}
                 @recipientType={{this.recipientType}}
                 @saveTask={{this.saveTask}}
                 @setCompleted={{this.setCompleted}}
@@ -47,6 +48,7 @@
         {{else}}
             <Editor::Modals::PublishFlow::Options
                 @publishOptions={{@data.publishOptions}}
+                @publicPreviewStatus={{@data.publicPreviewStatus}}
                 @recipientType={{this.recipientType}}
                 @confirm={{this.toggleConfirm}}
                 @close={{@close}}

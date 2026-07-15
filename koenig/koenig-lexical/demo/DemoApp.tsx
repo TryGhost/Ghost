@@ -170,6 +170,8 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
 function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
     const [searchParams, setSearchParams] = useSearchParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [publicPreviewTiers, setPublicPreviewTiers] = useState([]);
+    const [publicPreviewVisibility, setPublicPreviewVisibility] = useState('public');
     const [sidebarView, setSidebarView] = useState('json');
     const {snippets, createSnippet, deleteSnippet} = useSnippets();
 
@@ -307,6 +309,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
 
     const showTitle = !isMultiplayer && !['basic', 'minimal', 'email'].includes(editorType);
     const isEmailEditor = editorType === 'email';
+    const showPublicPreviewAccess = searchParams.get('publicPreview') === 'true';
 
     const cardConfig = {
         ...defaultCardConfig,
@@ -320,6 +323,20 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         },
         searchLinks: searchParams.get('searchLinks') === 'false' ? undefined : defaultCardConfig.searchLinks,
         stripeEnabled: searchParams.get('stripe') === 'false' ? false : defaultCardConfig.stripeEnabled,
+        publicPreview: showPublicPreviewAccess ? {
+            canChangeAccess: true,
+            fetchTiers: () => Promise.resolve([
+                {active: true, id: 'supporter', name: 'Supporter', slug: 'supporter'},
+                {active: true, id: 'patron', name: 'Patron', slug: 'patron'}
+            ]),
+            onChange: ({visibility, tiers = []}) => {
+                setPublicPreviewTiers(tiers);
+                setPublicPreviewVisibility(visibility);
+            },
+            paidAccessEnabled: searchParams.get('stripe') !== 'false',
+            tiers: publicPreviewTiers,
+            visibility: publicPreviewVisibility
+        } : undefined,
         deprecated: {
             headerV1: hideDeprecatedCardInMenu(searchParams),
             emailCta: hideDeprecatedCardInMenu(searchParams)

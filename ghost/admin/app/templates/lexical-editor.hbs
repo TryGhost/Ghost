@@ -14,6 +14,8 @@
                     @beforePublish={{perform this.beforeSaveTask}}
                     @afterPublish={{this.afterSave}}
                     @saveTask={{this.saveTask}}
+                    @showPublicPreviewGuidance={{this.showPublicPreviewGuidance}}
+                    @isPublicPreviewGuidanceVisible={{this.shouldShowPublicPreviewGuidance}}
                     as |publishManagement|
                 >
                     <div class="flex items-center pe-auto h-100 gap-2">
@@ -56,6 +58,58 @@
                 </Editor::PublishManagement>
             </header>
 
+            <div
+                class="gh-editor-public-preview-tip {{if this.shouldShowPublicPreviewGuidance "is-visible"}}"
+                role="status"
+                aria-atomic="true"
+                data-test-public-preview-tip
+                {{did-insert this.registerPublicPreviewGuidance}}
+                {{will-destroy this.unregisterPublicPreviewGuidance}}
+            >
+                <div class="gh-editor-public-preview-tip-visual" aria-hidden="true">
+                    <div class="gh-editor-public-preview-tip-scene">
+                        <div class="gh-editor-public-preview-tip-sheet">
+                            <span class="gh-editor-public-preview-tip-line title"></span>
+                            <span class="gh-editor-public-preview-tip-line"></span>
+                            <span class="gh-editor-public-preview-tip-line short"></span>
+                            <span class="gh-editor-public-preview-tip-insertion">
+                                <span class="gh-editor-public-preview-tip-command">
+                                    <span class="gh-editor-public-preview-tip-command-text">/preview</span>
+                                    <span class="gh-editor-public-preview-tip-cursor"></span>
+                                </span>
+                                <span class="gh-editor-public-preview-tip-divider">
+                                    <span class="gh-editor-public-preview-tip-divider-arrow">↓</span>
+                                    <span>
+                                        {{#if (eq (or this.post.visibility this.settings.defaultContentVisibility) "paid")}}
+                                            Paid-members only
+                                        {{else}}
+                                            Members only
+                                        {{/if}}
+                                    </span>
+                                    <span class="gh-editor-public-preview-tip-divider-arrow">↓</span>
+                                </span>
+                            </span>
+                            <span class="gh-editor-public-preview-tip-line restricted"></span>
+                            <span class="gh-editor-public-preview-tip-line short restricted"></span>
+                        </div>
+                    </div>
+                </div>
+                <button
+                    class="gh-editor-public-preview-tip-dismiss"
+                    type="button"
+                    aria-label="Dismiss paywall suggestion"
+                    {{on "click" this.dismissPublicPreviewGuidance}}
+                >
+                    {{svg-jar "close"}}
+                </button>
+                <div class="gh-editor-public-preview-tip-body">
+                    <strong class="gh-editor-public-preview-tip-title">Add a public preview</strong>
+                    <p>
+                        Click where the preview should end and type <strong>/preview</strong>. Everything above stays free to read — everything below is for paid members.
+                    </p>
+                </div>
+            </div>
+
             {{!--
                 gh-koenig-editor acts as a wrapper around the title input and
                 koenig editor canvas to support Ghost-specific editor behaviour
@@ -80,6 +134,8 @@
                 @scrollContainerSelector=".gh-koenig-editor"
 
                 @onEditorCreated={{this.setKoenigEditor}}
+                @registerPublicPreviewGuidanceContent={{this.registerPublicPreviewGuidanceContent}}
+                @unregisterPublicPreviewGuidanceContent={{this.unregisterPublicPreviewGuidanceContent}}
                 @updateWordCount={{this.updateWordCount}}
                 @updatePostTkCount={{this.updatePostTkCount}}
                 @updateFeatureImageTkCount={{this.updateFeatureImageTkCount}}
@@ -93,6 +149,11 @@
                 @clearFeatureImage={{this.clearFeatureImage}}
                 @cardOptions={{hash
                     post=this.post
+                    postVisibility=(or this.post.visibility this.settings.defaultContentVisibility)
+                    postTiers=this.post.tiers
+                    postId=this.post.id
+                    canChangePostAccess=this.canChangePostAccess
+                    updatePublicPreviewAccess=this.updatePublicPreviewAccess
                     snippets=this.snippets
                     deleteSnippet=(if this.canManageSnippets this.confirmDeleteSnippet)
                     createSnippet=(if this.canManageSnippets this.createSnippet)
@@ -118,6 +179,7 @@
                     @beforePublish={{perform this.beforeSaveTask}}
                     @afterPublish={{this.afterSave}}
                     @saveTask={{this.saveTask}}
+                    @isPublicPreviewGuidanceVisible={{this.shouldShowPublicPreviewGuidance}}
                     as |publishManagement|
                 >
                     <div class="gh-editor-wordcount">

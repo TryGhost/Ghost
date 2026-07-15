@@ -165,7 +165,12 @@ export default class LexicalEditorController extends Controller {
     @inject config;
 
     @tracked excerptErrorMessage = '';
+    @tracked publicPreviewGuidancePostIds = new Set();
 
+    publicPreviewGuidanceElement = null;
+    publicPreviewGuidanceContentElement = null;
+    publicPreviewGuidancePositionFrame = null;
+    publicPreviewGuidanceResizeObserver = null;
     /* public properties -----------------------------------------------------*/
 
     shouldFocusTitle = false;
@@ -271,6 +276,17 @@ export default class LexicalEditorController extends Controller {
         return false;
     }
 
+    @computed('session.user.{isOwnerOnly,isAdminOnly,isEitherEditor}')
+    get canChangePostAccess() {
+        const {user} = this.session;
+        return user.isOwnerOnly || user.isAdminOnly || user.isEitherEditor;
+    }
+
+    @computed('post.id', 'publicPreviewGuidancePostIds')
+    get shouldShowPublicPreviewGuidance() {
+        return this.publicPreviewGuidancePostIds.has(this.post.id);
+    }
+
     @computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning')
     get _autosaveRunning() {
         let autosave = this.get('_autosaveTask.isRunning');
@@ -322,6 +338,137 @@ export default class LexicalEditorController extends Controller {
         this._autosaveTask.perform();
         // force save at 60 seconds
         this._timedSaveTask.perform();
+    }
+
+    @action
+    async updatePublicPreviewAccess({visibility, tiers = []}) {
+        const previousVisibility = this.post.visibility;
+        const previousTiers = this.post.tiers;
+
+        this.post.set('visibility', visibility);
+        this.post.set('tiers', visibility === 'tiers' ? tiers : []);
+
+        try {
+            await this.post.validate({property: 'visibility'});
+            if (visibility === 'tiers') {
+                await this.post.validate({property: 'tiers'});
+            }
+
+            if (this.post.isDraft) {
+                await this.autosaveTask.perform();
+            }
+        } catch (error) {
+            this.post.set('visibility', previousVisibility);
+            this.post.set('tiers', previousTiers);
+
+            if (error === undefined) {
+                const validationMessage = this.post.errors.messages[0] || 'Choose a valid post access level.';
+                throw new Error(validationMessage);
+            }
+
+            throw error;
+        }
+    }
+
+    @action
+    dismissPublicPreviewGuidance() {
+        const visiblePostIds = new Set(this.publicPreviewGuidancePostIds);
+        visiblePostIds.delete(this.post.id);
+        this.publicPreviewGuidancePostIds = visiblePostIds;
+    }
+
+    @action
+    showPublicPreviewGuidance() {
+        this.publicPreviewGuidancePostIds = new Set([
+            ...this.publicPreviewGuidancePostIds,
+            this.post.id
+        ]);
+        this.positionPublicPreviewGuidance();
+        this.schedulePublicPreviewGuidancePosition();
+    }
+
+    @action
+    registerPublicPreviewGuidanceContent(element) {
+        this.publicPreviewGuidanceContentElement = element;
+        this.publicPreviewGuidanceResizeObserver?.observe(element);
+        this.schedulePublicPreviewGuidancePosition();
+    }
+
+    @action
+    unregisterPublicPreviewGuidanceContent(element) {
+        if (this.publicPreviewGuidanceContentElement === element) {
+            this.publicPreviewGuidanceResizeObserver?.unobserve(element);
+            this.publicPreviewGuidanceContentElement = null;
+        }
+    }
+
+    @action
+    registerPublicPreviewGuidance(element) {
+        this.publicPreviewGuidanceElement = element;
+
+        if (typeof ResizeObserver !== 'undefined') {
+            this.publicPreviewGuidanceResizeObserver = new ResizeObserver(() => {
+                this.schedulePublicPreviewGuidancePosition();
+            });
+
+            const editor = element.closest('.gh-editor');
+            if (editor) {
+                this.publicPreviewGuidanceResizeObserver.observe(editor);
+            }
+        }
+
+        window.addEventListener('resize', this.schedulePublicPreviewGuidancePosition);
+        this.schedulePublicPreviewGuidancePosition();
+    }
+
+    @action
+    unregisterPublicPreviewGuidance() {
+        window.removeEventListener('resize', this.schedulePublicPreviewGuidancePosition);
+        this.publicPreviewGuidanceResizeObserver?.disconnect();
+        this.publicPreviewGuidanceResizeObserver = null;
+        this.publicPreviewGuidanceContentElement = null;
+        this.publicPreviewGuidanceElement = null;
+
+        if (this.publicPreviewGuidancePositionFrame) {
+            cancelAnimationFrame(this.publicPreviewGuidancePositionFrame);
+            this.publicPreviewGuidancePositionFrame = null;
+        }
+    }
+
+    @action
+    schedulePublicPreviewGuidancePosition() {
+        if (this.publicPreviewGuidancePositionFrame) {
+            return;
+        }
+
+        this.publicPreviewGuidancePositionFrame = requestAnimationFrame(() => {
+            this.publicPreviewGuidancePositionFrame = null;
+            this.positionPublicPreviewGuidance();
+        });
+    }
+
+    positionPublicPreviewGuidance() {
+        const element = this.publicPreviewGuidanceElement || document.querySelector('.gh-editor-public-preview-tip');
+        const contentElement = this.publicPreviewGuidanceContentElement;
+
+        if (!element || !contentElement) {
+            element?.style.removeProperty('width');
+            element?.style.removeProperty('left');
+            return;
+        }
+
+        this.publicPreviewGuidanceElement = element;
+
+        const contentBounds = contentElement.getBoundingClientRect();
+        const contentGutter = 24;
+        const viewportGutter = 24;
+        const maximumCardWidth = 280;
+        const availableCardWidth = contentBounds.left - contentGutter - viewportGutter;
+        const cardWidth = Math.max(0, Math.min(maximumCardWidth, availableCardWidth));
+        const left = contentBounds.left - cardWidth - contentGutter;
+
+        element.style.setProperty('width', `${Math.round(cardWidth)}px`);
+        element.style.setProperty('left', `${Math.round(left)}px`);
     }
 
     @action
@@ -1320,6 +1467,7 @@ export default class LexicalEditorController extends Controller {
 
     willDestroy() {
         super.willDestroy(...arguments);
+        this.unregisterPublicPreviewGuidance();
         this._unregisterUnsavedChanges?.();
         this._unregisterUnsavedChanges = null;
         window.onbeforeunload = null;
