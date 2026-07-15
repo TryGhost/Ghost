@@ -26,7 +26,7 @@ describe("SEO meta settings", () => {
         await toggle.click();
         await section.getByRole("button", { name: "Save" }).click();
 
-        await expect.poll(() => settingsApi.lastRequest).toEqual({ settings: [{ key: "llms_enabled", value: false }] });
+        await expect(settingsApi).toHaveEditedSettings([{ key: "llms_enabled", value: false }]);
     });
 
     it("re-enables persisted-disabled LLM structured data", async () => {
@@ -43,7 +43,7 @@ describe("SEO meta settings", () => {
         await toggle.click();
         await section.getByRole("button", { name: "Save" }).click();
 
-        await expect.poll(() => settingsApi.lastRequest).toEqual({ settings: [{ key: "llms_enabled", value: true }] });
+        await expect(settingsApi).toHaveEditedSettings([{ key: "llms_enabled", value: true }]);
     });
 
     it("hides LLM structured data when the feature flag is off", async () => {
@@ -66,12 +66,10 @@ describe("SEO meta settings", () => {
         await section.getByRole("button", { name: "Save" }).click();
 
         await expect.element(section.getByLabelText("Meta title")).toHaveValue("Alternative title");
-        await expect.poll(() => settingsApi.lastRequest).toEqual({
-            settings: [
-                { key: "meta_title", value: "Alternative title" },
-                { key: "meta_description", value: "Alternative description" },
-            ],
-        });
+        await expect(settingsApi).toHaveEditedSettings([
+            { key: "meta_title", value: "Alternative title" },
+            { key: "meta_description", value: "Alternative description" },
+        ]);
     });
 
     it("edits the Facebook card", async () => {
@@ -88,13 +86,11 @@ describe("SEO meta settings", () => {
         await section.getByLabelText("Facebook description").fill("Facescription");
         await section.getByRole("button", { name: "Save" }).click();
 
-        await expect.poll(() => settingsApi.lastRequest).toEqual({
-            settings: [
-                { key: "og_image", value: "http://example.com/image.png" },
-                { key: "og_title", value: "Facetitle" },
-                { key: "og_description", value: "Facescription" },
-            ],
-        });
+        await expect(settingsApi).toHaveEditedSettings([
+            { key: "og_image", value: "http://example.com/image.png" },
+            { key: "og_title", value: "Facetitle" },
+            { key: "og_description", value: "Facescription" },
+        ]);
     });
 
     it("edits the X card", async () => {
@@ -111,13 +107,11 @@ describe("SEO meta settings", () => {
         await section.getByLabelText("X description").fill("Twitscription");
         await section.getByRole("button", { name: "Save" }).click();
 
-        await expect.poll(() => settingsApi.lastRequest).toEqual({
-            settings: [
-                { key: "twitter_image", value: "http://example.com/image.png" },
-                { key: "twitter_title", value: "Twititle" },
-                { key: "twitter_description", value: "Twitscription" },
-            ],
-        });
+        await expect(settingsApi).toHaveEditedSettings([
+            { key: "twitter_image", value: "http://example.com/image.png" },
+            { key: "twitter_title", value: "Twititle" },
+            { key: "twitter_description", value: "Twitscription" },
+        ]);
     });
 
     it("shows an error when an image has an unsupported file type", async () => {
@@ -162,17 +156,15 @@ describe("SEO meta settings", () => {
         await expect.element(section.getByLabelText("Facebook title")).toHaveValue("FB Title");
         await section.getByRole("tab", { name: "X card" }).click();
         await expect.element(section.getByLabelText("X title")).toHaveValue("X Title");
-        await expect.poll(() => settingsApi.lastRequest).toEqual({
-            settings: [
-                { key: "meta_title", value: "SEO Title" },
-                { key: "meta_description", value: "SEO Description" },
-                { key: "og_image", value: "http://example.com/facebook.png" },
-                { key: "og_title", value: "FB Title" },
-                { key: "og_description", value: "FB Description" },
-                { key: "twitter_title", value: "X Title" },
-                { key: "twitter_description", value: "X Description" },
-            ],
-        });
+        await expect(settingsApi).toHaveEditedSettings([
+            { key: "meta_title", value: "SEO Title" },
+            { key: "meta_description", value: "SEO Description" },
+            { key: "og_image", value: "http://example.com/facebook.png" },
+            { key: "og_title", value: "FB Title" },
+            { key: "og_description", value: "FB Description" },
+            { key: "twitter_title", value: "X Title" },
+            { key: "twitter_description", value: "X Description" },
+        ]);
     });
 
     it("navigates between card tabs", async () => {
@@ -213,6 +205,6 @@ describe("SEO meta settings", () => {
         await section.getByTestId("image-delete-button").click();
         await section.getByRole("button", { name: "Save" }).click();
 
-        await expect.poll(() => settingsApi.lastRequest).toEqual({ settings: [{ key: "og_image", value: "" }] });
+        await expect(settingsApi).toHaveEditedSettings([{ key: "og_image", value: "" }]);
     });
 });

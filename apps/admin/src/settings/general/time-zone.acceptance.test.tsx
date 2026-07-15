@@ -16,8 +16,6 @@ describe("Time zone settings", () => {
         await settingsScreen.timezone().getByRole("button", { name: "Save" }).click();
 
         await expect.element(select).toHaveTextContent("Alaska");
-        await expect.poll(() => settingsApi.lastRequest).toEqual({
-            settings: [{ key: "timezone", value: "America/Anchorage" }],
-        });
+        await expect(settingsApi).toHaveEditedSettings([{ key: "timezone", value: "America/Anchorage" }]);
     });
 });

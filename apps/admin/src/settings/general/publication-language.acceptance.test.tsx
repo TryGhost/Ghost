@@ -16,7 +16,7 @@ describe("Publication language settings", () => {
         await settingsScreen.publicationLanguage().getByRole("button", { name: "Save" }).click();
 
         await expect.element(select).toHaveTextContent("French (fr)");
-        await expect.poll(() => settingsApi.lastRequest).toEqual({ settings: [{ key: "locale", value: "fr" }] });
+        await expect(settingsApi).toHaveEditedSettings([{ key: "locale", value: "fr" }]);
     });
 
     it("enters a custom locale via the Other option", async () => {
@@ -29,7 +29,7 @@ describe("Publication language settings", () => {
         await settingsScreen.publicationLanguage().getByLabelText("Site language").fill("en-GB");
         await settingsScreen.publicationLanguage().getByRole("button", { name: "Save" }).click();
 
-        await expect.poll(() => settingsApi.lastRequest).toEqual({ settings: [{ key: "locale", value: "en-GB" }] });
+        await expect(settingsApi).toHaveEditedSettings([{ key: "locale", value: "en-GB" }]);
     });
 
     it("shows a validation error for an invalid custom locale", async () => {

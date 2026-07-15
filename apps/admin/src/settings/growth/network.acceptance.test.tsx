@@ -45,9 +45,7 @@ describe("Network settings", () => {
         await expect(section.getByText("You need to configure a supported custom domain to use this feature.")).toHaveCount(0);
 
         await toggle.click();
-        await expect.poll(() => settingsApi.lastRequest).toEqual({
-            settings: [{ key: "social_web", value: false }],
-        });
+        await expect(settingsApi).toHaveEditedSettings([{ key: "social_web", value: false }]);
     });
 
     it("can be turned on", async () => {
@@ -64,8 +62,6 @@ describe("Network settings", () => {
         await expect(section.getByText("You need to configure a supported custom domain to use this feature.")).toHaveCount(0);
 
         await toggle.click();
-        await expect.poll(() => settingsApi.lastRequest).toEqual({
-            settings: [{ key: "social_web", value: true }],
-        });
+        await expect(settingsApi).toHaveEditedSettings([{ key: "social_web", value: true }]);
     });
 });

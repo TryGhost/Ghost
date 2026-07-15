@@ -21,12 +21,10 @@ describe("Title and description settings", () => {
         await expect(section.getByLabelText("Site title")).toHaveCount(0);
         await expect.element(section.getByText("New Site Title", { exact: true })).toBeVisible();
         await expect.element(section.getByText("New Site Description", { exact: true })).toBeVisible();
-        await expect.poll(() => settingsApi.lastRequest).toEqual({
-            settings: [
-                { key: "title", value: "New Site Title" },
-                { key: "description", value: "New Site Description" },
-            ],
-        });
+        await expect(settingsApi).toHaveEditedSettings([
+            { key: "title", value: "New Site Title" },
+            { key: "description", value: "New Site Description" },
+        ]);
     });
 
     it("validates the title without saving", async () => {

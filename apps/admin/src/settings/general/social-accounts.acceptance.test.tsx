@@ -25,10 +25,6 @@ function withoutSettings(keys: string[]): SettingsResponse {
     return response;
 }
 
-function sortSettings<T extends {key: string}>(settings: T[]): T[] {
-    return [...settings].sort((left, right) => left.key.localeCompare(right.key));
-}
-
 describe("Social account settings", () => {
     it("edits all publication social URLs", async () => {
         fakeSettingsScreens();
@@ -47,8 +43,8 @@ describe("Social account settings", () => {
         for (const field of editedSocialSettings) {
             await expect.element(section.getByLabelText(field.label)).toHaveValue(field.displayValue);
         }
-        await expect.poll(() => sortSettings(settingsApi.lastRequest?.settings ?? [])).toEqual(
-            sortSettings(editedSocialSettings.map(({ key, value }) => ({ key, value }))),
+        await expect(settingsApi).toHaveEditedSettings(
+            editedSocialSettings.map(({ key, value }) => ({ key, value })),
         );
     });
 
@@ -189,7 +185,7 @@ describe("Social account settings", () => {
         await section.getByLabelText("Facebook").fill("fb");
         await section.getByRole("button", { name: "Save" }).click();
 
-        await expect.poll(() => settingsApi.lastRequest).toEqual({ settings: [{ key: "facebook", value: "fb" }] });
+        await expect(settingsApi).toHaveEditedSettings([{ key: "facebook", value: "fb" }]);
     });
 
     it("blocks a first invalid edit when another field is dirty", async () => {
