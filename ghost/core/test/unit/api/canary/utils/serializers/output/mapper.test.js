@@ -161,6 +161,41 @@ describe('Unit: utils/serializers/output/mappers', function () {
             assert.equal(result.primary_tag, undefined);
             assert.equal(result.primary_author, undefined);
         });
+
+        it('strips columns force-loaded for the URL after the URL is computed', async function () {
+            const frame = {
+                original: {
+                    context: {}
+                },
+                options: {
+                    columns: ['url', 'id', 'status', 'slug'],
+                    context: {}
+                },
+                // input serializer recorded: caller asked for ?fields=url,id —
+                // status/slug were forced for the URL computation
+                forcedUrlColumns: ['status', 'slug'],
+                apiType: 'admin'
+            };
+
+            let statusPresentAtUrlTime = false;
+            urlUtil.forPost.callsFake((id, attrs) => {
+                statusPresentAtUrlTime = attrs.status !== undefined;
+                return attrs;
+            });
+
+            const post = createJsonModel(testUtils.DataGenerator.forKnex.createPost({
+                id: 'id1',
+                status: 'published',
+                slug: 'my-post'
+            }));
+
+            const result = await mappers.posts(post, frame);
+
+            assert.ok(statusPresentAtUrlTime, 'status must still be present when the URL is computed');
+            assert.equal(result.status, undefined);
+            assert.equal(result.slug, undefined);
+            assert.equal(result.id, 'id1');
+        });
     });
 
     describe('User Mapper', function () {

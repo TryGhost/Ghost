@@ -52,9 +52,9 @@ module.exports = async (model, frame, options = {}) => {
     const routerType = dbType === 'page' ? 'pages' : 'posts';
     url.forPost(model.id, jsonModel, frame, routerType);
 
-    // Relations the input serializer force-loaded for the URL computation
-    // (frame.forcedUrlRelations) were not requested by the caller — strip
-    // them now that the URL is built so the response shape matches the query.
+    // Force-loaded for the URL computation, not requested by the caller.
+    // Must run before clean.post so it drops the computed primary_tag/
+    // primary_author along with the relation.
     if (frame.forcedUrlRelations) {
         frame.forcedUrlRelations.forEach((relation) => {
             delete jsonModel[relation];
@@ -134,6 +134,13 @@ module.exports = async (model, frame, options = {}) => {
     delete jsonModel.posts_meta;
 
     clean.post(jsonModel, frame);
+
+    // Columns force-loaded for the URL computation, not requested by the caller.
+    if (frame.forcedUrlColumns) {
+        frame.forcedUrlColumns.forEach((column) => {
+            delete jsonModel[column];
+        });
+    }
 
     if (frame.options && frame.options.withRelated) {
         frame.options.withRelated.forEach((relation) => {
