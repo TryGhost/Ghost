@@ -33,7 +33,7 @@ class DynamicRoutingService {
     }
 
     /**
-     * Wire the storage-layer dependencies so the API surface (get, setFromFilePath,
+     * Wire the storage-layer dependencies so the API surface (upload, download,
      * getCurrentHash) works immediately after boot — even when the frontend is
      * disabled and `start()` is never called.
      *
@@ -98,7 +98,7 @@ class DynamicRoutingService {
             .digest('hex');
     }
 
-    async get() {
+    async download() {
         try {
             const settings = await this.store.get();
 
@@ -112,7 +112,7 @@ class DynamicRoutingService {
         }
     }
 
-    async setFromFilePath(filePath) {
+    async upload(filePath) {
         const parseYaml = require('./yaml-parser');
         const {parseRouteSettings} = require('./route-settings-parser');
         const urlService = require('../url');
