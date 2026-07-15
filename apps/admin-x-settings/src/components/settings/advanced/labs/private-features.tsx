@@ -79,6 +79,10 @@ const features: Feature[] = [{
     title: 'Member custom fields',
     description: 'Let admins create and manage custom field definitions for members',
     flag: 'membersCustomFields'
+}, {
+    title: 'Preview by tier',
+    description: 'Preview posts and emails as a member of a specific tier',
+    flag: 'previewByTier'
 }];
 
 const AlphaFeatures: React.FC = () => {

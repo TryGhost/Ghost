@@ -58,7 +58,8 @@ const PRIVATE_FEATURES = [
     'smarterCounts',
     'getHelperDeduplication',
     'memberDetailsReact',
-    'membersCustomFields'
+    'membersCustomFields',
+    'previewByTier'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
