@@ -127,6 +127,40 @@ describe('Unit: utils/serializers/output/mappers', function () {
             sinon.assert.notCalled(urlUtil.forTag);
             sinon.assert.calledOnce(urlUtil.forUser);
         });
+
+        it('strip runs before clean so computed primary_tag/primary_author do not leak', async function () {
+            // Post.toJSON attaches primary_tag/primary_author when tags/authors
+            // are loaded; clean.post only removes them when the relation key is
+            // absent, so the strip must run first.
+            cleanUtil.post.restore();
+
+            const frame = {
+                original: {
+                    context: {}
+                },
+                options: {
+                    withRelated: ['tags', 'authors'],
+                    context: {}
+                },
+                forcedUrlRelations: ['tags', 'authors'],
+                apiType: 'content'
+            };
+
+            const post = createJsonModel(testUtils.DataGenerator.forKnex.createPost({
+                id: 'id1',
+                tags: [{id: 'id3', visibility: 'public'}],
+                authors: [{id: 'id4', name: 'Ghosty'}],
+                primary_tag: {id: 'id3', visibility: 'public'},
+                primary_author: {id: 'id4', name: 'Ghosty'}
+            }));
+
+            const result = await mappers.posts(post, frame);
+
+            assert.equal(result.tags, undefined);
+            assert.equal(result.authors, undefined);
+            assert.equal(result.primary_tag, undefined);
+            assert.equal(result.primary_author, undefined);
+        });
     });
 
     describe('User Mapper', function () {
