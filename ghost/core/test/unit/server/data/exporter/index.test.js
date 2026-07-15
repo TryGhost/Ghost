@@ -170,6 +170,13 @@ describe('Exporter', function () {
             sinon.assert.calledOnce(loggingStub);
             assert.match(result, /^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
         });
+
+        it('should return the base filename if path separator is present', async function () {
+            const filename = '../../backup';
+            const result = await exporter.fileName({filename});
+            assertExists(result);
+            assert.equal(result, 'backup.json');
+        });
     });
 
     describe('Export table allowlists', function () {
