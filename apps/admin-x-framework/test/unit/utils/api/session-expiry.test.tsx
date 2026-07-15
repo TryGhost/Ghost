@@ -71,6 +71,7 @@ describe('session expiry handling', () => {
         delete (window as any).location;
         (window as any).location = {
             href: 'http://localhost:3000/ghost/',
+            hash: '#/posts',
             origin: 'http://localhost:3000',
             pathname: '/ghost/',
             replace: vi.fn()
@@ -117,6 +118,24 @@ describe('session expiry handling', () => {
         }
 
         expect(window.location.replace).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+        '',
+        '#/',
+        '#/signin',
+        '#/signin/verify',
+        '#/signup/invitation-token',
+        '#/setup/one'
+    ])('does not redirect from unauthenticated Admin route %s', async (hash) => {
+        (window as any).location.hash = hash;
+        const {useFetchApi, SessionExpiredError} = await loadModules();
+        const {result} = renderHook(() => useFetchApi());
+
+        await expect(result.current('http://localhost:3000/ghost/api/admin/posts/', {retry: false}))
+            .rejects.toBeInstanceOf(SessionExpiredError);
+
+        expect(window.location.replace).not.toHaveBeenCalled();
     });
 
     it('does not redirect when the session endpoint returns 401', async () => {

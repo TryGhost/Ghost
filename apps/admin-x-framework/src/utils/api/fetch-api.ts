@@ -52,11 +52,21 @@ const xhrToFetchResponse = (xhr: Readonly<XMLHttpRequest>): Response => (
 
 const GHOST_API_REQUEST = /\/ghost\/api\//;
 const SESSION_API_REQUEST = /\/ghost\/api\/admin\/session([/?#]|$)/;
+const UNAUTHENTICATED_ADMIN_ROUTE = /^#\/(?:setup|signin|signup)(?:[/?]|$)/;
 
 let sessionExpiryHandled = false;
 
-// A 401 outside the session endpoint means the cookie session expired. Mirrors
-// Ember's handling: replace to the admin root, which reboots Admin onto signin.
+const isUnauthenticatedAdminRoute = (adminRoot: string) => {
+    return window.location.pathname === adminRoot && (
+        !window.location.hash
+        || window.location.hash === '#/'
+        || UNAUTHENTICATED_ADMIN_ROUTE.test(window.location.hash)
+    );
+};
+
+// An unauthorized Ghost API response outside the session endpoint means the
+// cookie session expired. Replace to the admin root unless Ember is already
+// booting or displaying an unauthenticated route.
 const redirectOnSessionExpiry = (endpoint: string | URL) => {
     const url = endpoint.toString();
 
@@ -64,9 +74,11 @@ const redirectOnSessionExpiry = (endpoint: string | URL) => {
         return false;
     }
 
-    if (!sessionExpiryHandled) {
+    const {adminRoot} = getGhostPaths();
+
+    if (!sessionExpiryHandled && !isUnauthenticatedAdminRoute(adminRoot)) {
         sessionExpiryHandled = true;
-        window.location.replace(getGhostPaths().adminRoot);
+        window.location.replace(adminRoot);
     }
 
     return true;
