@@ -1,6 +1,22 @@
+const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 const urlUtils = require('../../shared/url-utils');
 const {urlService} = require('../services/proxy');
 const {checks} = require('../services/data');
+
+// Canary: every serializer-fed path attaches `url`, so a post landing here
+// without one is an unknown producer worth finding before the lazy cutover.
+function warnMissingUrl(data) {
+    logging.warn(new errors.InternalServerError({
+        message: 'url helper fell back to the URL service for a post without a url',
+        code: 'URL_HELPER_MISSING_URL',
+        errorDetails: {
+            id: data.id,
+            slug: data.slug,
+            resourceKeys: Object.keys(data)
+        }
+    }));
+}
 
 function getUrl(data, absolute) {
     if (checks.isPost(data)) {
@@ -15,6 +31,8 @@ function getUrl(data, absolute) {
             }
             return absolute ? urlUtils.relativeToAbsolute(data.url) : urlUtils.absoluteToRelative(data.url);
         }
+
+        warnMissingUrl(data);
 
         /**
          * @NOTE
