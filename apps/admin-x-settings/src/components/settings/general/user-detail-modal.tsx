@@ -356,10 +356,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                         deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                                         editButtonClassName='md:invisible absolute -left-1 -top-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
                                         fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
-                                        fileUploadProps={{dragIndicatorClassName: 'rounded-full'}}
+                                        fileUploadProps={{dragIndicatorClassName: 'rounded-full', inputTestId: 'profile-image-upload'}}
                                         id='avatar'
                                         imageClassName='w-full h-full object-cover rounded-full shrink-0'
                                         imageContainerClassName='relative group bg-cover bg-center -ml-1 h-[80px] w-[80px] shrink-0'
+                                        imageTestId='profile-image-preview'
                                         imageURL={formState.profile_image ?? undefined}
                                         pintura={
                                             {
@@ -391,8 +392,10 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                         deleteButtonContent='Delete cover image'
                                         editButtonClassName={coverButtonClasses}
                                         fileUploadClassName={noCoverButtonClasses}
+                                        fileUploadProps={{inputTestId: 'cover-image-upload'}}
                                         id='cover-image'
                                         imageClassName='hidden'
+                                        imageTestId='cover-image-preview'
                                         imageURL={formState.cover_image || ''}
                                         pintura={
                                             {

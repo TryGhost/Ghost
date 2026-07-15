@@ -21,6 +21,8 @@ export {defaultThemesResponse, theme} from "./builders/theme";
 export type {Theme, ThemePackage, ThemesResponse} from "./builders/theme";
 export {post} from "./builders/post";
 export type {Post} from "./builders/post";
+export {staffInvite, staffRole, staffUser} from "./builders/staff-user";
+export type {StaffInvite, StaffRole, StaffRoleName, StaffUser} from "./builders/staff-user";
 export {changelogEntry} from "./builders/changelog";
 export type {ChangelogEntry} from "./builders/changelog";
 export {buildLexical, buildLexicalParagraph} from "./builders/lexical";

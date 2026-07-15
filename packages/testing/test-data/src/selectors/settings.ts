@@ -35,6 +35,9 @@ export const timezoneSelect = "timezone-select";
 export const seoTabView = "seo-tabview";
 export const selectOption = "select-option";
 export const toastError = "toast-error";
+export const toastSuccess = "toast-success";
+export const inviteUserModal = "invite-user-modal";
+export const limitModal = "limit-modal";
 
 // accessible names
 export const settingsSearchLabel = "Search";
