@@ -246,4 +246,142 @@ describe('AdapterManager', function () {
         const secondMailNewslettersAdapter = adapterManager.getAdapter('mail:newsletters');
         assert.equal(mailNewslettersAdapter, secondMailNewslettersAdapter);
     });
+
+    describe('init', function () {
+        // An adapter whose static `validate` records the config it was called
+        // with, and optionally throws — so tests can assert init's behaviour.
+        function makeValidatingAdapter(calls: object[], {shouldThrow = false} = {}) {
+            return class ValidatingAdapter extends BaseMailAdapter {
+                someMethod() {}
+                static validate(config: object) {
+                    calls.push(config);
+                    if (shouldThrow) {
+                        throw new Error('bad config');
+                    }
+                }
+            };
+        }
+
+        it('calls validate on a configured adapter and passes valid config through', function () {
+            const calls: object[] = [];
+            const loadAdapterFromPath = sinon.stub().returns(makeValidatingAdapter(calls));
+
+            const adapterManager = new AdapterManager({
+                loadAdapterFromPath,
+                pathsToAdapters: ['/path'],
+                config: makeConfig({mail: {active: 'custom', custom: {some: 'value'}}}),
+                baseClasses: {mail: BaseMailAdapter}
+            });
+
+            adapterManager.init();
+
+            assert.equal(calls.length, 1);
+            assert.deepEqual(calls[0], {some: 'value'});
+        });
+
+        it('is a no-op for an adapter without a validate static', function () {
+            const loadAdapterFromPath = sinon.stub().returns(CustomMailAdapter);
+
+            const adapterManager = new AdapterManager({
+                loadAdapterFromPath,
+                pathsToAdapters: ['/path'],
+                config: makeConfig({mail: {active: 'custom'}}),
+                baseClasses: {mail: BaseMailAdapter}
+            });
+
+            assert.doesNotThrow(() => adapterManager.init());
+        });
+
+        it('skips adapter types that are not configured', function () {
+            const loadAdapterFromPath = sinon.stub().throws(new Error('should not load'));
+
+            const adapterManager = new AdapterManager({
+                loadAdapterFromPath,
+                pathsToAdapters: ['/path'],
+                config: makeConfig({}), // no active adapter configured
+                baseClasses: {mail: BaseMailAdapter}
+            });
+
+            assert.doesNotThrow(() => adapterManager.init());
+            sinon.assert.notCalled(loadAdapterFromPath);
+        });
+
+        it('validates configured feature adapters', function () {
+            const calls: object[] = [];
+            const loadAdapterFromPath = sinon.stub().returns(makeValidatingAdapter(calls));
+
+            const adapterManager = new AdapterManager({
+                loadAdapterFromPath,
+                pathsToAdapters: ['/path'],
+                config: makeConfig({
+                    storage: {
+                        active: 'active-adapter',
+                        'active-adapter': {which: 'active'},
+                        media: {adapter: 'active-adapter', which: 'media'}
+                    }
+                }),
+                baseClasses: {storage: BaseMailAdapter}
+            });
+
+            adapterManager.init();
+
+            // Both the active adapter and the media feature (distinct merged
+            // config, with the `adapter` key stripped) validate.
+            assert.equal(calls.length, 2);
+            assert.deepEqual(calls, [
+                {which: 'active'},
+                {which: 'media'}
+            ]);
+        });
+
+        it('dedupes adapters resolving to the same class and config', function () {
+            const calls: object[] = [];
+            const loadAdapterFromPath = sinon.stub().returns(makeValidatingAdapter(calls));
+
+            const adapterManager = new AdapterManager({
+                loadAdapterFromPath,
+                pathsToAdapters: ['/path'],
+                config: makeConfig({
+                    storage: {
+                        active: 'the-adapter',
+                        // both features point at the active adapter (string form),
+                        // so all three resolve to the same class + config
+                        media: 'the-adapter',
+                        files: 'the-adapter',
+                        'the-adapter': {shared: 'config'}
+                    }
+                }),
+                baseClasses: {storage: BaseMailAdapter}
+            });
+
+            adapterManager.init();
+
+            assert.equal(calls.length, 1);
+            assert.deepEqual(calls[0], {shared: 'config'});
+        });
+
+        it('aggregates failures from multiple adapters into one error', function () {
+            const loadAdapterFromPath = sinon.stub();
+            loadAdapterFromPath.withArgs('/path/mail/bad-mail').returns(makeValidatingAdapter([], {shouldThrow: true}));
+            loadAdapterFromPath.withArgs('/path/storage/bad-storage').returns(makeValidatingAdapter([], {shouldThrow: true}));
+
+            const adapterManager = new AdapterManager({
+                loadAdapterFromPath,
+                pathsToAdapters: ['/path'],
+                config: makeConfig({
+                    mail: {active: 'bad-mail'},
+                    storage: {active: 'bad-storage'}
+                }),
+                baseClasses: {mail: BaseMailAdapter, storage: BaseMailAdapter}
+            });
+
+            assert.throws(() => adapterManager.init(), (err: Error & {errorDetails?: unknown}) => {
+                assert.equal((err as {errorType?: string}).errorType, 'IncorrectUsageError');
+                assert.match(err.message, /mail/);
+                assert.match(err.message, /storage/);
+                assert.equal((err.errorDetails as unknown[]).length, 2);
+                return true;
+            });
+        });
+    });
 });

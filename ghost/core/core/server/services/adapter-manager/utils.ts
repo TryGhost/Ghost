@@ -76,6 +76,33 @@ export function normalizeAdapterConfig(config: ConfigInstance) {
 }
 
 /**
+* Return the feature keys configured for a single adapter type's settings.
+*
+* A key is a "feature" (e.g. `images`/`media`/`files` for storage) when it isn't
+* `active` and its value either names another adapter (a String, e.g.
+* `media: 'LocalMediaStorage'`) or carries inline feature config (an Object with
+* an `adapter` property, e.g. `media: {adapter: 'S3Storage', bucket: '...'}`).
+* Plain adapter-config objects keyed by class name (e.g. `LocalMediaStorage: {}`)
+* are not features — `resolveAdapterOptions` resolves those back to the active
+* adapter — so they're intentionally excluded here.
+*/
+export function getConfiguredFeatures(settings: unknown): string[] {
+    if (!settings || typeof settings !== 'object') {
+        return [];
+    }
+
+    return Object.entries(settings as Record<string, unknown>)
+        .filter(([key, value]) => {
+            if (key === 'active') {
+                return false;
+            }
+            return typeof value === 'string'
+                || (typeof value === 'object' && value !== null && 'adapter' in value);
+        })
+        .map(([key]) => key);
+}
+
+/**
 * Resolve adapter options from the config, handling both top-level and nested feature-specific options.
 */
 export function resolveAdapterOptions(name: string, config: any) {

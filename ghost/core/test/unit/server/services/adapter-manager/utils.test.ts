@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import {Provider} from 'nconf'
 import {
     resolveAdapterOptions,
-    normalizeAdapterConfig
+    normalizeAdapterConfig,
+    getConfiguredFeatures
 } from '../../../../../core/server/services/adapter-manager/utils';
 import {bindAll as bindUrlHelpers} from '@tryghost/config-url-helpers';
 import {bindAll as bindHelpers} from '../../../../../core/shared/config/helpers';
@@ -314,6 +315,46 @@ describe('Adapter Manager: utils', function () {
                 adapterConfigValue: 'images_redis_value',
                 overrideMe: 'images_override'
             });
+        });
+    });
+
+    describe('getConfiguredFeatures', function () {
+        it('returns [] for missing or non-object settings', function () {
+            assert.deepEqual(getConfiguredFeatures(undefined), []);
+            assert.deepEqual(getConfiguredFeatures(null), []);
+            assert.deepEqual(getConfiguredFeatures('local-storage'), []);
+        });
+
+        it('ignores the active key and adapter-config objects', function () {
+            const settings = {
+                active: 'LocalImagesStorage',
+                LocalMediaStorage: {},
+                LocalFilesStorage: {}
+            };
+
+            assert.deepEqual(getConfiguredFeatures(settings), []);
+        });
+
+        it('detects string-valued features', function () {
+            const settings = {
+                active: 'LocalImagesStorage',
+                media: 'LocalMediaStorage',
+                files: 'LocalFilesStorage',
+                LocalMediaStorage: {},
+                LocalFilesStorage: {}
+            };
+
+            assert.deepEqual(getConfiguredFeatures(settings), ['media', 'files']);
+        });
+
+        it('detects object features carrying an adapter property', function () {
+            const settings = {
+                Redis: {commonConfigValue: 'x'},
+                images: {adapter: 'Redis', adapterConfigValue: 'y'},
+                settings: {adapter: 'Redis', adapterConfigValue: 'z'}
+            };
+
+            assert.deepEqual(getConfiguredFeatures(settings), ['images', 'settings']);
         });
     });
 });

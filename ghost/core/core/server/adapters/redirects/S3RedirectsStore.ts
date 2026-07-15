@@ -8,6 +8,7 @@ import {
     S3Client,
     S3ClientConfig
 } from '@aws-sdk/client-s3';
+import {z} from 'zod';
 import tpl from '@tryghost/tpl';
 import * as errors from '@tryghost/errors';
 import {RedirectsStoreBase, type RedirectConfig} from '@tryghost/adapter-base-redirects';
@@ -26,17 +27,32 @@ const messages = {
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
 
-export interface S3RedirectsStoreOptions {
-    bucket: string;
-    staticFileURLPrefix: string;
-    region?: string;
-    endpoint?: string;
-    forcePathStyle?: boolean;
-    accessKeyId?: string;
-    secretAccessKey?: string;
-    sessionToken?: string;
-    tenantPrefix?: string;
-}
+// Validates and normalises the config: the slash-trimmed fields
+// (`staticFileURLPrefix`, `tenantPrefix`) are stripped via `transform` so the
+// constructor consumes ready-to-use values, plus the credential-pair rule
+// (accessKeyId and secretAccessKey must be supplied together).
+const configSchema = z.object({
+    bucket: z.string({error: tpl(messages.missingBucket)}).min(1, {error: tpl(messages.missingBucket)}),
+    staticFileURLPrefix: z.string({error: tpl(messages.missingStaticFileURLPrefix)})
+        .transform(stripLeadingAndTrailingSlashes)
+        .refine(value => value.length > 0, {error: tpl(messages.missingStaticFileURLPrefix)}),
+    tenantPrefix: z.string().transform(stripLeadingAndTrailingSlashes).optional(),
+    region: z.string().optional(),
+    endpoint: z.string().optional(),
+    forcePathStyle: z.boolean().optional(),
+    accessKeyId: z.string().optional(),
+    secretAccessKey: z.string().optional(),
+    sessionToken: z.string().optional()
+}).refine((config) => {
+    // accessKeyId and secretAccessKey must be supplied together (or not at all).
+    const hasAccessKey = Boolean(config.accessKeyId);
+    const hasSecretKey = Boolean(config.secretAccessKey);
+    const hasSessionToken = Boolean(config.sessionToken);
+    const hasCredentialPair = hasAccessKey && hasSecretKey;
+    return !((hasAccessKey || hasSecretKey || hasSessionToken) && !hasCredentialPair);
+}, {error: tpl(messages.partialCredentials)});
+
+export type S3RedirectsStoreOptions = z.infer<typeof configSchema>;
 
 /**
  * Implements RedirectsStore against an S3-compatible bucket. Reads and
@@ -50,34 +66,41 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
     private readonly staticFileURLPrefix: string;
     private readonly tenantPrefix: string;
 
-    constructor(options: S3RedirectsStoreOptions) {
+    /**
+     * Parse + normalise the config, throwing an actionable IncorrectUsageError
+     * on the first problem. Shared by `validate` (boot-time check) and the
+     * constructor (which uses the normalised result).
+     */
+    private static parseConfig(config: unknown): z.infer<typeof configSchema> {
+        const result = configSchema.safeParse(config);
+        if (!result.success) {
+            throw new errors.IncorrectUsageError({
+                message: [...new Set(result.error.issues.map(issue => issue.message))].join('; ')
+            });
+        }
+        return result.data;
+    }
+
+    /**
+     * Validate the options S3RedirectsStore would be constructed with, without
+     * instantiating it (no S3 client is created). Called by the adapter manager
+     * at boot so misconfiguration fails early. Narrows `config` to
+     * `S3RedirectsStoreOptions`.
+     */
+    static validate(config: unknown): asserts config is S3RedirectsStoreOptions {
+        S3RedirectsStore.parseConfig(config);
+    }
+
+    constructor(config: unknown) {
         super();
-        if (!options.bucket) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.missingBucket)
-            });
-        }
 
-        const staticFileURLPrefix = stripLeadingAndTrailingSlashes(options.staticFileURLPrefix);
-        if (!staticFileURLPrefix) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.missingStaticFileURLPrefix)
-            });
-        }
+        const options = S3RedirectsStore.parseConfig(config);
 
-        const hasAccessKey = Boolean(options.accessKeyId);
-        const hasSecretKey = Boolean(options.secretAccessKey);
-        const hasSessionToken = Boolean(options.sessionToken);
-        const hasCredentialPair = hasAccessKey && hasSecretKey;
-        if ((hasAccessKey || hasSecretKey || hasSessionToken) && !hasCredentialPair) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.partialCredentials)
-            });
-        }
+        const hasCredentialPair = Boolean(options.accessKeyId) && Boolean(options.secretAccessKey);
 
         this.bucket = options.bucket;
-        this.staticFileURLPrefix = staticFileURLPrefix;
-        this.tenantPrefix = stripLeadingAndTrailingSlashes(options.tenantPrefix);
+        this.staticFileURLPrefix = options.staticFileURLPrefix;
+        this.tenantPrefix = options.tenantPrefix ?? '';
 
         const clientConfig: S3ClientConfig = {
             region: options.region,
