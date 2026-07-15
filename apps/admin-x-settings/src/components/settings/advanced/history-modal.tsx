@@ -1,8 +1,9 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
-import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, type LoadSelectOptions, LoadingIndicator, Modal, NoValueLabel, Popover, Select, type SelectOption, Toggle, ToggleGroup, debounce} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, type LoadSelectOptions, LoadingIndicator, Modal, NoValueLabel, Popover, Select, type SelectOption, Toggle, ToggleGroup} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type User} from '@tryghost/admin-x-framework/api/users';
+import {debounce} from '../../../utils/debounce';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {keepPreviousData} from '@tanstack/react-query';
 import {useCallback, useState} from 'react';

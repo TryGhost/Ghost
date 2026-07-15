@@ -3,12 +3,13 @@ import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Banner, Button as ShadeButton} from '@tryghost/shade/components';
 import {type GroupBase, type MultiValue} from 'react-select';
-import {Hint, MultiSelect, type MultiSelectOption, Select, Separator, SettingGroupContent, TextField, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Hint, MultiSelect, type MultiSelectOption, Select, Separator, SettingGroupContent, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {RefreshCw} from 'lucide-react';
 import {getSettingValues, isSettingReadOnly, useRegenerateAccessCode} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useLimiter} from '../../../hooks/use-limiter';
+import {withErrorBoundary} from '../../error-boundary';
 
 const SITE_VISIBILITY_OPTIONS = [
     {

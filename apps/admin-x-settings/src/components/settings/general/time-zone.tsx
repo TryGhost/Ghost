@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Select, SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {getLocalTime} from '../../../utils/helpers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {timezoneDataWithGMTOffset} from '@tryghost/timezone-data';
+import {withErrorBoundary} from '../../error-boundary';
 
 interface TimezoneDataDropdownOption {
     name: string;
