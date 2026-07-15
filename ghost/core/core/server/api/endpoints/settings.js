@@ -171,7 +171,7 @@ const controller = {
             method: 'edit'
         },
         async query(frame) {
-            await routeSettings.api.setFromFilePath(frame.file.path);
+            await routeSettings.api.upload(frame.file.path);
             const getRoutesHash = () => routeSettings.api.getCurrentHash();
             await settingsService.syncRoutesHash(getRoutesHash);
         }
@@ -192,7 +192,7 @@ const controller = {
             method: 'browse'
         },
         query() {
-            return routeSettings.api.get();
+            return routeSettings.api.download();
         }
     }
 };

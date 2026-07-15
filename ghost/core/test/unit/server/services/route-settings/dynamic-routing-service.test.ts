@@ -48,10 +48,10 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
         sinon.restore();
     });
 
-    it('get returns the verbatim yaml source from the store', async function () {
+    it('download returns the verbatim yaml source from the store', async function () {
         await store.replace(fromYaml(CUSTOM_YAML));
 
-        assert.equal(await service.get(), CUSTOM_YAML);
+        assert.equal(await service.download(), CUSTOM_YAML);
     });
 
     it('loadRouteSettings expands the domain model into the router format', async function () {
@@ -180,7 +180,7 @@ taxonomies:
                 assert.ok(errorStub.calledOnce);
                 assert.equal(errorStub.firstCall.args[0].code, 'ROUTE_SETTINGS_VALIDATION_FALLBACK');
 
-                assert.equal(await fallbackService.get(), legacyValidYaml);
+                assert.equal(await fallbackService.download(), legacyValidYaml);
             } finally {
                 await fs.remove(contentDir);
             }
@@ -203,14 +203,14 @@ taxonomies:
             corruptService.configure({store: fileStore, settingsLoader});
 
             try {
-                assert.equal(await corruptService.get(), corruptYaml);
+                assert.equal(await corruptService.download(), corruptYaml);
             } finally {
                 await fs.remove(contentDir);
             }
         });
     });
 
-    describe('setFromFilePath', function () {
+    describe('upload', function () {
         let uploadDir: string;
 
         const writeUpload = async (content: string): Promise<string> => {
@@ -233,18 +233,17 @@ taxonomies:
             sinon.stub(urlService, 'resetGenerators');
             sinon.stub(urlService, 'hasFinished').returns(true);
 
-            await service.setFromFilePath(await writeUpload(CUSTOM_YAML));
+            await service.upload(await writeUpload(CUSTOM_YAML));
 
             assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
         });
 
         it('rejects an invalid upload before anything reaches the store', async function () {
             const reloadStub = sinon.stub(bridge, 'reloadFrontend').resolves();
-            const previous = fromYaml(CUSTOM_YAML);
-            await store.replace(previous);
+            await store.replace(fromYaml(CUSTOM_YAML));
 
             await assert.rejects(
-                service.setFromFilePath(await writeUpload('routes:\n  no-slashes: about\n')),
+                service.upload(await writeUpload('routes:\n  no-slashes: about\n')),
                 (err: {errorType?: string}) => {
                     assert.equal(err.errorType, 'ValidationError');
                     return true;
@@ -264,7 +263,7 @@ taxonomies:
             getStub.onFirstCall().rejects(new errors.IncorrectUsageError({message: 'Could not parse provided YAML file: bad indentation of a mapping entry.'}));
             getStub.callThrough();
 
-            await service.setFromFilePath(await writeUpload(CUSTOM_YAML));
+            await service.upload(await writeUpload(CUSTOM_YAML));
 
             assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
         });
@@ -278,7 +277,7 @@ taxonomies:
             getStub.onFirstCall().rejects(new errors.ValidationError({message: 'slug is required for read data entries.'}));
             getStub.callThrough();
 
-            await service.setFromFilePath(await writeUpload(CUSTOM_YAML));
+            await service.upload(await writeUpload(CUSTOM_YAML));
 
             assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
         });
@@ -288,13 +287,12 @@ taxonomies:
             reloadStub.rejects(new Error('YAMLException: bad indentation of a mapping entry'));
             sinon.stub(urlService, 'resetGenerators');
 
-            const previous = fromYaml(CUSTOM_YAML);
-            await store.replace(previous);
+            await store.replace(fromYaml(CUSTOM_YAML));
 
             const nextYaml = CUSTOM_YAML.replace('/about/: about', '/contact/: contact');
 
             await assert.rejects(
-                service.setFromFilePath(await writeUpload(nextYaml)),
+                service.upload(await writeUpload(nextYaml)),
                 /YAMLException/
             );
 
