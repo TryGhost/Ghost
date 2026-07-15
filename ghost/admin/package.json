@@ -199,7 +199,6 @@
           {
             "projects": [
               "@tryghost/admin-x-framework",
-              "@tryghost/admin-x-settings",
               "@tryghost/activitypub"
             ],
             "target": "build"
@@ -227,7 +226,6 @@
           {
             "projects": [
               "@tryghost/admin-x-framework",
-              "@tryghost/admin-x-settings",
               "@tryghost/activitypub"
             ],
             "target": "build"
