@@ -8,14 +8,61 @@ const testUtils = require('../../../utils');
 describe('getUrl', function () {
     let urlServiceGetUrlForResourceStub;
     let urlUtilsUrlForStub;
+    let urlUtilsAbsoluteToRelativeStub;
 
     beforeEach(function () {
         urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
         urlUtilsUrlForStub = sinon.stub(urlUtils, 'urlFor');
+        urlUtilsAbsoluteToRelativeStub = sinon.stub(urlUtils, 'absoluteToRelative');
     });
 
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('posts carrying a serializer-attached url', function () {
+        it('reads the url property instead of asking the URL service', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost();
+            delete post.status;
+            post.url = 'http://my-site.com/my-post/';
+
+            urlUtilsAbsoluteToRelativeStub.withArgs('http://my-site.com/my-post/').returns('/my-post/');
+
+            assert.equal(getUrl(post), '/my-post/');
+            sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
+        });
+
+        it('returns the url property as-is for absolute requests', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost();
+            delete post.status;
+            post.url = 'http://my-site.com/my-post/';
+
+            assert.equal(getUrl(post, true), 'http://my-site.com/my-post/');
+            sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
+        });
+
+        it('returns the preview URL for the /404/ sentinel without asking the URL service', function () {
+            // The serializer computed /404/ from the full model — re-asking the
+            // service with the (stripped) render-time object can't do better.
+            const post = testUtils.DataGenerator.forKnex.createPost();
+            delete post.status;
+            post.url = 'http://my-site.com/404/';
+
+            urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, undefined).returns('preview url');
+
+            assert.equal(getUrl(post), 'preview url');
+            sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
+        });
+
+        it('returns the /404/ url itself for an explicitly published post', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost({status: 'published'});
+            post.url = 'http://my-site.com/404/';
+
+            urlUtilsAbsoluteToRelativeStub.withArgs('http://my-site.com/404/').returns('/404/');
+
+            assert.equal(getUrl(post), '/404/');
+            sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
+        });
     });
 
     it('should return url for a post', function () {
