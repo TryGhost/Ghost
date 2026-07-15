@@ -19,6 +19,7 @@ export const settingsScreen = {
     timezoneSelect: () => page.getByTestId(sel.timezoneSelect),
     seoTabView: () => page.getByTestId(sel.seoTabView),
     selectOption: (name: string) => page.getByTestId(sel.selectOption).filter({ hasText: name }),
+    errorToast: () => page.getByTestId(sel.toastError),
     sidebar: () => page.getByTestId(sel.settingsSidebar),
     search: () => page.getByLabelText(sel.settingsSearchLabel),
     exitButton: () => page.getByTestId(sel.exitSettings),

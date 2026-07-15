@@ -69,7 +69,7 @@ describe("Social account settings", () => {
     it("shows all new platforms when any migrated key is present", async () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings", {
-            boot: { browseSettings: { response: withoutSettings(["linkedin"]) } },
+            boot: { browseSettings: { response: withoutSettings(newPlatformKeys.filter(key => key !== "threads")) } },
         });
 
         for (const label of platformLabels) {

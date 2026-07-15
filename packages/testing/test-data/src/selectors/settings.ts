@@ -34,6 +34,7 @@ export const localeSelect = "locale-select";
 export const timezoneSelect = "timezone-select";
 export const seoTabView = "seo-tabview";
 export const selectOption = "select-option";
+export const toastError = "toast-error";
 
 // accessible names
 export const settingsSearchLabel = "Search";

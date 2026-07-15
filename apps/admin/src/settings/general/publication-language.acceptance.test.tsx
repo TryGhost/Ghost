@@ -40,6 +40,7 @@ describe("Publication language settings", () => {
         await settingsScreen.localeSelect().click();
         await settingsScreen.selectOption("Other").click();
         await settingsScreen.publicationLanguage().getByLabelText("Site language").fill("invalid--locale");
+        await settingsScreen.publicationLanguage().getByRole("button", { name: "Save" }).click();
 
         await expect.element(settingsScreen.publicationLanguage().getByText("Invalid locale format")).toBeVisible();
         expect(settingsApi.requests).toHaveLength(0);

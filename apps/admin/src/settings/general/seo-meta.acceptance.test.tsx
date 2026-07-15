@@ -29,6 +29,23 @@ describe("SEO meta settings", () => {
         await expect.poll(() => settingsApi.lastRequest).toEqual({ settings: [{ key: "llms_enabled", value: false }] });
     });
 
+    it("re-enables persisted-disabled LLM structured data", async () => {
+        fakeSettingsScreens();
+        const settingsApi = fakeEditSettings();
+        await renderAdminApp("/settings", {
+            labs: { llmsTxt: true },
+            boot: { browseSettings: { response: settingsResponse({ labs: { llmsTxt: true }, settings: { llms_enabled: false } }) } },
+        });
+
+        const section = settingsScreen.seoMeta();
+        const toggle = section.getByLabelText("Enable structured data for LLMs and AI search engines");
+        await expect.element(toggle).not.toBeChecked();
+        await toggle.click();
+        await section.getByRole("button", { name: "Save" }).click();
+
+        await expect.poll(() => settingsApi.lastRequest).toEqual({ settings: [{ key: "llms_enabled", value: true }] });
+    });
+
     it("hides LLM structured data when the feature flag is off", async () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings");
@@ -101,6 +118,24 @@ describe("SEO meta settings", () => {
                 { key: "twitter_description", value: "Twitscription" },
             ],
         });
+    });
+
+    it("shows an error when an image has an unsupported file type", async () => {
+        fakeSettingsScreens();
+        const uploadApi = fakeAdminEndpoint("POST", "/images/upload/", {
+            errors: [{ message: "Unsupported image", type: "UnsupportedMediaTypeError" }],
+        }, { status: 415 });
+        const settingsApi = fakeEditSettings();
+        await renderAdminApp("/settings");
+
+        const section = settingsScreen.seoMeta();
+        await section.getByRole("tab", { name: "Facebook card" }).click();
+        await section.getByLabelText("Upload Facebook image").upload(imageFile());
+
+        await expect.element(settingsScreen.errorToast()).toHaveTextContent("Unsupported file type");
+        expect(uploadApi.requests).toHaveLength(1);
+        expect(settingsApi.requests).toHaveLength(0);
+        await expect(section.getByTestId("image-upload-container")).toHaveCount(0);
     });
 
     it("saves metadata edited across all tabs in one request", async () => {
