@@ -400,8 +400,8 @@ test.describe('Analytics settings', async () => {
         await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird/)).not.toBeVisible();
         await expect(section.getByText(/Get the full picture of what.*s working with detailed, cookie-free traffic analytics/)).not.toBeVisible();
 
-        // Should show the separator
-        await expect(section.locator('.border-grey-200').first()).toBeVisible();
+        // Should render the separator (it has no intrinsic size without the admin CSS pipeline, so check attachment rather than visibility)
+        await expect(section.locator('[data-orientation="horizontal"]').first()).toBeAttached();
     });
 
     test('Upgrade now button navigates to /pro', async ({page}) => {
