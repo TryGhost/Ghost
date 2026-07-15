@@ -6,28 +6,17 @@ const service = new DynamicRoutingService();
 
 module.exports = {
     init: async () => {
-        const RouteSettings = require('./route-settings');
+        const adapterManager = require('../adapter-manager');
         const SettingsLoader = require('./settings-loader');
-        const DefaultSettingsManager = require('./default-settings-manager');
         const SettingsPathManager = require('./settings-path-manager');
 
         const settingsPathManager = new SettingsPathManager({type: 'routes', paths: [config.getContentPath('settings')]});
         const settingsLoader = new SettingsLoader({parseYaml, settingFilePath: settingsPathManager.getDefaultFilePath()});
-        const routeSettings = new RouteSettings({
-            settingsLoader,
-            settingsPath: settingsPathManager.getDefaultFilePath(),
-            backupPath: settingsPathManager.getBackupFilePath()
-        });
-        const defaultSettingsManager = new DefaultSettingsManager({
-            type: 'routes',
-            extension: '.yaml',
-            destinationFolderPath: config.getContentPath('settings'),
-            sourceFolderPath: config.get('paths').defaultRouteSettings
-        });
 
-        service.configure({settingsLoader, routeSettings});
-
-        await defaultSettingsManager.ensureSettingsFileExists();
+        service.configure({
+            store: adapterManager.getAdapter('route-settings'),
+            settingsLoader
+        });
     },
 
     get service() {
