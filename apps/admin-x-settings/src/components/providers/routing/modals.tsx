@@ -5,6 +5,7 @@ import type {RoutingModalProps} from '@tryghost/admin-x-framework/routing';
 import AboutModal from '../../settings/general/about';
 import AddIntegrationModal from '../../settings/advanced/integrations/add-integration-modal';
 import AddNewsletterModal from '../../settings/email/newsletters/add-newsletter-modal';
+import AnthropicModal from '../../settings/advanced/integrations/anthropic-modal';
 import ContentApiModal from '../../settings/advanced/integrations/content-api-modal';
 // import AddOfferModal from '../../settings/growth/offers/AddOfferModal';
 import AddRecommendationModal from '../../settings/growth/recommendations/add-recommendation-modal';
@@ -36,6 +37,7 @@ import ZapierModal from '../../settings/advanced/integrations/zapier-modal';
 const modals = {
     AddIntegrationModal,
     AddNewsletterModal,
+    AnthropicModal,
     ContentApiModal,
     AddRecommendationModal,
     CustomIntegrationModal,

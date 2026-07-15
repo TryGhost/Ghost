@@ -385,6 +385,15 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1284,6 +1293,15 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1732,6 +1750,15 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -2184,6 +2211,15 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -2253,7 +2289,7 @@ exports[`Settings API Edit can edit Stripe settings when Stripe Connect limit is
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5466",
+  "content-length": "5545",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2677,6 +2713,15 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -3126,6 +3171,15 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -4064,6 +4118,15 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -4514,6 +4577,15 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -4962,6 +5034,15 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -5418,6 +5499,15 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -5865,6 +5955,15 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -6319,6 +6418,15 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -7163,6 +7271,15 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -7611,6 +7728,15 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -8064,6 +8190,15 @@ Object {
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -8513,6 +8648,15 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -9062,6 +9206,15 @@ Object {
     Object {
       "key": "transistor_portal_url_template",
       "value": "https://partner.transistor.fm/ghost/{memberUuid}",
+    },
+    Object {
+      "key": "ai_anthropic_api_key",
+      "value": null,
+    },
+    Object {
+      "is_read_only": true,
+      "key": "ai_vision_to_text_available",
+      "value": false,
     },
     Object {
       "key": "members_enabled",

@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import {decoratePostSearchResult, getCardVisibilitySettings, offerUrls} from 'ghost-admin/components/koenig-lexical-editor';
+import {decoratePostSearchResult, getCardVisibilitySettings, getGenerateAltText, offerUrls} from 'ghost-admin/components/koenig-lexical-editor';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
@@ -149,6 +149,25 @@ describe('Unit: Component: koenig-lexical-editor', function () {
             });
 
             expect(settings).to.equal('web only');
+        });
+    });
+
+    describe('getGenerateAltText()', function () {
+        it('returns no callback when vision-to-text is not available', function () {
+            const ai = {generateImageAltText: sinon.stub()};
+
+            expect(getGenerateAltText({}, ai)).to.be.undefined;
+        });
+
+        it('returns a callback that delegates to the shared AI service', async function () {
+            const generateImageAltText = sinon.stub().resolves('A lighthouse above rough seas.');
+            const ai = {generateImageAltText};
+
+            const generateAltText = getGenerateAltText({aiVisionToTextAvailable: true}, ai);
+            const result = await generateAltText('/content/images/lighthouse.jpg');
+
+            expect(result).to.equal('A lighthouse above rough seas.');
+            expect(generateImageAltText.calledOnceWithExactly('/content/images/lighthouse.jpg')).to.be.true;
         });
     });
 });

@@ -694,5 +694,11 @@
             "type": "string",
             "flags": "PUBLIC"
         }
+    },
+    "ai": {
+        "ai_anthropic_api_key": {
+            "defaultValue": null,
+            "type": "string"
+        }
     }
 }

@@ -5,6 +5,7 @@ import TopLevelGroup from '../../top-level-group';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroupHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -102,6 +103,7 @@ const BuiltInIntegrations: React.FC = () => {
         'slack_username',
         'transistor'
     ]);
+    const [anthropicApiKey] = getSettingValues<string>(settings, ['ai_anthropic_api_key']);
 
     const items: BuiltInIntegrationItem[] = [
         {
@@ -152,6 +154,14 @@ const BuiltInIntegrations: React.FC = () => {
             modal: 'integrations/transistor',
             testId: 'transistor-integration',
             title: 'Transistor.fm'
+        },
+        {
+            active: !!anthropicApiKey,
+            detail: 'Generate accessible image descriptions',
+            icon: <LucideIcon.Sparkles className='size-8 text-foreground' strokeWidth={1.5} />,
+            modal: 'integrations/anthropic',
+            testId: 'anthropic-integration',
+            title: 'Anthropic'
         },
         {
             detail: 'Access your content programmatically',

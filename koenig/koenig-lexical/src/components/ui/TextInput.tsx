@@ -1,11 +1,11 @@
-export function TextInput({value, onChange, ...args}) {
+export function TextInput({value, onChange, controlled = false, ...args}) {
     const handleOnChange = (e) => {
         onChange(e);
     };
 
     return (
         <input
-            defaultValue={value}
+            {...(controlled ? {value} : {defaultValue: value})}
             onChange={handleOnChange}
             {...args}
         />

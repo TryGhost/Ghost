@@ -146,7 +146,8 @@ export function ImageCard({
     imageCardDragHandler,
     imageFileDragHandler,
     isPinturaEnabled,
-    openImageEditor
+    openImageEditor,
+    generateAltText
 }) {
     const figureRef = React.useRef(null);
 
@@ -183,6 +184,8 @@ export function ImageCard({
                     captionEditorInitialState={captionEditorInitialState}
                     captionPlaceholder="Type caption for image (optional)"
                     dataTestId="image-caption-editor"
+                    generateAltText={generateAltText}
+                    imageUrl={src}
                     isSelected={isSelected}
                     readOnly={!isSelected}
                     setAltText={setAltText}
@@ -240,5 +243,6 @@ ImageCard.propTypes = {
     imageFileDragHandler: PropTypes.object,
     imageCardDragHandler: PropTypes.object,
     isPinturaEnabled: PropTypes.bool,
-    openImageEditor: PropTypes.func
+    openImageEditor: PropTypes.func,
+    generateAltText: PropTypes.func
 };

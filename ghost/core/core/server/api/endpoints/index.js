@@ -128,6 +128,10 @@ module.exports = {
         return apiFramework.pipeline(require('./images'), localUtils);
     },
 
+    get ai() {
+        return apiFramework.pipeline(require('./ai'), localUtils);
+    },
+
     get media() {
         return apiFramework.pipeline(require('./media'), localUtils);
     },

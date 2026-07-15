@@ -14,6 +14,7 @@
             @clearImage={{@clearFeatureImage}}
             @alt={{@featureImageAlt}}
             @updateAlt={{@setFeatureImageAlt}}
+            @generateAlt={{if this.settings.aiVisionToTextAvailable this.generateAltText}}
             @caption={{@featureImageCaption}}
             @updateCaption={{@setFeatureImageCaption}}
             @handleCaptionBlur={{@handleFeatureImageCaptionBlur}}
