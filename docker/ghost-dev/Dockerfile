@@ -18,8 +18,12 @@ RUN apt-get update && \
 
 WORKDIR /home/ghost
 
-# Copy root workspace files for dependency installation
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Copy root workspace files for dependency installation. .pnpmfile.mjs must be
+# included: pnpm records its checksum (pnpmfileChecksum) in pnpm-lock.yaml, so
+# the --frozen-lockfile install below fails with a lockfile config mismatch if
+# the file is absent — even though its only hook (beforePacking) never runs
+# during install.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.mjs ./
 
 # Copy the manifests of the top-level dirs that hold ghost/core's dependency
 # closure — ghost/* (core, i18n, parse-email-address), koenig/* (the kg-*
