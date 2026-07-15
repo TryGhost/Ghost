@@ -97,7 +97,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 direction='rtl'
                 gap='gap-0'
                 hint='Record when a member opens an email'
-                label='Newsletter opens'
+                label='Email opens'
                 onChange={(e) => {
                     handleToggleChange('email_track_opens', e);
                 }}
@@ -111,7 +111,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 disabled={isEmailTrackClicksReadOnly}
                 gap='gap-0'
                 hint='Record when a member clicks on any link in an email'
-                label='Newsletter clicks'
+                label='Email clicks'
                 onChange={(e) => {
                     handleToggleChange('email_track_clicks', e);
                 }}
