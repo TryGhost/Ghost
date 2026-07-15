@@ -3,13 +3,15 @@ import errors from '@tryghost/errors';
 import {resolveAdapterExport} from './utils';
 import type {
     Adapter,
+    AdapterClassMap,
     AdapterConstructor,
     AdapterName,
-    AdapterRegistry,
     ResolvedAdapter
 } from './types';
 
-export interface AdapterManagerOptions {
+export interface AdapterManagerOptions<ClassMap extends AdapterClassMap = AdapterClassMap> {
+    /** Map from adapter type name to the base class all adapters of that type must extend */
+    baseClasses: ClassMap;
     /** The paths to check, e.g. ['content/adapters', 'core/server/adapters'] */
     pathsToAdapters: string[];
     /** A function to load adapters, e.g. global.require */
@@ -19,60 +21,44 @@ export interface AdapterManagerOptions {
 /**
  * AdapterManager loads, validates and caches adapter instances by type.
  *
- * The `Registry` type parameter is a phantom, type-only map from an adapter type
- * name to the instance type of its registered base class. It has no runtime
- * representation — it is grown by chaining `registerAdapter` calls, and read back
- * by `getAdapter` to return a precisely-typed instance:
+ * The full set of adapter types is fixed at construction: `baseClasses` maps
+ * each type name to its base class, and the same map is used at the type level
+ * so `getAdapter` accepts only known names and returns a precisely-typed
+ * instance:
  *
  * ```ts
- * const mgr = new AdapterManager({pathsToAdapters, loadAdapterFromPath})
- *     .registerAdapter('sso', SSOBase)
- *     .registerAdapter('storage', StorageBase);
+ * const mgr = new AdapterManager({
+ *     baseClasses: {
+ *         sso: SSOBase,
+ *         storage: StorageBase
+ *     },
+ *     pathsToAdapters,
+ *     loadAdapterFromPath
+ * });
  *
  * mgr.getAdapter('sso', 'MyAdapter', opts);        // => SSOBase instance
  * mgr.getAdapter('storage:images', 'S3', opts);    // => StorageBase instance
  * ```
- */ // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export class AdapterManager<Registry extends AdapterRegistry = {}> {
+ */
+export class AdapterManager<ClassMap extends AdapterClassMap = AdapterClassMap> {
     private baseClasses: Record<string, AdapterConstructor>;
     private instanceCache: Record<string, Record<string, Adapter>>;
     private pathsToAdapters: string[];
     private loadAdapterFromPath: (path: string) => unknown;
 
-    constructor({pathsToAdapters, loadAdapterFromPath}: AdapterManagerOptions) {
-        this.baseClasses = {};
+    constructor({baseClasses, pathsToAdapters, loadAdapterFromPath}: AdapterManagerOptions<ClassMap>) {
         this.instanceCache = {};
+        for (const type of Object.keys(baseClasses)) {
+            if (type.includes(':')) {
+                throw new errors.IncorrectUsageError({
+                    message: `Adapter type "${type}" cannot contain a colon.`
+                });
+            }
+            this.instanceCache[type] = {};
+        }
+        this.baseClasses = baseClasses;
         this.pathsToAdapters = pathsToAdapters;
         this.loadAdapterFromPath = loadAdapterFromPath;
-    }
-
-    /**
-     * Register an adapter type and the corresponding base class. Must be called
-     * before requesting adapters of that type.
-     *
-     * Returns `this` widened with the new type in the registry, so chained calls
-     * accumulate the full set of known adapter types at the type level. Re-registering
-     * a type replaces its base class at runtime, so the registry entry is replaced
-     * rather than intersected — an intersection would claim the adapter still has the
-     * members of the base class it no longer extends.
-     *
-     * @param type The name for the type of adapter
-     * @param BaseClass The class from which all adapters of this type must extend
-     */
-    registerAdapter<Type extends string, Base extends AdapterConstructor>(
-        type: Type,
-        BaseClass: Base
-    ): AdapterManager<Omit<Registry, Type> & Record<Type, InstanceType<Base>>> {
-        if (type.includes(':')) {
-            throw new errors.IncorrectUsageError({
-                message: `Adapter type "${type}" cannot contain a colon.`
-            });
-        }
-
-        this.instanceCache[type] = {};
-        this.baseClasses[type] = BaseClass;
-
-        return this as unknown as AdapterManager<Omit<Registry, Type> & Record<Type, InstanceType<Base>>>;
     }
 
     /**
@@ -95,11 +81,11 @@ export class AdapterManager<Registry extends AdapterRegistry = {}> {
      *
      * @returns The resolved and instantiated adapter
      */
-    getAdapter<Name extends AdapterName<Registry>>(
+    getAdapter<Name extends AdapterName<ClassMap>>(
         adapterName: Name,
         adapterClassName: string,
         config?: object
-    ): ResolvedAdapter<Registry, Name>;
+    ): ResolvedAdapter<ClassMap, Name>;
     getAdapter(adapterName: string, adapterClassName: string, config?: object): Adapter {
         if (!adapterName || !adapterClassName) {
             throw new errors.IncorrectUsageError({
@@ -197,5 +183,3 @@ export class AdapterManager<Registry extends AdapterRegistry = {}> {
         return adapter;
     }
 }
-
-export type InferAdapterName<T> = T extends AdapterManager<infer R> ? AdapterName<R> : never;

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sinon from 'sinon';
-import {AdapterManager, type AdapterManagerOptions} from '../../../../../core/server/services/adapter-manager/adapter-manager';
+import {AdapterManager} from '../../../../../core/server/services/adapter-manager/adapter-manager';
 import type {Adapter} from  '../../../../../core/server/services/adapter-manager/types';
 
 class BaseMailAdapter implements Adapter {
@@ -25,29 +25,25 @@ class DefaultMailAdapter extends BaseMailAdapter {
 }
 
 describe('AdapterManager', function () {
-    it('registerAdapter throws if type has a ":"', function () {
-        const opts: AdapterManagerOptions = {
-            loadAdapterFromPath: sinon.stub(),
-            pathsToAdapters: ['first/path']
-        }
-
-        const adapterManager = new AdapterManager(opts);
+    it('constructor throws if an adapter type has a ":"', function () {
         assert.throws(() => {
-            adapterManager.registerAdapter('mail:newsletters', BaseMailAdapter);
-        }), {
+            return new AdapterManager({
+                baseClasses: {'mail:newsletters': BaseMailAdapter},
+                loadAdapterFromPath: sinon.stub(),
+                pathsToAdapters: ['first/path']
+            });
+        }, {
             errorType: 'IncorrectUsageError',
-            message: 'Adapter type mail:newsletters cannot contain a colon.'
-        };
+            message: 'Adapter type "mail:newsletters" cannot contain a colon.'
+        });
     });
 
     it('getAdapter throws if called without correct parameters', function () {
-        const opts: AdapterManagerOptions = {
+        const adapterManager = new AdapterManager({
+            baseClasses: {mail: BaseMailAdapter},
             loadAdapterFromPath: sinon.stub(),
             pathsToAdapters: ['first/path']
-        }
-
-        const adapterManager = new AdapterManager(opts)
-            .registerAdapter('mail', BaseMailAdapter);
+        });
 
         assert.throws(() => {
             // @ts-expect-error missing args assertion
@@ -59,13 +55,11 @@ describe('AdapterManager', function () {
     });
 
     it('getAdapter throws if config does not contain adapter type key', function () {
-        const opts: AdapterManagerOptions = {
+        const adapterManager = new AdapterManager({
+            baseClasses: {some_other_adapter_type: BaseMailAdapter},
             loadAdapterFromPath: sinon.stub(),
             pathsToAdapters: ['first/path']
-        }
-
-        const adapterManager = new AdapterManager(opts)
-            .registerAdapter('some_other_adapter_type', BaseMailAdapter);
+        });
 
         assert.throws(() => {
             // @ts-expect-error invalid adapter type assertion
@@ -77,22 +71,22 @@ describe('AdapterManager', function () {
     });
 
     it('getAdapter can handle looking up from node_modules', function () {
-        const opts = {
-            loadAdapterFromPath: sinon.stub(),
+        const loadAdapterFromPath = sinon.stub();
+
+        const adapterManager = new AdapterManager({
+            baseClasses: {mail: BaseMailAdapter},
+            loadAdapterFromPath,
             pathsToAdapters: [
                 '', // node_modules
                 'first/path'
             ]
-        }
-
-        const adapterManager = new AdapterManager(opts)
-            .registerAdapter('mail', BaseMailAdapter);
+        });
 
         assert.throws(() => {
             adapterManager.getAdapter('mail', 'some-node-module-adapter');
         });
 
-        sinon.assert.calledWith(opts.loadAdapterFromPath, 'some-node-module-adapter');
+        sinon.assert.calledWith(loadAdapterFromPath, 'some-node-module-adapter');
     });
 
     it('Throws missing-dependency error when adapter exists but requires a missing package', function () {
@@ -104,14 +98,12 @@ describe('AdapterManager', function () {
             `require('this-package-does-not-exist-at-all');\nmodule.exports = class {};`
         );
 
-        const opts: AdapterManagerOptions = {
-            loadAdapterFromPath: require,
-            pathsToAdapters: [tmpDir]
-        }
-
         try {
-            const adapterManager = new AdapterManager(opts)
-                .registerAdapter('scheduling', BaseMailAdapter);
+            const adapterManager = new AdapterManager({
+                baseClasses: {scheduling: BaseMailAdapter},
+                loadAdapterFromPath: require,
+                pathsToAdapters: [tmpDir]
+            });
 
             assert.throws(() => {
                 adapterManager.getAdapter('scheduling', 'BrokenAdapter', {});
@@ -142,13 +134,11 @@ describe('AdapterManager', function () {
         loadAdapterFromPath.withArgs('first/path/mail/broken')
             .throwsException('SHIT_GOT_REAL');
 
-        const opts: AdapterManagerOptions = {
+        const adapterManager = new AdapterManager({
+            baseClasses: {mail: BaseMailAdapter},
             loadAdapterFromPath,
-            pathsToAdapters,
-        }
-
-        const adapterManager = new AdapterManager(opts)
-            .registerAdapter('mail', BaseMailAdapter);
+            pathsToAdapters
+        });
 
         const customAdapter = adapterManager.getAdapter('mail', 'custom', {});
         assert(customAdapter instanceof BaseMailAdapter);
@@ -171,10 +161,6 @@ describe('AdapterManager', function () {
     });
 
     it('Reads adapter type from the adapter name divided with a colon (adapter:feature syntax)', function () {
-        const pathsToAdapters = [
-            '/path'
-        ];
-
         const loadAdapterFromPath = sinon.stub();
 
         loadAdapterFromPath.withArgs('/path/mail/custom')
@@ -182,13 +168,11 @@ describe('AdapterManager', function () {
         loadAdapterFromPath.withArgs('/path/mail/default')
             .returns(DefaultMailAdapter);
 
-        const opts: AdapterManagerOptions = {
+        const adapterManager = new AdapterManager({
+            baseClasses: {mail: BaseMailAdapter},
             loadAdapterFromPath,
-            pathsToAdapters,
-        }
-
-        const adapterManager = new AdapterManager(opts)
-            .registerAdapter('mail', BaseMailAdapter);
+            pathsToAdapters: ['/path']
+        });
 
         const customAdapter = adapterManager.getAdapter('mail:newsletters', 'custom');
         assert(customAdapter instanceof BaseMailAdapter);
@@ -196,10 +180,6 @@ describe('AdapterManager', function () {
     });
 
     it('Creates separate class instances for adapters requested for different features', function () {
-        const pathsToAdapters = [
-            '/path'
-        ];
-
         const loadAdapterFromPath = sinon.stub();
 
         loadAdapterFromPath.withArgs('/path/mail/custom')
@@ -207,13 +187,11 @@ describe('AdapterManager', function () {
         loadAdapterFromPath.withArgs('/path/mail/default')
             .returns(DefaultMailAdapter);
 
-        const opts: AdapterManagerOptions = {
+        const adapterManager = new AdapterManager({
+            baseClasses: {mail: BaseMailAdapter},
             loadAdapterFromPath,
-            pathsToAdapters,
-        }
-
-        const adapterManager = new AdapterManager(opts)
-            .registerAdapter('mail', BaseMailAdapter);
+            pathsToAdapters: ['/path']
+        });
 
         const mailNewslettersAdapter = adapterManager.getAdapter('mail:newsletters', 'custom');
         assert(mailNewslettersAdapter instanceof BaseMailAdapter);
