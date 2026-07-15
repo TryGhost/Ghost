@@ -1260,8 +1260,8 @@ importers:
   apps/comments-ui:
     dependencies:
       '@doist/react-interpolate':
-        specifier: 2.2.2
-        version: 2.2.2(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        specifier: 2.2.3
+        version: 2.2.3(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@headlessui/react':
         specifier: 1.7.19
         version: 1.7.19(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -1388,8 +1388,8 @@ importers:
         version: 2.2.3(supports-color@5.5.0)
     devDependencies:
       '@doist/react-interpolate':
-        specifier: 2.2.2
-        version: 2.2.2(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        specifier: 2.2.3
+        version: 2.2.3(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@internal/cfg-eslint-react':
         specifier: workspace:*
         version: link:../../configs/eslint-react
@@ -5217,9 +5217,9 @@ packages:
     peerDependencies:
       react: '>=16.8.0'
 
-  '@doist/react-interpolate@2.2.2':
-    resolution: {integrity: sha512-Gu+E9WSn4LDpB3pB+X+6WDQzs0vFVGoRiUX3TsYMIRHbmS+Vf0dA1Ot7qk5WbK7uPOdXbUwKBA/IP+Hezo72og==}
-    engines: {node: ^20.0.0 || ^21.0.0 || ^22.0.0, npm: ^10.0.0 || ^11.0.0}
+  '@doist/react-interpolate@2.2.3':
+    resolution: {integrity: sha512-J3340L7xrKUTX++Aylg1oNG3Tb87LjEEkhyeKviX/GqcLaiU7JPXgj5+hLdmd8IkLhUpQT3UN5hYublVHXu7Nw==}
+    engines: {node: ^20.0.0 || ^22.0.0 || ^24.0.0 || ^26.0.0, npm: ^10.0.0 || ^11.0.0}
     peerDependencies:
       prop-types: 15.8.1
       react: '>=17.0.2'
@@ -25455,7 +25455,7 @@ snapshots:
       react: 18.3.1
       tslib: 2.8.1
 
-  '@doist/react-interpolate@2.2.2(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
+  '@doist/react-interpolate@2.2.3(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:
       prop-types: 15.8.1
       react: 17.0.2
