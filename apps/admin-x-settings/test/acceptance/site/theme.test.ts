@@ -57,7 +57,7 @@ async function openInstalledThemeEditor(page: Page, themeName: string) {
 
     const themeListItem = modal.getByTestId('theme-list-item').filter({hasText: new RegExp(escapeRegExp(themeName), 'i')});
     await themeListItem.getByRole('button', {name: 'Menu'}).click();
-    await page.getByTestId('popover-content').getByRole('button', {name: 'Edit code'}).click();
+    await page.getByRole('menuitem', {name: 'Edit code'}).click();
 
     return page.getByTestId('theme-code-editor-modal');
 }
@@ -67,7 +67,7 @@ async function openActiveThemeEditorFromSettings(page: Page) {
 
     const themeSection = page.getByTestId('theme');
     await themeSection.getByRole('button', {name: 'Menu'}).click();
-    await page.getByTestId('popover-content').getByRole('button', {name: 'Edit code'}).click();
+    await page.getByRole('menuitem', {name: 'Edit code'}).click();
 
     return page.getByTestId('theme-code-editor-modal');
 }
@@ -205,14 +205,14 @@ test.describe('Theme settings', async () => {
         // Download the active theme
 
         await casper.getByRole('button', {name: 'Menu'}).click();
-        await page.getByTestId('popover-content').getByRole('button', {name: 'Download'}).click();
+        await page.getByRole('menuitem', {name: 'Download'}).click();
 
         await expect(page.locator('iframe#iframeDownload')).toHaveAttribute('src', /\/api\/admin\/themes\/casper\/download/);
 
         // Delete the inactive theme
 
         await edition.getByRole('button', {name: 'Menu'}).click();
-        await page.getByTestId('popover-content').getByRole('button', {name: 'Delete'}).click();
+        await page.getByRole('menuitem', {name: 'Delete'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Delete'}).click();
