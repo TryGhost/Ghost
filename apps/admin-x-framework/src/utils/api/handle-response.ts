@@ -18,7 +18,9 @@ const handleResponse = async (response: Response) => {
 
         const data = await response.json() as ErrorResponse;
 
-        if (data.errors?.[0]?.type === 'VersionMismatchError') {
+        if (response.status === 403 && data.errors?.[0]?.message === 'Authorization failed') {
+            throw new UnauthorizedError(response, data);
+        } else if (data.errors?.[0]?.type === 'VersionMismatchError') {
             throw new VersionMismatchError(response, data);
         } else if (data.errors?.[0]?.type === 'ValidationError') {
             throw new ValidationError(response, data);
