@@ -84,14 +84,14 @@ test.describe('Analytics settings', async () => {
         await expect(section).toBeVisible();
 
         await expect(section.getByLabel('Web analytics')).toBeChecked();
-        await expect(section.getByLabel('Newsletter opens')).toBeChecked();
-        await expect(section.getByLabel('Newsletter clicks')).toBeChecked();
+        await expect(section.getByLabel('Email opens')).toBeChecked();
+        await expect(section.getByLabel('Email clicks')).toBeChecked();
         await expect(section.getByLabel('Member sources')).toBeChecked();
         await expect(section.getByLabel('Outbound link tagging')).toBeChecked();
 
         await section.getByLabel(/Web analytics/).uncheck();
-        await section.getByLabel(/Newsletter opens/).uncheck();
-        await section.getByLabel(/Newsletter clicks/).uncheck();
+        await section.getByLabel(/Email opens/).uncheck();
+        await section.getByLabel(/Email clicks/).uncheck();
         await section.getByLabel(/Member sources/).uncheck();
         await section.getByLabel(/Outbound link tagging/).uncheck();
 
@@ -191,11 +191,11 @@ test.describe('Analytics settings', async () => {
 
         await expect(section).toBeVisible();
 
-        const newsletterClicksToggle = await section.getByLabel(/Newsletter clicks/);
+        const emailClicksToggle = await section.getByLabel(/Email clicks/);
 
-        await expect(newsletterClicksToggle).not.toBeChecked();
+        await expect(emailClicksToggle).not.toBeChecked();
 
-        await expect(newsletterClicksToggle).toBeDisabled();
+        await expect(emailClicksToggle).toBeDisabled();
     });
     test('Shows web analytics toggle as disabled when web_analytics_configured is false', async ({page}) => {
         await mockApi({page, requests: createMockApiConfig({
@@ -400,8 +400,8 @@ test.describe('Analytics settings', async () => {
         await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird/)).not.toBeVisible();
         await expect(section.getByText(/Get the full picture of what.*s working with detailed, cookie-free traffic analytics/)).not.toBeVisible();
 
-        // Should show the separator
-        await expect(section.locator('.border-grey-200').first()).toBeVisible();
+        // Should render the separator (it has no intrinsic size without the admin CSS pipeline, so check attachment rather than visibility)
+        await expect(section.locator('[data-orientation="horizontal"]').first()).toBeAttached();
     });
 
     test('Upgrade now button navigates to /pro', async ({page}) => {

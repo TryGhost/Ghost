@@ -1,9 +1,10 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {IconLabel, Link, Select, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {IconLabel, Link, Select, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {withErrorBoundary} from '../../error-boundary';
 
 const MAILGUN_REGIONS = [
     {label: '🇺🇸 US', value: 'https://api.mailgun.net/v3'},

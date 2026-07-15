@@ -14,7 +14,7 @@ vi.mock('@sentry/react', () => ({
     ErrorBoundary: ({children}: {children: any}) => children
 }));
 
-vi.mock('@tryghost/admin-x-design-system', () => ({
+vi.mock('../../../src/utils/toast', () => ({
     showToast: vi.fn()
 }));
 
@@ -28,8 +28,8 @@ const mockShowToast = vi.fn();
 const mockToastRemove = vi.fn();
 
 import * as Sentry from '@sentry/react';
-import {showToast} from '@tryghost/admin-x-design-system';
 import toast from 'react-hot-toast';
+import {showToast} from '../../../src/utils/toast';
 
 const createWrapper = (sentryDSN?: string): React.FC<{children: ReactNode}> => {
     const TestWrapper: React.FC<{children: ReactNode}> = ({children}) => (

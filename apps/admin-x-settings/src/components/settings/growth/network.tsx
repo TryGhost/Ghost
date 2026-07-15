@@ -2,13 +2,14 @@ import React from 'react';
 import SettingImg from '../../../assets/images/network.png';
 import TopLevelGroup from '../../top-level-group';
 import validator from 'validator';
-import {Icon, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Icon, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useLimiter} from '../../../hooks/use-limiter';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();

@@ -1,9 +1,9 @@
 import * as Sentry from '@sentry/react';
-import {showToast} from '@tryghost/admin-x-design-system';
 import {useCallback} from 'react';
 import toast from 'react-hot-toast';
 import {useFramework} from '../providers/framework-provider';
 import {APIError, getErrorMessage} from '../utils/errors';
+import {showToast} from '../utils/toast';
 
 function showErrorToast(message: React.ReactNode) {
     toast.remove();

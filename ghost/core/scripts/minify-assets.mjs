@@ -11,10 +11,10 @@
  * in the production build and be able to utilize bundler benefits.
  */
 
-const esbuild = require('esbuild');
-const path = require('path');
-const fs = require('fs');
-const logging = require('@tryghost/logging');
+import esbuild from 'esbuild';
+import path from 'path';
+import fs from 'fs';
+import logging from '@tryghost/logging';
 
 // Determine the root directory by checking for common project files
 function findProjectRoot() {
@@ -85,41 +85,44 @@ const filesToMinify = [
     }
 ];
 
-// Process all files
-(async () => {
-    logging.debug('Starting JS minification...');
+logging.debug('Starting JS minification...');
 
-    for (const file of filesToMinify) {
-        try {
-            const srcPath = resolvePath(file.src);
-            const destPath = resolvePath(file.dest);
+const promises = filesToMinify.map(async (file) => {
+    try {
+        const srcPath = resolvePath(file.src);
+        const destPath = resolvePath(file.dest);
 
-            // Ensure the destination directory exists
-            const destDir = path.dirname(destPath);
-            if (!fs.existsSync(destDir)) {
-                fs.mkdirSync(destDir, {recursive: true});
-            }
-
-            // Create build configuration by merging default options with file-specific options
-            const buildConfig = {
-                entryPoints: [srcPath],
-                outfile: destPath,
-                minify: true,
-                platform: 'browser',
-                // Apply file-specific options, with defaults
-                ...file.options
-            };
-
-            await esbuild.build(buildConfig);
-
-            // Show bundling status in output
-            const bundleStatus = buildConfig.bundle ? 'bundled + minified' : 'minified';
-            logging.debug(`✓ ${file.src} → ${file.dest} (${bundleStatus})`);
-        } catch (error) {
-            console.error(`✗ Error processing ${file.src}:`, error);
-            process.exit(1);
+        // Ensure the destination directory exists
+        const destDir = path.dirname(destPath);
+        if (!fs.existsSync(destDir)) {
+            fs.mkdirSync(destDir, {recursive: true});
         }
-    }
 
-    logging.debug('JS processing complete');
-})();
+        // Create build configuration by merging default options with file-specific options
+        const buildConfig = {
+            entryPoints: [srcPath],
+            outfile: destPath,
+            minify: true,
+            platform: 'browser',
+            // Apply file-specific options, with defaults
+            ...file.options
+        };
+
+        await esbuild.build(buildConfig);
+
+        // Show bundling status in output
+        const bundleStatus = buildConfig.bundle ? 'bundled + minified' : 'minified';
+        logging.debug(`✓ ${file.src} → ${file.dest} (${bundleStatus})`);
+    } catch (error) {
+        console.error(`✗ Error processing ${file.src}:`, error);
+        throw error;
+    }
+})
+
+const results = await Promise.allSettled(promises);
+if (results.some(result => result.status === 'rejected')) {
+    logging.error('One or more files failed to minify. See errors above.');
+    process.exit(1);
+}
+
+logging.debug('JS processing complete');
