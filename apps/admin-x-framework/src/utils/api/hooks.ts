@@ -1,7 +1,7 @@
 import {InfiniteData, InvalidateOptions, InvalidateQueryFilters, QueryKey, UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {usePagination} from '@tryghost/admin-x-design-system';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import useHandleError from '../../hooks/use-handle-error';
+import {usePagination} from '../../hooks/use-pagination';
 import {usePermission} from '../../hooks/use-permissions';
 import {UserRoleType} from '../../api/roles';
 import {useFramework} from '../../providers/framework-provider';

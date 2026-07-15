@@ -3,7 +3,8 @@ import TopLevelGroup from '../../top-level-group';
 import clsx from 'clsx';
 import useQueryParams from '../../../hooks/use-query-params';
 import useStaffUsers from '../../../hooks/use-staff-users';
-import {Avatar, Button, List, ListItem, NoValueLabel, Separator, TabView, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, List, ListItem, NoValueLabel, TabView, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Separator} from '@tryghost/shade/components';
 import {type User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {type UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
@@ -11,6 +12,7 @@ import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 interface OwnerProps {
     user: User;

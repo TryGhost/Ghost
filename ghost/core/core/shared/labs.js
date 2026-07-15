@@ -56,7 +56,8 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'pictureImageFormats',
     'smarterCounts',
-    'getHelperDeduplication'
+    'getHelperDeduplication',
+    'memberDetailsReact'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

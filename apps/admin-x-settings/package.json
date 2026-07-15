@@ -8,19 +8,7 @@
         "url": "https://github.com/TryGhost/Ghost/tree/main/packages/admin-x-settings"
     },
     "author": "Ghost Foundation",
-    "files": [
-        "LICENSE",
-        "README.md",
-        "dist/"
-    ],
-    "main": "./dist/admin-x-settings.umd.cjs",
-    "module": "./dist/admin-x-settings.js",
     "exports": {
-        ".": {
-            "types": "./src/index.tsx",
-            "import": "./dist/admin-x-settings.js",
-            "require": "./dist/admin-x-settings.umd.cjs"
-        },
         "./src/*": {
             "import": "./src/*.tsx",
             "require": "./src/*.tsx"
@@ -28,17 +16,14 @@
     },
     "private": true,
     "scripts": {
-        "dev": "vite build --watch",
         "dev:start": "vite",
-        "build": "tsc && vite build",
         "lint": "pnpm run lint:js",
         "lint:js": "eslint --cache src test",
         "test": "pnpm test:unit",
-        "test:unit": "vitest run --config vitest.config.ts",
+        "test:unit": "tsc --noEmit && vitest run --config vitest.config.ts",
         "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' playwright test",
         "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 pnpm test:acceptance --headed",
-        "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
-        "preview": "vite preview"
+        "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance"
     },
     "dependencies": {
         "@codemirror/lang-css": "catalog:",
@@ -94,7 +79,7 @@
     },
     "nx": {
         "targets": {
-            "dev": {
+            "test:unit": {
                 "dependsOn": [
                     "^build"
                 ]

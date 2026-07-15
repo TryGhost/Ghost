@@ -3,7 +3,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {CheckboxGroup, ColorIndicator, Form, HtmlField, PreviewModalContent, type Tab, showToast} from '@tryghost/admin-x-design-system';
-import {debounce} from '@tryghost/admin-x-design-system';
+import {debounce} from '../../../utils/debounce';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';

@@ -189,6 +189,15 @@ describe('UNIT: route-settings FileStore', function () {
             assert.deepEqual(await store.get(), sampleSettings());
         });
 
+        it('creates the settings directory when it does not exist', async function () {
+            const missingDir = path.join(basePath, 'nested', 'settings');
+            const store = createStore({basePath: missingDir});
+
+            await store.replace(fromYaml(SAMPLE_YAML));
+
+            assert.equal(await fs.readFile(path.join(missingDir, 'routes.yaml'), 'utf8'), SAMPLE_YAML);
+        });
+
         it('does not create a backup when no previous file exists', async function () {
             await createStore().replace(sampleSettings());
 
@@ -214,7 +223,10 @@ describe('UNIT: route-settings FileStore', function () {
         });
 
         it('throws InternalServerError when the settings folder is not writable', async function () {
-            const store = createStore({basePath: path.join(basePath, 'missing-dir')});
+            const fileAsBasePath = path.join(basePath, 'not-a-directory');
+            await fs.writeFile(fileAsBasePath, 'plain file', 'utf8');
+
+            const store = createStore({basePath: fileAsBasePath});
 
             await assert.rejects(store.replace(sampleSettings()), (err: {errorType?: string}) => {
                 assert.equal(err.errorType, 'InternalServerError');

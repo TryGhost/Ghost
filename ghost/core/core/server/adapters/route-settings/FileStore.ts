@@ -116,6 +116,7 @@ export default class FileStore extends RouteSettingsStoreBase {
     private async writeAtomic(targetPath: string, content: string): Promise<void> {
         const tmpPath = `${targetPath}.tmp.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}`;
         try {
+            await fs.ensureDir(path.dirname(targetPath));
             await fs.writeFile(tmpPath, content, 'utf-8');
             await fs.move(tmpPath, targetPath, {overwrite: true});
         } catch (err) {

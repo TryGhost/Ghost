@@ -26,7 +26,8 @@ module.exports = function (Bookshelf) {
                     withRelatedFields,
                     id,
                     offset,
-                    limit
+                    limit,
+                    orderBy
                 } = options;
 
                 const bookshelfPrototype = Bookshelf.registry.models[modelName].prototype;
@@ -64,6 +65,10 @@ module.exports = function (Bookshelf) {
                 };
 
                 let query = Bookshelf.knex(tableNames[modelName]);
+
+                if (orderBy) {
+                    query.orderBy(orderBy);
+                }
 
                 if (offset) {
                     query.offset(offset);

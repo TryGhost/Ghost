@@ -122,6 +122,18 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     };
 });
 
+const mockLabs = vi.hoisted((): {current: Record<string, boolean>} => ({current: {}}));
+
+vi.mock('@tryghost/admin-x-framework/api/config', async () => {
+    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/config')>(
+        '@tryghost/admin-x-framework/api/config'
+    );
+    return {
+        ...actual,
+        useBrowseConfig: () => ({data: {config: {labs: mockLabs.current}}})
+    };
+});
+
 // xyflow's ReactFlow needs a sized container; stub it out for unit tests.
 type StubNode = {id: string; data?: Record<string, unknown>; type?: string};
 type StubEdge = {id: string; source: string; target: string; type?: string; data?: Record<string, unknown>};
@@ -282,6 +294,7 @@ describe('AutomationEditor', () => {
         mockEditMutation.isLoading = false;
         mockEditMutation.variables = undefined;
         mockToastError.mockReset();
+        mockLabs.current = {};
     });
 
     it('renders the loading state while the automation is fetching', () => {
@@ -367,6 +380,86 @@ describe('AutomationEditor', () => {
             ['action-wait', 'action-email'],
             ['action-email', '__tail__']
         ]);
+    });
+
+    it('renders send-email node stats only when the automationAnalytics labs flag is enabled', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {
+                automations: [{
+                    ...automationDetail,
+                    actions: automationDetail.actions.map(action => (action.type === 'send_email'
+                        ? {
+                            ...action,
+                            stats: {
+                                email_sent_count: 1247,
+                                email_opened_count: 780,
+                                opened_rate: 65,
+                                clicked_rate: null
+                            }
+                        }
+                        : action))
+                }]
+            },
+            isLoading: false,
+            isError: false
+        });
+
+        const {unmount} = renderEditor();
+        expect(screen.queryByText('Sent')).not.toBeInTheDocument();
+        unmount();
+
+        mockLabs.current = {automationAnalytics: true};
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('1,247');
+        expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('65%');
+        // @TODO: NY-1457 — Clicked is deferred until click data is available
+        expect(within(emailStep).queryByText('Clicked')).not.toBeInTheDocument();
+    });
+
+    it('does not render send-email node stats when the action has no stats', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        expect(within(emailStep).queryByText('Sent')).not.toBeInTheDocument();
+    });
+
+    it('renders zero sends and an unavailable open rate when there are no sends', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockUseReadAutomation.mockReturnValue({
+            data: {
+                automations: [{
+                    ...automationDetail,
+                    actions: automationDetail.actions.map(action => (action.type === 'send_email'
+                        ? {
+                            ...action,
+                            stats: {
+                                email_sent_count: 0,
+                                email_opened_count: 0,
+                                opened_rate: null,
+                                clicked_rate: null
+                            }
+                        }
+                        : action))
+                }]
+            },
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('0');
+        expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('--');
     });
 
     it('renders styled canvas zoom controls without the interaction toggle', () => {
@@ -1641,7 +1734,7 @@ describe('AutomationEditor', () => {
 
         let emailStep = screen.getByRole('button', {name: 'Send email: Untitled'});
         expect(emailStep).toHaveAttribute('aria-invalid', 'true');
-        expect(emailStep).toHaveClass('items-start');
+        expect(emailStep.firstElementChild).toHaveClass('items-start');
         expect(emailStep).toHaveClass('border-destructive');
         expect(emailStep).not.toHaveClass('border-yellow-600');
         expect(within(emailStep).getByText('Add a subject line and email body.').closest('div')?.previousElementSibling).toHaveClass('mt-[3px]');

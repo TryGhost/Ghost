@@ -2,7 +2,8 @@ import CodeModal from './code/code-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, SettingGroupHeader, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, SettingGroupHeader} from '@tryghost/admin-x-design-system';
+import {withErrorBoundary} from '../../error-boundary';
 
 const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (

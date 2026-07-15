@@ -1,5 +1,6 @@
 import React from 'react';
-import {Heading, Separator, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {Heading, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {Separator} from '@tryghost/shade/components';
 import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const TransistorSettings: React.FC<{

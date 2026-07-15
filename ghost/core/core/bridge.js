@@ -19,8 +19,6 @@ const appService = require('./frontend/services/apps');
 const {adminAuthAssets, cardAssets} = require('./frontend/services/assets-minification');
 const routerManager = require('./frontend/services/routing').routerManager;
 const settingsCache = require('./shared/settings-cache');
-const urlService = require('./server/services/url');
-const routeSettings = require('./server/services/route-settings');
 const labs = require('./shared/labs');
 
 // Listen to settings.locale.edited, similar to the member service and models/base/listeners
@@ -108,7 +106,7 @@ class Bridge {
         }
     }
 
-    async reloadFrontend() {
+    async reloadFrontend(routeSettings, urlService) {
         debug('reload frontend');
         const siteApp = require('./frontend/web/site');
 
@@ -121,7 +119,7 @@ class Bridge {
             urlService: urlService.facade
         };
 
-        await siteApp.reload(routerConfig);
+        siteApp.reload(routerConfig);
 
         // re-initialize apps (register app routers, because we have re-initialized the site routers)
         appService.init();

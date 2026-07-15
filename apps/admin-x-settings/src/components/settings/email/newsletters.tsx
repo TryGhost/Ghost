@@ -4,12 +4,13 @@ import React, {type ReactNode, useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Button, ConfirmationModal, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, TabView} from '@tryghost/admin-x-design-system';
 import {type InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
 import {type Newsletter, type NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
 import {arrayMove} from '@dnd-kit/sortable';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 const NavigateToNewsletter = ({id, children}: {id: string; children: ReactNode}) => {
     const modal = useModal();

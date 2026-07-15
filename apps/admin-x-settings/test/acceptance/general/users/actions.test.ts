@@ -33,7 +33,7 @@ test.describe('User actions', async () => {
         const modal = page.getByTestId('user-detail-modal');
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await page.getByTestId('popover-content').getByRole('button', {name: 'Suspend user'}).click();
+        await page.getByRole('menuitem', {name: 'Suspend user'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Suspend'}).click();
@@ -89,7 +89,7 @@ test.describe('User actions', async () => {
         await expect(modal).toHaveText(/Suspended/);
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await page.getByTestId('popover-content').getByRole('button', {name: 'Un-suspend user'}).click();
+        await page.getByRole('menuitem', {name: 'Un-suspend user'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Un-suspend'}).click();
@@ -130,7 +130,7 @@ test.describe('User actions', async () => {
         const modal = page.getByTestId('user-detail-modal');
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await page.getByTestId('popover-content').getByRole('button', {name: 'Delete user'}).click();
+        await page.getByRole('menuitem', {name: 'Delete user'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Delete user'}).click();
@@ -187,8 +187,14 @@ test.describe('User actions', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await expect(page.getByTestId('popover-content').getByRole('button', {name: 'Make owner'})).toHaveCount(0);
-        await modal.getByRole('button', {name: 'Actions'}).click();
+        await expect(page.getByRole('menu')).toBeVisible();
+        await expect(page.getByRole('menuitem', {name: 'Make owner'})).toHaveCount(0);
+
+        // Radix hides and disables pointer events on everything outside the
+        // open menu, so dismiss it with a raw outside click (Escape would
+        // also close the modal underneath)
+        await page.mouse.click(10, 10);
+        await expect(page.getByRole('menu')).toHaveCount(0);
 
         await modal.getByRole('button', {name: 'Close'}).click();
 
@@ -200,7 +206,7 @@ test.describe('User actions', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await page.getByTestId('popover-content').getByRole('button', {name: 'Make owner'}).click();
+        await page.getByRole('menuitem', {name: 'Make owner'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Yep — I\'m sure'}).click();
@@ -268,7 +274,7 @@ test.describe('User actions', async () => {
         await expect(modal).toHaveText(/Suspended/);
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await page.getByTestId('popover-content').getByRole('button', {name: 'Un-suspend user'}).click();
+        await page.getByRole('menuitem', {name: 'Un-suspend user'}).click();
 
         await expect(page.getByTestId('limit-modal')).toHaveText(/Your plan does not support more staff/);
     });

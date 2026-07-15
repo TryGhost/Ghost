@@ -5,12 +5,13 @@ import WelcomeEmailCustomizeModal from './member-emails/welcome-email-customize-
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Button, ConfirmationModal, Icon, Table, TableRow, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Icon, Table, TableRow, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailRecord, getDefaultWelcomeEmailValues} from './member-emails/default-welcome-email-values';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail, useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {withErrorBoundary} from '../../error-boundary';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
 const EmailPreviewRow: React.FC<{
