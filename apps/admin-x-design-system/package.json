@@ -54,6 +54,7 @@
         "sinon": "catalog:",
         "storybook": "catalog:",
         "tailwindcss": "catalog:",
+        "@typescript/native": "catalog:",
         "typescript": "catalog:",
         "validator": "catalog:",
         "vite": "catalog:",

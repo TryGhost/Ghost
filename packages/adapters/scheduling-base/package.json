@@ -41,6 +41,7 @@
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "sinon": "catalog:",
+    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

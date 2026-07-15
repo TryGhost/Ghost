@@ -43,6 +43,7 @@
     "@vitest/coverage-v8": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "simple-dom": "1.4.0",
+    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"

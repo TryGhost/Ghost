@@ -63,6 +63,8 @@
         "react-string-replace": "2.0.1"
     },
     "devDependencies": {
+        "@typescript/native": "catalog:",
+        "typescript": "catalog:",
         "@internal/cfg-eslint-react": "workspace:*",
         "@playwright/test": "catalog:",
         "@testing-library/jest-dom": "catalog:",

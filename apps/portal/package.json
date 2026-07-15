@@ -41,6 +41,8 @@
         ]
     },
     "devDependencies": {
+        "@typescript/native": "catalog:",
+        "typescript": "catalog:",
         "@doist/react-interpolate": "2.2.3",
         "@internal/cfg-eslint-react": "workspace:*",
         "@sentry/react": "catalog:",
