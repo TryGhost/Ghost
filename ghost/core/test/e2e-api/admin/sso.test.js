@@ -3,7 +3,7 @@ const {restore} = require('../../utils/e2e-framework-mock-manager');
 const {stringMatching} = matchers;
 const sinon = require('sinon');
 const adapterManager = require('../../../core/server/services/adapter-manager');
-const models = require('../../../core/server/models');
+const {SSOBase} = require('@tryghost/adapter-base-sso');
 
 describe('SSO API', function () {
     let agent;
@@ -11,11 +11,12 @@ describe('SSO API', function () {
     beforeAll(async function () {
         // Mock SSO adapter that always returns the owner. The stub stays registered
         // before Ghost boots (the original ordering, in case the adapter resolves
-        // during boot); the owner is looked up lazily per request, because under
-        // per-file isolation the DB isn't seeded until getGhostAPIAgent() /
-        // fixtureManager.init() run below — an eager lookup hits an unmigrated
-        // database (the old serial suite inherited a prior file's schema).
-        class MockSSOAdapter {
+        // during boot); the owner is looked up lazily per request via the user
+        // repository Ghost injects into the adapter — exercising the same
+        // dependency-injection path a real adapter uses, and avoiding an eager
+        // lookup that (under per-file isolation, before fixtureManager.init() runs
+        // below) would hit an unmigrated database.
+        class MockSSOAdapter extends SSOBase {
             async getRequestCredentials() {
                 return {
                     id: 'mock-credentials'
@@ -29,7 +30,7 @@ describe('SSO API', function () {
             }
 
             async getUserForIdentity() {
-                return models.User.getOwnerUser();
+                return this.getOwnerUser();
             }
         }
 

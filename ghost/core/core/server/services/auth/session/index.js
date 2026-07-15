@@ -74,6 +74,22 @@ module.exports = createSessionMiddleware({sessionService});
 // Looks funky but this is a "custom" piece of middleware
 module.exports.createSessionFromToken = () => {
     const ssoAdapter = adapterManager.getAdapter('sso');
+
+    // Provide the SSO adapter with the user lookups it needs, backed by the User
+    // model. This keeps the model coupling here in core and lets adapter
+    // implementations resolve users via the base class helpers instead of
+    // requiring Ghost's model layer directly.
+    ssoAdapter.setUserRepository({
+        async getByEmail(email) {
+            const user = await models.User.findOne({email});
+            return user ? {id: user.id, email: user.get('email')} : null;
+        },
+        async getOwner() {
+            const owner = await models.User.findOne({role: 'Owner', status: 'all'});
+            return owner ? {id: owner.id, email: owner.get('email')} : null;
+        }
+    });
+
     return sessionFromToken({
         callNextWithError: false,
         createSession: sessionService.createVerifiedSessionForUser,

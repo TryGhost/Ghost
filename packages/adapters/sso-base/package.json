@@ -43,7 +43,9 @@
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@tryghost/errors": "catalog:"
+  },
   "nx": {
     "targets": {
       "build": {
