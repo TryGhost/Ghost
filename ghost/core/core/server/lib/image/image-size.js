@@ -17,28 +17,14 @@ const FETCH_ONLY_FORMATS = [
 ];
 
 class ImageSize {
-    constructor({config, imageStore, storageUtils, validator, urlUtils, request, probe}) {
+    constructor({config, imageStore, storageUtils, validator, urlUtils, fetchExternal, probe}) {
         this.config = config;
         this.imageStore = imageStore;
         this.storageUtils = storageUtils;
         this.validator = validator;
         this.urlUtils = urlUtils;
-        this.request = request;
+        this.fetchExternal = fetchExternal;
         this.probe = probe;
-
-        this.REQUEST_OPTIONS = {
-            // we need the user-agent, otherwise some https request may fail (e.g. cloudfare)
-            headers: {
-                'User-Agent': 'Mozilla/5.0 Safari/537.36'
-            },
-            timeout: {
-                request: this.config.get('times:getImageSizeTimeoutInMS') || 10000
-            },
-            retry: {
-                limit: 0 // for `got`, used with image-size
-            },
-            responseType: 'buffer'
-        };
 
         this.NEEDLE_OPTIONS = {
             // we need the user-agent, otherwise some https request may fail (e.g. cloudflare)
@@ -107,7 +93,7 @@ class ImageSize {
     // download full image then use image-size to get it's dimensions
     // returns promise which resolves dimensions
     _fetchImageSizeFromUrl(imageUrl) {
-        return this.request(imageUrl, this.REQUEST_OPTIONS).then((response) => {
+        return this.fetchExternal(imageUrl, this.NEEDLE_OPTIONS).then((response) => {
             return this._imageSizeFromBuffer(response.body);
         });
     }
