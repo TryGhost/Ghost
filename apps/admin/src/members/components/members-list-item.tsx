@@ -3,10 +3,10 @@ import moment from 'moment-timezone';
 import {Avatar, TableCell, TableRow} from '@tryghost/shade/components';
 import {type Member} from '@tryghost/admin-x-framework/api/members';
 import {buildMemberDetailPath} from '@/members/member-detail-hash';
-import {cn} from '@tryghost/shade/utils';
+import {cn, formatPercentage} from '@tryghost/shade/utils';
 import {getActiveColumnValue} from '@/members/member-query-params';
 import type {ActiveColumn} from '@/members/member-query-params';
-import type {CSSProperties} from 'react';
+import {forwardRef, type CSSProperties} from 'react';
 import type {MemberTableColumnStyles} from './member-table-layout';
 
 const PINNED_EDGE_FADE_POSITION_STYLE = {
@@ -140,7 +140,7 @@ function MembersListItemOpenRate({
         <div
             className={cn('text-base', isKnown ? 'text-foreground' : 'text-muted-foreground')}
         >
-            {isKnown ? `${Math.round(emailOpenRate)}%` : 'N/A'}
+            {isKnown ? formatPercentage(emailOpenRate / 100) : 'N/A'}
         </div>
     );
 }
@@ -216,7 +216,7 @@ interface MembersListItemProps {
     onClick: (memberId: string) => void;
 }
 
-function MembersListItem({
+const MembersListItem = forwardRef<HTMLTableRowElement, MembersListItemProps & Omit<React.HTMLAttributes<HTMLTableRowElement>, 'onClick'>>(function MembersListItem({
     item,
     activeColumns,
     backPath,
@@ -226,8 +226,7 @@ function MembersListItem({
     timezone,
     onClick,
     ...props
-}: MembersListItemProps &
-    Omit<React.HTMLAttributes<HTMLTableRowElement>, 'onClick'>) {
+}, ref) {
     const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
         if (isModifiedClick(event)) {
             openMemberInNewTab(item.id, backPath);
@@ -248,6 +247,7 @@ function MembersListItem({
     return (
         <TableRow
             {...props}
+            ref={ref}
             className={cn('group cursor-pointer', props.className)}
             data-testid="members-list-item"
             onAuxClick={handleRowAuxClick}
@@ -303,7 +303,7 @@ function MembersListItem({
             ))}
         </TableRow>
     );
-}
+});
 
 export default MembersListItem;
 export {

@@ -1,6 +1,5 @@
 import { configDefaults, defineConfig } from "vitest/config";
 import type { PluginOption } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -38,7 +37,7 @@ function getBase(command: 'build' | 'serve'): string {
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
     base: getBase(command),
-    plugins: [tailwindcss() as PluginOption, react(), emberAssetsPlugin(), ghostBackendProxyPlugin(), tsconfigPaths()],
+    plugins: [tailwindcss() as PluginOption, react(), emberAssetsPlugin(), ghostBackendProxyPlugin()],
     define: sharedDefine,
     server: {
         host: '0.0.0.0',

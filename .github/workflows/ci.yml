@@ -795,11 +795,19 @@ jobs:
         # resolve the project root since apps live in apps/* and koenig/*
         run: |
           APP_NAME="${{ matrix.app }}"
-          echo "name=${APP_NAME#@tryghost/}" >> $GITHUB_OUTPUT
-          echo "root=$(pnpm -s nx show project ${{ matrix.app }} --json | jq -r .root)" >> $GITHUB_OUTPUT
+          APP_ROOT=$(pnpm -s nx show project ${{ matrix.app }} --json | jq -r .root)
+          {
+            echo "name=${APP_NAME#@tryghost/}"
+            echo "root=$APP_ROOT"
+            if [ -d "$APP_ROOT/playwright-report" ]; then
+              echo "has_report=true"
+            else
+              echo "has_report=false"
+            fi
+          } >> "$GITHUB_OUTPUT"
 
       - name: Upload test results
-        if: always()
+        if: always() && steps.app_name.outputs.has_report == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ${{ steps.app_name.outputs.name }}-playwright-report
