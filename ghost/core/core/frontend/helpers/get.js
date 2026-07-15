@@ -428,6 +428,15 @@ module.exports = async function get(resource, options) {
     apiOptions = parseOptions(ghostGlobals, this, apiOptions);
     apiOptions.context = {member: data.member};
 
+    // {{url}} on the results reads the serializer-attached url, so a narrowed
+    // fields list must still include it
+    if (['posts', 'pages', 'tags'].includes(resource) && _.isString(apiOptions.fields)) {
+        const fields = apiOptions.fields.split(',').map(field => field.trim());
+        if (!fields.includes('url')) {
+            apiOptions.fields = [...fields, 'url'].join(',');
+        }
+    }
+
     // Per-request deduplication: check if we have a cached result for this query
     const queryCache = options.data?._queryCache instanceof Map ? options.data._queryCache : null;
     let cacheKey;
