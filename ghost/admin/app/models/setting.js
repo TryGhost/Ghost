@@ -26,6 +26,7 @@ export default Model.extend(ValidationEngine, {
     slackUsername: attr('string'),
     firstpromoter: attr('boolean'),
     firstpromoterId: attr('string'),
+    claudeApiKey: attr('string'),
     unsplash: attr('boolean'),
     metaTitle: attr('string'),
     metaDescription: attr('string'),

@@ -29,6 +29,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'integrations/unsplash': 'UnsplashModal',
     'integrations/firstpromoter': 'FirstPromoterModal',
     'integrations/pintura': 'PinturaModal',
+    'integrations/claude': 'ClaudeModal',
     'integrations/new': 'AddIntegrationModal',
     'integrations/:id': 'CustomIntegrationModal',
     'recommendations/add': 'AddRecommendationModal',

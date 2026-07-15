@@ -9,6 +9,7 @@ import ContentApiModal from '../../settings/advanced/integrations/content-api-mo
 // import AddOfferModal from '../../settings/growth/offers/AddOfferModal';
 import AddRecommendationModal from '../../settings/growth/recommendations/add-recommendation-modal';
 import AnnouncementBarModal from '../../settings/site/announcement-bar-modal';
+import ClaudeModal from '../../settings/advanced/integrations/claude-modal';
 import CustomIntegrationModal from '../../settings/advanced/integrations/custom-integration-modal';
 import DesignAndThemeModal from '../../settings/site/design-and-theme-modal';
 // import EditOfferModal from '../../settings/growth/offers/EditOfferModal';
@@ -38,6 +39,7 @@ const modals = {
     AddNewsletterModal,
     ContentApiModal,
     AddRecommendationModal,
+    ClaudeModal,
     CustomIntegrationModal,
     DesignAndThemeModal,
     EditRecommendationModal,

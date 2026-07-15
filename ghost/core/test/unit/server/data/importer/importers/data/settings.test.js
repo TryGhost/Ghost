@@ -103,6 +103,19 @@ describe('SettingsImporter', function () {
             assert.equal(siteUuid, undefined);
         });
 
+        it('Does not import the Claude API key', function () {
+            const fakeSettings = [{
+                key: 'claude_api_key',
+                value: 'sk-ant-secret'
+            }];
+
+            const importer = new SettingsImporter({settings: fakeSettings}, {dataKeyToImport: 'settings'});
+
+            importer.beforeImport();
+
+            assert.equal(find(importer.dataToImport, {key: 'claude_api_key'}), undefined);
+        });
+
         it('Adds a problem if the existing data is_private is false, and new data is_private is true', function () {
             const fakeSettings = [{
                 key: 'password',

@@ -16,6 +16,7 @@ const db = require('../../../core/server/data/db');
 const dbUtils = require('../../utils/db-utils');
 
 const currentVersion = require('@tryghost/version');
+const addClaudeApiKeySetting = require('../../../core/server/data/migrations/versions/6.53/2026-07-14-12-25-50-add-claude-api-key-setting');
 const currentMajor = semver.major(currentVersion.original);
 const previousMinor = semver.minor(currentVersion.original) - 1;
 const previousVersion = `${currentMajor}.${previousMinor}`;
@@ -39,6 +40,21 @@ describe('Migrations', function () {
             await knexMigrator.rollback({
                 version: previousVersion,
                 force: true
+            });
+        });
+
+        it('adds the Claude API key setting', async function () {
+            await addClaudeApiKeySetting.up({transacting: db.knex});
+
+            const setting = await db.knex('settings')
+                .where('key', 'claude_api_key')
+                .first();
+
+            assert.deepEqual(_.pick(setting, ['key', 'value', 'type', 'group']), {
+                key: 'claude_api_key',
+                value: null,
+                type: 'string',
+                group: 'claude'
             });
         });
 

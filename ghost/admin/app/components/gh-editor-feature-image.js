@@ -36,6 +36,7 @@ function normalizeCaptionHtml(html) {
 }
 
 export default class GhEditorFeatureImageComponent extends Component {
+    @service notifications;
     @service settings;
 
     @tracked isEditingAlt = false;
@@ -43,6 +44,7 @@ export default class GhEditorFeatureImageComponent extends Component {
     @tracked showUnsplashSelector = false;
     @tracked canDrop = false;
     @tracked tkCount = 0;
+    @tracked isGeneratingAlt = false;
 
     get caption() {
         const content = this.args.caption;
@@ -107,6 +109,23 @@ export default class GhEditorFeatureImageComponent extends Component {
     @action
     onAltInput(event) {
         this.args.updateAlt(event.target.value);
+    }
+
+    @action
+    async generateAlt() {
+        if (this.isGeneratingAlt || !this.args.generateAlt || !this.args.image) {
+            return;
+        }
+
+        try {
+            this.isGeneratingAlt = true;
+            const altText = await this.args.generateAlt(this.args.image);
+            this.args.updateAlt(altText);
+        } catch (error) {
+            this.notifications.showAPIError(error, {key: 'feature-image.alt-text.generate'});
+        } finally {
+            this.isGeneratingAlt = false;
+        }
     }
 
     @action

@@ -207,5 +207,11 @@ describe('Exporter', function () {
             const allowedKeysLength = 108;
             assert.equal(totalKeysLength, SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
         });
+
+        it('blocks the Claude API key from exports', function () {
+            const {SETTING_KEYS_BLOCKLIST} = require('../../../../../core/server/data/exporter/table-lists.js');
+
+            assert.equal(SETTING_KEYS_BLOCKLIST.includes('claude_api_key'), true);
+        });
     });
 });
