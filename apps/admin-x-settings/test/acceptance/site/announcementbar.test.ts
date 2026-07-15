@@ -1,5 +1,14 @@
-import {type ElementHandle, expect, test} from '@playwright/test';
+import {type ElementHandle, type Page, expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, mockSitePreview, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+
+const openAnnouncementBarModal = async (page: Page) => {
+    await page.getByTestId('announcement-bar').getByRole('button', {name: 'Customize'}).click();
+    const modal = page.getByTestId('announcement-bar-modal');
+    // Opening lazily imports the modals chunk; a cold dev server can take
+    // longer than the default 5s expect timeout to serve that module graph
+    await expect(modal).toBeVisible({timeout: 20000});
+    return modal;
+};
 
 test.describe('Announcement Bar', async () => {
     test('Working with the announcement bar preview', async ({page}) => {
@@ -20,11 +29,7 @@ test.describe('Announcement Bar', async () => {
 
         await page.goto('/#/settings/announcement-bar');
 
-        const section = page.getByTestId('announcement-bar');
-
-        await section.getByRole('button', {name: 'Customize'}).click();
-        const modal = page.getByTestId('announcement-bar-modal');
-        await expect(modal).toBeVisible();
+        const modal = await openAnnouncementBarModal(page);
         await expect(modal.getByTestId('announcement-bar-preview-iframe')).toBeVisible();
 
         const checkTextInIframes = async (iframesHandles: ElementHandle[], textToSearch: string) => {
@@ -42,16 +47,20 @@ test.describe('Announcement Bar', async () => {
             return textExists;
         };
 
-        const iframesHandleHome = await modal.getByTestId('announcement-bar-preview-iframe').locator('iframe').elementHandles();
-        const textExistsInHomeIframes = await checkTextInIframes(iframesHandleHome, 'homepage preview');
-        expect(textExistsInHomeIframes).toBeTruthy();
+        // The preview content is fetched and written into the iframes
+        // asynchronously, so poll instead of checking a single snapshot
+        await expect(async () => {
+            const iframesHandleHome = await modal.getByTestId('announcement-bar-preview-iframe').locator('iframe').elementHandles();
+            expect(await checkTextInIframes(iframesHandleHome, 'homepage preview')).toBeTruthy();
+        }).toPass({timeout: 10000});
 
         await modal.getByTestId('design-toolbar').getByRole('tab', {name: 'Post'}).click();
         await expect(modal.getByTestId('announcement-bar-preview-iframe')).toBeVisible();
 
-        const iframesHandlePost = await modal.getByTestId('announcement-bar-preview-iframe').locator('iframe').elementHandles();
-        const textExistsInPostIframes = await checkTextInIframes(iframesHandlePost, 'post preview');
-        expect(textExistsInPostIframes).toBeTruthy();
+        await expect(async () => {
+            const iframesHandlePost = await modal.getByTestId('announcement-bar-preview-iframe').locator('iframe').elementHandles();
+            expect(await checkTextInIframes(iframesHandlePost, 'post preview')).toBeTruthy();
+        }).toPass({timeout: 10000});
     });
 
     // TODO - lexical isn't loading in the preview
@@ -88,15 +97,11 @@ test.describe('Announcement Bar', async () => {
 
         await page.goto('/#/settings/announcement-bar');
 
-        const section = page.getByTestId('announcement-bar');
-
-        await section.getByRole('button', {name: 'Customize'}).click();
+        const modal = await openAnnouncementBarModal(page);
 
         const labelElement = page.locator('label:text("Background color")');
 
         await expect(labelElement).toHaveCount(1);
-
-        const modal = page.getByTestId('announcement-bar-modal');
 
         // Check the titles of the buttons.
         // Get the parent div of the label
@@ -134,15 +139,11 @@ test.describe('Announcement Bar', async () => {
 
         await page.goto('/#/settings/announcement-bar');
 
-        const section = page.getByTestId('announcement-bar');
-
-        await section.getByRole('button', {name: 'Customize'}).click();
+        const modal = await openAnnouncementBarModal(page);
 
         const labelElement = page.locator('h6:text("Visibility")');
 
         await expect(labelElement).toHaveCount(1);
-
-        const modal = page.getByTestId('announcement-bar-modal');
 
         // get checkbox input with value of free_members
 
