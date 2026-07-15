@@ -9,8 +9,8 @@ export type AdapterConstructor<T extends Adapter = Adapter> = abstract new (...a
 
 /**
  * A type-only registry mapping an adapter type name (e.g. "storage") to the
- * instance type of the base class registered for it. Built up incrementally as
- * `registerAdapter` is called — see `AdapterManager`.
+ * instance type of the base class registered for it. Derived from the
+ * `baseClasses` map passed to `AdapterManager` — see `RegistryOf`.
  */
 export type AdapterRegistry = Record<string, Adapter>;
 

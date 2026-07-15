@@ -1,85 +1,91 @@
 import path from 'node:path';
 import errors from '@tryghost/errors';
-import {resolveAdapterExport} from './utils';
+import {resolveAdapterExport, resolveAdapterOptions, normalizeAdapterConfig} from './utils';
+import type {ConfigInstance} from '../../../shared/config/loader';
 import type {
     Adapter,
     AdapterConstructor,
     AdapterName,
-    AdapterRegistry,
     ResolvedAdapter
 } from './types';
 
-export interface AdapterManagerOptions {
+/**
+ * A map from an adapter type name (e.g. "storage") to the base class every
+ * adapter of that type must extend.
+ */
+export type BaseClassMap = Record<string, AdapterConstructor>;
+
+/**
+ * The type-only registry derived from a `BaseClassMap`: each adapter type name
+ * mapped to the instance type of its base class. Read back by `getAdapter` to
+ * return a precisely-typed instance.
+ */
+export type RegistryOf<BaseClasses extends BaseClassMap> = {
+    [Type in keyof BaseClasses]: InstanceType<BaseClasses[Type]>;
+};
+
+export interface AdapterManagerOptions<BaseClasses extends BaseClassMap = BaseClassMap> {
     /** The paths to check, e.g. ['content/adapters', 'core/server/adapters'] */
     pathsToAdapters: string[];
     /** A function to load adapters, e.g. global.require */
     loadAdapterFromPath: (path: string) => unknown;
+    /** The base classes keyed by adapter type name, e.g. {storage: GhostStorageBase} */
+    baseClasses: BaseClasses;
+    /** The config instance used to resolve which adapter and options to load */
+    config: ConfigInstance;
 }
 
 /**
  * AdapterManager loads, validates and caches adapter instances by type.
  *
- * The `Registry` type parameter is a phantom, type-only map from an adapter type
- * name to the instance type of its registered base class. It has no runtime
- * representation — it is grown by chaining `registerAdapter` calls, and read back
- * by `getAdapter` to return a precisely-typed instance:
+ * The set of known adapter types (and the base class each must extend) is fixed
+ * at construction time via the `baseClasses` map. The `BaseClasses` type
+ * parameter is inferred from that map, so `getAdapter` can return a
+ * precisely-typed instance:
  *
  * ```ts
- * const mgr = new AdapterManager({pathsToAdapters, loadAdapterFromPath})
- *     .registerAdapter('sso', SSOBase)
- *     .registerAdapter('storage', StorageBase);
+ * const mgr = new AdapterManager({
+ *     pathsToAdapters,
+ *     loadAdapterFromPath,
+ *     config,
+ *     baseClasses: {sso: SSOBase, storage: StorageBase}
+ * });
  *
- * mgr.getAdapter('sso', 'MyAdapter', opts);        // => SSOBase instance
- * mgr.getAdapter('storage:images', 'S3', opts);    // => StorageBase instance
+ * mgr.getAdapter('sso');            // => SSOBase instance
+ * mgr.getAdapter('storage:images'); // => StorageBase instance
  * ```
- */ // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export class AdapterManager<Registry extends AdapterRegistry = {}> {
-    private baseClasses: Record<string, AdapterConstructor>;
+ */
+export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
+    private baseClasses: BaseClassMap;
     private instanceCache: Record<string, Record<string, Adapter>>;
     private pathsToAdapters: string[];
     private loadAdapterFromPath: (path: string) => unknown;
+    private config: ConfigInstance;
 
-    constructor({pathsToAdapters, loadAdapterFromPath}: AdapterManagerOptions) {
+    constructor({pathsToAdapters, loadAdapterFromPath, baseClasses, config}: AdapterManagerOptions<BaseClasses>) {
         this.baseClasses = {};
         this.instanceCache = {};
         this.pathsToAdapters = pathsToAdapters;
         this.loadAdapterFromPath = loadAdapterFromPath;
-    }
+        this.config = config;
 
-    /**
-     * Register an adapter type and the corresponding base class. Must be called
-     * before requesting adapters of that type.
-     *
-     * Returns `this` widened with the new type in the registry, so chained calls
-     * accumulate the full set of known adapter types at the type level. Re-registering
-     * a type replaces its base class at runtime, so the registry entry is replaced
-     * rather than intersected — an intersection would claim the adapter still has the
-     * members of the base class it no longer extends.
-     *
-     * @param type The name for the type of adapter
-     * @param BaseClass The class from which all adapters of this type must extend
-     */
-    registerAdapter<Type extends string, Base extends AdapterConstructor>(
-        type: Type,
-        BaseClass: Base
-    ): AdapterManager<Omit<Registry, Type> & Record<Type, InstanceType<Base>>> {
-        if (type.includes(':')) {
-            throw new errors.IncorrectUsageError({
-                message: `Adapter type "${type}" cannot contain a colon.`
-            });
+        for (const [type, BaseClass] of Object.entries(baseClasses)) {
+            if (type.includes(':')) {
+                throw new errors.IncorrectUsageError({
+                    message: `Adapter type "${type}" cannot contain a colon.`
+                });
+            }
+
+            this.instanceCache[type] = {};
+            this.baseClasses[type] = BaseClass;
         }
-
-        this.instanceCache[type] = {};
-        this.baseClasses[type] = BaseClass;
-
-        return this as unknown as AdapterManager<Omit<Registry, Type> & Record<Type, InstanceType<Base>>>;
     }
 
     /**
      * Force recreation of all instances instead of reusing cached instances.
      * Use when editing config file during tests.
      */
-    clearInstanceCache(): void {
+    clearCache(): void {
         for (const key of Object.keys(this.instanceCache)) {
             this.instanceCache[key] = {};
         }
@@ -88,26 +94,30 @@ export class AdapterManager<Registry extends AdapterRegistry = {}> {
     /**
      * getAdapter
      *
-     * @param adapterName The name of the type of adapter, e.g. "storage" or
+     * Resolves the active adapter class name and options for the given name from
+     * config, then loads, validates and caches the adapter instance.
+     *
+     * @param name The name of the type of adapter, e.g. "storage" or
      *   "scheduling", optionally including the feature, e.g. "storage:images"
-     * @param adapterClassName The active adapter instance class name e.g. "LocalFileStorage"
-     * @param config The config the adapter could be instantiated with
      *
      * @returns The resolved and instantiated adapter
      */
-    getAdapter<Name extends AdapterName<Registry>>(
-        adapterName: Name,
-        adapterClassName: string,
-        config?: object
-    ): ResolvedAdapter<Registry, Name>;
-    getAdapter(adapterName: string, adapterClassName: string, config?: object): Adapter {
-        if (!adapterName || !adapterClassName) {
+    getAdapter<Name extends AdapterName<RegistryOf<BaseClasses>>>(
+        name: Name
+    ): ResolvedAdapter<RegistryOf<BaseClasses>, Name>;
+    getAdapter(name: string): Adapter {
+        if (!name) {
             throw new errors.IncorrectUsageError({
-                message: 'getAdapter must be called with a adapterName and a adapterClassName.'
+                message: 'getAdapter must be called with an adapter name.'
             });
         }
 
-        const [adapterType] = adapterName.split(':');
+        // Re-read config on every call so runtime config changes (and test config
+        // overrides) are reflected, matching the original JS implementation.
+        const adapterServiceConfig = normalizeAdapterConfig(this.config);
+        const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+
+        const [adapterType] = name.split(':');
         const adapterCache = this.instanceCache[adapterType];
 
         if (!adapterCache) {
@@ -116,8 +126,14 @@ export class AdapterManager<Registry extends AdapterRegistry = {}> {
             });
         }
 
+        if (!adapterClassName) {
+            throw new errors.IncorrectUsageError({
+                message: `Unable to find ${adapterType} adapter in ${this.pathsToAdapters}.`
+            });
+        }
+
         // @NOTE: example cache key value 'email:newsletters:custom-newsletter-adapter'
-        const adapterCacheKey = `${adapterName}:${adapterClassName}`;
+        const adapterCacheKey = `${name}:${adapterClassName}`;
         if (adapterCache[adapterCacheKey]) {
             return adapterCache[adapterCacheKey];
         }
@@ -167,7 +183,7 @@ export class AdapterManager<Registry extends AdapterRegistry = {}> {
         // `Adapter` is an abstract-compatible constructor type; the runtime value
         // is always a concrete class here, so instantiation is safe.
         const AdapterClass = Adapter as new (config?: object) => Adapter;
-        const adapter = new AdapterClass(config);
+        const adapter = new AdapterClass(adapterConfig);
 
         const BaseClass = this.baseClasses[adapterType];
         if (!(adapter instanceof BaseClass)) {
@@ -197,5 +213,3 @@ export class AdapterManager<Registry extends AdapterRegistry = {}> {
         return adapter;
     }
 }
-
-export type InferAdapterName<T> = T extends AdapterManager<infer R> ? AdapterName<R> : never;
