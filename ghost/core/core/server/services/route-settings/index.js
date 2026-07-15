@@ -1,3 +1,5 @@
+const config = require('../../../shared/config');
+const parseYaml = require('./yaml-parser');
 const DynamicRoutingService = require('./dynamic-routing-service');
 
 const service = new DynamicRoutingService();
@@ -5,8 +7,16 @@ const service = new DynamicRoutingService();
 module.exports = {
     init: async () => {
         const adapterManager = require('../adapter-manager');
+        const SettingsLoader = require('./settings-loader');
+        const SettingsPathManager = require('./settings-path-manager');
 
-        service.configure({store: adapterManager.getAdapter('route-settings')});
+        const settingsPathManager = new SettingsPathManager({type: 'routes', paths: [config.getContentPath('settings')]});
+        const settingsLoader = new SettingsLoader({parseYaml, settingFilePath: settingsPathManager.getDefaultFilePath()});
+
+        service.configure({
+            store: adapterManager.getAdapter('route-settings'),
+            settingsLoader
+        });
     },
 
     get service() {

@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const fs = require('fs-extra');
 const debug = require('@tryghost/debug')('services:route-settings:service');
+const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
@@ -14,6 +15,10 @@ const messages = {
  */
 const DEFAULT_ROUTES_SETTING_HASH = '3d180d52c663d173a6be791ef411ed01';
 
+function isStoredContentError(err) {
+    return err.errorType === 'ValidationError' || err.errorType === 'IncorrectUsageError';
+}
+
 /**
  * @typedef {import('@tryghost/adapter-base-route-settings').RouteSettingsStore} RouteSettingsStore
  */
@@ -22,21 +27,26 @@ class DynamicRoutingService {
     constructor() {
         /** @type {RouteSettingsStore} */
         this.store = null;
+        this.settingsLoader = null;
         this.routerManager = null;
         this.urlService = null;
     }
 
     /**
-     * Wire the storage-layer dependency so the API surface (get, setFromFilePath,
+     * Wire the storage-layer dependencies so the API surface (get, setFromFilePath,
      * getCurrentHash) works immediately after boot — even when the frontend is
      * disabled and `start()` is never called.
      *
      * @param {object} deps
      * @param {RouteSettingsStore} deps.store - adapter-manager provided store
+     * @param {object} [deps.settingsLoader]  - legacy SettingsLoader used as a
+     *        read-path fallback when the stricter store parser rejects a file
+     *        (see loadRouteSettings)
      */
-    configure({store}) {
+    configure({store, settingsLoader}) {
         debug('configure');
         this.store = store;
+        this.settingsLoader = settingsLoader;
     }
 
     /**
@@ -59,7 +69,21 @@ class DynamicRoutingService {
     async loadRouteSettings() {
         const {expandRouteSettings} = require('./activation-bridge');
 
-        return expandRouteSettings(await this.store.get());
+        try {
+            return expandRouteSettings(await this.store.get());
+        } catch (err) {
+            if (!this.settingsLoader || err.errorType !== 'ValidationError') {
+                throw err;
+            }
+            logging.error(new errors.InternalServerError({
+                message: 'Route settings failed the stricter validation and were loaded with the legacy validator instead. Please review the routes.yaml file.',
+                code: 'ROUTE_SETTINGS_VALIDATION_FALLBACK',
+                err,
+                errorDetails: {reason: err.message}
+            }));
+
+            return this.settingsLoader.loadSettings();
+        }
     }
 
     getDefaultHash() {
@@ -75,9 +99,17 @@ class DynamicRoutingService {
     }
 
     async get() {
-        const settings = await this.store.get();
+        try {
+            const settings = await this.store.get();
 
-        return settings.yamlSource;
+            return settings.yamlSource;
+        } catch (err) {
+            if (!this.settingsLoader || !isStoredContentError(err)) {
+                throw err;
+            }
+
+            return fs.readFile(this.settingsLoader.settingFilePath, 'utf8');
+        }
     }
 
     async setFromFilePath(filePath) {
@@ -90,7 +122,14 @@ class DynamicRoutingService {
         // upload is rejected here and never reaches the store.
         const content = await fs.readFile(filePath, 'utf8');
         const next = parseRouteSettings(parseYaml(content), content);
-        const previous = await this.store.get();
+        let previous = null;
+        try {
+            previous = await this.store.get();
+        } catch (err) {
+            if (!isStoredContentError(err)) {
+                throw err;
+            }
+        }
 
         await this.store.replace(next);
 
@@ -99,19 +138,14 @@ class DynamicRoutingService {
         const bringBackValidRoutes = async () => {
             urlService.resetGenerators({releaseResourcesOnly: true});
 
-            await this.store.replace(previous);
+            if (previous) {
+                await this.store.replace(previous);
+            }
 
-            return bridge.reloadFrontend();
+            return bridge.reloadFrontend(this, urlService);
         };
 
-        try {
-            await bridge.reloadFrontend();
-        } catch (err) {
-            return bringBackValidRoutes()
-                .finally(() => {
-                    throw err;
-                });
-        }
+        await bridge.reloadFrontend(this, urlService);
 
         let tries = 0;
 
