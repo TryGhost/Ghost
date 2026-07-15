@@ -96,8 +96,10 @@ describe('session expiry handling', () => {
         const {useFetchApi, SessionExpiredError} = await loadModules();
         const {result} = renderHook(() => useFetchApi());
 
-        await expect(result.current('http://localhost:3000/ghost/api/admin/posts/401/', {retry: false}))
-            .rejects.toBeInstanceOf(SessionExpiredError);
+        const error = await result.current('http://localhost:3000/ghost/api/admin/posts/401/', {retry: false})
+            .catch(fetchError => fetchError);
+        expect(error).toBeInstanceOf(SessionExpiredError);
+        expect(error.data).toEqual(unauthorizedBody);
 
         expect(window.location.replace).toHaveBeenCalledExactlyOnceWith('/ghost/');
     });
@@ -126,7 +128,8 @@ describe('session expiry handling', () => {
         '#/signin',
         '#/signin/verify',
         '#/signup/invitation-token',
-        '#/setup/one'
+        '#/setup/one',
+        '#/reset/reset-token'
     ])('does not redirect from unauthenticated Admin route %s', async (hash) => {
         (window as any).location.hash = hash;
         const {useFetchApi, SessionExpiredError} = await loadModules();

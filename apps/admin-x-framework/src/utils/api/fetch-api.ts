@@ -52,7 +52,7 @@ const xhrToFetchResponse = (xhr: Readonly<XMLHttpRequest>): Response => (
 
 const GHOST_API_REQUEST = /\/ghost\/api\//;
 const SESSION_API_REQUEST = /\/ghost\/api\/admin\/session([/?#]|$)/;
-const UNAUTHENTICATED_ADMIN_ROUTE = /^#\/(?:setup|signin|signup)(?:[/?]|$)/;
+const UNAUTHENTICATED_ADMIN_ROUTE = /^#\/(?:reset|setup|signin|signup)(?:[/?]|$)/;
 
 let sessionExpiryHandled = false;
 
@@ -65,23 +65,21 @@ const isUnauthenticatedAdminRoute = (adminRoot: string) => {
 };
 
 // An unauthorized Ghost API response outside the session endpoint means the
-// cookie session expired. Replace to the admin root unless Ember is already
-// booting or displaying an unauthenticated route.
-const redirectOnSessionExpiry = (endpoint: string | URL) => {
+// cookie session expired
+const isSessionExpiry = (endpoint: string | URL) => {
     const url = endpoint.toString();
+    return GHOST_API_REQUEST.test(url) && !SESSION_API_REQUEST.test(url);
+};
 
-    if (!GHOST_API_REQUEST.test(url) || SESSION_API_REQUEST.test(url)) {
-        return false;
-    }
-
+// Replace to the admin root at most once across concurrent failures, unless
+// Ember is already booting or displaying an unauthenticated route
+const redirectOnSessionExpiry = () => {
     const {adminRoot} = getGhostPaths();
 
     if (!sessionExpiryHandled && !isUnauthenticatedAdminRoute(adminRoot)) {
         sessionExpiryHandled = true;
         window.location.replace(adminRoot);
     }
-
-    return true;
 };
 
 const fetchWithXhr = (
@@ -242,7 +240,8 @@ export const useFetchApi = () => {
                         throw new TimeoutError();
                     }
 
-                    if (error instanceof UnauthorizedError && redirectOnSessionExpiry(endpoint)) {
+                    if (error instanceof UnauthorizedError && isSessionExpiry(endpoint)) {
+                        redirectOnSessionExpiry();
                         throw new SessionExpiredError(error.response!, error.data, {cause: error});
                     }
 

@@ -10,6 +10,9 @@ const handleResponse = async (response: Response) => {
     } else if (response.status === 413) {
         throw new RequestEntityTooLargeError(response, await response.text());
     } else if (response.status === 401) {
+        if (response.headers.get('content-type')?.includes('json')) {
+            throw new UnauthorizedError(response, await response.json());
+        }
         throw new UnauthorizedError(response, await response.text());
     } else if (!response.ok) {
         if (!response.headers.get('content-type')?.includes('json')) {
