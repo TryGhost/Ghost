@@ -1,0 +1,6 @@
+/* Standalone lane only (dev:start + acceptance harness). The embedded lane gets
+   shade from apps/admin/src/index.css — never import shade via styles/index.css. */
+@import './index.css';
+@import '@tryghost/shade/styles.css';
+
+@source "../../../shade/src/**/*.{js,ts,jsx,tsx}";
