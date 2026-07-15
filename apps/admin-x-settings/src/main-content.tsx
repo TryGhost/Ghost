@@ -2,12 +2,11 @@ import ExitSettingsButton from './components/exit-settings-button';
 import Settings from './components/settings';
 import Sidebar from './components/sidebar';
 import Users from './components/settings/general/users';
-import {Heading, confirmIfDirty, topLevelBackdropClasses} from '@tryghost/admin-x-design-system';
+import {Heading, confirmIfDirty, topLevelBackdropClasses, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {type ReactNode, useEffect} from 'react';
 import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from './components/providers/global-data-provider';
-import {useGlobalDirtyState} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const EMPTY_KEYWORDS: string[] = [];
