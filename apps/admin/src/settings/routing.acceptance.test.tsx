@@ -4,11 +4,9 @@ import { currentRoute, fakeSettingsScreens, renderAdminApp } from "@test-utils/a
 import { settingsScreen } from "./settings.screen";
 
 describe("Settings routing", () => {
-    it("reopens an open modal from its persisted route", async () => {
+    it("opens a modal from a direct route", async () => {
         fakeSettingsScreens();
 
-        // A browser refresh reconstructs this route; render it directly to
-        // preserve the contract without a second full-app render.
         await renderAdminApp("/settings/portal/edit");
 
         await expect.element(settingsScreen.portalModal()).toBeVisible();

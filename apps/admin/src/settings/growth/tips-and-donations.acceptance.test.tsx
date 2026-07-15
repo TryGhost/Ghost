@@ -28,6 +28,7 @@ describe("Tips and donations settings", () => {
         await renderAdminApp("/settings");
 
         await expect(settingsScreen.tipsAndDonations()).toHaveCount(0);
+        await expect(settingsScreen.navItem("Tips & donations")).toHaveCount(0);
     });
 
     it("shows the suggested amount and shareable link when Stripe is enabled", async () => {
@@ -57,9 +58,7 @@ describe("Tips and donations settings", () => {
         await settingsScreen.suggestedAmount().fill("7.25");
         await section.getByRole("button", { name: "Save" }).click();
 
-        await expect.poll(() => settingsApi.lastRequest).toEqual({
-            settings: [{ key: "donations_suggested_amount", value: "725" }],
-        });
+        await expect(settingsApi).toHaveEditedSettings([{ key: "donations_suggested_amount", value: "725" }]);
     });
 
     it("blocks suggested amounts above Stripe's maximum", async () => {

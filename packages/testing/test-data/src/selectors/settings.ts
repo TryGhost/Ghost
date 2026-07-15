@@ -26,11 +26,23 @@ export const portal = "portal";
 export const explore = "explore";
 export const network = "network";
 export const tipsAndDonations = "tips-and-donations";
+export const publicationLanguage = "publication-language";
+export const timezone = "timezone";
+export const socialAccounts = "social-accounts";
+export const seoMeta = "seometa";
+export const localeSelect = "locale-select";
+export const timezoneSelect = "timezone-select";
+export const seoTabView = "seo-tabview";
+export const selectOption = "select-option";
+export const toastError = "toast-error";
 
 // accessible names
 export const settingsSearchLabel = "Search";
 export const siteTitleLabel = "Site title";
 export const suggestedAmountLabel = "Suggested amount";
+export const siteDescriptionLabel = "Site description";
+export const siteLanguageLabel = "Site language";
+export const siteTimezoneLabel = "Site timezone";
 
 // text fragments
 export const testimonialPlaceholder = "What changed for the better since you switched to Ghost?";
