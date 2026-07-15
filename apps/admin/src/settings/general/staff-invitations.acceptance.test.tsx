@@ -1,4 +1,5 @@
 import {describe, expect, it} from "vitest";
+import {userEvent} from "vitest/browser";
 
 import {configResponse, fakeAdminEndpoint, fakeInvites, renderAdminApp} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
@@ -23,14 +24,16 @@ describe("Staff invitations", () => {
         await modal.getByRole("button", {name: "Send invitation"}).click();
         await expect.element(modal.getByText("Please enter a valid email address.")).toBeVisible();
 
-        await modal.getByLabelText("Email address").fill("test");
+        const emailInput = modal.getByLabelText("Email address");
+        await userEvent.type(emailInput.element(), "test");
         await expect(modal.getByText("Please enter a valid email address.")).toHaveCount(0);
-        await modal.getByRole("button", {name: "Retry"}).click();
+        await modal.getByRole("button", {name: "Send invitation"}).click();
         await expect.element(modal.getByText("Please enter a valid email address.")).toBeVisible();
 
-        await modal.getByLabelText("Email address").fill(author.email);
+        await emailInput.fill("");
+        await userEvent.type(emailInput.element(), author.email);
         await expect(modal.getByText("Please enter a valid email address.")).toHaveCount(0);
-        await modal.getByRole("button", {name: "Retry"}).click();
+        await modal.getByRole("button", {name: "Send invitation"}).click();
         await expect.element(modal.getByText("A user with that email address already exists.")).toBeVisible();
 
         await modal.getByLabelText("Email address").fill(existingInvite.email);
@@ -38,7 +41,7 @@ describe("Staff invitations", () => {
         await expect.element(modal.getByText("A user with that email address was already invited.")).toBeVisible();
 
         await modal.getByLabelText("Email address").fill(created.email);
-        await modal.getByRole("button", {name: "Author"}).click();
+        await modal.getByRole("radio", {name: /^Author\b/}).click();
         await modal.getByRole("button", {name: "Retry"}).click();
 
         await expect.element(settingsScreen.successToast()).toHaveTextContent("Invitation sent");
@@ -65,7 +68,7 @@ describe("Staff invitations", () => {
 
         const modal = await openInviteModal();
         await modal.getByLabelText("Email address").fill("existing-on-next-page@test.com");
-        await modal.getByRole("button", {name: "Author"}).click();
+        await modal.getByRole("radio", {name: /^Author\b/}).click();
         await modal.getByRole("button", {name: "Send invitation"}).click();
 
         await expect.element(modal.getByText("A user with that email address already exists.")).toBeVisible();
@@ -131,10 +134,10 @@ describe("Staff invitations", () => {
         await renderAdminApp("/settings/staff", {boot: {...boot, browseConfig: {response: config}}});
 
         const modal = await openInviteModal();
-        await modal.getByRole("button", {name: "Author"}).click();
+        await modal.getByRole("radio", {name: /^Author\b/}).click();
         await expect.element(modal).toHaveTextContent("Your plan does not support more staff");
 
-        await modal.getByRole("button", {name: "Contributor"}).click();
+        await modal.getByRole("radio", {name: /^Contributor\b/}).click();
         await expect(modal.getByText("Your plan does not support more staff")).toHaveCount(0);
     });
 });
