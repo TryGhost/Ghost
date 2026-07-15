@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const urlUtils = require('../../../../core/shared/url-utils');
 const urlService = require('../../../../core/server/services/url');
 const getUrl = require('../../../../core/frontend/meta/url');
@@ -72,6 +73,38 @@ describe('getUrl', function () {
             .returns('post url');
 
         assert.equal(getUrl(post), 'post url');
+    });
+
+    describe('canary log for posts without a serializer-attached url', function () {
+        let loggingWarnStub;
+
+        beforeEach(function () {
+            loggingWarnStub = sinon.stub(logging, 'warn');
+        });
+
+        it('warns when a post falls back to the URL service', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost();
+            urlServiceGetUrlForResourceStub.returns('/my-post/');
+
+            getUrl(post);
+
+            sinon.assert.calledOnce(loggingWarnStub);
+            const report = loggingWarnStub.firstCall.args[0];
+            assert.equal(report.code, 'URL_HELPER_MISSING_URL');
+            assert.equal(report.errorDetails.id, post.id);
+            assert.ok(report.errorDetails.resourceKeys.includes('slug'));
+            assert.match(report.stack, /url\.test\.js/);
+        });
+
+        it('does not warn when the post carries a url', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost();
+            post.url = 'http://my-site.com/my-post/';
+            urlUtilsAbsoluteToRelativeStub.returns('/my-post/');
+
+            getUrl(post);
+
+            sinon.assert.notCalled(loggingWarnStub);
+        });
     });
 
     describe('Content-API-serialized posts (status stripped by the serializer)', function () {
