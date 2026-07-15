@@ -28,7 +28,10 @@ docker
 !docker/**/*.entrypoint.sh
 !docker/**/*entrypoint.sh
 
-ghost/core/core/built/admin
+# NOTE: core/built/admin is intentionally NOT ignored — the production image's
+# `full` stage COPYs it from the build context, where CI injects the admin build
+# artifact. The `core` stage copies from the deploy stage (which never builds
+# admin), so a stray local admin build cannot leak into the core image.
 
 # Ignore local config files (.json and .jsonc)
 ghost/core/config.local.json*
