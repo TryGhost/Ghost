@@ -1,13 +1,24 @@
 'use strict';
 
 /*
- * Architectural boundary rules for ghost/core, enforced on the resolved module
- * graph. These mirror the `ghost/node/no-restricted-require` rules that used to
- * live in ghost/core/eslint.config.mjs; moving them here lets us drop the
- * custom eslint-plugin-ghost rule when migrating off ESLint, and catches ESM
- * imports the require-only rule could not.
+ * Architectural boundary rules for the monorepo, enforced on the resolved
+ * module graph (require AND import). Two sections:
  *
- * Run from the repo root, so paths are anchored on `^ghost/core/core/`.
+ *   ghost/core  — layer separation inside the Ghost server: shared/ must stay
+ *                 dependency-free, frontend/ crosses to server/ only via the
+ *                 proxy seam, and server/ must not reach into the frontend
+ *                 rendering layer. Paths are anchored on `^ghost/core/core/`.
+ *
+ *   apps/       — design system layer hierarchy and public/admin separation.
+ *                 shade/ and admin-x-design-system/ are leaf packages that
+ *                 nothing above them may pull back into. admin-x-framework/
+ *                 sits above them but below feature apps. Public UMD bundles
+ *                 (portal, comments-ui, etc.) must not depend on admin libs.
+ *
+ *                 Workspace packages appear as unresolved `@tryghost/*` module
+ *                 specifiers in the graph (pnpm workspace symlinks are stopped
+ *                 by doNotFollow:node_modules), so `to.path` matches on
+ *                 package name rather than a file path.
  *
  * @type {import('dependency-cruiser').IConfiguration}
  */
@@ -85,11 +96,66 @@ module.exports = {
                 ]
             },
             to: {path: '^ghost/core/core/frontend/'}
+        },
+
+        // ============================================================
+        // apps/ — shade/ is the foundation; must not depend on higher layers
+        // ============================================================
+        {
+            name: 'shade-is-leaf',
+            comment: 'shade/ must not depend on admin-x-framework or admin-x-design-system. It is the foundation layer.',
+            severity: 'error',
+            from: {path: '^apps/shade/'},
+            to: {path: '^@tryghost/(admin-x-framework|admin-x-design-system)'}
+        },
+        // ============================================================
+        // apps/ — admin-x-design-system/ is a leaf; must not depend on higher layers
+        // ============================================================
+        {
+            name: 'admin-x-design-system-is-leaf',
+            comment: 'admin-x-design-system/ must not depend on shade or admin-x-framework.',
+            severity: 'error',
+            from: {path: '^apps/admin-x-design-system/'},
+            to: {path: '^@tryghost/(shade|admin-x-framework)'}
+        },
+        // ============================================================
+        // apps/ — admin-x-framework/ must not depend on feature apps
+        // ============================================================
+        {
+            name: 'framework-not-feature-apps',
+            comment: 'admin-x-framework/ must not depend on feature apps (activitypub, posts, admin-x-settings). The framework layer sits below the feature layer.',
+            severity: 'error',
+            from: {path: '^apps/admin-x-framework/'},
+            to: {path: '^@tryghost/(activitypub|posts|admin-x-settings)'}
+        },
+        // ============================================================
+        // apps/ — new admin apps must not use the legacy design system
+        // ============================================================
+        {
+            name: 'new-admin-apps-not-admin-x-design-system',
+            comment: 'New admin apps must use shade, not admin-x-design-system.',
+            severity: 'error',
+            from: {
+                // Adding apps to this list is the goal as each migrates off admin-x-design-system
+                // Goal: Work up until admin-x-settings joins and admin-x-design-system can be removed
+                path: '^apps/(activitypub|posts)/'
+            },
+            to: {path: '^@tryghost/admin-x-design-system'}
+        },
+        // ============================================================
+        // apps/ — public UMD apps must not depend on admin-only libraries
+        // ============================================================
+        {
+            name: 'public-apps-not-admin-libs',
+            comment: 'Public UMD apps (portal, comments-ui, etc.) must not depend on admin-only libraries (shade, admin-x-framework, admin-x-design-system).',
+            severity: 'error',
+            from: {path: '^apps/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/'},
+            to: {path: '^@tryghost/(shade|admin-x-framework|admin-x-design-system)'}
         }
     ],
     options: {
         doNotFollow: {path: 'node_modules'},
-        exclude: {path: '(^|/)(node_modules|coverage|coverage-next|test|built)/'}
+        exclude: {path: '(^|/)(node_modules|coverage|coverage-next|test|built|dist)/'}
     }
 };
 
