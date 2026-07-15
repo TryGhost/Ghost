@@ -6,6 +6,7 @@ import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-fra
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
 import {createOfferRedemptionFilterUrl} from './offer-helpers';
+import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {useEffect, useState} from 'react';
@@ -112,7 +113,7 @@ const Sidebar: React.FC<{
                                     <div className='flex flex-col gap-5'>
                                         <div className='flex flex-col gap-1.5'>
                                             <span className='text-sm leading-none font-semibold text-grey-700'>Performance</span>
-                                            <span>{offer?.redemption_count} {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}</span>
+                                            <span>{formatNumber(offer?.redemption_count || 0)} {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}</span>
                                         </div>
                                         {offer?.redemption_count > 0 && offer?.last_redeemed ?
                                             <div className='flex flex-col gap-1.5'>
@@ -131,11 +132,11 @@ const Sidebar: React.FC<{
                             <div className='flex flex-col gap-6'>
                                 <TextField
                                     error={Boolean(errors.name)}
-                                    hint={errors.name || <div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={`${nameLengthColor}`}>{nameLength}</span> / 40</strong></div>}
+                                    hint={errors.name || <div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={`${nameLengthColor}`}>{formatNumber(nameLength)}</span> / {formatNumber(40)}</strong></div>}
                                     maxLength={40}
                                     placeholder='Black Friday'
                                     title='Offer name'
-                                    value={offer?.name}
+                                    value={offer?.name ?? ''}
                                     onChange={(e) => {
                                         setNameLength(e.target.value.length);
                                         updateOffer({name: e.target.value});
@@ -149,7 +150,7 @@ const Sidebar: React.FC<{
                                     placeholder='black-friday'
                                     rightPlaceholder={offer?.code !== '' ? <Button className='mt-1 mr-0.5' color='green' label={isCopied ? 'Copied!' : 'Copy link'} size='sm' onClick={handleCopyClick} /> : null}
                                     title='Offer code'
-                                    value={offer?.code}
+                                    value={offer?.code ?? ''}
                                     onChange={e => updateOffer({code: e.target.value})}
                                     onKeyDown={() => clearError('code')}
                                 />
@@ -158,14 +159,14 @@ const Sidebar: React.FC<{
                                     hint={errors.displayTitle}
                                     placeholder='Black Friday Special'
                                     title='Display title'
-                                    value={offer?.display_title}
+                                    value={offer?.display_title ?? ''}
                                     onChange={e => updateOffer({display_title: e.target.value})}
                                     onKeyDown={() => clearError('displayTitle')}
                                 />
                                 <TextArea
                                     placeholder='Take advantage of this limited-time offer.'
                                     title='Display description'
-                                    value={offer?.display_description}
+                                    value={offer?.display_description ?? ''}
                                     onChange={e => updateOffer({display_description: e.target.value})}
                                 />
                             </div>

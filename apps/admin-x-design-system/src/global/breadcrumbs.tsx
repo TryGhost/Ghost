@@ -3,6 +3,7 @@ import React from 'react';
 import Button from './button';
 
 export type BreadcrumbItem = {
+    key?: React.Key;
     label: React.ReactNode;
     onClick?: () => void;
 }
@@ -29,7 +30,6 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     separatorClassName
 }) => {
     const allItems = items.length;
-    let i = 0;
 
     containerClassName = clsx(
         'flex items-center gap-2',
@@ -50,13 +50,16 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             {backIcon &&
             <Button className={snapBackIcon ? 'mr-1' : 'mr-6'} icon='arrow-left' iconColorClass='dark:text-white' size='sm' link onClick={onBack} />
             }
-            {items.map((item) => {
-                const bcItem = (i === allItems - 1 ?
-                    <span className={activeItemClassName}>{item.label}</span>
-                    :
-                    <>
+            {items.map((item, index) => {
+                const itemKey = item.key ?? String(item.label);
+
+                if (index === allItems - 1) {
+                    return <span key={itemKey} className={activeItemClassName}>{item.label}</span>;
+                }
+
+                return (
+                    <React.Fragment key={itemKey}>
                         <button
-                            key={`bc-${i}`}
                             className={`${itemClassName} ${item.onClick && '-mx-1 cursor-pointer rounded-sm px-1 py-px hover:bg-grey-100 dark:hover:bg-grey-900'}`}
                             type="button"
                             onClick={item.onClick}
@@ -64,9 +67,8 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                             {item.label}
                         </button>
                         <span className={separatorClassName}>/</span>
-                    </>);
-                i = i + 1;
-                return bcItem;
+                    </React.Fragment>
+                );
             })}
         </div>
     );
