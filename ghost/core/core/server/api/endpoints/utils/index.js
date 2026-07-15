@@ -52,14 +52,11 @@ module.exports = {
     },
 
     /**
-     * @description Whether the response will carry a serialized `url` for the
-     * requested resources. True unless a `?fields` narrowing excludes it.
-     *
-     * Shared by the output serializer (which skips URL generation when false)
-     * and the input serializers (which force-load the columns/relations the
-     * URL service needs when true) — both sides must always agree, or the
-     * input under-fetches and the lazy URL service rejects the resource as
-     * thin.
+     * @description Whether the response will carry a serialized `url` — true
+     * unless a `?fields` narrowing excludes it. Shared by the output
+     * serializer's guard and the input serializers' force-load; a drift
+     * between the two under-fetches and the lazy URL service rejects the
+     * resource as thin.
      * @param {import('@tryghost/api-framework').Frame} frame
      * @returns {boolean}
      */

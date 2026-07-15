@@ -71,10 +71,7 @@ const controller = {
         async query(frame) {
             await _addMemberContextToFrame(frame);
 
-            // The previews response serializes `url` through the same posts
-            // mapper as the other endpoints, so the relations the lazy URL
-            // service reads must be loaded here too; the mapper strips the
-            // forced ones from the response after the URL is built.
+            // previews has no input serializer, so the URL force-load happens here
             urlSerializerUtils.forceUrlRelationsWhenLazy(frame, 'posts');
 
             const model = await models.Post.findOne(Object.assign({status: 'all'}, frame.data), frame.options);
