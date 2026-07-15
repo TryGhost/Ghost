@@ -41,7 +41,7 @@
         ]
     },
     "devDependencies": {
-        "@doist/react-interpolate": "2.2.2",
+        "@doist/react-interpolate": "2.2.3",
         "@internal/cfg-eslint-react": "workspace:*",
         "@sentry/react": "catalog:",
         "@testing-library/jest-dom": "catalog:",

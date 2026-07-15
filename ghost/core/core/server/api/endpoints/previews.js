@@ -2,6 +2,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const membersService = require('../../services/members');
+const urlSerializerUtils = require('./utils/serializers/input/utils/url');
 const ALLOWED_INCLUDES = ['authors', 'tags', 'tiers'];
 const ALLOWED_MEMBER_STATUSES = ['anonymous', 'free', 'paid'];
 
@@ -69,6 +70,9 @@ const controller = {
         },
         async query(frame) {
             await _addMemberContextToFrame(frame);
+
+            // previews has no input serializer, so the URL force-load happens here
+            urlSerializerUtils.forceUrlRelationsWhenLazy(frame, 'posts');
 
             const model = await models.Post.findOne(Object.assign({status: 'all'}, frame.data), frame.options);
             if (!model) {

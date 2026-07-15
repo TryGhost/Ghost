@@ -81,6 +81,121 @@ describe('Unit: utils/serializers/output/mappers', function () {
             assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', {id: 'id3', feature_image: 'value'}, frame.options]);
             assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id4', {name: 'Ghosty', id: 'id4'}, frame.options]);
         });
+
+        it('strips relations force-loaded for the URL after the URL is computed', async function () {
+            const frame = {
+                original: {
+                    context: {}
+                },
+                options: {
+                    withRelated: ['tags', 'authors'],
+                    context: {}
+                },
+                // input serializer recorded: caller asked for authors only,
+                // tags were force-loaded for the URL computation
+                forcedUrlRelations: ['tags'],
+                apiType: 'content'
+            };
+
+            const post = createJsonModel(testUtils.DataGenerator.forKnex.createPost({
+                id: 'id1',
+                tags: [{
+                    id: 'id3'
+                }],
+                authors: [{
+                    id: 'id4',
+                    name: 'Ghosty'
+                }]
+            }));
+
+            // the mapper mutates the model in place, so capture at call time
+            let tagsPresentAtUrlTime = false;
+            urlUtil.forPost.callsFake((id, attrs) => {
+                tagsPresentAtUrlTime = Array.isArray(attrs.tags);
+                return attrs;
+            });
+
+            const result = await mappers.posts(post, frame);
+
+            // url computed while tags were still on the model
+            sinon.assert.calledOnce(urlUtil.forPost);
+            assert.ok(tagsPresentAtUrlTime, 'tags must still be present when the URL is computed');
+
+            // ...but the response does not leak the unrequested relation
+            assert.equal(result.tags, undefined);
+            assert.ok(result.authors, 'requested relation must survive');
+            sinon.assert.notCalled(urlUtil.forTag);
+            sinon.assert.calledOnce(urlUtil.forUser);
+        });
+
+        it('strip runs before clean so computed primary_tag/primary_author do not leak', async function () {
+            // Post.toJSON attaches primary_tag/primary_author when tags/authors
+            // are loaded; clean.post only removes them when the relation key is
+            // absent, so the strip must run first.
+            cleanUtil.post.restore();
+
+            const frame = {
+                original: {
+                    context: {}
+                },
+                options: {
+                    withRelated: ['tags', 'authors'],
+                    context: {}
+                },
+                forcedUrlRelations: ['tags', 'authors'],
+                apiType: 'content'
+            };
+
+            const post = createJsonModel(testUtils.DataGenerator.forKnex.createPost({
+                id: 'id1',
+                tags: [{id: 'id3', visibility: 'public'}],
+                authors: [{id: 'id4', name: 'Ghosty'}],
+                primary_tag: {id: 'id3', visibility: 'public'},
+                primary_author: {id: 'id4', name: 'Ghosty'}
+            }));
+
+            const result = await mappers.posts(post, frame);
+
+            assert.equal(result.tags, undefined);
+            assert.equal(result.authors, undefined);
+            assert.equal(result.primary_tag, undefined);
+            assert.equal(result.primary_author, undefined);
+        });
+
+        it('strips columns force-loaded for the URL after the URL is computed', async function () {
+            const frame = {
+                original: {
+                    context: {}
+                },
+                options: {
+                    columns: ['url', 'id', 'status', 'slug'],
+                    context: {}
+                },
+                // input serializer recorded: caller asked for ?fields=url,id —
+                // status/slug were forced for the URL computation
+                forcedUrlColumns: ['status', 'slug'],
+                apiType: 'admin'
+            };
+
+            let statusPresentAtUrlTime = false;
+            urlUtil.forPost.callsFake((id, attrs) => {
+                statusPresentAtUrlTime = attrs.status !== undefined;
+                return attrs;
+            });
+
+            const post = createJsonModel(testUtils.DataGenerator.forKnex.createPost({
+                id: 'id1',
+                status: 'published',
+                slug: 'my-post'
+            }));
+
+            const result = await mappers.posts(post, frame);
+
+            assert.ok(statusPresentAtUrlTime, 'status must still be present when the URL is computed');
+            assert.equal(result.status, undefined);
+            assert.equal(result.slug, undefined);
+            assert.equal(result.id, 'id1');
+        });
     });
 
     describe('User Mapper', function () {
