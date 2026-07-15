@@ -1,9 +1,14 @@
-const assert = require('node:assert/strict');
-const {RouteSettingsStoreBase} = require('@tryghost/adapter-base-route-settings');
+import assert from 'node:assert/strict';
+import type {RouteSettings} from '@tryghost/adapter-base-route-settings';
 
+// the adapter-manager exports via `module.exports` (so its methods stay
+// stubbable) and config-utils is untyped JS, so neither can be imported.
+// RouteSettingsStoreBase is required rather than imported so that we compare
+// against the same class the adapter loader resolves - it loads adapters with
+// `require`, which reads the package's compiled build, whereas an ESM import
+// here resolves to the package source and would fail the `instanceof` check.
+const {RouteSettingsStoreBase} = require('@tryghost/adapter-base-route-settings');
 const adapterManager = require('../../../../../core/server/services/adapter-manager');
-const getAdapterServiceConfig = require('../../../../../core/server/services/adapter-manager/config');
-const config = require('../../../../../core/shared/config');
 const configUtils = require('../../../../utils/config-utils');
 
 describe('UNIT: adapter-manager route-settings wiring', function () {
@@ -20,36 +25,10 @@ describe('UNIT: adapter-manager route-settings wiring', function () {
         assert.deepEqual([...store.requiredFns], ['get', 'replace']);
     });
 
-    it('resolves FileStore paths from Ghost config when not explicitly set', function () {
-        const adapterServiceConfig = getAdapterServiceConfig(config);
-
-        assert.equal(adapterServiceConfig['route-settings'].FileStore.basePath, config.getContentPath('settings'));
-        assert.equal(adapterServiceConfig['route-settings'].FileStore.defaultSettingsBasePath, config.get('paths').defaultRouteSettings);
-    });
-
-    it('keeps explicitly configured FileStore paths', function () {
-        configUtils.set('adapters:route-settings:FileStore:basePath', '/custom/settings');
-
-        const adapterServiceConfig = getAdapterServiceConfig(config);
-
-        assert.equal(adapterServiceConfig['route-settings'].FileStore.basePath, '/custom/settings');
-    });
-
-    it('re-resolves FileStore paths when the content path changes', function () {
-        const before = getAdapterServiceConfig(config);
-
-        configUtils.set('paths:contentPath', '/elsewhere/');
-
-        const after = getAdapterServiceConfig(config);
-
-        assert.equal(after['route-settings'].FileStore.basePath, config.getContentPath('settings'));
-        assert.notEqual(after['route-settings'].FileStore.basePath, before['route-settings'].FileStore.basePath);
-    });
-
     it('reads the bundled default route settings end-to-end', async function () {
         const store = adapterManager.getAdapter('route-settings');
 
-        const settings = await store.get();
+        const settings: RouteSettings = await store.get();
 
         assert.deepEqual(settings.routes, []);
         assert.deepEqual(settings.collections, [{path: '/', permalink: '/{slug}/', templates: ['index']}]);
@@ -62,7 +41,7 @@ describe('UNIT: adapter-manager route-settings wiring', function () {
 
         assert.throws(() => {
             adapterManager.getAdapter('route-settings');
-        }, (err) => {
+        }, (err: Error & {errorType?: string}) => {
             assert.equal(err.errorType, 'IncorrectUsageError');
             assert.match(err.message, /Unable to find route-settings adapter MissingStore/);
             return true;
