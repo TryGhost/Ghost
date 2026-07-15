@@ -248,6 +248,27 @@ describe('Unit: utils/serializers/output/mappers', function () {
             assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', tag, frame.options]);
             sinon.assert.calledOnce(cleanUtil.tag);
         });
+
+        it('strips columns force-loaded for the URL after the URL is computed', function () {
+            const frame = {
+                options: {
+                    columns: ['name', 'url', 'visibility'],
+                    context: {}
+                },
+                forcedUrlColumns: ['visibility']
+            };
+
+            const tag = createJsonModel(testUtils.DataGenerator.forKnex.createTag({
+                id: 'id3',
+                name: 'Tag',
+                visibility: 'public'
+            }));
+
+            const result = mappers.tags(tag, frame);
+
+            assert.equal(result.visibility, undefined);
+            assert.equal(result.name, 'Tag');
+        });
     });
 
     describe('Integration Mapper', function () {

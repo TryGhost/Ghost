@@ -223,6 +223,47 @@ describe('{{#get}} helper', function () {
             });
         });
 
+        it('appends url to narrowed fields so {{url}} keeps working on the results', async function () {
+            await get.call(
+                resource,
+                'posts',
+                {hash: {fields: 'title,slug'}, data: locals, fn: fn, inverse: inverse}
+            );
+            assert.equal(browseStub.firstCall.args[0].fields, 'title,slug,url');
+        });
+
+        it('appends url to narrowed fields for tags', async function () {
+            const tagBrowseStub = sinon.stub().resolves();
+            sinon.stub(api, 'tagsPublic').get(() => {
+                return {browse: tagBrowseStub};
+            });
+
+            await get.call(
+                resource,
+                'tags',
+                {hash: {fields: 'name,slug'}, data: locals, fn: fn, inverse: inverse}
+            );
+            assert.equal(tagBrowseStub.firstCall.args[0].fields, 'name,slug,url');
+        });
+
+        it('leaves fields alone when url is already requested', async function () {
+            await get.call(
+                resource,
+                'posts',
+                {hash: {fields: 'title,url'}, data: locals, fn: fn, inverse: inverse}
+            );
+            assert.equal(browseStub.firstCall.args[0].fields, 'title,url');
+        });
+
+        it('does not add a fields option when none was given', async function () {
+            await get.call(
+                resource,
+                'posts',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            );
+            assert.equal(browseStub.firstCall.args[0].fields, undefined);
+        });
+
         it('should resolve post.tags alias', async function () {
             await get.call(
                 resource,
