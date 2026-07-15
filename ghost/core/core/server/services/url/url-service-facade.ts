@@ -385,28 +385,43 @@ export class UrlServiceFacade {
         isEqual: (a: unknown, b: unknown) => boolean
     ): void {
         if (!isEqual(eagerValue, lazyValue)) {
-            this._report(new errors.InternalServerError({
+            const {caller, ...details} = context;
+            const report = new errors.InternalServerError({
                 message: 'URL service parity mismatch',
                 code: 'LAZY_URL_PARITY_MISMATCH',
-                errorDetails: {method, eager: eagerValue, lazy: lazyValue, ...context}
-            }));
+                errorDetails: {method, eager: eagerValue, lazy: lazyValue, ...details}
+            });
+            this._applyCallerStack(report, caller);
+            this._report(report);
         }
     }
 
     private _reportLazyError(method: string, err: Error, context: Record<string, unknown>): void {
+        const {caller, ...details} = context;
         const report = new errors.InternalServerError({
             message: 'Lazy URL service threw during comparison',
             code: 'LAZY_URL_COMPARE_ERROR',
             err,
-            errorDetails: {method, ...context}
+            errorDetails: {method, ...details}
         });
         // @tryghost/errors copies the wrapped error's enumerable props over the
         // new error, so a thrown error carrying its own errorDetails (e.g. the
         // thin-resource report) silently clobbers the compare context passed
         // above. Re-merge after construction so both survive in the logs.
         const innerDetails = (err as {errorDetails?: Record<string, unknown>}).errorDetails;
-        report.errorDetails = {method, ...context, ...innerDetails};
+        report.errorDetails = {method, ...details, ...innerDetails};
+        this._applyCallerStack(report, caller);
         this._report(report);
+    }
+
+    // The report's own stack is setImmediate scaffolding — the caller frames
+    // captured at call time are the stack worth logging.
+    private _applyCallerStack(report: Error, caller: unknown): void {
+        if (typeof caller !== 'string') {
+            return;
+        }
+        const frames = caller.split('\n').slice(1).join('\n');
+        report.stack = `${report.name}: ${report.message}\n${frames}`;
     }
 
     private _report(error: Error): void {

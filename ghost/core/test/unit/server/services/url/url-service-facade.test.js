@@ -402,39 +402,42 @@ describe('UrlServiceFacade', function () {
             lazyUrlService.getUrlForResource.throws(thinError);
             compareFacade.getUrlForResource({type: 'posts', id: 'a', slug: 'hello'});
             await flush();
-            const details = logging.error.firstCall.args[0].errorDetails;
-            assert.equal(details.resourceType, 'posts');
-            assert.deepEqual(details.missing, ['tags']);
-            assert.equal(details.method, 'getUrlForResource');
-            assert.match(details.caller, /url-service-facade\.test\.js/);
-            assert.deepEqual(details.resourceKeys, ['type', 'id', 'slug']);
+            const report = logging.error.firstCall.args[0];
+            assert.equal(report.errorDetails.resourceType, 'posts');
+            assert.deepEqual(report.errorDetails.missing, ['tags']);
+            assert.equal(report.errorDetails.method, 'getUrlForResource');
+            assert.match(report.stack, /url-service-facade\.test\.js/);
+            assert.deepEqual(report.errorDetails.resourceKeys, ['type', 'id', 'slug']);
         });
 
-        it('reports the caller stack and resource keys with a lazy throw from getUrlForResource', async function () {
+        it('replaces the report stack with the caller frames on a lazy throw', async function () {
             lazyUrlService.getUrlForResource.throws(new Error('boom'));
             compareFacade.getUrlForResource({type: 'posts', id: 'a', slug: 'hello'});
             await flush();
-            const details = logging.error.firstCall.args[0].errorDetails;
-            // The compare runs in setImmediate, so the throw's own stack has no
-            // caller frames; the facade captures them at call time instead.
-            assert.match(details.caller, /url-service-facade\.test\.js/);
-            assert.deepEqual(details.resourceKeys, ['type', 'id', 'slug']);
+            const report = logging.error.firstCall.args[0];
+            assert.match(report.stack, /^InternalServerError: Lazy URL service threw during comparison\n/);
+            assert.match(report.stack, /url-service-facade\.test\.js/);
+            assert.equal(report.errorDetails.caller, undefined);
+            assert.deepEqual(report.errorDetails.resourceKeys, ['type', 'id', 'slug']);
         });
 
-        it('reports the caller stack and resource keys with a forward URL mismatch', async function () {
+        it('replaces the report stack with the caller frames on a forward URL mismatch', async function () {
             compareFacade.getUrlForResource({type: 'posts', id: 'a', slug: 'hello'});
             await flush();
-            const details = logging.error.firstCall.args[0].errorDetails;
-            assert.match(details.caller, /url-service-facade\.test\.js/);
-            assert.deepEqual(details.resourceKeys, ['type', 'id', 'slug']);
+            const report = logging.error.firstCall.args[0];
+            assert.match(report.stack, /^InternalServerError: URL service parity mismatch\n/);
+            assert.match(report.stack, /url-service-facade\.test\.js/);
+            assert.equal(report.errorDetails.caller, undefined);
+            assert.deepEqual(report.errorDetails.resourceKeys, ['type', 'id', 'slug']);
         });
 
-        it('reports the caller stack and resource keys with an ownership mismatch', async function () {
+        it('replaces the report stack with the caller frames on an ownership mismatch', async function () {
             compareFacade.ownsResource('routerA', {type: 'posts', id: 'a', status: 'published'});
             await flush();
-            const details = logging.error.firstCall.args[0].errorDetails;
-            assert.match(details.caller, /url-service-facade\.test\.js/);
-            assert.deepEqual(details.resourceKeys, ['type', 'id', 'status']);
+            const report = logging.error.firstCall.args[0];
+            assert.match(report.stack, /url-service-facade\.test\.js/);
+            assert.equal(report.errorDetails.caller, undefined);
+            assert.deepEqual(report.errorDetails.resourceKeys, ['type', 'id', 'status']);
         });
 
         it('resolveUrl returns the eager answer without awaiting lazy', async function () {
