@@ -148,14 +148,6 @@ jobs:
               - '!koenig/kg-unsplash-selector/**'
               - '!koenig/kg-simplemde/**'
               - '!koenig/*/test/**'
-            tinybird:
-              - '.github/workflows/ci.yml'
-              - 'compose.dev.analytics.yaml'
-              - 'ghost/core/core/server/data/tinybird/**'
-              - '!ghost/core/core/server/data/tinybird/**/*.md'
-            tinybird-datafiles:
-              - 'ghost/core/core/server/data/tinybird/**'
-              - '!ghost/core/core/server/data/tinybird/**/*.md'
             unit-test-globals:
               - 'vitest.config.mjs'
             core-unit-test-globals:
@@ -257,8 +249,6 @@ jobs:
       publish_public_apps_matrix: ${{ steps.affected.outputs.publish_public_apps_matrix }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
-      changed_tinybird: ${{ steps.changed.outputs.tinybird }}
-      changed_tinybird_datafiles: ${{ steps.changed.outputs.tinybird-datafiles }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       # Single gate for the build + browser-E2E lane. True for tags, or when a
       # changed file could affect a running Ghost instance (see the `e2e` path
@@ -822,43 +812,6 @@ jobs:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  job_tinybird-tests:
-    name: Tinybird Tests
-    runs-on: ubuntu-latest
-    needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_tinybird == 'true'
-    defaults:
-        run:
-          working-directory: ghost/core/core/server/data/tinybird
-    services:
-      tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:942cb8a703806bedc39a5ca77bc9cd36dd813ddad1556d46022ce9492f5acdb8
-        ports:
-          - 7181:7181
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - name: Install Tinybird CLI
-        run: curl -fsSL https://tinybird.co/install.sh | sh
-      - name: Build project
-        run: tb build
-      - name: Test project
-        run: tb test run
-      - name: Trigger and watch traffic analytics infra Tinybird workflow
-        if: github.repository == 'TryGhost/Ghost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        env:
-          GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
-        uses: ./.github/actions/dispatch-workflow
-        with:
-          repo: TryGhost/traffic-analytics-infra
-          workflow: tinybird.yml
-          branch: main
-          dispatch-inputs: >-
-            {
-              "ghost_ref": "${{ github.sha }}",
-              "caller_run_id": "${{ github.run_id }}",
-              "run_local_tests": false
-            }
 
   job_ghost-cli:
     name: Ghost-CLI tests
@@ -1742,7 +1695,6 @@ jobs:
         job_acceptance-tests,
         job_legacy-tests,
         job_apps_acceptance-tests,
-        job_tinybird-tests,
         job_build_e2e_public_apps,
         job_e2e_tests,
         publish_public_apps
@@ -1856,34 +1808,6 @@ jobs:
         uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
-
-  deploy_tinybird:
-    name: Deploy Tinybird
-    runs-on: ubuntu-latest
-    needs: [
-      job_setup,
-      job_tinybird-tests
-    ]
-    if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird_datafiles == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-      - name: Trigger and watch traffic analytics infra Tinybird workflow
-        if: github.repository == 'TryGhost/Ghost'
-        env:
-          GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
-        uses: ./.github/actions/dispatch-workflow
-        with:
-          repo: TryGhost/traffic-analytics-infra
-          workflow: tinybird.yml
-          branch: main
-          dispatch-inputs: >-
-            {
-              "ghost_ref": "${{ github.sha }}",
-              "caller_run_id": "${{ github.run_id }}",
-              "run_local_tests": false,
-              "deploy_staging": true,
-              "deploy_production": true
-            }
 
   # --------------------------------------------------------------------------- #
   # Trigger Pro CD — dispatch to Ghost-Moya cd.yml (runs on main + PRs)
