@@ -1,11 +1,12 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, Heading, LimitModal, Menu, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, Heading, LimitModal, Menu, SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [themeLimitError, setThemeLimitError] = useState<string|null>(null);

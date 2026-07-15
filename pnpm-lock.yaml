@@ -985,9 +985,6 @@ importers:
       '@tinybirdco/charts':
         specifier: 0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@tryghost/admin-x-design-system':
-        specifier: workspace:*
-        version: link:../admin-x-design-system
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
@@ -2338,8 +2335,8 @@ importers:
         specifier: 7.1.0
         version: 7.1.0(debug@4.4.3)
       '@tryghost/adapter-base-cache':
-        specifier: 0.1.26
-        version: 0.1.26
+        specifier: 0.1.27
+        version: 0.1.27
       '@tryghost/adapter-base-redirects':
         specifier: workspace:*
         version: link:../../packages/adapters/redirects-base
@@ -9750,8 +9747,8 @@ packages:
     resolution: {integrity: sha512-VyMVKRrpHTT8PnotUeV8L/mDaMwD5DaAKCFLP73zAqAtvF0FCqky+Ki7BYbFCYQmqFyTe9316Ed5zS70QUR9eg==}
     engines: {node: '>= 10'}
 
-  '@tryghost/adapter-base-cache@0.1.26':
-    resolution: {integrity: sha512-p4w4ZR+3dOQeRTkNNCwWvZViBs6kx2AqyHee7Dldvpj6/Qf/+s1vXRnYJfEODzmit65M41oBgIAEplYHHQ0V1g==}
+  '@tryghost/adapter-base-cache@0.1.27':
+    resolution: {integrity: sha512-LIle8Z15mQd1FiHbCYpMgVk8UdjYG9AaadeFIdWgZK3NeBFjhS4sfEcPUiOrS6lm2pOKYn06IDEP6G9vU7cEmg==}
 
   '@tryghost/admin-api-schema@4.7.5':
     resolution: {integrity: sha512-k8XWP5g6hwpe3DcxhujBVHrDSkUSZ1nedR/TBony3TMbqNCMi4v40HkOhXiryAZ/ENDcmlKj/ZLzYDgG6cb0ww==}
@@ -30451,7 +30448,7 @@ snapshots:
 
   '@tootallnate/once@3.0.1': {}
 
-  '@tryghost/adapter-base-cache@0.1.26': {}
+  '@tryghost/adapter-base-cache@0.1.27': {}
 
   '@tryghost/admin-api-schema@4.7.5':
     dependencies:

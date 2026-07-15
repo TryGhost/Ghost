@@ -1,5 +1,8 @@
-import {ButtonColor} from '@tryghost/admin-x-design-system';
 import {useCallback, useEffect, useState} from 'react';
+
+// Structurally matches admin-x-design-system's ButtonColor so okProps.color stays
+// assignable to its Button color prop.
+export type ButtonColor = 'clear' | 'light-grey' | 'grey' | 'black' | 'green' | 'red' | 'white' | 'outline';
 
 export type Dirtyable<Data> = Data & {
     dirty?: boolean;
