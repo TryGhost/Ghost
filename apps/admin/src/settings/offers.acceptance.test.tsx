@@ -212,7 +212,7 @@ describe("Offers", () => {
         await expect.element(updateModal).toBeVisible();
 
         const codeInput = updateModal.getByPlaceholder("black-friday");
-        await expect.element(codeInput).toHaveValue("first-offer");
+        await expect.element(codeInput).toHaveValue(firstOffer.code);
         await codeInput.fill("");
         await updateModal.getByRole("button", { name: "Save" }).click();
         await expect.element(updateModal).toHaveTextContent(/Please enter a code/);
