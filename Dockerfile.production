@@ -64,8 +64,8 @@ RUN pnpm --filter-prod "ghost^..." -r run build && \
     pnpm --filter ghost run build:assets
 
 # Produce a self-contained deploy dir: ghost/core's `files` set + a fully resolved,
-# production-only node_modules (devDeps pruned, optional better-sqlite3 kept). Admin
-# is never built here, so core/built/admin is absent — the core image stays
+# production-only node_modules (--prod drops devDeps, keeps optional better-sqlite3).
+# Admin is never built here, so core/built/admin is absent — the core image stays
 # admin-free and the full stage injects admin from the build context.
 #
 # inject-workspace-packages: hard-copy the workspace deps (kg-*/adapters/i18n) into

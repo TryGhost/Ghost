@@ -925,8 +925,13 @@ jobs:
       # The built admin (ghost/core/core/built/admin) is consumed by both job_pack
       # (packed into the Ghost-CLI archive) and job_docker (COPYed into the full
       # image). Ship it as a tarball to preserve file modes and speed transfer.
+      #
+      # --exclude '*.map': admin sourcemaps (~60MB) are uploaded to Sentry during
+      # the build (IS_SHIPPING), not shipped in the image. ghost/core's `files`
+      # field strips them from the Ghost-CLI archive (!core/built/**/*.map), so
+      # excluding them here matches that for the Docker image too.
       - name: Pack admin build
-        run: tar -czf admin-build.tar.gz -C ghost/core/core/built admin
+        run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/core/built admin
 
       - name: Upload admin build artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
