@@ -1,35 +1,33 @@
-import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {renderHeaderNodeV1} from './renderers/v1/header-renderer.js';
 import {parseHeaderNode} from './parsers/header-parser.js';
 // V2 imports below
 import {renderHeaderNodeV2} from './renderers/v2/header-renderer.js';
 
-const headerProperties = [
-    {name: 'size', default: 'small'},
-    {name: 'style', default: 'dark'},
-    {name: 'buttonEnabled', default: false},
-    {name: 'buttonUrl', default: '', urlType: 'url'},
-    {name: 'buttonText', default: ''},
-    {name: 'header', default: '', urlType: 'html', wordCount: true},
-    {name: 'subheader', default: '', urlType: 'html', wordCount: true},
-    {name: 'backgroundImageSrc', default: '', urlType: 'url'},
-    {name: 'version', default: 1},
-    {name: 'accentColor', default: '#FF1A75'},
-    {name: 'alignment', default: 'center'},
-    {name: 'backgroundColor', default: '#000000'},
-    {name: 'backgroundImageWidth', default: null as number | null},
-    {name: 'backgroundImageHeight', default: null as number | null},
-    {name: 'backgroundSize', default: 'cover'},
-    {name: 'textColor', default: '#FFFFFF'},
-    {name: 'buttonColor', default: '#ffffff'},
-    {name: 'buttonTextColor', default: '#000000'},
-    {name: 'layout', default: 'full'},
-    {name: 'swapped', default: false}
-] as const satisfies readonly DecoratorNodeProperty[];
+const headerProperties = {
+    size: {default: 'small'},
+    style: {default: 'dark'},
+    buttonEnabled: {default: false},
+    buttonUrl: {default: '', urlType: 'url'},
+    buttonText: {default: ''},
+    header: {default: '', urlType: 'html', wordCount: true},
+    subheader: {default: '', urlType: 'html', wordCount: true},
+    backgroundImageSrc: {default: '', urlType: 'url'},
+    version: {default: 1},
+    accentColor: {default: '#FF1A75'},
+    alignment: {default: 'center'},
+    backgroundColor: {default: '#000000'},
+    backgroundImageWidth: {default: null as number | null},
+    backgroundImageHeight: {default: null as number | null},
+    backgroundSize: {default: 'cover'},
+    textColor: {default: '#FFFFFF'},
+    buttonColor: {default: '#ffffff'},
+    buttonTextColor: {default: '#000000'},
+    layout: {default: 'full'},
+    swapped: {default: false}
+} satisfies DecoratorNodePropertyMap;
 
 export type HeaderData = DecoratorNodeData<typeof headerProperties>;
-
-export interface HeaderNode extends DecoratorNodeValueMap<typeof headerProperties> {}
 
 type HeaderRenderNode = Parameters<typeof renderHeaderNodeV1>[0] & Parameters<typeof renderHeaderNodeV2>[0];
 type HeaderRenderOutput = ReturnType<typeof renderHeaderNodeV1> | ReturnType<typeof renderHeaderNodeV2>;

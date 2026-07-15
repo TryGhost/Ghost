@@ -1,18 +1,16 @@
-import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {parseAudioNode} from './audio-parser.js';
 import {renderAudioNode} from './audio-renderer.js';
 
-const audioProperties = [
-    {name: 'duration', default: 0},
-    {name: 'mimeType', default: ''},
-    {name: 'src', default: '', urlType: 'url'},
-    {name: 'title', default: ''},
-    {name: 'thumbnailSrc', default: ''}
-] as const satisfies readonly DecoratorNodeProperty[];
+const audioProperties = {
+    duration: {default: 0},
+    mimeType: {default: ''},
+    src: {default: '', urlType: 'url'},
+    title: {default: ''},
+    thumbnailSrc: {default: ''}
+} satisfies DecoratorNodePropertyMap;
 
 export type AudioData = DecoratorNodeData<typeof audioProperties>;
-
-export interface AudioNode extends DecoratorNodeValueMap<typeof audioProperties> {}
 
 export class AudioNode extends generateDecoratorNode({
     nodeType: 'audio',

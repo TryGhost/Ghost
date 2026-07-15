@@ -18,6 +18,10 @@ vi.mock(import('lexical'), async (importOriginal) => {
     };
 });
 
+vi.mock(import('@tryghost/kg-default-nodes'), () => ({
+    $isKoenigCard: node => Boolean(node)
+}));
+
 describe('useVisibilityToggle', () => {
     let editor;
     let node;

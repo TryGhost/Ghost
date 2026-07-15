@@ -1,23 +1,21 @@
-import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {parseProductNode} from './product-parser.js';
 import {renderProductNode} from './product-renderer.js';
 
-const productProperties = [
-    {name: 'productImageSrc', default: '', urlType: 'url'},
-    {name: 'productImageWidth', default: null as number | null},
-    {name: 'productImageHeight', default: null as number | null},
-    {name: 'productTitle', default: '', urlType: 'html', wordCount: true},
-    {name: 'productDescription', default: '', urlType: 'html', wordCount: true},
-    {name: 'productRatingEnabled', default: false},
-    {name: 'productStarRating', default: 5},
-    {name: 'productButtonEnabled', default: false},
-    {name: 'productButton', default: ''},
-    {name: 'productUrl', default: ''}
-] as const satisfies readonly DecoratorNodeProperty[];
+const productProperties = {
+    productImageSrc: {default: '', urlType: 'url'},
+    productImageWidth: {default: null as number | null},
+    productImageHeight: {default: null as number | null},
+    productTitle: {default: '', urlType: 'html', wordCount: true},
+    productDescription: {default: '', urlType: 'html', wordCount: true},
+    productRatingEnabled: {default: false},
+    productStarRating: {default: 5},
+    productButtonEnabled: {default: false},
+    productButton: {default: ''},
+    productUrl: {default: ''}
+} satisfies DecoratorNodePropertyMap;
 
 export type ProductData = DecoratorNodeData<typeof productProperties>;
-
-export interface ProductNode extends DecoratorNodeValueMap<typeof productProperties> {}
 
 export class ProductNode extends generateDecoratorNode({
     nodeType: 'product',

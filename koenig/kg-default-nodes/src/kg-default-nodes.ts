@@ -1,4 +1,4 @@
-export {GeneratedDecoratorNodeBase} from './generate-decorator-node.js';
+export type {GeneratedDecoratorNode} from './generate-decorator-node.js';
 export * from './export-dom.js';
 import * as image from './nodes/image/ImageNode.js';
 import * as codeblock from './nodes/codeblock/CodeBlockNode.js';
