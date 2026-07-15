@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react';
 import {useCallback} from 'react';
 import {useFramework} from '../../providers/framework-provider';
-import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError, UnauthorizedError} from '../errors';
+import {APIError, MaintenanceError, ServerUnreachableError, SessionExpiredError, TimeoutError, UnauthorizedError} from '../errors';
 import {getGhostPaths} from '../helpers';
 import handleResponse from './handle-response';
 
@@ -51,7 +51,7 @@ const xhrToFetchResponse = (xhr: Readonly<XMLHttpRequest>): Response => (
 );
 
 const GHOST_API_REQUEST = /\/ghost\/api\//;
-const SESSION_API_REQUEST = /\/ghost\/api\/admin\/session(\/|$)/;
+const SESSION_API_REQUEST = /\/ghost\/api\/admin\/session([/?#]|$)/;
 
 let sessionExpiryHandled = false;
 
@@ -60,12 +60,16 @@ let sessionExpiryHandled = false;
 const redirectOnSessionExpiry = (endpoint: string | URL) => {
     const url = endpoint.toString();
 
-    if (sessionExpiryHandled || !GHOST_API_REQUEST.test(url) || SESSION_API_REQUEST.test(url)) {
-        return;
+    if (!GHOST_API_REQUEST.test(url) || SESSION_API_REQUEST.test(url)) {
+        return false;
     }
 
-    sessionExpiryHandled = true;
-    window.location.replace(getGhostPaths().adminRoot);
+    if (!sessionExpiryHandled) {
+        sessionExpiryHandled = true;
+        window.location.replace(getGhostPaths().adminRoot);
+    }
+
+    return true;
 };
 
 const fetchWithXhr = (
@@ -226,8 +230,8 @@ export const useFetchApi = () => {
                         throw new TimeoutError();
                     }
 
-                    if (error instanceof UnauthorizedError) {
-                        redirectOnSessionExpiry(endpoint);
+                    if (error instanceof UnauthorizedError && redirectOnSessionExpiry(endpoint)) {
+                        throw new SessionExpiredError(error.response!, error.data, {cause: error});
                     }
 
                     let newError = error;

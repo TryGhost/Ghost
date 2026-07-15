@@ -90,6 +90,8 @@ export class UnauthorizedError extends APIError {
     }
 }
 
+export class SessionExpiredError extends UnauthorizedError {}
+
 export class ThemeValidationError extends JSONError {
     constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
         super(response, data, 'Theme is not compatible or contains errors.', errorOptions);

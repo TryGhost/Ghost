@@ -2,7 +2,7 @@ import {renderHook} from '@testing-library/react';
 import React, {ReactNode} from 'react';
 import useHandleError from '../../../src/hooks/use-handle-error';
 import {FrameworkProvider} from '../../../src/providers/framework-provider';
-import {APIError, UnauthorizedError, ValidationError} from '../../../src/utils/errors';
+import {APIError, SessionExpiredError, UnauthorizedError, ValidationError} from '../../../src/utils/errors';
 
 // Mock external dependencies
 vi.mock('@sentry/react', () => ({
@@ -190,7 +190,34 @@ describe('useHandleError', () => {
         expect(toast.remove).toHaveBeenCalled();
     });
 
-    it('does not show toast for unauthorized errors', () => {
+    it('does not send session expiry errors to Sentry', () => {
+        const wrapper = createWrapper('https://sentry.dsn');
+        const {result} = renderHook(() => useHandleError(), {wrapper});
+
+        const mockResponse = new Response(null, {status: 401});
+        const error = new SessionExpiredError(mockResponse, '');
+
+        result.current(error);
+
+        expect(Sentry.captureException).not.toHaveBeenCalled();
+    });
+
+    it('does not show toast for session expiry errors', () => {
+        const wrapper = createWrapper();
+        const {result} = renderHook(() => useHandleError(), {wrapper});
+
+        const mockResponse = new Response(null, {status: 401});
+        const error = new SessionExpiredError(mockResponse, '');
+
+        result.current(error);
+
+        // The fetch layer redirects to signin on session expiry, so the
+        // error handler must not flash a toast over the unloading page
+        expect(showToast).not.toHaveBeenCalled();
+        expect(toast.remove).toHaveBeenCalled();
+    });
+
+    it('shows toast for unauthorized errors that do not trigger a redirect', () => {
         const wrapper = createWrapper();
         const {result} = renderHook(() => useHandleError(), {wrapper});
 
@@ -199,10 +226,10 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        // The fetch layer redirects to signin on session expiry, so the
-        // error handler must not flash a toast over the unloading page
-        expect(showToast).not.toHaveBeenCalled();
-        expect(toast.remove).toHaveBeenCalled();
+        expect(showToast).toHaveBeenCalledWith({
+            message: 'You are not authorised to make this request.',
+            type: 'error'
+        });
     });
 
     it('shows validation error message from context', () => {
