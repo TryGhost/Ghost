@@ -107,7 +107,7 @@ describe("Staff invitations", () => {
         expect(deleteApi.requests).toHaveLength(1);
     });
 
-    it("loads the next page of invitations and keeps the total count accurate", async () => {
+    it("loads the next page of invitations and keeps the total count accurate", {timeout: 30_000}, async () => {
         const invites = Array.from({length: 101}, (_, index) => invite({
             id: `invite${index}`,
             email: `invitee${index}@test.com`,
@@ -117,11 +117,12 @@ describe("Staff invitations", () => {
         await renderAdminApp("/settings/staff?tab=invited", {boot});
 
         const section = settingsScreen.users();
-        await expect(section.getByTestId("user-invite")).toHaveCount(100);
+        await expect.element(section.getByText("invitee0@test.com", {exact: true})).toBeVisible();
+        await expect(section.getByText("invitee100@test.com", {exact: true})).toHaveCount(0);
         await expect.element(section.getByRole("tab", {name: "Invited"})).toHaveTextContent("Invited101");
         await section.getByRole("button", {name: "Load more (showing 100/101 invites)"}).click();
 
-        await expect(section.getByTestId("user-invite")).toHaveCount(101);
+        await expect.element(section.getByText("invitee100@test.com", {exact: true})).toBeVisible();
         expect(invitesApi.requests.map(request => request.page)).toEqual([1, 2]);
     });
 

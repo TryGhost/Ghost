@@ -20,7 +20,7 @@ test.describe('Ghost Admin - Staff settings', () => {
         const image = {
             name: 'profile.png',
             mimeType: 'image/png',
-            buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z7t8AAAAASUVORK5CYII=', 'base64')
+            buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64')
         };
 
         await staffDetailsPage.gotoMyProfile();

@@ -1,5 +1,11 @@
 import {BasePage} from '@/helpers/pages';
-import {FilePayload, Locator, Page} from '@playwright/test';
+import {Locator, Page} from '@playwright/test';
+
+type FilePayload = {
+    name: string;
+    mimeType: string;
+    buffer: Buffer;
+};
 
 export class AdminStaffDetailsPage extends BasePage {
     readonly userDetailModal: Locator;
