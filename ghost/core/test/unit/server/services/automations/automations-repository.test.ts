@@ -1952,19 +1952,19 @@ describe('automations repository', function () {
             secondRevisionId = secondRevision.id;
 
             await knex('automated_email_recipients').insert([{
-                id: 'delivered-only',
+                id: 'recipient-1',
                 automation_action_revision_id: firstRevisionId,
                 mailgun_message_id: 'mid1'
             }, {
-                id: 'opened-only',
+                id: 'recipient-2',
                 automation_action_revision_id: secondRevisionId,
                 mailgun_message_id: 'mid2'
             }, {
-                id: 'opened-and-delivered',
+                id: 'recipient-3',
                 automation_action_revision_id: firstRevisionId,
                 mailgun_message_id: 'mid3'
             }, {
-                id: 'neither',
+                id: 'recipient-4',
                 automation_action_revision_id: firstRevisionId,
                 mailgun_message_id: 'mid4'
             }]);
@@ -1994,19 +1994,19 @@ describe('automations repository', function () {
             await repo.trackEmailDeliveredAndOpened(new Map());
 
             assert.deepEqual(await getRecipients(), [{
-                id: 'delivered-only',
+                id: 'recipient-1',
                 delivered_at: null,
                 opened_at: null
             }, {
-                id: 'neither',
+                id: 'recipient-2',
                 delivered_at: null,
                 opened_at: null
             }, {
-                id: 'opened-and-delivered',
+                id: 'recipient-3',
                 delivered_at: null,
                 opened_at: null
             }, {
-                id: 'opened-only',
+                id: 'recipient-4',
                 delivered_at: null,
                 opened_at: null
             }]);
@@ -2016,43 +2016,43 @@ describe('automations repository', function () {
 
         it('tracks delivers and opens, leaving untouched recipients alone', async function () {
             await repo.trackEmailDeliveredAndOpened(new Map([
-                ['delivered-only', delivered(EARLIER, firstRevisionId)],
-                ['opened-only', open(LATER, secondRevisionId)],
-                ['opened-and-delivered', deliveredAndOpened(EARLIER, LATER, firstRevisionId)]
+                ['recipient-1', delivered(EARLIER, firstRevisionId)],
+                ['recipient-2', open(LATER, secondRevisionId)],
+                ['recipient-3', deliveredAndOpened(EARLIER, LATER, firstRevisionId)]
             ]));
 
             assert.deepEqual(await getRecipients(), [{
-                id: 'delivered-only',
+                id: 'recipient-1',
                 delivered_at: EARLIER,
                 opened_at: null
             }, {
-                id: 'neither',
+                id: 'recipient-2',
                 delivered_at: null,
-                opened_at: null
+                opened_at: LATER
             }, {
-                id: 'opened-and-delivered',
+                id: 'recipient-3',
                 delivered_at: EARLIER,
                 opened_at: LATER
             }, {
-                id: 'opened-only',
+                id: 'recipient-4',
                 delivered_at: null,
-                opened_at: LATER
+                opened_at: null
             }]);
         });
 
         it('keeps the earliest delivered and opened timestamps', async function () {
             await knex('automated_email_recipients')
-                .where('id', 'opened-and-delivered')
+                .where('id', 'recipient-3')
                 .update({
                     delivered_at: EARLIER,
                     opened_at: EARLIER
                 });
 
             await repo.trackEmailDeliveredAndOpened(new Map([
-                ['opened-and-delivered', deliveredAndOpened(LATER, LATER, firstRevisionId)]
+                ['recipient-3', deliveredAndOpened(LATER, LATER, firstRevisionId)]
             ]));
 
-            assert.deepEqual(await getRecipient('opened-and-delivered'), {
+            assert.deepEqual(await getRecipient('recipient-3'), {
                 delivered_at: EARLIER,
                 opened_at: EARLIER
             });
@@ -2061,17 +2061,17 @@ describe('automations repository', function () {
 
         it('overwrites delivered and opened timestamps that are later than the new ones', async function () {
             await knex('automated_email_recipients')
-                .where('id', 'opened-and-delivered')
+                .where('id', 'recipient-3')
                 .update({
                     delivered_at: LATER,
                     opened_at: LATER
                 });
 
             await repo.trackEmailDeliveredAndOpened(new Map([
-                ['opened-and-delivered', deliveredAndOpened(EARLIER, EARLIER, firstRevisionId)]
+                ['recipient-3', deliveredAndOpened(EARLIER, EARLIER, firstRevisionId)]
             ]));
 
-            assert.deepEqual(await getRecipient('opened-and-delivered'), {
+            assert.deepEqual(await getRecipient('recipient-3'), {
                 delivered_at: EARLIER,
                 opened_at: EARLIER
             });
@@ -2080,9 +2080,9 @@ describe('automations repository', function () {
 
         it('counts one open per recipient that opened', async function () {
             await repo.trackEmailDeliveredAndOpened(new Map([
-                ['delivered-only', open(EARLIER, firstRevisionId)],
-                ['opened-and-delivered', open(LATER, firstRevisionId)],
-                ['opened-only', open(EARLIER, secondRevisionId)]
+                ['recipient-1', open(EARLIER, firstRevisionId)],
+                ['recipient-3', open(LATER, firstRevisionId)],
+                ['recipient-2', open(EARLIER, secondRevisionId)]
             ]));
 
             assert.equal(await getOpenedCount(firstRevisionId), 2);
@@ -2090,7 +2090,7 @@ describe('automations repository', function () {
         });
 
         it('counts a recipient only on its first open, however often it is tracked', async function () {
-            const opens = new Map([['opened-only', open(EARLIER, secondRevisionId)]]);
+            const opens = new Map([['recipient-2', open(EARLIER, secondRevisionId)]]);
 
             await repo.trackEmailDeliveredAndOpened(opens);
             assert.equal(await getOpenedCount(secondRevisionId), 1);
@@ -2103,7 +2103,7 @@ describe('automations repository', function () {
 
         it('does not count a delivery as an open', async function () {
             await repo.trackEmailDeliveredAndOpened(new Map([
-                ['delivered-only', delivered(EARLIER, firstRevisionId)]
+                ['recipient-1', delivered(EARLIER, firstRevisionId)]
             ]));
 
             assert.equal(await getOpenedCount(firstRevisionId), null);
@@ -2115,8 +2115,8 @@ describe('automations repository', function () {
                 .update({email_opened_count: 5});
 
             await repo.trackEmailDeliveredAndOpened(new Map([
-                ['delivered-only', open(EARLIER, firstRevisionId)],
-                ['opened-only', open(EARLIER, secondRevisionId)]
+                ['recipient-1', open(EARLIER, firstRevisionId)],
+                ['recipient-2', open(EARLIER, secondRevisionId)]
             ]));
 
             assert.equal(await getOpenedCount(firstRevisionId), 1);
