@@ -2,7 +2,7 @@ const {EventProcessingResult} = require('./event-processing-result');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 /** @import {PrometheusClient} from '@tryghost/prometheus-metrics' */
-/** @import {EventProcessor} from './event-processor' */
+/** @import {BatchEventProcessor} from './batch-event-processor' */
 
 /**
  * @typedef {object} FetchData
@@ -106,7 +106,7 @@ module.exports = class EmailAnalyticsService {
      * @param {object} dependencies.queries
      * @param {object} dependencies.provider
      * @param {PrometheusClient} dependencies.prometheusClient
-     * @param {() => EventProcessor} dependencies.createEventProcessor
+     * @param {() => BatchEventProcessor} dependencies.createEventProcessor
      * @param {JobNames} dependencies.jobNames
      * @param {CursorSeed} dependencies.cursorSeed
      */

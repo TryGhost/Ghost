@@ -1,12 +1,12 @@
 const {EventProcessingResult} = require('./event-processing-result');
 const logging = require('@tryghost/logging');
-/** @import {EventProcessor} from './event-processor' */
+/** @import {BatchEventProcessor} from './batch-event-processor' */
 /** @import {FetchData} from './email-analytics-service' */
 
 /**
- * @implements {EventProcessor}
+ * @implements {BatchEventProcessor}
  */
-class NewsletterEmailAnalyticsProcessor {
+class NewsletterEmailAnalyticsBatchProcessor {
     #config;
     #emailEventProcessor;
     #prometheusClient;
@@ -276,4 +276,4 @@ class NewsletterEmailAnalyticsProcessor {
     }
 }
 
-exports.NewsletterEmailAnalyticsProcessor = NewsletterEmailAnalyticsProcessor;
+exports.NewsletterEmailAnalyticsBatchProcessor = NewsletterEmailAnalyticsBatchProcessor;

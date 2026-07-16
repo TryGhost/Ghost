@@ -1,6 +1,6 @@
 import type {EventProcessingResult} from './event-processing-result';
 
-export type EventProcessor = {
+export type BatchEventProcessor = {
     processBatch(
         events: any[],
         result: EventProcessingResult,

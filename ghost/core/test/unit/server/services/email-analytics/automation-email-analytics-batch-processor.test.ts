@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 import sinon from 'sinon';
 
-import {AutomationEmailAnalyticsProcessor} from '../../../../../core/server/services/email-analytics/automation-email-analytics-processor';
+import {AutomationEmailAnalyticsBatchProcessor} from '../../../../../core/server/services/email-analytics/automation-email-analytics-batch-processor';
 import {EventProcessingResult} from '../../../../../core/server/services/email-analytics/event-processing-result';
 import type {AutomatedEmailRecipientWithMailgunId} from '../../../../../core/server/services/automations/automations-repository';
 
@@ -22,7 +22,7 @@ function buildAutomationsApi(recipients: AutomatedEmailRecipientWithMailgunId[] 
     };
 }
 
-describe('AutomationEmailAnalyticsProcessor', function () {
+describe('AutomationEmailAnalyticsBatchProcessor', function () {
     afterEach(function () {
         sinon.restore();
     });
@@ -30,7 +30,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
     describe('processBatch', function () {
         it('handles delivered', async function () {
             const automationsApi = buildAutomationsApi([buildRecipient()]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
             const result = new EventProcessingResult();
             const fetchData: {lastEventTimestamp?: Date} = {};
 
@@ -55,7 +55,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
 
         it('handles opened', async function () {
             const automationsApi = buildAutomationsApi([buildRecipient()]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
             const result = new EventProcessingResult();
             const fetchData: {lastEventTimestamp?: Date} = {};
 
@@ -79,7 +79,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
                 buildRecipient({id: 'recipient-1', mailgun_message_id: 'message-1'}),
                 buildRecipient({id: 'recipient-2', mailgun_message_id: 'message-2', automation_action_revision_id: 'revision-2'})
             ]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
             const result = new EventProcessingResult();
             const fetchData: {lastEventTimestamp?: Date} = {};
 
@@ -115,7 +115,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
                 buildRecipient({id: 'recipient-2', mailgun_message_id: 'message-2', automation_action_revision_id: 'revision-1'}),
                 buildRecipient({id: 'recipient-3', mailgun_message_id: 'message-3', automation_action_revision_id: 'revision-2'})
             ]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
 
             await processor.processBatch([{
                 type: 'opened',
@@ -141,7 +141,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
 
         it('keeps the earliest timestamp when a recipient has several events of the same type', async function () {
             const automationsApi = buildAutomationsApi([buildRecipient()]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
 
             await processor.processBatch([{
                 type: 'delivered',
@@ -175,7 +175,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
 
         it('normalizes provider ids before looking recipients up', async function () {
             const automationsApi = buildAutomationsApi([buildRecipient()]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
             const result = new EventProcessingResult();
 
             await processor.processBatch([{
@@ -193,7 +193,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
 
         it('deduplicates provider ids before looking recipients up', async function () {
             const automationsApi = buildAutomationsApi([buildRecipient()]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
 
             await processor.processBatch([{
                 type: 'delivered',
@@ -213,7 +213,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
 
         it('counts events with no matching recipient as unprocessable', async function () {
             const automationsApi = buildAutomationsApi([]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
             const result = new EventProcessingResult();
 
             await processor.processBatch([{
@@ -235,7 +235,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
 
         it('counts events with no provider id as unprocessable', async function () {
             const automationsApi = buildAutomationsApi([buildRecipient()]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
             const result = new EventProcessingResult();
 
             await processor.processBatch([{
@@ -252,7 +252,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
 
         it(`doesn't look up recipients when no event has a provider id`, async function () {
             const automationsApi = buildAutomationsApi([]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
 
             await processor.processBatch([{
                 type: 'delivered',
@@ -264,7 +264,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
 
         it(`doesn't handle other event types`, async function () {
             const automationsApi = buildAutomationsApi([buildRecipient()]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
             const result = new EventProcessingResult();
             const fetchData: {lastEventTimestamp?: Date} = {};
 
@@ -284,7 +284,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
 
         it('merges into an existing result rather than replacing it', async function () {
             const automationsApi = buildAutomationsApi([buildRecipient()]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
             const result = new EventProcessingResult({delivered: 2, opened: 1});
 
             await processor.processBatch([{
@@ -298,7 +298,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
 
         it('advances lastEventTimestamp to the latest event', async function () {
             const automationsApi = buildAutomationsApi([buildRecipient()]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
             const fetchData = {lastEventTimestamp: new Date(2)};
 
             await processor.processBatch([{
@@ -316,7 +316,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
 
         it(`doesn't move lastEventTimestamp backwards`, async function () {
             const automationsApi = buildAutomationsApi([buildRecipient()]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
             const fetchData = {lastEventTimestamp: new Date(10)};
 
             await processor.processBatch([{
@@ -330,7 +330,7 @@ describe('AutomationEmailAnalyticsProcessor', function () {
 
         it('handles an empty batch', async function () {
             const automationsApi = buildAutomationsApi([]);
-            const processor = new AutomationEmailAnalyticsProcessor({automationsApi});
+            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
             const result = new EventProcessingResult();
             const fetchData: {lastEventTimestamp?: Date} = {};
 

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
 
-const {NewsletterEmailAnalyticsProcessor} = require('../../../../../core/server/services/email-analytics/newsletter-email-analytics-processor');
+const {NewsletterEmailAnalyticsBatchProcessor} = require('../../../../../core/server/services/email-analytics/newsletter-email-analytics-batch-processor');
 const {EventProcessingResult} = require('../../../../../core/server/services/email-analytics/event-processing-result');
 
 /**
@@ -16,7 +16,7 @@ function createMockConfig() {
     };
 }
 
-describe('NewsletterEmailAnalyticsProcessor', function () {
+describe('NewsletterEmailAnalyticsBatchProcessor', function () {
     let clock;
 
     beforeEach(function () {
@@ -93,7 +93,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('uses passed-in event processor', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -131,7 +131,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('handles opened', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -161,7 +161,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('handles delivered', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -191,7 +191,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('handles failed (permanent)', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -220,7 +220,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('handles failed (temporary)', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -249,7 +249,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('handles unsubscribed', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -279,7 +279,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('handles complained', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -309,7 +309,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it(`doens't handle other event types`, async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -351,7 +351,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('delivered returns unprocessable', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -371,7 +371,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('opened returns unprocessable', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -391,7 +391,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('failed (permanent) returns unprocessable', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -412,7 +412,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('failed (temporary) returns unprocessable', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -433,7 +433,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('unsubscribed returns unprocessable', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -453,7 +453,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                     });
 
                     it('complained returns unprocessable', async function () {
-                        const processor = new NewsletterEmailAnalyticsProcessor({
+                        const processor = new NewsletterEmailAnalyticsBatchProcessor({
                             config: createMockConfig(),
                             emailEventProcessor
                         });
@@ -480,7 +480,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
                         handleDelivered: sinon.stub().resolves({emailId: 1, emailRecipientId: 1, memberId: 1})
                     };
 
-                    const processor = new NewsletterEmailAnalyticsProcessor({
+                    const processor = new NewsletterEmailAnalyticsBatchProcessor({
                         config: createMockConfig(),
                         emailEventProcessor
                     });
@@ -523,7 +523,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
         });
 
         function createProcessor() {
-            return new NewsletterEmailAnalyticsProcessor({
+            return new NewsletterEmailAnalyticsBatchProcessor({
                 config: createMockConfig(),
                 queries
             });
@@ -610,7 +610,7 @@ describe('NewsletterEmailAnalyticsProcessor', function () {
 
             it('aggregates the ids collected by processBatch', async function () {
                 configUtils.set('emailAnalytics:batchProcessing', false);
-                const processor = new NewsletterEmailAnalyticsProcessor({
+                const processor = new NewsletterEmailAnalyticsBatchProcessor({
                     config: createMockConfig(),
                     emailEventProcessor: {
                         handleDelivered: sinon.stub().resolves({emailId: 'e-1', emailRecipientId: 'r-1', memberId: 'm-1'})

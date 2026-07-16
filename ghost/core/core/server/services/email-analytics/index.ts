@@ -2,7 +2,7 @@
 import EmailAnalyticsServiceWrapper from './email-analytics-service-wrapper';
 import config from '../../../shared/config';
 // @ts-expect-error This module lacks type definitions.
-import {NewsletterEmailAnalyticsProcessor} from './newsletter-email-analytics-processor';
+import {NewsletterEmailAnalyticsBatchProcessor} from './newsletter-email-analytics-batch-processor';
 // @ts-expect-error This module lacks type definitions.
 import EmailEventStorage from '../email-service/email-event-storage';
 // @ts-expect-error This module lacks type definitions.
@@ -25,7 +25,7 @@ import StartEmailAnalyticsJobEvent from './events/start-email-analytics-job-even
 import {StartAutomationEmailAnalyticsJobEvent} from './events/start-automation-email-analytics-job-event';
 import {AUTOMATION_EMAIL_TAG} from '../member-welcome-emails/constants';
 import * as automationsApi from '../automations/automations-api';
-import {AutomationEmailAnalyticsProcessor} from './automation-email-analytics-processor';
+import {AutomationEmailAnalyticsBatchProcessor} from './automation-email-analytics-batch-processor';
 
 export const newsletters = new EmailAnalyticsServiceWrapper({
     logName: 'newsletters'
@@ -77,7 +77,7 @@ export const init = () => {
         },
         prometheusClient,
         createEventProcessor: () => (
-            new NewsletterEmailAnalyticsProcessor({
+            new NewsletterEmailAnalyticsBatchProcessor({
                 config,
                 emailEventProcessor: newsletterEmailEventProcessor,
                 prometheusClient,
@@ -103,7 +103,7 @@ export const init = () => {
             }
         },
         createEventProcessor: () => (
-            new AutomationEmailAnalyticsProcessor({
+            new AutomationEmailAnalyticsBatchProcessor({
                 automationsApi
             })
         )

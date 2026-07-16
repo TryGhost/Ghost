@@ -3,7 +3,7 @@ const metrics = require('@tryghost/metrics');
 const config = require('../../../shared/config');
 const domainEvents = require('@tryghost/domain-events');
 /** @import {PrometheusClient} from '@tryghost/prometheus-metrics' */
-/** @import {EventProcessor} from './event-processor' */
+/** @import {BatchEventProcessor} from './batch-event-processor' */
 /** @import {JobNames, CursorSeed} from './email-analytics-service' */
 
 class EmailAnalyticsServiceWrapper {
@@ -30,7 +30,7 @@ class EmailAnalyticsServiceWrapper {
      * @param {string[]} options.mailgunTags
      * @param {JobNames} options.jobNames
      * @param {CursorSeed} options.cursorSeed
-     * @param {() => EventProcessor} options.createEventProcessor
+     * @param {() => BatchEventProcessor} options.createEventProcessor
      * @param {PrometheusClient} [options.prometheusClient]
      */
     init({

@@ -1,7 +1,7 @@
 import {normalizeMailgunMessageId} from '../automations/mailgun-message-id';
 import type * as automationsApi from '../automations/automations-api';
 import type {AutomatedEmailEvents, AutomatedEmailRecipientWithMailgunId} from '../automations/automations-repository';
-import type {EventProcessor} from './event-processor';
+import type {BatchEventProcessor} from './batch-event-processor';
 import {EventProcessingResult} from './event-processing-result';
 
 type AutomationsApi = {
@@ -60,7 +60,7 @@ const trackEarliest = (
     map.set(recipient.id, events);
 };
 
-export class AutomationEmailAnalyticsProcessor implements EventProcessor {
+export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcessor {
     #automationsApi;
 
     constructor({
