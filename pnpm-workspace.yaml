@@ -82,6 +82,7 @@ catalog:
   '@tryghost/helpers': 1.1.106
   '@tryghost/limit-service': 1.5.6
   '@tryghost/logging': 4.2.1
+  '@tryghost/mongo-knex': 0.10.1
   '@tryghost/nql': 0.13.1
   '@tryghost/nql-lang': 0.6.6
   '@tryghost/string': 0.3.5

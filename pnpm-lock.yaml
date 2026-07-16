@@ -141,6 +141,9 @@ catalogs:
     '@tryghost/limit-service':
       specifier: 1.5.6
       version: 1.5.6
+    '@tryghost/mongo-knex':
+      specifier: 0.10.1
+      version: 0.10.1
     '@tryghost/nql':
       specifier: 0.13.1
       version: 0.13.1
@@ -1132,7 +1135,7 @@ importers:
         version: 1.5.6
       '@tryghost/nql':
         specifier: 'catalog:'
-        version: 0.13.1(supports-color@5.5.0)
+        version: 0.13.1
       '@tryghost/string':
         specifier: 'catalog:'
         version: 0.3.5
@@ -1345,7 +1348,7 @@ importers:
         version: link:../../packages/i18n
       '@tryghost/nql':
         specifier: 'catalog:'
-        version: 0.13.1(supports-color@5.5.0)
+        version: 0.13.1
       '@types/react':
         specifier: catalog:react17
         version: 17.0.93
@@ -2054,7 +2057,7 @@ importers:
         version: 1.5.6
       '@tryghost/nql':
         specifier: 'catalog:'
-        version: 0.13.1(supports-color@5.5.0)
+        version: 0.13.1
       '@tryghost/string':
         specifier: 'catalog:'
         version: 0.3.5
@@ -2484,6 +2487,9 @@ importers:
       '@tryghost/metrics':
         specifier: 1.0.43
         version: 1.0.43(supports-color@5.5.0)
+      '@tryghost/mongo-knex':
+        specifier: 'catalog:'
+        version: 0.10.1
       '@tryghost/mongo-utils':
         specifier: 0.6.5
         version: 0.6.5
@@ -2498,7 +2504,7 @@ importers:
         version: 2.3.1(babel-core@6.26.3)(debug@4.4.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       '@tryghost/nql':
         specifier: 'catalog:'
-        version: 0.13.1(supports-color@5.5.0)
+        version: 0.13.1
       '@tryghost/nql-lang':
         specifier: 'catalog:'
         version: 0.6.6
@@ -30906,7 +30912,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/mongo-knex@0.10.1(supports-color@5.5.0)':
+  '@tryghost/mongo-knex@0.10.1':
     dependencies:
       debug: 4.4.3(supports-color@5.5.0)
       lodash: 4.18.1
@@ -31001,7 +31007,7 @@ snapshots:
 
   '@tryghost/nql@0.13.0':
     dependencies:
-      '@tryghost/mongo-knex': 0.10.1(supports-color@5.5.0)
+      '@tryghost/mongo-knex': 0.10.1
       '@tryghost/mongo-utils': 0.6.5
       '@tryghost/nql-lang': 0.6.6
       lodash: 4.18.1
@@ -31009,9 +31015,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/nql@0.13.1(supports-color@5.5.0)':
+  '@tryghost/nql@0.13.1':
     dependencies:
-      '@tryghost/mongo-knex': 0.10.1(supports-color@5.5.0)
+      '@tryghost/mongo-knex': 0.10.1
       '@tryghost/mongo-utils': 0.6.5
       '@tryghost/nql-lang': 0.6.6
       lodash: 4.18.1
@@ -40001,7 +40007,7 @@ snapshots:
       '@tryghost/debug': 2.3.1(supports-color@5.5.0)
       '@tryghost/errors': 1.3.13
       '@tryghost/logging': 4.2.1(supports-color@5.5.0)
-      '@tryghost/nql': 0.13.1(supports-color@5.5.0)
+      '@tryghost/nql': 0.13.1
       '@tryghost/pretty-cli': 3.3.1
       '@tryghost/server': 3.1.1
       '@tryghost/zip': 3.5.0

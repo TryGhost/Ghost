@@ -199,6 +199,8 @@ export const getActionTitle = (action: Action) => {
         resourceType = 'gift link';
     } else if (resourceType === 'security_action') {
         resourceType = 'security action';
+    } else if (resourceType === 'member_custom_field') {
+        resourceType = 'custom field';
     }
 
     // Because a `page` and `post` both use the same model, we store the

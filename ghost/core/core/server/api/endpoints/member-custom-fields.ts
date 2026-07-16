@@ -35,15 +35,17 @@ const controller = {
 
     browse: {
         headers: noCacheInvalidation,
-        // No filter/pagination/order options: the definition list is small and
-        // global, and returned whole in a fixed order. (A future sort_order column
-        // would change the order server-side, not add a client option.)
-        options: [],
+        // `filter` narrows by status (the definition list is otherwise small and
+        // global, returned whole in a fixed order). Archived fields are hidden by
+        // default; Settings passes `filter=status:[active,archived]` to see both.
+        // No pagination/order options — a future sort_order column would change the
+        // order server-side, not add a client option.
+        options: ['filter'],
         permissions(frame: Frame) {
             return canThis(frame).browse.member_custom_field();
         },
-        query() {
-            return definitions!.browse();
+        query(frame: Frame) {
+            return definitions!.browse({filter: frame.options.filter as string | undefined});
         }
     },
 

@@ -3,32 +3,31 @@ import type {Knex} from 'knex';
 import {FieldTypeSchema} from '@tryghost/custom-field-types';
 import {DbDate} from '../../lib/db-date';
 
+// A field's lifecycle state. `archived` is a soft state: the field drops out of
+// the values path but stays visible in the definition list (with its status) so
+// admins can find, rename, restore, or permanently delete it. The values mirror
+// schema.js's `isIn` constraint on the column — which is static config and can't
+// import this, so that one stays literal with a pointer back here.
+export const FIELD_STATUS = {active: 'active', archived: 'archived'} as const;
+export type FieldStatus = typeof FIELD_STATUS[keyof typeof FIELD_STATUS];
+export const FieldStatusSchema = z.enum([FIELD_STATUS.active, FIELD_STATUS.archived]);
+
 // The members_custom_fields row: the single source for the read projection and the
 // knex table type below. `type` is validated as the field-type enum here (the DB
 // only stores registered types), so the row already carries the narrow type and
-// the definition codec needs no cast.
+// the definition codec needs no cast. `status` travels with the row: it's part of
+// the read projection so the definition list can group active vs archived.
 export const DbCustomField = z.object({
     id: z.string(),
     key: z.string(),
     name: z.string(),
     type: FieldTypeSchema,
+    status: FieldStatusSchema,
     created_at: DbDate,
     updated_at: DbDate.nullable()
 });
 
-// A field's lifecycle state. Persistence-only: the domain CustomField doesn't
-// carry it (archived-ness is how the store soft-deletes, not something publishers
-// see), so it lives here with the row type rather than in models.ts. The values
-// mirror schema.js's `isIn` constraint on the column — which is static config and
-// can't import this, so that one stays literal with a pointer back here.
-export const FIELD_STATUS = {active: 'active', archived: 'archived'} as const;
-export type FieldStatus = typeof FIELD_STATUS[keyof typeof FIELD_STATUS];
-
-// The stored row also carries `status`. It's the persistence concern above, so it
-// lives only in the knex row type here, not in the codec schema. DB-defaulted to
-// 'active' on create and only ever set via update (archive), so it's absent from
-// the insert type.
-type CustomFieldRow = z.infer<typeof DbCustomField> & {status: FieldStatus};
+type CustomFieldRow = z.infer<typeof DbCustomField>;
 
 // A member's stored value for one field. `value_text`/`value_json` are the raw
 // columns — which one carries the value, and how it decodes, is the storage
@@ -60,7 +59,9 @@ declare module 'knex/types/tables' {
     interface Tables {
         members_custom_fields: Knex.CompositeTableType<
             CustomFieldRow,
-            Omit<z.input<typeof DbCustomField>, 'updated_at'>,
+            // `status` is DB-defaulted to 'active' on create and only ever set via
+            // update (archive/restore), so it's absent from the insert type.
+            Omit<z.input<typeof DbCustomField>, 'updated_at' | 'status'>,
             Partial<CustomFieldRow>
         >;
         members_custom_field_values: Knex.CompositeTableType<
