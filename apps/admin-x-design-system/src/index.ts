@@ -78,7 +78,7 @@ export {default as Button} from './global/button';
 export type {ButtonColor, ButtonProps} from './global/button';
 export {default as ButtonGroup} from './global/button-group';
 export type {ButtonGroupProps} from './global/button-group';
-export {default as ErrorBoundary, withErrorBoundary} from './global/error-boundary';
+export {default as ErrorBoundary} from './global/error-boundary';
 export type {ErrorBoundaryProps} from './global/error-boundary';
 export {default as Heading} from './global/heading';
 export type {HeadingProps} from './global/heading';
