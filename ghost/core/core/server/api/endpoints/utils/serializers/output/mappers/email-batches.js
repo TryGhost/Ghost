@@ -2,7 +2,7 @@ const _ = require('lodash');
 
 const batchFields = [
     'id',
-    'provider_id',
+    'mailgun_message_id',
     'status',
     'member_segment',
     'created_at',

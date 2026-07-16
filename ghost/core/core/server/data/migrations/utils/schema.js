@@ -208,17 +208,19 @@ function createAddIndexMigration(table, columns) {
  * @param {string} table
  * @param {string} from
  * @param {string} to
+ * @param {object} [options]
+ * @param {'instant'|'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
  *
  * @returns {Migration}
  */
-function createRenameColumnMigration(table, from, to) {
+function createRenameColumnMigration(table, from, to, options = {}) {
     return createNonTransactionalMigration(
         async function up(knex) {
             const hasColumn = await knex.schema.hasColumn(table, to);
             if (hasColumn) {
                 logging.warn(`Renaming ${table}.${from} to ${table}.${to} column - skipping as column ${table}.${to} already exists`);
             } else {
-                await commands.renameColumn(table, from, to, knex);
+                await commands.renameColumn(table, from, to, knex, options);
             }
         },
         async function down(knex) {
@@ -226,7 +228,7 @@ function createRenameColumnMigration(table, from, to) {
             if (hasColumn) {
                 logging.warn(`Renaming ${table}.${to} to ${table}.${from} column - skipping as column ${table}.${from} already exists`);
             } else {
-                await commands.renameColumn(table, to, from, knex);
+                await commands.renameColumn(table, to, from, knex, options);
             }
         }
     );

@@ -74,4 +74,40 @@ describe('schema commands', function () {
             assert.deepEqual(builderViews, ['my_view']);
         });
     });
+
+    describe('renameColumn', function () {
+        it('uses requested algorithm on MySQL', async function () {
+            const rawStatements = [];
+            const fakeKnex = {
+                client: {config: {client: 'mysql2'}},
+                raw: (sql) => {
+                    rawStatements.push(sql);
+                    return Promise.resolve();
+                }
+            };
+
+            await commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {algorithm: 'instant'});
+
+            assert.deepEqual(rawStatements, [
+                'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`, algorithm=instant;'
+            ]);
+        });
+
+        it('does not force an algorithm when none is requested', async function () {
+            const rawStatements = [];
+            const fakeKnex = {
+                client: {config: {client: 'mysql2'}},
+                raw: (sql) => {
+                    rawStatements.push(sql);
+                    return Promise.resolve();
+                }
+            };
+
+            await commands.renameColumn('table', 'old_column', 'new_column', fakeKnex);
+
+            assert.deepEqual(rawStatements, [
+                'ALTER TABLE `table` RENAME COLUMN `old_column` TO `new_column`;'
+            ]);
+        });
+    });
 });

@@ -177,13 +177,16 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
  * @param {string} from
  * @param {string} to
  * @param {import('knex').Knex.Transaction} [transaction]
+ * @param {object} [options]
+ * @param {'instant'|'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
  */
-async function renameColumn(tableName, from, to, transaction = db.knex) {
+async function renameColumn(tableName, from, to, transaction = db.knex, options = {}) {
     logging.info(`Renaming column '${from}' to '${to}' in table '${tableName}'`);
 
     if (DatabaseInfo.isMySQL(transaction)) {
         // The knex helper does a lot of interesting things with foreign keys that are slow on bigger MySQL clusters
-        return await transaction.raw(`ALTER TABLE \`${tableName}\` RENAME COLUMN \`${from}\` TO \`${to}\`;`);
+        const algorithm = options.algorithm && options.algorithm !== 'auto' ? `, algorithm=${options.algorithm}` : '';
+        return await transaction.raw(`ALTER TABLE \`${tableName}\` RENAME COLUMN \`${from}\` TO \`${to}\`${algorithm};`);
     }
 
     return await transaction.schema.table(tableName, function (table) {

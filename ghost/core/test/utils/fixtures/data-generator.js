@@ -1312,7 +1312,7 @@ DataGenerator.Content = {
         {
             id: ObjectId().toHexString(),
             email_id: null, // emails[0] relation added later
-            provider_id: 'email1@testing.mailgun.net',
+            mailgun_message_id: 'email1@testing.mailgun.net',
             status: 'submitted',
             fallback_sending_domain: false
         }
