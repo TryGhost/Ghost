@@ -7,6 +7,13 @@ export const imageUploadHandler = async (files, nodeKey, editor, upload) => {
         return;
     }
 
+    const isTargetCard = editor.getEditorState().read(() => {
+        return $isKoenigCard($getNodeByKey(nodeKey));
+    });
+    if (!isTargetCard) {
+        return;
+    }
+
     // show preview via an object URL whilst upload is in progress
     let previewUrl = URL.createObjectURL(files[0]);
     if (previewUrl) {

@@ -8,6 +8,8 @@ export const VISIBILITY_SETTINGS = {
 };
 
 export function parseVisibilityToToggles(visibility) {
+    visibility = visibility || buildDefaultVisibility();
+
     return {
         web: {
             nonMembers: visibility.web.nonMember,

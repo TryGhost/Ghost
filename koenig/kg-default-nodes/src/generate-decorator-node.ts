@@ -151,10 +151,10 @@ export function generateDecoratorNode({nodeType, properties, defaultRenderFn, ve
         constructor(data: Record<string, unknown> = {}, key?: string) {
             super(key);
             internalProps.forEach((prop) => {
-                if (typeof prop.default === 'boolean') {
-                    this[prop.privateName] = data[prop.name] ?? prop.default;
-                } else {
+                if (typeof prop.default === 'string') {
                     this[prop.privateName] = data[prop.name] || prop.default;
+                } else {
+                    this[prop.privateName] = data[prop.name] ?? prop.default;
                 }
             });
         }

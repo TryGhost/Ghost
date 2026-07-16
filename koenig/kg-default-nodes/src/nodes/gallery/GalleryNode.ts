@@ -2,12 +2,25 @@ import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropert
 import {parseGalleryNode} from './gallery-parser.js';
 import {renderGalleryNode} from './gallery-renderer.js';
 
+export interface GalleryImage {
+    fileName: string;
+    src: string;
+    width: number;
+    height: number;
+    row: number;
+    alt?: string;
+    caption?: string;
+    title?: string;
+    href?: string;
+}
+
 const galleryProperties = {
-    images: {default: [] as unknown[]},
+    images: {default: [] as GalleryImage[]},
     caption: {default: '', wordCount: true}
 } satisfies DecoratorNodePropertyMap;
 
 export type GalleryData = DecoratorNodeData<typeof galleryProperties>;
+export type GalleryNodeData = Required<GalleryData>;
 
 export class GalleryNode extends generateDecoratorNode({
     nodeType: 'gallery',

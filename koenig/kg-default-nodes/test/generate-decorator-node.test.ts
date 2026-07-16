@@ -69,6 +69,30 @@ describe('Utils: generateDecoratorNode', function () {
                 expect($isKoenigCard(node)).toBe(true);
             });
         });
+
+        it('preserves explicitly provided falsy non-string values', function () {
+            const NodeWithDefaults = utils.generateDecoratorNode({
+                nodeType: 'falsy-properties-test',
+                properties: {
+                    title: {default: 'Default title'},
+                    count: {default: 1},
+                    enabled: {default: true}
+                }
+            });
+            const typedEditor = createHeadlessEditor({nodes: [NodeWithDefaults]});
+
+            typedEditor.update(() => {
+                const node = new NodeWithDefaults({
+                    title: '',
+                    count: 0,
+                    enabled: false
+                });
+
+                expect(node.title).toBe('Default title');
+                expect(node.count).toBe(0);
+                expect(node.enabled).toBe(false);
+            });
+        });
     });
 
     describe('exportDOM', function () {
