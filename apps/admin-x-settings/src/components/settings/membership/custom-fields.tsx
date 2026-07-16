@@ -3,8 +3,9 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useFeatureFlag from '../../../hooks/use-feature-flag';
-import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/admin-x-design-system';
 import {useBrowseMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {withErrorBoundary} from '../../error-boundary';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
