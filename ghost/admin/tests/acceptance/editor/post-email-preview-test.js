@@ -95,7 +95,7 @@ describe('Acceptance: Post email preview', function () {
         expect(options.length).to.equal(3);
         expect(options[0].textContent.trim()).to.equal('Free member');
         expect(options[1].textContent.trim()).to.equal('Paid member');
-        expect(options[2].textContent.trim()).to.equal('Tier');
+        expect(options[2].textContent.trim()).to.equal('Specific tier');
 
         // can switch free/paid member in preview
         await selectChoose('[data-test-select="preview-segment"]', 'Paid member');
@@ -109,7 +109,7 @@ describe('Acceptance: Post email preview', function () {
         expect(requestBody.member_tier).to.be.undefined;
 
         // selecting a specific tier sends the paid audience narrowed to that tier
-        await selectChoose('[data-test-select="preview-segment"]', 'Tier');
+        await selectChoose('[data-test-select="preview-segment"]', 'Specific tier');
         await selectChoose('[data-test-select="preview-tier"]', 'Archive');
         await click(find('[data-test-button="post-preview-test-email"]'));
         await click(find('[data-test-button="send-test-email"]'));

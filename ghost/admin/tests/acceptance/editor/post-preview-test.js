@@ -50,7 +50,7 @@ describe('Acceptance: Post preview', function () {
         expect(url.searchParams.get('member_status')).to.equal('paid');
 
         // tier previews add a grouped tier selector and identify the selected tier
-        await selectChoose('[data-test-select="preview-segment"]', 'Tier');
+        await selectChoose('[data-test-select="preview-segment"]', 'Specific tier');
         expect(find('[data-test-select="preview-tier"]')).to.exist;
 
         await click('[data-test-select="preview-tier"] .ember-power-select-trigger');
@@ -81,14 +81,14 @@ describe('Acceptance: Post preview', function () {
         this.server.create('tier', {name: archivedTierName, slug: 'archive', type: 'paid', active: false});
         await openPreviewModal.call(this);
 
-        await selectChoose('[data-test-select="preview-segment"]', 'Tier');
+        await selectChoose('[data-test-select="preview-segment"]', 'Specific tier');
         await selectChoose('[data-test-select="preview-tier"]', archivedTierName);
 
         await click('.gh-post-preview-close');
         await click('[data-test-button="publish-preview"]');
 
         // selections persist and the preview link is tier-aware immediately on reopen
-        expect(find('[data-test-select="preview-segment"]')).to.contain.text('Tier');
+        expect(find('[data-test-select="preview-segment"]')).to.contain.text('Specific tier');
         expect(find('[data-test-select="preview-tier"]')).to.contain.text(archivedTierName);
 
         await click('[data-test-button="share-preview"]');

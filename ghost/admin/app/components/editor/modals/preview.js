@@ -132,7 +132,7 @@ export default class EditorPostPreviewModal extends Component {
 
             if (this.tiers.length > 0) {
                 this.previewAsOptions.push(
-                    {label: 'Tier', value: 'tier'}
+                    {label: 'Specific tier', value: 'tier'}
                 );
             }
         }
