@@ -3,9 +3,10 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import RecommendationIcon from './recommendation-icon';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, Link, NoValueLabel, type PaginationData, type ShowMoreData, Table, TableCell, TableRow, Tooltip} from '@tryghost/admin-x-design-system';
+import {Button, Link, NoValueLabel, type PaginationData, type ShowMoreData, Table, TableCell, TableRow} from '@tryghost/admin-x-design-system';
 import {type Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
-import {numberWithCommas} from '../../../../utils/helpers';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface RecommendationListProps {
@@ -51,7 +52,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                     <>
                         <div className='flex items-center'>
                             <div className='mr-2'>
-                                <span>{numberWithCommas(count)}</span>
+                                <span>{formatNumber(count)}</span>
                             </div>
                             <div className='text-grey-700 lowercase'>
                                 <span>{showSubscribers ? newMembers : clicks}</span>
@@ -86,7 +87,28 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
 
     if (isLoading || recommendations.length) {
         return <Table
-            hint={<span>Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link><Tooltip containerClassName='ml-1 align-middle leading-none' content={copied ? 'Copied' : 'Copy link'} size='sm'><Button color='clear' hideLabel={true} icon={copied ? 'check-circle' : 'duplicate'} iconColorClass={copied ? 'text-green w-[14px] h-[14px]' : 'text-grey-600 hover:opacity-80 w-[14px] h-[14px]'} label={copied ? 'Copied' : 'Copy'} unstyled={true} onClick={copyRecommendationsUrl} /></Tooltip></span>}
+            hint={
+                <span>
+                    Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link>
+                    <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    className='ml-1 align-middle leading-none'
+                                    color='clear'
+                                    hideLabel={true}
+                                    icon={copied ? 'check-circle' : 'duplicate'}
+                                    iconColorClass={copied ? 'text-green w-[14px] h-[14px]' : 'text-grey-600 hover:opacity-80 w-[14px] h-[14px]'}
+                                    label={copied ? 'Copied' : 'Copy'}
+                                    unstyled={true}
+                                    onClick={copyRecommendationsUrl}
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent>{copied ? 'Copied' : 'Copy link'}</TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </span>
+            }
             isLoading={isLoading}
             pagination={pagination}
             showMore={showMore}
