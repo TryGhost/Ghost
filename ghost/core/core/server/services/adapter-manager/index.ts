@@ -2,8 +2,8 @@ import GhostStorageBase from 'ghost-storage-base';
 import {SchedulingBase} from '@tryghost/adapter-base-scheduling';
 import {SSOBase} from '@tryghost/adapter-base-sso';
 import BaseCache from '@tryghost/adapter-base-cache';
-import { RedirectsStoreBase } from '@tryghost/adapter-base-redirects';
-import { RouteSettingsStoreBase } from '@tryghost/adapter-base-route-settings';
+import {RedirectsStoreBase} from '@tryghost/adapter-base-redirects';
+import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
 
 import {AdapterManager} from './adapter-manager';
 import config from '../../../shared/config';
