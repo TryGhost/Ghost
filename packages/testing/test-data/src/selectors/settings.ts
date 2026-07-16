@@ -48,6 +48,19 @@ export const mailgun = "mailgun";
 export const addNewsletterModal = "add-newsletter-modal";
 export const newsletterModal = "newsletter-modal";
 export const toastInfo = "toast-info";
+export const access = "access";
+export const siteAccessCode = "site-access-code";
+export const regenerateAccessCode = "regenerate-access-code";
+export const subscriptionAccessSelect = "subscription-access-select";
+export const defaultPostAccessSelect = "default-post-access-select";
+export const commentingSelect = "commenting-select";
+export const tiersSelect = "tiers-select";
+export const customFields = "custom-fields";
+export const customFieldModal = "custom-field-modal";
+export const stripeModal = "stripe-modal";
+export const tiers = "tiers";
+export const tierDetailModal = "tier-detail-modal";
+export const analytics = "analytics";
 
 // accessible names
 export const settingsSearchLabel = "Search";
