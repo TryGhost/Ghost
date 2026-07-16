@@ -1,6 +1,5 @@
 // @ts-expect-error This module lacks type definitions.
 import EmailAnalyticsServiceWrapper from './email-analytics-service-wrapper';
-// @ts-expect-error This module lacks type definitions.
 import config from '../../../shared/config';
 // @ts-expect-error This module lacks type definitions.
 import {NewsletterEmailAnalyticsProcessor} from './newsletter-email-analytics-processor';
