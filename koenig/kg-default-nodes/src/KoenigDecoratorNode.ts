@@ -13,10 +13,15 @@ export class KoenigDecoratorNode extends DecoratorNode<unknown> {
     }
 }
 
-export type KoenigCard = KoenigDecoratorNode & {
+export type KoenigCard<TOutput extends ExportDOMOutput = ExportDOMOutput> = KoenigDecoratorNode & {
+    [key: string]: unknown;
+
     isKoenigCard(): true;
-    exportDOM(editor: LexicalEditor, options?: ExportDOMOptions): ExportDOMOutput;
+    exportDOM(editor: LexicalEditor, options?: ExportDOMOptions): TOutput;
+    getDataset(): Record<string, unknown>;
     hasDynamicData(): boolean;
+    hasEditMode(): boolean;
+    getIsVisibilityActive(): boolean;
     getDynamicData?(options: ExportDOMOptions): Promise<{key: number; data: unknown}>;
 };
 
@@ -30,6 +35,9 @@ export function $isKoenigCard(node: unknown): node is KoenigCard {
     return typeof card.isKoenigCard === 'function' &&
         card.isKoenigCard() === true &&
         typeof card.exportDOM === 'function' &&
-        typeof card.hasDynamicData === 'function';
+        typeof card.getDataset === 'function' &&
+        typeof card.hasDynamicData === 'function' &&
+        typeof card.hasEditMode === 'function' &&
+        typeof card.getIsVisibilityActive === 'function';
 }
 /* c8 ignore end */

@@ -1,26 +1,25 @@
-import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {parseVideoNode} from './video-parser.js';
 import {renderVideoNode} from './video-renderer.js';
+import type {CardWidth} from '../../utils/card-widths.js';
 
-const videoProperties = [
-    {name: 'src', default: '', urlType: 'url'},
-    {name: 'caption', default: '', urlType: 'html', wordCount: true},
-    {name: 'fileName', default: ''},
-    {name: 'mimeType', default: ''},
-    {name: 'width', default: null as number | null},
-    {name: 'height', default: null as number | null},
-    {name: 'duration', default: 0},
-    {name: 'thumbnailSrc', default: '', urlType: 'url'},
-    {name: 'customThumbnailSrc', default: '', urlType: 'url'},
-    {name: 'thumbnailWidth', default: null as number | null},
-    {name: 'thumbnailHeight', default: null as number | null},
-    {name: 'cardWidth', default: 'regular'},
-    {name: 'loop', default: false}
-] as const satisfies readonly DecoratorNodeProperty[];
+const videoProperties = {
+    src: {default: '', urlType: 'url'},
+    caption: {default: '', urlType: 'html', wordCount: true},
+    fileName: {default: ''},
+    mimeType: {default: ''},
+    width: {default: null as number | null},
+    height: {default: null as number | null},
+    duration: {default: 0},
+    thumbnailSrc: {default: '', urlType: 'url'},
+    customThumbnailSrc: {default: '', urlType: 'url'},
+    thumbnailWidth: {default: null as number | null},
+    thumbnailHeight: {default: null as number | null},
+    cardWidth: {default: 'regular' as CardWidth},
+    loop: {default: false}
+} satisfies DecoratorNodePropertyMap;
 
 export type VideoData = DecoratorNodeData<typeof videoProperties>;
-
-export interface VideoNode extends DecoratorNodeValueMap<typeof videoProperties> {}
 
 export class VideoNode extends generateDecoratorNode({
     nodeType: 'video',

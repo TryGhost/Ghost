@@ -1,8 +1,16 @@
 import {$getNodeByKey} from 'lexical';
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {getImageDimensions} from './getImageDimensions';
 
 export const imageUploadHandler = async (files, nodeKey, editor, upload) => {
     if (!files) {
+        return;
+    }
+
+    const isTargetCard = editor.getEditorState().read(() => {
+        return $isKoenigCard($getNodeByKey(nodeKey));
+    });
+    if (!isTargetCard) {
         return;
     }
 
@@ -11,7 +19,9 @@ export const imageUploadHandler = async (files, nodeKey, editor, upload) => {
     if (previewUrl) {
         await editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.previewSrc = previewUrl;
+            if ($isKoenigCard(node)) {
+                node.previewSrc = previewUrl;
+            }
         });
     }
 
@@ -25,10 +35,12 @@ export const imageUploadHandler = async (files, nodeKey, editor, upload) => {
     // replace preview URL with real URL and set image metadata
     await editor.update(() => {
         const node = $getNodeByKey(nodeKey);
-        node.width = width;
-        node.height = height;
-        node.src = imageSrc;
-        node.previewSrc = null;
+        if ($isKoenigCard(node)) {
+            node.width = width;
+            node.height = height;
+            node.src = imageSrc;
+            node.previewSrc = null;
+        }
     });
 
     return;

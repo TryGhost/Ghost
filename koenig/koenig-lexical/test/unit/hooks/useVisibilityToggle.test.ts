@@ -8,6 +8,9 @@ import {useVisibilityToggle} from '../../../src/hooks/useVisibilityToggle';
 const lexicalMocks = vi.hoisted(() => ({
     $getNodeByKey: vi.fn()
 }));
+const koenigMocks = vi.hoisted(() => ({
+    $isKoenigCard: vi.fn()
+}));
 
 vi.mock(import('lexical'), async (importOriginal) => {
     const actual = await importOriginal();
@@ -17,6 +20,10 @@ vi.mock(import('lexical'), async (importOriginal) => {
         $getNodeByKey: lexicalMocks.$getNodeByKey
     };
 });
+
+vi.mock(import('@tryghost/kg-default-nodes'), () => ({
+    $isKoenigCard: koenigMocks.$isKoenigCard
+}));
 
 describe('useVisibilityToggle', () => {
     let editor;
@@ -34,6 +41,7 @@ describe('useVisibilityToggle', () => {
     };
 
     beforeEach(() => {
+        koenigMocks.$isKoenigCard.mockReturnValue(true);
         node = {
             visibility: DEFAULT_VISIBILITY,
             getIsVisibilityActive: vi.fn(() => true)
@@ -56,6 +64,7 @@ describe('useVisibilityToggle', () => {
     afterEach(() => {
         vi.restoreAllMocks();
         lexicalMocks.$getNodeByKey.mockReset();
+        koenigMocks.$isKoenigCard.mockReset();
     });
 
     function callHook(visibility = DEFAULT_VISIBILITY, {stripeEnabled = true} = {}) {
@@ -125,6 +134,24 @@ describe('useVisibilityToggle', () => {
 
         act(() => toggleVisibility('web', 'paidMembers', false));
         expect(node.visibility.web.memberSegment).toBe('status:free');
+    });
+
+    it('does not read or mutate visibility for a non-card node', () => {
+        const getVisibility = vi.fn();
+        const setVisibility = vi.fn();
+        Object.defineProperty(node, 'visibility', {
+            configurable: true,
+            get: getVisibility,
+            set: setVisibility
+        });
+        koenigMocks.$isKoenigCard.mockReturnValue(false);
+
+        const {result} = renderHook(() => useVisibilityToggle(editor, 'testKey', cardConfig));
+
+        expect(getVisibility).not.toHaveBeenCalled();
+        act(() => result.current.toggleVisibility('web', 'nonMembers', false));
+        expect(getVisibility).not.toHaveBeenCalled();
+        expect(setVisibility).not.toHaveBeenCalled();
     });
 
     it('returns only web options when email visibility is disabled in cardConfig', () => {

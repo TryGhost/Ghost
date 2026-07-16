@@ -1,19 +1,9 @@
 import {createHeadlessEditor} from '@lexical/headless';
-import {utils, type ExportDOMOptions, type ExportDOMOutput} from '../src/index.js';
+import {$isKoenigCard, utils, type ExportDOMOutput} from '../src/index.js';
 import type {LexicalEditor} from 'lexical';
 import {dom} from './test-utils/index.js';
 
 const defaultVisibility = utils.visibility.buildDefaultVisibility();
-
-type GeneratedNodeClass = ReturnType<typeof utils.generateDecoratorNode>;
-
-interface GeneratedNodeInstance {
-    exportDOM(editor: LexicalEditor, options?: ExportDOMOptions): ExportDOMOutput;
-    exportJSON(): Record<string, unknown>;
-    getDataset(): Record<string, unknown>;
-    visibility: Record<string, unknown>;
-    [key: string]: unknown;
-}
 
 function createRenderResult(tagName: 'div' | 'span', content: string) {
     const element = dom.window.document.createElement(tagName);
@@ -51,21 +41,71 @@ describe('Utils: generateDecoratorNode', function () {
         });
     });
 
+    describe('properties', function () {
+        it('widens primitive defaults without a helper type', function () {
+            const TypedNode = utils.generateDecoratorNode({
+                nodeType: 'typed-properties-test',
+                properties: {
+                    title: {default: ''},
+                    count: {default: 0},
+                    enabled: {default: false}
+                }
+            });
+            const typedEditor = createHeadlessEditor({nodes: [TypedNode]});
+
+            typedEditor.update(() => {
+                const node = new TypedNode({
+                    title: 'Custom title',
+                    count: 2,
+                    enabled: true
+                });
+                const title: string = node.title;
+                const count: number = node.count;
+                const enabled: boolean = node.enabled;
+
+                expect(title).toBe('Custom title');
+                expect(count).toBe(2);
+                expect(enabled).toBe(true);
+                expect($isKoenigCard(node)).toBe(true);
+            });
+        });
+
+        it('preserves explicitly provided falsy non-string values', function () {
+            const NodeWithDefaults = utils.generateDecoratorNode({
+                nodeType: 'falsy-properties-test',
+                properties: {
+                    title: {default: 'Default title'},
+                    count: {default: 1},
+                    enabled: {default: true}
+                }
+            });
+            const typedEditor = createHeadlessEditor({nodes: [NodeWithDefaults]});
+
+            typedEditor.update(() => {
+                const node = new NodeWithDefaults({
+                    title: '',
+                    count: 0,
+                    enabled: false
+                });
+
+                expect(node.title).toBe('Default title');
+                expect(node.count).toBe(0);
+                expect(node.enabled).toBe(false);
+            });
+        });
+    });
+
     describe('exportDOM', function () {
-        let NodeWithRender: GeneratedNodeClass;
-        let $createNodeWithRender: (dataset?: Record<string, unknown>) => GeneratedNodeInstance;
+        const NodeWithRender = utils.generateDecoratorNode({
+            nodeType: 'render-test',
+            properties: {},
+            defaultRenderFn: () => createRenderResult('div', 'default render')
+        });
+        const $createNodeWithRender = (dataset?: ConstructorParameters<typeof NodeWithRender>[0]) => {
+            return new NodeWithRender(dataset);
+        };
 
         beforeAll(function () {
-            NodeWithRender = utils.generateDecoratorNode({
-                nodeType: 'render-test',
-                properties: [],
-                defaultRenderFn: () => createRenderResult('div', 'default render')
-            });
-
-            $createNodeWithRender = (dataset?: Record<string, unknown>) => {
-                return new NodeWithRender(dataset) as unknown as GeneratedNodeInstance;
-            };
-
             editor = createHeadlessEditor({nodes: [NodeWithRender]});
         });
 
@@ -80,7 +120,7 @@ describe('Utils: generateDecoratorNode', function () {
         it('uses versioned default renderer (static version)', editorTest(function () {
             const VersionedNode = utils.generateDecoratorNode({
                 nodeType: 'versioned-render-test',
-                properties: [],
+                properties: {},
                 version: 2,
                 defaultRenderFn: {
                     1: () => createRenderResult('div', 'version 1'),
@@ -88,7 +128,7 @@ describe('Utils: generateDecoratorNode', function () {
                 }
             });
 
-            const node = new VersionedNode() as unknown as GeneratedNodeInstance;
+            const node = new VersionedNode();
             const result = node.exportDOM(editor);
 
             expect(result.type).toBe('inner');
@@ -98,7 +138,7 @@ describe('Utils: generateDecoratorNode', function () {
         it('uses versioned default renderer (dataset version)', editorTest(function () {
             const VersionedNode = utils.generateDecoratorNode({
                 nodeType: 'versioned-render-test',
-                properties: [{name: 'version', default: 1}],
+                properties: {version: {default: 1}},
                 version: 1,
                 defaultRenderFn: {
                     1: node => createRenderResult('div', `version ${node.version}`),
@@ -106,7 +146,7 @@ describe('Utils: generateDecoratorNode', function () {
                 }
             });
 
-            const node = new VersionedNode({version: 2}) as unknown as GeneratedNodeInstance;
+            const node = new VersionedNode({version: 2});
             const result = node.exportDOM(editor);
 
             expect(result.type).toBe('inner');
@@ -116,24 +156,24 @@ describe('Utils: generateDecoratorNode', function () {
         it('throws error when defaultRenderFn is not provided', editorTest(function () {
             const NodeWithoutRender = utils.generateDecoratorNode({
                 nodeType: 'no-render-test',
-                properties: []
+                properties: {}
             });
 
-            const node = new NodeWithoutRender() as unknown as GeneratedNodeInstance;
+            const node = new NodeWithoutRender();
             expect(() => node.exportDOM(editor)).toThrow('[generateDecoratorNode] no-render-test: "defaultRenderFn" is required');
         }));
 
         it('throws error when default versioned renderer is missing for node version', editorTest(function () {
             const VersionedNode = utils.generateDecoratorNode({
                 nodeType: 'versioned-render-test',
-                properties: [],
+                properties: {},
                 version: 2,
                 defaultRenderFn: {
                     1: () => createRenderResult('div', 'version 1')
                 }
             });
 
-            const node = new VersionedNode() as unknown as GeneratedNodeInstance;
+            const node = new VersionedNode();
             expect(() => node.exportDOM(editor)).toThrow('[generateDecoratorNode] versioned-render-test: "defaultRenderFn" for version 2 is required');
         }));
 
@@ -160,7 +200,7 @@ describe('Utils: generateDecoratorNode', function () {
         it('throws error when custom versioned renderer is missing for node version (emailCustomizationAlpha)', editorTest(function () {
             const VersionedNode = utils.generateDecoratorNode({
                 nodeType: 'versioned-render-test',
-                properties: [{name: 'version', default: 1}],
+                properties: {version: {default: 1}},
                 version: 1,
                 defaultRenderFn: {
                     1: () => createRenderResult('div', 'version 1'),
@@ -168,7 +208,7 @@ describe('Utils: generateDecoratorNode', function () {
                 }
             });
 
-            const node = new VersionedNode({version: 2}) as unknown as GeneratedNodeInstance;
+            const node = new VersionedNode({version: 2});
 
             expect(() => node.exportDOM(editor, {
                 feature: {
@@ -184,20 +224,16 @@ describe('Utils: generateDecoratorNode', function () {
     });
 
     describe('hasVisibility', function () {
-        let NodeWithVisibility: GeneratedNodeClass;
-        let $createNodeWithVisibility: (dataset?: Record<string, unknown>) => GeneratedNodeInstance;
+        const NodeWithVisibility = utils.generateDecoratorNode({
+            nodeType: 'visibility-test',
+            properties: {},
+            hasVisibility: true
+        });
+        const $createNodeWithVisibility = (dataset?: ConstructorParameters<typeof NodeWithVisibility>[0]) => {
+            return new NodeWithVisibility(dataset);
+        };
 
         beforeAll(function () {
-            NodeWithVisibility = utils.generateDecoratorNode({
-                nodeType: 'visibility-test',
-                properties: [],
-                hasVisibility: true
-            });
-
-            $createNodeWithVisibility = (dataset?: Record<string, unknown>) => {
-                return new NodeWithVisibility(dataset) as unknown as GeneratedNodeInstance;
-            };
-
             editor = createHeadlessEditor({nodes: [NodeWithVisibility]});
         });
 
@@ -248,7 +284,7 @@ describe('Utils: generateDecoratorNode', function () {
                     showOnEmail: true,
                     segment: 'status:free'
                 }
-            }) as unknown as GeneratedNodeInstance;
+            });
 
             // old values are kept, new values are added
             expect(node.visibility).toEqual({

@@ -2,6 +2,7 @@ import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {$createImageNode} from '../nodes/ImageNode.jsx';
 import {$createNodeSelection, $getNearestNodeFromDOMNode, $getNodeByKey, $setSelection} from 'lexical';
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {DragDropHandler} from '../utils/draggable/DragDropHandler.jsx';
 import {createRoot} from 'react-dom/client';
 import {flushSync} from 'react-dom';
@@ -36,13 +37,14 @@ function useDragDropReorder(editor, isEditable) {
         editor.update(() => {
             const cardNode = $getNearestNodeFromDOMNode(draggableElement);
 
-            if (cardNode) {
+            if ($isKoenigCard(cardNode)) {
+                const getIcon = cardNode.getIcon;
                 draggableInfo = {
                     type: 'card',
                     nodeKey: cardNode.getKey(),
                     cardName: cardNode.getType(),
-                    dataset: cardNode.getDataset?.(),
-                    Icon: cardNode.getIcon()
+                    dataset: cardNode.getDataset(),
+                    Icon: typeof getIcon === 'function' ? getIcon.call(cardNode) : undefined
                 };
             }
         });
