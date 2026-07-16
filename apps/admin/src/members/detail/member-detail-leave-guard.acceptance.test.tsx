@@ -17,12 +17,13 @@ function fakeMemberDetailWorld(m: Member) {
 /**
  * The unsaved-changes guard must cover BOTH ways of leaving the screen:
  *
- * - react-router navigations (the breadcrumb Link) — guarded by `useBlocker`.
+ * - react-router navigations (the breadcrumb Link).
  * - native `<a href="#/…">` anchors (the admin sidebar, links into
  *   Ember-owned routes) — those create a history entry react-router didn't
- *   make and reach it as an untracked POP it cannot block, so they're guarded
- *   separately by `useHashLinkNavigationGuard` (the React port of Ember's
- *   `trailing-hash.js` click interception).
+ *   make and reach it as an untracked POP it cannot block.
+ *
+ * `useNavigationGuard` covers both, so these drive the screen from the outside
+ * without knowing which path a navigation took.
  */
 describe('Member detail leave guard', () => {
     it('guards leaving via the breadcrumb (react-router link) with unsaved edits', async () => {
