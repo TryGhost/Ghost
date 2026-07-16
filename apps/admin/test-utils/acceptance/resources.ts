@@ -8,6 +8,7 @@ import {
     type Comment,
     type Label,
     type Member,
+    type Newsletter,
     type Offer,
     type SettingsResponse,
     type StaffInvite,
@@ -204,13 +205,19 @@ const membersResource = defineResource<Member>({
 
 // Members-page chrome: the filter bar mounts with the page and probes these lookups.
 const labelsResource = defineResource<Label>({ resource: "labels", semantics: { kind: "passthrough" } });
-const newslettersResource = defineResource({ resource: "newsletters", semantics: { kind: "passthrough" } });
+const newslettersResource = defineResource<Newsletter>({ resource: "newsletters", semantics: { kind: "passthrough" } });
 
 /** Tiers list fake (passthrough): serves the declared tiers and captures every browse request. */
 export const fakeTiers = defineResource<Tier>({ resource: "tiers", semantics: { kind: "passthrough" } });
 
 /** Offers list fake (passthrough): serves the declared offers and captures every browse request. */
 export const fakeOffers = defineResource<Offer>({ resource: "offers", semantics: { kind: "passthrough" } });
+
+/** Labels list fake (passthrough): serves declared labels and captures browse filters/search. */
+export const fakeLabels = labelsResource;
+
+/** Newsletters list fake (passthrough): serves declared newsletters and captures pagination. */
+export const fakeNewsletters = newslettersResource;
 
 export interface FakeMembersOptions {
     /**

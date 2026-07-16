@@ -38,6 +38,16 @@ export const toastError = "toast-error";
 export const toastSuccess = "toast-success";
 export const inviteUserModal = "invite-user-modal";
 export const limitModal = "limit-modal";
+export const enableNewsletters = "enable-newsletters";
+export const defaultRecipients = "default-recipients";
+export const defaultRecipientsSelect = "default-recipients-select";
+export const emails = "emails";
+export const memberEmails = "memberemails";
+export const newsletters = "newsletters";
+export const mailgun = "mailgun";
+export const addNewsletterModal = "add-newsletter-modal";
+export const newsletterModal = "newsletter-modal";
+export const toastInfo = "toast-info";
 
 // accessible names
 export const settingsSearchLabel = "Search";
