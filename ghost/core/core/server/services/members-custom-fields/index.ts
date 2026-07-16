@@ -26,8 +26,8 @@ export function init(): void {
     const {knex} = require('../../data/db');
     const models = require('../../models');
 
-    const recordAction: RecordCustomFieldAction = ({context, verb, subject}) =>
-        recordCustomFieldAction({Action: models.Action, context, verb, subject});
+    const recordAction: RecordCustomFieldAction = ({context, verb, subject, details}) =>
+        recordCustomFieldAction({Action: models.Action, context, verb, subject, details});
 
     definitions = new CustomFieldDefinitionsService({knex, recordAction});
     // The values service reads the field definitions straight from the table, so

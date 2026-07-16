@@ -9,6 +9,7 @@ const CustomFieldResource = z.object({
     key: z.string(),
     name: z.string(),
     type: z.string(),
+    status: z.string(),
     created_at: z.date(),
     updated_at: z.date().nullable()
 });
