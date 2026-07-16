@@ -36,6 +36,8 @@
         "react-dom": "catalog:"
     },
     "devDependencies": {
+        "@typescript/native": "catalog:",
+        "typescript": "catalog:",
         "@internal/cfg-eslint-react": "workspace:*",
         "@playwright/test": "catalog:",
         "@storybook/addon-docs": "catalog:",

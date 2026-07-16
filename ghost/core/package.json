@@ -305,6 +305,7 @@
     "supertest": "catalog:",
     "tmp": "0.2.7",
     "tsx": "catalog:",
+    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "validator": "catalog:",

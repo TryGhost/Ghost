@@ -102,6 +102,7 @@
         "tsc-alias": "1.8.17",
         "tsx": "catalog:",
         "tw-animate-css": "catalog:",
+        "@typescript/native": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:",
         "vite-plugin-svgr": "catalog:",

@@ -69,6 +69,7 @@
         "msw": "catalog:",
         "sirv": "3.0.2",
         "tailwindcss": "catalog:",
+        "@typescript/native": "catalog:",
         "typescript": "catalog:",
         "typescript-eslint": "catalog:",
         "vite": "catalog:",

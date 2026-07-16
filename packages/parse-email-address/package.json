@@ -42,6 +42,7 @@
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "tsx": "catalog:",
+    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
