@@ -1,5 +1,4 @@
-import type {AutomationStepToRun, AutomationsRepository} from './automations-repository';
-import type {RecordEmailSentOptions} from './automations-api';
+import type {AutomationStepToRun, AutomationsRepository, RecordEmailSentOptions} from './automations-repository';
 import {getMailgunMessageId} from './mailgun-message-id';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
