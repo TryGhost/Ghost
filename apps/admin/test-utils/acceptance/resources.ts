@@ -254,6 +254,8 @@ export const fakeUsers = defineResource<StaffUser>({ resource: "users", semantic
 export const fakeInvites = defineResource<StaffInvite>({ resource: "invites", semantics: { kind: "passthrough" } });
 export const fakeRoles = defineResource<StaffRole>({ resource: "roles", semantics: { kind: "passthrough" } });
 const themesResource = defineResource({ resource: "themes", semantics: { kind: "passthrough" } });
+/** Themes list fake (passthrough): installed/active state is declared by the spec. */
+export const fakeThemes = themesResource;
 const automatedEmailsResource = defineResource({ resource: "automated_emails", semantics: { kind: "passthrough" } });
 const recommendationsResource = defineResource({ resource: "recommendations", semantics: { kind: "passthrough" } });
 const integrationsResource = defineResource({ resource: "integrations", semantics: { kind: "passthrough" } });

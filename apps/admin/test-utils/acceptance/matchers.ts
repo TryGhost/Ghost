@@ -2,6 +2,7 @@ import { expect } from "vitest";
 import { server, type Locator } from "vitest/browser";
 
 import type { EditSettingsCapture, ResourceCapture } from "./resources";
+import type { SitePreviewCapture } from "./worker";
 
 type EditedSettings = NonNullable<EditSettingsCapture["lastRequest"]>["settings"];
 
@@ -90,6 +91,34 @@ async function pollEditedSettings(
     };
 }
 
+/** Polls until any captured preview request contains every expected parameter. */
+async function pollSitePreview(
+    isNot: boolean,
+    capture: SitePreviewCapture,
+    expected: Record<string, string>
+): Promise<{ pass: boolean; message: () => string }> {
+    const matches = () => capture.requests.some(({ preview }) => {
+        const params = new URLSearchParams(preview);
+        return Object.entries(expected).every(([key, value]) => params.get(key) === value);
+    });
+    const deadline = Date.now() + POLL_TIMEOUT_MS;
+    let pass = matches();
+
+    while (pass === isNot && Date.now() < deadline) {
+        await sleep(POLL_INTERVAL_MS);
+        pass = matches();
+    }
+
+    const seen = capture.requests.length === 0
+        ? "no preview request captured yet"
+        : `captured parameters were ${capture.requests.map(({ preview }) => JSON.stringify(Object.fromEntries(new URLSearchParams(preview)))).join(", ")}`;
+
+    return {
+        pass,
+        message: () => `expected the capture ${isNot ? "not " : ""}to have requested preview parameters ${JSON.stringify(expected)}, but ${seen}`,
+    };
+}
+
 expect.extend({
     /** `await expect(locator).toHaveCount(n)` — polls until the locator resolves to exactly `n` elements (`.not`-aware). */
     async toHaveCount(received: Locator, expected: number) {
@@ -122,6 +151,11 @@ expect.extend({
     async toHaveEditedSettings(received: EditSettingsCapture, expected: EditedSettings) {
         return await pollEditedSettings(Boolean(this.isNot), received, expected);
     },
+
+    /** `await expect(preview).toHaveRequestedPreview(params)` — matches a subset against any captured x-ghost-preview header. */
+    async toHaveRequestedPreview(received: SitePreviewCapture, expected: Record<string, string>) {
+        return await pollSitePreview(Boolean(this.isNot), received, expected);
+    },
 });
 
 declare module "vitest" {
@@ -131,5 +165,6 @@ declare module "vitest" {
         toHaveSentFilter(expected: string | RegExp): Promise<void>;
         toHaveSentSearch(expected: string | RegExp): Promise<void>;
         toHaveEditedSettings(expected: EditedSettings): Promise<void>;
+        toHaveRequestedPreview(expected: Record<string, string>): Promise<void>;
     }
 }

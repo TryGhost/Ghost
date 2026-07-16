@@ -1,5 +1,25 @@
 import JSZip from 'jszip';
 
+export const parseEditingThemeRoute = (path: string): {themeName: string | null; isInvalid: boolean} => {
+    if (!path.startsWith('theme/edit/')) {
+        return {themeName: null, isInvalid: false};
+    }
+
+    const encodedThemeName = path.slice('theme/edit/'.length).split('?')[0];
+    if (!encodedThemeName || encodedThemeName.includes('/')) {
+        return {themeName: null, isInvalid: true};
+    }
+
+    try {
+        const themeName = decodeURIComponent(encodedThemeName);
+        return !themeName || themeName.includes('/')
+            ? {themeName: null, isInvalid: true}
+            : {themeName, isInvalid: false};
+    } catch {
+        return {themeName: null, isInvalid: true};
+    }
+};
+
 export type ThemeEditorFile = {
     path: string;
     editable: boolean;
