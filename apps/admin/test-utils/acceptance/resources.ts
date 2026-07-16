@@ -1,4 +1,6 @@
 import { HttpResponse } from "msw";
+import type { Action } from "@tryghost/admin-x-framework/api/actions";
+import type { Integration } from "@tryghost/admin-x-framework/api/integrations";
 import {
     activeThemeResponse,
     browseResponse,
@@ -258,7 +260,11 @@ const themesResource = defineResource({ resource: "themes", semantics: { kind: "
 export const fakeThemes = themesResource;
 const automatedEmailsResource = defineResource({ resource: "automated_emails", semantics: { kind: "passthrough" } });
 const recommendationsResource = defineResource({ resource: "recommendations", semantics: { kind: "passthrough" } });
-const integrationsResource = defineResource({ resource: "integrations", semantics: { kind: "passthrough" } });
+const integrationsResource = defineResource<Integration>({ resource: "integrations", semantics: { kind: "passthrough" } });
+/** Integrations list fake (passthrough): serves configured built-in/custom integrations and captures browse requests. */
+export const fakeIntegrations = integrationsResource;
+/** History actions fake (passthrough): specs declare filtered responses and assert the outgoing NQL. */
+export const fakeActions = defineResource<Omit<Action, "context"> & { context: string }>({ resource: "actions", semantics: { kind: "passthrough" } });
 
 /**
  * Declares the world the settings area's page chrome reads at mount — every

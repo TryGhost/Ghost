@@ -1,6 +1,8 @@
 import {test} from '@playwright/test';
-// import {globalDataRequests} from '@tryghost/admin-x-framework/test/acceptance';
 
-test.describe('Signup Embed', async () => {
-    // TODO - currently having difficulty rendering the iframe in the test
+test.describe('Settings acceptance placeholder', () => {
+    test.skip('hello world', () => {
+        // Follow-up: https://linear.app/tryghost/issue/PLA-243
+        // Keep the Playwright target discoverable until its plumbing is removed.
+    });
 });
