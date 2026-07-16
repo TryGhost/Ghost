@@ -50,6 +50,66 @@
         {{/if}}
     </div>
 
+    <div class="gh-publish-setting" data-test-setting="post-visibility">
+        <button
+            type="button"
+            class="gh-publish-setting-title"
+            {{on "click" (fn this.toggleSection "postVisibility")}}
+            data-test-setting-title
+        >
+            {{svg-jar (if (eq this.postVisibility "public") "publish-unlock" "publish-lock")}}
+            <div class="gh-publish-setting-trigger">
+                <span>{{this.postVisibilityLabel}}</span>
+                <span class="gh-publish-setting-separator" aria-hidden="true">·</span>
+                <span class="gh-publish-setting-summary">{{this.publicPreviewSummary}}</span>
+            </div>
+            <span class="gh-publish-setting-controls {{if (eq this.openSection "postVisibility") "expanded"}}">
+                {{svg-jar "arrow-down" class="icon-expand"}}
+            </span>
+        </button>
+
+        {{#liquid-if (eq this.openSection "postVisibility")}}
+            <div class="gh-publish-setting-form gh-publish-setting-access-form">
+                <fieldset class="gh-publish-types gh-publish-access-options">
+                    <legend class="hidden">Post access</legend>
+                    {{#each this.postVisibilityOptions as |option|}}
+                        <span>
+                            <input
+                                type="radio"
+                                name="post-visibility"
+                                id="post-visibility-{{option.value}}"
+                                class="gh-radio-button"
+                                value={{option.value}}
+                                checked={{eq option.value this.postVisibility}}
+                                {{on "change" this.setPostVisibility}}
+                                data-test-post-visibility={{option.value}}
+                            >
+                            <label for="post-visibility-{{option.value}}">{{option.label}}</label>
+                        </span>
+                    {{/each}}
+                </fieldset>
+
+                {{#if (eq this.postVisibility "tiers")}}
+                    <div class="gh-publish-access-tiers" data-test-visibility-segment-select>
+                        <GhPostSettingsMenu::VisibilitySegmentSelect
+                            @tiers={{@publishOptions.post.tiers}}
+                            @onChange={{this.setVisibilityTiers}}
+                            @renderInPlace={{false}}
+                            @hideOptionsWhenAllSelected={{true}}
+                        />
+                    </div>
+                {{/if}}
+
+                {{#if this.shouldShowPublicPreviewOpportunity}}
+                    <p class="gh-publish-access-preview-opportunity">
+                        This post doesn't include a public preview.
+                        <button type="button" class="gh-publish-access-preview-action" {{on "click" (fn @close (hash afterTask="showPublicPreviewGuidanceTask"))}}>Add one</button>
+                    </p>
+                {{/if}}
+            </div>
+        {{/liquid-if}}
+    </div>
+
     {{#unless @publishOptions.emailUnavailable}}
         {{#let (members-count-fetcher query=(hash filter=this.freeMembersRecipientFilter)) as |freeMembersCountFetcher|}}
         {{#let (or this.hasPublicPreviewEmailRisk (and this.hasPaidOnlyPaywallOpportunity (gt freeMembersCountFetcher.count 0))) as |hasPublicPreviewEmailNotice|}}

@@ -3,9 +3,36 @@ import {action} from '@ember/object';
 import {getPublicPreviewEmailRisk} from 'ghost-admin/utils/public-preview';
 import {tracked} from '@glimmer/tracking';
 
+const POST_VISIBILITY_OPTIONS = [
+    {label: 'Public', value: 'public'},
+    {label: 'Members only', value: 'members'},
+    {label: 'Paid-members only', value: 'paid'},
+    {label: 'Specific tiers', value: 'tiers'}
+];
+
 export default class PublishFlowOptions extends Component {
     @tracked openSection = null;
     @tracked displayedPublicPreviewEmailNotice = null;
+
+    get postVisibilityOptions() {
+        return POST_VISIBILITY_OPTIONS;
+    }
+
+    get postVisibility() {
+        return this.args.publishOptions.post.visibility || this.args.publishOptions.settings.defaultContentVisibility || 'public';
+    }
+
+    get postVisibilityLabel() {
+        return POST_VISIBILITY_OPTIONS.find(option => option.value === this.postVisibility)?.label;
+    }
+
+    get publicPreviewSummary() {
+        return this.args.publicPreviewStatus === 'none' ? 'No public preview' : 'Has public preview';
+    }
+
+    get shouldShowPublicPreviewOpportunity() {
+        return this.postVisibility !== 'public' && this.args.publicPreviewStatus === 'none';
+    }
 
     get publicPreviewEmailRisk() {
         const publishOptions = this.args.publishOptions;
@@ -147,6 +174,23 @@ export default class PublishFlowOptions extends Component {
         if (!segments.includes('status:free')) {
             publishOptions.setRecipientFilter(['status:free', ...segments].join(','));
         }
+    }
+
+    @action
+    setPostVisibility(event) {
+        const visibility = event.target.value;
+        const post = this.args.publishOptions.post;
+
+        post.set('visibility', visibility);
+
+        if (visibility !== 'tiers') {
+            post.set('tiers', []);
+        }
+    }
+
+    @action
+    setVisibilityTiers(tiers) {
+        this.args.publishOptions.post.set('tiers', tiers);
     }
 
     @action

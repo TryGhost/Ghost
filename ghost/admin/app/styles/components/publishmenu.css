@@ -494,6 +494,13 @@
     line-height: 1.35em;
 }
 
+.gh-publish-setting-separator {
+    margin: 0 .6rem;
+    color: color-mod(var(--black) a(35%));
+    font-size: 1.2em;
+    line-height: 1;
+}
+
 .gh-publish-setting-email-warning {
     transition: all 0.3s ease;
 }
@@ -707,6 +714,57 @@
 .gh-publish-types label:hover,
 .gh-publish-schedule label:hover {
     color: var(--middarkgrey-d1);
+}
+
+.gh-publish-access-options {
+    flex-wrap: wrap;
+    gap: 1.2rem;
+}
+
+.gh-publish-access-options label {
+    margin-right: 0;
+}
+
+.gh-publish-setting-access-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    overflow: visible;
+}
+
+.gh-publish-access-tiers {
+    width: 100%;
+}
+
+.gh-publish-access-preview-opportunity {
+    margin: 0;
+    color: var(--middarkgrey);
+    font-size: 1.4rem;
+    line-height: 1.5em;
+}
+
+.gh-publish-access-preview-action {
+    margin-left: .3rem;
+    padding: 0;
+    border: 0;
+    color: var(--green-d1);
+    background: none;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 500;
+    line-height: inherit;
+    cursor: pointer;
+    transition: color .2s ease;
+    vertical-align: baseline;
+}
+
+.gh-publish-access-preview-action:hover {
+    color: var(--green-d2);
+}
+
+.gh-publish-access-preview-action:focus-visible {
+    outline: 2px solid var(--green-d1);
+    outline-offset: 2px;
 }
 
 .gh-publish-types + .gh-box {
