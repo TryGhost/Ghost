@@ -51,6 +51,12 @@ describe('Email Service', function () {
             },
             getPreviewSegment: (post, segment) => {
                 return segment;
+            },
+            describeSegment: (post, segment) => {
+                return {
+                    status: segment?.includes('status:-free') ? 'status:-free' : (segment?.includes('status:free') ? 'status:free' : null),
+                    hasPostAccess: true
+                };
             }
         };
         sendingService = {
