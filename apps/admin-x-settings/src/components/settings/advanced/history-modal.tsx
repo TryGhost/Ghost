@@ -1,10 +1,12 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
-import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, type LoadSelectOptions, Modal, NoValueLabel, Popover, Select, type SelectOption, Toggle, ToggleGroup} from '@tryghost/admin-x-design-system';
-import {LoadingIndicator} from '@tryghost/shade/components';
+import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, type LoadSelectOptions, Modal, Popover, Select, type SelectOption, Toggle, ToggleGroup} from '@tryghost/admin-x-design-system';
+import {History} from 'lucide-react';
+import {LoadingIndicator, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type User} from '@tryghost/admin-x-framework/api/users';
 import {debounce} from '../../../utils/debounce';
+import {formatNumber} from '@tryghost/shade/utils';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {keepPreviousData} from '@tanstack/react-query';
 import {useCallback, useState} from 'react';
@@ -126,8 +128,8 @@ const HistoryActionDescription: React.FC<{action: Action}> = ({action}) => {
         const apiKeysRotated = typeof action.context.api_keys_rotated === 'number' ? action.context.api_keys_rotated : null;
         const usersLocked = typeof action.context.users_locked === 'number' ? action.context.users_locked : null;
         const details = [
-            apiKeysRotated !== null ? `${apiKeysRotated} API ${apiKeysRotated === 1 ? 'key' : 'keys'} rotated` : null,
-            usersLocked !== null ? `${usersLocked} ${usersLocked === 1 ? 'user' : 'users'} locked` : null
+            apiKeysRotated !== null ? `${formatNumber(apiKeysRotated)} API ${apiKeysRotated === 1 ? 'key' : 'keys'} rotated` : null,
+            usersLocked !== null ? `${formatNumber(usersLocked)} ${usersLocked === 1 ? 'user' : 'users'} locked` : null
         ].filter(Boolean);
 
         return <>{details.length ? details.join(', ') : 'Authentication reset'}</>;
@@ -249,7 +251,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                                         <div>
                                             {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
                                             {!isBulkAction(action) && <HistoryActionDescription action={action} />}
-                                            {action.count ? <> {action.count} times</> : null}
+                                            {action.count ? <> {formatNumber(action.count)} times</> : null}
                                             <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
                                         </div>
                                     }
@@ -262,7 +264,8 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                                 )}
                             </>
                         ) : (
-                            <NoValueLabel icon='time-back'>
+                            <NoValueLabel>
+                                <NoValueLabelIcon><History /></NoValueLabelIcon>
                                 {hasActiveFilters ?
                                     'No entries match your current filters.' :
                                     'No history entries found.'

@@ -1,7 +1,9 @@
 import React from 'react';
-import {Button, DragIndicator, NoValueLabel, type SortableItemContainerProps, SortableList, Table, TableRow} from '@tryghost/admin-x-design-system';
+import {Button, DragIndicator, type SortableItemContainerProps, SortableList, Table, TableRow} from '@tryghost/admin-x-design-system';
 import {Inline} from '@tryghost/shade/primitives';
+import {MailX} from 'lucide-react';
 import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -104,7 +106,8 @@ const NewslettersList: React.FC<NewslettersListProps> = ({newsletters, isLoading
             ))}
         </Table>;
     } else {
-        return <NoValueLabel icon='mail-block'>
+        return <NoValueLabel>
+            <NoValueLabelIcon><MailX /></NoValueLabelIcon>
             No newsletters found.
         </NoValueLabel>;
     }

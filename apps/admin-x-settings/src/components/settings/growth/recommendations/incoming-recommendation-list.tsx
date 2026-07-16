@@ -1,8 +1,9 @@
 import React, {useMemo} from 'react';
 import RecommendationIcon from './recommendation-icon';
-import {Button, NoValueLabel, type PaginationData, type ShowMoreData, Table, TableRow} from '@tryghost/admin-x-design-system';
+import {Button, type PaginationData, type ShowMoreData, Table, TableRow} from '@tryghost/admin-x-design-system';
 import {type IncomingRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {Inline} from '@tryghost/shade/primitives';
+import {NoValueLabel} from '@tryghost/shade/components';
 import {type ReferrerHistoryItem} from '@tryghost/admin-x-framework/api/referrers';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
