@@ -83,6 +83,8 @@ describe("Newsletter settings", () => {
         expect(createApi.lastRequest?.body).toMatchObject({
             newsletters: [{name: created.name, feedback_enabled: true}],
         });
+        await settingsScreen.newsletterModal().getByRole("button", {name: "Close"}).click();
+        await expect.element(settingsScreen.newsletters().getByText(created.name, {exact: true})).toBeVisible();
     });
 
     it("validates and updates a newsletter in the visible list", async () => {
@@ -242,13 +244,17 @@ describe("Newsletter settings", () => {
                 },
             },
         };
-        fakeNewsletterWorld();
+        fakeSettingsScreens();
+        const newslettersApi = fakeNewsletters(({filter}) => (
+            filter === "status:active" ? [activeNewsletter] : [activeNewsletter, archivedNewsletter]
+        ));
         fakeAdminEndpoint("GET", /^\/members\/\?.*filter=newsletters/, browseResponse("members", [], {limit: 1}));
         await renderAdminApp("/settings/newsletters", {boot: {browseConfig: {response: config}}});
         const section = settingsScreen.newsletters();
 
         await section.getByRole("button", {name: "Add newsletter"}).click();
         await expect.element(settingsScreen.limitModal()).toHaveTextContent("Your plan supports up to 1 newsletters");
+        expect(newslettersApi.requests).toContainEqual(expect.objectContaining({filter: "status:active", limit: 1}));
         await settingsScreen.limitModal().getByRole("button", {name: "Cancel"}).click();
 
         await section.getByRole("tab", {name: "Archived"}).click();
