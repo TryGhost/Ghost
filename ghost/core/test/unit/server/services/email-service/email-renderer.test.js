@@ -1329,7 +1329,7 @@ describe('Email renderer', function () {
         });
     });
 
-    describe('getPreviewSegment', function () {
+    describe('getSegmentForAudience', function () {
         let emailRenderer;
 
         beforeEach(function () {
@@ -1354,17 +1354,17 @@ describe('Email renderer', function () {
         it('maps the paid audience to the tier access segment for a tiers post', function () {
             const post = createTiersPost([{slug: 'gold'}, {slug: 'silver'}]);
             assert.equal(
-                emailRenderer.getPreviewSegment(post, 'status:-free'),
+                emailRenderer.getSegmentForAudience(post, 'paid'),
                 'status:-free+(product:\'gold\',product:\'silver\')'
             );
         });
 
-        it('keeps the free audience segment for a tiers post', function () {
+        it('maps the free audience to the free segment', function () {
             const post = createTiersPost([{slug: 'gold'}]);
-            assert.equal(emailRenderer.getPreviewSegment(post, 'status:free'), 'status:free');
+            assert.equal(emailRenderer.getSegmentForAudience(post, 'free'), 'status:free');
         });
 
-        it('passes the paid audience through for non-tiers posts', function () {
+        it('maps the paid audience to the paid segment for non-tiers posts', function () {
             const post = {
                 get: (key) => {
                     if (key === 'visibility') {
@@ -1372,17 +1372,47 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            assert.equal(emailRenderer.getPreviewSegment(post, 'status:-free'), 'status:-free');
+            assert.equal(emailRenderer.getSegmentForAudience(post, 'paid'), 'status:-free');
         });
 
-        it('passes through for a tiers post with no tiers', function () {
+        it('maps the paid audience to the paid segment for a tiers post with no tiers', function () {
             const post = createTiersPost([]);
-            assert.equal(emailRenderer.getPreviewSegment(post, 'status:-free'), 'status:-free');
+            assert.equal(emailRenderer.getSegmentForAudience(post, 'paid'), 'status:-free');
         });
 
-        it('passes through a null segment', function () {
+        it('maps a null status to an unsegmented render', function () {
             const post = createTiersPost([{slug: 'gold'}]);
-            assert.equal(emailRenderer.getPreviewSegment(post, null), null);
+            assert.equal(emailRenderer.getSegmentForAudience(post, null), null);
+        });
+
+        it('narrows the paid audience to a selected tier', function () {
+            const post = createTiersPost([{slug: 'gold'}, {slug: 'silver'}]);
+            assert.equal(
+                emailRenderer.getSegmentForAudience(post, 'paid', 'silver'),
+                'status:-free+product:\'silver\''
+            );
+        });
+
+        it('escapes quotes when narrowing to a tier', function () {
+            const post = createTiersPost([{slug: 'gold'}]);
+            assert.equal(
+                emailRenderer.getSegmentForAudience(post, 'paid', 'we\'re-fancy'),
+                'status:-free+product:\'we\\\'re-fancy\''
+            );
+        });
+
+        it('escapes backslashes when narrowing to a tier', function () {
+            const post = createTiersPost([{slug: 'gold'}]);
+            // a trailing backslash must not swallow the closing quote
+            assert.equal(
+                emailRenderer.getSegmentForAudience(post, 'paid', 'trailing\\'),
+                'status:-free+product:\'trailing\\\\\''
+            );
+        });
+
+        it('ignores a selected tier for the free audience', function () {
+            const post = createTiersPost([{slug: 'gold'}]);
+            assert.equal(emailRenderer.getSegmentForAudience(post, 'free', 'gold'), 'status:free');
         });
     });
 

@@ -55,7 +55,7 @@
                                             {{autofocus}}
                                             {{on-key "Enter" (perform this.sendPreviewEmailTask)}}
                                         />
-                                        <p class="description">You'll receive this as a {{@memberSegment}} member.</p>
+                                        <p class="description">You'll receive this as a {{@memberDescription}}.</p>
                                         <GhTaskButton
                                             @task={{this.sendPreviewEmailTask}}
                                             @buttonText="Send"
@@ -105,7 +105,7 @@
                 tabindex="0"
                 sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
                 {{did-insert this.renderEmailPreview}}
-                {{did-update this.renderEmailPreview @memberSegment}}
+                {{did-update this.renderEmailPreview @memberStatus @memberTier}}
                 {{on "focusin" this.focusPreviewFrame}}
                 {{close-dropdowns-on-click}}
             ></iframe>

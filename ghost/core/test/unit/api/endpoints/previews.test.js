@@ -76,6 +76,37 @@ describe('Previews controller', function () {
             assert.equal(frame.original.context.member.products[0].slug, 'silver');
         });
 
+        it('sets the selected tier on the paid member context', async function () {
+            const findOne = sinon.stub(Product, 'findOne').resolves({
+                get: sinon.stub().returns('archived-tier')
+            });
+            const frame = {options: {member_status: 'paid', member_tier: 'archived-tier'}};
+
+            await previewsController.read.query(frame);
+
+            sinon.assert.calledOnceWithExactly(findOne, {slug: 'archived-tier', type: 'paid'});
+            assert.deepEqual(frame.original.context.member, {
+                status: 'paid',
+                products: [{slug: 'archived-tier'}]
+            });
+        });
+
+        it('rejects a non-string member_tier', async function () {
+            const findOne = sinon.stub(Product, 'findOne');
+            const frame = {options: {member_status: 'paid', member_tier: ['silver', 'gold']}};
+
+            await assert.rejects(previewsController.read.query(frame), {errorType: 'ValidationError'});
+            sinon.assert.notCalled(findOne);
+        });
+
+        it('rejects an empty member_tier', async function () {
+            const findOne = sinon.stub(Product, 'findOne');
+            const frame = {options: {member_status: 'paid', member_tier: ''}};
+
+            await assert.rejects(previewsController.read.query(frame), {errorType: 'ValidationError'});
+            sinon.assert.notCalled(findOne);
+        });
+
         it('sets frame.apiType but does not set member context when member_status is anonymous', async function () {
             const frame = {options: {member_status: 'anonymous'}};
             await previewsController.read.query(frame);
