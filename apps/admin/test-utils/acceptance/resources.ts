@@ -10,6 +10,9 @@ import {
     type Member,
     type Offer,
     type SettingsResponse,
+    type StaffInvite,
+    type StaffRole,
+    type StaffUser,
     type Tag,
     type Tier,
 } from "@tryghost/test-data";
@@ -240,9 +243,9 @@ export function fakeMembers(members: RespondWith<Member>, { labels = [], tiers =
 // Settings-screen chrome: admin-x-settings renders EVERY settings group on
 // one page (routes only scroll/expand), so all of these fire on any
 // /settings/* mount regardless of which screen a spec is about.
-const usersResource = defineResource({ resource: "users", semantics: { kind: "passthrough" } });
-const invitesResource = defineResource({ resource: "invites", semantics: { kind: "passthrough" } });
-const rolesResource = defineResource({ resource: "roles", semantics: { kind: "passthrough" } });
+export const fakeUsers = defineResource<StaffUser>({ resource: "users", semantics: { kind: "passthrough" } });
+export const fakeInvites = defineResource<StaffInvite>({ resource: "invites", semantics: { kind: "passthrough" } });
+export const fakeRoles = defineResource<StaffRole>({ resource: "roles", semantics: { kind: "passthrough" } });
 const themesResource = defineResource({ resource: "themes", semantics: { kind: "passthrough" } });
 const automatedEmailsResource = defineResource({ resource: "automated_emails", semantics: { kind: "passthrough" } });
 const recommendationsResource = defineResource({ resource: "recommendations", semantics: { kind: "passthrough" } });
@@ -261,9 +264,9 @@ const integrationsResource = defineResource({ resource: "integrations", semantic
  * registered after this one wins (e.g. `fakeOffers([...])`).
  */
 export function fakeSettingsScreens(): void {
-    usersResource(currentUserResponse().users);
-    invitesResource([]);
-    rolesResource([]);
+    fakeUsers(currentUserResponse().users as unknown as StaffUser[]);
+    fakeInvites([]);
+    fakeRoles([]);
     themesResource(activeThemeResponse().themes);
     fakeTiers([]);
     fakeOffers([]);
