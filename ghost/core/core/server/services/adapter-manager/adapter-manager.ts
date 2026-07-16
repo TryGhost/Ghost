@@ -1,6 +1,6 @@
 import path from 'node:path';
 import errors from '@tryghost/errors';
-import {resolveAdapterExport, resolveAdapterOptions, normalizeAdapterConfig} from './utils';
+import {resolveAdapterExport, resolveAdapterOptions, normalizeAdapterConfig, getConfiguredFeatures} from './utils';
 import type {ConfigInstance} from '../../../shared/config/loader';
 import type {
     Adapter,
@@ -112,15 +112,69 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
             });
         }
 
+        const {Adapter, adapterConfig, adapterType, adapterClassName} = this.loadAdapter(name);
+        const adapterCache = this.instanceCache[adapterType];
+
+        // @NOTE: example cache key value 'email:newsletters:custom-newsletter-adapter'
+        const adapterCacheKey = `${name}:${adapterClassName}`;
+        if (adapterCache[adapterCacheKey]) {
+            return adapterCache[adapterCacheKey];
+        }
+
+        // `Adapter` is an abstract-compatible constructor type; the runtime value
+        // is always a concrete class here, so instantiation is safe.
+        const AdapterClass = Adapter as new (config?: object) => Adapter;
+        const adapter = new AdapterClass(adapterConfig);
+
+        const BaseClass = this.baseClasses[adapterType];
+        if (!(adapter instanceof BaseClass)) {
+            if (Object.getPrototypeOf(Adapter).name !== BaseClass.name) {
+                throw new errors.IncorrectUsageError({
+                    message: `${adapterType} adapter ${adapterClassName} does not inherit from the base class.`
+                });
+            }
+        }
+
+        if (!Array.isArray(adapter.requiredFns)) {
+            throw new errors.IncorrectUsageError({
+                message: `${adapterType} adapter ${adapterClassName} does not have the requiredFns array.`
+            });
+        }
+
+        for (const requiredFn of adapter.requiredFns) {
+            if (typeof (adapter as any)[requiredFn] !== 'function') {
+                throw new errors.IncorrectUsageError({
+                    message: `${adapterType} adapter ${adapterClassName} is missing the ${requiredFn} method.`
+                });
+            }
+        }
+
+        adapterCache[adapterCacheKey] = adapter;
+
+        return adapter;
+    }
+
+    /**
+     * Resolve the active adapter class name and options for `name` from config,
+     * then locate and load the adapter constructor from `pathsToAdapters`.
+     *
+     * Does not instantiate the adapter or touch the instance cache — shared by
+     * `getAdapter` (which instantiates + caches) and `init` (which validates).
+     */
+    private loadAdapter(name: string): {
+        Adapter: AdapterConstructor;
+        adapterConfig: object;
+        adapterType: string;
+        adapterClassName: string;
+    } {
         // Re-read config on every call so runtime config changes (and test config
         // overrides) are reflected, matching the original JS implementation.
         const adapterServiceConfig = normalizeAdapterConfig(this.config);
         const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
         const [adapterType] = name.split(':');
-        const adapterCache = this.instanceCache[adapterType];
 
-        if (!adapterCache) {
+        if (!this.baseClasses[adapterType]) {
             throw new errors.NotFoundError({
                 message: `Unknown adapter type ${adapterType}. Please register adapter.`
             });
@@ -130,12 +184,6 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
             throw new errors.IncorrectUsageError({
                 message: `Unable to find ${adapterType} adapter in ${this.pathsToAdapters}.`
             });
-        }
-
-        // @NOTE: example cache key value 'email:newsletters:custom-newsletter-adapter'
-        const adapterCacheKey = `${name}:${adapterClassName}`;
-        if (adapterCache[adapterCacheKey]) {
-            return adapterCache[adapterCacheKey];
         }
 
         let Adapter: AdapterConstructor | null = null;
@@ -180,36 +228,67 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
             });
         }
 
-        // `Adapter` is an abstract-compatible constructor type; the runtime value
-        // is always a concrete class here, so instantiation is safe.
-        const AdapterClass = Adapter as new (config?: object) => Adapter;
-        const adapter = new AdapterClass(adapterConfig);
+        return {Adapter, adapterConfig: adapterConfig ?? {}, adapterType, adapterClassName};
+    }
 
-        const BaseClass = this.baseClasses[adapterType];
-        if (!(adapter instanceof BaseClass)) {
-            if (Object.getPrototypeOf(Adapter).name !== BaseClass.name) {
-                throw new errors.IncorrectUsageError({
-                    message: `${adapterType} adapter ${adapterClassName} does not inherit from the base class.`
-                });
+    /**
+     * Validate the config of every configured adapter up-front, so
+     * misconfiguration fails at boot rather than on first lazy `getAdapter`.
+     *
+     * Enumerates the active adapter for each registered type plus every
+     * configured feature variant (e.g. `storage:media`), resolves each to a
+     * distinct class + config, and calls the adapter's optional static
+     * `validate` when present. All failures — bad config or a failure to load a
+     * configured adapter — are aggregated into a single error so an operator
+     * sees every problem at once. Types with no configured adapter are skipped;
+     * presence is still enforced on use by `getAdapter`.
+     */
+    init(): void {
+        const adapterServiceConfig = normalizeAdapterConfig(this.config);
+
+        // 1. Enumerate every configured adapter name (active + feature variants).
+        const names: string[] = [];
+        for (const adapterType of Object.keys(this.baseClasses)) {
+            names.push(adapterType);
+            for (const feature of getConfiguredFeatures(adapterServiceConfig[adapterType])) {
+                names.push(`${adapterType}:${feature}`);
             }
         }
 
-        if (!Array.isArray(adapter.requiredFns)) {
+        // 2. Resolve to distinct class + config pairs, skipping unconfigured
+        //    types/features and deduping identical class+config combinations.
+        const distinct = new Map<string, string>();
+        for (const name of names) {
+            const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+            if (!adapterClassName) {
+                continue;
+            }
+            const [adapterType] = name.split(':');
+            const key = `${adapterType}:${adapterClassName}:${JSON.stringify(adapterConfig ?? {})}`;
+            if (!distinct.has(key)) {
+                distinct.set(key, name);
+            }
+        }
+
+        // 3. Load + validate each distinct adapter, aggregating all failures.
+        const failures: {name: string; err: Error}[] = [];
+        for (const name of distinct.values()) {
+            try {
+                const {Adapter, adapterConfig} = this.loadAdapter(name);
+                if (typeof Adapter.validate === 'function') {
+                    Adapter.validate(adapterConfig);
+                }
+            } catch (err) {
+                failures.push({name, err: err as Error});
+            }
+        }
+
+        if (failures.length > 0) {
+            const details = failures.map(({name, err}) => `- ${name}: ${err.message}`).join('\n');
             throw new errors.IncorrectUsageError({
-                message: `${adapterType} adapter ${adapterClassName} does not have the requiredFns array.`
+                message: `Invalid adapter configuration:\n${details}`,
+                errorDetails: failures.map(({name, err}) => ({adapter: name, message: err.message}))
             });
         }
-
-        for (const requiredFn of adapter.requiredFns) {
-            if (typeof (adapter as any)[requiredFn] !== 'function') {
-                throw new errors.IncorrectUsageError({
-                    message: `${adapterType} adapter ${adapterClassName} is missing the ${requiredFn} method.`
-                });
-            }
-        }
-
-        adapterCache[adapterCacheKey] = adapter;
-
-        return adapter;
     }
 }

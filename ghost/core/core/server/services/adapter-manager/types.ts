@@ -4,8 +4,17 @@ export interface Adapter {
 
 /**
  * Constructor type that matches abstract as well as concrete base classes.
+ *
+ * The optional static `validate` lets an adapter check the options it would be
+ * constructed with — without being instantiated — so misconfiguration can be
+ * surfaced at boot rather than on first lazy use. It is synchronous and throws
+ * (e.g. `IncorrectUsageError`) when the config is invalid. This is the loose,
+ * manager-facing signature; a concrete adapter is free to declare a narrower
+ * assertion signature (`asserts config is XOptions`) on its own static.
  */
-export type AdapterConstructor<T extends Adapter = Adapter> = abstract new (...args: any[]) => T;
+export type AdapterConstructor<T extends Adapter = Adapter> = (abstract new (...args: any[]) => T) & {
+    validate?(config?: object): void;
+};
 
 /**
  * A type-only registry mapping an adapter type name (e.g. "storage") to the
