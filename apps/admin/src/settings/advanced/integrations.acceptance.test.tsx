@@ -141,8 +141,7 @@ describe("Advanced integrations", () => {
         const modal = await openCustomIntegration();
         await expect.element(modal).toHaveTextContent(/admin-api-secret/);
         await modal.getByText("admin-api-secret").hover();
-        const regenerateButton = modal.getByRole("button", {name: "Regenerate"}).element() as HTMLButtonElement;
-        regenerateButton.click();
+        await modal.getByRole("button", {name: "Regenerate"}).click();
         await settingsScreen.confirmationModal().getByRole("button", {name: "Regenerate Admin API Key"}).click();
         await expect.element(modal).toHaveTextContent(/Admin API Key was successfully regenerated/);
         await expect.element(modal).toHaveTextContent(/new-api-key/);
