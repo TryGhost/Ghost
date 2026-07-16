@@ -22,6 +22,20 @@ export class EventProcessingResult {
         this.merge(result);
     }
 
+    reset(): void {
+        this.delivered = 0;
+        this.opened = 0;
+        this.temporaryFailed = 0;
+        this.permanentFailed = 0;
+        this.unsubscribed = 0;
+        this.complained = 0;
+        this.unhandled = 0;
+        this.unprocessable = 0;
+        this.processingFailures = 0;
+        this.emailIds = [];
+        this.memberIds = [];
+    }
+
     get totalEvents(): number {
         return this.delivered
             + this.opened

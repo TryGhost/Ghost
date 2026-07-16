@@ -392,3 +392,15 @@ export async function recordEmailSent(options: RecordEmailSentOptions): Promise<
             });
     });
 }
+
+export async function getAutomatedEmailRecipientsByMailgunIds(
+    ...args: Parameters<AutomationsRepository['getAutomatedEmailRecipientsByMailgunIds']>
+) {
+    return await repository.getAutomatedEmailRecipientsByMailgunIds(...args);
+}
+
+export async function trackEmailDeliveredAndOpened(
+    ...args: Parameters<AutomationsRepository['trackEmailDeliveredAndOpened']>
+) {
+    return await repository.trackEmailDeliveredAndOpened(...args);
+}

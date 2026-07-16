@@ -69,6 +69,18 @@ export interface EditAutomationData {
     edges: AutomationEdge[];
 }
 
+export type AutomatedEmailRecipientWithMailgunId = {
+    id: string;
+    mailgun_message_id: string;
+    automation_action_revision_id: string;
+};
+
+export type AutomatedEmailEvents = {
+    deliveredAt?: Date;
+    openedAt?: Date;
+    automationActionRevisionId: string;
+};
+
 type AutomationStepBase = {
     id: string;
     locked_by: string;
@@ -155,4 +167,16 @@ export interface AutomationsRepository {
         step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
         retryAt: Readonly<Date>
     ): Promise<boolean>;
+    /**
+     * Fetch sent emails by their Mailgun IDs.
+     */
+    getAutomatedEmailRecipientsByMailgunIds(
+        mailgunMessageIds: ReadonlyArray<string>
+    ): Promise<AutomatedEmailRecipientWithMailgunId[]>;
+    /**
+     * Track delivery and open events.
+     */
+    trackEmailDeliveredAndOpened(
+        eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>
+    ): Promise<void>;
 }
