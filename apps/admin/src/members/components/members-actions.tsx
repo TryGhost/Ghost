@@ -48,8 +48,8 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     });
     const activeNewsletters = newslettersData?.newsletters || [];
 
-    const {mutateAsync: bulkEditAsync, isLoading: isBulkEditing} = useBulkEditMembers();
-    const {mutate: bulkDelete, isLoading: isBulkDeleting} = useBulkDeleteMembers();
+    const {mutateAsync: bulkEditAsync, isPending: isBulkEditing} = useBulkEditMembers();
+    const {mutate: bulkDelete, isPending: isBulkDeleting} = useBulkDeleteMembers();
     const [isUnsubscribing, setIsUnsubscribing] = useState(false);
     const memberOperationParams = buildMemberOperationParams({nql, search});
     const handleExport = useCallback(async () => {

@@ -1,4 +1,4 @@
-import {InfiniteData, useQueryClient} from '@tanstack/react-query';
+import {InfiniteData, useIsFetching, useQueryClient} from '@tanstack/react-query';
 import {useEffect} from 'react';
 import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {apiUrl} from '../utils/api/fetch-api';
@@ -16,6 +16,9 @@ export type MemberTier = {
     slug: string;
     active: boolean;
     type: string;
+    // Populated for complimentary / gift subscriptions; the tier expiry the admin
+    // set when the comp was created, or the gift expiry from the redemption.
+    expiry_at?: string | null;
 };
 
 export type MemberNewsletter = {
@@ -27,6 +30,11 @@ export type MemberNewsletter = {
 };
 
 export type MemberSubscription = {
+    // Complimentary and gift subscriptions arrive from the members BREAD service
+    // with `id: ''` — they're synthesised from the member's tier and carry no
+    // Stripe subscription id. Paid ones always have a real Stripe id. The Ember
+    // screen classifies via `!sub.id` (empty-string is falsy) combined with the
+    // plan nickname.
     id: string;
     customer: {
         id: string;
@@ -44,6 +52,9 @@ export type MemberSubscription = {
     start_date: string;
     current_period_end: string;
     cancel_at_period_end: boolean;
+    // Populated for subscriptions currently in a Stripe trial; used to render
+    // "Free trial" + "Ends <date>" copy without leaning on the paid-price branch.
+    trial_end_at?: string | null;
     price: {
         id: string;
         price_id: string;
@@ -57,6 +68,15 @@ export type MemberSubscription = {
     offer: {
         id: string;
         name: string;
+    } | null;
+    attribution?: {
+        id?: string | null;
+        type?: string | null;
+        url?: string | null;
+        title?: string | null;
+        referrer_source?: string | null;
+        referrer_medium?: string | null;
+        referrer_url?: string | null;
     } | null;
 };
 
@@ -81,6 +101,15 @@ export type Member = {
     // TODO: The server returns geolocation as a JSON-encoded string (not a parsed object).
     // Long term we should parse this on the server side and return a proper object.
     geolocation?: string | null;
+    attribution?: {
+        id?: string | null;
+        type?: string | null;
+        url?: string | null;
+        title?: string | null;
+        referrer_source?: string | null;
+        referrer_medium?: string | null;
+        referrer_url?: string | null;
+    } | null;
     email_suppression?: {
         suppressed: boolean;
         info?: {
@@ -112,6 +141,17 @@ const memberCountSearchParams = {limit: '1'} as const;
 
 export const getMemberCountQueryKey = () => [dataType, apiUrl(membersPath, memberCountSearchParams)] as const;
 
+/**
+ * True while any member query is in flight. Callers use this to hold a control
+ * disabled across the refetch a mutation invalidates, so it can't be fired
+ * again against state the screen hasn't re-rendered yet.
+ *
+ * Lives here because `dataType` is private to this module: reading the key from
+ * a consumer means hand-copying the string, which then breaks silently and
+ * without a type error if it ever changes.
+ */
+export const useMembersFetching = () => useIsFetching({queryKey: [dataType]}) > 0;
+
 export const useBrowseMembers = createQuery<MembersResponseType>({
     dataType,
     path: membersPath
@@ -132,6 +172,15 @@ export function useMemberCount() {
 export type NewMember = {
     email: string;
     name?: string | null;
+    note?: string | null;
+    // Matched/created by name on the server, same as the edit payload.
+    labels?: Array<{name: string; slug?: string}>;
+    // Explicit initial subscription set. When omitted, the server falls back
+    // to `subscribe_on_signup:true + visibility:members` newsletters
+    // (`member-repository.js:460-464`). The Ember admin sends the same set
+    // explicitly so the outcome doesn't drift if the server-side default
+    // ever changes; the React admin now matches.
+    newsletters?: Array<{id: string}>;
 };
 
 export const useAddMember = createMutation<MembersResponseType, NewMember>({
@@ -305,7 +354,6 @@ function useSyncMemberCountFromList(result: BrowseMembersInfiniteResult, searchP
         const listTotalIsAuthoritative = listIsUnfiltered
             && !result.isError
             && !result.isPlaceholderData
-            && !result.isPreviousData
             && typeof listTotal === 'number';
 
         if (!listTotalIsAuthoritative) {
@@ -343,7 +391,7 @@ function useSyncMemberCountFromList(result: BrowseMembersInfiniteResult, searchP
                 }
             }
         }, {updatedAt: result.dataUpdatedAt});
-    }, [queryClient, listIsUnfiltered, listTotal, result.dataUpdatedAt, result.isError, result.isPlaceholderData, result.isPreviousData]);
+    }, [queryClient, listIsUnfiltered, listTotal, result.dataUpdatedAt, result.isError, result.isPlaceholderData]);
 }
 
 export function useBrowseMembersInfinite(options: BrowseMembersInfiniteOptions = {}): BrowseMembersInfiniteResult {
@@ -422,3 +470,192 @@ export const useBulkDeleteMembers = createMutation<
     searchParams: buildBulkMemberSearchParams,
     invalidateQueries: {dataType}
 });
+
+// -----------------------------------------------------------------------------
+// Single-member detail-screen operations
+// -----------------------------------------------------------------------------
+
+// Labels are matched/created by name+slug, newsletters and tiers by id. `tiers`
+// carries complimentary-subscription assignments (with optional expiry); passing
+// a shorter list removes the omitted comp tiers. `include=tiers` mirrors the
+// Ember save so the response carries the refreshed tier list.
+export interface EditMemberData {
+    id: string;
+    name?: string;
+    email?: string;
+    note?: string | null;
+    subscribed?: boolean;
+    labels?: Array<{name: string; slug?: string}>;
+    newsletters?: Array<{id: string}>;
+    tiers?: Array<{id: string; expiry_at?: string | null}>;
+}
+
+export const useEditMember = createMutation<MembersResponseType, EditMemberData>({
+    method: 'PUT',
+    path: ({id}) => `/members/${id}/`,
+    defaultSearchParams: {include: 'tiers'},
+    body: ({id, ...rest}) => ({members: [{id, ...rest}]}),
+    invalidateQueries: {dataType}
+});
+
+export const useDeleteMember = createMutation<void, {id: string; cancel?: boolean}>({
+    method: 'DELETE',
+    path: ({id}) => `/members/${id}/`,
+    searchParams: ({cancel}) => ({cancel: cancel ? 'true' : 'false'}),
+    invalidateQueries: {dataType}
+});
+
+export interface MemberSigninUrlResponseType {
+    member_id: string;
+    url: string;
+}
+
+// The Admin API wraps the controller payload in the `member_signin_urls` array
+// envelope (see `member-signin-urls.js` + framework serializer). Unwrap here so
+// consumers get the flat `{member_id, url}` object they actually want.
+export const getMemberSigninUrl = createQueryWithId<MemberSigninUrlResponseType>({
+    dataType: 'MemberSigninUrlResponseType',
+    path: id => `/members/${id}/signin_urls/`,
+    returnData: (originalData) => {
+        const envelope = originalData as {member_signin_urls?: MemberSigninUrlResponseType[]};
+        return envelope.member_signin_urls?.[0] ?? {member_id: '', url: ''};
+    }
+});
+
+export const useMemberLogout = createMutation<void, {id: string}>({
+    method: 'DELETE',
+    path: ({id}) => `/members/${id}/sessions/`,
+    invalidateQueries: {dataType}
+});
+
+// cancel_at_period_end true=cancel / false=continue; status:'canceled' is used by
+// the complimentary flow to end an active paid subscription before comping.
+// The two are mutually exclusive — either you're toggling the soft cancel flag OR
+// you're hard-canceling. A discriminated union prevents callers from accidentally
+// setting both at once (which the request body would silently send together).
+interface EditMemberSubscriptionBase {
+    memberId: string;
+    subscriptionId: string;
+}
+export type EditMemberSubscriptionData =
+    | (EditMemberSubscriptionBase & {cancelAtPeriodEnd: boolean; status?: undefined})
+    | (EditMemberSubscriptionBase & {status: 'canceled'; cancelAtPeriodEnd?: undefined});
+
+export const useEditMemberSubscription = createMutation<MembersResponseType, EditMemberSubscriptionData>({
+    method: 'PUT',
+    path: ({memberId, subscriptionId}) => `/members/${memberId}/subscriptions/${subscriptionId}/`,
+    body: ({cancelAtPeriodEnd, status}) => ({
+        ...(cancelAtPeriodEnd !== undefined ? {cancel_at_period_end: cancelAtPeriodEnd} : {}),
+        ...(status ? {status} : {})
+    }),
+    invalidateQueries: {dataType}
+});
+
+export const useRemoveMemberEmailSuppression = createMutation<void, {id: string}>({
+    method: 'DELETE',
+    path: ({id}) => `/members/${id}/suppression/`,
+    invalidateQueries: {dataType}
+});
+
+// -----------------------------------------------------------------------------
+// Per-member activity feed (GET /members/events)
+// -----------------------------------------------------------------------------
+
+export interface MemberActivityEventMember {
+    id: string;
+    uuid: string;
+    name: string | null;
+    email: string;
+    avatar_image: string | null;
+}
+
+// The feed returns heterogeneous event types (signup, subscription, email,
+// click, comment, feedback, …); `data` is narrowed per-type at the render layer.
+// `data.created_at` is the pagination cursor field and is present on every event.
+export interface MemberActivityEvent {
+    type: string;
+    data: {
+        created_at?: string;
+        member?: MemberActivityEventMember | null;
+        [key: string]: unknown;
+    };
+}
+
+export interface MemberActivityFeedResponseType {
+    events: MemberActivityEvent[];
+    meta?: Meta;
+}
+
+export interface MemberActivityFeedInfiniteResponseType extends MemberActivityFeedResponseType {
+    isEnd: boolean;
+}
+
+const MEMBER_ACTIVITY_LIMIT = '20';
+
+// The events endpoint paginates by cursor rather than page number: each request
+// asks for events older than a UTC `YYYY-MM-DD HH:mm:ss` timestamp taken from the
+// last event of the previous page (events are ordered created_at desc).
+//
+// KNOWN LIMITATION: the cursor is `created_at`-only, without the id tie-breaker
+// Ember's version added (`+id:<'<lastId>'`). Two events emitted in the same
+// second on a page boundary can be skipped from the paginated list. The current
+// consumer (`MemberActivityFeed` in `apps/posts`) only fetches 5 events and
+// never calls `fetchNextPage`, so this is not exploitable today; add an id
+// secondary cursor before another screen starts paginating.
+function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {
+    const createdAt = events[events.length - 1]?.data?.created_at;
+    if (!createdAt) {
+        return undefined;
+    }
+    return new Date(createdAt).toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function buildMemberEventsFilter(memberId: string): string {
+    return `data.member_id:'${memberId}'`;
+}
+
+const useMemberActivityFeedQuery = createInfiniteQuery<MemberActivityFeedInfiniteResponseType>({
+    dataType: 'MemberActivityFeedResponseType',
+    path: '/members/events/',
+    defaultSearchParams: {limit: MEMBER_ACTIVITY_LIMIT},
+    defaultNextPageParams: (lastPage, otherParams) => {
+        const limit = Number(otherParams.limit ?? MEMBER_ACTIVITY_LIMIT);
+        const cursor = memberEventsCursor(lastPage.events);
+        // Stop when the last page wasn't full or we can't advance the cursor.
+        if (!cursor || lastPage.events.length < limit) {
+            return undefined;
+        }
+        // otherParams.filter is the base member filter (no cursor) — rebuild with it.
+        return {
+            ...otherParams,
+            filter: `data.created_at:<'${cursor}'+${otherParams.filter ?? ''}`
+        };
+    },
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<MemberActivityFeedResponseType>;
+        const events = pages.flatMap(page => page.events);
+        const lastPage = pages[pages.length - 1];
+        // Use the actual page limit echoed back in the server-side pagination
+        // meta so callers that override the default (e.g. `useMemberActivityFeed`
+        // passes `limit: '5'` for the sidebar preview) don't get a premature
+        // `isEnd=true` on a full page of results.
+        const paginationLimit = lastPage?.meta?.pagination?.limit;
+        const effectiveLimit = typeof paginationLimit === 'number' ? paginationLimit : Number(MEMBER_ACTIVITY_LIMIT);
+        return {
+            events,
+            meta: lastPage?.meta,
+            isEnd: (lastPage?.events.length ?? 0) < effectiveLimit
+        };
+    }
+});
+
+export function useMemberActivityFeed(memberId: string, options: {enabled?: boolean; limit?: string} = {}) {
+    const {limit = MEMBER_ACTIVITY_LIMIT, enabled} = options;
+    return useMemberActivityFeedQuery({
+        searchParams: {
+            filter: buildMemberEventsFilter(memberId),
+            limit
+        },
+        ...(enabled !== undefined ? {enabled} : {})
+    });
+}

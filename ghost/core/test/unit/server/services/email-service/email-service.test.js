@@ -11,7 +11,7 @@ describe('Email Service', function () {
     let membersRepository;
     let emailRenderer;
     let sendingService;
-    let scheduleRecurringJobs;
+    let scheduleRecurringNewslettersJob;
     let domainWarmingService;
 
     beforeEach(function () {
@@ -22,7 +22,7 @@ describe('Email Service', function () {
         };
         verificicationRequired = false;
         scheduleEmail = sinon.stub().returns();
-        scheduleRecurringJobs = sinon.stub().resolves();
+        scheduleRecurringNewslettersJob = sinon.stub().resolves();
         settings = {};
         settingsCache = {
             get(key) {
@@ -98,7 +98,7 @@ describe('Email Service', function () {
             membersRepository,
             sendingService,
             emailAnalyticsJobs: {
-                scheduleRecurringJobs
+                scheduleRecurringNewslettersJob
             },
             domainWarmingService: domainWarmingService
         });
@@ -153,7 +153,7 @@ describe('Email Service', function () {
                 emailRenderer,
                 membersRepository,
                 sendingService,
-                emailAnalyticsJobs: {scheduleRecurringJobs},
+                emailAnalyticsJobs: {scheduleRecurringNewslettersJob},
                 domainWarmingService,
                 config: {
                     get(key) {
@@ -281,7 +281,7 @@ describe('Email Service', function () {
             assert.equal(email.get('status'), 'pending');
             assert.equal(email.get('source'), post.get('mobiledoc'));
             assert.equal(email.get('source_type'), 'mobiledoc');
-            sinon.assert.calledOnce(scheduleRecurringJobs);
+            sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
         });
 
         describe('Domain warming', function () {
@@ -355,9 +355,9 @@ describe('Email Service', function () {
                 mobiledoc: 'Mobiledoc'
             });
 
-            scheduleRecurringJobs.rejects(new Error('Test error'));
+            scheduleRecurringNewslettersJob.rejects(new Error('Test error'));
             await service.createEmail(post);
-            sinon.assert.calledOnce(scheduleRecurringJobs);
+            sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
         });
 
         it('Creates and schedules an email with lexical', async function () {
@@ -541,7 +541,7 @@ describe('Email Service', function () {
                 emailRenderer,
                 membersRepository,
                 sendingService,
-                emailAnalyticsJobs: {scheduleRecurringJobs},
+                emailAnalyticsJobs: {scheduleRecurringNewslettersJob},
                 domainWarmingService
             });
 
@@ -576,7 +576,7 @@ describe('Email Service', function () {
                 emailRenderer,
                 membersRepository,
                 sendingService,
-                emailAnalyticsJobs: {scheduleRecurringJobs},
+                emailAnalyticsJobs: {scheduleRecurringNewslettersJob},
                 domainWarmingService
             });
 
@@ -626,7 +626,7 @@ describe('Email Service', function () {
                 emailRenderer,
                 membersRepository,
                 sendingService,
-                emailAnalyticsJobs: {scheduleRecurringJobs},
+                emailAnalyticsJobs: {scheduleRecurringNewslettersJob},
                 domainWarmingService
             });
 
@@ -662,7 +662,7 @@ describe('Email Service', function () {
                 emailRenderer,
                 membersRepository,
                 sendingService,
-                emailAnalyticsJobs: {scheduleRecurringJobs},
+                emailAnalyticsJobs: {scheduleRecurringNewslettersJob},
                 domainWarmingService,
                 // 1 hour override
                 config: {get: key => (key === 'bulkEmail:resumeMaxAgeMs' ? 60 * 60 * 1000 : undefined)}

@@ -25,7 +25,7 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "engines": {
-    "node": "^22.18.0"
+    "node": "^22.23.1"
   },
   "devDependencies": {
     "@babel/core": "7.29.7",
@@ -199,7 +199,6 @@
           {
             "projects": [
               "@tryghost/admin-x-framework",
-              "@tryghost/admin-x-settings",
               "@tryghost/activitypub"
             ],
             "target": "build"
@@ -227,7 +226,6 @@
           {
             "projects": [
               "@tryghost/admin-x-framework",
-              "@tryghost/admin-x-settings",
               "@tryghost/activitypub"
             ],
             "target": "build"

@@ -5,7 +5,7 @@ import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import MINIMAL_NODES from './MinimalNodes';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {HeaderNode as BaseHeaderNode} from '@tryghost/kg-default-nodes';
+import {HeaderNode as BaseHeaderNode, type CardWidth, normalizeCardWidth} from '@tryghost/kg-default-nodes';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
@@ -101,7 +101,7 @@ export class HeaderNode extends BaseHeaderNode {
         return dataset;
     }
 
-    getCardWidth() {
+    getCardWidth(): CardWidth | undefined {
         const version = this.version;
 
         if (version === 1) {
@@ -110,7 +110,7 @@ export class HeaderNode extends BaseHeaderNode {
 
         if (version === 2) {
             const layout = this.layout;
-            return layout === 'split' ? 'full' : layout;
+            return normalizeCardWidth(layout === 'split' ? 'full' : layout);
         }
     }
 

@@ -25,6 +25,11 @@ class EmailAnalyticsServiceWrapper {
         const emailSuppressionList = require('../email-suppression-list');
         const prometheusClient = require('../../../shared/prometheus-client');
 
+        const tags = ['bulk-email'];
+        if (config.get('bulkEmail:mailgun:tag')) {
+            tags.push(config.get('bulkEmail:mailgun:tag'));
+        }
+
         this.eventStorage = new EmailEventStorage({
             db,
             membersRepository,
@@ -50,7 +55,7 @@ class EmailAnalyticsServiceWrapper {
             config,
             settings,
             eventProcessor,
-            provider: new MailgunProvider({config, settings}),
+            provider: new MailgunProvider({config, settings, tags}),
             queries,
             domainEvents,
             prometheusClient

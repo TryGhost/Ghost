@@ -187,19 +187,37 @@ export interface FakeEndpointOptions {
 /**
  * Fake one non-admin-API absolute URL for the current test (wins over the
  * external-origin blocklist, resets between tests). Admin API paths belong
- * to resource fakes / boot overrides / `fakeAdminEndpoint`.
+ * to resource fakes / boot overrides / `fakeAdminEndpoint`. Returns a
+ * capture of every matched request for payload assertions.
  */
-export function fakeEndpoint(method: string, url: string, response: unknown, { status = 200 }: FakeEndpointOptions = {}): void {
+export function fakeEndpoint(method: string, url: string, response: unknown, { status = 200 }: FakeEndpointOptions = {}): EndpointCapture {
     const expectedMethod = method.toUpperCase();
+    const requests: CapturedEndpointRequest[] = [];
 
     runningWorker().use(
-        http.all(url, ({ request }) => {
+        http.all(url, async ({ request }) => {
             if (request.method !== expectedMethod) {
                 return undefined;
             }
+
+            let body: unknown;
+            try {
+                body = await request.clone().json();
+            } catch {
+                body = undefined;
+            }
+            requests.push({ url: request.url, body });
+
             return HttpResponse.json(response as Record<string, unknown>, { status });
         })
     );
+
+    return {
+        requests,
+        get lastRequest() {
+            return requests[requests.length - 1];
+        },
+    };
 }
 
 export interface CapturedEndpointRequest {

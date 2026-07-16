@@ -13,10 +13,16 @@ export {automation} from "./builders/automation";
 export type {Automation} from "./builders/automation";
 export {comment} from "./builders/comment";
 export type {Comment, CommentPost} from "./builders/comment";
+export {commentThread, reply} from "./builders/comment-thread";
+export type {CommentThread, ReplySpec} from "./builders/comment-thread";
+export {offer, retentionOffer} from "./builders/offer";
+export type {Offer} from "./builders/offer";
 export {defaultThemesResponse, theme} from "./builders/theme";
 export type {Theme, ThemePackage, ThemesResponse} from "./builders/theme";
 export {post} from "./builders/post";
 export type {Post} from "./builders/post";
+export {staffInvite, staffRole, staffUser} from "./builders/staff-user";
+export type {StaffInvite, StaffRole, StaffRoleName, StaffUser} from "./builders/staff-user";
 export {changelogEntry} from "./builders/changelog";
 export type {ChangelogEntry} from "./builders/changelog";
 export {buildLexical, buildLexicalParagraph} from "./builders/lexical";
@@ -27,12 +33,8 @@ export type {BrowseResponse, BrowseResponseOptions, Pagination} from "./envelope
 
 export {generateId, generateSlug, generateUuid} from "./utils";
 
-export {automationsSelectors} from "./selectors/automations";
-export {commentsSelectors} from "./selectors/comments";
-export {membersSelectors} from "./selectors/members";
-export {sidebarSelectors} from "./selectors/sidebar";
-export {tagsSelectors} from "./selectors/tags";
-export {whatsNewSelectors} from "./selectors/whats-new";
+// Selector modules are deliberately NOT re-exported here: their flat names
+// collide across surfaces. Import them via "@tryghost/test-data/selectors/*".
 
 export {
     activeThemeResponse,

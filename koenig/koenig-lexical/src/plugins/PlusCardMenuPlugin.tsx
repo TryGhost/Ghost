@@ -251,7 +251,7 @@ function usePlusCardMenu(editor) {
                 {isShowingButton && <PlusButton onClick={openMenu} />}
                 {isShowingMenu && (
                     <PlusMenu>
-                        <CardMenu closeMenu={closeMenu} insert={insert} menu={cardMenu.menu} />
+                        <CardMenu closeMenu={closeMenu} insert={insert} menu={cardMenu.menu} source="plus" />
                     </PlusMenu>
                 )}
             </div>

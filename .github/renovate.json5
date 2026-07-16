@@ -38,6 +38,13 @@
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
+    // Keep every open Renovate branch current, including updates that require
+    // human review. The shared preset uses `rebaseWhen: automerging`, which
+    // Renovate resolves to `never` whenever a package rule disables automerge.
+    // Those PRs then conflict with main indefinitely and occupy the open-PR cap
+    // until somebody manually requests a rebase. Runner scheduling below still
+    // limits when the resulting branch updates and CI runs can happen.
+    "rebaseWhen": "behind-base-branch",
     // Soak every dependency update for 72 hours before opening a PR. This guards
     // against compromised publishes (malicious version yanked within a few hours)
     // and against unstable releases that get hotfixed shortly after publish.
@@ -198,6 +205,24 @@
             "dependencyDashboardApproval": true
         },
 
+        // The shared preset keeps major updates to packages we publish out of
+        // automerge. Make that manual-merge requirement visible on the PR.
+        {
+            "description": "Require human review for major TryGhost package updates",
+            "matchPackageNames": [
+                "/^@tryghost\/.+/",
+                "gscan",
+                "knex-migrator"
+            ],
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "automerge": false,
+            "addLabels": [
+                "needs:review"
+            ]
+        },
+
         // Pin the Node.js runtime — Renovate must not bump it. Node is upgraded
         // manually as one coordinated change: the `engines` range (root +
         // ghost/core package.json), the `NODE_VERSION` ARG behind the `node`
@@ -228,7 +253,7 @@
         //    Node.js runtime declared in `engines`, not a dependency — so a hard
         //    version cap is the only lever. Raise it when we bump the Node engine.
         {
-            "description": "Cap @types/node at the installed Node major (engines: ^22.13.1)",
+            "description": "Cap @types/node at the installed Node major (engines: ^22.23.1)",
             "matchPackageNames": [
                 "@types/node"
             ],
@@ -424,6 +449,71 @@
             "minimumReleaseAge": "0 days"
         },
 
+        // The shared preset's automerge rule only matches traditional package
+        // dependency types. pnpm catalogs use `pnpm.catalog` (default catalog)
+        // and `pnpm.catalog.<name>` (named catalogs), so catalog updates were
+        // opening with automerge disabled even when the same package in a
+        // package.json would automerge. Apply the same default here.
+        {
+            "description": "Automerge pnpm catalog updates after CI passes",
+            "matchDepTypes": [
+                "/^pnpm\\.catalog(?:\\..+)?$/"
+            ],
+            "automerge": true,
+            "automergeType": "pr"
+        },
+
+        // The catalog rule above is local, so it is evaluated after package
+        // rules inherited from the shared preset. Repeat the shared CSS/style
+        // exclusion locally so adding catalog support does not turn intentionally
+        // human-reviewed build-pipeline updates into automerges, and label every
+        // such PR so it is easy to find.
+        {
+            "description": "Require human review for CSS preprocessor updates",
+            "matchPackageNames": [
+                "/^postcss/",
+                "/^css/",
+                "/^sass/",
+                "/^less/",
+                "/^styl/",
+                "autoprefixer",
+                "cssnano",
+                "postcss",
+                "postcss-cli",
+                "postcss-import",
+                "postcss-custom-media",
+                "postcss-custom-properties",
+                "postcss-color-mod-function",
+                "postcss-easy-import",
+                "ember-cli-postcss",
+                "gulp-postcss",
+                "sass",
+                "node-sass",
+                "sass-embedded",
+                "less",
+                "stylus",
+                "stylelint",
+                "tailwindcss"
+            ],
+            "automerge": false,
+            "addLabels": [
+                "needs:review"
+            ]
+        },
+
+        // Overrides change transitive resolution across the entire workspace,
+        // so keep them manual and make that policy explicit on their PRs.
+        {
+            "description": "Require human review for pnpm override updates",
+            "matchDepTypes": [
+                "pnpm.overrides"
+            ],
+            "automerge": false,
+            "addLabels": [
+                "needs:review"
+            ]
+        },
+
         // Group each pinned-version pnpm catalog into a single PR per catalog.
         //
         // The named catalogs in pnpm-workspace.yaml (react17, eslint9,
@@ -463,6 +553,25 @@
                 "lucide-react"
             ],
             "automerge": true
+        },
+
+        // Docker tag changes can alter runtime/service behavior even without a
+        // manifest change. Keep those updates manual and visibly labelled; the
+        // controlled digest rule immediately below remains automergeable.
+        {
+            "description": "Require human review for Docker tag updates",
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchUpdateTypes": [
+                "major",
+                "minor",
+                "patch"
+            ],
+            "automerge": false,
+            "addLabels": [
+                "needs:review"
+            ]
         },
 
         // Batch internal Docker digest pins into a single weekly PR and
@@ -541,7 +650,10 @@
                 "!actions/**",
                 "!github/**"
             ],
-            "automerge": false
+            "automerge": false,
+            "addLabels": [
+                "needs:review"
+            ]
         },
 
         // Security patches and minors automerge after CI passes regardless

@@ -1,6 +1,7 @@
 import {type Member, type MembersInfiniteResponseType, useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
 import {type ValueSource} from '@tryghost/shade/patterns';
 import {createGhostBrowseValueSource} from './create-ghost-browse-value-source';
+import {keepPreviousData} from '@tanstack/react-query';
 
 function toMemberOption(member: Member) {
     return {
@@ -25,7 +26,7 @@ const useRemoteMemberValueSource = createGhostBrowseValueSource<Member, MembersI
     useQuery: ({enabled, searchParams}) => {
         return useBrowseMembersInfinite({
             enabled,
-            keepPreviousData: true,
+            placeholderData: keepPreviousData,
             searchParams
         });
     },

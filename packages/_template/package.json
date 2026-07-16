@@ -33,18 +33,13 @@
     "build"
   ],
   "devDependencies": {
-    "@eslint/js": "catalog:",
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
     "@types/node": "catalog:",
-    "@typescript-eslint/parser": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-ghost": "catalog:",
-    "globals": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
     "vitest": "catalog:"
   },
   "dependencies": {},

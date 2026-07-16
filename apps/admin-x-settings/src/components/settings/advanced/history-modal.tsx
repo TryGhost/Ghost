@@ -1,9 +1,12 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
-import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, type LoadSelectOptions, LoadingIndicator, Modal, NoValueLabel, Popover, Select, type SelectOption, Toggle, ToggleGroup, debounce} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, type LoadSelectOptions, Modal, NoValueLabel, Popover, Select, type SelectOption, Toggle, ToggleGroup} from '@tryghost/admin-x-design-system';
+import {LoadingIndicator} from '@tryghost/shade/components';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type User} from '@tryghost/admin-x-framework/api/users';
+import {debounce} from '../../../utils/debounce';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
+import {keepPreviousData} from '@tanstack/react-query';
 import {useCallback, useState} from 'react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
@@ -189,7 +192,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
             ...otherParams,
             filter: [otherParams.filter, lastPage.actions.length && `created_at:<'${formatDateForFilter(new Date(lastPage.actions[lastPage.actions.length - 1].created_at))}'`].join('+')
         }),
-        keepPreviousData: true
+        placeholderData: keepPreviousData
     });
 
     const fetchNext = useCallback(() => {
@@ -268,7 +271,9 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                         )
                     ) : data === undefined ? (
                         <div className="flex items-center justify-center px-5 pt-12 pb-10">
-                            <LoadingIndicator />
+                            <div className="flex h-64 items-center justify-center">
+                                <LoadingIndicator size='lg' />
+                            </div>
                         </div>
                     ) : (
                         <NoValueLabel>No entries found.</NoValueLabel>

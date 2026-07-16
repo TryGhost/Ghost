@@ -1,5 +1,21 @@
 import { HttpResponse } from "msw";
-import { browseResponse, type Automation, type Comment, type Label, type Member, type Tag, type Tier } from "@tryghost/test-data";
+import {
+    activeThemeResponse,
+    browseResponse,
+    currentUserResponse,
+    settingsResponse,
+    type Automation,
+    type Comment,
+    type Label,
+    type Member,
+    type Offer,
+    type SettingsResponse,
+    type StaffInvite,
+    type StaffRole,
+    type StaffUser,
+    type Tag,
+    type Tier,
+} from "@tryghost/test-data";
 
 import { record418, registerAdminApiHandler, registerRoute } from "./worker";
 
@@ -188,9 +204,13 @@ const membersResource = defineResource<Member>({
 
 // Members-page chrome: the filter bar mounts with the page and probes these lookups.
 const labelsResource = defineResource<Label>({ resource: "labels", semantics: { kind: "passthrough" } });
-const tiersResource = defineResource<Tier>({ resource: "tiers", semantics: { kind: "passthrough" } });
-const offersResource = defineResource({ resource: "offers", semantics: { kind: "passthrough" } });
 const newslettersResource = defineResource({ resource: "newsletters", semantics: { kind: "passthrough" } });
+
+/** Tiers list fake (passthrough): serves the declared tiers and captures every browse request. */
+export const fakeTiers = defineResource<Tier>({ resource: "tiers", semantics: { kind: "passthrough" } });
+
+/** Offers list fake (passthrough): serves the declared offers and captures every browse request. */
+export const fakeOffers = defineResource<Offer>({ resource: "offers", semantics: { kind: "passthrough" } });
 
 export interface FakeMembersOptions {
     /**
@@ -214,8 +234,101 @@ export function fakeMembers(members: RespondWith<Member>, { labels = [], tiers =
     const labelsById = new Map([...embeddedLabels, ...labels].map((l) => [l.id, l]));
 
     labelsResource([...labelsById.values()]);
-    tiersResource(tiers);
-    offersResource([]);
+    fakeTiers(tiers);
+    fakeOffers([]);
     newslettersResource([]);
     return membersResource(members);
+}
+
+// Settings-screen chrome: admin-x-settings renders EVERY settings group on
+// one page (routes only scroll/expand), so all of these fire on any
+// /settings/* mount regardless of which screen a spec is about.
+export const fakeUsers = defineResource<StaffUser>({ resource: "users", semantics: { kind: "passthrough" } });
+export const fakeInvites = defineResource<StaffInvite>({ resource: "invites", semantics: { kind: "passthrough" } });
+export const fakeRoles = defineResource<StaffRole>({ resource: "roles", semantics: { kind: "passthrough" } });
+const themesResource = defineResource({ resource: "themes", semantics: { kind: "passthrough" } });
+const automatedEmailsResource = defineResource({ resource: "automated_emails", semantics: { kind: "passthrough" } });
+const recommendationsResource = defineResource({ resource: "recommendations", semantics: { kind: "passthrough" } });
+const integrationsResource = defineResource({ resource: "integrations", semantics: { kind: "passthrough" } });
+
+/**
+ * Declares the world the settings area's page chrome reads at mount — every
+ * settings group renders on one page, so this covers the requests ALL
+ * /settings/* specs trigger: the staff section (users/invites/roles), design
+ * (themes), membership (tiers/newsletters), growth (recommendations, offers,
+ * referrer stats) and advanced (integrations, automated emails).
+ *
+ * Defaults are the minimal believable world: the boot table's owner as the
+ * only staff user, the canned active theme, and empty lists everywhere else.
+ * Screen-specific data a spec asserts on is declared in the spec — a fake
+ * registered after this one wins (e.g. `fakeOffers([...])`).
+ */
+export function fakeSettingsScreens(): void {
+    fakeUsers(currentUserResponse().users as unknown as StaffUser[]);
+    fakeInvites([]);
+    fakeRoles([]);
+    themesResource(activeThemeResponse().themes);
+    fakeTiers([]);
+    fakeOffers([]);
+    newslettersResource([]);
+    automatedEmailsResource([]);
+    recommendationsResource([]);
+    integrationsResource([]);
+
+    // Two endpoints defineResource can't express:
+    //  - /incoming_recommendations/ responds under the `recommendations` key
+    //    (useBrowseIncomingRecommendations crashes on any other envelope);
+    //  - /stats/referrers/ (growth's "Top sources") isn't a list envelope.
+    registerRoute("GET", "/incoming_recommendations/?…");
+    registerRoute("GET", "/stats/referrers/");
+    registerAdminApiHandler((request, apiPath) => {
+        if (request.method !== "GET") {
+            return undefined;
+        }
+        if (apiPath === "/incoming_recommendations/" || apiPath.startsWith("/incoming_recommendations/?")) {
+            return HttpResponse.json(browseResponse("recommendations", [], { limit: 5 }));
+        }
+        if (apiPath === "/stats/referrers/") {
+            return HttpResponse.json({ stats: [] });
+        }
+        return undefined;
+    });
+}
+
+type SettingsPutBody = { settings: Array<{ key: string; value: string | boolean | null }> };
+
+export interface EditSettingsCapture {
+    /** Every PUT /settings/ body, oldest first. */
+    requests: SettingsPutBody[];
+    readonly lastRequest: SettingsPutBody | undefined;
+}
+
+/**
+ * Handles PUT /settings/ the way Ghost does — echoes back the full settings
+ * world with the submitted keys applied — and captures every request body so
+ * specs can assert exactly what the UI saved.
+ */
+export function fakeEditSettings(): EditSettingsCapture {
+    const requests: SettingsPutBody[] = [];
+
+    registerRoute("PUT", "/settings/");
+    registerAdminApiHandler(async (request, apiPath) => {
+        if (request.method !== "PUT" || apiPath !== "/settings/") {
+            return undefined;
+        }
+
+        const body = (await request.json()) as SettingsPutBody;
+        requests.push(body);
+
+        const overrides = Object.fromEntries(body.settings.map(({ key, value }) => [key, value]));
+        const response: SettingsResponse = settingsResponse({ settings: overrides });
+        return HttpResponse.json(response);
+    });
+
+    return {
+        requests,
+        get lastRequest() {
+            return requests[requests.length - 1];
+        },
+    };
 }

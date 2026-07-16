@@ -153,17 +153,9 @@ export default class GhBillingIframe extends Component {
         this.stateBridge.triggerSubscriptionChange(data);
 
         // Invalidate React Query cache for config data in admin-x-settings
-        if (window?.adminXQueryClient?.invalidateQueries && typeof window.adminXQueryClient.invalidateQueries === 'function') {
-            try {
-                // React Query v5+
-                window.adminXQueryClient.refetchQueries({queryKey: ['ConfigResponseType']}).catch(() => {});
-                window.adminXQueryClient.refetchQueries({queryKey: ['SettingsResponseType']}).catch(() => {});
-            } catch (_) {
-                // TODO: remove this fallback when Admin-X-Settings updates to React Query v5+ (@tanstack/react-query)
-                // React Query v4 fallback
-                window.adminXQueryClient.refetchQueries(['ConfigResponseType']).catch(() => {});
-                window.adminXQueryClient.refetchQueries(['SettingsResponseType']).catch(() => {});
-            }
+        if (window?.adminXQueryClient?.refetchQueries && typeof window.adminXQueryClient.refetchQueries === 'function') {
+            window.adminXQueryClient.refetchQueries({queryKey: ['ConfigResponseType']}).catch(() => {});
+            window.adminXQueryClient.refetchQueries({queryKey: ['SettingsResponseType']}).catch(() => {});
         }
 
         this.billing.subscription = data.subscription;

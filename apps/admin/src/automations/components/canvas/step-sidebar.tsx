@@ -2,10 +2,12 @@ import '@xyflow/react/dist/style.css';
 import React, {useEffect, useRef, useState} from 'react';
 import type {AutomationDetail, AutomationSendEmailAction, AutomationWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Button, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText} from '@tryghost/shade/components';
+import {EmailPerformanceSection} from './email-performance-section';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {MemberTier, StepSidebarDetail} from '@/automations/components/types';
 import {TRIGGER_CANVAS_ID} from './nodes';
 import {formatWait} from './format-wait';
+import {useFeatureFlag} from '@/hooks/use-feature-flag';
 
 const MAX_WAIT_DAYS = 30;
 const WHOLE_NUMBER_PATTERN = /^\d+$/;
@@ -179,6 +181,7 @@ const SendEmailSidebarBody: React.FC<{
   onDelete: () => void;
 }> = ({action, onUpdateSubject, onEditEmail, onDelete}) => {
     const subjectInputRef = useRef<HTMLInputElement>(null);
+    const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
 
     useEffect(() => {
         subjectInputRef.current?.focus({preventScroll: true});
@@ -203,6 +206,7 @@ const SendEmailSidebarBody: React.FC<{
                 <LucideIcon.Pencil className='size-4' />
               Edit email
             </Button>
+            {automationAnalyticsEnabled && action.stats && <EmailPerformanceSection stats={action.stats} />}
             <div className='mt-auto pt-6'>
                 <DeleteStepButton onClick={onDelete} />
             </div>

@@ -42,10 +42,15 @@ export function KeyboardSelection({items, getItem, onSelect, defaultSelected}) {
             });
         }
         if (event.key === 'Enter') {
+            const selectedItem = items[selectedIndex];
+            if (!selectedItem) {
+                return;
+            }
+
             // The stop propagation is required for Safari
             event.preventDefault();
             event.stopPropagation();
-            onSelect(items[selectedIndex]);
+            onSelect(selectedItem);
         }
     }, [items, selectedIndex, onSelect]);
 

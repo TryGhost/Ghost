@@ -13,7 +13,7 @@ const messages = {
  * non-empty `from` / `to` strings, with `from` compilable as a RegExp.
  * Throws on the first failure rather than collecting errors.
  *
- * @param {import('./types').RedirectConfig[]} redirects
+ * @param {import('@tryghost/adapter-base-redirects').RedirectConfig[]} redirects
  */
 const validate = (redirects) => {
     if (!_.isArray(redirects)) {

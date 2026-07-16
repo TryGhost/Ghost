@@ -1,7 +1,15 @@
 import { expect } from "vitest";
 import { server, type Locator } from "vitest/browser";
 
-import type { ResourceCapture } from "./resources";
+import type { EditSettingsCapture, ResourceCapture } from "./resources";
+
+type EditedSettings = NonNullable<EditSettingsCapture["lastRequest"]>["settings"];
+
+function editedSettingsEqual(actual: EditedSettings | undefined, expected: EditedSettings): boolean {
+    return actual?.length === expected.length && expected.every(expectedSetting => (
+        actual.some(setting => setting.key === expectedSetting.key && setting.value === expectedSetting.value)
+    ));
+}
 
 // Poll timing follows the configured expect.poll defaults (vitest.acceptance.config.ts).
 const POLL_INTERVAL_MS = server.config.expect.poll?.interval ?? 50;
@@ -57,6 +65,31 @@ async function pollCapturedRequestField(
     };
 }
 
+/** Polls until the settings mutation capture receives the exact edited settings payload. */
+async function pollEditedSettings(
+    isNot: boolean,
+    capture: EditSettingsCapture,
+    expected: EditedSettings
+): Promise<{ pass: boolean; message: () => string }> {
+    const deadline = Date.now() + POLL_TIMEOUT_MS;
+    let actual = capture.lastRequest?.settings;
+    let pass = editedSettingsEqual(actual, expected);
+
+    while (pass === isNot && Date.now() < deadline) {
+        await sleep(POLL_INTERVAL_MS);
+        actual = capture.lastRequest?.settings;
+        pass = editedSettingsEqual(actual, expected);
+    }
+
+    const seen = actual === undefined ? "no settings edit captured yet" : `the last edit was ${JSON.stringify(actual)}`;
+
+    return {
+        pass,
+        message: () =>
+            `expected the capture ${isNot ? "not " : ""}to have edited settings ${JSON.stringify(expected)}, but ${seen}`,
+    };
+}
+
 expect.extend({
     /** `await expect(locator).toHaveCount(n)` — polls until the locator resolves to exactly `n` elements (`.not`-aware). */
     async toHaveCount(received: Locator, expected: number) {
@@ -84,6 +117,11 @@ expect.extend({
     async toHaveSentSearch(received: ResourceCapture, expected: string | RegExp) {
         return await pollCapturedRequestField(Boolean(this.isNot), received, "search", expected);
     },
+
+    /** `await expect(api).toHaveEditedSettings(settings)` — polls until the latest PUT /settings/ payload matches exactly. */
+    async toHaveEditedSettings(received: EditSettingsCapture, expected: EditedSettings) {
+        return await pollEditedSettings(Boolean(this.isNot), received, expected);
+    },
 });
 
 declare module "vitest" {
@@ -92,5 +130,6 @@ declare module "vitest" {
         toHaveCount(expected: number): Promise<void>;
         toHaveSentFilter(expected: string | RegExp): Promise<void>;
         toHaveSentSearch(expected: string | RegExp): Promise<void>;
+        toHaveEditedSettings(expected: EditedSettings): Promise<void>;
     }
 }

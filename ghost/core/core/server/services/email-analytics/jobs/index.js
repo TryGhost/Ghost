@@ -1,43 +1,32 @@
-const path = require('path');
-const moment = require('moment');
 const config = require('../../../../shared/config');
+const labs = require('../../../../shared/labs');
 const models = require('../../../models');
 const jobsService = require('../../jobs');
+const {EmailAnalyticsJobScheduler} = require('./email-analytics-job-scheduler');
 
-let hasScheduled = false;
+const emailAnalyticsJobScheduler = new EmailAnalyticsJobScheduler({
+    models,
+    config,
+    labs,
+    jobManager: jobsService
+});
 
-module.exports = {
-    async scheduleRecurringJobs(skipEmailCheck = false) {
-        if (
-            !hasScheduled &&
-            config.get('emailAnalytics:enabled') &&
-            config.get('backgroundJobs:emailAnalytics') &&
-            !process.env.NODE_ENV.startsWith('test')
-        ) {
-            // Don't register email analytics job if we have no emails,
-            // processor usage from many sites spinning up threads can be high.
-            // Mega service will re-run this scheduling task when an email is sent
-            const emailCount = skipEmailCheck ? 1 : (await models.Email
-                .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
-                .where('status', '<>', 'failed')
-                .count());
+/**
+ * @param {Parameters<typeof EmailAnalyticsJobScheduler.prototype.scheduleRecurringNewslettersJob>} args
+ * @returns {Promise<void>}
+ */
+exports.scheduleRecurringNewslettersJob = async (...args) => {
+    if (!process.env.NODE_ENV.startsWith('test')) {
+        await emailAnalyticsJobScheduler.scheduleRecurringNewslettersJob(...args);
+    }
+};
 
-            if (emailCount > 0) {
-                // use a random seconds value to avoid spikes to external APIs on the minute
-                const s = Math.floor(Math.random() * 60); // 0-59
-                // run every 5 minutes, on 1,6,11..., 2,7,12..., 3,8,13..., etc
-                const m = Math.floor(Math.random() * 5); // 0-4
-
-                jobsService.addJob({
-                    at: `${s} ${m}/5 * * * *`,
-                    job: path.resolve(__dirname, 'fetch-latest/index.js'),
-                    name: 'email-analytics-fetch-latest'
-                });
-
-                hasScheduled = true;
-            }
-        }
-
-        return hasScheduled;
+/**
+ * @param {Parameters<typeof EmailAnalyticsJobScheduler.prototype.scheduleRecurringAutomationsJob>} args
+ * @returns {Promise<void>}
+ */
+exports.scheduleRecurringAutomationsJob = async (...args) => {
+    if (!process.env.NODE_ENV.startsWith('test')) {
+        await emailAnalyticsJobScheduler.scheduleRecurringAutomationsJob(...args);
     }
 };

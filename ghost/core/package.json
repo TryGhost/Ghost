@@ -43,10 +43,10 @@
     "tsconfig.json"
   ],
   "scripts": {
-    "archive": "node scripts/pack.js",
+    "archive": "node scripts/pack.mjs",
     "dev": "nodemon index.js",
     "build:assets": "pnpm run '/^build:assets:/'",
-    "build:assets:js": "node bin/minify-assets.js",
+    "build:assets:js": "node scripts/minify-assets.mjs",
     "generate-golden-email": "node bin/generate-golden-email.js",
     "migrate:create": "node bin/create-migration.js",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
@@ -71,11 +71,11 @@
     "lint:frontend": "eslint 'core/frontend/**/*.js' --cache",
     "lint:test": "eslint 'test/**/*.js' --cache",
     "lint:code": "pnpm run '/^lint:(server|shared|frontend)$/'",
-    "lint:types": "pnpm --filter @tryghost/parse-email-address build && eslint '**/*.ts' --cache && tsc --noEmit",
+    "lint:types": "eslint '**/*.ts' --cache && tsc --noEmit",
     "lint": "pnpm run '/^lint:(server|shared|frontend|test|types)$/'"
   },
   "engines": {
-    "node": "^22.18.0",
+    "node": "^22.23.1",
     "cli": "^1.29.1"
   },
   "dependencies": {
@@ -85,13 +85,17 @@
     "@isaacs/ttlcache": "1.4.1",
     "@sentry/node": "7.120.4",
     "@slack/webhook": "7.1.0",
-    "@tryghost/adapter-base-cache": "0.1.26",
+    "@tryghost/adapter-base-cache": "0.1.27",
+    "@tryghost/adapter-base-redirects": "workspace:*",
+    "@tryghost/adapter-base-route-settings": "workspace:*",
+    "@tryghost/adapter-base-scheduling": "workspace:*",
+    "@tryghost/adapter-base-sso": "workspace:*",
     "@tryghost/admin-api-schema": "4.7.5",
     "@tryghost/api-framework": "catalog:",
     "@tryghost/bookshelf-plugins": "2.2.4",
     "@tryghost/brute-knex": "catalog:",
     "@tryghost/color-utils": "catalog:",
-    "@tryghost/config-url-helpers": "1.0.26",
+    "@tryghost/config-url-helpers": "1.0.27",
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/database-info": "2.3.1",
     "@tryghost/debug": "catalog:",
@@ -101,7 +105,7 @@
     "@tryghost/helpers": "catalog:",
     "@tryghost/html-to-plaintext": "1.0.11",
     "@tryghost/i18n": "workspace:*",
-    "@tryghost/image-transform": "1.4.16",
+    "@tryghost/image-transform": "1.4.17",
     "@tryghost/job-manager": "1.0.9",
     "@tryghost/kg-card-factory": "workspace:*",
     "@tryghost/kg-clean-basic-html": "workspace:*",
@@ -174,7 +178,7 @@
     "ghost-storage-base": "2.1.5",
     "glob": "catalog:",
     "got": "13.0.0",
-    "gscan": "6.4.1",
+    "gscan": "6.4.2",
     "handlebars": "4.7.9",
     "heic-convert": "2.1.0",
     "html-to-text": "5.1.1",
@@ -261,6 +265,7 @@
     "@types/lodash": "4.17.24",
     "@types/lodash-es": "4.17.12",
     "@types/mime-types": "3.0.1",
+    "@types/nconf": "catalog:",
     "@types/node": "catalog:",
     "@types/node-fetch": "2.6.13",
     "@types/node-jose": "1.1.13",
@@ -268,7 +273,8 @@
     "@types/on-headers": "1.0.4",
     "@types/papaparse": "5.5.2",
     "@types/sanitize-html": "catalog:",
-    "@types/sinon": "21.0.1",
+    "@types/semver": "7.7.1",
+    "@types/sinon": "catalog:",
     "@types/supertest": "6.0.3",
     "@typescript-eslint/parser": "catalog:",
     "@vitest/coverage-v8": "catalog:",
@@ -369,11 +375,6 @@
           "{projectRoot}/coverage-e2e"
         ]
       },
-      "test:ci:e2e:no-coverage": {
-        "dependsOn": [
-          "^build"
-        ]
-      },
       "test:ci:legacy": {
         "dependsOn": [
           "^build"
@@ -385,11 +386,6 @@
         ],
         "outputs": [
           "{projectRoot}/coverage-integration"
-        ]
-      },
-      "test:ci:integration:no-coverage": {
-        "dependsOn": [
-          "^build"
         ]
       }
     }

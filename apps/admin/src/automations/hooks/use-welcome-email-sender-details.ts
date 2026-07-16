@@ -1,4 +1,4 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/hooks/use-welcome-email-sender-details.ts because we need to support the email design modal in both the settings app and the posts app until Automations GAs
+// NOTE: duplicated in apps/admin-x-settings/src/hooks/use-welcome-email-sender-details.ts — the email design modal needs it in both apps until Automations GAs; keep in sync
 import {resolveWelcomeEmailSenderDetails} from '@/automations/utils/welcome-email-sender-details';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useMemo} from 'react';

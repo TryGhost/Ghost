@@ -18,7 +18,9 @@ const forPost = (id, attrs, frame, type = 'posts') => {
     // reach the lazy URL service without the fields it needs (status,
     // tags/authors) and be rejected as thin. The value would only be deleted
     // at the end of this function anyway. forUser/forTag guard the same way.
-    if (frame.options.columns && !frame.options.columns.includes('url')) {
+    // Shared with the input serializers' force-load so both sides always
+    // agree on when a URL is generated.
+    if (!localUtils.willSerializeUrl(frame)) {
         return attrs;
     }
 

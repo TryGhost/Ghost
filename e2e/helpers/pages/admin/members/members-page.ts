@@ -1,6 +1,6 @@
 import {AdminPage} from '@/admin-pages';
 import {JSHandle, Locator, Page} from '@playwright/test';
-import {membersSelectors} from '@tryghost/test-data';
+import {membersListItem, newMemberLink} from '@tryghost/test-data/selectors/members';
 
 export class MembersPage extends AdminPage {
     readonly newMemberButton: Locator;
@@ -12,11 +12,11 @@ export class MembersPage extends AdminPage {
         super(page);
         this.pageUrl = `/ghost/#/${route}`;
 
-        this.newMemberButton = page.getByRole('link', {name: 'New member'});
+        this.newMemberButton = page.getByRole('link', {name: newMemberLink});
 
         this.loadMoreButton = page.getByRole('button', {name: 'Load more'});
         this.membersListScrollRoot = page.getByTestId('members-list-scroll-root');
-        this.memberListItems = page.getByTestId(membersSelectors.testIds.listItem);
+        this.memberListItems = page.getByTestId(membersListItem);
     }
 
     async clickMemberByEmail(email: string): Promise<void> {
@@ -83,7 +83,7 @@ export class MembersPage extends AdminPage {
                 const rows = Array.from(document.querySelectorAll(`[data-testid="${listItemTestId}"]`));
 
                 return rows.some(row => Number(row.getAttribute('data-index') || '-1') > previousMaxIndex);
-            }, {previousMaxIndex: maxRenderedIndex, listItemTestId: membersSelectors.testIds.listItem});
+            }, {previousMaxIndex: maxRenderedIndex, listItemTestId: membersListItem});
             maxRenderedIndex = await this.getMaxRenderedIndex();
         }
 
