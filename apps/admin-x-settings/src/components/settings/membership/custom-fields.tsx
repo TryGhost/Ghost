@@ -3,7 +3,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useFeatureFlag from '../../../hooks/use-feature-flag';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button, Icon} from '@tryghost/admin-x-design-system';
 import {useBrowseMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {withErrorBoundary} from '../../error-boundary';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -41,8 +41,8 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
                                     type='button'
                                     onClick={() => openModal(field)}
                                 >
-                                    <div className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-grey-100 text-[1.5rem] font-semibold dark:bg-grey-900'>
-                                        {userType.iconText}
+                                    <div className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-grey-100 dark:bg-grey-900'>
+                                        <Icon name={userType.icon} size={18} />
                                     </div>
                                     <div className='min-w-0 grow'>
                                         <div className='truncate leading-tight font-semibold'>{field.name}</div>

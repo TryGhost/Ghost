@@ -24,9 +24,10 @@ export type MemberCustomField = {
 export type MemberCustomFieldUserType = {
     id: FieldType;
     label: string;
-    // The literal glyph shown in icon tiles (future types may need real icons;
-    // keep this a plain string so apps decide how to render it)
-    iconText: string;
+    // Icon name, resolved by the rendering app's icon set (today that's the
+    // admin-x-design-system set in Settings — the only surface showing type
+    // icons). A name rather than a component keeps this catalog render-free.
+    icon: string;
     // Which control collects/edits a value of this type
     input: 'text' | 'textarea' | 'address';
 };
@@ -35,9 +36,9 @@ export type MemberCustomFieldUserType = {
 // Record<FieldType, ...> annotation keeps this exhaustive: adding a field type
 // upstream fails to compile here until it has a presentation.
 const fieldTypePresentation: Record<FieldType, Omit<MemberCustomFieldUserType, 'id'>> = {
-    short_text: {label: 'Short text', iconText: 'Aa', input: 'text'},
-    long_text: {label: 'Long text', iconText: '¶', input: 'textarea'},
-    address: {label: 'Address', iconText: 'St', input: 'address'}
+    short_text: {label: 'Short text', icon: 'aa', input: 'text'},
+    long_text: {label: 'Long text', icon: 'long-text', input: 'textarea'},
+    address: {label: 'Address', icon: 'map-pin', input: 'address'}
 };
 
 // The catalog in the shared catalog's declared order, so every admin surface
