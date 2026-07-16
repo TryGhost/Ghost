@@ -122,8 +122,13 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
             testId='custom-field-modal'
             title={isEdit ? 'Edit custom field' : 'New custom field'}
             onOk={async () => {
-                if (await handleSave()) {
-                    modal.remove();
+                try {
+                    if (await handleSave()) {
+                        modal.remove();
+                    }
+                } catch {
+                    // useForm has already passed the error to onSaveError, which
+                    // renders field validation or reports an unexpected failure.
                 }
             }}
         >

@@ -234,12 +234,13 @@ export interface EndpointCapture {
 
 // A named non-`unknown` union: `unknown | fn` collapses to `unknown` and the
 // function form's parameter would lose contextual typing.
-export type FakeAdminEndpointResponse = object | unknown[] | null | ((request: CapturedEndpointRequest) => unknown);
+type FakeAdminEndpointResponseBody = object | unknown[] | null;
+export type FakeAdminEndpointResponse = FakeAdminEndpointResponseBody | ((request: CapturedEndpointRequest) => unknown);
 
 /**
  * Fake one admin API endpoint that has no resource fake. `apiPath` is
  * relative to /ghost/api/admin (string = exact including the query, RegExp =
- * test). `response` may be a function of the captured request —
+ * test). `response` may be a synchronous or async function of the captured request —
  * `({body}) => body` echoes. Returns a capture of every matched request.
  * Prefer `defineResource` for browse endpoints.
  */
@@ -269,8 +270,8 @@ export function fakeAdminEndpoint(
         const captured: CapturedEndpointRequest = { url: request.url, body };
         requests.push(captured);
 
-        const responseBody =
-            typeof response === "function" ? (response as (request: CapturedEndpointRequest) => unknown)(captured) : response;
+        const responseBody: unknown =
+            typeof response === "function" ? await response(captured) : response;
 
         return HttpResponse.json(responseBody as Record<string, unknown>, { status });
     });
