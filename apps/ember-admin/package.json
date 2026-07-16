@@ -172,6 +172,7 @@
         "*.js": "eslint"
     },
     "dependencies": {
+        "dompurify": "catalog:",
         "lodash": "catalog:",
         "path-browserify": "1.0.1",
         "webpack": "5.105.4"
