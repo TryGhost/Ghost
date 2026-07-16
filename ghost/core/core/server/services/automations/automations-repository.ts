@@ -24,11 +24,18 @@ export interface WaitAction {
     };
 }
 
+export interface AutomationEmailTopLink {
+    url: string;
+    clicked_count: number;
+}
+
 export interface AutomationEmailStats {
     email_sent_count: number;
     email_opened_count: number;
+    email_clicked_count: number;
     opened_rate: number | null;
     clicked_rate: number | null;
+    top_links: AutomationEmailTopLink[];
 }
 
 export interface SendEmailAction {

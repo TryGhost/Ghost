@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const LinkRedirect = require('./link-redirect');
 const ObjectID = require('bson-objectid').default;
 const debug = require('@tryghost/debug')('LinkRedirectRepository');
@@ -42,14 +43,19 @@ module.exports = class LinkRedirectRepository {
     /**
      * Save a new LinkRedirect to the DB
      * @param {InstanceType<LinkRedirect>} linkRedirect
+     * @param {{automationActionId?: string}} [options]
      * @returns {Promise<void>}
      */
-    async save(linkRedirect) {
+    async save(linkRedirect, options = {}) {
         debug('Saving link redirect', linkRedirect.from.pathname, '->', linkRedirect.to.href);
         const model = await this.#LinkRedirect.add({
             // Only store the pathname (no support for variable query strings)
             from: this.stripSubdirectoryFromPath(linkRedirect.from.pathname),
-            to: linkRedirect.to.href
+            to: linkRedirect.to.href,
+            ...(options.automationActionId ? {
+                automation_action_id: options.automationActionId,
+                automation_to_hash: this.#getAutomationToHash(linkRedirect.to)
+            } : {})
         }, {});
 
         linkRedirect.link_id = ObjectID.createFromHexString(model.id);
@@ -178,6 +184,32 @@ module.exports = class LinkRedirectRepository {
             }
             return linkRedirect;
         }
+    }
+
+    /**
+     * Get an automation LinkRedirect by action and destination URL
+     * @param {string} automationActionId
+     * @param {URL} url
+     * @returns {Promise<InstanceType<LinkRedirect>|undefined>} LinkRedirect
+     */
+    async getByAutomationActionAndURL(automationActionId, url) {
+        const linkRedirectModel = await this.#LinkRedirect.findOne({
+            automation_action_id: automationActionId,
+            automation_to_hash: this.#getAutomationToHash(url)
+        }, {});
+
+        if (linkRedirectModel) {
+            return this.fromModel(linkRedirectModel);
+        }
+    }
+
+    /**
+     * The `to` column is too long to index, so unique lookups go through a hash of it
+     * @param {URL} url
+     * @returns {string}
+     */
+    #getAutomationToHash(url) {
+        return crypto.createHash('sha256').update(url.href).digest('hex');
     }
 
     /**

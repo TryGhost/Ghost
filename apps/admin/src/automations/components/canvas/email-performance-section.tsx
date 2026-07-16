@@ -1,9 +1,11 @@
 import React from 'react';
-import {ChartContainer, Separator} from '@tryghost/shade/components';
+import {ChartContainer, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Separator} from '@tryghost/shade/components';
 import type {ChartConfig} from '@tryghost/shade/components';
 import type {AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
-import {Recharts, formatNumber} from '@tryghost/shade/utils';
+import {LucideIcon, Recharts, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {formatRate} from './format-stats';
+
+const MAX_TOP_LINKS = 10;
 
 const EMAIL_PERFORMANCE_CHART_CONFIG = {
     value: {label: 'Rate'}
@@ -63,7 +65,7 @@ const EMAIL_CHART_RINGS = {
     clicked: {innerRadius: 38, outerRadius: 60}
 };
 
-const EmailPerformanceChart: React.FC<{openRate: number}> = ({openRate}) => (
+const EmailPerformanceChart: React.FC<{openRate: number; clickRate: number}> = ({openRate, clickRate}) => (
     <div className='relative mx-auto aspect-square size-[240px]'>
         <EmailPerformanceRing
             color='purple'
@@ -79,16 +81,66 @@ const EmailPerformanceChart: React.FC<{openRate: number}> = ({openRate}) => (
             outerRadius={EMAIL_CHART_RINGS.opened.outerRadius}
             value={openRate}
         />
-        {/* @TODO: NY-1457 */}
-        {/* <EmailPerformanceRing
+        <EmailPerformanceRing
             color='teal'
             datatype='Clicked'
             innerRadius={EMAIL_CHART_RINGS.clicked.innerRadius}
             outerRadius={EMAIL_CHART_RINGS.clicked.outerRadius}
             value={clickRate}
-        /> */}
+        />
     </div>
 );
+
+const TopClickedLinks: React.FC<{stats: AutomationEmailStats}> = ({stats}) => {
+    if (stats.email_sent_count === 0) {
+        return (
+            <div className='py-8 text-center text-sm text-muted-foreground'>
+                Click stats will appear after this email has been sent.
+            </div>
+        );
+    }
+
+    if (stats.top_links.length === 0) {
+        return (
+            <div className='py-8 text-center text-sm text-muted-foreground'>
+                No links in this email.
+            </div>
+        );
+    }
+
+    return (
+        <DataList>
+            <DataListBody>
+                {stats.top_links.slice(0, MAX_TOP_LINKS).map((link) => {
+                    const percentage = stats.email_clicked_count > 0 ? link.clicked_count / stats.email_clicked_count : 0;
+                    return (
+                        <DataListRow key={link.url}>
+                            <DataListBar style={{width: `${Math.round(percentage * 100)}%`}} />
+                            <DataListItemContent>
+                                <div className='flex items-center space-x-2 overflow-hidden'>
+                                    <LucideIcon.Link className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />
+                                    <a
+                                        className='block truncate font-medium hover:underline'
+                                        href={link.url}
+                                        rel='noreferrer'
+                                        target='_blank'
+                                        title={link.url}
+                                    >
+                                        {link.url.replace(/^https?:\/\//, '')}
+                                    </a>
+                                </div>
+                            </DataListItemContent>
+                            <DataListItemValue>
+                                <DataListItemValueAbs>{formatNumber(link.clicked_count)}</DataListItemValueAbs>
+                                <DataListItemValuePerc>{formatPercentage(percentage)}</DataListItemValuePerc>
+                            </DataListItemValue>
+                        </DataListRow>
+                    );
+                })}
+            </DataListBody>
+        </DataList>
+    );
+};
 
 const KPI_CLASS_NAME = 'group/kpi -mx-2 -my-1 flex flex-col gap-0.5 rounded-md px-2 py-1 transition-colors hover:bg-muted';
 
@@ -117,22 +169,26 @@ export const EmailPerformanceSection: React.FC<{stats: AutomationEmailStats}> = 
                         <span className='hidden group-hover/kpi:inline'>{stats.email_sent_count > 0 ? formatNumber(stats.email_opened_count) : '--'}</span>
                     </span>
                 </div>
-                {/* @TODO: NY-1457 */}
-                {/* <div className={KPI_CLASS_NAME}>
+                <div className={KPI_CLASS_NAME}>
                     <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
                         <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-teal)'}} />
                         Clicked
                     </span>
-                    <span className='text-xl font-semibold tracking-tight tabular-nums'>{formatRate(stats.clicked_rate)}</span>
-                </div> */}
+                    <span className='text-xl font-semibold tracking-tight tabular-nums'>
+                        <span className='group-hover/kpi:hidden'>{formatRate(stats.clicked_rate)}</span>
+                        <span className='hidden group-hover/kpi:inline'>{stats.email_sent_count > 0 ? formatNumber(stats.email_clicked_count) : '--'}</span>
+                    </span>
+                </div>
             </div>
-            <EmailPerformanceChart openRate={(stats.opened_rate ?? 0) / 100} />
+            <EmailPerformanceChart clickRate={(stats.clicked_rate ?? 0) / 100} openRate={(stats.opened_rate ?? 0) / 100} />
         </div>
-        {/* @TODO: NY-1457 */}
-        {/* <Separator />
-        <div className='flex items-center justify-between'>
-            <span className='text-sm font-medium text-text-secondary'>Top clicked links</span>
-            <span className='text-sm font-medium text-muted-foreground'>Members</span>
-        </div> */}
+        <Separator />
+        <div className='flex flex-col gap-3'>
+            <div className='flex items-center justify-between'>
+                <span className='text-sm font-medium text-text-secondary'>Top clicked links</span>
+                <span className='text-sm font-medium text-muted-foreground'>Members</span>
+            </div>
+            <TopClickedLinks stats={stats} />
+        </div>
     </div>
 );

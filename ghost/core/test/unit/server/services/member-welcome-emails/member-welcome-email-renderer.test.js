@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const lexicalLib = require('../../../../../core/server/lib/lexical');
 const emailDesign = require('../../../../../core/server/services/email-rendering/email-design');
+const linkTracking = require('../../../../../core/server/services/link-tracking');
 const MemberWelcomeEmailRenderer = require('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
 
 describe('MemberWelcomeEmailRenderer', function () {
@@ -506,6 +507,108 @@ describe('MemberWelcomeEmailRenderer', function () {
             const $ = cheerio.load(result.html);
             assert($.text().includes('Gérer vos préférences'));
             assert(!$.text().includes('Manage your preferences'));
+        });
+
+        describe('click tracking', function () {
+            const memberUuid = '00000000-0000-4000-8000-000000000001';
+            let addAutomationTrackingToUrl;
+            let originalService;
+
+            beforeEach(function () {
+                sinon.stub(linkTracking, 'init').resolves();
+                addAutomationTrackingToUrl = sinon.stub().callsFake(async (url, automationActionId, uuid) => {
+                    const tracked = new URL('https://example.com/r/abc123');
+                    tracked.searchParams.set('m', uuid);
+                    return tracked;
+                });
+                originalService = linkTracking.service;
+                linkTracking.service = {addAutomationTrackingToUrl};
+            });
+
+            afterEach(function () {
+                linkTracking.service = originalService;
+            });
+
+            it('rewrites content links to tracked redirects when analytics is passed', async function () {
+                lexicalRenderStub.resolves('<p><a href="https://external.com/page">Link</a></p>');
+                const renderer = createRenderer();
+
+                const result = await renderer.render({
+                    lexical: '{}',
+                    subject: 'Welcome!',
+                    member: {name: 'John', email: 'john@example.com', uuid: memberUuid},
+                    siteSettings: defaultSiteSettings,
+                    analytics: {automationActionId: 'action-id'}
+                });
+
+                sinon.assert.calledWith(addAutomationTrackingToUrl, sinon.match((url) => {
+                    return url instanceof URL && url.href === 'https://external.com/page';
+                }), 'action-id', memberUuid);
+                assert(result.html.includes(`https://example.com/r/abc123?m=${memberUuid}`));
+            });
+
+            it('resolves relative links against the site URL before tracking them', async function () {
+                lexicalRenderStub.resolves('<p><a href="/about">About</a></p>');
+                const renderer = createRenderer();
+
+                await renderer.render({
+                    lexical: '{}',
+                    subject: 'Welcome!',
+                    member: {name: 'John', email: 'john@example.com', uuid: memberUuid},
+                    siteSettings: defaultSiteSettings,
+                    analytics: {automationActionId: 'action-id'}
+                });
+
+                sinon.assert.calledWith(addAutomationTrackingToUrl, sinon.match((url) => {
+                    return url instanceof URL && url.href === 'https://example.com/about';
+                }), 'action-id', memberUuid);
+            });
+
+            it('does not rewrite links when analytics is not passed', async function () {
+                lexicalRenderStub.resolves('<p><a href="https://external.com/page">Link</a></p>');
+                const renderer = createRenderer();
+
+                const result = await renderer.render({
+                    lexical: '{}',
+                    subject: 'Welcome!',
+                    member: {name: 'John', email: 'john@example.com', uuid: memberUuid},
+                    siteSettings: defaultSiteSettings
+                });
+
+                sinon.assert.notCalled(addAutomationTrackingToUrl);
+                assert(result.html.includes('https://external.com/page'));
+            });
+
+            it('does not rewrite links when the member has no uuid', async function () {
+                lexicalRenderStub.resolves('<p><a href="https://external.com/page">Link</a></p>');
+                const renderer = createRenderer();
+
+                await renderer.render({
+                    lexical: '{}',
+                    subject: 'Welcome!',
+                    member: {name: 'John', email: 'john@example.com'},
+                    siteSettings: defaultSiteSettings,
+                    analytics: {automationActionId: 'action-id'}
+                });
+
+                sinon.assert.notCalled(addAutomationTrackingToUrl);
+            });
+
+            it('skips placeholder and non-http links', async function () {
+                lexicalRenderStub.resolves('<p><a href="#">Placeholder</a> <a href="mailto:hi@example.com">Mail</a></p>');
+                const renderer = createRenderer();
+
+                const result = await renderer.render({
+                    lexical: '{}',
+                    subject: 'Welcome!',
+                    member: {name: 'John', email: 'john@example.com', uuid: memberUuid},
+                    siteSettings: defaultSiteSettings,
+                    analytics: {automationActionId: 'action-id'}
+                });
+
+                sinon.assert.notCalled(addAutomationTrackingToUrl);
+                assert(result.html.includes('mailto:hi@example.com'));
+            });
         });
 
         describe('design customization', function () {

@@ -121,6 +121,24 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('locked_at');
     });
 
+    await database.schema.createTable('redirects', (table) => {
+        table.text('id').primary();
+        table.text('from').notNullable();
+        table.text('to').notNullable();
+        table.text('automation_action_id').references('id').inTable('automation_actions');
+        table.text('automation_to_hash');
+        table.text('created_at').notNullable();
+        table.text('updated_at');
+        table.unique(['automation_action_id', 'automation_to_hash']);
+    });
+
+    await database.schema.createTable('members_click_events', (table) => {
+        table.text('id').primary();
+        table.text('member_id').notNullable();
+        table.text('redirect_id').notNullable().references('id').inTable('redirects');
+        table.text('created_at').notNullable();
+    });
+
     const freeAutomationId = id();
     const paidAutomationId = id();
     await database('email_design_settings').insert([{
@@ -683,8 +701,10 @@ describe('automations repository', function () {
             assert.deepEqual(action.stats, {
                 email_sent_count: 3,
                 email_opened_count: 0,
+                email_clicked_count: 0,
                 opened_rate: 0,
-                clicked_rate: null
+                clicked_rate: 0,
+                top_links: []
             });
         });
 
@@ -698,8 +718,10 @@ describe('automations repository', function () {
             assert.deepEqual(action.stats, {
                 email_sent_count: 0,
                 email_opened_count: 0,
+                email_clicked_count: 0,
                 opened_rate: null,
-                clicked_rate: null
+                clicked_rate: null,
+                top_links: []
             });
         });
 
@@ -725,8 +747,55 @@ describe('automations repository', function () {
             assert.deepEqual(action.stats, {
                 email_sent_count: 4,
                 email_opened_count: 3,
+                email_clicked_count: 0,
                 opened_rate: 75,
-                clicked_rate: null
+                clicked_rate: 0,
+                top_links: []
+            });
+        });
+
+        it('counts unique clicked members and lists top links including unclicked ones', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(emailAction);
+
+            const now = toDatabaseDate(new Date());
+            await knex('automation_action_revisions')
+                .where('action_id', emailAction.id)
+                .update({
+                    email_sent_count: 4,
+                    email_opened_count: 3
+                });
+            await knex('redirects').insert([
+                {id: 'redirect-1', from: '/r/aaa', to: 'https://example.com/a', automation_action_id: emailAction.id, automation_to_hash: 'hash-a', created_at: now},
+                {id: 'redirect-2', from: '/r/bbb', to: 'https://example.com/b', automation_action_id: emailAction.id, automation_to_hash: 'hash-b', created_at: now},
+                {id: 'redirect-3', from: '/r/ccc', to: 'https://example.com/c', automation_action_id: emailAction.id, automation_to_hash: 'hash-c', created_at: now}
+            ]);
+            await knex('members_click_events').insert([
+                {id: 'click-1', member_id: 'member-1', redirect_id: 'redirect-1', created_at: now},
+                {id: 'click-2', member_id: 'member-1', redirect_id: 'redirect-1', created_at: now},
+                {id: 'click-3', member_id: 'member-2', redirect_id: 'redirect-1', created_at: now},
+                {id: 'click-4', member_id: 'member-1', redirect_id: 'redirect-2', created_at: now}
+            ]);
+
+            const result = await repo.getById(automation.id);
+            assert(result);
+            const action = result.actions.find(candidate => candidate.id === emailAction.id);
+            assert(action);
+            if (action.type !== 'send_email') {
+                assert.fail('Expected a send_email action');
+            }
+            assert.deepEqual(action.stats, {
+                email_sent_count: 4,
+                email_opened_count: 3,
+                email_clicked_count: 2,
+                opened_rate: 75,
+                clicked_rate: 50,
+                top_links: [
+                    {url: 'https://example.com/a', clicked_count: 2},
+                    {url: 'https://example.com/b', clicked_count: 1},
+                    {url: 'https://example.com/c', clicked_count: 0}
+                ]
             });
         });
     });

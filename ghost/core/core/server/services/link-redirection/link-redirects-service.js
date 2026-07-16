@@ -6,9 +6,10 @@ const LinkRedirect = require('./link-redirect');
 /**
  * @typedef {object} ILinkRedirectRepository
  * @prop {(url: URL) => Promise<LinkRedirect|undefined>} getByURL
+ * @prop {(automationActionId: string, url: URL) => Promise<LinkRedirect|undefined>} getByAutomationActionAndURL
  * @prop {({filter: string}) => Promise<LinkRedirect[]>} getAll
  * @prop {({filter: string}) => Promise<String[]>} getFilteredIds
- * @prop {(linkRedirect: LinkRedirect) => Promise<void>} save
+ * @prop {(linkRedirect: LinkRedirect, options?: {automationActionId?: string}) => Promise<void>} save
  */
 
 // Placeholder pattern for member UUID in redirect destinations
@@ -18,6 +19,8 @@ const MEMBER_UUID_PLACEHOLDER = '%%{uuid}%%';
 // UUID pattern (8-4-4-4-12 hex format) for validating member UUIDs
 //   Ghost uses UUID v4; this regex is not that strict
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const isUniqueConstraintError = err => err?.code === 'ER_DUP_ENTRY' || err?.code?.startsWith?.('SQLITE_CONSTRAINT');
 
 class LinkRedirectsService {
     /** @type ILinkRedirectRepository */
@@ -71,18 +74,51 @@ class LinkRedirectsService {
     /**
      * @param {URL} from
      * @param {URL} to
+     * @param {{automationActionId?: string}} [options]
      *
      * @returns {Promise<LinkRedirect>}
      */
-    async addRedirect(from, to) {
+    async addRedirect(from, to, options = {}) {
         const link = new LinkRedirect({
             from,
             to
         });
 
-        await this.#linkRedirectRepository.save(link);
+        await this.#linkRedirectRepository.save(link, options);
 
         return link;
+    }
+
+    /**
+     * Get the shared redirect for a destination URL within an automation action,
+     * creating it on first use. Concurrent sends can race on the insert, so a
+     * unique-constraint failure falls back to reading the winning row.
+     * @param {string} automationActionId
+     * @param {URL} to
+     *
+     * @returns {Promise<LinkRedirect>}
+     */
+    async getOrAddAutomationRedirect(automationActionId, to) {
+        const existing = await this.#linkRedirectRepository.getByAutomationActionAndURL(automationActionId, to);
+        if (existing) {
+            return existing;
+        }
+
+        const from = await this.getSlugUrl();
+        try {
+            return await this.addRedirect(from, to, {automationActionId});
+        } catch (err) {
+            if (!isUniqueConstraintError(err)) {
+                throw err;
+            }
+
+            const retryExisting = await this.#linkRedirectRepository.getByAutomationActionAndURL(automationActionId, to);
+            if (retryExisting) {
+                return retryExisting;
+            }
+
+            throw err;
+        }
     }
 
     /**

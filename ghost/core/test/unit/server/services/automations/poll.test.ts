@@ -410,6 +410,32 @@ describe('automations poll', function () {
         }));
     });
 
+    it('passes click tracking analytics for the send when the setting is enabled', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_clicks').returns(true);
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({id: '<mailgun-message-id>'});
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            analytics: {automationActionId: step.action_id}
+        }));
+    });
+
+    it('does not pass click tracking analytics for the send when the setting is disabled', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_clicks').returns(false);
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({id: '<mailgun-message-id>'});
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            analytics: null
+        }));
+    });
+
     it('records the automated email recipient without a Mailgun message ID after an SMTP send', async function () {
         const step = buildEmailStep({
             automation_action_revision_id: 'revision-id'

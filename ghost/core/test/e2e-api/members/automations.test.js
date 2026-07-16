@@ -11,9 +11,41 @@ const membersService = require('../../../core/server/services/members');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const {cleanupAutomationsFixture, setupAutomationsFixture} = require('../../utils/automations-fixtures');
+const linkRedirection = require('../../../core/server/services/link-redirection');
+const RedirectEvent = require('../../../core/server/services/link-redirection/redirect-event');
 
 const HOUR_MS = 60 * 60 * 1000;
 const AUTOMATION_EMAIL_REPLY_TO = 'support@example.com';
+const AUTOMATION_EMAIL_LINK_URL = 'https://example.com/promo';
+
+const LINKED_EMAIL_LEXICAL = JSON.stringify({
+    root: {
+        children: [{
+            children: [{
+                children: [{detail: 0, format: 0, mode: 'normal', style: '', text: 'Claim your bonus', type: 'text', version: 1}],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'link',
+                version: 1,
+                rel: null,
+                target: null,
+                title: null,
+                url: AUTOMATION_EMAIL_LINK_URL
+            }],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1
+        }],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1
+    }
+});
 
 let agent;
 let schedulerKey;
@@ -263,6 +295,86 @@ describe('Members Automations', function () {
         await runAutomationForFreeMember(automation, secondEmail);
 
         assert.deepEqual(await getEmailSentCounts(sendEmailActions), [2, 2]);
+    });
+
+    it('rewrites automation email links to tracked redirects and records member clicks', async function () {
+        let automation = await getFreeMemberSignupAutomation();
+        const firstEmailAction = automation.actions.find(action => action.type === 'send_email');
+        assert(firstEmailAction);
+
+        automation = await updateAutomation(automation, {
+            actions: automation.actions.map((action) => {
+                const editableAction = serializeEditableAction(action);
+                if (action.id !== firstEmailAction.id) {
+                    return editableAction;
+                }
+                return {
+                    ...editableAction,
+                    data: {
+                        ...editableAction.data,
+                        email_lexical: LINKED_EMAIL_LEXICAL
+                    }
+                };
+            })
+        });
+
+        const email = `automation-clicks-member-${Date.now()}@test.example`;
+        await runAutomationForFreeMember(automation, email);
+
+        const sentEmails = getAutomationEmailSends();
+        const welcomeEmail = sentEmails.find(({subject}) => subject === 'Welcome!');
+        assert(welcomeEmail, 'Expected the welcome email to have been sent');
+
+        const trackedLinkMatch = welcomeEmail.html.match(/href="([^"]*\/r\/[0-9a-f]+\?m=[^"]+)"/);
+        assert(trackedLinkMatch, 'Expected the automation email to contain a tracked redirect link');
+        const trackedUrl = new URL(trackedLinkMatch[1].replace(/&amp;/g, '&'));
+        const memberUuid = trackedUrl.searchParams.get('m');
+        const member = await models.Member.findOne({email});
+        assert.equal(memberUuid, member.get('uuid'));
+
+        const redirectRow = await db.knex('redirects')
+            .where('automation_action_id', firstEmailAction.id)
+            .first();
+        assert(redirectRow, 'Expected a redirect linked to the send email action');
+        assert.equal(redirectRow.to, AUTOMATION_EMAIL_LINK_URL);
+
+        try {
+            // A second send of the same action reuses the same redirect
+            await runAutomationForFreeMember(automation, `automation-clicks-second-${Date.now()}@test.example`);
+            const redirectRows = await db.knex('redirects')
+                .where('automation_action_id', firstEmailAction.id);
+            assert.equal(redirectRows.length, 1);
+
+            // Simulate the member clicking the tracked link: resolve the redirect the way
+            // GET /r/:slug does and dispatch the same event it dispatches
+            const link = await linkRedirection.linkRedirectRepository.getByURL(trackedUrl);
+            assert(link, 'Expected the tracked URL to resolve to a redirect');
+            assert.equal(link.to.href, `${AUTOMATION_EMAIL_LINK_URL}`);
+            DomainEvents.dispatch(RedirectEvent.create({url: trackedUrl, link}));
+            await DomainEvents.allSettled();
+
+            const clickRows = await db.knex('members_click_events')
+                .where('redirect_id', redirectRow.id);
+            assert.equal(clickRows.length, 1);
+            assert.equal(clickRows[0].member_id, member.id);
+
+            const refreshedAutomation = await getFreeMemberSignupAutomation();
+            const actionWithStats = refreshedAutomation.actions.find(action => action.id === firstEmailAction.id);
+            assert.equal(actionWithStats.stats.email_sent_count, 2);
+            assert.equal(actionWithStats.stats.email_clicked_count, 1);
+            assert.equal(actionWithStats.stats.clicked_rate, 50);
+            assert.deepEqual(actionWithStats.stats.top_links, [{
+                url: AUTOMATION_EMAIL_LINK_URL,
+                clicked_count: 1
+            }]);
+        } finally {
+            await db.knex('members_click_events')
+                .where('redirect_id', redirectRow.id)
+                .del();
+            await db.knex('redirects')
+                .where('id', redirectRow.id)
+                .del();
+        }
     });
 
     it('does nothing when the automation is inactive', async function () {

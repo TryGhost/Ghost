@@ -20,11 +20,18 @@ export type AutomationWaitAction = {
     };
 }
 
+export type AutomationEmailTopLink = {
+    url: string;
+    clicked_count: number;
+}
+
 export type AutomationEmailStats = {
     email_sent_count: number;
     email_opened_count: number;
+    email_clicked_count: number;
     opened_rate: number | null;
     clicked_rate: number | null;
+    top_links: readonly AutomationEmailTopLink[];
 }
 
 export type AutomationSendEmailAction = {

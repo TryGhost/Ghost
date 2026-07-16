@@ -65,6 +65,96 @@ describe('LinkRedirectsService', function () {
         });
     });
 
+    describe('getOrAddAutomationRedirect', function () {
+        it('returns an existing redirect if present', async function () {
+            const existing = {
+                from: new URL('https://localhost:2368/r/existing'),
+                to: new URL('https://example.com')
+            };
+            const linkRedirectRepository = {
+                getByAutomationActionAndURL: sinon.stub().resolves(existing),
+                getByURL: sinon.stub(),
+                save: sinon.stub()
+            };
+            const instance = new LinkRedirectsService({
+                linkRedirectRepository,
+                config: {
+                    baseURL: new URL('https://localhost:2368/')
+                }
+            });
+
+            const result = await instance.getOrAddAutomationRedirect('action-id', new URL('https://example.com'));
+
+            assert.equal(result, existing);
+            sinon.assert.notCalled(linkRedirectRepository.save);
+        });
+
+        it('creates a redirect with the automation action when none exists', async function () {
+            const linkRedirectRepository = {
+                getByAutomationActionAndURL: sinon.stub().resolves(undefined),
+                getByURL: sinon.stub().resolves(undefined),
+                save: sinon.stub().resolves()
+            };
+            const instance = new LinkRedirectsService({
+                linkRedirectRepository,
+                config: {
+                    baseURL: new URL('https://localhost:2368/')
+                }
+            });
+
+            const result = await instance.getOrAddAutomationRedirect('action-id', new URL('https://example.com'));
+
+            assert.equal(result.to.href, 'https://example.com/');
+            assert.match(result.from.pathname, /^\/r\/[0-9a-f]{8}$/);
+            sinon.assert.calledOnceWithExactly(linkRedirectRepository.save, result, {automationActionId: 'action-id'});
+        });
+
+        it('retries lookup after a concurrent unique constraint failure', async function () {
+            const existing = {
+                from: new URL('https://localhost:2368/r/existing'),
+                to: new URL('https://example.com')
+            };
+            const linkRedirectRepository = {
+                getByAutomationActionAndURL: sinon.stub()
+                    .onFirstCall().resolves(undefined)
+                    .onSecondCall().resolves(existing),
+                getByURL: sinon.stub().resolves(undefined),
+                save: sinon.stub().rejects(Object.assign(new Error('duplicate'), {code: 'ER_DUP_ENTRY'}))
+            };
+            const instance = new LinkRedirectsService({
+                linkRedirectRepository,
+                config: {
+                    baseURL: new URL('https://localhost:2368/')
+                }
+            });
+
+            const result = await instance.getOrAddAutomationRedirect('action-id', new URL('https://example.com'));
+
+            assert.equal(result, existing);
+            sinon.assert.calledTwice(linkRedirectRepository.getByAutomationActionAndURL);
+        });
+
+        it('rethrows non-constraint save errors', async function () {
+            const linkRedirectRepository = {
+                getByAutomationActionAndURL: sinon.stub().resolves(undefined),
+                getByURL: sinon.stub().resolves(undefined),
+                save: sinon.stub().rejects(new Error('database offline'))
+            };
+            const instance = new LinkRedirectsService({
+                linkRedirectRepository,
+                config: {
+                    baseURL: new URL('https://localhost:2368/')
+                }
+            });
+
+            await assert.rejects(
+                instance.getOrAddAutomationRedirect('action-id', new URL('https://example.com')),
+                /database offline/
+            );
+            sinon.assert.calledOnce(linkRedirectRepository.getByAutomationActionAndURL);
+        });
+    });
+
     describe('relativeRedirectPrefix', function () {
         it('returns relative path without subdirectory for Express routing', function () {
             const instance = new LinkRedirectsService({

@@ -258,6 +258,106 @@ describe('Automations API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('returns click stats and top links for send_email actions', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+            const automationId = browseBody.automations[0].id;
+
+            const {body: readBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+            const emailAction = readBody.automations[0].actions.find(action => action.type === 'send_email');
+
+            const now = new Date();
+            const memberIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+            const redirectIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+            const clickEventIds = [ObjectId().toHexString(), ObjectId().toHexString(), ObjectId().toHexString()];
+
+            try {
+                await models.Base.knex('automation_action_revisions')
+                    .where('action_id', emailAction.id)
+                    .update({email_sent_count: 4, email_opened_count: 3});
+
+                await models.Base.knex('members').insert(memberIds.map((memberId, index) => ({
+                    id: memberId,
+                    uuid: `00000000-0000-4000-8000-00000000010${index}`,
+                    transient_id: `transient-${memberId}`,
+                    email: `automation-clicks-${index}@example.com`,
+                    status: 'free',
+                    name: `Clicks Member ${index}`,
+                    created_at: now
+                })));
+
+                await models.Base.knex('redirects').insert([{
+                    id: redirectIds[0],
+                    from: '/r/automation-clicks-a',
+                    to: 'https://example.com/a',
+                    automation_action_id: emailAction.id,
+                    automation_to_hash: 'automation-clicks-hash-a',
+                    created_at: now
+                }, {
+                    id: redirectIds[1],
+                    from: '/r/automation-clicks-b',
+                    to: 'https://example.com/b',
+                    automation_action_id: emailAction.id,
+                    automation_to_hash: 'automation-clicks-hash-b',
+                    created_at: now
+                }]);
+
+                await models.Base.knex('members_click_events').insert([{
+                    id: clickEventIds[0],
+                    member_id: memberIds[0],
+                    redirect_id: redirectIds[0],
+                    created_at: now
+                }, {
+                    id: clickEventIds[1],
+                    member_id: memberIds[1],
+                    redirect_id: redirectIds[0],
+                    created_at: now
+                }, {
+                    id: clickEventIds[2],
+                    member_id: memberIds[0],
+                    redirect_id: redirectIds[1],
+                    created_at: now
+                }]);
+
+                const {body} = await agent
+                    .get(`automations/${automationId}`)
+                    .expectStatus(200)
+                    .expect(cacheInvalidateHeaderNotSet());
+
+                const actionWithStats = body.automations[0].actions.find(action => action.id === emailAction.id);
+                assert.deepEqual(actionWithStats.stats, {
+                    email_sent_count: 4,
+                    email_opened_count: 3,
+                    email_clicked_count: 2,
+                    opened_rate: 75,
+                    clicked_rate: 50,
+                    top_links: [{
+                        url: 'https://example.com/a',
+                        clicked_count: 2
+                    }, {
+                        url: 'https://example.com/b',
+                        clicked_count: 1
+                    }]
+                });
+            } finally {
+                await models.Base.knex('members_click_events')
+                    .whereIn('id', clickEventIds)
+                    .del();
+                await models.Base.knex('redirects')
+                    .whereIn('id', redirectIds)
+                    .del();
+                await models.Base.knex('members')
+                    .whereIn('id', memberIds)
+                    .del();
+                await models.Base.knex('automation_action_revisions')
+                    .where('action_id', emailAction.id)
+                    .update({email_sent_count: null, email_opened_count: null});
+            }
+        });
     });
 
     describe('email preview', function () {

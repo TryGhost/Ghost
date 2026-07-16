@@ -59,8 +59,10 @@ class DataGenerator {
             table.dependencies = Object.entries(this.schemaTables[table.name]).reduce((acc, [_col, data]) => {
                 if (data.references) {
                     const referencedTable = data.references.split('.')[0];
-                    // The ghost_subscriptions_id property has a foreign key to the subscriptions table, but we don't use that table yet atm, so don't add it as a dependency
-                    if (!acc.includes(referencedTable) && referencedTable !== 'subscriptions') {
+                    // Referenced tables without an importer can't be dependencies:
+                    // subscriptions isn't used yet, and the automation tables have no seeder
+                    const tablesWithoutImporters = ['subscriptions', 'automation_actions'];
+                    if (!acc.includes(referencedTable) && !tablesWithoutImporters.includes(referencedTable)) {
                         acc.push(referencedTable);
                     }
                 }

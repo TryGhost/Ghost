@@ -233,6 +233,20 @@ class LinkClickTrackingService {
         return url;
     }
 
+    /**
+     * Add tracking to a URL in an automation email, reusing the action's shared redirect for this destination
+     * @param {URL} url
+     * @param {string} automationActionId
+     * @param {string} memberUuid
+     * @return {Promise<URL>}
+     */
+    async addAutomationTrackingToUrl(url, automationActionId, memberUuid) {
+        const redirect = await this.#linkRedirectService.getOrAddAutomationRedirect(automationActionId, url);
+        const trackedUrl = new URL(redirect.from.href);
+        trackedUrl.searchParams.set('m', memberUuid);
+        return trackedUrl;
+    }
+
     subscribe() {
         this.#DomainEvents.subscribe(RedirectEvent, async (event) => {
             const uuid = event.data.url.searchParams.get('m');

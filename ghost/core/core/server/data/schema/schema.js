@@ -1044,8 +1044,13 @@ module.exports = {
         from: {type: 'string', maxlength: 191, nullable: false, index: true},
         to: {type: 'string', maxlength: 2000, nullable: false},
         post_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'posts.id', setNullDelete: true},
+        automation_action_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'automation_actions.id', setNullDelete: true},
+        automation_to_hash: {type: 'string', maxlength: 64, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['automation_action_id', 'automation_to_hash']
+        ]
     },
     members_click_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

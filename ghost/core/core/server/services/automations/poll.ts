@@ -26,6 +26,9 @@ type MemberWelcomeEmailService = {
             };
             memberStatus: 'free' | 'paid';
             trackOpens: boolean;
+            analytics?: null | {
+                automationActionId: string;
+            };
         }) => Promise<unknown>;
     };
 };
@@ -186,6 +189,7 @@ const processStep = async ({
             }
             memberWelcomeEmailService.init();
             const trackOpens = Boolean(settingsCache.get('email_track_opens'));
+            const trackClicks = Boolean(settingsCache.get('email_track_clicks'));
             const sendResult = await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
                     designSettingId: step.email_design_setting_id,
@@ -198,7 +202,8 @@ const processStep = async ({
                     uuid: member.get('uuid')
                 },
                 memberStatus,
-                trackOpens
+                trackOpens,
+                analytics: trackClicks ? {automationActionId: step.action_id} : null
             });
             const mailgunMessageId = getMailgunMessageId(sendResult);
             // Only Mailgun sends can produce open events for automation emails

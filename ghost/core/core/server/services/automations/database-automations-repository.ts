@@ -11,6 +11,7 @@ import type {
     AutomationAction,
     AutomationEdge,
     AutomationEmailStats,
+    AutomationEmailTopLink,
     AutomationSummary,
     AutomationStepTerminalStatus,
     AutomationStepToRun,
@@ -66,6 +67,17 @@ type ActionStatsRow = {
     action_id: string;
     email_sent_count: number | null;
     email_opened_count: number | null;
+};
+
+type ActionClickStatsRow = {
+    automation_action_id: string;
+    clicked_count: number | string | null;
+};
+
+type ActionTopLinkRow = {
+    automation_action_id: string;
+    url: string;
+    clicked_count: number | string | null;
 };
 
 type ActionRevisionRow = {
@@ -1148,7 +1160,7 @@ async function loadActionStats(
         return new Map();
     }
 
-    const rows: ActionStatsRow[] = await trx('automation_action_revisions')
+    const revisionRows: ActionStatsRow[] = await trx('automation_action_revisions')
         .select('action_id')
         .sum({
             email_sent_count: 'email_sent_count',
@@ -1157,7 +1169,53 @@ async function loadActionStats(
         .whereIn('action_id', actionIds)
         .groupBy('action_id');
 
-    return new Map(rows.map(row => [row.action_id, buildEmailStats(row)]));
+    // Clicked counts unique members, matching newsletter click analytics
+    const clickRows: ActionClickStatsRow[] = await trx('redirects')
+        .select('redirects.automation_action_id')
+        .countDistinct({clicked_count: 'members_click_events.member_id'})
+        .join('members_click_events', 'members_click_events.redirect_id', 'redirects.id')
+        .whereIn('redirects.automation_action_id', actionIds)
+        .groupBy('redirects.automation_action_id');
+
+    // Left join so links that were sent but never clicked still appear with a 0 count
+    const topLinkRows = await trx('redirects')
+        .select('redirects.automation_action_id', 'redirects.to as url')
+        .countDistinct({clicked_count: 'members_click_events.member_id'})
+        .leftJoin('members_click_events', 'members_click_events.redirect_id', 'redirects.id')
+        .whereIn('redirects.automation_action_id', actionIds)
+        .groupBy('redirects.automation_action_id', 'redirects.to')
+        .orderBy([
+            {column: 'clicked_count', order: 'desc'},
+            {column: 'url', order: 'asc'}
+        ]) as unknown as ActionTopLinkRow[];
+
+    const revisionByAction = new Map(revisionRows.map(row => [row.action_id, row]));
+    const clickedByAction = new Map(clickRows.map(row => [row.automation_action_id, Number(row.clicked_count ?? 0)]));
+    const topLinksByAction = new Map<string, AutomationEmailTopLink[]>();
+    for (const row of topLinkRows) {
+        const links = topLinksByAction.get(row.automation_action_id) ?? [];
+        links.push({
+            url: row.url,
+            clicked_count: Number(row.clicked_count ?? 0)
+        });
+        topLinksByAction.set(row.automation_action_id, links);
+    }
+
+    const statsByAction = new Map<string, AutomationEmailStats>();
+    const actionIdsWithData = new Set([
+        ...revisionByAction.keys(),
+        ...clickedByAction.keys(),
+        ...topLinksByAction.keys()
+    ]);
+    for (const actionId of actionIdsWithData) {
+        statsByAction.set(actionId, buildEmailStats(
+            revisionByAction.get(actionId),
+            clickedByAction.get(actionId) ?? 0,
+            topLinksByAction.get(actionId) ?? []
+        ));
+    }
+
+    return statsByAction;
 }
 
 async function loadEdgeRows(trx: Knex.Transaction, automationId: string): Promise<EdgeRow[]> {
@@ -1208,21 +1266,30 @@ function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null):
 const EMPTY_EMAIL_STATS: AutomationEmailStats = {
     email_sent_count: 0,
     email_opened_count: 0,
+    email_clicked_count: 0,
     opened_rate: null,
-    clicked_rate: null
+    clicked_rate: null,
+    top_links: []
 };
 
-function buildEmailStats(row: ActionStatsRow): AutomationEmailStats {
-    const emailSentCount = row.email_sent_count ?? 0;
-    const emailOpenedCount = row.email_opened_count ?? 0;
+function buildEmailStats(
+    row: ActionStatsRow | undefined,
+    clickedCount: number,
+    topLinks: AutomationEmailTopLink[]
+): AutomationEmailStats {
+    const emailSentCount = Number(row?.email_sent_count ?? 0);
+    const emailOpenedCount = Number(row?.email_opened_count ?? 0);
     return {
         email_sent_count: emailSentCount,
         email_opened_count: emailOpenedCount,
+        email_clicked_count: clickedCount,
         opened_rate: emailSentCount
             ? Math.round(emailOpenedCount / emailSentCount * 100)
             : null,
-        // TODO(NY-1387) Populate clicked_rate once click tracking is implemented.
-        clicked_rate: null
+        clicked_rate: emailSentCount
+            ? Math.round(clickedCount / emailSentCount * 100)
+            : null,
+        top_links: topLinks
     };
 }
 

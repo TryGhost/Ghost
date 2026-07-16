@@ -393,8 +393,13 @@ describe('AutomationEditor', () => {
                             stats: {
                                 email_sent_count: 1247,
                                 email_opened_count: 780,
+                                email_clicked_count: 324,
                                 opened_rate: 65,
-                                clicked_rate: null
+                                clicked_rate: 26,
+                                top_links: [
+                                    {url: 'https://example.com/pricing', clicked_count: 200},
+                                    {url: 'https://example.com/about', clicked_count: 124}
+                                ]
                             }
                         }
                         : action))
@@ -414,8 +419,7 @@ describe('AutomationEditor', () => {
         const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
         expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('1,247');
         expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('65%');
-        // @TODO: NY-1457 — Clicked is deferred until click data is available
-        expect(within(emailStep).queryByText('Clicked')).not.toBeInTheDocument();
+        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('26%');
     });
 
     it('does not render send-email node stats when the action has no stats', () => {
@@ -444,8 +448,10 @@ describe('AutomationEditor', () => {
                             stats: {
                                 email_sent_count: 0,
                                 email_opened_count: 0,
+                                email_clicked_count: 0,
                                 opened_rate: null,
-                                clicked_rate: null
+                                clicked_rate: null,
+                                top_links: []
                             }
                         }
                         : action))
@@ -460,6 +466,112 @@ describe('AutomationEditor', () => {
         const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
         expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('0');
         expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('--');
+        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('--');
+    });
+
+    it('shows top clicked links with counts in the send-email sidebar', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockUseReadAutomation.mockReturnValue({
+            data: {
+                automations: [{
+                    ...automationDetail,
+                    actions: automationDetail.actions.map(action => (action.type === 'send_email'
+                        ? {
+                            ...action,
+                            stats: {
+                                email_sent_count: 1247,
+                                email_opened_count: 780,
+                                email_clicked_count: 324,
+                                opened_rate: 65,
+                                clicked_rate: 26,
+                                top_links: [
+                                    {url: 'https://example.com/pricing', clicked_count: 200},
+                                    {url: 'https://example.com/about', clicked_count: 0}
+                                ]
+                            }
+                        }
+                        : action))
+                }]
+            },
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByText('Top clicked links')).toBeInTheDocument();
+        expect(within(sidebar).getByRole('link', {name: /example\.com\/pricing/})).toHaveAttribute('href', 'https://example.com/pricing');
+        expect(within(sidebar).getByText('200')).toBeInTheDocument();
+        expect(within(sidebar).getByRole('link', {name: /example\.com\/about/})).toBeInTheDocument();
+    });
+
+    it('explains that the email has no links when sends exist but no redirects were created', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockUseReadAutomation.mockReturnValue({
+            data: {
+                automations: [{
+                    ...automationDetail,
+                    actions: automationDetail.actions.map(action => (action.type === 'send_email'
+                        ? {
+                            ...action,
+                            stats: {
+                                email_sent_count: 10,
+                                email_opened_count: 5,
+                                email_clicked_count: 0,
+                                opened_rate: 50,
+                                clicked_rate: 0,
+                                top_links: []
+                            }
+                        }
+                        : action))
+                }]
+            },
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByText('No links in this email.')).toBeInTheDocument();
+    });
+
+    it('explains that click stats arrive after sending when nothing has been sent', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockUseReadAutomation.mockReturnValue({
+            data: {
+                automations: [{
+                    ...automationDetail,
+                    actions: automationDetail.actions.map(action => (action.type === 'send_email'
+                        ? {
+                            ...action,
+                            stats: {
+                                email_sent_count: 0,
+                                email_opened_count: 0,
+                                email_clicked_count: 0,
+                                opened_rate: null,
+                                clicked_rate: null,
+                                top_links: []
+                            }
+                        }
+                        : action))
+                }]
+            },
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByText('Click stats will appear after this email has been sent.')).toBeInTheDocument();
     });
 
     it('renders styled canvas zoom controls without the interaction toggle', () => {
