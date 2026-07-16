@@ -53,7 +53,10 @@ export class SidebarPage extends AdminPage {
 
     constructor(page: Page) {
         super(page);
-        this.sidebar = page.getByRole('navigation');
+        // The admin renders more than one navigation landmark (React screens
+        // carry a breadcrumb <nav aria-label="breadcrumb"> too), so anchor on
+        // the site search control, which only the sidebar contains.
+        this.sidebar = page.getByRole('navigation').filter({has: page.getByRole('button', {name: /Search site/})});
         this.postsToggle = this.sidebar.getByRole('button', {name: sidebarSel.postsToggle});
         this.userDropdownTrigger = page.getByRole('button', {name: sidebarSel.userMenuTrigger});
         this.appearanceMenuItem = page.getByRole('menuitem', {name: sidebarSel.appearanceMenuItem});

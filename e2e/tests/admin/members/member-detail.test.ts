@@ -1,4 +1,4 @@
-import {MemberDetailsPage} from '@/admin-pages';
+import {MemberDetailsPage, SidebarPage} from '@/admin-pages';
 import {MemberFactory, createMemberFactory} from '@/data-factory';
 import {Page} from '@playwright/test';
 import {expect, test} from '@/helpers/playwright';
@@ -309,6 +309,22 @@ for (const {implementation, memberDetailsReact} of [
             await page.goto(memberPath(member.id));
             await memberDetailsPage.nameInput.fill('Grace B. Hopper');
             await memberDetailsPage.membersBackLink.click();
+
+            await expect(memberDetailsPage.confirmLeaveButton).toBeVisible();
+            await memberDetailsPage.confirmLeaveButton.click();
+            await expect(page).toHaveURL(/#\/members$/);
+        });
+
+        test('leaving with unsaved changes via the sidebar - warns before navigating away', async ({page}) => {
+            // The sidebar navigates with native hash anchors rather than
+            // client-side router links, so it exercises a different guard path
+            // than the back link above; both must warn.
+            const sidebar = new SidebarPage(page);
+            const member = await memberFactory.create({name: 'Grace Hopper', email: 'grace-unsaved-sidebar@ghost.org'});
+
+            await page.goto(memberPath(member.id));
+            await memberDetailsPage.nameInput.fill('Grace B. Hopper');
+            await sidebar.getNavLink('Members').click();
 
             await expect(memberDetailsPage.confirmLeaveButton).toBeVisible();
             await memberDetailsPage.confirmLeaveButton.click();
