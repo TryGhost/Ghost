@@ -70,7 +70,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 />
                 <TextField
                     title='Mailgun domain'
-                    value={mailgunDomain}
+                    value={mailgunDomain ?? ''}
                     onChange={(e) => {
                         updateSetting('mailgun_domain', e.target.value);
                     }}
@@ -80,7 +80,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         hint={apiKeysHint}
                         title='Mailgun private API key'
                         type='password'
-                        value={mailgunApiKey}
+                        value={mailgunApiKey ?? ''}
                         onChange={(e) => {
                             updateSetting('mailgun_api_key', e.target.value);
                         }}
