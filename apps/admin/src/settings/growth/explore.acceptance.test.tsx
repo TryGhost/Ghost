@@ -24,9 +24,7 @@ describe("Ghost Explore settings", () => {
         await expect.element(settingsScreen.exploreToggle()).not.toBeChecked();
         await settingsScreen.exploreToggle().click();
 
-        await expect.poll(() => settingsApi.lastRequest).toEqual({
-            settings: [{ key: "explore_ping", value: true }],
-        });
+        await expect(settingsApi).toHaveEditedSettings([{ key: "explore_ping", value: true }]);
     });
 
     it("can share growth data with Ghost Explore", async () => {
@@ -40,9 +38,7 @@ describe("Ghost Explore settings", () => {
         await expect.element(settingsScreen.exploreGrowthToggle()).not.toBeChecked();
         await settingsScreen.exploreGrowthToggle().click();
 
-        await expect.poll(() => settingsApi.lastRequest).toEqual({
-            settings: [{ key: "explore_ping_growth", value: true }],
-        });
+        await expect(settingsApi).toHaveEditedSettings([{ key: "explore_ping_growth", value: true }]);
     });
 
     it("renders a preview with the member count", async () => {

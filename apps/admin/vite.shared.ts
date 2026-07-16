@@ -16,6 +16,7 @@ export const sharedDefine = {
 };
 
 export const sharedResolve = {
+    tsconfigPaths: true,
     alias: {
         "@ghost-cards": GHOST_CARDS_PATH,
         // TODO: Remove this when @tryghost/nql is updated

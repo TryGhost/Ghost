@@ -118,12 +118,13 @@ const TransistorModal = NiceModal.create(() => {
                     {enabled && (
                         <APIKeys keys={[
                             {
+                                id: 'admin-api-key',
                                 label: 'Admin API key',
                                 text: adminApiKey?.secret,
                                 hint: regenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
                                 onRegenerate: handleRegenerate
                             },
-                            {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
+                            {id: 'api-url', label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                         ]} />
                     )}
                 </Form>

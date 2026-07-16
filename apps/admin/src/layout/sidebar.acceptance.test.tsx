@@ -8,6 +8,7 @@ import {
     fakeEndpoint,
     fakeTags,
     renderAdminApp,
+    currentUserResponse,
     settingsResponse,
     type RenderAdminAppOptions,
 } from "@test-utils/acceptance";
@@ -168,6 +169,7 @@ describe("Network notification badge", () => {
         // The ActivityPub app owns its request graph; this spec asserts only the shell badge.
         allowUnhandledRequests();
         fakeUnreadNotifications(5);
+        fakeAdminEndpoint("GET", "/users/?limit=100&include=roles", currentUserResponse());
         await renderAdminApp("/", socialWebEnabled());
 
         await expect.element(sidebarScreen.networkBadge()).toBeVisible();

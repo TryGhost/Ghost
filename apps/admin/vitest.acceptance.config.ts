@@ -1,7 +1,6 @@
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
 import type { PluginOption } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -13,7 +12,7 @@ import { sharedDefine, sharedResolve } from "./vite.shared";
  * in vite.config.ts (jsdom).
  */
 export default defineConfig({
-    plugins: [tailwindcss() as PluginOption, react(), tsconfigPaths()],
+    plugins: [tailwindcss() as PluginOption, react()],
     // Serves the MSW service worker script; scoped to the test config so it
     // never ends up in the production build's public assets.
     publicDir: "./test-utils/acceptance/public",
