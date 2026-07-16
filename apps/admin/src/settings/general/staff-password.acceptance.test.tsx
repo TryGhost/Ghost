@@ -17,6 +17,7 @@ describe("Staff passwords", () => {
         const newPassword = modal.getByTestId("new-password");
         const confirmPassword = modal.getByTestId("confirm-password");
         const save = modal.getByTestId("save-password-button");
+        await expect.element(newPassword).toHaveFocus();
 
         await newPassword.fill("short");
         await confirmPassword.fill("short");
@@ -54,13 +55,18 @@ describe("Staff passwords", () => {
 
         const modal = settingsScreen.userDetailModal();
         await modal.getByTestId("change-password-button").click();
-        await modal.getByTestId("new-password").fill("this-is-sufficiently-secure");
-        await modal.getByTestId("confirm-password").fill("this-is-sufficiently-secure");
+        const oldPassword = modal.getByTestId("old-password");
+        const newPassword = modal.getByTestId("new-password");
+        const confirmPassword = modal.getByTestId("confirm-password");
         const save = modal.getByTestId("save-password-button");
+        await expect.element(oldPassword).toHaveFocus();
+
+        await newPassword.fill("this-is-sufficiently-secure");
+        await confirmPassword.fill("this-is-sufficiently-secure");
         await save.click();
         await expect.element(modal.getByText("Your current password is required to set a new one")).toBeVisible();
 
-        await modal.getByTestId("old-password").fill("current-password");
+        await oldPassword.fill("current-password");
         await save.click();
         await expect.element(save).toHaveTextContent("Saved");
         expect(passwordApi.lastRequest?.body).toMatchObject({password: [{oldPassword: "current-password", user_id: owner.id}]});
