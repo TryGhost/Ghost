@@ -49,6 +49,18 @@ describe("Portal settings", () => {
         ]);
     });
 
+    it("shows the free tier option when Stripe is disconnected", async () => {
+        fakeSettingsScreens();
+        fakeTiers([freeTier]);
+        await renderAdminApp("/settings");
+
+        const modal = await openPortal();
+        const freeTierCheckbox = modal.getByTestId("free-tier-checkbox");
+        await expect.element(freeTierCheckbox).toBeVisible();
+        await expect.element(freeTierCheckbox).toBeChecked();
+        await expect.element(modal.getByText("Free", {exact: true})).toBeVisible();
+    });
+
     it("hides the free-tier option for paid-only signup", async () => {
         fakeSettingsScreens();
         fakeTiers([freeTier]);
