@@ -233,35 +233,6 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
             );
         });
 
-        it('counts events with no provider id as unprocessable', async function () {
-            const automationsApi = buildAutomationsApi([buildRecipient()]);
-            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
-            const result = new EventProcessingResult();
-
-            await processor.processBatch([{
-                type: 'delivered',
-                providerId: null,
-                timestamp: new Date(1)
-            }, {
-                type: 'opened',
-                timestamp: new Date(2)
-            }], result, {});
-
-            assert.deepEqual(result, new EventProcessingResult({unprocessable: 2}));
-        });
-
-        it(`doesn't look up recipients when no event has a provider id`, async function () {
-            const automationsApi = buildAutomationsApi([]);
-            const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});
-
-            await processor.processBatch([{
-                type: 'delivered',
-                timestamp: new Date(1)
-            }], new EventProcessingResult(), {});
-
-            sinon.assert.notCalled(automationsApi.getAutomatedEmailRecipientsByMailgunIds);
-        });
-
         it(`doesn't handle other event types`, async function () {
             const automationsApi = buildAutomationsApi([buildRecipient()]);
             const processor = new AutomationEmailAnalyticsBatchProcessor({automationsApi});

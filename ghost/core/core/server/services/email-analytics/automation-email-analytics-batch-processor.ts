@@ -11,16 +11,14 @@ type AutomationsApi = {
 
 type EmailAnalyticsEvent = {
     type: string;
-    providerId?: string | null;
+    providerId: string;
     timestamp: Date;
 };
 
 const getMailgunMessageIds = (events: Iterable<EmailAnalyticsEvent>): Set<string> => {
     const result = new Set<string>();
     for (const {providerId} of events) {
-        if (providerId) {
-            result.add(normalizeMailgunMessageId(providerId));
-        }
+        result.add(normalizeMailgunMessageId(providerId));
     }
     return result;
 };
@@ -94,8 +92,8 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
             let eventResult: EventProcessingResult;
 
             const getRecipient = () => {
-                const mailgunMessageId = event.providerId ? normalizeMailgunMessageId(event.providerId) : null;
-                return mailgunMessageId ? automatedEmailRecipientsByMessageId.get(mailgunMessageId) : null;
+                const mailgunMessageId = normalizeMailgunMessageId(event.providerId);
+                return automatedEmailRecipientsByMessageId.get(mailgunMessageId);
             };
 
             switch (event.type) {
