@@ -36,7 +36,7 @@ function themeLimits(allowlist: string[], error: string) {
 }
 
 async function archiveBuffer(): Promise<ArrayBuffer> {
-    const fixture = new URL("../../../../admin-x-settings/test/utils/responses/theme.zip", import.meta.url);
+    const fixture = new URL("../../../test-utils/acceptance/fixtures/theme.zip", import.meta.url);
     return await fetch(fixture).then(response => response.arrayBuffer());
 }
 
