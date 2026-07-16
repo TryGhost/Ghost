@@ -16,14 +16,10 @@
     },
     "private": true,
     "scripts": {
-        "dev:start": "vite",
         "lint": "pnpm run lint:js",
         "lint:js": "eslint --cache src test",
         "test": "pnpm test:unit",
-        "test:unit": "tsc --noEmit && vitest run --config vitest.config.ts",
-        "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' playwright test",
-        "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 pnpm test:acceptance --headed",
-        "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance"
+        "test:unit": "tsc --noEmit && vitest run --config vitest.config.ts"
     },
     "dependencies": {
         "@codemirror/lang-css": "catalog:",
@@ -61,7 +57,6 @@
         "@typescript/native": "catalog:",
         "typescript": "catalog:",
         "@internal/cfg-eslint-react": "workspace:*",
-        "@playwright/test": "catalog:",
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:",
         "@tryghost/admin-x-design-system": "workspace:*",
@@ -85,15 +80,7 @@
                 "dependsOn": [
                     "^build"
                 ]
-            },
-            "test:acceptance": {
-                "dependsOn": [
-                    "^build"
-                ]
             }
-        },
-        "tags": [
-            "playwright"
-        ]
+        }
     }
 }

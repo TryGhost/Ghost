@@ -1000,9 +1000,6 @@ importers:
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
-      '@tryghost/test-data':
-        specifier: workspace:*
-        version: link:../../packages/testing/test-data
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -1179,9 +1176,6 @@ importers:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
         version: link:../../configs/eslint-react
-      '@playwright/test':
-        specifier: 'catalog:'
-        version: 1.61.1
       '@testing-library/jest-dom':
         specifier: 'catalog:'
         version: 6.9.1
