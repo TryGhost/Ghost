@@ -28,8 +28,20 @@ const EXTERNAL_URL_BLOCKLIST: Array<{ pattern: string; isMatch: (url: string) =>
     { pattern: "*/.ghost/activitypub/*", isMatch: (url) => url.includes("/.ghost/activitypub/") },
 ];
 
+// Per-test preview URLs are arbitrary site origins, so they cannot live in
+// the static external blocklist. Track the declared ones for teardown just
+// like admin API and blocklisted requests.
+const trackedSitePreviewUrls = new Set<string>();
+
+function previewUrlKey(url: string): string {
+    const parsed = new URL(url);
+    return `${parsed.origin}${parsed.pathname}`;
+}
+
 function isTrackedUrl(url: string): boolean {
-    return ADMIN_API_PATTERN.test(url) || EXTERNAL_URL_BLOCKLIST.some(({ isMatch }) => isMatch(url));
+    return ADMIN_API_PATTERN.test(url)
+        || EXTERNAL_URL_BLOCKLIST.some(({ isMatch }) => isMatch(url))
+        || trackedSitePreviewUrls.has(previewUrlKey(url));
 }
 
 /** External boot chrome, served by default like the boot table; override per test with `fakeEndpoint`. */
@@ -182,6 +194,8 @@ export function registerAdminApiHandler(resolver: AdminApiResolver): void {
 
 export interface FakeEndpointOptions {
     status?: number;
+    /** Override the response Content-Type; binary endpoint fakes require this. */
+    contentType?: string;
 }
 
 /**
@@ -232,9 +246,50 @@ export interface EndpointCapture {
     readonly lastRequest: CapturedEndpointRequest | undefined;
 }
 
+export interface SitePreviewRequest {
+    /** The requested preview URL, including the admin_toolbar query parameter. */
+    url: string;
+    /** The raw x-ghost-preview header; parse with URLSearchParams. */
+    preview: string;
+    accept: string | null;
+}
+
+export interface SitePreviewCapture {
+    /** Every preview request, oldest first. */
+    requests: SitePreviewRequest[];
+}
+
+/**
+ * Serves the HTML fetched by the design/announcement preview and captures
+ * the x-ghost-preview contract. The app writes this HTML into buffered
+ * iframes; specs should assert the captured preview parameters rather than
+ * reaching through the implementation-detail iframe.
+ */
+export function fakeSitePreview(url: string, html: string): SitePreviewCapture {
+    const requests: SitePreviewRequest[] = [];
+
+    trackedSitePreviewUrls.add(previewUrlKey(url));
+    registerRoute("POST", `${url}?admin_toolbar=0`);
+    runningWorker().use(
+        http.post(url, ({ request }) => {
+            requests.push({
+                url: request.url,
+                preview: request.headers.get("x-ghost-preview") ?? "",
+                accept: request.headers.get("accept"),
+            });
+
+            return HttpResponse.text(html, {
+                headers: { "Content-Type": "text/html; charset=utf-8" },
+            });
+        })
+    );
+
+    return { requests };
+}
+
 // A named non-`unknown` union: `unknown | fn` collapses to `unknown` and the
 // function form's parameter would lose contextual typing.
-type FakeAdminEndpointResponseBody = object | unknown[] | null;
+type FakeAdminEndpointResponseBody = object | unknown[] | ArrayBuffer | null;
 export type FakeAdminEndpointResponse = FakeAdminEndpointResponseBody | ((request: CapturedEndpointRequest) => unknown);
 
 /**
@@ -248,7 +303,7 @@ export function fakeAdminEndpoint(
     method: string,
     apiPath: string | RegExp,
     response: FakeAdminEndpointResponse,
-    { status = 200 }: FakeEndpointOptions = {}
+    { status = 200, contentType }: FakeEndpointOptions = {}
 ): EndpointCapture {
     const expectedMethod = method.toUpperCase();
     const requests: CapturedEndpointRequest[] = [];
@@ -272,6 +327,13 @@ export function fakeAdminEndpoint(
 
         const responseBody: unknown =
             typeof response === "function" ? await response(captured) : response;
+
+        if (responseBody instanceof ArrayBuffer) {
+            return new HttpResponse(responseBody, {
+                status,
+                headers: contentType ? { "Content-Type": contentType } : undefined,
+            });
+        }
 
         return HttpResponse.json(responseBody as Record<string, unknown>, { status });
     });
@@ -357,4 +419,5 @@ export function resetFakeApi(): void {
     routesDuringLastTest = [...registeredRoutes];
     worker?.resetHandlers();
     registeredRoutes.length = bootRouteCount;
+    trackedSitePreviewUrls.clear();
 }
