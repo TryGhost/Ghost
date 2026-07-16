@@ -20,6 +20,7 @@ import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {useHashLinkNavigationGuard} from '@/hooks/use-hash-link-navigation-guard';
 import type {MemberEditableFields} from './member-detail-edit';
 
 // The create screen reuses this route with the sentinel id "new". Safe because
@@ -275,7 +276,13 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({paidMembersEnabled, 
 
     useConfirmUnload(activeMutation.isPending || hasUnsavedChanges);
     const blocker = useBlocker(({currentLocation, nextLocation}) => !bypassGuardRef.current && hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname);
-    const isBlocked = blocker.state === 'blocked';
+    // Native `<a href="#/…">` navigations (the sidebar, links into Ember
+    // routes) never reach the react-router blocker above — see the hook.
+    // Ember's own guard (`trailing-hash.js`) can't cover this screen either:
+    // with `memberDetailsReact` on, the Ember member route aborts and never
+    // registers into the `unsaved-changes` service.
+    const anchorGuard = useHashLinkNavigationGuard(hasUnsavedChanges);
+    const isBlocked = blocker.state === 'blocked' || anchorGuard.isBlocked;
 
     // Save button state (Save / Saving / Saved / Retry), mirroring the Ember task button.
     let saveLabel: React.ReactNode = 'Save';
@@ -448,6 +455,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({paidMembersEnabled, 
                 <AlertDialog open={isBlocked} onOpenChange={(open) => {
                     if (!open && isBlocked) {
                         blocker.reset?.();
+                        anchorGuard.reset();
                     }
                 }}>
                     <AlertDialogContent>
@@ -457,7 +465,13 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({paidMembersEnabled, 
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Keep editing</AlertDialogCancel>
-                            <Button variant='destructive' onClick={() => blocker.proceed?.()}>Leave</Button>
+                            <Button variant='destructive' onClick={() => {
+                                if (anchorGuard.isBlocked) {
+                                    anchorGuard.proceed();
+                                } else {
+                                    blocker.proceed?.();
+                                }
+                            }}>Leave</Button>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
