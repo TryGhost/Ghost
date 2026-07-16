@@ -1,9 +1,8 @@
 {
   "name": "@tryghost/i18n",
-  "version": "0.0.0",
+  "private": true,
   "repository": "https://github.com/TryGhost/Ghost/tree/main/ghost/i18n",
   "author": "Ghost Foundation",
-  "private": true,
   "main": "index.js",
   "exports": {
     ".": {

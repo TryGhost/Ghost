@@ -249,3 +249,14 @@ minimumReleaseAgeExclude:
   - "knex-migrator"
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+
+versioning:
+  ignore:
+    - 'ghost-admin' # admin has a version but is not published
+    # public apps, published automatically on merge to main
+    - '@tryghost/announcement-bar'
+    - '@tryghost/admin-toolbar'
+    - '@tryghost/comments-ui'
+    - '@tryghost/signup-form'
+    - '@tryghost/sodo-search'
+    - '@tryghost/portal'

@@ -1,6 +1,5 @@
 {
   "name": "@tryghost/{{NAME}}",
-  "version": "0.0.0",
   "description": "{{DESCRIPTION}}",
   "private": true,
   "type": "module",
