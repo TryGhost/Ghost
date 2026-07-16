@@ -17,8 +17,6 @@ function getMode(urlTemplate: string): SpacerImageProviderMode {
 }
 
 const SpacerImageProvider: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const [providerMode, setProviderMode] = React.useState<SpacerImageProviderMode>('default');
-
     const {
         localSettings,
         isEditing,
@@ -31,14 +29,7 @@ const SpacerImageProvider: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const savedSetting = localSettings?.find(setting => setting.key === SETTING_KEY);
     const savedTemplate = savedSetting ? (savedSetting.value?.toString() ?? '') : DEFAULT_SPACER_IMAGE_URL_TEMPLATE;
-
-    React.useEffect(() => {
-        if (isEditing) {
-            return;
-        }
-
-        setProviderMode(getMode(savedTemplate));
-    }, [isEditing, savedTemplate]);
+    const providerMode = getMode(savedTemplate);
 
     const updateTemplate = (value: string) => {
         updateSetting(SETTING_KEY, value);
@@ -49,9 +40,6 @@ const SpacerImageProvider: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const handleModeChange = (value: string) => {
-        const mode = value as SpacerImageProviderMode;
-        setProviderMode(mode);
-
         if (value === 'default') {
             updateTemplate(DEFAULT_SPACER_IMAGE_URL_TEMPLATE);
         } else {
@@ -70,10 +58,7 @@ const SpacerImageProvider: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='spacer-image-provider'
             title='Video spacer images'
             hideEditButton
-            onCancel={() => {
-                handleCancel();
-                setProviderMode(getMode(savedTemplate));
-            }}
+            onCancel={handleCancel}
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
