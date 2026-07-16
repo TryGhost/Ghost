@@ -3,10 +3,10 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import RecommendationIcon from './recommendation-icon';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, Link, NoValueLabel, type PaginationData, type ShowMoreData, Table, TableRow} from '@tryghost/admin-x-design-system';
+import {Button, Link, type PaginationData, type ShowMoreData, Table, TableRow} from '@tryghost/admin-x-design-system';
 import {Inline} from '@tryghost/shade/primitives';
+import {NoValueLabel, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {type Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 

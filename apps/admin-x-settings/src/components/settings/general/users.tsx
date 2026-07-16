@@ -3,10 +3,11 @@ import TopLevelGroup from '../../top-level-group';
 import clsx from 'clsx';
 import useQueryParams from '../../../hooks/use-query-params';
 import useStaffUsers from '../../../hooks/use-staff-users';
-import {Avatar, Button, List, ListItem, NoValueLabel, TabView, Toggle, showToast} from '@tryghost/admin-x-design-system';
-import {Separator} from '@tryghost/shade/components';
+import {Avatar, Button, List, ListItem, TabView, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade/components';
 import {type User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {type UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
+import {UserRoundX} from 'lucide-react';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -65,7 +66,8 @@ const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
 
     if (!users || !users.length) {
         return (
-            <NoValueLabel icon='single-user-block'>
+            <NoValueLabel>
+                <NoValueLabelIcon><UserRoundX /></NoValueLabelIcon>
                 No {groupname} found.
             </NoValueLabel>
         );
@@ -173,7 +175,8 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
 const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     if (!users || !users.length) {
         return (
-            <NoValueLabel icon='single-user-block'>
+            <NoValueLabel>
+                <NoValueLabelIcon><UserRoundX /></NoValueLabelIcon>
                 No invitations found.
             </NoValueLabel>
         );

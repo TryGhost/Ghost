@@ -100,8 +100,6 @@ export {LoadingIndicator} from './global/loading-indicator';
 export type {LoadingIndicatorProps} from './global/loading-indicator';
 export {default as Menu} from './global/menu';
 export type {MenuItem, MenuProps} from './global/menu';
-export {default as NoValueLabel} from './global/no-value-label';
-export type {NoValueLabelProps} from './global/no-value-label';
 export {default as Pagination} from './global/pagination';
 export type {PaginationProps} from './global/pagination';
 export {default as Popover} from './global/popover';
