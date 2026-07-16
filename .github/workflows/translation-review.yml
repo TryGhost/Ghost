@@ -26,7 +26,7 @@ on:
   pull_request_target:
     types: [opened, reopened, synchronize, labeled]
     paths:
-      - 'ghost/i18n/locales/**'
+      - 'packages/i18n/locales/**'
   workflow_dispatch:
     inputs:
       pr_number:

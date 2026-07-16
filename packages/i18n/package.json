@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/i18n",
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Ghost/tree/main/ghost/i18n",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/i18n",
   "author": "Ghost Foundation",
   "private": true,
   "main": "index.js",
@@ -27,7 +27,7 @@
     "lint:test": "eslint test/ --cache",
     "lint:translations": "node ./test/i18n.lint.js",
     "translate": "pnpm translate:ghost && pnpm translate:portal && pnpm translate:signup-form && pnpm translate:comments && pnpm translate:search && node generate-context.js",
-    "translate:ghost": "NAMESPACE=ghost i18next '../core/core/{frontend,server,shared}/**/*.{js,jsx,ts}' '!../core/core/frontend/public/*.min.js' '../core/core/server/services/email-rendering/partials/**/*.hbs' '../core/core/server/services/email-service/email-templates/**/*.hbs' '../core/core/server/services/comments/email-templates/**/*.hbs' '../core/core/server/services/member-welcome-emails/email-templates/**/*.hbs' '../core/core/server/services/gifts/**/*.{ts,hbs}'",
+    "translate:ghost": "NAMESPACE=ghost i18next '../../ghost/core/core/{frontend,server,shared}/**/*.{js,jsx,ts}' '!../../ghost/core/core/frontend/public/*.min.js' '../../ghost/core/core/server/services/email-rendering/partials/**/*.hbs' '../../ghost/core/core/server/services/email-service/email-templates/**/*.hbs' '../../ghost/core/core/server/services/comments/email-templates/**/*.hbs' '../../ghost/core/core/server/services/member-welcome-emails/email-templates/**/*.hbs' '../../ghost/core/core/server/services/gifts/**/*.{ts,hbs}'",
     "translate:portal": "NAMESPACE=portal i18next '../../apps/portal/src/**/*.{js,jsx}'",
     "translate:signup-form": "NAMESPACE=signup-form i18next '../../apps/signup-form/src/**/*.{ts,tsx}'",
     "translate:comments": "NAMESPACE=comments i18next '../../apps/comments-ui/src/**/*.{ts,tsx}'",

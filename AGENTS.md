@@ -10,14 +10,13 @@ Shared dependency versions are pinned in `pnpm-workspace.yaml` under `catalog:` 
 
 ## Monorepo Structure
 
-Ghost is a pnpm + Nx monorepo with three workspace groups:
+Ghost is a pnpm + Nx monorepo with four workspace groups:
 
 ### ghost/* - Core Ghost packages
 - **ghost/core** - Main Ghost application (Node.js/Express backend)
   - Core server: `ghost/core/core/server/`
   - Frontend rendering: `ghost/core/core/frontend/`
 - **ghost/admin** - Ember.js admin client (legacy, being migrated to React)
-- **ghost/i18n** - Centralized internationalization for all apps
 
 ### apps/* - React-based UI applications
 Two categories of apps:
@@ -52,7 +51,7 @@ external consumers only, automatically as part of the Ghost release lane
 (see `publish_koenig_packages` in ci.yml).
 
 **Zero-build dev via the `source` export condition.** The `kg-*` libraries
-consumed by `ghost/core` (and `ghost/parse-email-address`) declare a `source`
+consumed by `ghost/core` (and `packages/parse-email-address`) declare a `source`
 condition in their `package.json` `exports` that points at the raw
 `src/*.ts`, listed *before* `types`/`import`/`require`:
 
@@ -72,8 +71,20 @@ in a `kg-*` package is picked up with **no `tsc` rebuild**. Production and the
 published npm tarball run plain `node`, which ignores `source` and uses
 `build/` — and `src/` is excluded from each package's `files` array, so it is
 never shipped. When adding a new backend-consumed TS workspace package, copy
-this `exports` shape (see `ghost/parse-email-address`) so it works build-free
+this `exports` shape (see `packages/parse-email-address`) so it works build-free
 in dev from day one; keep the `^build` graph for `tsc`/type-checking and prod.
+
+### packages/* - Shared workspace libraries
+Backend and shared libraries consumed via `workspace:` — not published to npm:
+
+- **i18n** - Centralized internationalization for all apps
+- **parse-email-address** - Email address parsing (see the `source` export
+  condition above)
+- **adapters/** - Adapter base classes (`adapter-base-*`: scheduling, storage,
+  SSO, redirects, route settings)
+- **custom-field-types**, **testing** - Shared field-type definitions and test
+  helpers
+- **_template** - Scaffold for new packages; excluded from the workspace
 
 ### e2e/ - End-to-end tests
 - Playwright-based E2E tests with Docker container isolation
@@ -214,10 +225,10 @@ pnpm dev:all                   #
 ### i18n Architecture
 
 **Centralized Translations:**
-- Single source: `ghost/i18n/locales/{locale}/{namespace}.json`
+- Single source: `packages/i18n/locales/{locale}/{namespace}.json`
 - Namespaces: `ghost`, `portal`, `signup-form`, `comments`, `search`
 - 60+ supported locales
-- Context descriptions: `ghost/i18n/locales/context.json` — every key must have a non-empty description
+- Context descriptions: `packages/i18n/locales/context.json` — every key must have a non-empty description
 
 **Translation Workflow:**
 ```bash
@@ -330,7 +341,7 @@ Conventions:
 - **New features:** Build in React in `apps/admin` (domain folders under `src/`)
 - **Use:** `admin-x-framework` for API hooks (`useBrowse`, `useEdit`, etc.)
 - **Use:** `shade` design system for new components (not admin-x-design-system)
-- **Translations:** Add to `ghost/i18n/locales/en/ghost.json`
+- **Translations:** Add to `packages/i18n/locales/en/ghost.json`
 
 ### When Working on Public UI
 - **Edit:** `apps/portal`, `apps/comments-ui`, etc.

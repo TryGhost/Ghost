@@ -4,7 +4,7 @@ Advisory CI tool that posts a non-approving GitHub review on Ghost
 translation PRs.
 
 Triggered by `.github/workflows/translation-review.yml` when the `affects:i18n`
-label is applied to a PR. Reads the PR's changes to `ghost/i18n/locales/**/*.json`,
+label is applied to a PR. Reads the PR's changes to `packages/i18n/locales/**/*.json`,
 asks Claude to validate the translations against the English source and
 `context.json`, and posts the result as a `COMMENT`-event review. The bot
 cannot approve PRs and the review never blocks merge — a maintainer still

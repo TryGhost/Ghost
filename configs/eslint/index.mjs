@@ -280,7 +280,7 @@ export const localFilenamesPlugin = {
  * @property {boolean} [commonjs=false]
  *   When true: sourceType is 'commonjs' instead of 'module'.
  * @property {boolean} [legacyLocalFilenames=false]
- *   LEGACY escape hatch for ghost/i18n. When true: register the
+ *   LEGACY escape hatch for packages/i18n. When true: register the
  *   localFilenamesPlugin and turn off `ghost/filenames/match-regex` so the
  *   workspace can use `local-filenames/match-regex` (its workspace-local
  *   variant) instead. Should be unified with the rest of the codebase
@@ -296,7 +296,7 @@ export const localFilenamesPlugin = {
  * @property {object} [extraTestRules]
  *   Per-workspace test rule overrides.
  * @property {Array<import('eslint').Linter.Config>} [extraBlocks]
- *   Append extra config blocks (e.g. ghost/i18n's `max-lines` override on
+ *   Append extra config blocks (e.g. packages/i18n's `max-lines` override on
  *   `lib/index.js`). Each block SHOULD set its own `files:` glob — flat config
  *   treats a block without `files:` as applying to all files, which is rarely
  *   what consumers want.
