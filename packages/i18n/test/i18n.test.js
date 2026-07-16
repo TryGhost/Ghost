@@ -300,7 +300,7 @@ describe('i18n', function () {
                     const currentPath = keypath ? `${keypath}.${key}` : key;
 
                     if (value === null || value === undefined || value === '') {
-                        assert.fail(`Empty value found at ${currentPath}. If you added a new key for translation, please add it to the ghost/i18n/locales/context.json file.`);
+                        assert.fail(`Empty value found at ${currentPath}. If you added a new key for translation, please add it to the packages/i18n/locales/context.json file.`);
                     }
 
                     if (typeof value === 'object' && value !== null) {

@@ -1129,7 +1129,7 @@ importers:
         version: 0.2.19
       '@tryghost/i18n':
         specifier: workspace:*
-        version: link:../../ghost/i18n
+        version: link:../../packages/i18n
       '@tryghost/kg-unsplash-selector':
         specifier: workspace:*
         version: link:../../koenig/kg-unsplash-selector
@@ -1345,7 +1345,7 @@ importers:
         version: 12.1.5(@types/react@17.0.93)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@tryghost/i18n':
         specifier: workspace:*
-        version: link:../../ghost/i18n
+        version: link:../../packages/i18n
       '@tryghost/nql':
         specifier: 'catalog:'
         version: 0.13.1(supports-color@5.5.0)
@@ -1436,7 +1436,7 @@ importers:
         version: 14.6.1(@testing-library/dom@10.4.1)
       '@tryghost/i18n':
         specifier: workspace:*
-        version: link:../../ghost/i18n
+        version: link:../../packages/i18n
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
@@ -1714,7 +1714,7 @@ importers:
         version: 0.4.4(tailwindcss@3.4.19(tsx@4.23.0)(yaml@2.9.0))
       '@tryghost/i18n':
         specifier: workspace:*
-        version: link:../../ghost/i18n
+        version: link:../../packages/i18n
       '@types/react':
         specifier: 'catalog:'
         version: 18.3.31
@@ -1774,7 +1774,7 @@ importers:
         version: 2.2.3(supports-color@5.5.0)
       '@tryghost/i18n':
         specifier: workspace:*
-        version: link:../../ghost/i18n
+        version: link:../../packages/i18n
       flexsearch:
         specifier: 0.8.212
         version: 0.8.212
@@ -2444,7 +2444,7 @@ importers:
         version: 1.0.11
       '@tryghost/i18n':
         specifier: workspace:*
-        version: link:../i18n
+        version: link:../../packages/i18n
       '@tryghost/image-transform':
         specifier: 1.4.17
         version: 1.4.17(@types/node@22.20.0)
@@ -3044,37 +3044,6 @@ importers:
       better-sqlite3:
         specifier: 'catalog:'
         version: 12.11.1
-
-  ghost/i18n:
-    dependencies:
-      '@tryghost/debug':
-        specifier: 'catalog:'
-        version: 2.2.3(supports-color@5.5.0)
-      i18next:
-        specifier: 23.16.8
-        version: 23.16.8
-    devDependencies:
-      '@internal/cfg-eslint':
-        specifier: workspace:*
-        version: link:../../configs/eslint
-      '@vitest/coverage-v8':
-        specifier: 'catalog:'
-        version: 4.1.9(@vitest/browser@4.1.9)(vitest@4.1.9)
-      eslint:
-        specifier: 'catalog:'
-        version: 9.39.4(jiti@2.7.0)
-      fs-extra:
-        specifier: 'catalog:'
-        version: 11.3.6
-      glob:
-        specifier: 'catalog:'
-        version: 13.0.6
-      i18next-parser:
-        specifier: 9.4.0
-        version: 9.4.0
-      vitest:
-        specifier: 'catalog:'
-        version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.9)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(typescript@7.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
 
   koenig/kg-card-factory:
     devDependencies:
@@ -4153,6 +4122,37 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@22.20.0)(@vitest/browser-playwright@4.1.9)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
+
+  packages/i18n:
+    dependencies:
+      '@tryghost/debug':
+        specifier: 'catalog:'
+        version: 2.2.3(supports-color@5.5.0)
+      i18next:
+        specifier: 23.16.8
+        version: 23.16.8
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../configs/eslint
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.9(@vitest/browser@4.1.9)(vitest@4.1.9)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)
+      fs-extra:
+        specifier: 'catalog:'
+        version: 11.3.6
+      glob:
+        specifier: 'catalog:'
+        version: 13.0.6
+      i18next-parser:
+        specifier: 9.4.0
+        version: 9.4.0
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.9)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(typescript@7.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
 
   packages/parse-email-address:
     dependencies:

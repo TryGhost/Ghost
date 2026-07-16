@@ -13,7 +13,6 @@ export default defineConfig({
     test: {
         projects: [
             'ghost/core',
-            'ghost/i18n',
             'packages/**',
             '!packages/_template',
             'apps/*',

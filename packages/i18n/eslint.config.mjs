@@ -5,7 +5,7 @@ export default [{
     // ESM shims; they're not part of the linted CJS source surface.
     ignores: ['lib/registry/**', 'build/**']
 }, ...nodeLibConfig({
-    // ghost/i18n is JS-only (CommonJS) and uses the local-filenames variant of
+    // packages/i18n is JS-only (CommonJS) and uses the local-filenames variant of
     // match-regex instead of the ghost-plugin one. legacyLocalFilenames handles both.
     typescript: false,
     commonjs: true,
