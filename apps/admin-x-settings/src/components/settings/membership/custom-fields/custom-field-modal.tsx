@@ -1,6 +1,6 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import {ConfirmationModal, Form, Modal, Select, type SelectOption, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, Icon, Modal, Select, type SelectOption, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {type OptionProps, type SingleValueProps, components} from 'react-select';
 import {ValidationError, getErrorMessage} from '@tryghost/admin-x-framework/errors';
 import {memberCustomFieldUserTypes, useCreateMemberCustomField, useDeleteMemberCustomField, useEditMemberCustomField, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -11,9 +11,10 @@ const typeOptions: SelectOption[] = memberCustomFieldUserTypes.map(userType => (
 
 const userTypeById = (id: string) => memberCustomFieldUserTypes.find(userType => userType.id === id) || memberCustomFieldUserTypes[0];
 
+// Fixed-width so option labels align in a column regardless of icon shape.
 const TypeTile: React.FC<{userTypeId: string}> = ({userTypeId}) => (
-    <span className='shrink-0 font-semibold'>
-        {userTypeById(userTypeId).iconText}
+    <span className='flex w-5 shrink-0 items-center justify-center'>
+        <Icon name={userTypeById(userTypeId).icon} size='sm' />
     </span>
 );
 
