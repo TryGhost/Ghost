@@ -1,4 +1,4 @@
-const EmailEventStorage = require('../../../../../core/server/services/email-service/email-event-storage');
+const NewsletterEmailEventStorage = require('../../../../../core/server/services/email-service/newsletter-email-event-storage');
 
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
@@ -26,12 +26,12 @@ describe('Email Event Storage', function () {
 
     describe('Constructor', function () {
         it('doesn\'t throw', function () {
-            new EmailEventStorage({});
+            new NewsletterEmailEventStorage({});
         });
 
         it('sets up metrics if prometheusClient is provided', function () {
             const prometheusClient = createPrometheusClient();
-            new EmailEventStorage({prometheusClient});
+            new NewsletterEmailEventStorage({prometheusClient});
             sinon.assert.calledOnce(prometheusClient.registerCounter);
         });
     });
@@ -46,7 +46,7 @@ describe('Email Event Storage', function () {
         });
 
         const db = createDb();
-        const eventHandler = new EmailEventStorage({db});
+        const eventHandler = new NewsletterEmailEventStorage({db});
         await eventHandler.handleDelivered(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].delivered_at);
@@ -56,7 +56,7 @@ describe('Email Event Storage', function () {
         const event = EmailDeliveredEvent.create({});
         const db = createDb();
         const prometheusClient = createPrometheusClient();
-        const eventHandler = new EmailEventStorage({db, prometheusClient});
+        const eventHandler = new NewsletterEmailEventStorage({db, prometheusClient});
         sinon.stub(eventHandler, 'recordEventStored').resolves();
         await eventHandler.handleDelivered(event);
         sinon.assert.calledOnce(eventHandler.recordEventStored);
@@ -72,7 +72,7 @@ describe('Email Event Storage', function () {
         });
 
         const db = createDb();
-        const eventHandler = new EmailEventStorage({db});
+        const eventHandler = new NewsletterEmailEventStorage({db});
         await eventHandler.handleOpened(event);
         sinon.assert.calledOnce(db.update);
         assert(!!db.update.firstCall.args[0].opened_at);
@@ -82,7 +82,7 @@ describe('Email Event Storage', function () {
         const event = EmailOpenedEvent.create({});
         const db = createDb();
         const prometheusClient = createPrometheusClient();
-        const eventHandler = new EmailEventStorage({db, prometheusClient});
+        const eventHandler = new NewsletterEmailEventStorage({db, prometheusClient});
         sinon.stub(eventHandler, 'recordEventStored').resolves();
         await eventHandler.handleOpened(event);
         sinon.assert.calledOnce(eventHandler.recordEventStored);
@@ -122,7 +122,7 @@ describe('Email Event Storage', function () {
             findOne: sinon.stub().resolves(existing)
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             db,
             models: {
                 EmailRecipientFailure
@@ -168,7 +168,7 @@ describe('Email Event Storage', function () {
             findOne: sinon.stub().resolves(existing)
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             db,
             models: {
                 EmailRecipientFailure
@@ -213,7 +213,7 @@ describe('Email Event Storage', function () {
             findOne: sinon.stub().resolves(existing)
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             db,
             models: {
                 EmailRecipientFailure
@@ -248,7 +248,7 @@ describe('Email Event Storage', function () {
             add: sinon.stub().resolves()
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             db,
             models: {
                 EmailRecipientFailure
@@ -283,7 +283,7 @@ describe('Email Event Storage', function () {
             add: sinon.stub().resolves()
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             db,
             models: {
                 EmailRecipientFailure
@@ -317,7 +317,7 @@ describe('Email Event Storage', function () {
             add: sinon.stub().resolves()
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             db,
             models: {
                 EmailRecipientFailure
@@ -340,7 +340,7 @@ describe('Email Event Storage', function () {
         });
 
         const db = createDb();
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             db,
             models: {}
         });
@@ -382,7 +382,7 @@ describe('Email Event Storage', function () {
             findOne: sinon.stub().resolves(existing)
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             db,
             models: {
                 EmailRecipientFailure
@@ -428,7 +428,7 @@ describe('Email Event Storage', function () {
             findOne: sinon.stub().resolves(existing)
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             models: {
                 EmailRecipientFailure
             }
@@ -470,7 +470,7 @@ describe('Email Event Storage', function () {
             findOne: sinon.stub().resolves(existing)
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             models: {
                 EmailRecipientFailure
             }
@@ -493,7 +493,7 @@ describe('Email Event Storage', function () {
             removeUnsubscribe: sinon.stub().resolves()
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             membersRepository: {
                 update
             },
@@ -516,7 +516,7 @@ describe('Email Event Storage', function () {
         const error = new Error('Member not found');
         const update = sinon.stub().throws(error);
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             membersRepository: {
                 update
             }
@@ -551,7 +551,7 @@ describe('Email Event Storage', function () {
             })
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             membersRepository,
             models: {
                 Email
@@ -580,7 +580,7 @@ describe('Email Event Storage', function () {
             removeComplaint: sinon.stub().resolves()
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             models: {
                 EmailSpamComplaintEvent
             },
@@ -608,7 +608,7 @@ describe('Email Event Storage', function () {
             removeComplaint: sinon.stub().resolves()
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             models: {
                 EmailSpamComplaintEvent
             },
@@ -635,7 +635,7 @@ describe('Email Event Storage', function () {
             removeComplaint: sinon.stub().resolves()
         };
 
-        const eventHandler = new EmailEventStorage({
+        const eventHandler = new NewsletterEmailEventStorage({
             models: {
                 EmailSpamComplaintEvent
             },
@@ -655,7 +655,7 @@ describe('Email Event Storage', function () {
                     inc: incStub
                 })
             };
-            const eventHandler = new EmailEventStorage({prometheusClient});
+            const eventHandler = new NewsletterEmailEventStorage({prometheusClient});
             eventHandler.recordEventStored('delivered');
             sinon.assert.calledOnce(incStub);
         });
@@ -665,7 +665,7 @@ describe('Email Event Storage', function () {
                 registerCounter: sinon.stub(),
                 getMetric: sinon.stub().throws(new Error('Metric not found'))
             };
-            const eventHandler = new EmailEventStorage({prometheusClient});
+            const eventHandler = new NewsletterEmailEventStorage({prometheusClient});
             assert.doesNotThrow(() => eventHandler.recordEventStored('delivered'));
         });
     });

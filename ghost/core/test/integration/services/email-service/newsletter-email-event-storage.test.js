@@ -24,7 +24,7 @@ const processingModes = [
 ];
 
 processingModes.forEach(({name, batchProcessing}) => {
-    describe(`EmailEventStorage - ${name}`, function () {
+    describe(`NewsletterEmailEventStorage - ${name}`, function () {
         let agent;
         let events = [];
         let models;

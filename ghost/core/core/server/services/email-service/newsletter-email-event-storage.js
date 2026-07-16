@@ -2,7 +2,7 @@ const moment = require('moment-timezone');
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 
-class EmailEventStorage {
+class NewsletterEmailEventStorage {
     #db;
     #membersRepository;
     #models;
@@ -352,4 +352,4 @@ class EmailEventStorage {
     }
 }
 
-module.exports = EmailEventStorage;
+module.exports = NewsletterEmailEventStorage;
