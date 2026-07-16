@@ -99,6 +99,14 @@ describe('Previews controller', function () {
             sinon.assert.notCalled(findOne);
         });
 
+        it('rejects an empty member_tier', async function () {
+            const findOne = sinon.stub(Product, 'findOne');
+            const frame = {options: {member_status: 'paid', member_tier: ''}};
+
+            await assert.rejects(previewsController.read.query(frame), {errorType: 'ValidationError'});
+            sinon.assert.notCalled(findOne);
+        });
+
         it('sets frame.apiType but does not set member context when member_status is anonymous', async function () {
             const frame = {options: {member_status: 'anonymous'}};
             await previewsController.read.query(frame);

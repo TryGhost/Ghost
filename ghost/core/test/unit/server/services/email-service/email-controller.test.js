@@ -227,6 +227,56 @@ describe('Email Controller', function () {
             assert.equal(memberStatus, 'free');
         });
 
+        it('rejects a legacy memberSegment even when member_status is present', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass(),
+                    Newsletter: createModelClass()
+                }
+            });
+            await assert.rejects(controller._getFrameData({
+                options: {
+                    id: 'options-id',
+                    member_status: 'paid',
+                    memberSegment: 'status:-free+product:\'gold\''
+                },
+                data: {}
+            }), {errorType: 'ValidationError'});
+        });
+
+        it('rejects a non-string legacy memberSegment', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass(),
+                    Newsletter: createModelClass()
+                }
+            });
+            // a single-element array would coerce to a valid object key
+            await assert.rejects(controller._getFrameData({
+                options: {
+                    id: 'options-id',
+                    memberSegment: ['status:free']
+                },
+                data: {}
+            }), {errorType: 'ValidationError'});
+        });
+
+        it('rejects an empty member_tier', async function () {
+            const controller = new EmailController({}, {
+                models: {
+                    Post: createModelClass(),
+                    Newsletter: createModelClass()
+                }
+            });
+            await assert.rejects(controller._getFrameData({
+                options: {
+                    id: 'options-id',
+                    member_tier: ''
+                },
+                data: {}
+            }), {errorType: 'ValidationError'});
+        });
+
         it('rejects a non-string member_tier from options', async function () {
             const controller = new EmailController({}, {
                 models: {

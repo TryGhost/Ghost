@@ -20,7 +20,7 @@ const _addMemberContextToFrame = async (frame) => {
 
     // the framework's options validation only supports required/values checks,
     // so guard the shape here — repeated query params arrive as arrays
-    if (frame.options.member_tier !== undefined && typeof frame.options.member_tier !== 'string') {
+    if (frame.options.member_tier !== undefined && (typeof frame.options.member_tier !== 'string' || frame.options.member_tier === '')) {
         throw new errors.ValidationError({
             message: tpl(messages.invalidMemberTier)
         });

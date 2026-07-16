@@ -42,7 +42,7 @@ class EmailController {
         // rather than 500 downstream (the api-framework only validates
         // required/values, so the endpoint can't do this for us)
         const memberTier = frame.options.member_tier ?? frame.data?.member_tier ?? null;
-        if (memberTier !== null && typeof memberTier !== 'string') {
+        if (memberTier !== null && (typeof memberTier !== 'string' || memberTier === '')) {
             throw new errors.ValidationError({
                 message: tpl(messages.invalidMemberTier)
             });
@@ -56,13 +56,13 @@ class EmailController {
         }
 
         const legacySegment = frame.options.memberSegment ?? frame.data?.memberSegment ?? null;
+        if (legacySegment !== null && (typeof legacySegment !== 'string' || !Object.hasOwn(LEGACY_SEGMENT_STATUSES, legacySegment))) {
+            throw new errors.ValidationError({
+                message: tpl(messages.invalidMemberSegment)
+            });
+        }
         if (memberStatus === null && legacySegment !== null) {
             memberStatus = LEGACY_SEGMENT_STATUSES[legacySegment];
-            if (memberStatus === undefined) {
-                throw new errors.ValidationError({
-                    message: tpl(messages.invalidMemberSegment)
-                });
-            }
         }
 
         let post;

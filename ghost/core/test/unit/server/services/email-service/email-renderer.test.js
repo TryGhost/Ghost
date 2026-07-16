@@ -1401,6 +1401,15 @@ describe('Email renderer', function () {
             );
         });
 
+        it('escapes backslashes when narrowing to a tier', function () {
+            const post = createTiersPost([{slug: 'gold'}]);
+            // a trailing backslash must not swallow the closing quote
+            assert.equal(
+                emailRenderer.getSegmentForAudience(post, 'paid', 'trailing\\'),
+                'status:-free+product:\'trailing\\\\\''
+            );
+        });
+
         it('ignores a selected tier for the free audience', function () {
             const post = createTiersPost([{slug: 'gold'}]);
             assert.equal(emailRenderer.getSegmentForAudience(post, 'free', 'gold'), 'status:free');

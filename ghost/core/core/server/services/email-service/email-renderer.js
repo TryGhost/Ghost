@@ -487,7 +487,8 @@ class EmailRenderer {
             return null;
         }
         if (tierSlug) {
-            return `status:-free+product:'${tierSlug.replace(/'/g, '\\\'')}'`;
+            const escapedSlug = tierSlug.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+            return `status:-free+product:'${escapedSlug}'`;
         }
         if (post.get('visibility') === 'tiers') {
             const accessFilter = getPostAccessFilter(getPostGatingShape(post));
