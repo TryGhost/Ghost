@@ -1,4 +1,4 @@
-import {service, type RequestContext} from '../../services/members-custom-fields';
+import {definitions, type RequestContext} from '../../services/members-custom-fields';
 
 const permissionsService = require('../../services/permissions');
 
@@ -43,7 +43,7 @@ const controller = {
             return canThis(frame).browse.member_custom_field();
         },
         query() {
-            return service!.browse();
+            return definitions!.browse();
         }
     },
 
@@ -55,7 +55,7 @@ const controller = {
             return canThis(frame).read.member_custom_field(frame.options.key);
         },
         query(frame: Frame) {
-            return service!.read(frame.options.key);
+            return definitions!.read(frame.options.key);
         }
     },
 
@@ -66,7 +66,7 @@ const controller = {
             return canThis(frame).add.member_custom_field();
         },
         query(frame: Frame) {
-            return service!.add(requestContextFromFrame(frame), frame.data.members_custom_fields[0]);
+            return definitions!.add(requestContextFromFrame(frame), frame.data.members_custom_fields[0]);
         }
     },
 
@@ -78,7 +78,7 @@ const controller = {
             return canThis(frame).edit.member_custom_field(frame.options.key);
         },
         query(frame: Frame) {
-            return service!.edit(requestContextFromFrame(frame), frame.options.key, frame.data.members_custom_fields[0]);
+            return definitions!.edit(requestContextFromFrame(frame), frame.options.key, frame.data.members_custom_fields[0]);
         }
     },
 
@@ -91,7 +91,7 @@ const controller = {
             return canThis(frame).destroy.member_custom_field(frame.options.key);
         },
         async query(frame: Frame) {
-            await service!.destroy(requestContextFromFrame(frame), frame.options.key);
+            await definitions!.destroy(requestContextFromFrame(frame), frame.options.key);
             return null;
         }
     }

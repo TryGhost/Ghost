@@ -5,6 +5,8 @@ import {z} from 'zod';
 import {CustomField} from './models';
 import {FieldTypeSchema} from '@tryghost/custom-field-types';
 import {customFieldCodec} from './codec';
+import {FIELD_STATUS} from './schema';
+import {activeFields} from './queries';
 import {type RecordCustomFieldAction, type RequestContext} from './actions';
 
 // @tryghost/string ships no types; slugify is the same helper tags/labels use.
@@ -39,7 +41,7 @@ const EditFieldInput = z.object({
     type: FieldTypeSchema.optional()
 });
 
-export class CustomFieldsService {
+export class CustomFieldDefinitionsService {
     private knex: Knex;
     private recordAction: RecordCustomFieldAction;
 
@@ -52,8 +54,7 @@ export class CustomFieldsService {
         // Active fields only; archived fields are retained (so their key stays
         // reserved) but hidden. Insertion order for now — when the UI needs a
         // persistent user-defined order, add a `sort_order` column and order by it.
-        const rows = await this.knex(TABLE)
-            .where('status', 'active')
+        const rows = await activeFields(this.knex)
             .orderBy('created_at', 'asc')
             .orderBy('id', 'asc')
             .select('*');
@@ -192,8 +193,8 @@ export class CustomFieldsService {
         if (!field) {
             throw new errors.NotFoundError({message: 'Custom field not found.'});
         }
-        if (field.status !== 'archived') {
-            await this.knex(TABLE).where('key', key).update({status: 'archived', updated_at: new Date()});
+        if (field.status !== FIELD_STATUS.archived) {
+            await this.knex(TABLE).where('key', key).update({status: FIELD_STATUS.archived, updated_at: new Date()});
             await this.recordAction({context, verb: 'archive', subject: key});
         }
     }
