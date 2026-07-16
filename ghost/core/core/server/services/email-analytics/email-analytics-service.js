@@ -378,7 +378,7 @@ module.exports = class EmailAnalyticsService {
         fetchData.running = true;
         fetchData.lastStarted = new Date();
         fetchData.lastBegin = begin;
-        this.queries.setJobTimestamp(fetchData.jobName, 'started', begin);
+        await this.queries.setJobTimestamp(fetchData.jobName, 'started', begin);
 
         // Timing metrics
         const fetchStartMs = Date.now();
