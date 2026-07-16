@@ -180,6 +180,9 @@ catalogs:
     '@types/sanitize-html':
       specifier: 2.16.1
       version: 2.16.1
+    '@types/semver':
+      specifier: 7.7.1
+      version: 7.7.1
     '@types/sinon':
       specifier: 22.0.0
       version: 22.0.0
@@ -318,6 +321,9 @@ catalogs:
     react-router:
       specifier: 7.18.1
       version: 7.18.1
+    semver:
+      specifier: 7.8.5
+      version: 7.8.5
     sinon:
       specifier: 22.0.0
       version: 22.0.0
@@ -453,7 +459,7 @@ overrides:
 
 packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
 
-pnpmfileChecksum: sha256-HiRuK7P5OxfDunYuWJfSntnbDVKAT4NjlnblKXMjPak=
+pnpmfileChecksum: sha256-HFDJRDXPJung3QA+SJGLFvCaWudv3AAtCmD3O4SpXLY=
 
 importers:
 
@@ -483,9 +489,6 @@ importers:
       husky:
         specifier: 9.1.7
         version: 9.1.7
-      jsonc-parser:
-        specifier: 'catalog:'
-        version: 3.3.1
       knip:
         specifier: 6.24.0
         version: 6.24.0
@@ -504,9 +507,6 @@ importers:
       secretlint:
         specifier: 13.0.2
         version: 13.0.2(supports-color@5.5.0)
-      semver:
-        specifier: 7.8.5
-        version: 7.8.5
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1166,6 +1166,9 @@ importers:
       react-select:
         specifier: 5.10.2
         version: 5.10.2(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      semver:
+        specifier: 'catalog:'
+        version: 7.8.5
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1203,6 +1206,9 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.31)
+      '@types/semver':
+        specifier: 'catalog:'
+        version: 7.7.1
       '@types/validator':
         specifier: 'catalog:'
         version: 13.15.10
@@ -2809,7 +2815,7 @@ importers:
         specifier: 2.17.5
         version: 2.17.5
       semver:
-        specifier: 7.8.5
+        specifier: 'catalog:'
         version: 7.8.5
       sharp:
         specifier: 0.35.3
@@ -2927,7 +2933,7 @@ importers:
         specifier: 'catalog:'
         version: 2.16.1
       '@types/semver':
-        specifier: 7.7.1
+        specifier: 'catalog:'
         version: 7.7.1
       '@types/sinon':
         specifier: 'catalog:'
@@ -4203,6 +4209,19 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.9)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
+
+  scripts:
+    dependencies:
+      semver:
+        specifier: 'catalog:'
+        version: 7.8.5
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../configs/eslint
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)
 
 packages:
 

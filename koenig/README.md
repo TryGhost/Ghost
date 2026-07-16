@@ -118,7 +118,7 @@ The `publish_koenig_packages` job in
 [.github/workflows/ci.yml](../.github/workflows/ci.yml) runs on stable release
 tags only (no `-rc` prereleases), after `publish_ghost` succeeds — so every
 published version corresponds to content that shipped inside a released Ghost.
-It runs [.github/scripts/publish-koenig-packages.js](../.github/scripts/publish-koenig-packages.js),
+It runs [scripts/publish-koenig-packages.cjs](../scripts/publish-koenig-packages.cjs),
 which for each non-private package:
 
 1. Skips it if its directory is unchanged since the previous release tag.

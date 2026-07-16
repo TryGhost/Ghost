@@ -28,6 +28,16 @@ function beforePacking(pkg) {
     delete pkg.nx;
     delete pkg.devDependencies;
 
+    if (pkg.exports) {
+        // remove any source condition exports, since the packages don't ship
+        // the source files
+        for (const key of Object.keys(pkg.exports)) {
+            if (typeof pkg.exports[key] === 'object' && pkg.exports[key].source) {
+                delete pkg.exports[key].source;
+            }
+        }
+    }
+
     if (pkg.name !== 'ghost') {
         return pkg;
     }

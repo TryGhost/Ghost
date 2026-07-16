@@ -27,7 +27,7 @@
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
         "preship": "pnpm lint",
-        "ship": "node ../../.github/scripts/release-apps.js",
+        "ship": "node ../../scripts/release-apps.cjs",
         "prepublishOnly": "pnpm build"
     },
     "dependencies": {

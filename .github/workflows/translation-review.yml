@@ -72,11 +72,21 @@ jobs:
             .github/scripts/i18n-review
           sparse-checkout-cone-mode: false
 
+      # Keep in lockstep with i18n-review-checks.yml, which lints/tests this
+      # tool — checking it on a different runtime than it ships on is pointless.
+      # Tracks current LTS rather than the repo's NODE_VERSION: i18n-review is
+      # outside the workspace and shares no runtime with Ghost.
       - name: Set up Node
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: '20'
+          node-version: '24'
 
+      # npm, not pnpm: this tool is intentionally outside the pnpm workspace so
+      # this job can install from a sparse checkout of main without the root
+      # lockfile or lifecycle hooks. Don't "fix" it to pnpm, and don't fold the
+      # tool into the workspace — see .github/scripts/i18n-review/README.md.
+      # --omit=dev keeps eslint (a dev dep, used by i18n-review-checks.yml) out
+      # of this secrets-holding job.
       - name: Install dependencies
         working-directory: .github/scripts/i18n-review
         run: npm ci --no-audit --no-fund --omit=dev

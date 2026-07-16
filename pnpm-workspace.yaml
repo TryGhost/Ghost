@@ -6,6 +6,7 @@ packages:
   - 'packages/**'
   - '!packages/_template'
   - 'configs/*'
+  - 'scripts'
 
 strictDepBuilds: true
 catalogMode: strict
@@ -94,6 +95,7 @@ catalog:
   '@types/react': 18.3.31
   '@types/react-dom': 18.3.7
   '@types/sanitize-html': 2.16.1
+  '@types/semver': 7.7.1
   '@types/sinon': 22.0.0
   '@types/validator': 13.15.10
   '@typescript-eslint/eslint-plugin': 8.49.0
@@ -140,6 +142,7 @@ catalog:
   react-dom: 18.3.1
   react-hot-toast: 2.6.0
   react-router: 7.18.1
+  semver: 7.8.5
   sinon: 22.0.0
   sonner: 2.0.7
   storybook: 10.4.6

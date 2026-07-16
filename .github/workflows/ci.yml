@@ -111,6 +111,10 @@ jobs:
           filters: |
             shared: &shared
               - '.github/**'
+              # The @internal/scripts workspace sits outside .github but is
+              # invoked by the workflows below, so it needs the same treatment
+              # the '.github/**' glob used to give it when it lived there.
+              - 'scripts/**'
               # Renovate config / workflow files have no Ghost
               # runtime/test impact. Anchored as &renovate_only and
               # referenced from every filter below so a PR touching
@@ -130,6 +134,7 @@ jobs:
               - *renovate_only
               - '.github/actions/**'
               - '.github/scripts/**'
+              - 'scripts/**'
             core:
               - *shared
               - 'ghost/**'
@@ -238,7 +243,7 @@ jobs:
           # itself per-app — instead we emit the matrix here and it skips when
           # the result is `[]`. The publish job's own is_main / event gates keep
           # tags and PRs from publishing regardless of what this lists.
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node .github/scripts/build-public-apps-matrix.js "$AFFECTED_PROJECTS")
+          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.cjs "$AFFECTED_PROJECTS")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
     outputs:
@@ -289,7 +294,7 @@ jobs:
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node .github/scripts/check-app-version-bump.js
+        run: node scripts/check-app-version-bump.cjs
 
   job_migration_integrity_check:
     name: Check migration integrity
@@ -310,7 +315,7 @@ jobs:
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node .github/scripts/check-migration-integrity.js
+        run: node scripts/check-migration-integrity.cjs
 
   job_lint:
     runs-on: ubuntu-latest
@@ -1882,7 +1887,7 @@ jobs:
           # minor/major line). The patch digit in package.json is otherwise
           # unused — Ghost core resolves apps via <pkg>@~<major.minor> on
           # jsDelivr, so the newest published patch is what sites receive.
-          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/.github/scripts/compute-next-app-version.js" .)
+          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/scripts/compute-next-app-version.cjs" .)
           echo "Publishing ${{ matrix.package_name }}@${NEXT_VERSION}"
 
           # Write it before building so the version baked into the bundle
@@ -2019,7 +2024,7 @@ jobs:
   # only ever sees package versions whose content shipped in a released Ghost.
   # Ghost itself never installs these from npm (dev/CI use workspace links,
   # the production archive embeds them as component tarballs) — publishing is
-  # for external consumers only. See .github/scripts/publish-koenig-packages.js
+  # for external consumers only. See scripts/publish-koenig-packages.cjs
   # --------------------------------------------------------------------------- #
   publish_koenig_packages:
     needs: [publish_ghost]
@@ -2067,7 +2072,7 @@ jobs:
         run: npm install -g npm@11
 
       - name: Publish changed packages
-        run: node .github/scripts/publish-koenig-packages.js "$GITHUB_REF_NAME"
+        run: node scripts/publish-koenig-packages.cjs "$GITHUB_REF_NAME"
 
   # --------------------------------------------------------------------------- #
   # Trigger docker-library-ghost auto-update — runs after the npm package is
@@ -2122,7 +2127,7 @@ jobs:
         run: |
           PREV_TAG="${{ steps.prev_tag.outputs.tag }}"
           if [ -n "$PREV_TAG" ]; then
-            node scripts/lib/release-notes.js "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
+            node scripts/lib/release-notes.cjs "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
           else
             echo "This release contains fixes for minor bugs and issues reported by Ghost users." > /tmp/release-notes.md
           fi

@@ -93,7 +93,7 @@ function getChangedApps(changedFiles) {
 }
 
 function getPrVersion(app) {
-    const packageJsonPath = path.resolve(__dirname, `../../${app.path}/package.json`);
+    const packageJsonPath = path.resolve(__dirname, `../${app.path}/package.json`);
 
     if (!fs.existsSync(packageJsonPath)) {
         throw new Error(`${app.path}/package.json does not exist in this PR`);
@@ -124,7 +124,7 @@ function readVersionFromDefaults(defaultsContent, app, sourceLabel) {
 }
 
 function getPrDefaultsVersion(app) {
-    const defaultsPath = path.resolve(__dirname, '../../ghost/core/core/shared/config/defaults.json');
+    const defaultsPath = path.resolve(__dirname, '../ghost/core/core/shared/config/defaults.json');
 
     if (!fs.existsSync(defaultsPath)) {
         throw new Error('ghost/core/core/shared/config/defaults.json does not exist in this PR');

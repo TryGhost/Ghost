@@ -25,7 +25,7 @@
         "lint:types": "tsc --noEmit",
         "lint": "pnpm run '/^lint:/'",
         "preship": "pnpm lint",
-        "ship": "node ../../.github/scripts/release-apps.js",
+        "ship": "node ../../scripts/release-apps.cjs",
         "prepublishOnly": "pnpm build"
     },
     "browserslist": {

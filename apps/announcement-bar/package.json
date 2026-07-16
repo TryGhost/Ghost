@@ -26,7 +26,7 @@
         "test:unit": "pnpm test:ci",
         "lint": "eslint src test --cache",
         "preship": "pnpm lint",
-        "ship": "node ../../.github/scripts/release-apps.js",
+        "ship": "node ../../scripts/release-apps.cjs",
         "prepublishOnly": "pnpm build"
     },
     "browserslist": {
