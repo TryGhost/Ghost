@@ -132,10 +132,19 @@ function appendClearCookie(res) {
 
 function getCleanRedirectUrl(req) {
     const currentUrl = new URL(req.originalUrl || req.url, urlUtils.getSiteUrl());
+    const subdir = urlUtils.getSubdir();
+
     currentUrl.searchParams.delete(QUERY_PARAM);
     currentUrl.searchParams.delete(HIDE_QUERY_PARAM);
 
-    return `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`;
+    // A proxy can strip the configured subdirectory before forwarding the
+    // request to Ghost. Preserve it in the public redirect URL unless the
+    // request path already includes it.
+    const pathname = subdir && currentUrl.pathname !== subdir && !currentUrl.pathname.startsWith(`${subdir}/`)
+        ? urlUtils.urlJoin(subdir, currentUrl.pathname)
+        : currentUrl.pathname;
+
+    return `${pathname}${currentUrl.search}${currentUrl.hash}`;
 }
 
 function getQueryValue(value) {
