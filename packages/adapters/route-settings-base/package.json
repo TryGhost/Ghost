@@ -1,6 +1,5 @@
 {
   "name": "@tryghost/adapter-base-route-settings",
-  "version": "0.0.0",
   "description": "The adapter-base-route-settings package for Ghost.",
   "private": true,
   "type": "module",

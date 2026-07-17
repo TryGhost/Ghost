@@ -1,7 +1,6 @@
 {
     "name": "@tryghost/admin-x-framework",
     "type": "module",
-    "version": "0.0.0",
     "repository": "https://github.com/TryGhost/Ghost/tree/main/apps/admin-x-framework",
     "author": "Ghost Foundation",
     "private": true,

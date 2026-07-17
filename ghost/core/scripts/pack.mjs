@@ -35,6 +35,11 @@ const CORE_DIR = path.resolve(import.meta.dirname, '..');
 const ROOT_DIR = path.resolve(CORE_DIR, '../..');
 const BUILD_DIR = path.join(CORE_DIR, 'package');
 const COMPONENTS_DIR = path.join(BUILD_DIR, 'components');
+const BUILD_PKG_PATH = path.join(BUILD_DIR, 'package.json');
+
+// Placeholder stamped onto versionless workspace packages for the duration of
+// the pack — see stampMissingVersions.
+const STAMPED_VERSION = '0.0.0';
 
 const readJson = async file => JSON.parse(await fs.readFile(file, 'utf8'));
 const writeJson = (file, data) => fs.writeFile(file, JSON.stringify(data, null, 2) + '\n');
@@ -74,6 +79,47 @@ function parsePackJson(output) {
     }
 }
 
+/**
+ * Stamp STAMPED_VERSION onto every workspace package that doesn't declare a
+ * version, and return a function that restores the manifests byte-for-byte.
+ *
+ * Private packages declare no version: nothing reads it, since every workspace
+ * dep resolves through `workspace:`. `pnpm pack` is the exception — it resolves
+ * the workspace protocol against each package's on-disk manifest, and a
+ * versionless target fails the pack with
+ * ERR_PNPM_CANNOT_RESOLVE_WORKSPACE_PROTOCOL. Neither pnpmfile hook can supply
+ * the version: that resolution runs before `beforePacking`, and `readPackage`
+ * doesn't feed it either.
+ *
+ * This covers every versionless workspace package, not just ghost's prod
+ * closure, because the closure's devDependencies (`@internal/cfg-*`) get
+ * resolved too — `beforePacking` strips them, but only after they've resolved.
+ *
+ * The value never reaches a consumer: it only names the component tarballs,
+ * which are wired up by exact filename (the `components` map below, and the
+ * file:components/*.tgz overrides written in step 3).
+ *
+ * @returns {Promise<() => Promise<void>>} restores the stamped manifests
+ */
+async function stampMissingVersions() {
+    const {stdout} = await pnpm(['list', '--recursive', '--depth', '-1', '--json']);
+    const stamped = await Promise.all(JSON.parse(stdout).map(async ({path: dir}) => {
+        const file = path.join(dir, 'package.json');
+        const raw = await fs.readFile(file, 'utf8');
+        const manifest = JSON.parse(raw);
+        if (manifest.version) {
+            return null;
+        }
+        await writeJson(file, {...manifest, version: STAMPED_VERSION});
+        return {file, raw};
+    }));
+    const originals = stamped.filter(Boolean);
+    console.log(`Stamping version ${STAMPED_VERSION} onto ${originals.length} versionless workspace package(s)`);
+    return async () => {
+        await Promise.all(originals.map(({file, raw}) => fs.writeFile(file, raw)));
+    };
+}
+
 // Read the root manifest + workspace config up front (independent of the build).
 // packageManager is required by corepack and verified by CI release checks.
 const [rootPkg, rootWorkspace] = await Promise.all([
@@ -88,64 +134,70 @@ if (!rootPkg.packageManager) {
 await fs.rm(BUILD_DIR, {recursive: true, force: true});
 await fs.mkdir(COMPONENTS_DIR, {recursive: true});
 
-// 1. Pack the production workspace dependency closure as component tarballs.
-// `--filter-prod "ghost^..."` selects exactly the prod (not dev) workspace deps
-// of ghost, transitively — the kg-* editor packages (which depend on each other),
-// @tryghost/i18n, parse-email-address, and the adapter-base-* packages. These
-// are the versions this Ghost build was tested against; ghost-cli must install
-// them from these bundled tarballs, never from the registry.
-console.log('Packing workspace components (pnpm pack, prod closure)...');
-const {stdout: packJson} = await pnpm([
-    '--filter-prod', 'ghost^...',
-    'pack',
-    '--pack-destination', COMPONENTS_DIR,
-    '--json'
-]);
-
-// `pnpm pack --json` emits one JSON object per packed package.
+// Both pack steps resolve `workspace:` specs against the on-disk manifests, so
+// the versionless packages need a version for as long as they run.
 const components = new Map(); // package name → tarball filename
-for (const obj of parsePackJson(packJson)) {
-    const name = obj.name;
-    const file = path.basename(obj.filename || obj.path || '');
-    if (!name || !file) {
-        continue;
-    }
-    components.set(name, file);
-    console.log(`  ${name} → components/${file}`);
-}
-if (components.size === 0) {
-    throw new Error('pnpm pack produced no component tarballs');
-}
-await Promise.all([...components].map(async ([name, file]) => {
-    if (!await exists(path.join(COMPONENTS_DIR, file))) {
-        throw new Error(`Component tarball missing after pack: ${file} (for ${name})`);
-    }
-}));
+const restoreVersions = await stampMissingVersions();
+try {
+    // 1. Pack the production workspace dependency closure as component tarballs.
+    // `--filter-prod "ghost^..."` selects exactly the prod (not dev) workspace deps
+    // of ghost, transitively — the kg-* editor packages (which depend on each other),
+    // @tryghost/i18n, parse-email-address, and the adapter-base-* packages. These
+    // are the versions this Ghost build was tested against; ghost-cli must install
+    // them from these bundled tarballs, never from the registry.
+    console.log('\nPacking workspace components (pnpm pack, prod closure)...');
+    const {stdout: packJson} = await pnpm([
+        '--filter-prod', 'ghost^...',
+        'pack',
+        '--pack-destination', COMPONENTS_DIR,
+        '--json'
+    ]);
 
-// 2. Pack `ghost` itself. The root .pnpmfile.mjs beforePacking hook reads
-// GHOST_COMPONENTS to rewrite ghost's workspace deps to file:components/*.tgz,
-// and strips devDependencies/nx/scripts from the packed manifest. Extract the
-// resulting tarball into package/ (npm layout: a top-level package/ dir).
-console.log('\nPacking ghost (pnpm pack)...');
-const ghostPackDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ghost-pack-'));
-await pnpm(
-    ['--filter', 'ghost', 'pack', '--pack-destination', ghostPackDir],
-    {env: {...process.env, GHOST_COMPONENTS: JSON.stringify(Object.fromEntries(components))}}
-);
-const ghostTgz = (await fs.readdir(ghostPackDir)).find(f => f.endsWith('.tgz'));
-if (!ghostTgz) {
-    throw new Error('pnpm pack did not produce a ghost tarball');
+    // `pnpm pack --json` emits one JSON object per packed package.
+    for (const obj of parsePackJson(packJson)) {
+        const name = obj.name;
+        const file = path.basename(obj.filename || obj.path || '');
+        if (!name || !file) {
+            continue;
+        }
+        components.set(name, file);
+        console.log(`  ${name} → components/${file}`);
+    }
+    if (components.size === 0) {
+        throw new Error('pnpm pack produced no component tarballs');
+    }
+    await Promise.all([...components].map(async ([name, file]) => {
+        if (!await exists(path.join(COMPONENTS_DIR, file))) {
+            throw new Error(`Component tarball missing after pack: ${file} (for ${name})`);
+        }
+    }));
+
+    // 2. Pack `ghost` itself. The root .pnpmfile.mjs beforePacking hook reads
+    // GHOST_COMPONENTS to rewrite ghost's workspace deps to file:components/*.tgz,
+    // and strips devDependencies/nx/scripts from the packed manifest. Extract the
+    // resulting tarball into package/ (npm layout: a top-level package/ dir).
+    console.log('\nPacking ghost (pnpm pack)...');
+    const ghostPackDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ghost-pack-'));
+    await pnpm(
+        ['--filter', 'ghost', 'pack', '--pack-destination', ghostPackDir],
+        {env: {...process.env, GHOST_COMPONENTS: JSON.stringify(Object.fromEntries(components))}}
+    );
+    const ghostTgz = (await fs.readdir(ghostPackDir)).find(f => f.endsWith('.tgz'));
+    if (!ghostTgz) {
+        throw new Error('pnpm pack did not produce a ghost tarball');
+    }
+    // Extract into CORE_DIR; the tarball's top-level package/ dir becomes BUILD_DIR,
+    // merging alongside the components/ dir packed in step 1.
+    await execFileAsync('tar', ['xzf', path.join(ghostPackDir, ghostTgz), '-C', CORE_DIR]);
+    await fs.rm(ghostPackDir, {recursive: true, force: true});
+} finally {
+    await restoreVersions();
 }
-// Extract into CORE_DIR; the tarball's top-level package/ dir becomes BUILD_DIR,
-// merging alongside the components/ dir packed in step 1.
-await execFileAsync('tar', ['xzf', path.join(ghostPackDir, ghostTgz), '-C', CORE_DIR]);
-await fs.rm(ghostPackDir, {recursive: true, force: true});
 
 // Carry the root packageManager over — ghost/core's own manifest doesn't declare one.
-const pkgPath = path.join(BUILD_DIR, 'package.json');
-const pkg = await readJson(pkgPath);
+const pkg = await readJson(BUILD_PKG_PATH);
 pkg.packageManager = rootPkg.packageManager;
-await writeJson(pkgPath, pkg);
+await writeJson(BUILD_PKG_PATH, pkg);
 console.log(`  Set packageManager: ${rootPkg.packageManager.split('+')[0]}`);
 
 // 3. Write a trimmed pnpm-workspace.yaml. We keep:
@@ -194,7 +246,7 @@ await pnpm(
 console.log('\nValidating build output...');
 const requiredFiles = ['pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json'];
 const [packagedPkg, packagedWorkspace, missingFiles, componentTgzCount] = await Promise.all([
-    readJson(pkgPath),
+    readJson(BUILD_PKG_PATH),
     readYaml(path.join(BUILD_DIR, 'pnpm-workspace.yaml')),
     Promise.all(requiredFiles.map(async rel => (await exists(path.join(BUILD_DIR, rel)) ? null : rel))),
     fs.readdir(COMPONENTS_DIR).then(files => files.filter(f => f.endsWith('.tgz')).length)
