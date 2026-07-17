@@ -26,7 +26,11 @@ function parseArgs() {
             'bump-type': {type: 'string', default: 'auto'},
             'branch': {type: 'string', default: 'main'},
             'dry-run': {type: 'boolean', default: false},
-            'skip-checks': {type: 'boolean', default: false}
+            'skip-checks': {type: 'boolean', default: false},
+            // Version and commit the pending package changesets without touching
+            // Ghost's version, cutting a tag, or publishing. Publishing is a
+            // separate step (the "Publish Packages" workflow_dispatch).
+            'packages-only': {type: 'boolean', default: false}
         },
     });
 
@@ -56,6 +60,22 @@ function log(msg) {
 
 function logStep(msg) {
     console.log(`\n▸ ${msg}`);
+}
+
+// Consume changesets → version the publishable workspace packages. `pnpm
+// version -r` reads .changeset/, writes each package's new version, rewrites
+// dependent workspace ranges, and deletes the consumed intents. Recursive mode
+// never creates its own commit or tag, so the caller commits the result.
+function applyChangesetVersions() {
+    if (!existsSync(join(ROOT_DIR, '.changeset'))) {
+        log('No .changeset directory — nothing to version');
+        return;
+    }
+    // --no-git-checks: the working tree is intentionally dirty here — the normal
+    // release has already written the Ghost version bumps (committed together
+    // below), and the packages-only path commits straight after. `pnpm version
+    // -r` refuses on an unclean tree by default.
+    run('pnpm version -r --no-git-checks');
 }
 
 // --- Version detection ---
@@ -197,10 +217,57 @@ function updateThemeSubmodule(themeDir, themeName) {
     return false;
 }
 
+// --- Packages-only release ---
+
+// Version and commit the pending package changesets without bumping Ghost,
+// cutting a tag, or advancing the RC. Publishing happens separately (the
+// "Publish Packages" workflow_dispatch, which publishes any committed version
+// missing from npm), so this only needs to land the bumps on the branch.
+async function runPackagesOnlyRelease(opts) {
+    console.log('Ghost Packages-Only Release');
+    console.log('===========================');
+    log(`Branch: ${opts.branch}`);
+    log(`Dry run: ${opts.dryRun}`);
+
+    logStep('Applying changeset versions to publishable packages');
+    applyChangesetVersions();
+
+    // version -r writes package.json bumps, rewrites workspace ranges, removes
+    // consumed changesets, and may touch the lockfile. Nothing staged means
+    // there were no pending changesets to release.
+    const changes = run('git status --porcelain');
+    if (!changes) {
+        log('No pending package changes to release');
+        console.log('\n✓ Nothing to publish');
+        return;
+    }
+
+    logStep('Committing package versions');
+    run('git add -A');
+    run('git commit -m "Versioned pending package changesets"');
+
+    if (opts.dryRun) {
+        logStep('DRY RUN — skipping push');
+        log(`Would push branch ${opts.branch}`);
+    } else {
+        logStep('Pushing');
+        run('git push origin HEAD');
+        log('Pushed package version bumps');
+    }
+
+    console.log('\n✓ Packages-only release complete');
+    log('Run the "Publish Packages" workflow to publish the new versions to npm');
+}
+
 // --- Main ---
 
 async function main() {
     const opts = parseArgs();
+
+    if (opts.packagesOnly) {
+        await runPackagesOnlyRelease(opts);
+        return;
+    }
 
     console.log('Ghost Release Script');
     console.log('====================');
@@ -269,8 +336,18 @@ async function main() {
     writePkgVersion(GHOST_CORE_PKG, newVersion);
     writePkgVersion(GHOST_ADMIN_PKG, newVersion);
 
+    // 7b. Consume changesets → version the publishable workspace packages
+    // (kg-*, packages/*, ...). These changes land in the Ghost release commit
+    // below, tying every package version to the Ghost release that carries its
+    // content; publishing (scripts/publish-packages.js) reads those off npm.
+    logStep('Applying changeset versions to publishable packages');
+    applyChangesetVersions();
+
     // 8. Commit and tag
-    run(`git add ${relative(ROOT_DIR, GHOST_CORE_PKG)} ${relative(ROOT_DIR, GHOST_ADMIN_PKG)}`);
+    // Stage everything: the two Ghost manifests plus whatever `pnpm version -r`
+    // touched (package.jsons, workspace-range rewrites, removed changesets,
+    // pnpm-lock.yaml). Theme submodule bumps are already committed above.
+    run('git add -A');
     run(`git commit -m "v${newVersion}"`);
     run(`git tag v${newVersion}`);
     log(`Created tag v${newVersion}`);

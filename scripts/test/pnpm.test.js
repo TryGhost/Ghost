@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import {
     getWorkspace,
     getPublishablePackages,
+    loadPackage,
     resolvePackageCatalog,
 } from '../lib/pnpm.js';
 
@@ -140,6 +141,18 @@ describe('resolvePackageCatalog', () => {
             () => resolvePackageCatalog(workspace, {dependencies: {lodash: 'catalog:react17'}}),
             /Could not resolve catalog dependency lodash from catalog react17/
         );
+    });
+});
+
+describe('loadPackage (against the live repo)', () => {
+    it('parses a package manifest present in the base commit', async () => {
+        const manifest = await loadPackage('HEAD', 'package.json');
+        assert.strictEqual(typeof manifest.name, 'string');
+    });
+
+    it('returns null when the package is absent from the base commit (new package)', async () => {
+        const manifest = await loadPackage('HEAD', 'apps/does-not-exist/package.json');
+        assert.strictEqual(manifest, null);
     });
 });
 

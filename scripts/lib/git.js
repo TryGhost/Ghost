@@ -7,17 +7,36 @@ import {ROOT_DIR} from './constants.js';
 // regardless of the process working directory.
 const $ = $$({cwd: ROOT_DIR});
 
+// Git prints one of these when the commit is valid but the path isn't in it —
+// including the new-file case, where the working tree has the path but the base
+// commit doesn't ("exists on disk, but not in"). Both are distinct from an
+// invalid commit ("invalid object name") or any other git failure.
+const MISSING_PATH_RE = /does not exist in|exists on disk, but not in/;
+
+function isMissingPathError(error) {
+    return MISSING_PATH_RE.test(`${error.stderr ?? ''}\n${error.message ?? ''}`);
+}
+
 /**
  * Retrieves the contents of a file from a specific commit in a Git repository.
+ *
  * @param {string} commitHash - The hash of the commit to retrieve the file from.
  * @param {string} filePath - The path to the file within the repository.
- * @returns {Promise<string>} - A promise that resolves to the contents of the file.
+ * @param {object} [options]
+ * @param {boolean} [options.allowMissing=false] - When true, resolve to null if
+ *   the path does not exist in the commit instead of throwing. Invalid commits
+ *   and other git failures still throw.
+ * @returns {Promise<string|null>} - The file contents, or null when the path is
+ *   missing and allowMissing is set.
  */
-export async function getFileFromCommit(commitHash, filePath) {
+export async function getFileFromCommit(commitHash, filePath, {allowMissing = false} = {}) {
     try {
         const {stdout} = await $`git show ${commitHash}:${filePath}`;
         return stdout;
     } catch (error) {
+        if (allowMissing && isMissingPathError(error)) {
+            return null;
+        }
         throw new Error(`Failed to retrieve file from commit: ${error.message}`);
     }
 }
@@ -57,7 +76,7 @@ export async function pathHasChanges(path, baseCommit, headCommit, ignorePattern
     let changedFiles = await getChangedFiles(path, baseCommit, headCommit);
 
     if (ignorePatterns.length > 0) {
-        const match = pm(ignorePatterns);
+        const match = pm(ignorePatterns.map(pattern => `${path}/${pattern}`));
         changedFiles = changedFiles.filter(file => !match(file));
     }
 

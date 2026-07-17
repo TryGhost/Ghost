@@ -37,7 +37,10 @@ export async function loadWorkspace(commitHash) {
 }
 
 export async function loadPackage(commitHash, packagePath) {
-    const fileContent = await getFileFromCommit(commitHash, packagePath);
+    // allowMissing: a package absent from the base commit is a new package, not
+    // an error. getFileFromCommit returns null and we treat it as such, so the
+    // caller follows the changeset-required path. Invalid commits still throw.
+    const fileContent = await getFileFromCommit(commitHash, packagePath, {allowMissing: true});
     if (!fileContent) {
         // file does not exist in this commit, return null to indicate that
         // this is a new package

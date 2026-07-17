@@ -2,7 +2,6 @@
   "name": "@tryghost/adapter-base-redirects",
   "version": "0.0.0",
   "description": "The adapter-base-redirects package for Ghost.",
-  "private": true,
   "type": "module",
   "repository": {
     "type": "git",
