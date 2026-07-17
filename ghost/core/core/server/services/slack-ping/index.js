@@ -2,14 +2,14 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
-const {blogIcon} = require('../lib/image');
-const urlUtils = require('../../shared/url-utils');
-const urlService = require('./url');
-const settingsCache = require('../../shared/settings-cache');
+const {blogIcon} = require('../../lib/image');
+const urlUtils = require('../../../shared/url-utils');
+const urlService = require('../url');
+const settingsCache = require('../../../shared/settings-cache');
 const moment = require('moment');
 
 // Used to receive post.published model event, but also the slack.test event from the API which iirc this was done to avoid circular deps a long time ago
-const events = require('../lib/common/events');
+const events = require('../../lib/common/events');
 
 const messages = {
     requestFailedError: 'The {service} service was unable to send a ping request, your site will continue to function.',
@@ -193,7 +193,7 @@ function slackTestPing() {
     });
 }
 
-function listen() {
+function init() {
     if (!events.hasRegisteredListener('post.published', 'slackListener')) {
         events.on('post.published', slackListener);
     }
@@ -205,5 +205,5 @@ function listen() {
 
 // Public API
 module.exports = {
-    listen: listen
+    init: init
 };
