@@ -69,12 +69,20 @@ class SlackPingService {
                 const membersContentIdx = post.html.indexOf('<!--members-only-->');
                 const substringEnd = membersContentIdx > -1 ? membersContentIdx : post.html.length;
 
+                // Remove members-only content
+                let plaintext = post.html.substring(0, substringEnd);
+
+                // Strip out HTML to a fixed point: a single replace pass can
+                // leave a tag reconstructed from nested input, so repeat until
+                // nothing changes
+                let previous;
+                do {
+                    previous = plaintext;
+                    plaintext = plaintext.replace(/<[^>]+>/g, '');
+                } while (plaintext !== previous);
+
                 description = `${
-                    post.html
-                        // Remove members-only content
-                        .substring(0, substringEnd)
-                        // Strip out HTML
-                        .replace(/<[^>]+>/g, '')
+                    plaintext
                         // Split into sentences
                         .split('.')
                         // Remove empty strings
