@@ -2,7 +2,7 @@
 # Minimal Development Dockerfile for Ghost Core
 # Source code is mounted at runtime for hot-reload support
 
-ARG NODE_VERSION=22.18.0
+ARG NODE_VERSION=22.23.1
 
 FROM node:$NODE_VERSION-bullseye-slim
 
@@ -18,8 +18,12 @@ RUN apt-get update && \
 
 WORKDIR /home/ghost
 
-# Copy root workspace files for dependency installation
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Copy root workspace files for dependency installation. .pnpmfile.mjs must be
+# included: pnpm records its checksum (pnpmfileChecksum) in pnpm-lock.yaml, so
+# the --frozen-lockfile install below fails with a lockfile config mismatch if
+# the file is absent — even though its only hook (beforePacking) never runs
+# during install.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.mjs ./
 
 # Copy the manifests of the top-level dirs that hold ghost/core's dependency
 # closure — ghost/* (core, i18n, parse-email-address), koenig/* (the kg-*
@@ -41,8 +45,12 @@ COPY --parents \
     packages/**/package.json \
     ./
 
-# Copy root lifecycle scripts/hooks needed by `pnpm install`
-COPY .github/scripts .github/scripts
+# Copy root lifecycle scripts/hooks needed by `pnpm install`. Only the preinstall
+# hook is taken from the scripts/ workspace — copying the whole dir would bust
+# this layer (and the install below) whenever any unrelated script changes. Its
+# package.json comes along so the workspace member pnpm-workspace.yaml declares
+# actually exists; the filtered install below never builds it.
+COPY scripts/package.json scripts/enforce-package-manager.js scripts/
 COPY .github/hooks .github/hooks
 
 # Enable corepack so it can read packageManager from package.json and provide pnpm

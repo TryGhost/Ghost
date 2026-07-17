@@ -2,9 +2,10 @@ import LOCALE_DATA from '@tryghost/i18n/lib/locale-data.json';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {SelectWithOther, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {SelectWithOther, SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {validateLocale} from '../../../utils/locale-validation';
+import {withErrorBoundary} from '../../error-boundary';
 import type {SelectOption} from '@tryghost/admin-x-design-system';
 
 const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {

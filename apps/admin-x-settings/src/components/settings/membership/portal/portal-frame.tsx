@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {LoadingIndicator} from '@tryghost/shade/components';
 
 type PortalFrameProps = {
     href: string;
@@ -62,7 +62,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     }
 
     return (
-        <>{isInvisible && <div className={loaderClassNames}><span><LoadingIndicator /></span></div>}
+        <>{isInvisible && <div className={loaderClassNames}><span><LoadingIndicator size='lg' /></span></div>}
             <iframe
                 ref={iframeRef}
                 className={!isInvisible && hasLoaded ? '' : loaderVisibility}

@@ -1329,7 +1329,7 @@ describe('Email renderer', function () {
         });
     });
 
-    describe('getPreviewSegment', function () {
+    describe('getSegmentForAudience', function () {
         let emailRenderer;
 
         beforeEach(function () {
@@ -1354,17 +1354,17 @@ describe('Email renderer', function () {
         it('maps the paid audience to the tier access segment for a tiers post', function () {
             const post = createTiersPost([{slug: 'gold'}, {slug: 'silver'}]);
             assert.equal(
-                emailRenderer.getPreviewSegment(post, 'status:-free'),
+                emailRenderer.getSegmentForAudience(post, 'paid'),
                 'status:-free+(product:\'gold\',product:\'silver\')'
             );
         });
 
-        it('keeps the free audience segment for a tiers post', function () {
+        it('maps the free audience to the free segment', function () {
             const post = createTiersPost([{slug: 'gold'}]);
-            assert.equal(emailRenderer.getPreviewSegment(post, 'status:free'), 'status:free');
+            assert.equal(emailRenderer.getSegmentForAudience(post, 'free'), 'status:free');
         });
 
-        it('passes the paid audience through for non-tiers posts', function () {
+        it('maps the paid audience to the paid segment for non-tiers posts', function () {
             const post = {
                 get: (key) => {
                     if (key === 'visibility') {
@@ -1372,17 +1372,47 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            assert.equal(emailRenderer.getPreviewSegment(post, 'status:-free'), 'status:-free');
+            assert.equal(emailRenderer.getSegmentForAudience(post, 'paid'), 'status:-free');
         });
 
-        it('passes through for a tiers post with no tiers', function () {
+        it('maps the paid audience to the paid segment for a tiers post with no tiers', function () {
             const post = createTiersPost([]);
-            assert.equal(emailRenderer.getPreviewSegment(post, 'status:-free'), 'status:-free');
+            assert.equal(emailRenderer.getSegmentForAudience(post, 'paid'), 'status:-free');
         });
 
-        it('passes through a null segment', function () {
+        it('maps a null status to an unsegmented render', function () {
             const post = createTiersPost([{slug: 'gold'}]);
-            assert.equal(emailRenderer.getPreviewSegment(post, null), null);
+            assert.equal(emailRenderer.getSegmentForAudience(post, null), null);
+        });
+
+        it('narrows the paid audience to a selected tier', function () {
+            const post = createTiersPost([{slug: 'gold'}, {slug: 'silver'}]);
+            assert.equal(
+                emailRenderer.getSegmentForAudience(post, 'paid', 'silver'),
+                'status:-free+product:\'silver\''
+            );
+        });
+
+        it('escapes quotes when narrowing to a tier', function () {
+            const post = createTiersPost([{slug: 'gold'}]);
+            assert.equal(
+                emailRenderer.getSegmentForAudience(post, 'paid', 'we\'re-fancy'),
+                'status:-free+product:\'we\\\'re-fancy\''
+            );
+        });
+
+        it('escapes backslashes when narrowing to a tier', function () {
+            const post = createTiersPost([{slug: 'gold'}]);
+            // a trailing backslash must not swallow the closing quote
+            assert.equal(
+                emailRenderer.getSegmentForAudience(post, 'paid', 'trailing\\'),
+                'status:-free+product:\'trailing\\\\\''
+            );
+        });
+
+        it('ignores a selected tier for the free audience', function () {
+            const post = createTiersPost([{slug: 'gold'}]);
+            assert.equal(emailRenderer.getSegmentForAudience(post, 'free', 'gold'), 'status:free');
         });
     });
 
@@ -2414,6 +2444,94 @@ describe('Email renderer', function () {
             const preview = await emailRenderer.renderBody(post, newsletter, 'status:-free+(product:\'gold\')', {});
             assert(preview.html.includes('finishing part only for members'));
             assert(!preview.html.includes('Become a paid member of Test Blog to get access to all'));
+        });
+
+        it('renders tier-gated content according to a specific tier segment', async function () {
+            renderedPost = '<div> Lexical Test </div> some text for both <!--members-only--> finishing part only for members';
+            const post = {
+                related: (key) => {
+                    if (key === 'tiers') {
+                        return {toJSON: () => [{slug: 'gold'}, {slug: 'silver'}]};
+                    }
+                    return null;
+                },
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+                    if (key === 'visibility') {
+                        return 'tiers';
+                    }
+                    if (key === 'title') {
+                        return 'Test Post';
+                    }
+                },
+                getLazyRelation: () => {
+                    return {models: [{get: k => (k === 'name' ? 'Test Author' : undefined)}]};
+                }
+            };
+            const newsletter = {
+                get: (key) => {
+                    if (key === 'show_post_title_section' || key === 'feedback_enabled') {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+
+            const silver = await emailRenderer.renderBody(post, newsletter, 'status:-free+product:\'silver\'', {});
+            assert(silver.html.includes('finishing part only for members'));
+            assert(!silver.html.includes('Become a paid member of Test Blog to get access to all'));
+
+            const bronze = await emailRenderer.renderBody(post, newsletter, 'status:-free+product:\'bronze\'', {});
+            assert(!bronze.html.includes('finishing part only for members'));
+            assert(bronze.html.includes('Become a paid member of Test Blog to get access to all'));
+
+            // the plain paid segment includes members without a matching tier -> paywall
+            const plainPaid = await emailRenderer.renderBody(post, newsletter, 'status:-free', {});
+            assert(!plainPaid.html.includes('finishing part only for members'));
+            assert(plainPaid.html.includes('Become a paid member of Test Blog to get access to all'));
+        });
+
+        it('does not paywall a tier segment on a paid-visibility post', async function () {
+            renderedPost = '<div> Lexical Test </div> some text for both <!--members-only--> finishing part only for members';
+            const post = {
+                related: () => {
+                    return null;
+                },
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+                    if (key === 'visibility') {
+                        return 'paid';
+                    }
+                    if (key === 'title') {
+                        return 'Test Post';
+                    }
+                },
+                getLazyRelation: () => {
+                    return {models: [{get: k => (k === 'name' ? 'Test Author' : undefined)}]};
+                }
+            };
+            const newsletter = {
+                get: (key) => {
+                    if (key === 'show_post_title_section' || key === 'feedback_enabled') {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+
+            // every tier member is a paid member, so a tier segment on a
+            // paid-members-only post gets the full content
+            const tierSegment = await emailRenderer.renderBody(post, newsletter, 'status:-free+product:\'gold\'', {});
+            assert(tierSegment.html.includes('finishing part only for members'));
+            assert(!tierSegment.html.includes('Become a paid member of Test Blog to get access to all'));
+
+            const freeSegment = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+            assert(!freeSegment.html.includes('finishing part only for members'));
+            assert(freeSegment.html.includes('Become a paid member of Test Blog to get access to all'));
         });
 
         it('does not paywall an unsegmented (null segment) render of a gated post', async function () {

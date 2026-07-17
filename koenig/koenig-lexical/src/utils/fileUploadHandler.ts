@@ -1,4 +1,5 @@
 import {$getNodeByKey} from 'lexical';
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 
 export const stripFileExtension = (fileName) => {
     const fileExtension = fileName.split('.').pop();
@@ -31,10 +32,12 @@ export const fileUploadHandler = async (files, nodeKey, editor, upload) => {
     };
     await editor.update(() => {
         const node = $getNodeByKey(nodeKey);
-        node.fileTitle = stripFileExtension(dataset.fileName); // initially sets the title to the file name
-        node.fileName = dataset.fileName;
-        node.fileSize = dataset.fileSize;
-        node.src = dataset.src;
+        if ($isKoenigCard(node)) {
+            node.fileTitle = stripFileExtension(dataset.fileName); // initially sets the title to the file name
+            node.fileName = dataset.fileName;
+            node.fileSize = dataset.fileSize;
+            node.src = dataset.src;
+        }
     });
 
     return;

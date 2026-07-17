@@ -1,9 +1,15 @@
-import {DesignSystemAppProps} from '@tryghost/admin-x-design-system';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {TopLevelFrameworkProps} from '../providers/framework-provider';
 
-const fetchKoenigLexical: DesignSystemAppProps['fetchKoenigLexical'] = async () => {
+// Structurally matches admin-x-design-system's DesignSystemAppProps so apps can
+// type their designSystem prop against either package.
+interface DesignSystemProps {
+    darkMode: boolean;
+    fetchKoenigLexical: () => Promise<unknown>;
+}
+
+const fetchKoenigLexical: DesignSystemProps['fetchKoenigLexical'] = async () => {
     // @ts-expect-error koenig-lexical doesn't currently ship TypeScript declarations.
     return await import('@tryghost/koenig-lexical');
 };
@@ -11,7 +17,7 @@ const fetchKoenigLexical: DesignSystemAppProps['fetchKoenigLexical'] = async () 
 export default function renderStandaloneApp<Props extends object>(
     App: React.ComponentType<Props & {
         framework: TopLevelFrameworkProps;
-        designSystem: DesignSystemAppProps;
+        designSystem: DesignSystemProps;
     }>,
     props: Props
 ) {
@@ -44,7 +50,7 @@ export default function renderStandaloneApp<Props extends object>(
                 designSystem={{darkMode: false, fetchKoenigLexical}}
                 framework={{
                     externalNavigate: (link) => {
-                        // Use the expectExternalNavigate helper to test this dummy external linking
+                        // Standalone tests can assert this captured navigation on document.body.
                         document.body.dataset.externalNavigate = JSON.stringify(link);
                     },
                     ghostVersion: '5.x',

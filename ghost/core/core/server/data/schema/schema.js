@@ -656,6 +656,43 @@ module.exports = {
         label_id: {type: 'string', maxlength: 24, nullable: false, references: 'labels.id', cascadeDelete: true},
         sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
+    members_custom_fields: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        key: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        name: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        type: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            // Keep in sync with FIELD_TYPE_IDS in @tryghost/custom-field-types,
+            // the source of truth (this static schema can't import it).
+            validations: {
+                isIn: [[
+                    'short_text',
+                    'long_text',
+                    'address'
+                ]]
+            }
+        },
+        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active', validations: {isIn: [['active', 'archived']]}},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
+    },
+    members_custom_field_values: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        custom_field_id: {type: 'string', maxlength: 24, nullable: false, references: 'members_custom_fields.id', cascadeDelete: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        // Exactly one value column is populated per row, chosen by the field
+        // type's storage type in @tryghost/custom-field-types, whose byte bound
+        // on long_text matches this column exactly.
+        value_text: {type: 'text', maxlength: 65535, nullable: true},
+        value_json: {type: 'text', maxlength: 65535, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['member_id', 'custom_field_id']
+        ]
+    },
     members_stripe_customers: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},

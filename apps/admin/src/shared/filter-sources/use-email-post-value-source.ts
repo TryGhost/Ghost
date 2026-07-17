@@ -2,6 +2,7 @@ import {type Post, type PostsResponseType, useBrowsePostsInfinite} from '@trygho
 import {type ValueSource} from '@tryghost/shade/patterns';
 import {createGhostBrowseValueSource} from './create-ghost-browse-value-source';
 import {escapeNqlString} from '@/shared/filters/filter-normalization';
+import {keepPreviousData} from '@tanstack/react-query';
 
 const EMAIL_BASE_FILTER = '(status:published,status:sent)+newsletter_id:-null';
 
@@ -32,7 +33,7 @@ const useRemoteEmailPostValueSource = createGhostBrowseValueSource<Post, PostsRe
     useQuery: ({enabled, searchParams}) => {
         return useBrowsePostsInfinite({
             enabled,
-            keepPreviousData: true,
+            placeholderData: keepPreviousData,
             searchParams
         });
     },

@@ -1,7 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const urlService = require('../../services/url');
+const urlSerializerUtils = require('./utils/serializers/input/utils/url');
 const ALLOWED_INCLUDES = ['authors', 'tags', 'tiers'];
 
 const messages = {
@@ -36,12 +36,9 @@ const controller = {
             }
         },
         async query(frame) {
-            const callerIncludes = Array.isArray(frame.options.withRelated) ? frame.options.withRelated : [];
-            const options = {
-                ...frame.options,
-                withRelated: [...new Set([...callerIncludes, ...urlService.facade.getRequiredRelations()])]
-            };
-            const model = await models.Post.findOne(Object.assign(frame.data, {status: 'sent'}), options);
+            urlSerializerUtils.forceUrlRelationsWhenLazy(frame, 'posts');
+
+            const model = await models.Post.findOne(Object.assign(frame.data, {status: 'sent'}), frame.options);
 
             if (!model) {
                 throw new errors.NotFoundError({

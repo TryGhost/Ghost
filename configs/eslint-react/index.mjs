@@ -106,7 +106,7 @@ import {
  * @returns {import('eslint').Linter.Config[]}
  *
  * @example
- * // apps/posts/eslint.config.js — Vite TS React + Tailwind v4 + shade restriction
+ * // apps/<app>/eslint.config.js — Vite TS React + Tailwind v4 + shade restriction
  * import {reactAppConfig} from '@internal/cfg-eslint-react';
  * export default reactAppConfig({
  *   tailwindCssPath: `${import.meta.dirname}/../admin/src/index.css`,

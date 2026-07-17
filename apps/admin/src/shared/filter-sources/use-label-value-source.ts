@@ -5,6 +5,7 @@ import {buildQuotedListFilter, filterOptionsByQuery, mergeFilterOptions} from '.
 import {createGhostBrowseValueSource} from './create-ghost-browse-value-source';
 import {createHybridValueSource} from './create-hybrid-value-source';
 import {escapeNqlString} from '@/shared/filters/filter-normalization';
+import {keepPreviousData} from '@tanstack/react-query';
 
 const LABEL_PAGE_LIMIT = '100';
 
@@ -82,7 +83,7 @@ const useRemoteLabelValueSource = createGhostBrowseValueSource<Label, LabelsResp
     useQuery: ({enabled, searchParams}) => {
         return useBrowseLabelsInfinite({
             enabled,
-            keepPreviousData: true,
+            placeholderData: keepPreviousData,
             searchParams
         });
     },

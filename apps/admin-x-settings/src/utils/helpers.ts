@@ -20,29 +20,6 @@ export function getOptionLabel(
     return options?.find(option => option.value === value)?.label;
 }
 
-export function getInitials(name: string = '') {
-    const rgx = new RegExp(/([A-Za-z\u00C0-\u017F]{1})[A-Za-z\u00C0-\u017F]+/, 'g');
-    const rgxInitials = [...name.matchAll(rgx)];
-
-    const initials = (
-        (rgxInitials.shift()?.[1] || '') + (rgxInitials.pop()?.[1] || '')
-    ).toUpperCase();
-
-    return initials;
-}
-
-export function generateAvatarColor(name: string) {
-    const s = 70;
-    const l = 40;
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-
-    const h = hash % 360;
-    return 'hsl(' + h + ', ' + s + '%, ' + l + '%)';
-}
-
 export function numberWithCommas(x: number) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }

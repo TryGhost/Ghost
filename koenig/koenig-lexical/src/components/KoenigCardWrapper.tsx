@@ -2,6 +2,7 @@ import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$getNodeByKey, CLICK_COMMAND, COMMAND_PRIORITY_LOW} from 'lexical';
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {CardWrapper} from './ui/CardWrapper';
 import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {VISIBILITY_SETTINGS} from '../utils/visibility';
@@ -62,7 +63,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                         const clickedToolbar = event.target.closest('[data-kg-allow-clickthrough="false"]');
                         const clickedSettingsPanel = event.target.closest('[data-kg-settings-panel]');
 
-                        if (isSelected && (cardNode?.hasEditMode?.() && !isEditing && !clickedToolbar && !clickedSettingsPanel)) {
+                        if (isSelected && ($isKoenigCard(cardNode) && cardNode.hasEditMode() && !isEditing && !clickedToolbar && !clickedSettingsPanel)) {
                             editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: !clickedDifferentEditor});
                         } else if (!isSelected) {
                             editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: !clickedDifferentEditor});
@@ -150,7 +151,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     if (cardConfig?.visibilitySettings !== VISIBILITY_SETTINGS.NONE) {
         editor.getEditorState().read(() => {
             const cardNode = $getNodeByKey(nodeKey);
-            isVisibilityActive = cardNode?.getIsVisibilityActive?.();
+            isVisibilityActive = $isKoenigCard(cardNode) ? cardNode.getIsVisibilityActive() : false;
         });
     }
 

@@ -165,6 +165,63 @@ describe('Unit: models/user', function () {
         });
     });
 
+    describe('edit', function () {
+        it('checks for duplicate email before editing user', async function () {
+            sinon.stub(models.User, 'getByEmail').resolves({id: 'another-user-id'});
+            const edit = sinon.stub(ghostBookshelf.Model, 'edit').resolves();
+
+            await assert.rejects(models.User.edit({
+                email: 'duplicate@example.com'
+            }, {
+                id: 'user-id',
+                context: {internal: true}
+            }), (error) => {
+                assert.equal(error instanceof errors.ValidationError, true);
+                assert.equal(error.message, 'Email is already in use');
+                return true;
+            });
+
+            assert.equal(edit.called, false);
+        });
+
+        it('updates role and returns reloaded user with change metadata', async function () {
+            const relation = {
+                fetch: sinon.stub().resolves({
+                    models: [{
+                        id: 'old-role-id',
+                        get: sinon.stub().withArgs('name').returns('Author')
+                    }]
+                }),
+                updatePivot: sinon.stub().resolves()
+            };
+            const editedUser = {
+                id: 'user-id',
+                _changed: {roles: true},
+                roles: sinon.stub().returns(relation)
+            };
+            const role = {
+                id: 'new-role-id',
+                get: sinon.stub().withArgs('name').returns('Editor')
+            };
+            const reloadedUser = {};
+
+            sinon.stub(ghostBookshelf.Model, 'edit').resolves(editedUser);
+            sinon.stub(models.Role, 'findOne').resolves(role);
+            const findOne = sinon.stub(models.User, 'findOne').resolves(reloadedUser);
+
+            const result = await models.User.edit({roles: ['Editor']}, {
+                id: 'user-id',
+                context: {internal: true}
+            });
+
+            assert.equal(result, reloadedUser);
+            assert.deepEqual(reloadedUser._changed, {roles: true});
+            sinon.assert.calledWith(models.Role.findOne, {name: 'Editor'});
+            sinon.assert.calledWith(relation.updatePivot, {role_id: 'new-role-id'});
+            sinon.assert.calledWith(findOne, {id: 'user-id'}, sinon.match({status: 'all'}));
+        });
+    });
+
     describe('setup', function () {
         it('sets system colour mode as the default accessibility preference for the initial owner', async function () {
             const edit = sinon.stub(models.User, 'edit').resolves();

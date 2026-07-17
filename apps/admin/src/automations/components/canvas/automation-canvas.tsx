@@ -16,13 +16,20 @@ import {type StepPickerType} from './step-picker';
 import {StepSidebar} from './step-sidebar';
 import {formatWait} from './format-wait';
 import {isEmptyEmailLexical} from '@/automations/utils';
+import {useFeatureFlag} from '@/hooks/use-feature-flag';
 import {useLocation, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import type {EmailModalMode} from '@/automations/components/types';
 
 const NODE_X = 0;
 const NODE_WIDTH = 256;
 const NODE_COLUMN_CENTER_X = NODE_X + (NODE_WIDTH / 2);
-const NODE_GAP_Y = 180;
+// Visible space between node bottom and the next node's top. Constant across all pairs so the
+// chain reads as evenly spaced regardless of how tall any individual node renders.
+const NODE_VISUAL_GAP_Y = 112;
+// Approximate rendered heights — used to compute the absolute y-position of each node so the
+// visible gap stays uniform. If node body layout changes, retune these.
+const REGULAR_NODE_HEIGHT = 68;
+const EMAIL_NODE_WITH_STATS_HEIGHT = 133;
 const INITIAL_VIEWPORT_Y = 40;
 const NODE_ENTER_ANIMATION_DURATION = 250;
 const DISABLED_REASON = 'Maximum steps added';
@@ -42,6 +49,7 @@ const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
             icon: LucideIcon.Mail,
             isPlaceholderValue: !action.data.email_subject,
             label: 'Send email',
+            stats: action.stats,
             value: action.data.email_subject || 'Untitled',
             warningMessage: isEmptyEmailLexical(action.data.email_lexical) ? 'Empty email body' : undefined
         };
@@ -150,6 +158,7 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
 type BuildGraphParams = {
     actionErrors: Record<string, string>;
     automation: AutomationDetail;
+    automationAnalyticsEnabled: boolean;
     disabled: boolean;
     onDelete: (stepId: string) => void;
     onEditEmailBody: (stepId: string, mode?: EmailModalMode) => void;
@@ -160,7 +169,7 @@ type BuildGraphParams = {
     selectedStepId: string | null;
 }
 
-const buildGraph = ({actionErrors, automation, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[] } => {
+const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[] } => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -176,11 +185,12 @@ const buildGraph = ({actionErrors, automation, disabled, onDelete, onEditEmailBo
         targetId: TAIL_CANVAS_ID
     };
 
+    let cursorY = 0;
     const nodes: AutomationFlowNode[] = [
         {
             id: TRIGGER_CANVAS_ID,
             type: 'trigger',
-            position: {x: NODE_X, y: 0},
+            position: {x: NODE_X, y: cursorY},
             data: {
                 contextMenuItems: buildNodeContextMenuItems({
                     onSelectStep,
@@ -196,14 +206,23 @@ const buildGraph = ({actionErrors, automation, disabled, onDelete, onEditEmailBo
             ...baseNodeProps
         }
     ];
+    cursorY += REGULAR_NODE_HEIGHT + NODE_VISUAL_GAP_Y;
 
-    ordered.forEach((action, index) => {
+    ordered.forEach((action) => {
+        const displayData = buildActionData(action);
+        const errorMessage = actionErrors[action.id];
+        const showStatsFooter = automationAnalyticsEnabled
+            && action.type === 'send_email'
+            && Boolean(action.stats)
+            && !errorMessage
+            && !displayData.warningMessage;
+
         nodes.push({
             id: action.id,
             type: 'step',
-            position: {x: NODE_X, y: NODE_GAP_Y * (index + 1)},
+            position: {x: NODE_X, y: cursorY},
             data: {
-                ...buildActionData(action),
+                ...displayData,
                 contextMenuItems: buildNodeContextMenuItems({
                     canDelete: true,
                     canEditEmailBody: action.type === 'send_email',
@@ -213,19 +232,21 @@ const buildGraph = ({actionErrors, automation, disabled, onDelete, onEditEmailBo
                     onSelectStep,
                     stepId: action.id
                 }),
-                errorMessage: actionErrors[action.id],
+                errorMessage,
                 isNew: newStepId === action.id,
                 selected: selectedStepId === action.id,
+                showStatsFooter,
                 onSelect: () => onSelectStep(action.id)
             },
             ...baseNodeProps
         });
+        cursorY += (showStatsFooter ? EMAIL_NODE_WITH_STATS_HEIGHT : REGULAR_NODE_HEIGHT) + NODE_VISUAL_GAP_Y;
     });
 
     nodes.push({
         id: TAIL_CANVAS_ID,
         type: 'tail',
-        position: {x: NODE_X, y: NODE_GAP_Y * (ordered.length + 1)},
+        position: {x: NODE_X, y: cursorY},
         data: {disabled, disabledReason, onPick, anchor: tailAnchor},
         draggable: false,
         connectable: false
@@ -431,6 +452,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         : undefined;
 
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
+    const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
 
     const graph = useMemo(() => {
         if (!automation) {
@@ -439,6 +461,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         return buildGraph({
             actionErrors,
             automation,
+            automationAnalyticsEnabled,
             disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
             onDelete: handleRequestDelete,
             onEditEmailBody: handleContextMenuEditEmail,
@@ -448,7 +471,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
             newStepId,
             selectedStepId
         });
-    }, [actionErrors, automation, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handlePick, handleRequestDelete, newStepId, selectedStepId]);
+    }, [actionErrors, automation, automationAnalyticsEnabled, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handlePick, handleRequestDelete, newStepId, selectedStepId]);
 
     const clearDetail = useCallback(() => {
         setSelectedStep(null);

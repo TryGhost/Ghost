@@ -199,6 +199,8 @@ export const getActionTitle = (action: Action) => {
         resourceType = 'gift link';
     } else if (resourceType === 'security_action') {
         resourceType = 'security action';
+    } else if (resourceType === 'member_custom_field') {
+        resourceType = 'custom field';
     }
 
     // Because a `page` and `post` both use the same model, we store the
@@ -219,6 +221,8 @@ export const getActionTitle = (action: Action) => {
 
     if (actionName === 'reset_authentication') {
         actionName = 'reset authentication';
+    } else if (actionName === 'custom_fields_edited') {
+        actionName = 'custom fields edited';
     }
 
     if (action.context?.count && (action.context?.count as number) > 1) {

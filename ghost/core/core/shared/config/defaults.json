@@ -30,6 +30,7 @@
         "staffDeviceVerification": true
     },
     "useMinFiles": true,
+    "verifyRequestIntegrity": true,
     "paths": {
         "contentPath": "content/",
         "fixtures": "core/server/data/schema/fixtures/fixtures",
@@ -50,6 +51,10 @@
             "active": "FileStore",
             "FileStore": {},
             "S3RedirectsStore": {}
+        },
+        "route-settings": {
+            "active": "FileStore",
+            "FileStore": {}
         }
     },
     "storage": {

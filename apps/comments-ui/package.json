@@ -29,7 +29,7 @@
         "lint:code": "eslint src --cache",
         "lint:types": "pnpm test:types",
         "preship": "pnpm lint",
-        "ship": "node ../../.github/scripts/release-apps.js",
+        "ship": "node ../../scripts/release-apps.js",
         "prepublishOnly": "pnpm build"
     },
     "browserslist": {
@@ -45,7 +45,7 @@
         ]
     },
     "dependencies": {
-        "@doist/react-interpolate": "2.2.2",
+        "@doist/react-interpolate": "2.2.3",
         "@headlessui/react": "1.7.19",
         "@tiptap/core": "2.27.2",
         "@tiptap/extension-blockquote": "2.27.2",
@@ -63,6 +63,8 @@
         "react-string-replace": "2.0.1"
     },
     "devDependencies": {
+        "@typescript/native": "catalog:",
+        "typescript": "catalog:",
         "@internal/cfg-eslint-react": "workspace:*",
         "@playwright/test": "catalog:",
         "@testing-library/jest-dom": "catalog:",

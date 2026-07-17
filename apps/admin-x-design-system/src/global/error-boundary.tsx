@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/react';
-import React, {ComponentType, ErrorInfo, ReactNode} from 'react';
+import React, {ErrorInfo, ReactNode} from 'react';
 import Banner from './banner';
 
 export interface ErrorBoundaryProps {
@@ -47,13 +47,3 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
 }
 
 export default ErrorBoundary;
-
-export const withErrorBoundary = <Props extends Record<string, unknown>>(Component: ComponentType<Props>, name: string) => {
-    return function WithErrorBoundary(props: Props) {
-        return (
-            <ErrorBoundary name={name}>
-                <Component {...props} />
-            </ErrorBoundary>
-        );
-    };
-};

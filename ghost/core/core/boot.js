@@ -93,6 +93,13 @@ async function initDatabase({config}) {
 async function initCore({ghostServer, config, frontend}) {
     debug('Begin: initCore');
 
+    // Validate configured adapters up-front so misconfiguration fails at boot
+    // rather than on first lazy use (e.g. first image upload or scheduled job)
+    debug('Begin: adapters');
+    const adapterManager = require('./server/services/adapter-manager');
+    adapterManager.init();
+    debug('End: adapters');
+
     // URL Utils is a bit slow, put it here so the timing is visible separate from models
     debug('Begin: Load urlUtils');
     require('./shared/url-utils');
@@ -132,6 +139,12 @@ async function initCore({ghostServer, config, frontend}) {
     const giftLinksService = require('./server/services/gift-links');
     giftLinksService.init();
     debug('End: Gift Links Service');
+
+    // Member custom fields service: knex-backed, wired once the DB is ready.
+    debug('Begin: Member Custom Fields Service');
+    const memberCustomFieldsService = require('./server/services/members-custom-fields');
+    memberCustomFieldsService.init();
+    debug('End: Member Custom Fields Service');
 
     if (ghostServer) {
         // Job Service allows parts of Ghost to run in the background
@@ -323,8 +336,8 @@ async function initServices({ghostServer} = {}) {
     const members = require('./server/services/members');
     const tiers = require('./server/services/tiers');
     const permissions = require('./server/services/permissions');
-    const indexnow = require('./server/services/indexnow');
-    const slack = require('./server/services/slack');
+    const indexnow = require('./server/services/indexnow-ping');
+    const slack = require('./server/services/slack-ping');
     const webhooks = require('./server/services/webhooks');
     const postScheduling = require('./server/services/post-scheduling').default;
     const comments = require('./server/services/comments');
@@ -372,8 +385,8 @@ async function initServices({ghostServer} = {}) {
         postsPublic.init(),
         membersEvents.init(),
         permissions.init(),
-        indexnow.listen(),
-        slack.listen(),
+        indexnow.init(),
+        slack.init(),
         audienceFeedback.init(),
         emailService.init({ghostServer}),
         emailAnalytics.init(),

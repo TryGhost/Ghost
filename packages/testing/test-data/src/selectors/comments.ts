@@ -9,6 +9,7 @@ export const commentsList = "comments-list";
 export const commentListRow = "comment-list-row";
 export const repliesMetric = "replies-metric";
 export const repliedToLink = "replied-to-link";
+export const commentingDisabledIndicator = "commenting-disabled-indicator";
 /** Thread sidebar rows carry the comment id: `comment-thread-row-<id>`. */
 export const commentThreadRowPrefix = "comment-thread-row-";
 

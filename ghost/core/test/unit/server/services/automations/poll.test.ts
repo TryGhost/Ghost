@@ -7,6 +7,8 @@ import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../../../core/server/services/me
 // @ts-expect-error Models currently lack type definitions.
 import {Member} from '../../../../../core/server/models';
 
+const settingsCache = require('../../../../../core/shared/settings-cache');
+
 const MAX_STEPS_PER_BATCH = 100;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 
@@ -121,6 +123,7 @@ describe('automations poll', function () {
     let memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
     let scheduleAutomationEmailAnalyticsJob: sinon.SinonStub;
     let options: PollOptionsStubs;
+    let settingsCacheGet: sinon.SinonStub;
 
     beforeEach(function () {
         sinon.useFakeTimers({now: new Date('2026-01-01T12:00:00.000Z'), shouldAdvanceTime: true});
@@ -150,6 +153,8 @@ describe('automations poll', function () {
             memberWelcomeEmailService
         };
 
+        settingsCacheGet = sinon.stub(settingsCache, 'get');
+        settingsCacheGet.withArgs('email_track_opens').returns(false);
         sinon.stub(Member, 'findOne').resolves(buildMember());
     });
 
@@ -353,6 +358,9 @@ describe('automations poll', function () {
 
         await poll(options);
 
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackOpens: false
+        }));
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
             automationActionRevisionId: 'revision-id',
             mailgunMessageId: 'mailgun-message-id',
@@ -370,11 +378,44 @@ describe('automations poll', function () {
         );
     });
 
+    it('enables open tracking for the send and recipient when the setting is enabled', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_opens').returns(true);
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({id: '<mailgun-message-id>'});
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackOpens: true
+        }));
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            trackOpens: true
+        }));
+    });
+
+    it('does not enable open tracking for the send and recipient when the setting is disabled', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_opens').returns(false);
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({id: '<mailgun-message-id>'});
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackOpens: false
+        }));
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            trackOpens: false
+        }));
+    });
+
     it('records the automated email recipient without a Mailgun message ID after an SMTP send', async function () {
         const step = buildEmailStep({
             automation_action_revision_id: 'revision-id'
         });
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_opens').returns(true);
         memberWelcomeEmailService.api.sendAutomationEmail.resolves({
             messageId: '<smtp-message-id>',
             response: '250 Message accepted'
@@ -382,6 +423,9 @@ describe('automations poll', function () {
 
         await poll(options);
 
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackOpens: true
+        }));
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
             automationActionRevisionId: 'revision-id',
             memberEmail: 'member@example.com',

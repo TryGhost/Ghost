@@ -51,6 +51,7 @@
     "postcss": "catalog:",
     "postcss-import": "16.1.1",
     "tailwindcss": "catalog:tailwind3",
+    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vite": "catalog:",

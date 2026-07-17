@@ -253,7 +253,7 @@
         //    Node.js runtime declared in `engines`, not a dependency — so a hard
         //    version cap is the only lever. Raise it when we bump the Node engine.
         {
-            "description": "Cap @types/node at the installed Node major (engines: ^22.13.1)",
+            "description": "Cap @types/node at the installed Node major (engines: ^22.23.1)",
             "matchPackageNames": [
                 "@types/node"
             ],

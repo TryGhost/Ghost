@@ -17,7 +17,7 @@ const parseMailgunMessageId = (sendResult: unknown): string | undefined => {
     return sendResult.id;
 };
 
-const normalizeMailgunMessageId = (mailgunMessageId: string): string => {
+export const normalizeMailgunMessageId = (mailgunMessageId: string): string => {
     return mailgunMessageId.trim().replace(/^<|>$/g, '');
 };
 

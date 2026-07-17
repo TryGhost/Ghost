@@ -52,6 +52,15 @@ module.exports = async (model, frame, options = {}) => {
     const routerType = dbType === 'page' ? 'pages' : 'posts';
     url.forPost(model.id, jsonModel, frame, routerType);
 
+    // Force-loaded for the URL computation, not requested by the caller.
+    // Must run before clean.post so it drops the computed primary_tag/
+    // primary_author along with the relation.
+    if (frame.forcedUrlRelations) {
+        frame.forcedUrlRelations.forEach((relation) => {
+            delete jsonModel[relation];
+        });
+    }
+
     extraAttrs.forPost(frame.options, model, jsonModel);
 
     const defaultFormats = ['html'];
@@ -125,6 +134,13 @@ module.exports = async (model, frame, options = {}) => {
     delete jsonModel.posts_meta;
 
     clean.post(jsonModel, frame);
+
+    // Columns force-loaded for the URL computation, not requested by the caller.
+    if (frame.forcedUrlColumns) {
+        frame.forcedUrlColumns.forEach((column) => {
+            delete jsonModel[column];
+        });
+    }
 
     if (frame.options && frame.options.withRelated) {
         frame.options.withRelated.forEach((relation) => {

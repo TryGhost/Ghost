@@ -26,6 +26,7 @@
     "devDependencies": {
         "@internal/cfg-eslint": "workspace:*",
         "eslint": "catalog:",
+        "@typescript/native": "catalog:",
         "typescript": "catalog:",
         "vitest": "catalog:"
     }
