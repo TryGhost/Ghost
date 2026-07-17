@@ -9,6 +9,9 @@ const messages = {
     memberNotFound: 'Member not found.'
 };
 
+// Stored in the action's `context.action_name`; Admin maps it to a display label.
+const CUSTOM_FIELDS_EDITED_ACTION = 'custom_fields_edited';
+
 /**
  * @typedef {object} ILabsService
  * @prop {(key: string) => boolean} isSet
@@ -605,7 +608,14 @@ module.exports = class MemberBREADService {
             const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
             if (memberUnchanged && plannedCustomFields.length > 0) {
                 model._changed = {custom_fields: true};
-                const eventOptions = {context: options.context, transacting: options.transacting};
+                // A mixed edit keeps the generic label on purpose: relabelling the
+                // one action a member change already fired would bury that change
+                // behind this one.
+                const eventOptions = {
+                    context: options.context,
+                    transacting: options.transacting,
+                    actionName: CUSTOM_FIELDS_EDITED_ACTION
+                };
                 await model.triggerThen('updated', model, eventOptions);
             }
         }
