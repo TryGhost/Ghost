@@ -1,6 +1,12 @@
 import {FIELD_TYPE_IDS, type FieldType} from '@tryghost/custom-field-types';
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 
+// Re-exported so admin apps can type address values and validate against the
+// same schemas the server enforces, without a direct dependency on the shared
+// catalog package — the framework is their surface for everything custom-fields.
+export type {Address as MemberCustomFieldAddress} from '@tryghost/custom-field-types';
+export {FIELD_TYPES as MEMBER_CUSTOM_FIELD_TYPES} from '@tryghost/custom-field-types';
+
 export type MemberCustomField = {
     // Fields are addressed by their immutable key; the DB id is never exposed.
     key: string;
