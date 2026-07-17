@@ -1,3 +1,5 @@
+import {glob, readFile} from 'node:fs/promises';
+
 // Global pnpm hooks for the Ghost monorepo.
 //
 // Only `beforePacking` is defined. It runs during `pnpm pack` / `pnpm publish`
@@ -63,4 +65,44 @@ function beforePacking(pkg) {
     return pkg;
 }
 
-export const hooks = {beforePacking};
+/**
+ * Dynamic config update function to automatically exclude "private" packages
+ * from pnpm's changelog detection. We can't remove the version fields
+ * because that would break workspace resolution, but we can dynamically add them
+ * to the versioning.ignore list so that they don't trigger changelog generation.
+ */
+async function updateConfig(config) {
+    const {packages, versioning = {}} = config;
+    const ignoredPackages = new Set(versioning.ignore ?? []);
+
+    // step 1: enumerate all workspace packages with glob
+    const ignore = packages
+        .filter(p => p.startsWith('!'))
+        .map(p => p.slice(1));
+    const patterns = packages
+        .filter(p => !p.startsWith('!'))
+        .map(p => `${p}/package.json`);
+
+    const files = await Array.fromAsync(glob(patterns, {ignore}));
+
+    // step 2: read each package.json and check for "private", if so add to
+    // the ignore set
+    await Promise.all(
+        files.map(async (file) => {
+            const pkg = JSON.parse(await readFile(file, 'utf-8'));
+            if (pkg.private) {
+                ignoredPackages.add(pkg.name);
+            }
+        })
+    );
+
+    // step 3: update the config with the new ignore list
+    config.versioning = {
+        ...versioning,
+        ignore: Array.from(ignoredPackages),
+    };
+
+    return config;
+}
+
+export const hooks = {beforePacking, updateConfig};
