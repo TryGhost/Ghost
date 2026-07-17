@@ -31,7 +31,7 @@
     "build:production": "pnpm nx run ghost:build:tsc && pnpm nx run ghost:build:assets && pnpm nx run @tryghost/admin:build",
     "build": "pnpm nx run-many -t build",
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
-    "clean:hard": "node ./scripts/clean.cjs",
+    "clean:hard": "node ./scripts/clean.js",
     "dev": "pnpm nx run ghost-monorepo:docker:dev",
     "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
@@ -81,7 +81,7 @@
     "tb:install": "curl https://tinybird.co | sh",
     "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
     "data:analytics:clear": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
-    "release": "node scripts/release.cjs"
+    "release": "node scripts/release.js"
   },
   "devDependencies": {
     "@eslint/compat": "2.1.0",
