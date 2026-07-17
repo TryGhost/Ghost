@@ -6,7 +6,7 @@ import useFeatureFlag from '../../../hooks/use-feature-flag';
 import {Button, Icon, List, ListItem, TabView} from '@tryghost/admin-x-design-system';
 import {NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
 import {TextCursorInput} from 'lucide-react';
-import {useBrowseMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {useBrowseMemberCustomFieldsIncludingArchived, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {withErrorBoundary} from '../../error-boundary';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
@@ -83,13 +83,12 @@ const FieldList: React.FC<{
 
 const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
     // The endpoint is closed (404s) while the flag is off, so keep the query in
-    // step with the flag rather than firing it into a wall. Browse hides
-    // archived fields by default (most surfaces only want active ones);
-    // Settings is the one place that manages both, so it opts in explicitly.
+    // step with the flag rather than firing it into a wall. Settings is the one
+    // place that manages archived fields too, so it uses the include-archived
+    // variant rather than the default active-only browse.
     const hasCustomFields = useFeatureFlag('membersCustomFields');
-    const {data} = useBrowseMemberCustomFields({
-        enabled: hasCustomFields,
-        searchParams: {filter: 'status:[active,archived]'}
+    const {data} = useBrowseMemberCustomFieldsIncludingArchived({
+        enabled: hasCustomFields
     });
     const fields = data?.members_custom_fields || [];
     const [selectedTab, setSelectedTab] = useState('active-fields');

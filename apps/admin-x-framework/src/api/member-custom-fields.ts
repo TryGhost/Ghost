@@ -73,6 +73,13 @@ export const useBrowseMemberCustomFields = createQuery<MemberCustomFieldsRespons
     path: '/members/custom_fields/'
 });
 
+// Browse hides archived fields by default. Settings is the one surface that
+// manages both, so it opts into every status through this variant rather than
+// hand-writing the filter grammar in the view.
+export const useBrowseMemberCustomFieldsIncludingArchived = (
+    options?: Parameters<typeof useBrowseMemberCustomFields>[0]
+) => useBrowseMemberCustomFields({...options, searchParams: {filter: 'status:[active,archived]'}});
+
 export const getMemberCustomField = createQueryWithId<MemberCustomFieldsResponseType>({
     dataType,
     path: key => `/members/custom_fields/${key}/`
