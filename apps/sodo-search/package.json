@@ -27,7 +27,7 @@
         "test": "vitest run",
         "lint": "eslint src test --cache",
         "preship": "pnpm lint",
-        "ship": "node ../../scripts/release-apps.cjs",
+        "ship": "node ../../scripts/release-apps.js",
         "prepublishOnly": "pnpm build"
     },
     "browserslist": {
