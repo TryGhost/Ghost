@@ -1,6 +1,6 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import {ConfirmationModal, Form, Icon, Modal, Select, type SelectOption, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, Icon, Menu, Modal, Select, type SelectOption, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {type OptionProps, type SingleValueProps, components} from 'react-select';
 import {ValidationError, getErrorMessage} from '@tryghost/admin-x-framework/errors';
 import {memberCustomFieldUserTypes, useCreateMemberCustomField, useDeleteMemberCustomField, useEditMemberCustomField, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -86,7 +86,12 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
 
     const selectedType = typeOptions.find(option => option.value === formState.userTypeId);
 
-    const leftButtonProps = isEdit ? {
+    const isArchived = field?.status === 'archived';
+
+    // The modal's third action mirrors the field's state: an active field can
+    // be archived, an archived one reactivated. Both confirm first (the
+    // newsletters pattern) — they change what every collection surface shows.
+    const archiveButtonProps = {
         label: 'Archive',
         link: true,
         color: 'red' as const,
@@ -95,13 +100,19 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
             modal.remove();
             NiceModal.show(ConfirmationModal, {
                 title: 'Archive custom field',
-                prompt: <>Archiving <strong>{field!.name}</strong> removes it from your custom fields. Its key stays reserved so it can&rsquo;t be reused, and this can&rsquo;t be undone.</>,
+                prompt: <>
+                    <div className='mb-6'>Your custom field <strong>{field!.name}</strong> will no longer show up on your members, collect new information, or appear in filters.</div>
+                    <div>Values already collected for this field will remain unchanged.</div>
+                </>,
                 okLabel: 'Archive',
                 okColor: 'red',
-                onOk: async (deleteModal) => {
+                onOk: async (archiveModal) => {
                     try {
-                        await deleteField(field!.key);
-                        deleteModal?.remove();
+                        // Archiving is a status change over the same PUT a rename
+                        // uses; DELETE is the permanent, values-destroying removal
+                        // and only valid on an already-archived field.
+                        await editField({key: field!.key, status: 'archived'});
+                        archiveModal?.remove();
                         showToast({type: 'success', title: 'Custom field archived'});
                     } catch (e) {
                         showToast({type: 'error', title: 'Failed to archive the custom field'});
@@ -110,7 +121,71 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                 }
             });
         }
-    } : undefined;
+    };
+
+    const reactivateButtonProps = {
+        label: 'Reactivate',
+        link: true,
+        color: 'green' as const,
+        size: 'sm' as const,
+        onClick: () => {
+            modal.remove();
+            NiceModal.show(ConfirmationModal, {
+                title: 'Reactivate custom field',
+                prompt: <>
+                    <div className='mb-6'>Reactivating <strong>{field!.name}</strong> will immediately make it available again on your members, for collecting, and in filters.</div>
+                    <div>Values already collected for this field will remain unchanged.</div>
+                </>,
+                okLabel: 'Reactivate',
+                onOk: async (reactivateModal) => {
+                    try {
+                        await editField({key: field!.key, status: 'active'});
+                        reactivateModal?.remove();
+                        showToast({type: 'success', title: 'Custom field reactivated'});
+                    } catch (e) {
+                        showToast({type: 'error', title: 'Failed to reactivate the custom field'});
+                        handleError(e, {withToast: false});
+                    }
+                }
+            });
+        }
+    };
+
+    let leftButtonProps;
+    if (isEdit) {
+        leftButtonProps = isArchived ? reactivateButtonProps : archiveButtonProps;
+    }
+
+    // Permanent deletion hides behind the header menu — one deliberate click
+    // away, mirroring the members page's actions menu and the API's own
+    // two-step (only archived fields can be deleted). A visible red button
+    // would put irreversible data loss on equal footing with Save.
+    const confirmDeleteField = () => {
+        modal.remove();
+        NiceModal.show(ConfirmationModal, {
+            title: 'Delete custom field',
+            prompt: <><strong>{field!.name}</strong> and every value collected from your members will be permanently deleted from the database. This can&rsquo;t be undone.</>,
+            okLabel: 'Delete',
+            okColor: 'red',
+            onOk: async (deleteModal) => {
+                try {
+                    await deleteField(field!.key);
+                    deleteModal?.remove();
+                    showToast({type: 'success', title: 'Custom field deleted'});
+                } catch (e) {
+                    showToast({type: 'error', title: 'Failed to delete the custom field'});
+                    handleError(e, {withToast: false});
+                }
+            }
+        });
+    };
+
+    const archivedFieldMenu = (
+        <Menu
+            items={[{id: 'delete-field', label: 'Delete custom field', icon: 'trash', destructive: true, onClick: confirmDeleteField}]}
+            position='end'
+        />
+    );
 
     return (
         <Modal
@@ -121,7 +196,8 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
             okLabel={okProps.label || 'Save'}
             size='sm'
             testId='custom-field-modal'
-            title={isEdit ? 'Edit custom field' : 'New custom field'}
+            title={isEdit ? 'Edit custom field' : 'Add custom field'}
+            topRightContent={isArchived ? archivedFieldMenu : undefined}
             onOk={async () => {
                 try {
                     if (await handleSave()) {
