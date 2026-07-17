@@ -196,6 +196,12 @@ function serializeMember(member, options) {
         serialized.tiers = json.products;
     }
 
+    // Present on a read whenever the flag is on; absent otherwise, and absent on
+    // browse. An empty object is a member with no values set.
+    if (json.custom_fields) {
+        serialized.custom_fields = json.custom_fields;
+    }
+
     serialized.current_subscription = json.current_subscription || null;
 
     // Rename subscriptions.price.product to subscriptions.price.tier
