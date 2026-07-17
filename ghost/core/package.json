@@ -120,6 +120,7 @@
     "@tryghost/logging": "catalog:",
     "@tryghost/members-csv": "2.0.7",
     "@tryghost/metrics": "1.0.43",
+    "@tryghost/mongo-knex": "catalog:",
     "@tryghost/mongo-utils": "0.6.5",
     "@tryghost/mw-error-handler": "1.0.13",
     "@tryghost/mw-vhost": "1.0.6",

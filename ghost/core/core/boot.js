@@ -336,7 +336,7 @@ async function initServices({ghostServer} = {}) {
     const members = require('./server/services/members');
     const tiers = require('./server/services/tiers');
     const permissions = require('./server/services/permissions');
-    const indexnow = require('./server/services/indexnow');
+    const indexnow = require('./server/services/indexnow-ping');
     const slack = require('./server/services/slack');
     const webhooks = require('./server/services/webhooks');
     const postScheduling = require('./server/services/post-scheduling').default;
@@ -385,7 +385,7 @@ async function initServices({ghostServer} = {}) {
         postsPublic.init(),
         membersEvents.init(),
         permissions.init(),
-        indexnow.listen(),
+        indexnow.init(),
         slack.listen(),
         audienceFeedback.init(),
         emailService.init({ghostServer}),

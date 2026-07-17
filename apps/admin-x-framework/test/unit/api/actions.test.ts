@@ -44,5 +44,14 @@ describe('actions api helpers', () => {
                 context: {action_name: 'reset_authentication'}
             }))).toBe('Security action reset authentication');
         });
+
+        it('formats custom field definition actions across the lifecycle', () => {
+            const title = (event: string) => getActionTitle(baseAction({resource_type: 'member_custom_field', event}));
+            expect(title('added')).toBe('Custom field added');
+            expect(title('edited')).toBe('Custom field edited');
+            expect(title('archived')).toBe('Custom field archived');
+            expect(title('restored')).toBe('Custom field restored');
+            expect(title('deleted')).toBe('Custom field deleted');
+        });
     });
 });
