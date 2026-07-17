@@ -1,7 +1,7 @@
 {
     "name": "@tryghost/activitypub",
     "type": "module",
-    "version": "3.1.55",
+    "private": true,
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -22,7 +22,6 @@
         },
         "./api": "./src/index.tsx"
     },
-    "private": false,
     "scripts": {
         "dev": "vite build --watch",
         "dev:start": "vite",
