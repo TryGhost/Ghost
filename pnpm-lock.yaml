@@ -13,8 +13,8 @@ importers:
         version: 2.30.1
     devDependencies:
       '@tryghost/pro-ship':
-        specifier: 1.1.5
-        version: 1.1.5
+        specifier: 1.1.7
+        version: 1.1.7
       '@types/express':
         specifier: 5.0.6
         version: 5.0.6
@@ -311,13 +311,13 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@tryghost/pro-ship@1.1.5':
-    resolution: {integrity: sha512-gwd4ynAnEHkj6bx+tfkZCYaL+WlNHQQmCkAJn7Q2H0Uq+mG74i2wwxUWr+wTuyxjLg8KviMux5uwtkEQfzi1VA==}
+  '@tryghost/pro-ship@1.1.7':
+    resolution: {integrity: sha512-pF06n43ZssCV1rjy/B6MQcempQc7Kij46/odeiJZHoP9GAOPhTLfmq0zSdQp9WE4vhHGHdwboee9Z7gSszCD9g==}
     engines: {node: '>=20.20.0'}
     hasBin: true
 
-  '@tryghost/root-utils@2.3.1':
-    resolution: {integrity: sha512-1g0HskTTDJzn3CzcEWhd4aKtcmPm3IztD7cyfQQiG4QX+6gfpPOkYk7Y5gDOwTKAYtfor0nc8npSY90vvIj93A==}
+  '@tryghost/root-utils@2.3.2':
+    resolution: {integrity: sha512-tUyMS4xJUceE62JjZIjWAXCeoVlbNHWF2dIy6xJkaYgeHw4oZ5YoKMu9Mzqa7TPHIapU+BxwdWV0HvMj9dZGlA==}
 
   '@tybys/wasm-util@0.10.3':
     resolution: {integrity: sha512-F3fo1MYrRJYL3zER0OUOmkutjr1Vp23m7OsSgp7nq4SP6OqX6C/56XFIPAl5bt3zaBRjmW7SGz3u/6LwFpYcOg==}
@@ -895,12 +895,12 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@tryghost/pro-ship@1.1.5':
+  '@tryghost/pro-ship@1.1.7':
     dependencies:
-      '@tryghost/root-utils': 2.3.1
+      '@tryghost/root-utils': 2.3.2
       semver: 7.8.5
 
-  '@tryghost/root-utils@2.3.1':
+  '@tryghost/root-utils@2.3.2':
     dependencies:
       caller: 1.1.0
       find-root: 1.1.0
