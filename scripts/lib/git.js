@@ -1,4 +1,11 @@
-import {$} from 'execa';
+import {$ as $$} from 'execa';
+import pm from 'picomatch';
+
+import {ROOT_DIR} from './constants.js';
+
+// Always run git from the repo root so callers can pass repo-relative paths
+// regardless of the process working directory.
+const $ = $$({cwd: ROOT_DIR});
 
 /**
  * Retrieves the contents of a file from a specific commit in a Git repository.
@@ -42,10 +49,17 @@ export async function getChangedFiles(path, baseCommit, headCommit = 'HEAD', onl
  * @param {string} path - The path to check for changes.
  * @param {string} baseCommit - The first commit hash to compare.
  * @param {string} headCommit - The second commit hash to compare.
+ * @param {string[]} [ignorePatterns] - Optional patterns to ignore
  *
  * @returns {Promise<boolean>} - A promise that resolves to true if there are changes, false otherwise.
  */
-export async function pathHasChanges(path, baseCommit, headCommit) {
-    const changedFiles = await getChangedFiles(path, baseCommit, headCommit);
+export async function pathHasChanges(path, baseCommit, headCommit, ignorePatterns = []) {
+    let changedFiles = await getChangedFiles(path, baseCommit, headCommit);
+
+    if (ignorePatterns.length > 0) {
+        const match = pm(ignorePatterns);
+        changedFiles = changedFiles.filter(file => !match(file));
+    }
+
     return changedFiles.length > 0;
 }

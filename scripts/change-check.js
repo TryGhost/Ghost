@@ -1,4 +1,5 @@
-import {isDeepStrictEqual} from 'node:util'
+import {isDeepStrictEqual, parseArgs} from 'node:util'
+import camelcaseKeys from 'camelcase-keys';
 
 import {pathHasChanges} from './lib/git.js';
 import {
@@ -10,8 +11,24 @@ import {
     resolvePackageCatalog,
 } from './lib/pnpm.js';
 
-const baseCommit = 'main';
-const headCommit = 'HEAD';
+const {values, positionals} = parseArgs({
+    options: {
+        // mirrors the options pnpm gives for filtering
+        'test-pattern': {
+            type: 'string',
+            multiple: true,
+        },
+        'changed-files-ignore-pattern': {
+            type: 'string',
+            multiple: true,
+        }
+    },
+    allowPositionals: true,
+});
+
+const {testPattern = [], changedFilesIgnorePattern = []} = camelcaseKeys(values);
+const [baseCommit = 'main', headCommit = 'HEAD'] = positionals;
+const ignorePatterns = [...testPattern, ...changedFilesIgnorePattern];
 
 const wksp = await getWorkspace();
 if (!wksp) {
@@ -26,7 +43,7 @@ if (!projects?.length) {
 const baseWksp = await loadWorkspace(baseCommit);
 
 async function packageHasChanges(project) {
-    if (await pathHasChanges(project.dir, baseCommit, headCommit)) {
+    if (await pathHasChanges(project.dir, baseCommit, headCommit, ignorePatterns)) {
         return true;
     }
 

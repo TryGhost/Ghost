@@ -48,7 +48,7 @@ export async function loadPackage(commitHash, packagePath) {
 }
 
 const packageSections = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'];
-const catalogRegex = /^catalog:(\w+)?$/;
+const catalogRegex = /^catalog:([\w.-]+)?$/;
 
 /**
  * Resovles a version from the workspace catalog. Throws if not found in the catalog
@@ -112,7 +112,7 @@ export function resolvePackageCatalog(workspace, pkg) {
  * @property {string} name - The name of the package.
  * @property {string} pkgPath - The path to the package.json file.
  * @property {object} manifest - The parsed package.json content.
- * @property {string} rootDir - The path to the package dir.
+ * @property {string} dir - The path to the package dir.
  */
 
 /**
@@ -135,11 +135,11 @@ export async function getPublishablePackages(workspace) {
         .filter(p => !p.startsWith('!'))
         .map(p => `${p}/package.json`);
 
-    const files = await Array.fromAsync(glob(patterns, {ignore}));
+    const files = await Array.fromAsync(glob(patterns, {ignore, cwd: ROOT_DIR}));
 
     const pkgs = await Promise.all(
         files.map(async (file) => {
-            const pkg = await readJson(file);
+            const pkg = await readJson(resolve(ROOT_DIR, file));
             if (pkg.private || igoredPackages.has(pkg.name)) {
                 return null;
             }
