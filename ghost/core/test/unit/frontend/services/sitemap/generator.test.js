@@ -153,6 +153,16 @@ describe('Generators', function () {
                 ));
                 assert.equal(isCanonical, false);
             });
+
+            it('returns false if the normalized canonical url matches the post url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: 'https://MYBLOG.com:443/some-cool-page'
+                }), 'https://myblog.com/some-cool-page/');
+
+                assert.equal(isCanonical, false);
+            });
         });
 
         describe('fn: addUrl', function () {

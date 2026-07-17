@@ -22,8 +22,22 @@ class BaseSiteMapGenerator {
         this.maxPerPage = 50000;
     }
 
-    hasCanonicalUrl(datum) {
-        return Boolean(datum?.canonical_url);
+    hasCanonicalUrl(datum, url) {
+        if (!datum?.canonical_url) {
+            return false;
+        }
+
+        const normalizeUrl = (value) => {
+            const normalizedUrl = new URL(value);
+            normalizedUrl.pathname = normalizedUrl.pathname.replace(/\/+$/, '');
+            return normalizedUrl.href;
+        };
+
+        try {
+            return normalizeUrl(datum.canonical_url) !== normalizeUrl(url);
+        } catch {
+            return datum.canonical_url !== url;
+        }
     }
 
     generateXmlFromNodes(page) {
@@ -83,7 +97,7 @@ class BaseSiteMapGenerator {
         const lastModified = this.getLastModifiedForDatum(datum);
         const node = this.createUrlNodeFromDatum(url, datum, lastModified);
 
-        if (node && !this.hasCanonicalUrl(datum)) {
+        if (node && !this.hasCanonicalUrl(datum, url)) {
             this.updateLastModified(datum, lastModified);
             this.updateLookups(datum, node, lastModified);
             // force regeneration of xml
