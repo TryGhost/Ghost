@@ -53,5 +53,19 @@ describe('actions api helpers', () => {
             expect(title('restored')).toBe('Custom field restored');
             expect(title('deleted')).toBe('Custom field deleted');
         });
+
+        it('formats a member custom field value change', () => {
+            expect(getActionTitle(baseAction({
+                resource_type: 'member',
+                context: {action_name: 'custom_fields_edited', primary_name: 'Jamie Larson'}
+            }))).toBe('Member custom fields edited');
+        });
+
+        it('formats a member edit that did not touch custom fields', () => {
+            expect(getActionTitle(baseAction({
+                resource_type: 'member',
+                context: {primary_name: 'Jamie Larson'}
+            }))).toBe('Member edited');
+        });
     });
 });

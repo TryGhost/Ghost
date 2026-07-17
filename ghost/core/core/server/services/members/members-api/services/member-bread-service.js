@@ -9,6 +9,9 @@ const messages = {
     memberNotFound: 'Member not found.'
 };
 
+// Stored in the action's `context.action_name`; Admin maps it to a display label.
+const CUSTOM_FIELDS_EDITED_ACTION = 'custom_fields_edited';
+
 /**
  * @typedef {object} ILabsService
  * @prop {(key: string) => boolean} isSet
@@ -605,7 +608,17 @@ module.exports = class MemberBREADService {
             const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
             if (memberUnchanged && plannedCustomFields.length > 0) {
                 model._changed = {custom_fields: true};
-                const eventOptions = {context: options.context, transacting: options.transacting};
+                // `actionName` is what the history log reads to title an `edited`
+                // action as something more specific than "Member edited" — the same
+                // hinge `commenting_disabled` uses. Only the values-only edit can
+                // claim it: an edit that changed the member too already fired its
+                // action from the save above, and labelling that one would hide the
+                // member change behind the custom-field one.
+                const eventOptions = {
+                    context: options.context,
+                    transacting: options.transacting,
+                    actionName: CUSTOM_FIELDS_EDITED_ACTION
+                };
                 await model.triggerThen('updated', model, eventOptions);
             }
         }

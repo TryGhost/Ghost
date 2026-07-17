@@ -925,6 +925,88 @@ describe('Member Custom Fields Admin API', function () {
         });
     });
 
+    describe('records member custom field value changes in the history (via the actions API)', function () {
+        // `context` is a text column, so the API hands it back as a JSON string —
+        // Admin parses it before reading `action_name`, and so does this.
+        const parseContext = (action: {context: string | null}) => (typeof action.context === 'string' ? JSON.parse(action.context) : action.context);
+
+        // The member's edit history as the history log asks for it: the same
+        // endpoint, filter and include the Admin history modal uses.
+        const memberEditedActions = async (memberId: string) => {
+            const {body} = await agent
+                .get(`actions/?filter=resource_id:'${memberId}'%2Bresource_type:member&include=actor`)
+                .expectStatus(200);
+            return body.actions.filter((action: {event: string}) => action.event === 'edited');
+        };
+
+        it('marks a values-only edit as a custom-field change', async function () {
+            // The payload that makes the whole feature auditable: without
+            // action_name the log can't tell this from a name change.
+            const field = await createField({name: 'Favourite topic'});
+            const memberId = await createMember();
+
+            await setValues(memberId, {[field.key]: 'Ghosts'});
+
+            const actions = await memberEditedActions(memberId);
+            assert.equal(actions.length, 1);
+            assert.equal(parseContext(actions[0]).action_name, 'custom_fields_edited');
+            assert.equal(actions[0].resource_id, memberId);
+            // The row still has to say who the member is and who changed them —
+            // action_name titles the entry, it doesn't replace the rest of it.
+            assert.ok(parseContext(actions[0]).primary_name, 'the action should name the member');
+            assert.equal(actions[0].actor_type, 'user');
+        });
+
+        it('leaves a plain member edit unmarked', async function () {
+            const memberId = await createMember();
+
+            await agent
+                .put(`members/${memberId}/`)
+                .body({members: [{name: 'Renamed'}]})
+                .expectStatus(200);
+
+            const actions = await memberEditedActions(memberId);
+            assert.equal(actions.length, 1);
+            assert.equal(parseContext(actions[0]).action_name, undefined);
+        });
+
+        it('leaves an edit that changes the member too unmarked', async function () {
+            // The member's own save already fired the one action for this edit, and
+            // it covers a change to the member itself — marking it as a custom-field
+            // change would hide the rename behind the wrong label. The generic
+            // "Member edited" is the honest title for a mixed edit.
+            const field = await createField({name: 'Favourite topic'});
+            const memberId = await createMember();
+
+            await agent
+                .put(`members/${memberId}/`)
+                .body({members: [{name: 'Renamed', custom_fields: {[field.key]: 'Ghosts'}}]})
+                .expectStatus(200);
+
+            const actions = await memberEditedActions(memberId);
+            assert.equal(actions.length, 1);
+            assert.equal(parseContext(actions[0]).action_name, undefined);
+        });
+
+        it('marks a full PUT that only really changes a custom field', async function () {
+            // The Admin member editor resends the whole member, so the save is a
+            // no-op and only the custom field actually changed.
+            const field = await createField({name: 'Favourite topic'});
+            const memberId = await createMember();
+            const {body} = await agent.get(`members/${memberId}/`).expectStatus(200);
+            const {email} = body.members[0];
+
+            await agent
+                .put(`members/${memberId}/`)
+                .body({members: [{email, custom_fields: {[field.key]: 'Ghosts'}}]})
+                .expectStatus(200);
+
+            const actions = await memberEditedActions(memberId);
+            assert.equal(actions.length, 1);
+            assert.equal(parseContext(actions[0]).action_name, 'custom_fields_edited');
+        });
+    });
+
     describe('Authorization', function () {
         // The full role matrix is pinned in migration.test.js; here we only prove
         // the endpoint enforces the permission — a role without it is rejected.
