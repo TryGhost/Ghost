@@ -48,7 +48,13 @@ const FieldList: React.FC<{
                     return (
                         <ListItem
                             key={field.key}
-                            action={<Button color='green' label='Edit' link onClick={() => openModal(field)} />}
+                            // The Edit button stays visible (not hover-only) so it's
+                            // keyboard-focusable — the row div isn't. stopPropagation
+                            // keeps a button click from also firing the row's onClick.
+                            action={<Button color='green' label='Edit' link onClick={(e) => {
+                                e?.stopPropagation();
+                                openModal(field);
+                            }} />}
                             avatar={
                                 <div className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-grey-100 dark:bg-grey-900'>
                                     <Icon name={userType.icon} size={18} />
@@ -57,7 +63,6 @@ const FieldList: React.FC<{
                             detail={userType.label}
                             testId='custom-field-list-item'
                             title={<span className='font-semibold'>{field.name}</span>}
-                            hideActions
                             separator
                             onClick={() => openModal(field)}
                         />
