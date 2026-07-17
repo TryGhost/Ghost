@@ -1,5 +1,6 @@
 const models = require('../../models');
 const urlService = require('../../services/url');
+const {requiredUrlColumns} = require('./utils/serializers/input/utils/url');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 
@@ -24,7 +25,7 @@ const controller = {
                 filter: 'type:post+status:[draft,published,scheduled,sent]',
                 limit: '10000',
                 order: 'updated_at DESC',
-                columns: ['id', 'uuid', 'url', 'title', 'slug', 'status', 'published_at', 'visibility'],
+                columns: requiredUrlColumns('posts', ['id', 'uuid', 'url', 'title', 'slug', 'status', 'published_at', 'visibility']),
                 ...urlRelationsWhenLazyRouting()
             };
 
@@ -44,7 +45,7 @@ const controller = {
                 filter: 'type:page+status:[draft,published,scheduled]',
                 limit: '10000',
                 order: 'updated_at DESC',
-                columns: ['id', 'uuid', 'url', 'title', 'slug', 'status', 'published_at', 'visibility'],
+                columns: requiredUrlColumns('pages', ['id', 'uuid', 'url', 'title', 'slug', 'status', 'published_at', 'visibility']),
                 ...urlRelationsWhenLazyRouting()
             };
 
@@ -63,7 +64,7 @@ const controller = {
             const options = {
                 limit: '10000',
                 order: 'updated_at DESC',
-                columns: ['id', 'slug', 'name', 'url']
+                columns: requiredUrlColumns('tags', ['id', 'slug', 'name', 'url'])
             };
 
             return models.Tag.findPage(options);
@@ -81,7 +82,7 @@ const controller = {
             const options = {
                 limit: '10000',
                 order: 'updated_at DESC',
-                columns: ['id', 'slug', 'url', 'name', 'profile_image']
+                columns: requiredUrlColumns('authors', ['id', 'slug', 'url', 'name', 'profile_image'])
             };
 
             return models.User.findPage(options);
