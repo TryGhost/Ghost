@@ -20,16 +20,16 @@
  * ghost/core/core/frontend/web/middleware/serve-indexnow-key.js
  */
 
-const urlService = require('./url');
-const urlUtils = require('../../shared/url-utils');
+const urlService = require('../url');
+const urlUtils = require('../../../shared/url-utils');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
-const settingsCache = require('../../shared/settings-cache');
-const config = require('../../shared/config');
-const labs = require('../../shared/labs');
-const events = require('../lib/common/events');
+const settingsCache = require('../../../shared/settings-cache');
+const config = require('../../../shared/config');
+const labs = require('../../../shared/labs');
+const events = require('../../lib/common/events');
 
 const messages = {
     requestFailedError: 'The {service} service was unable to send a ping request, your site will continue to function.',
@@ -238,7 +238,7 @@ function indexnowListener(model, options) {
 /**
  * Register event listeners for IndexNow
  */
-function listen() {
+function init() {
     // Listen for new posts being published
     events
         .removeListener('post.published', indexnowListener)
@@ -251,7 +251,7 @@ function listen() {
 }
 
 module.exports = {
-    listen: listen,
+    init: init,
     ping: ping,
     getApiKey: getApiKey
 };

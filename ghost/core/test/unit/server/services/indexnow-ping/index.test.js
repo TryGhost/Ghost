@@ -2,14 +2,14 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const _ = require('lodash');
 const nock = require('nock');
-const testUtils = require('../../../utils');
-const indexnow = require('../../../../core/server/services/indexnow');
-const events = require('../../../../core/server/lib/common/events');
-const settingsCache = require('../../../../core/shared/settings-cache');
-const config = require('../../../../core/shared/config');
-const labs = require('../../../../core/shared/labs');
+const testUtils = require('../../../../utils');
+const indexnow = require('../../../../../core/server/services/indexnow-ping');
+const events = require('../../../../../core/server/lib/common/events');
+const settingsCache = require('../../../../../core/shared/settings-cache');
+const config = require('../../../../../core/shared/config');
+const labs = require('../../../../../core/shared/labs');
 const logging = require('@tryghost/logging');
-const urlService = require('../../../../core/server/services/url');
+const urlService = require('../../../../../core/server/services/url');
 
 describe('IndexNow', function () {
     let eventStub;
@@ -36,9 +36,9 @@ describe('IndexNow', function () {
         nock.cleanAll();
     });
 
-    describe('listen()', function () {
+    describe('init()', function () {
         it('should initialise events correctly', function () {
-            indexnow.listen();
+            indexnow.init();
             sinon.assert.calledTwice(eventStub);
             sinon.assert.calledWith(eventStub, 'post.published');
             sinon.assert.calledWith(eventStub, 'post.published.edited');
@@ -54,7 +54,7 @@ describe('IndexNow', function () {
             settingsCacheStub.withArgs('indexnow_api_key').returns(null);
             loggingStub = sinon.stub(logging, 'warn');
 
-            indexnow.listen();
+            indexnow.init();
             listener = eventStub.firstCall.args[1];
         });
 
