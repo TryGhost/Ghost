@@ -5,7 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const {execSync} = require('node:child_process');
 const semver = require('semver');
-const {resolveBaseTag} = require('./lib/resolve-base-tag');
+const {resolveBaseTag} = require('./lib/resolve-base-tag.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const GHOST_CORE_PKG = path.join(ROOT, 'ghost/core/package.json');
@@ -133,7 +133,7 @@ async function waitForChecks(commit) {
 
     const startTime = Date.now();
 
-    while (true) { // eslint-disable-line no-constant-condition
+    while (true) {
         const response = await fetch(`https://api.github.com/repos/TryGhost/Ghost/commits/${commit}/check-runs`, {
             headers: {
                 Authorization: `token ${token}`,
@@ -171,7 +171,9 @@ async function waitForChecks(commit) {
         }
 
         log(`(${elapsed}s elapsed), polling in 30s...`);
-        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+        await new Promise((resolve) => {
+            setTimeout(resolve, POLL_INTERVAL_MS);
+        });
     }
 }
 

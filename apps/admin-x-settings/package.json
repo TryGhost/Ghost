@@ -50,6 +50,7 @@
         "react-dom": "catalog:",
         "react-hot-toast": "catalog:",
         "react-select": "5.10.2",
+        "semver": "catalog:",
         "sonner": "catalog:",
         "validator": "catalog:"
     },
@@ -66,6 +67,7 @@
         "@types/node": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
+        "@types/semver": "catalog:",
         "@types/validator": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "eslint": "catalog:",

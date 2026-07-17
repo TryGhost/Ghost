@@ -3,9 +3,8 @@ import {parseArgs} from 'node:util';
 import {cp, readFile, writeFile, readdir, stat, rm, mkdir} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import {join, dirname, relative, resolve, sep} from 'node:path';
-import {fileURLToPath} from 'node:url';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = join(import.meta.dirname, '..');
 const TEMPLATE_DIR = join(ROOT, 'packages', '_template');
 const PACKAGES_DIR = join(ROOT, 'packages');
 

@@ -86,7 +86,7 @@ async function getNewVersion() {
 }
 
 async function updateConfig(newVersion) {
-    const defaultConfigPath = path.resolve(__dirname, '../../ghost/core/core/shared/config/defaults.json');
+    const defaultConfigPath = path.resolve(__dirname, '../ghost/core/core/shared/config/defaults.json');
     const defaultConfig = require(defaultConfigPath);
 
     const configKey = CONFIG_KEYS[APP_NAME];

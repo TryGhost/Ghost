@@ -37,7 +37,7 @@ function parseVersionFolder(folder) {
  * e.g. "6.28.0-rc.0" → {major: 6, minor: 28}
  */
 function getSafeVersion() {
-    const packageJsonPath = path.resolve(__dirname, '../../', PACKAGE_JSON_PATH);
+    const packageJsonPath = path.resolve(__dirname, '../', PACKAGE_JSON_PATH);
     const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
     const match = pkg.version.match(/^(\d+)\.(\d+)/);
     if (!match) {
@@ -97,7 +97,7 @@ function compareVersions(a, b) {
  * This catches orphaned folders that knex-migrator would skip.
  */
 function checkOrphanedFolders(safeVersion) {
-    const migrationsDir = path.resolve(__dirname, '../../', MIGRATIONS_PATH);
+    const migrationsDir = path.resolve(__dirname, '../', MIGRATIONS_PATH);
     const folders = fs.readdirSync(migrationsDir)
         .filter(f => fs.statSync(path.join(migrationsDir, f)).isDirectory())
         .filter(f => /^\d+\.\d+$/.test(f));

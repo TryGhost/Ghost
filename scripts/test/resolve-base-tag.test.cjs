@@ -5,7 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const {execSync} = require('node:child_process');
 const semver = require('semver');
-const {resolveBaseTag} = require('../lib/resolve-base-tag');
+const {resolveBaseTag} = require('../lib/resolve-base-tag.cjs');
 
 /**
  * Create a temporary git repo with semver tags for testing.

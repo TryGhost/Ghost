@@ -32,9 +32,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {execFileSync} = require('node:child_process');
 
-const {computeNextVersion, getPublishedVersions} = require('./compute-next-app-version');
+const {computeNextVersion, getPublishedVersions} = require('./compute-next-app-version.cjs');
 
-const ROOT_DIR = path.resolve(__dirname, '../..');
+const ROOT_DIR = path.resolve(__dirname, '..');
 const KOENIG_DIR = path.join(ROOT_DIR, 'koenig');
 
 function run(cmd, args, opts = {}) {
