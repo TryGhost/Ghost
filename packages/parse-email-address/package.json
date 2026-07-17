@@ -1,5 +1,6 @@
 {
   "name": "@tryghost/parse-email-address",
+  "version": "0.0.0",
   "private": true,
   "repository": {
     "type": "git",
