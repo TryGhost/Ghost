@@ -2,17 +2,17 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const _ = require('lodash');
 const nock = require('nock');
-const testUtils = require('../../../utils');
-const configUtils = require('../../../utils/config-utils');
+const testUtils = require('../../../../utils');
+const configUtils = require('../../../../utils/config-utils');
 
 // Stuff we test
-const slack = require('../../../../core/server/services/slack');
+const slack = require('../../../../../core/server/services/slack-ping');
 
-const events = require('../../../../core/server/lib/common/events');
+const events = require('../../../../../core/server/lib/common/events');
 const logging = require('@tryghost/logging');
-const imageLib = require('../../../../core/server/lib/image');
-const urlService = require('../../../../core/server/services/url');
-const settingsCache = require('../../../../core/shared/settings-cache');
+const imageLib = require('../../../../../core/server/lib/image');
+const urlService = require('../../../../../core/server/services/url');
+const settingsCache = require('../../../../../core/shared/settings-cache');
 
 // Test data
 const slackURL = 'https://hooks.slack.com/services/a-b-c-d';
@@ -45,7 +45,7 @@ describe('Slack', function () {
     });
 
     function getListeners() {
-        slack.listen();
+        slack.init();
 
         return {
             slackListener: eventStub.firstCall.args[1],
@@ -91,8 +91,8 @@ describe('Slack', function () {
         };
     }
 
-    it('listen() should initialise event correctly', function () {
-        slack.listen();
+    it('init() should initialise event correctly', function () {
+        slack.init();
         sinon.assert.calledTwice(eventStub);
         sinon.assert.calledWith(eventStub.firstCall, 'post.published', sinon.match.func);
         sinon.assert.calledWith(eventStub.secondCall, 'slack.test', sinon.match.func);
