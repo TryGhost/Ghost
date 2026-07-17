@@ -1,5 +1,3 @@
-import '../utils/index.js';
-
 import card from '../../src/cards/header.js';
 import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
 const serializer = new HTMLSerializer(voidMap);
@@ -22,7 +20,7 @@ describe('Header card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.equal(`<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" style="" data-kg-background-image="https://example.com/image.jpg"><h2 class="kg-header-card-header" id="this-is-the-header-card">This is the header card</h2><h3 class="kg-header-card-subheader" id="hi">hi</h3><a href="https://example.com/" class="kg-header-card-button">The button</a></div>`);
+        expect(serializer.serialize(card.render(opts))).toBe(`<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" style="" data-kg-background-image="https://example.com/image.jpg"><h2 class="kg-header-card-header" id="this-is-the-header-card">This is the header card</h2><h3 class="kg-header-card-subheader" id="hi">hi</h3><a href="https://example.com/" class="kg-header-card-button">The button</a></div>`);
     });
 
     it('renders nothing when header and subheader is undefined and the button is disabled', function () {
@@ -42,7 +40,7 @@ describe('Header card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.match('');
+        expect(serializer.serialize(card.render(opts))).toEqual('');
     });
 
     it('renders a minimal header card', function () {
@@ -62,7 +60,7 @@ describe('Header card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.equal(`<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" style="" data-kg-background-image=""><h2 class="kg-header-card-header" id="hi">hi</h2></div>`);
+        expect(serializer.serialize(card.render(opts))).toBe(`<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" style="" data-kg-background-image=""><h2 class="kg-header-card-header" id="hi">hi</h2></div>`);
     });
 
     it('transforms urls absolute to relative', function () {
@@ -75,10 +73,10 @@ describe('Header card', function () {
 
         const transformed = card.absoluteToRelative!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        (transformed.backgroundImageSrc as string).should.equal('/img.jpg');
-        (transformed.buttonUrl as string).should.equal('/post');
-        (transformed.header as string).should.equal('<a href="/post"></a>');
-        (transformed.subheader as string).should.equal('<a href="/post"></a>');
+        expect((transformed.backgroundImageSrc as string)).toBe('/img.jpg');
+        expect((transformed.buttonUrl as string)).toBe('/post');
+        expect((transformed.header as string)).toBe('<a href="/post"></a>');
+        expect((transformed.subheader as string)).toBe('<a href="/post"></a>');
     });
 
     it('transforms urls relative to absolute', function () {
@@ -91,10 +89,10 @@ describe('Header card', function () {
 
         const transformed = card.relativeToAbsolute!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        (transformed.backgroundImageSrc as string).should.equal('http://127.0.0.1:2369/img.jpg');
-        (transformed.buttonUrl as string).should.equal('http://127.0.0.1:2369/post');
-        (transformed.header as string).should.equal('<a href="http://127.0.0.1:2369/post"></a>');
-        (transformed.subheader as string).should.equal('<a href="http://127.0.0.1:2369/post"></a>');
+        expect((transformed.backgroundImageSrc as string)).toBe('http://127.0.0.1:2369/img.jpg');
+        expect((transformed.buttonUrl as string)).toBe('http://127.0.0.1:2369/post');
+        expect((transformed.header as string)).toBe('<a href="http://127.0.0.1:2369/post"></a>');
+        expect((transformed.subheader as string)).toBe('<a href="http://127.0.0.1:2369/post"></a>');
     });
 
     it('transforms urls to transform-ready', function () {
@@ -107,9 +105,9 @@ describe('Header card', function () {
 
         const transformed = card.toTransformReady!(payload, {siteUrl: 'http://127.0.0.1:2369/'});
 
-        (transformed.backgroundImageSrc as string).should.equal('__GHOST_URL__/img.jpg');
-        (transformed.buttonUrl as string).should.equal('__GHOST_URL__/post');
-        (transformed.header as string).should.equal('<a href="__GHOST_URL__/post"></a>');
-        (transformed.subheader as string).should.equal('<a href="__GHOST_URL__/post"></a>');
+        expect((transformed.backgroundImageSrc as string)).toBe('__GHOST_URL__/img.jpg');
+        expect((transformed.buttonUrl as string)).toBe('__GHOST_URL__/post');
+        expect((transformed.header as string)).toBe('<a href="__GHOST_URL__/post"></a>');
+        expect((transformed.subheader as string)).toBe('<a href="__GHOST_URL__/post"></a>');
     });
 });

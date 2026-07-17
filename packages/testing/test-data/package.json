@@ -1,0 +1,33 @@
+{
+    "name": "@tryghost/test-data",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "repository": "https://github.com/TryGhost/Ghost/tree/main/testing/test-data",
+    "author": "Ghost Foundation",
+    "license": "MIT",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "exports": {
+        ".": "./src/index.ts",
+        "./selectors/*": "./src/selectors/*.ts",
+        "./package.json": "./package.json"
+    },
+    "scripts": {
+        "test": "pnpm test:types && pnpm test:unit",
+        "test:unit": "vitest run",
+        "test:types": "tsc --noEmit",
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint src/ test/ --cache"
+    },
+    "dependencies": {
+        "@faker-js/faker": "catalog:"
+    },
+    "devDependencies": {
+        "@internal/cfg-eslint": "workspace:*",
+        "eslint": "catalog:",
+        "@typescript/native": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:"
+    }
+}

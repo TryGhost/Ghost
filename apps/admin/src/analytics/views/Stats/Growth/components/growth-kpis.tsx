@@ -2,10 +2,10 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator, Tabs, TabsList} from '@tryghost/shade/components';
 import {type DiffDirection} from '@/analytics/hooks/use-growth-stats';
 import {GhAreaChart, type GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue} from '@tryghost/shade/patterns';
-import {STATS_RANGES} from '@/analytics/utils/constants';
+import {STATS_RANGES} from '@/shared/analytics/constants';
 import {centsToDollars, formatDisplayDateWithRange} from '@tryghost/shade/app';
 import {formatNumber} from '@tryghost/shade/utils';
-import {sanitizeChartData} from '@/analytics/utils/chart-helpers';
+import {getEffectiveChartRange, sanitizeChartData} from '@/shared/analytics/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
@@ -146,9 +146,9 @@ const GrowthKPIs: React.FC<{
     const {totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions} = totals;
 
     // Create chart data based on selected tab
-    const chartData = useMemo(() => {
+    const {chartData, chartRange} = useMemo(() => {
         if (!allChartData || allChartData.length === 0) {
-            return [];
+            return {chartData: [], chartRange: range};
         }
 
         // First sanitize the data based on the selected field
@@ -222,7 +222,10 @@ const GrowthKPIs: React.FC<{
             });
         }
 
-        return processedData;
+        return {
+            chartData: processedData,
+            chartRange: getEffectiveChartRange(range, allChartData, {fieldName})
+        };
     }, [currentTab, allChartData, range, currencySymbol]);
 
     const tabConfig = {
@@ -367,8 +370,8 @@ const GrowthKPIs: React.FC<{
                         } :
                         formatNumber}
                     id={currentTab}
-                    range={range}
-                    tooltipContent={currentTab === 'paid-members' ? <PaidMembersTooltipContent color={tabConfig['paid-members'].color} range={range} showBreakdown={true} /> : undefined}
+                    range={chartRange}
+                    tooltipContent={currentTab === 'paid-members' ? <PaidMembersTooltipContent color={tabConfig['paid-members'].color} range={chartRange} showBreakdown={true} /> : undefined}
                 />
             </div>
         </Tabs>

@@ -3,12 +3,12 @@ import React from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, SkeletonTable} from '@tryghost/shade/components';
 import {LucideIcon, abbreviateNumber, cn, formatDisplayDate, formatNumber} from '@tryghost/shade/utils';
 import {type TopPostViewsStats} from '@tryghost/admin-x-framework/api/stats';
-import {getPeriodText} from '@/analytics/utils/chart-helpers';
+import {getPeriodText} from '@/shared/analytics/chart-helpers';
 import {getPostDestination} from '@/analytics/utils/url-helpers';
 import {getPostStatusText} from '@tryghost/admin-x-framework/utils/post-utils';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
-import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 
 interface PostlistTooptipProps {
     title?: string;

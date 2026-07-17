@@ -1,7 +1,6 @@
-import 'should';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$getRoot, type LexicalEditor} from 'lexical';
-import {dom, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, dom, html} from '../test-utils/index.js';
 import {EmailCtaNode, $createEmailCtaNode, $isEmailCtaNode} from '../../src/index.js';
 
 const editorNodes = [EmailCtaNode];
@@ -11,16 +10,16 @@ describe('EmailCtaNode', function () {
     let dataset: Record<string, unknown>;
     let exportOptions: Record<string, unknown>;
 
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({
@@ -45,59 +44,59 @@ describe('EmailCtaNode', function () {
 
     it('matches node with $isEmailCtaNode', editorTest(function () {
         const emailCtaNode = $createEmailCtaNode(dataset);
-        $isEmailCtaNode(emailCtaNode).should.be.true();
+        expect($isEmailCtaNode(emailCtaNode)).toBe(true);
     }));
 
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {
             const emailNode = $createEmailCtaNode(dataset);
 
-            emailNode.alignment.should.equal(dataset.alignment);
-            emailNode.buttonText.should.equal(dataset.buttonText);
-            emailNode.buttonUrl.should.equal(dataset.buttonUrl);
-            emailNode.html.should.equal(dataset.html);
-            emailNode.segment.should.equal(dataset.segment);
-            emailNode.showButton.should.equal(dataset.showButton);
-            emailNode.showDividers.should.equal(dataset.showDividers);
+            expect(emailNode.alignment).toBe(dataset.alignment);
+            expect(emailNode.buttonText).toBe(dataset.buttonText);
+            expect(emailNode.buttonUrl).toBe(dataset.buttonUrl);
+            expect(emailNode.html).toBe(dataset.html);
+            expect(emailNode.segment).toBe(dataset.segment);
+            expect(emailNode.showButton).toBe(dataset.showButton);
+            expect(emailNode.showDividers).toBe(dataset.showDividers);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const emailNode = $createEmailCtaNode();
 
-            emailNode.alignment.should.equal('left');
+            expect(emailNode.alignment).toBe('left');
             emailNode.alignment = 'center';
-            emailNode.alignment.should.equal('center');
+            expect(emailNode.alignment).toBe('center');
 
-            emailNode.buttonText.should.equal('');
+            expect(emailNode.buttonText).toBe('');
             emailNode.buttonText = 'Hello World';
-            emailNode.buttonText.should.equal('Hello World');
+            expect(emailNode.buttonText).toBe('Hello World');
 
-            emailNode.buttonUrl.should.equal('');
+            expect(emailNode.buttonUrl).toBe('');
             emailNode.buttonUrl = 'https://example.com';
-            emailNode.buttonUrl.should.equal('https://example.com');
+            expect(emailNode.buttonUrl).toBe('https://example.com');
 
-            emailNode.html.should.equal('');
+            expect(emailNode.html).toBe('');
             emailNode.html = '<p>Hello World</p>';
-            emailNode.html.should.equal('<p>Hello World</p>');
+            expect(emailNode.html).toBe('<p>Hello World</p>');
 
-            emailNode.segment.should.equal('status:free');
+            expect(emailNode.segment).toBe('status:free');
             emailNode.segment = 'status:-free';
-            emailNode.segment.should.equal('status:-free');
+            expect(emailNode.segment).toBe('status:-free');
 
-            emailNode.showButton.should.equal(false);
+            expect(emailNode.showButton).toBe(false);
             emailNode.showButton = true;
-            emailNode.showButton.should.equal(true);
+            expect(emailNode.showButton).toBe(true);
 
-            emailNode.showDividers.should.equal(true);
+            expect(emailNode.showDividers).toBe(true);
             emailNode.showDividers = false;
-            emailNode.showDividers.should.equal(false);
+            expect(emailNode.showDividers).toBe(false);
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
             const emailNode = $createEmailCtaNode(dataset);
             const emailNodeDataset = emailNode.getDataset();
 
-            emailNodeDataset.should.deepEqual({
+            expect(emailNodeDataset).toEqual({
                 ...dataset
             });
         }));
@@ -105,7 +104,7 @@ describe('EmailCtaNode', function () {
 
     describe('getType', function () {
         it('returns the correct node type', editorTest(function () {
-            EmailCtaNode.getType().should.equal('email-cta');
+            expect(EmailCtaNode.getType()).toBe('email-cta');
         }));
     });
 
@@ -116,13 +115,13 @@ describe('EmailCtaNode', function () {
             const clone = EmailCtaNode.clone(emailCtaNode) as EmailCtaNode;
             const cloneDataset = clone.getDataset();
 
-            cloneDataset.should.deepEqual({...emailCtaNodeDataset});
+            expect(cloneDataset).toEqual({...emailCtaNodeDataset});
         }));
     });
 
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
-            EmailCtaNode.urlTransformMap.should.deepEqual({
+            expect(EmailCtaNode.urlTransformMap).toEqual({
                 buttonUrl: 'url',
                 html: 'html'
             });
@@ -132,7 +131,7 @@ describe('EmailCtaNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const emailCtaNode = $createEmailCtaNode(dataset);
-            emailCtaNode.hasEditMode().should.be.true();
+            expect(emailCtaNode.hasEditMode()).toBe(true);
         }));
     });
 
@@ -141,7 +140,7 @@ describe('EmailCtaNode', function () {
             const emailNode = $createEmailCtaNode(dataset);
             const json = emailNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'email-cta',
                 version: 1,
                 alignment: dataset.alignment,
@@ -156,39 +155,41 @@ describe('EmailCtaNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done: (err?: unknown) => void) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'email-cta',
-                        ...dataset
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'email-cta',
+                            ...dataset
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [emailNode] = $getRoot().getChildren() as EmailCtaNode[];
+                editor.getEditorState().read(() => {
+                    try {
+                        const [emailNode] = $getRoot().getChildren() as EmailCtaNode[];
 
-                    emailNode.alignment.should.equal(dataset.alignment);
-                    emailNode.buttonText.should.equal(dataset.buttonText);
-                    emailNode.buttonUrl.should.equal(dataset.buttonUrl);
-                    emailNode.html.should.equal(dataset.html);
-                    emailNode.segment.should.equal(dataset.segment);
-                    emailNode.showButton.should.equal(dataset.showButton);
-                    emailNode.showDividers.should.equal(dataset.showDividers);
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        expect(emailNode.alignment).toBe(dataset.alignment);
+                        expect(emailNode.buttonText).toBe(dataset.buttonText);
+                        expect(emailNode.buttonUrl).toBe(dataset.buttonUrl);
+                        expect(emailNode.html).toBe(dataset.html);
+                        expect(emailNode.segment).toBe(dataset.segment);
+                        expect(emailNode.showButton).toBe(dataset.showButton);
+                        expect(emailNode.showDividers).toBe(dataset.showDividers);
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });
@@ -213,7 +214,7 @@ describe('EmailCtaNode', function () {
             const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
-            el.outerHTML.should.prettifyTo(html`
+            assertPrettifiesTo(el.outerHTML, html`
                 <div data-gh-segment="status:free">
                     <hr>
                     <p>Hello World</p>
@@ -240,7 +241,7 @@ describe('EmailCtaNode', function () {
             const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
-            el.outerHTML.should.equal('<span></span>');
+            expect(el.outerHTML).toBe('<span></span>');
         }));
     });
 
@@ -250,7 +251,7 @@ describe('EmailCtaNode', function () {
             node.html = 'Testing';
 
             // email CTA nodes don't have text content
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
         }));
     });
 });

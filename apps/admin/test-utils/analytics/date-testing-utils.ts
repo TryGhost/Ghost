@@ -1,4 +1,3 @@
-import moment from 'moment';
 import {type MockInstance, vi} from 'vitest';
 
 /**
@@ -8,7 +7,6 @@ import {type MockInstance, vi} from 'vitest';
 
 // Fixed date for consistent testing
 export const FIXED_DATE = new Date('2024-01-15T12:00:00.000Z');
-export const FIXED_DATE_STRING = '2024-01-15';
 
 /**
  * Mock system date to a fixed point in time
@@ -43,70 +41,6 @@ export const getExpectedDateRange = (days: number, baseDate: Date = FIXED_DATE) 
 };
 
 /**
- * Create a date range for testing that spans specific days
- */
-export const createDateRange = (startDaysAgo: number, endDaysAgo: number = 0, baseDate: Date = FIXED_DATE) => {
-    const startDate = new Date(baseDate);
-    const endDate = new Date(baseDate);
-
-    startDate.setDate(startDate.getDate() - startDaysAgo);
-    endDate.setDate(endDate.getDate() - endDaysAgo);
-
-    return {
-        startDate,
-        endDate,
-        startDateString: startDate.toISOString().split('T')[0],
-        endDateString: endDate.toISOString().split('T')[0]
-    };
-};
-
-/**
- * Mock the getRangeDates function from @tryghost/shade/app
- * Provides consistent date ranges for testing
- */
-export const mockGetRangeDates = () => {
-    return (range: number) => {
-        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
-        return {
-            startDate: moment.utc(expectedDateFrom).startOf('day'),
-            endDate: moment.utc(expectedDateTo).startOf('day'),
-            timezone: 'UTC'
-        };
-    };
-};
-
-/**
- * Mock the formatQueryDate function from @tryghost/shade/app
- * Provides consistent date formatting
- */
-export const mockFormatQueryDate = () => {
-    return (date: moment.Moment) => date.format('YYYY-MM-DD');
-};
-
-/**
- * Common date test scenarios
- */
-export const DATE_TEST_SCENARIOS = {
-    today: {range: 1, description: 'today'},
-    lastWeek: {range: 7, description: 'last 7 days'},
-    lastMonth: {range: 30, description: 'last 30 days'},
-    last3Months: {range: 90, description: 'Last 90 days'},
-    yearToDate: {range: -1, description: 'year to date'}
-} as const;
-
-// Mock external date functions. `vi.mock` is hoisted by vitest and must stay at
-// the top level of the module — importing this file registers the mock for the
-// test file that pulls it in.
-vi.mock('@tryghost/shade/app', async () => {
-    const actual = await vi.importActual<Record<string, unknown>>('@tryghost/shade/app');
-    return {
-        ...actual,
-        getRangeDates: vi.fn().mockImplementation(mockGetRangeDates()),
-        formatQueryDate: vi.fn().mockImplementation(mockFormatQueryDate())
-    };
-});
-
-/**
  * Setup date mocking for hook tests
  * This should be called in beforeEach for hooks that use date functions
  */
@@ -117,25 +51,4 @@ export const setupDateMocking = () => {
         mockDate,
         cleanup: restoreSystemDate
     };
-};
-
-/**
- * Test helper for date-dependent API calls
- * Verifies that API calls were made with expected date parameters
- */
-export const expectApiCallWithDateRange = (
-    mockApiCall: MockInstance,
-    range: number,
-    additionalParams: Record<string, unknown> = {}
-) => {
-    const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
-
-    expect(mockApiCall).toHaveBeenCalledWith({
-        searchParams: {
-            date_from: expectedDateFrom,
-            date_to: expectedDateTo,
-            ...additionalParams
-        },
-        enabled: expect.any(Boolean) as boolean
-    });
 };

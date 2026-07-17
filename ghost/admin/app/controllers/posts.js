@@ -1,11 +1,10 @@
 import Controller from '@ember/controller';
 import SelectionList from 'ghost-admin/components/posts-list/selection-list';
 import {DEFAULT_QUERY_PARAMS} from 'ghost-admin/helpers/reset-query-params';
-import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
+import {escapeNqlString} from 'ghost-admin/utils/escape-nql-string';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const TYPES = [{
@@ -53,6 +52,9 @@ const ORDERS = [{
     value: 'updated_at desc'
 }];
 
+const ALL_AUTHORS_OPTION = {name: 'All authors', slug: null};
+const ALL_TAGS_OPTION = {name: 'All tags', slug: null};
+
 export default class PostsController extends Controller {
     @service feature;
     @service router;
@@ -76,18 +78,8 @@ export default class PostsController extends Controller {
     availableVisibilities = VISIBILITIES;
     availableOrders = ORDERS;
 
-    _availableAuthors = this.store.peekAll('user');
-
-    // Set & used by the posts route
-    _hasLoadedAuthors = false;
-    _hasLoadedFilteredTag = false;
-
-    @tracked _initialTags = new TrackedArray();
-    _initialTagsMeta = null;
-    _hasLoadedInitialTags = false;
-    @tracked _searchedTags = new TrackedArray();
-    _searchedTagsQuery = null;
-    _searchedTagsMeta = null;
+    staticAuthorOptions = [ALL_AUTHORS_OPTION];
+    staticTagOptions = [ALL_TAGS_OPTION];
 
     constructor() {
         super(...arguments);
@@ -113,90 +105,45 @@ export default class PostsController extends Controller {
         return this.availableOrders.findBy('value', this.order) || {value: '!unknown'};
     }
 
-    get availableTags() {
-        let options = [{name: 'All tags', slug: null}];
-
-        options = options.concat(this.tagsManager.sortTags(this._initialTags));
-
-        if (this.tag && !options.findBy('slug', this.tag)) {
-            const foundTag = this.tagsManager.loadedTags.findBy('slug', this.tag);
-            if (foundTag) {
-                options.push(foundTag);
-            }
-        }
-
-        return options;
-    }
-
-    @action
-    async loadInitialTags() {
-        if (!this._hasLoadedInitialTags) {
-            await this.loadMoreTagsTask.perform(false);
-            this._hasLoadedInitialTags = true;
-        }
-    }
-
-    @task({drop: true})
-    *loadMoreTagsTask(isSearch = false) {
-        if (isSearch) {
-            if (this.searchTagsTask.isRunning) {
-                return;
-            }
-
-            if (this._searchedTagsMeta && this._searchedTagsMeta.pagination.pages <= this._searchedTagsMeta.pagination.page) {
-                return;
-            }
-
-            const page = this._searchedTagsMeta.pagination.page + 1;
-            const tags = yield this.tagsManager.searchTagsTask.perform(this._searchedTagsQuery, {page});
-            this._searchedTags.push(...this.tagsManager.sortTags(tags.toArray()));
-            this._searchedTagsMeta = tags.meta;
-        } else {
-            if (this._initialTagsMeta && this._initialTagsMeta?.pagination.pages <= this._initialTagsMeta.pagination.page) {
-                return;
-            }
-
-            const page = this._initialTagsMeta?.pagination.page ? this._initialTagsMeta.pagination.page + 1 : 1;
-            const tags = yield this.store.query('tag', {limit: 100, page, order: 'name asc'});
-            this._initialTags.push(...tags.toArray());
-            this._initialTagsMeta = tags.meta;
-        }
-    }
-
-    @task
-    *searchTagsTask(term) {
-        this._searchedTagsQuery = term;
-        const tags = yield this.tagsManager.searchTagsTask.perform(term);
-        this._searchedTagsMeta = tags.meta;
-
-        // we need to create a tracked array for vertical-collection to update as new options are loaded
-        // because we can't rely on power-select re-rendering as @options changes via auto template updates
-        this._searchedTags = new TrackedArray(this.tagsManager.sortTags(tags.toArray()));
-        return this._searchedTags;
-    }
-
     get selectedTag() {
         if (this.tag === null) {
-            return this.availableTags[0];
-        } else {
-            return this.tagsManager.loadedTags.findBy('slug', this.tag) || {slug: '!unknown'};
+            return ALL_TAGS_OPTION;
         }
-    }
 
-    get availableAuthors() {
-        const authors = this._availableAuthors;
-        const options = authors.toArray();
-
-        options.unshift({name: 'All authors', slug: null});
-
-        return options;
+        return this.store.peekAll('tag').findBy('slug', this.tag) || {slug: '!unknown'};
     }
 
     get selectedAuthor() {
-        let author = this.author;
-        let authors = this.availableAuthors;
+        if (this.author === null) {
+            return ALL_AUTHORS_OPTION;
+        }
 
-        return authors.findBy('slug', author) || {slug: '!unknown'};
+        return this.store.peekAll('user').findBy('slug', this.author) || {slug: '!unknown'};
+    }
+
+    @action
+    loadTagsPage({limit, page}) {
+        return this.store.query('tag', {limit, page, order: 'name asc'});
+    }
+
+    @action
+    searchTagsPage(term, {limit, page}) {
+        return this.store.query('tag', {filter: `tags.name:~${escapeNqlString(term)}`, limit, page, order: 'name asc'});
+    }
+
+    @action
+    sortTags(tags) {
+        return this.tagsManager.sortTags(tags);
+    }
+
+    @action
+    loadAuthorsPage({limit, page}) {
+        return this.store.query('user', {limit, page, order: 'name asc'});
+    }
+
+    @action
+    searchAuthorsPage(term, {limit, page}) {
+        return this.store.query('user', {filter: `name:~${escapeNqlString(term)}`, limit, page, order: 'name asc'});
     }
 
     @action

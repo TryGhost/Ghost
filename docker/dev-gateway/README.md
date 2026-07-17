@@ -26,7 +26,7 @@ Caddy uses environment variables (set in `compose.dev.yaml`) to configure proxy 
   - For developing with the [ActivityPub project](https://github.com/TryGhost/ActivityPub) running locally
   - Requires the ActivityPub docker-compose services to be running
 
-**Note:** AdminX React apps (admin-x-settings, activitypub, posts, stats) are served through the admin dev server so they don't need separate proxy entries.
+**Note:** AdminX React apps (admin-x-settings, activitypub) are served through the admin dev server so they don't need separate proxy entries.
 
 ### Ghost Configuration
 Ghost is configured via environment variables in `compose.dev.yaml` to load public app assets from `/ghost/assets/*` (e.g., `portal__url: /ghost/assets/portal/portal.min.js`). This uses the same path structure as built admin assets.

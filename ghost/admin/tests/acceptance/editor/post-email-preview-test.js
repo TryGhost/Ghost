@@ -1,6 +1,7 @@
 import loginAsRole from '../../helpers/login-as-role';
 import {click, find, findAll, focus, waitFor, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
+import {disableLabsFlag, enableLabsFlag} from '../../helpers/labs-flag';
 import {disableMembers, disablePaidMembers, enableMembers, enablePaidMembers} from '../../helpers/members';
 import {enableMailgun} from '../../helpers/mailgun';
 import {expect} from 'chai';
@@ -17,6 +18,7 @@ describe('Acceptance: Post email preview', function () {
         enableMailgun(this.server);
         enableMembers(this.server);
         enablePaidMembers(this.server);
+        enableLabsFlag(this.server, 'previewByTier');
         await loginAsRole('Administrator', this.server);
     });
 
@@ -65,7 +67,7 @@ describe('Acceptance: Post email preview', function () {
         const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
         const requestBody = JSON.parse(lastRequest.requestBody);
         expect(requestBody.newsletter).to.equal('awesome-newsletter');
-        expect(requestBody.memberSegment).to.equal('status:free');
+        expect(requestBody.member_status).to.equal('free');
     });
 
     it('should hide newsletters list when only 1 newsletter exists', async function () {
@@ -79,7 +81,8 @@ describe('Acceptance: Post email preview', function () {
         expect(find('[data-test-text="newsletter-from"]')).to.contain.rendered.text('noreply@example.com');
     });
 
-    it('can select paid/free member for preview', async function () {
+    it('can select free, paid, or tier member for preview', async function () {
+        this.server.create('tier', {name: 'Archive', slug: 'archive', type: 'paid', active: false});
         await openEmailPreviewModal.call(this);
 
         expect(find('[data-test-email-preview-newsletter-select]'), 'newsletter select').not.to.exist;
@@ -89,9 +92,10 @@ describe('Acceptance: Post email preview', function () {
         await clickTrigger('[data-test-select="preview-segment"]');
 
         const options = findAll('.ember-power-select-option');
-        expect(options.length).to.equal(2);
+        expect(options.length).to.equal(3);
         expect(options[0].textContent.trim()).to.equal('Free member');
         expect(options[1].textContent.trim()).to.equal('Paid member');
+        expect(options[2].textContent.trim()).to.equal('Specific tier');
 
         // can switch free/paid member in preview
         await selectChoose('[data-test-select="preview-segment"]', 'Paid member');
@@ -101,7 +105,42 @@ describe('Acceptance: Post email preview', function () {
         await click(find('[data-test-button="send-test-email"]'));
         const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
         const requestBody = JSON.parse(lastRequest.requestBody);
+        expect(requestBody.member_status).to.equal('paid');
+        expect(requestBody.member_tier).to.be.undefined;
+
+        // selecting a specific tier sends the paid audience narrowed to that tier
+        await selectChoose('[data-test-select="preview-segment"]', 'Specific tier');
+        await selectChoose('[data-test-select="preview-tier"]', 'Archive');
+        await click(find('[data-test-button="post-preview-test-email"]'));
+        await click(find('[data-test-button="send-test-email"]'));
+        const [tierRequest] = this.server.pretender.handledRequests.slice(-1);
+        const tierRequestBody = JSON.parse(tierRequest.requestBody);
+        expect(tierRequestBody.member_status).to.equal('paid');
+        expect(tierRequestBody.member_tier).to.equal('archive');
+    });
+
+    it('sends the legacy memberSegment param and hides tiers without the previewByTier flag', async function () {
+        disableLabsFlag(this.server, 'previewByTier');
+        this.server.create('tier', {name: 'Archive', slug: 'archive', type: 'paid', active: false});
+
+        await openEmailPreviewModal.call(this);
+
+        // no Tier option without the flag
+        await clickTrigger('[data-test-select="preview-segment"]');
+        const options = findAll('.ember-power-select-option');
+        expect(options.length).to.equal(2);
+        expect(options[0].textContent.trim()).to.equal('Free member');
+        expect(options[1].textContent.trim()).to.equal('Paid member');
+
+        // older backends only understand memberSegment
+        await selectChoose('[data-test-select="preview-segment"]', 'Paid member');
+        await click(find('[data-test-button="post-preview-test-email"]'));
+        await click(find('[data-test-button="send-test-email"]'));
+        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+        const requestBody = JSON.parse(lastRequest.requestBody);
         expect(requestBody.memberSegment).to.equal('status:-free');
+        expect(requestBody.member_status).to.be.undefined;
+        expect(requestBody.member_tier).to.be.undefined;
     });
 
     it('hides segment dropdown when only one option is available', async function () {

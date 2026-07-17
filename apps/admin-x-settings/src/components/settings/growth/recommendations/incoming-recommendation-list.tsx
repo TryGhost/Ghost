@@ -1,9 +1,11 @@
 import React, {useMemo} from 'react';
 import RecommendationIcon from './recommendation-icon';
-import {Button, NoValueLabel, type PaginationData, type ShowMoreData, Table, TableCell, TableRow} from '@tryghost/admin-x-design-system';
+import {Button, type PaginationData, type ShowMoreData, Table, TableRow} from '@tryghost/admin-x-design-system';
 import {type IncomingRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
+import {Inline} from '@tryghost/shade/primitives';
+import {NoValueLabel} from '@tryghost/shade/components';
 import {type ReferrerHistoryItem} from '@tryghost/admin-x-framework/api/referrers';
-import {numberWithCommas} from '../../../../utils/helpers';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface IncomingRecommendationListProps {
@@ -53,33 +55,31 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                 </div>
             )
         } testId='incoming-recommendation-list-item' hideActions>
-            <TableCell className='w-80' onClick={showDetails}>
-                <div className='group flex items-center gap-3 hover:cursor-pointer'>
-                    <div className={`flex grow flex-col`}>
-                        <div className="flex items-center gap-3">
-                            <RecommendationIcon favicon={incomingRecommendation.favicon} featured_image={incomingRecommendation.featured_image} title={incomingRecommendation.title || incomingRecommendation.url} />
-                            <span className='line-clamp-1 font-medium'>{incomingRecommendation.title || incomingRecommendation.url}</span>
-                        </div>
-                    </div>
+            <Inline className='w-full' gap='none'>
+                <div className='grow py-3 pr-6' onClick={showDetails}>
+                    <Inline className='group hover:cursor-pointer' gap='md'>
+                        <RecommendationIcon favicon={incomingRecommendation.favicon} featured_image={incomingRecommendation.featured_image} title={incomingRecommendation.title || incomingRecommendation.url} />
+                        <span className='line-clamp-1 font-medium'>{incomingRecommendation.title || incomingRecommendation.url}</span>
+                    </Inline>
                 </div>
-            </TableCell>
-            <TableCell className='hidden w-auto text-left whitespace-nowrap md:visible! md:table-cell!' padding={false} valign="middle" onClick={showDetails}>
-                {(signups === 0) ? (
-                    <span className="text-grey-500 dark:text-grey-900">-</span>
-                ) : (
-                    <div className='mr-2'>
-                        <span>{numberWithCommas(signups)}</span>
-                    </div>
-                )}
-            </TableCell>
-            <TableCell className='hidden w-[1%] whitespace-nowrap md:visible! md:table-cell!' valign="middle" onClick={showDetails}>
-                {(signups === 0) ? (null) : (
-                    <div className='-mt-px text-left'>
-                        <span className='-mb-px inline-block min-w-[60px] text-left whitespace-nowrap text-grey-700 lowercase'>{freeMembersLabel}</span>
-                    </div>
-                )}
-            </TableCell>
-            {incomingRecommendation.recommending_back && <TableCell className='w-[1%] whitespace-nowrap group-hover/table-row:visible md:invisible'><div className='mt-1 text-right whitespace-nowrap text-grey-700'>Recommending</div></TableCell>}
+                <div className='hidden py-3 pr-6 text-left whitespace-nowrap md:block' onClick={showDetails}>
+                    {(signups === 0) ? (
+                        <span className="text-muted-foreground">-</span>
+                    ) : (
+                        <div className='mr-2'>
+                            <span>{formatNumber(signups)}</span>
+                        </div>
+                    )}
+                </div>
+                <div className='hidden w-[1%] py-3 pr-6 whitespace-nowrap md:block' onClick={showDetails}>
+                    {(signups === 0) ? (null) : (
+                        <div className='-mt-px text-left'>
+                            <span className='-mb-px inline-block min-w-[60px] text-left whitespace-nowrap text-grey-700 lowercase'>{freeMembersLabel}</span>
+                        </div>
+                    )}
+                </div>
+                {incomingRecommendation.recommending_back && <div className='w-[1%] py-3 pr-6 whitespace-nowrap group-hover/table-row:visible md:invisible'><div className='mt-1 text-right whitespace-nowrap text-grey-700'>Recommending</div></div>}
+            </Inline>
         </TableRow>
     );
 };

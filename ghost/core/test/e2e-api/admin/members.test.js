@@ -2204,8 +2204,9 @@ describe('Members API', function () {
         assert.equal(readBody.members.length, 1, 'The member was not found in read');
         const readMember = readBody.members[0];
 
-        // Note that we explicitly need to ask to include tiers while browsing
-        const {body: browseBody} = await agent.get(`/members/?search=${memberWithPaidSubscription.email}&include=tiers`);
+        // Note that we explicitly need to ask to include tiers and custom fields
+        // while browsing — a read carries both without being asked
+        const {body: browseBody} = await agent.get(`/members/?search=${memberWithPaidSubscription.email}&include=tiers,custom_fields`);
         assert.equal(browseBody.members.length, 1, 'The member was not found in browse');
         const browseMember = browseBody.members[0];
 

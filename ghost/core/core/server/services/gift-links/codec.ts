@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {camelKeys, snakeKeys} from './case-keys';
+import {camelKeys, snakeKeys} from '../../lib/case-keys';
 import {DbGiftLink} from './schema';
 import {GiftLink} from './models';
 

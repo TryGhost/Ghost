@@ -4,9 +4,9 @@ import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, Flag, Icon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade/utils';
-import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@/analytics/utils/constants';
+import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@/shared/analytics/constants';
 import {SVGMap} from 'react-svg-map';
-import {getPeriodText} from '@/analytics/utils/chart-helpers';
+import {getPeriodText} from '@/shared/analytics/chart-helpers';
 
 // `@svg-maps/world` is a CJS-only data package shaped `{__esModule, default}` with no ESM build; Rolldown returns the wrapper object, so interop-unwrap the default to get the actual map data (Rollup returns the data object unchanged).
 const worldMap = (World as {default?: typeof World}).default ?? World;

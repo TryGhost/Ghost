@@ -49,7 +49,7 @@ export const useInvalidateOffers = () => {
     const queryClient = useQueryClient();
 
     return () => {
-        return queryClient.invalidateQueries([dataType]);
+        return queryClient.invalidateQueries({queryKey: [dataType]});
     };
 };
 

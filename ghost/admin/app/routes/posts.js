@@ -127,14 +127,13 @@ export default class PostsRoute extends AuthenticatedRoute {
         return RSVP.hash(models);
     }
 
-    // trigger a background load of all tags and authors for use in filter dropdowns
+    // trigger a background load of any filtered tag/author that isn't already
+    // in the store so the filter dropdown triggers can display their names
     setupController(controller, model) {
         super.setupController(...arguments);
 
-        if (!this.session.user.isAuthorOrContributor && !controller._hasLoadedAuthors) {
-            this.store.query('user', {limit: 'all'}).then(() => {
-                controller._hasLoadedAuthors = true;
-            });
+        if (!this.session.user.isAuthorOrContributor && controller.selectedAuthor?.slug === '!unknown') {
+            this.store.queryRecord('user', {slug: controller.author});
         }
 
         if (controller.tag && !controller.selectedTag?.slug || controller.selectedTag?.slug === '!unknown') {

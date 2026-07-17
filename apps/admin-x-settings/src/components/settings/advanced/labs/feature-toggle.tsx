@@ -85,7 +85,7 @@ const FeatureToggle: React.FC<FeatureToggleProps> = ({label, flag, disabled, con
                 value: JSON.stringify({...labs, [flag]: newValue})
             }]);
             trackEvent('Feature Toggled', {state: newValue ? 'on' : 'off', feature: flag});
-            client.setQueriesData([configDataType], current => ({
+            client.setQueriesData({queryKey: [configDataType]}, current => ({
                 config: {
                     ...(current as ConfigResponseType).config,
                     labs: {

@@ -1,8 +1,10 @@
-import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {parsePaywallNode} from './paywall-parser.js';
 import {renderPaywallNode} from './paywall-renderer.js';
 
-const paywallProperties = [] as const satisfies readonly DecoratorNodeProperty[];
+const paywallProperties = {
+
+} satisfies DecoratorNodePropertyMap;
 
 export type PaywallData = DecoratorNodeData<typeof paywallProperties>;
 

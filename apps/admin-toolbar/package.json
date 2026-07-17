@@ -24,11 +24,12 @@
     "test": "pnpm test:unit",
     "test:unit": "pnpm run build && vitest run",
     "preship": "pnpm lint",
-    "ship": "node ../../.github/scripts/release-apps.js",
+    "ship": "node ../../scripts/release-apps.cjs",
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
+    "@internal/cfg-eslint": "workspace:*",
     "concurrently": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",

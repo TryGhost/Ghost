@@ -10,10 +10,9 @@ const {mockShowToast, mockSonnerError} = vi.hoisted(() => ({
     mockSonnerError: vi.fn()
 }));
 
-vi.mock('@tryghost/admin-x-design-system', async (importOriginal) => {
-    const original = await importOriginal<typeof import('@tryghost/admin-x-design-system')>();
-    return {...original, showToast: mockShowToast};
-});
+vi.mock('../../../src/utils/toast', () => ({
+    showToast: mockShowToast
+}));
 
 vi.mock('sonner', () => ({
     toast: {

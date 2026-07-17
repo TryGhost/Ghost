@@ -1,4 +1,4 @@
-import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 
 export const useLimiter = () => {
     const {config} = useAnalyticsData();

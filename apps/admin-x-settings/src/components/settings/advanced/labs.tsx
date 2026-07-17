@@ -3,9 +3,10 @@ import LabsBubbles from '../../../assets/images/labs-bg.svg';
 import PrivateFeatures from './labs/private-features';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, SettingGroupHeader, type Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, SettingGroupHeader, type Tab, TabView} from '@tryghost/admin-x-design-system';
 import {useAutoExpandable} from '../../../hooks/use-auto-expandable';
 import {useGlobalData} from '../../providers/global-data-provider';
+import {withErrorBoundary} from '../../error-boundary';
 
 type LabsTab = 'labs-private-features' | 'labs-beta-features';
 

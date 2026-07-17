@@ -10,13 +10,13 @@ describe('render()', function () {
 
         const html = await renderer.render(editorState);
 
-        html.should.eql(`<p>First paragraph</p><p>Second paragraph</p>`);
+        expect(html).toEqual(`<p>First paragraph</p><p>Second paragraph</p>`);
     });
 
     it('accepts an error handler callback', function () {
         const renderer = new Renderer({
             onError: (error: Error) => {
-                error.message.should.eql('test');
+                expect(error.message).toEqual('test');
             }
         });
 

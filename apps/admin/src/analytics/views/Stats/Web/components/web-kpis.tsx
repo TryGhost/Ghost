@@ -1,10 +1,9 @@
 import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Tabs, TabsList} from '@tryghost/shade/components';
 import {GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue} from '@tryghost/shade/patterns';
 import {KPI_METRICS} from '@/analytics/views/Stats/Web/web-kpi-metrics';
-import {STATS_RANGES} from '@/analytics/utils/constants';
 import {formatDuration, formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {getEffectiveChartRange, sanitizeChartData} from '@/shared/analytics/chart-helpers';
 import {getYRange} from '@tryghost/shade/app';
-import {sanitizeChartData, truncateLeadingEmptyData} from '@/analytics/utils/chart-helpers';
 import {useMemo, useState} from 'react';
 
 export interface KpiDataItem {
@@ -27,7 +26,7 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
             return [];
         }
 
-        const sanitizedData = sanitizeChartData<KpiDataItem>(data, range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
+        return sanitizeChartData<KpiDataItem>(data, range, currentMetric.dataKey as keyof KpiDataItem, 'sum')?.map((item: KpiDataItem) => {
             const value = Number(item[currentMetric.dataKey]);
             return {
                 date: String(item.date),
@@ -36,14 +35,10 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
                 label: currentMetric.label
             };
         }) || [];
+    }, [data, range, currentMetric]);
 
-        // For "all time" range, truncate leading empty data points after aggregation
-        // This works around api_kpis returning zeros for dates before the site had data
-        if (range === STATS_RANGES.allTime.value) {
-            return truncateLeadingEmptyData(sanitizedData);
-        }
-
-        return sanitizedData;
+    const chartRange = useMemo(() => {
+        return getEffectiveChartRange(range, data || [], {fieldName: currentMetric.dataKey as keyof KpiDataItem});
     }, [data, range, currentMetric]);
 
     // Calculate KPI values
@@ -114,10 +109,10 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 <GhAreaChart
                     className='-mb-3 h-[16vw] max-h-[320px] min-h-[180px] w-full'
-                    color={currentMetric.chartColor}
+                    color={currentMetric.color}
                     data={chartData}
                     id="mrr"
-                    range={range}
+                    range={chartRange}
                     showHours={true}
                     yAxisRange={[0, getYRange(chartData).max]}
                 />

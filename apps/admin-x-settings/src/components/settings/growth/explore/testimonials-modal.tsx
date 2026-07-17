@@ -2,8 +2,8 @@ import AliAbdaal from '../../../../assets/images/ali-abdaal.png';
 import IsaacSaul from '../../../../assets/images/isaac-saul.png';
 import JoelWarner from '../../../../assets/images/joel-warner.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {Avatar, Button, Form, Modal, Select, TextArea, showToast} from '@tryghost/admin-x-design-system';
-import {generateAvatarColor, getInitials} from '../../../../utils/helpers';
+import {Avatar} from '@tryghost/shade/components';
+import {Button, Form, Modal, Select, TextArea, showToast} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -182,7 +182,7 @@ const TestimonialsModal = NiceModal.create(() => {
                             </div>
                             <div className='mt-4 ml-0.5'>
                                 <div className='flex items-center gap-2'>
-                                    <Avatar bgColor={generateAvatarColor((staffUserName ? staffUserName : staffUserEmail))} image={staffUserProfileImage ?? undefined} label={getInitials(staffUserName)} labelColor='white' size='md' />
+                                    <Avatar className='size-10' email={staffUserEmail} name={staffUserName} src={staffUserProfileImage} />
                                     <div className='flex flex-col'>
                                         <span className='font-medium'>By {staffUserName ? staffUserName : staffUserEmail}</span>
                                         <span className='text-sm text-grey-700'>{staffUserRole} — {siteTitle}</span>

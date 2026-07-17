@@ -1,6 +1,6 @@
 You are reviewing translation changes in a pull request to Ghost, an open-source
 blogging and newsletter publishing platform. The PR contains additions or
-edits to one or more locale files under `ghost/i18n/locales/<lang>/<ns>.json`,
+edits to one or more locale files under `packages/i18n/locales/<lang>/<ns>.json`,
 translating English source strings into the target language.
 
 You are validating **translations from English into the target language**. Do
@@ -78,7 +78,7 @@ non-gendered when possible. Flag transliterations and "Name" substitutions.
 
 ## Consult context.json
 
-Each translation key has a short description in `ghost/i18n/locales/context.json`
+Each translation key has a short description in `packages/i18n/locales/context.json`
 explaining where the string is used. If a translation doesn't seem to fit
 the English meaning, check context.json before flagging it — the surrounding
 UI context often disambiguates.

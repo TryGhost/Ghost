@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.52.1-rc.0",
+  "version": "6.53.0-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -22,10 +22,10 @@
     "test": "ember exam --split 2 --parallel",
     "lint:js": "eslint . --cache",
     "lint:hbs": "ember-template-lint .",
-    "lint": "pnpm lint:js && pnpm lint:hbs"
+    "lint": "pnpm run '/^lint:/'"
   },
   "engines": {
-    "node": "^22.18.0"
+    "node": "^22.23.1"
   },
   "devDependencies": {
     "@babel/core": "7.29.7",
@@ -42,6 +42,7 @@
     "@faker-js/faker": "10.4.0",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
+    "@internal/cfg-eslint": "workspace:*",
     "@sentry/ember": "7.120.3",
     "@sentry/integrations": "7.114.0",
     "@sentry/replay": "7.116.0",
@@ -198,9 +199,7 @@
           {
             "projects": [
               "@tryghost/admin-x-framework",
-              "@tryghost/admin-x-settings",
-              "@tryghost/activitypub",
-              "@tryghost/posts"
+              "@tryghost/activitypub"
             ],
             "target": "build"
           }
@@ -227,9 +226,7 @@
           {
             "projects": [
               "@tryghost/admin-x-framework",
-              "@tryghost/admin-x-settings",
-              "@tryghost/activitypub",
-              "@tryghost/posts"
+              "@tryghost/activitypub"
             ],
             "target": "build"
           }

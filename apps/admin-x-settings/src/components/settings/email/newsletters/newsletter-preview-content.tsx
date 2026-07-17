@@ -3,7 +3,8 @@ import LatestPosts1 from '../../../../assets/images/latest-posts-1.jpg';
 import LatestPosts2 from '../../../../assets/images/latest-posts-2.jpg';
 import LatestPosts3 from '../../../../assets/images/latest-posts-3.jpg';
 import clsx from 'clsx';
-import {GhostOrb, Icon} from '@tryghost/admin-x-design-system';
+import {GhostOrb} from '@tryghost/shade/components';
+import {Icon} from '@tryghost/admin-x-design-system';
 import {isManagedEmail} from '@tryghost/admin-x-framework/api/config';
 import {useGlobalData} from '../../../providers/global-data-provider';
 

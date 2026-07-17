@@ -1,23 +1,20 @@
-import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {parseEmbedNode} from './embed-parser.js';
 import {renderEmbedNode} from './embed-renderer.js';
 
-const embedProperties = [
-    {name: 'url', default: '', urlType: 'url'},
-    {name: 'embedType', default: ''},
-    {name: 'html', default: ''},
-    {
-        name: 'metadata',
+const embedProperties = {
+    url: {default: '', urlType: 'url'},
+    embedType: {default: ''},
+    html: {default: ''},
+    metadata: {
         get default() {
             return {} as Record<string, unknown>;
         }
     },
-    {name: 'caption', default: '', wordCount: true}
-] as const satisfies readonly DecoratorNodeProperty[];
+    caption: {default: '', wordCount: true}
+} satisfies DecoratorNodePropertyMap;
 
 export type EmbedData = DecoratorNodeData<typeof embedProperties>;
-
-export interface EmbedNode extends DecoratorNodeValueMap<typeof embedProperties> {}
 
 export class EmbedNode extends generateDecoratorNode({
     nodeType: 'embed',

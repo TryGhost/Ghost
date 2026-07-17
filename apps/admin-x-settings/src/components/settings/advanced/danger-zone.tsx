@@ -3,7 +3,7 @@ import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import trackEvent from '../../../utils/analytics';
 import useStaffUsers from '../../../hooks/use-staff-users';
-import {Button, ConfirmationModal, ListItem, SettingGroupHeader, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, ListItem, SettingGroupHeader, showToast} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useDeleteAllContent} from '@tryghost/admin-x-framework/api/db';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -11,6 +11,7 @@ import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tryghost/admin-x-framework';
 import {useRemoveAllGiftLinks} from '@tryghost/admin-x-framework/api/gift-links';
 import {useResetAuth} from '@tryghost/admin-x-framework/api/security';
+import {withErrorBoundary} from '../../error-boundary';
 
 const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {mutateAsync: deleteAllContent} = useDeleteAllContent();

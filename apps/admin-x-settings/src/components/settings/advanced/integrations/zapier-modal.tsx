@@ -97,12 +97,13 @@ const ZapierModal = NiceModal.create(() => {
                 detail='Automation for your favorite apps'
                 extra={<div className='mt-1 -mb-4'><APIKeys keys={[
                     {
+                        id: 'admin-api-key',
                         label: 'Admin API key',
                         text: adminApiKey?.secret,
                         hint: regenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
                         onRegenerate: handleRegenerate
                     },
-                    {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
+                    {id: 'api-url', label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                 ]} /></div>}
                 icon={<Icon name='zapier' size={56} />}
                 title='Zapier'

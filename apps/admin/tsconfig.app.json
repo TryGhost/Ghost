@@ -17,7 +17,6 @@
     "jsx": "react-jsx",
 
     /* Path aliases */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "@test-utils/*": ["./test-utils/*"],
@@ -33,8 +32,6 @@
   },
   "include": ["src", "test-utils"],
   "references": [
-    { "path": "../admin-x-framework/tsconfig.declaration.json" },
-    { "path": "../posts/tsconfig.declaration.json" },
-    { "path": "../activitypub/tsconfig.declaration.json" }
+    { "path": "../admin-x-framework/tsconfig.declaration.json" },    { "path": "../activitypub/tsconfig.declaration.json" }
   ]
 }

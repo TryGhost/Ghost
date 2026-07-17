@@ -6,16 +6,17 @@ import StatsHeader from '@/analytics/views/Stats/layout/stats-header';
 import StatsLayout from '@/analytics/views/Stats/layout/stats-layout';
 import StatsView from '@/analytics/views/Stats/layout/stats-view';
 import TopPosts from './components/top-posts';
-import {ALL_AUDIENCES} from '@/analytics/utils/constants';
+import {ALL_AUDIENCES} from '@/shared/analytics/constants';
 import {type GhAreaChartDataItem} from '@tryghost/shade/patterns';
 import {H3} from '@tryghost/shade/primitives';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {NavbarActions} from '@tryghost/shade/components';
-import {centsToDollars, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade/app';
-import {getAudienceQueryParam} from '@/analytics/utils/audience';
+import {centsToDollars, formatQueryDate, getRangeDates} from '@tryghost/shade/app';
+import {getEffectiveChartRange, sanitizeChartData} from '@/shared/analytics/chart-helpers';
+import {getAudienceQueryParam} from '@/shared/analytics/audience';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
-import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {useGrowthStats} from '@/analytics/hooks/use-growth-stats';
 import {useLatestPostStats} from '@/analytics/hooks/use-latest-post-stats';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
@@ -113,6 +114,10 @@ const Overview: React.FC = () => {
             };
         });
     }, [visitorsData, range]);
+    const visitorsChartRange = useMemo(() => {
+        return getEffectiveChartRange(range, (visitorsData as WebKpiDataItem[]) || [], {fieldName: 'visits'});
+    }, [visitorsData, range]);
+
     const visitorsYRange: [number, number] = useMemo(() => {
         const defaultRange: [number, number] = [0, 1];
         if (!visitorsChartData || visitorsChartData.length === 0) {
@@ -131,6 +136,10 @@ const Overview: React.FC = () => {
         const maxValue = Math.max(...values);
         return [0, maxValue || defaultRange[1]]; // Use 10 as minimum if maxValue is 0
     }, [visitorsChartData]);
+
+    const growthChartRange = useMemo(() => {
+        return getEffectiveChartRange(range, growthChartData || []);
+    }, [growthChartData, range]);
 
     /* Get members
     /* ---------------------------------------------------------------------- */
@@ -210,12 +219,14 @@ const Overview: React.FC = () => {
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <OverviewKPIs
                     currencySymbol={currencySymbol}
+                    growthChartRange={growthChartRange}
                     growthTotals={growthTotals}
                     isLoading={isVisitorsLoading || isGrowthStatsLoading}
                     kpiValues={kpiValues}
                     membersChartData={membersChartData}
                     mrrChartData={mrrChartData}
                     visitorsChartData={visitorsChartData}
+                    visitorsChartRange={visitorsChartRange}
                     visitorsYRange={visitorsYRange}
                 />
                 <LatestPost

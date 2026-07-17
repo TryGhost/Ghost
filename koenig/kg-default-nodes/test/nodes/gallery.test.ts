@@ -1,5 +1,4 @@
-import should from 'should';
-import {createDocument, dom, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {$getRoot, LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
@@ -10,8 +9,6 @@ import {ImageNode} from '../../src/index.js';
 // processed by other lower priority nodes when skipped with dataset.hasBeenProcessed
 const editorNodes = [GalleryNode, ImageNode];
 
-void should;
-
 describe('GalleryNode', function () {
     let editor: LexicalEditor;
     let dataset: Record<string, unknown>;
@@ -20,16 +17,16 @@ describe('GalleryNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -116,21 +113,21 @@ describe('GalleryNode', function () {
 
     it('matches node with $isGalleryNode', editorTest(function () {
         const node = $createGalleryNode(dataset);
-        $isGalleryNode(node).should.be.true();
+        expect($isGalleryNode(node)).toBe(true);
     }));
 
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {
             const galleryNode = $createGalleryNode(dataset);
 
-            galleryNode.images.should.deepEqual(dataset.images);
-            galleryNode.caption.should.equal(dataset.caption);
+            expect(galleryNode.images).toEqual(dataset.images);
+            expect(galleryNode.caption).toBe(dataset.caption);
         }));
 
         it('can be created without a dataset', editorTest(function () {
             const galleryNode = $createGalleryNode();
 
-            galleryNode.getDataset().should.deepEqual({
+            expect(galleryNode.getDataset()).toEqual({
                 images: [],
                 caption: ''
             });
@@ -139,25 +136,25 @@ describe('GalleryNode', function () {
         it('has setters for all properties', editorTest(function () {
             const galleryNode = $createGalleryNode({} as Record<string, unknown>);
 
-            galleryNode.images.should.deepEqual([]);
+            expect(galleryNode.images).toEqual([]);
             galleryNode.images = [{src: 'image1.jpg'}];
-            galleryNode.images.should.deepEqual([{src: 'image1.jpg'}]);
+            expect(galleryNode.images).toEqual([{src: 'image1.jpg'}]);
 
-            galleryNode.caption.should.equal('');
+            expect(galleryNode.caption).toBe('');
             galleryNode.caption = 'New caption';
-            galleryNode.caption.should.equal('New caption');
+            expect(galleryNode.caption).toBe('New caption');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
             const galleryNode = $createGalleryNode(dataset);
 
-            galleryNode.getDataset().should.deepEqual(dataset);
+            expect(galleryNode.getDataset()).toEqual(dataset);
         }));
     });
 
     describe('getType', function () {
         it('returns the correct node type', editorTest(function () {
-            GalleryNode.getType().should.equal('gallery');
+            expect(GalleryNode.getType()).toBe('gallery');
         }));
     });
 
@@ -168,13 +165,13 @@ describe('GalleryNode', function () {
             const clone = GalleryNode.clone(galleryNode) as GalleryNode;
             const cloneDataset = clone.getDataset();
 
-            cloneDataset.should.deepEqual({...galleryNodeDataset});
+            expect(cloneDataset).toEqual({...galleryNodeDataset});
         }));
     });
 
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
-            GalleryNode.urlTransformMap.should.deepEqual({
+            expect(GalleryNode.urlTransformMap).toEqual({
                 caption: 'html',
                 images: {
                     src: 'url',
@@ -187,40 +184,42 @@ describe('GalleryNode', function () {
     describe('hasEditMode', function () {
         it('returns false', editorTest(function () {
             const galleryNode = $createGalleryNode(dataset);
-            galleryNode.hasEditMode().should.be.false();
+            expect(galleryNode.hasEditMode()).toBe(false);
         }));
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'gallery',
-                        ...dataset
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'gallery',
+                            ...dataset
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [galleryNode] = $getRoot().getChildren() as GalleryNode[];
+                editor.getEditorState().read(() => {
+                    try {
+                        const [galleryNode] = $getRoot().getChildren() as GalleryNode[];
 
-                    galleryNode.images.should.deepEqual(dataset.images);
-                    galleryNode.caption.should.equal(dataset.caption);
+                        expect(galleryNode.images).toEqual(dataset.images);
+                        expect(galleryNode.caption).toBe(dataset.caption);
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });
@@ -230,7 +229,7 @@ describe('GalleryNode', function () {
             const galleryNode = $createGalleryNode(dataset);
             const json = galleryNode.exportJSON();
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'gallery',
                 version: 1,
                 images: dataset.images,
@@ -270,9 +269,9 @@ describe('GalleryNode', function () {
             `);
 
             const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
-            nodes.length.should.equal(1);
+            expect(nodes.length).toBe(1);
 
-            nodes[0].images.should.deepEqual([
+            expect(nodes[0].images).toEqual([
                 {
                     fileName: 'jklm4567.jpeg',
                     row: 0,
@@ -305,7 +304,7 @@ describe('GalleryNode', function () {
                 }
             ]);
 
-            nodes[0].caption.should.equal('My <em>exciting</em> caption');
+            expect(nodes[0].caption).toBe('My <em>exciting</em> caption');
         }));
 
         it('parses Medium gallery', editorTest(function () {
@@ -338,9 +337,9 @@ describe('GalleryNode', function () {
             `);
 
             const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
-            nodes.length.should.equal(1);
+            expect(nodes.length).toBe(1);
 
-            nodes[0].images.should.deepEqual([
+            expect(nodes[0].images).toEqual([
                 {
                     fileName: 'jklm4567.jpeg',
                     row: 0,
@@ -371,7 +370,7 @@ describe('GalleryNode', function () {
                 }
             ]);
 
-            nodes[0].caption.should.equal('');
+            expect(nodes[0].caption).toBe('');
         }));
 
         it('handles Medium galleries with multiple captions', editorTest(function () {
@@ -405,9 +404,9 @@ describe('GalleryNode', function () {
             `);
 
             const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
-            nodes.length.should.equal(1);
+            expect(nodes.length).toBe(1);
 
-            nodes[0].caption.should.equal('First Caption / End Caption');
+            expect(nodes[0].caption).toBe('First Caption / End Caption');
         }));
 
         describe('Squarespace galleries', function () {
@@ -445,14 +444,15 @@ describe('GalleryNode', function () {
                 `);
 
                 const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
-                nodes.length.should.equal(1);
+                expect(nodes.length).toBe(1);
 
-                nodes[0].getType().should.equal('gallery');
+                expect(nodes[0].getType()).toBe('gallery');
 
                 const images = nodes[0].images;
 
-                images.should.be.an.Array().with.lengthOf(3);
-                images.should.deepEqual([
+                expect(images).toBeInstanceOf(Array);
+                expect(images).toHaveLength(3);
+                expect(images).toEqual([
                     {
                         fileName: 'test.jpg', row: 0, src: 'https://example.com/test.jpg', width: 2500, height: 1663, alt: 'image alt text'
                     },
@@ -464,7 +464,7 @@ describe('GalleryNode', function () {
                     }
                 ]);
 
-                nodes[0].caption.should.equal('');
+                expect(nodes[0].caption).toBe('');
             }));
 
             it('can handle multiple captions', editorTest(function () {
@@ -498,11 +498,12 @@ describe('GalleryNode', function () {
                 `);
 
                 const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
-                nodes.length.should.equal(1);
+                expect(nodes.length).toBe(1);
 
                 const images = nodes[0].images;
-                images.should.be.an.Array().with.lengthOf(3);
-                images.should.deepEqual([
+                expect(images).toBeInstanceOf(Array);
+                expect(images).toHaveLength(3);
+                expect(images).toEqual([
                     {
                         fileName: 'test.jpg', row: 0, src: 'https://example.com/test.jpg', width: 2500, height: 1663, alt: 'image alt text'
                     },
@@ -514,7 +515,7 @@ describe('GalleryNode', function () {
                     }
                 ]);
 
-                nodes[0].caption.should.eql('Image caption 1 / Image caption 2');
+                expect(nodes[0].caption).toEqual('Image caption 1 / Image caption 2');
             }));
 
             it('parses a slideshow gallery into gallery card', editorTest(function () {
@@ -542,11 +543,12 @@ describe('GalleryNode', function () {
                 `);
 
                 const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
-                nodes.length.should.equal(1);
+                expect(nodes.length).toBe(1);
 
                 const images = nodes[0].images;
-                images.should.be.an.Array().with.lengthOf(4);
-                images.should.deepEqual([
+                expect(images).toBeInstanceOf(Array);
+                expect(images).toHaveLength(4);
+                expect(images).toEqual([
                     {
                         fileName: 'test.jpg', row: 0, src: 'https://example.com/test.jpg', width: 2500, height: 1663, alt: 'image alt text'
                     },
@@ -561,7 +563,7 @@ describe('GalleryNode', function () {
                     }
                 ]);
 
-                nodes[0].caption.should.equal('');
+                expect(nodes[0].caption).toBe('');
             }));
 
             it('parses a grid gallery into gallery card', editorTest(function () {
@@ -591,11 +593,12 @@ describe('GalleryNode', function () {
                 `);
 
                 const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
-                nodes.length.should.equal(1);
+                expect(nodes.length).toBe(1);
 
                 const images = nodes[0].images;
-                images.should.be.an.Array().with.lengthOf(2);
-                images.should.deepEqual([
+                expect(images).toBeInstanceOf(Array);
+                expect(images).toHaveLength(2);
+                expect(images).toEqual([
                     {
                         fileName: 'test-1.jpg', row: 0, src: 'https://example.com/test-1.jpg', width: 800, height: 600, alt: 'image alt text'
                     },
@@ -604,7 +607,7 @@ describe('GalleryNode', function () {
                     }
                 ]);
 
-                nodes[0].caption.should.equal('');
+                expect(nodes[0].caption).toBe('');
             }));
 
             it('ignores summary item galleries', editorTest(function () {
@@ -634,7 +637,7 @@ describe('GalleryNode', function () {
                 `);
 
                 const nodes = $generateNodesFromDOM(editor, document) as GalleryNode[];
-                nodes.some(node => node.getType() === 'gallery').should.be.false();
+                expect(nodes.some(node => node.getType() === 'gallery')).toBe(false);
             }));
         });
     });
@@ -644,7 +647,7 @@ describe('GalleryNode', function () {
             const galleryNode = $createGalleryNode(dataset);
             const {element} = galleryNode.exportDOM(editor, {...exportOptions, canTransformImage: () => false});
 
-            (element as HTMLElement).outerHTML.should.prettifyTo(html`
+            assertPrettifiesTo((element as HTMLElement).outerHTML, html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
                     <div class="kg-gallery-container">
                         <div class="kg-gallery-row">
@@ -684,17 +687,17 @@ describe('GalleryNode', function () {
             exportOptions.target = 'email';
             const {element} = galleryNode.exportDOM(editor, exportOptions);
 
-            (element as HTMLElement).outerHTML.should.not.containEql('srcset=');
+            expect((element as HTMLElement).outerHTML).not.toContain('srcset=');
         }));
     });
 
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
             const node = $createGalleryNode({} as Record<string, unknown>);
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
 
             node.caption = 'Test caption';
-            node.getTextContent().should.equal('Test caption\n\n');
+            expect(node.getTextContent()).toBe('Test caption\n\n');
         }));
     });
 });

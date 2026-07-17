@@ -196,6 +196,17 @@ export class LazyUrlService implements LazyUrlServiceBackend {
             if (/\b(year|month|day)\b/.test(config.permalink)) {
                 fields.add('published_at');
             }
+            // primary_tag/primary_author are computed attributes the model
+            // only attaches when `options.columns` names them, so they must
+            // be forced like scalar columns — the tags/authors relations
+            // (via getRequiredRelations) alone don't surface them on a
+            // `?fields=url` query.
+            for (const computed of ['primary_tag', 'primary_author'] as const) {
+                if (new RegExp(`\\b${computed}\\b`).test(config.permalink) ||
+                    (config.filter && new RegExp(`\\b${computed}\\b`).test(config.filter))) {
+                    fields.add(computed);
+                }
+            }
             filterScalarFields(config.filter).forEach(field => fields.add(field));
         }
         return [...fields];

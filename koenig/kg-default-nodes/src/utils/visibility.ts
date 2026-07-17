@@ -21,7 +21,7 @@ function isNullish(value: unknown) {
 }
 
 // ensure we always work with a deep copy to avoid accidental ref mutations
-export function buildDefaultVisibility() {
+export function buildDefaultVisibility(): typeof DEFAULT_VISIBILITY {
     return JSON.parse(JSON.stringify(DEFAULT_VISIBILITY));
 }
 

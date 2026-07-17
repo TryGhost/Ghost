@@ -25,7 +25,6 @@
   },
   "devDependencies": {
     "browserify": "17.0.1",
-    "debug": "4.4.3",
     "gulp": "5.0.1",
     "gulp-clean-css": "4.3.0",
     "gulp-concat": "2.6.1",
@@ -44,8 +43,7 @@
   },
   "dependencies": {
     "codemirror": "5.65.21",
-    "codemirror-spell-checker": "1.1.2",
-    "marked": "18.0.5"
+    "codemirror-spell-checker": "1.1.2"
   },
   "gitHead": "d46b01ff5696e5a457abee67e0aabc62f2b8a191"
 }

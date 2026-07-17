@@ -1,13 +1,13 @@
-import DisabledSourcesIndicator from '@/analytics/views/Stats/components/disabled-sources-indicator';
+import DisabledSourcesIndicator from '@/shared/analytics/disabled-sources-indicator';
 import React, {useState} from 'react';
 import SortButton from '@/analytics/views/Stats/components/sort-button';
-import SourceIcon from '@/analytics/views/Stats/components/source-icon';
+import SourceIcon from '@/shared/analytics/source-icon';
 import {Button, EmptyIndicator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Skeleton, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {centsToDollars} from '@tryghost/shade/app';
 import {getFaviconDomain, getSymbol, useAppContext} from '@tryghost/admin-x-framework';
-import {getPeriodText} from '@/analytics/utils/chart-helpers';
-import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
+import {getPeriodText} from '@/shared/analytics/chart-helpers';
+import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
 import {useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
 import {useTopSourcesGrowth} from '@/analytics/hooks/use-top-sources-growth';
 

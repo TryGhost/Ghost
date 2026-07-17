@@ -6,22 +6,7 @@ import {isUnsplashImage} from '../../utils/is-unsplash-image.js';
 import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
 import {setSrcsetAttribute} from '../../utils/srcset-attribute.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
-
-interface GalleryImage {
-    fileName: string;
-    src: string;
-    width: number;
-    height: number;
-    alt?: string;
-    title?: string;
-    row: number;
-    href?: string;
-}
-
-interface GalleryNodeData {
-    images: GalleryImage[];
-    caption: string;
-}
+import type {GalleryImage, GalleryNodeData} from './GalleryNode.js';
 
 interface GalleryRenderOptions extends ExportDOMOptions {
     imageOptimization?: {

@@ -3,13 +3,15 @@ import React, {useEffect, useState} from 'react';
 import SettingImg from '../../../assets/images/ghost-explore.png';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Button, Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, Icon, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
+import {Separator} from '@tryghost/shade/components';
 import {type Setting, getSettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {abbreviateNumber} from '@tryghost/shade/utils';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();

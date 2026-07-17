@@ -4,7 +4,7 @@ import SignupCardIcon from '../assets/icons/kg-card-type-signup.svg?react';
 import SignupNodeComponent from './SignupNodeComponent';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {SignupNode as BaseSignupNode} from '@tryghost/kg-default-nodes';
+import {SignupNode as BaseSignupNode, type CardWidth, normalizeCardWidth} from '@tryghost/kg-default-nodes';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
@@ -110,9 +110,9 @@ export class SignupNode extends BaseSignupNode {
         return dataset;
     }
 
-    getCardWidth() {
+    getCardWidth(): CardWidth | undefined {
         const layout = this.layout;
-        return layout === 'split' ? 'full' : layout;
+        return normalizeCardWidth(layout === 'split' ? 'full' : layout);
     }
 
     decorate() {

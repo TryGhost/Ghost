@@ -16,6 +16,24 @@ module.exports.isFinished = async () => {
     });
 };
 
+// Wait for a standalone (non-singleton) eager UrlService instance to finish
+// its boot walk. Used by the parity integration tests, which construct their
+// own instances instead of using the singleton `isFinished` above.
+module.exports.waitUntilFinished = (standaloneUrlService, timeout = 5000) => {
+    return new Promise((resolve, reject) => {
+        const start = Date.now();
+        (function retry() {
+            if (standaloneUrlService.hasFinished()) {
+                return resolve();
+            }
+            if (Date.now() - start > timeout) {
+                return reject(new Error('Eager UrlService did not finish in time'));
+            }
+            setTimeout(retry, 50);
+        })();
+    });
+};
+
 // @TODO: unify all the reset/softTeset helpers so they either work how the main code works or the reasons why they are different are clear
 module.exports.init = ({urlCache} = {}) => {
     urlService.init({urlCache});

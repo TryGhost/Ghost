@@ -16,7 +16,7 @@ const Group = ({children}) => {
  * @param {T[]} [options.items]
  * @param {(T, selected) => import('react').ReactElement} [options.getItem]
  */
-export function KeyboardSelectionWithGroups({groups, getItem, getGroup, onSelect, defaultSelected, isLoading}) {
+export function KeyboardSelectionWithGroups({groups, getItem, getGroup, onSelect, onEnterWithoutSelection, defaultSelected, isLoading}) {
     const items = groups.flatMap(group => group.items);
     const defaultIndex = Math.max(0, items.findIndex(item => item === defaultSelected));
     const [selectedIndex, setSelectedIndex] = React.useState(defaultIndex);
@@ -54,12 +54,22 @@ export function KeyboardSelectionWithGroups({groups, getItem, getGroup, onSelect
             setScrollSelectedIntoView(true);
         }
         if (event.key === 'Enter') {
+            const selectedItem = items[selectedIndex];
+            if (!selectedItem && !onEnterWithoutSelection) {
+                return;
+            }
+
             // The stop propagation is required for Safari
             event.preventDefault();
             event.stopPropagation();
-            onSelect(items[selectedIndex]);
+
+            if (selectedItem) {
+                onSelect(selectedItem);
+            } else {
+                onEnterWithoutSelection();
+            }
         }
-    }, [items, selectedIndex, onSelect]);
+    }, [items, selectedIndex, onSelect, onEnterWithoutSelection]);
 
     React.useEffect(() => {
         // The capture phase is required for Safari

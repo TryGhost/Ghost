@@ -12,12 +12,19 @@ export default class GhMigrateIframe extends Component {
     willDestroy() {
         super.willDestroy(...arguments);
         window.removeEventListener('message', this.handleIframeMessage);
+
+        // Remove the class that adds a higher z-index that is added on setup
+        document.getElementById('ember-app').classList.remove('migration-app-open');
     }
 
     @action
     setup() {
         this.migrate.getMigrateIframe().src = this.migrate.getIframeURL();
         window.addEventListener('message', this.handleIframeMessage);
+
+        // Add class that adds a higher z-index so the app site over the top of the nav bar. #ember-app is a
+        // few levels up from this component, document.getElementById is a light-touch way to add the class.
+        document.getElementById('ember-app').classList.add('migration-app-open');
     }
 
     @action

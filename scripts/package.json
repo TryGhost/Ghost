@@ -1,0 +1,20 @@
+{
+  "name": "@internal/scripts",
+  "version": "0.0.0",
+  "description": "Repo automation scripts, invoked from CI workflows and local pnpm aliases",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --cache",
+    "test:unit": "node --test",
+    "test": "pnpm run '/^test:/'"
+  },
+  "dependencies": {
+    "semver": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "eslint": "catalog:"
+  }
+}

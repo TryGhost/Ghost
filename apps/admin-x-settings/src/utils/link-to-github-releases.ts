@@ -1,5 +1,5 @@
-// @ts-expect-error - semver subpath has no types
 import semverParse from 'semver/functions/parse';
+import type {Options} from 'semver';
 
 // Supported version formats:
 // - 6.21.2                          → release tag
@@ -31,7 +31,8 @@ export function linkToGitHubReleases(version: string): string {
 
     // Check pre-release segment for a commit SHA (legacy format: -0-gabcdef or -pre-gabcdef)
     try {
-        const semverVersion = semverParse(versionWithoutBuild, {includePrerelease: true});
+        // note: the type cast here is needed bc semver's types use the wrong Options object
+        const semverVersion = semverParse(versionWithoutBuild, {includePrerelease: true} as Options);
         const prerelease = semverVersion?.prerelease;
 
         if (prerelease && prerelease.length > 0) {

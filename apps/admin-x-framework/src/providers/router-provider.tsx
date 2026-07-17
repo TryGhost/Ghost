@@ -117,6 +117,7 @@ export function RouterProvider({
                     {children}
                 </NavigationStackProvider>
             ),
+            hydrateFallbackElement: <></>,
             children: routes.map(route => ({
                 ...route,
                 errorElement: route.errorElement || errorElement || <ErrorPage />

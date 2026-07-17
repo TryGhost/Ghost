@@ -2,9 +2,9 @@ import React from 'react';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, EmptyIndicator} from '@tryghost/shade/components';
 import {GhAreaChart, type GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
-import {STATS_RANGES} from '@/analytics/utils/constants';
+import {STATS_RANGES} from '@/shared/analytics/constants';
 import {centsToDollars} from '@tryghost/shade/app';
-import {getPeriodText} from '@/analytics/utils/chart-helpers';
+import {getPeriodText} from '@/shared/analytics/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';
 import {useAnalytics} from '@/analytics/providers/analytics-context';
 import {useLimiter} from '@/analytics/hooks/use-limiter';
@@ -104,6 +104,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
 interface OverviewKPIsProps {
     kpiValues: {visits: string};
     visitorsChartData: GhAreaChartDataItem[];
+    visitorsChartRange: number;
     visitorsYRange: [number, number];
     growthTotals: {
         directions: { total: 'up' | 'down' | 'same' | 'empty'; mrr: 'up' | 'down' | 'same' | 'empty' };
@@ -113,6 +114,7 @@ interface OverviewKPIsProps {
     };
     membersChartData: GhAreaChartDataItem[];
     mrrChartData: GhAreaChartDataItem[];
+    growthChartRange: number;
     currencySymbol: string;
     isLoading: boolean;
 }
@@ -120,15 +122,16 @@ interface OverviewKPIsProps {
 const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     kpiValues,
     visitorsChartData,
+    visitorsChartRange,
     visitorsYRange,
     growthTotals,
     membersChartData,
     mrrChartData,
+    growthChartRange,
     currencySymbol,
     isLoading
 }) => {
     const navigate = useNavigate();
-    const {range} = useAnalytics();
     const {appSettings} = useAppContext();
     const limiter = useLimiter();
     const isWebAnalyticsLimited = limiter.isLimited('limitAnalytics');
@@ -178,7 +181,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                         color='var(--chart-blue)'
                         data={visitorsChartData}
                         id="visitors"
-                        range={range}
+                        range={visitorsChartRange}
                         showHorizontalLines={true}
                         showYAxisValues={false}
                         syncId="overview-charts"
@@ -229,7 +232,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                         color='var(--chart-darkblue)'
                         data={membersChartData}
                         id="members"
-                        range={range}
+                        range={growthChartRange}
                         showHorizontalLines={true}
                         showYAxisValues={false}
                         syncId="overview-charts"
@@ -256,7 +259,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                         color='var(--chart-teal)'
                         data={mrrChartData}
                         id="mrr"
-                        range={range}
+                        range={growthChartRange}
                         showHorizontalLines={true}
                         showYAxisValues={false}
                         syncId="overview-charts"

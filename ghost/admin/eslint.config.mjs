@@ -10,7 +10,7 @@ import {
     localFilenamesPlugin,
     mochaRulesOff,
     strictLinterOptions
-} from '../../eslint.shared.mjs';
+} from '@internal/cfg-eslint';
 
 // ghost/admin uses local-filenames/match-regex (workspace-scoped, blocks
 // below) instead of ghost/filenames/match-regex (from correctnessRules) — turn

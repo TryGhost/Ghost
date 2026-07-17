@@ -1,6 +1,6 @@
 import VideoCardIcon from '../assets/icons/kg-card-type-video.svg?react';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {VideoNode as BaseVideoNode} from '@tryghost/kg-default-nodes';
+import {VideoNode as BaseVideoNode, normalizeCardWidth} from '@tryghost/kg-default-nodes';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {VideoNodeComponent} from './VideoNodeComponent';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
@@ -85,12 +85,14 @@ export class VideoNode extends BaseVideoNode {
     }
 
     decorate() {
+        const cardWidth = normalizeCardWidth(this.cardWidth) ?? 'regular';
+
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()} width={this.cardWidth}>
+            <KoenigCardWrapper nodeKey={this.getKey()} width={cardWidth}>
                 <VideoNodeComponent
                     captionEditor={this.__captionEditor}
                     captionEditorInitialState={this.__captionEditorInitialState}
-                    cardWidth={this.cardWidth}
+                    cardWidth={cardWidth}
                     customThumbnail={this.customThumbnailSrc}
                     initialFile={this.__initialFile}
                     isLoopChecked={this.loop}

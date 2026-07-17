@@ -1,5 +1,4 @@
-import 'should';
-import {createDocument, dom, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
@@ -18,16 +17,16 @@ describe('BookmarkNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => function (done: (err?: unknown) => void) {
+    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
                 testFn();
-                done();
+                resolve();
             } catch (e) {
-                done(e);
+                reject(e);
             }
         });
-    };
+    });
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
@@ -52,7 +51,7 @@ describe('BookmarkNode', function () {
 
     it('matches node with $isBookmarkNode', editorTest(function () {
         const bookmarkNode = $createBookmarkNode(dataset);
-        $isBookmarkNode(bookmarkNode).should.be.true();
+        expect($isBookmarkNode(bookmarkNode)).toBe(true);
     }));
 
     describe('data access', function () {
@@ -60,57 +59,57 @@ describe('BookmarkNode', function () {
             const bookmarkNode = $createBookmarkNode(dataset);
 
             const metadata = dataset.metadata as Record<string, unknown>;
-            bookmarkNode.url.should.equal(dataset.url);
-            bookmarkNode.icon.should.equal(metadata.icon);
-            bookmarkNode.title.should.equal(metadata.title);
-            bookmarkNode.description.should.equal(metadata.description);
-            bookmarkNode.author.should.equal(metadata.author);
-            bookmarkNode.publisher.should.equal(metadata.publisher);
-            bookmarkNode.thumbnail.should.equal(metadata.thumbnail);
-            bookmarkNode.caption.should.equal(dataset.caption);
+            expect(bookmarkNode.url).toBe(dataset.url);
+            expect(bookmarkNode.icon).toBe(metadata.icon);
+            expect(bookmarkNode.title).toBe(metadata.title);
+            expect(bookmarkNode.description).toBe(metadata.description);
+            expect(bookmarkNode.author).toBe(metadata.author);
+            expect(bookmarkNode.publisher).toBe(metadata.publisher);
+            expect(bookmarkNode.thumbnail).toBe(metadata.thumbnail);
+            expect(bookmarkNode.caption).toBe(dataset.caption);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const bookmarkNode = $createBookmarkNode();
 
-            bookmarkNode.url.should.equal('');
+            expect(bookmarkNode.url).toBe('');
             bookmarkNode.url = 'https://www.ghost.org/';
-            bookmarkNode.url.should.equal('https://www.ghost.org/');
+            expect(bookmarkNode.url).toBe('https://www.ghost.org/');
 
-            bookmarkNode.icon.should.equal('');
+            expect(bookmarkNode.icon).toBe('');
             bookmarkNode.icon = 'https://www.ghost.org/favicon.ico';
-            bookmarkNode.icon.should.equal('https://www.ghost.org/favicon.ico');
+            expect(bookmarkNode.icon).toBe('https://www.ghost.org/favicon.ico');
 
-            bookmarkNode.title.should.equal('');
+            expect(bookmarkNode.title).toBe('');
             bookmarkNode.title = 'Ghost: The Creator Economy Platform';
-            bookmarkNode.title.should.equal('Ghost: The Creator Economy Platform');
+            expect(bookmarkNode.title).toBe('Ghost: The Creator Economy Platform');
 
-            bookmarkNode.description.should.equal('');
+            expect(bookmarkNode.description).toBe('');
             bookmarkNode.description = 'doing kewl stuff';
-            bookmarkNode.description.should.equal('doing kewl stuff');
+            expect(bookmarkNode.description).toBe('doing kewl stuff');
 
-            bookmarkNode.author.should.equal('');
+            expect(bookmarkNode.author).toBe('');
             bookmarkNode.author = 'ghost';
-            bookmarkNode.author.should.equal('ghost');
+            expect(bookmarkNode.author).toBe('ghost');
 
-            bookmarkNode.publisher.should.equal('');
+            expect(bookmarkNode.publisher).toBe('');
             bookmarkNode.publisher = 'Ghost - The Professional Publishing Platform';
-            bookmarkNode.publisher.should.equal('Ghost - The Professional Publishing Platform');
+            expect(bookmarkNode.publisher).toBe('Ghost - The Professional Publishing Platform');
 
-            bookmarkNode.thumbnail.should.equal('');
+            expect(bookmarkNode.thumbnail).toBe('');
             bookmarkNode.thumbnail = 'https://ghost.org/images/meta/ghost.png';
-            bookmarkNode.thumbnail.should.equal('https://ghost.org/images/meta/ghost.png');
+            expect(bookmarkNode.thumbnail).toBe('https://ghost.org/images/meta/ghost.png');
 
-            bookmarkNode.caption.should.equal('');
+            expect(bookmarkNode.caption).toBe('');
             bookmarkNode.caption = 'caption here';
-            bookmarkNode.caption.should.equal('caption here');
+            expect(bookmarkNode.caption).toBe('caption here');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
             const bookmarkNode = $createBookmarkNode(dataset);
             const bookmarkNodeDataset = bookmarkNode.getDataset();
 
-            bookmarkNodeDataset.should.deepEqual({
+            expect(bookmarkNodeDataset).toEqual({
                 ...dataset
             });
         }));
@@ -118,7 +117,7 @@ describe('BookmarkNode', function () {
 
     describe('getType', function () {
         it('returns the correct node type', editorTest(function () {
-            BookmarkNode.getType().should.equal('bookmark');
+            expect(BookmarkNode.getType()).toBe('bookmark');
         }));
     });
 
@@ -129,13 +128,13 @@ describe('BookmarkNode', function () {
             const clone = BookmarkNode.clone(bookmarkNode) as BookmarkNode;
             const cloneDataset = clone.getDataset();
 
-            cloneDataset.should.deepEqual({...bookmarkNodeDataset});
+            expect(cloneDataset).toEqual({...bookmarkNodeDataset});
         }));
     });
 
     describe('urlTransformMap', function () {
         it('contains the expected URL mapping', editorTest(function () {
-            BookmarkNode.urlTransformMap.should.deepEqual({
+            expect(BookmarkNode.urlTransformMap).toEqual({
                 url: 'url',
                 'metadata.icon': 'url',
                 'metadata.thumbnail': 'url'
@@ -146,7 +145,7 @@ describe('BookmarkNode', function () {
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const bookmarkNode = $createBookmarkNode(dataset);
-            bookmarkNode.hasEditMode().should.be.true();
+            expect(bookmarkNode.hasEditMode()).toBe(true);
         }));
     });
 
@@ -154,9 +153,9 @@ describe('BookmarkNode', function () {
         it('returns true if url is empty', editorTest(function () {
             const bookmarkNode = $createBookmarkNode(dataset);
 
-            bookmarkNode.isEmpty().should.be.false();
+            expect(bookmarkNode.isEmpty()).toBe(false);
             bookmarkNode.url = '';
-            bookmarkNode.isEmpty().should.be.true();
+            expect(bookmarkNode.isEmpty()).toBe(true);
         }));
     });
 
@@ -189,7 +188,7 @@ describe('BookmarkNode', function () {
 
             const prettyExpectedHtml = Prettier.format(expectedHtml, {parser: 'html'});
 
-            element.outerHTML.should.prettifyTo(prettyExpectedHtml);
+            assertPrettifiesTo(element.outerHTML, prettyExpectedHtml);
         }));
 
         it('renders email target', editorTest(function () {
@@ -200,10 +199,10 @@ describe('BookmarkNode', function () {
             const result = bookmarkNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
-            element.innerHTML.should.containEql('<!--[if !mso !vml]-->');
-            element.innerHTML.should.containEql('<figure class="kg-card kg-bookmark-card');
-            element.innerHTML.should.containEql('<!--[if vml]>');
-            element.innerHTML.should.containEql('<table class="kg-card kg-bookmark-card--outlook"');
+            expect(element.innerHTML).toContain('<!--[if !mso !vml]-->');
+            expect(element.innerHTML).toContain('<figure class="kg-card kg-bookmark-card');
+            expect(element.innerHTML).toContain('<!--[if vml]>');
+            expect(element.innerHTML).toContain('<table class="kg-card kg-bookmark-card--outlook"');
         }));
     });
 
@@ -213,7 +212,7 @@ describe('BookmarkNode', function () {
             const json = bookmarkNode.exportJSON();
             const metadata = dataset.metadata as Record<string, unknown>;
 
-            json.should.deepEqual({
+            expect(json).toEqual({
                 type: 'bookmark',
                 version: 1,
                 url: dataset.url,
@@ -231,52 +230,54 @@ describe('BookmarkNode', function () {
     });
 
     describe('importJSON', function () {
-        it('imports all data', function (done) {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'bookmark',
-                        ...dataset
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
+        it('imports all data', function () {
+            return new Promise<void>((resolve, reject) => {
+                const serializedState = JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'bookmark',
+                            ...dataset
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                });
 
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
+                const editorState = editor.parseEditorState(serializedState);
+                editor.setEditorState(editorState);
 
-            editor.getEditorState().read(() => {
-                try {
-                    const [bookmarkNode] = $getRoot().getChildren() as BookmarkNode[];
+                editor.getEditorState().read(() => {
+                    try {
+                        const [bookmarkNode] = $getRoot().getChildren() as BookmarkNode[];
 
-                    bookmarkNode.url.should.equal(dataset.url);
-                    bookmarkNode.icon.should.equal((dataset.metadata as Record<string, unknown>).icon);
-                    bookmarkNode.title.should.equal((dataset.metadata as Record<string, unknown>).title);
-                    bookmarkNode.description.should.equal((dataset.metadata as Record<string, unknown>).description);
-                    bookmarkNode.author.should.equal((dataset.metadata as Record<string, unknown>).author);
-                    bookmarkNode.publisher.should.equal((dataset.metadata as Record<string, unknown>).publisher);
-                    bookmarkNode.thumbnail.should.equal((dataset.metadata as Record<string, unknown>).thumbnail);
-                    bookmarkNode.caption.should.equal(dataset.caption);
+                        expect(bookmarkNode.url).toBe(dataset.url);
+                        expect(bookmarkNode.icon).toBe((dataset.metadata as Record<string, unknown>).icon);
+                        expect(bookmarkNode.title).toBe((dataset.metadata as Record<string, unknown>).title);
+                        expect(bookmarkNode.description).toBe((dataset.metadata as Record<string, unknown>).description);
+                        expect(bookmarkNode.author).toBe((dataset.metadata as Record<string, unknown>).author);
+                        expect(bookmarkNode.publisher).toBe((dataset.metadata as Record<string, unknown>).publisher);
+                        expect(bookmarkNode.thumbnail).toBe((dataset.metadata as Record<string, unknown>).thumbnail);
+                        expect(bookmarkNode.caption).toBe(dataset.caption);
 
-                    done();
-                } catch (e) {
-                    done(e);
-                }
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
             });
         });
     });
 
     describe('static properties', function () {
         it('getType', editorTest(function () {
-            BookmarkNode.getType().should.equal('bookmark');
+            expect(BookmarkNode.getType()).toBe('bookmark');
         }));
 
         it('urlTransformMap', editorTest(function () {
-            BookmarkNode.urlTransformMap.should.deepEqual({
+            expect(BookmarkNode.urlTransformMap).toEqual({
                 url: 'url',
                 'metadata.icon': 'url',
                 'metadata.thumbnail': 'url'
@@ -308,16 +309,16 @@ describe('BookmarkNode', function () {
             `);
             const nodes = $generateNodesFromDOM(editor, document);
 
-            nodes.length.should.equal(1);
+            expect(nodes.length).toBe(1);
             const node = nodes[0] as BookmarkNode;
-            node.url.should.equal(dataset.url);
-            node.icon.should.equal((dataset.metadata as Record<string, unknown>).icon);
-            node.title.should.equal((dataset.metadata as Record<string, unknown>).title);
-            node.description.should.equal((dataset.metadata as Record<string, unknown>).description);
-            node.author.should.equal((dataset.metadata as Record<string, unknown>).author);
-            node.publisher.should.equal((dataset.metadata as Record<string, unknown>).publisher);
-            node.thumbnail.should.equal((dataset.metadata as Record<string, unknown>).thumbnail);
-            node.caption.should.equal(dataset.caption);
+            expect(node.url).toBe(dataset.url);
+            expect(node.icon).toBe((dataset.metadata as Record<string, unknown>).icon);
+            expect(node.title).toBe((dataset.metadata as Record<string, unknown>).title);
+            expect(node.description).toBe((dataset.metadata as Record<string, unknown>).description);
+            expect(node.author).toBe((dataset.metadata as Record<string, unknown>).author);
+            expect(node.publisher).toBe((dataset.metadata as Record<string, unknown>).publisher);
+            expect(node.thumbnail).toBe((dataset.metadata as Record<string, unknown>).thumbnail);
+            expect(node.caption).toBe(dataset.caption);
         }));
 
         // mixtape embeds parse into bookmark cards
@@ -330,42 +331,42 @@ describe('BookmarkNode', function () {
                 const document = createDocument(html`<div class="graf graf--mixtapeEmbed graf-after--p"><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" data-href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="markup--anchor markup--mixtapeEmbed-anchor" title="https://slack.engineering/typescript-at-slack-a81307fa288d"><strong class="markup--strong markup--mixtapeEmbed-strong">TypeScript at Slack</strong><br><em class="markup--em markup--mixtapeEmbed-em">Or, How I Learned to Stop Worrying &amp; Trust the Compiler</em>slack.engineering</a><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="js-mixtapeImage mixtapeImage u-ignoreBlock" data-media-id="abc123" data-thumbnail-img-id="1*-h1bH8gB3I7gPh5AG1HmsQ.png" style="background-image: url(https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png);"></a></div>`);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                nodes.length.should.equal(1);
+                expect(nodes.length).toBe(1);
                 const bookmarkNode = nodes[0] as BookmarkNode;
 
-                bookmarkNode.url.should.equal('https://slack.engineering/typescript-at-slack-a81307fa288d');
-                bookmarkNode.title.should.equal('TypeScript at Slack');
-                bookmarkNode.description.should.equal('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
-                bookmarkNode.publisher.should.equal('slack.engineering');
-                bookmarkNode.thumbnail.should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+                expect(bookmarkNode.url).toBe('https://slack.engineering/typescript-at-slack-a81307fa288d');
+                expect(bookmarkNode.title).toBe('TypeScript at Slack');
+                expect(bookmarkNode.description).toBe('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
+                expect(bookmarkNode.publisher).toBe('slack.engineering');
+                expect(bookmarkNode.thumbnail).toBe('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
             }));
 
             it('parses mixtape with missing title', editorTest(function () {
                 const document = createDocument(html`<div class="graf graf--mixtapeEmbed graf-after--mixtapeEmbed"><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" data-href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="markup--anchor markup--mixtapeEmbed-anchor" title="https://slack.engineering/typescript-at-slack-a81307fa288d"><br><em class="markup--em markup--mixtapeEmbed-em">Or, How I Learned to Stop Worrying &amp; Trust the Compiler</em>slack.engineering</a><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="js-mixtapeImage mixtapeImage u-ignoreBlock" data-media-id="abc123" data-thumbnail-img-id="1*-h1bH8gB3I7gPh5AG1HmsQ.png" style="background-image: url(https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png);"></a></div>`);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                nodes.length.should.equal(1);
+                expect(nodes.length).toBe(1);
                 const bookmarkNode = nodes[0] as BookmarkNode;
 
-                bookmarkNode.url.should.equal('https://slack.engineering/typescript-at-slack-a81307fa288d');
-                bookmarkNode.title.should.equal('');
-                bookmarkNode.description.should.equal('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
-                bookmarkNode.publisher.should.equal('slack.engineering');
-                bookmarkNode.thumbnail.should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+                expect(bookmarkNode.url).toBe('https://slack.engineering/typescript-at-slack-a81307fa288d');
+                expect(bookmarkNode.title).toBe('');
+                expect(bookmarkNode.description).toBe('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
+                expect(bookmarkNode.publisher).toBe('slack.engineering');
+                expect(bookmarkNode.thumbnail).toBe('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
             }));
 
             it('parses mixtape when title and description are nested descendants', editorTest(function () {
                 const document = createDocument(html`<div class="graf graf--mixtapeEmbed graf-after--p"><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" data-href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="markup--anchor markup--mixtapeEmbed-anchor" title="https://slack.engineering/typescript-at-slack-a81307fa288d"><span><strong class="markup--strong markup--mixtapeEmbed-strong">TypeScript at Slack</strong></span><br><span><em class="markup--em markup--mixtapeEmbed-em">Or, How I Learned to Stop Worrying &amp; Trust the Compiler</em></span>slack.engineering</a><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="js-mixtapeImage mixtapeImage u-ignoreBlock" data-media-id="abc123" data-thumbnail-img-id="1*-h1bH8gB3I7gPh5AG1HmsQ.png" style="background-image: url(https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png);"></a></div>`);
                 const nodes = $generateNodesFromDOM(editor, document);
 
-                nodes.length.should.equal(1);
+                expect(nodes.length).toBe(1);
                 const bookmarkNode = nodes[0] as BookmarkNode;
 
-                bookmarkNode.url.should.equal('https://slack.engineering/typescript-at-slack-a81307fa288d');
-                bookmarkNode.title.should.equal('TypeScript at Slack');
-                bookmarkNode.description.should.equal('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
-                bookmarkNode.publisher.should.containEql('slack.engineering');
-                bookmarkNode.thumbnail.should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+                expect(bookmarkNode.url).toBe('https://slack.engineering/typescript-at-slack-a81307fa288d');
+                expect(bookmarkNode.title).toBe('TypeScript at Slack');
+                expect(bookmarkNode.description).toBe('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
+                expect(bookmarkNode.publisher).toContain('slack.engineering');
+                expect(bookmarkNode.thumbnail).toBe('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
             }));
         });
     });
@@ -373,14 +374,14 @@ describe('BookmarkNode', function () {
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
             const node = $createBookmarkNode();
-            node.getTextContent().should.equal('');
+            expect(node.getTextContent()).toBe('');
 
             node.title = 'Test';
             node.description = 'Test description';
             node.url = 'https://example.com';
             node.caption = 'Test <strong>caption</strong>';
 
-            node.getTextContent().should.equal('Test\nTest description\nhttps://example.com\nTest <strong>caption</strong>\n\n');
+            expect(node.getTextContent()).toBe('Test\nTest description\nhttps://example.com\nTest <strong>caption</strong>\n\n');
         }));
     });
 });

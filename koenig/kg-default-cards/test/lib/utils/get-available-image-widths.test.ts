@@ -1,5 +1,3 @@
-import '../../utils/index.js';
-
 import getAvailableImageWidths from '../../../src/utils/get-available-image-widths.js';
 
 const contentWidths = {
@@ -16,7 +14,7 @@ describe('Utils: getAvailableImageWidths', function () {
             height: 2000
         };
 
-        getAvailableImageWidths(image, contentWidths).should.deepEqual([
+        expect(getAvailableImageWidths(image, contentWidths)).toEqual([
             600,
             1000,
             1600,
@@ -30,7 +28,7 @@ describe('Utils: getAvailableImageWidths', function () {
             height: 1000
         };
 
-        getAvailableImageWidths(image, contentWidths).should.deepEqual([
+        expect(getAvailableImageWidths(image, contentWidths)).toEqual([
             600,
             1000,
             1600
@@ -43,7 +41,7 @@ describe('Utils: getAvailableImageWidths', function () {
             height: 2000
         };
 
-        getAvailableImageWidths(image, contentWidths).should.deepEqual([
+        expect(getAvailableImageWidths(image, contentWidths)).toEqual([
             600,
             1000,
             1600,
