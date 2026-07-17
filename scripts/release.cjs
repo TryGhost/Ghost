@@ -5,7 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const {execSync} = require('node:child_process');
 const semver = require('semver');
-const {resolveBaseTag} = require('./lib/resolve-base-tag.cjs');
+const {resolveBaseTag} = require('./lib/resolve-base-tag.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const GHOST_CORE_PKG = path.join(ROOT, 'ghost/core/package.json');

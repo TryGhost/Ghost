@@ -24,7 +24,7 @@
     "test": "pnpm test:unit",
     "test:unit": "pnpm run build && vitest run",
     "preship": "pnpm lint",
-    "ship": "node ../../scripts/release-apps.cjs",
+    "ship": "node ../../scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
