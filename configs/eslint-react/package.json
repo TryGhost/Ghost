@@ -1,5 +1,6 @@
 {
     "name": "@internal/cfg-eslint-react",
+    "version": "0.0.0",
     "description": "Shared ESLint config for internal Ghost React apps",
     "private": true,
     "type": "module",

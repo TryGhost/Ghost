@@ -1,5 +1,6 @@
 {
     "name": "@tryghost/test-data",
+    "version": "0.0.0",
     "private": true,
     "type": "module",
     "repository": "https://github.com/TryGhost/Ghost/tree/main/testing/test-data",

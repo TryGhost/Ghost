@@ -1,5 +1,6 @@
 {
     "name": "@internal/cfg-eslint",
+    "version": "0.0.0",
     "description": "Shared ESLint atoms + Node-library config for internal Ghost packages",
     "private": true,
     "type": "module",
