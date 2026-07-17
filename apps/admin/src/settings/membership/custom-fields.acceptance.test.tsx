@@ -258,6 +258,18 @@ describe("Custom fields", () => {
         expect(deleteApi.requests).toHaveLength(1);
     });
 
+    it("does not expose permanent deletion for an active field", async () => {
+        fakeSettingsScreens();
+        fakeCustomFields([companyField]);
+        await renderAdminApp("/settings", {boot: customFieldsBoot()});
+
+        // Deletion lives behind the header menu, and an active field has none —
+        // the UI can't reach delete, matching the API's archived-only rule.
+        await settingsScreen.customFields().getByTestId("custom-field-list-item").click();
+        const modal = settingsScreen.customFieldModal();
+        await expect(modal.getByRole("button", {name: "Menu"})).toHaveCount(0);
+    });
+
     it("shows no tabs at all while no fields exist", async () => {
         fakeSettingsScreens();
         fakeCustomFields([]);
