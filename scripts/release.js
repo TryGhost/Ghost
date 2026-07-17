@@ -1,17 +1,19 @@
-#!/usr/bin/env node
-'use strict';
+import {existsSync} from 'node:fs';
+import {join, relative} from 'node:path';
+import {execSync} from 'node:child_process';
+import {parseArgs as baseParseArgs} from 'node:util';
+import semver from 'semver';
+import camelcaseKeys from 'camelcase-keys';
+import {setTimeout} from 'node:timers/promises';
 
-const path = require('node:path');
-const fs = require('node:fs');
-const {execSync} = require('node:child_process');
-const semver = require('semver');
-const {resolveBaseTag} = require('./lib/resolve-base-tag.js');
+import {ROOT_DIR} from './lib/constants.js';
+import {resolveBaseTag} from './lib/resolve-base-tag.js';
+import {readJsonSync, writeJsonSync} from './lib/utils.js';
 
-const ROOT = path.resolve(__dirname, '..');
-const GHOST_CORE_PKG = path.join(ROOT, 'ghost/core/package.json');
-const GHOST_ADMIN_PKG = path.join(ROOT, 'ghost/admin/package.json');
-const CASPER_DIR = path.join(ROOT, 'ghost/core/content/themes/casper');
-const SOURCE_DIR = path.join(ROOT, 'ghost/core/content/themes/source');
+const GHOST_CORE_PKG = join(ROOT_DIR, 'ghost/core/package.json');
+const GHOST_ADMIN_PKG = join(ROOT_DIR, 'ghost/admin/package.json');
+const CASPER_DIR = join(ROOT_DIR, 'ghost/core/content/themes/casper');
+const SOURCE_DIR = join(ROOT_DIR, 'ghost/core/content/themes/source');
 
 const MAX_WAIT_MS = 30 * 60 * 1000; // 30 minutes
 const POLL_INTERVAL_MS = 30 * 1000; // 30 seconds
@@ -19,47 +21,33 @@ const POLL_INTERVAL_MS = 30 * 1000; // 30 seconds
 // --- Argument parsing ---
 
 function parseArgs() {
-    const args = process.argv.slice(2);
-    const opts = {
-        bumpType: 'auto',
-        branch: 'main',
-        dryRun: false,
-        skipChecks: false
-    };
+    const {values} = baseParseArgs({
+        options: {
+            'bump-type': {type: 'string', default: 'auto'},
+            'branch': {type: 'string', default: 'main'},
+            'dry-run': {type: 'boolean', default: false},
+            'skip-checks': {type: 'boolean', default: false}
+        },
+    });
 
-    for (const arg of args) {
-        if (arg.startsWith('--bump-type=')) {
-            opts.bumpType = arg.split('=')[1];
-        } else if (arg.startsWith('--branch=')) {
-            opts.branch = arg.split('=')[1];
-        } else if (arg === '--dry-run') {
-            opts.dryRun = true;
-        } else if (arg === '--skip-checks') {
-            opts.skipChecks = true;
-        } else {
-            console.error(`Unknown argument: ${arg}`);
-            process.exit(1);
-        }
-    }
-
-    return opts;
+    return camelcaseKeys(values);
 }
 
 // --- Helpers ---
 
 function run(cmd, opts = {}) {
-    const result = execSync(cmd, {cwd: ROOT, encoding: 'utf8', ...opts});
+    const result = execSync(cmd, {cwd: ROOT_DIR, encoding: 'utf8', ...opts});
     return result.trim();
 }
 
 function readPkgVersion(pkgPath) {
-    return JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version;
+    return readJsonSync(pkgPath).version;
 }
 
 function writePkgVersion(pkgPath, version) {
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    const pkg = readJsonSync(pkgPath);
     pkg.version = version;
-    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+    writeJsonSync(pkgPath, pkg);
 }
 
 function log(msg) {
@@ -171,22 +159,19 @@ async function waitForChecks(commit) {
         }
 
         log(`(${elapsed}s elapsed), polling in 30s...`);
-        await new Promise((resolve) => {
-            setTimeout(resolve, POLL_INTERVAL_MS);
-        });
+        await setTimeout(POLL_INTERVAL_MS);
     }
 }
 
 // --- Theme submodule updates ---
 
 function updateThemeSubmodule(themeDir, themeName) {
-    if (!fs.existsSync(themeDir)) {
+    if (!existsSync(themeDir)) {
         log(`${themeName} not present, skipping`);
         return false;
     }
 
-    const currentPkg = JSON.parse(fs.readFileSync(path.join(themeDir, 'package.json'), 'utf8'));
-    const currentVersion = currentPkg.version;
+    const currentVersion = readPkgVersion(join(themeDir, 'package.json'));
 
     // Checkout latest stable tag on main branch
     try {
@@ -199,12 +184,11 @@ function updateThemeSubmodule(themeDir, themeName) {
         return false;
     }
 
-    const updatedPkg = JSON.parse(fs.readFileSync(path.join(themeDir, 'package.json'), 'utf8'));
-    const newVersion = updatedPkg.version;
+    const newVersion = readPkgVersion(join(themeDir, 'package.json'));
 
     if (semver.gt(newVersion, currentVersion)) {
         log(`${themeName} updated: v${currentVersion} → v${newVersion}`);
-        run(`git add -f ${path.relative(ROOT, themeDir)}`);
+        run(`git add -f ${relative(ROOT_DIR, themeDir)}`);
         run(`git commit -m "🎨 Updated ${themeName} to v${newVersion}"`);
         return true;
     }
@@ -231,7 +215,7 @@ async function main() {
 
     // 2. Resolve base tag
     logStep('Resolving base tag');
-    const {tag: baseTag, isPrerelease} = resolveBaseTag(currentVersion, ROOT);
+    const {tag: baseTag, isPrerelease} = resolveBaseTag(currentVersion, ROOT_DIR);
     if (isPrerelease) {
         log(`Prerelease detected (${currentVersion}), resolved base tag: ${baseTag}`);
     } else {
@@ -286,7 +270,7 @@ async function main() {
     writePkgVersion(GHOST_ADMIN_PKG, newVersion);
 
     // 8. Commit and tag
-    run(`git add ${path.relative(ROOT, GHOST_CORE_PKG)} ${path.relative(ROOT, GHOST_ADMIN_PKG)}`);
+    run(`git add ${relative(ROOT_DIR, GHOST_CORE_PKG)} ${relative(ROOT_DIR, GHOST_ADMIN_PKG)}`);
     run(`git commit -m "v${newVersion}"`);
     run(`git tag v${newVersion}`);
     log(`Created tag v${newVersion}`);
@@ -312,7 +296,7 @@ async function main() {
     log(`Next RC: ${nextRc}`);
     writePkgVersion(GHOST_CORE_PKG, nextRc);
     writePkgVersion(GHOST_ADMIN_PKG, nextRc);
-    run(`git add ${path.relative(ROOT, GHOST_CORE_PKG)} ${path.relative(ROOT, GHOST_ADMIN_PKG)}`);
+    run(`git add ${relative(ROOT_DIR, GHOST_CORE_PKG)} ${relative(ROOT_DIR, GHOST_ADMIN_PKG)}`);
     run(`git commit -m "Bumped version to ${nextRc}"`);
 
     if (opts.dryRun) {

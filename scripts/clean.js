@@ -1,10 +1,5 @@
 // NOTE: this file can't use any NPM dependencies because it needs to run even if dependencies aren't installed yet or are corrupted
-const {execSync} = require('child_process');
-
-resetNxCache();
-deleteNodeModules();
-deleteBuildArtifacts();
-console.log('Cleanup complete!');
+import { execSync } from 'node:child_process';
 
 function deleteBuildArtifacts() {
     console.log('Deleting all build artifacts...');
@@ -42,3 +37,8 @@ function resetNxCache() {
         process.exit(1);
     }
 }
+
+resetNxCache();
+deleteNodeModules();
+deleteBuildArtifacts();
+console.log('Cleanup complete!');
