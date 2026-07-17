@@ -28,8 +28,11 @@ const ADDRESS_SUBFIELD_LABELS: Record<typeof ADDRESS_SUBFIELD_KEYS[number], stri
     country: 'Country'
 };
 
+// role='alert': after a save-attempt these render while focus stays on the Save
+// button, so an assertive live region is the only way a screen reader hears the
+// failure.
 const ErrorMessage: React.FC<{message?: string}> = ({message}) => {
-    return message ? <p className='text-sm text-destructive'>{message}</p> : null;
+    return message ? <p className='text-sm text-destructive' role='alert'>{message}</p> : null;
 };
 
 // The address composite: one input per sub-field, paired into a two-column
@@ -145,6 +148,14 @@ const MemberCustomFieldEditModal: React.FC<{
         if (editMutation.isPending) {
             return;
         }
+        // An unchanged value has nothing to write; skip the PUT entirely. The
+        // merge is keyed on the field, so a no-op save would still declare a
+        // member change and fire member.edited (webhooks, audit) for a value
+        // that didn't move. Mirrors the page-level save's dirty gate.
+        if (!isDirty) {
+            onClose();
+            return;
+        }
         if (Object.keys(validationErrors).length > 0) {
             setSaveAttempted(true);
             return;
@@ -166,19 +177,22 @@ const MemberCustomFieldEditModal: React.FC<{
 
     return (
         <Dialog open onOpenChange={(open) => {
-            if (!open) {
+            // Never dismiss while the save is in flight: closing here would let
+            // the field be reopened and saved again, racing two PUTs whose order
+            // isn't guaranteed. A dirty editor also refuses casual dismissal.
+            if (!open && !editMutation.isPending) {
                 onClose();
             }
         }}>
             <DialogContent
                 data-testid='member-custom-field-edit-modal'
                 onEscapeKeyDown={(event) => {
-                    if (isDirty) {
+                    if (isDirty || editMutation.isPending) {
                         event.preventDefault();
                     }
                 }}
                 onInteractOutside={(event) => {
-                    if (isDirty) {
+                    if (isDirty || editMutation.isPending) {
                         event.preventDefault();
                     }
                 }}
@@ -207,8 +221,8 @@ const MemberCustomFieldEditModal: React.FC<{
                     <ErrorMessage message={inputErrors['']} />
                 </div>
                 <DialogFooter>
-                    <Button variant='outline' onClick={onClose}>Cancel</Button>
-                    <Button className='min-w-16' onClick={onSave}>
+                    <Button disabled={editMutation.isPending} variant='outline' onClick={onClose}>Cancel</Button>
+                    <Button className='min-w-16' disabled={editMutation.isPending} onClick={onSave}>
                         {editMutation.isPending ? <><LoadingIndicator size='sm' /><span className='sr-only'>Saving</span></> : 'Save'}
                     </Button>
                 </DialogFooter>
@@ -218,7 +232,7 @@ const MemberCustomFieldEditModal: React.FC<{
 };
 
 /** One readable line per value; address collapses to a formatted string. */
-function formatValue(field: MemberCustomField, value: EditableCustomFieldValue | undefined): string | null {
+function formatValue(value: EditableCustomFieldValue | undefined): string | null {
     if (value === undefined) {
         return null;
     }
@@ -257,7 +271,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({member
                 <CardContent className='px-6 py-4'>
                     <ul>
                         {fields.map((field) => {
-                            const display = formatValue(field, values[field.key]);
+                            const display = formatValue(values[field.key]);
                             return (
                                 // Dividers fade around the hovered row (its own border-b, and the
                                 // previous row's via :has), so the hover tint floats free of the
@@ -267,7 +281,10 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({member
                                         the pencil is a hover/focus-revealed affordance, not the
                                         control itself. */}
                                     <button
-                                        aria-label={`Edit ${field.name}`}
+                                        // An explicit label overrides the inner spans as the accessible
+                                        // name, so carry the value into it — otherwise a screen reader
+                                        // announces only the field name and never its current value.
+                                        aria-label={display ? `Edit ${field.name}: ${display}` : `Edit ${field.name}`}
                                         // -mx/px + calc width: the hover tint bleeds past the text
                                         // column like the settings rows, while the row text (and the
                                         // li dividers) stay aligned with the rest of the card.

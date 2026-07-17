@@ -348,6 +348,11 @@ describe('getCustomFieldValidationErrors', () => {
         expect(errors).toEqual({job_title: 'Use 255 characters or fewer.'});
     });
 
+    it('reports an over-long required address sub-field as a length problem, not a missing one', () => {
+        const errors = getCustomFieldValidationErrors({home_address: {...validAddress, line1: 'x'.repeat(256)}}, fields);
+        expect(errors).toEqual({'home_address.line1': 'Use 255 characters or fewer.'});
+    });
+
     it('validates the normalized value, so whitespace does not dodge a limit', () => {
         const errors = getCustomFieldValidationErrors({home_address: {line1: '1 Main St', city: '  ', postal_code: '10115', country: 'DE'}}, fields);
         expect(Object.keys(errors)).toEqual(['home_address.city']);

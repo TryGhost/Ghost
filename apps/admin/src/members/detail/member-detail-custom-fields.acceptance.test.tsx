@@ -79,6 +79,29 @@ describe('Member detail custom fields', () => {
         expect(saved.members[0].name).toBeUndefined();
     });
 
+    it('leaves an unsaved page edit intact when a custom field is saved', async () => {
+        const m = member({name: 'Ada Lovelace'});
+        const editApi = fakeMemberDetailWorld(m, {job_title: 'Editor'});
+        await renderAdminApp(`/members/${m.id}`, FLAGS);
+
+        // Dirty the page draft by editing the name, without saving it.
+        await page.getByLabelText('Name').fill('Ada L.');
+        const pageSave = page.getByTestId('member-detail').getByRole('button', {name: 'Save', exact: true});
+        await expect.element(pageSave).toBeEnabled();
+
+        // A custom-field save triggers a member refetch. That refetch must not
+        // reseed the page draft — the unsaved name edit has to survive, and the
+        // field payload must not carry the name.
+        await page.getByRole('button', {name: 'Edit Job title'}).click();
+        await modal().getByLabelText('Job title').fill('Publisher');
+        await modal().getByRole('button', {name: 'Save', exact: true}).click();
+        await expect.element(page.getByText('Publisher')).toBeVisible();
+
+        await expect.element(page.getByLabelText('Name')).toHaveValue('Ada L.');
+        await expect.element(pageSave).toBeEnabled();
+        expect(editApi.lastRequest?.body).toEqual({members: [{id: m.id, custom_fields: {job_title: 'Publisher'}}]});
+    });
+
     it('clears a value by saving an emptied editor (null merge patch)', async () => {
         const m = member({name: 'Ada Lovelace'});
         const editApi = fakeMemberDetailWorld(m, {job_title: 'Editor'});
