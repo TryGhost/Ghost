@@ -16,9 +16,12 @@ Write it as ESM (`.js` — the package is `type: module`) and parse arguments wi
 `semver` is already there. Keep it cheap: everything here lands in every dev's
 `pnpm install`, so prefer `node:` built-ins.
 
-Put testable logic in `lib/` and cover it in `test/` — tests are plain
-`node --test`, discovered automatically. Note this package is *not* part of the
-root Vitest watcher (`pnpm test:watch`), which only covers Vitest-based projects.
+Put logic shared by several scripts in `lib/`. A script that is its own
+entrypoint can just export the parts worth testing and guard the CLI path with
+`import.meta.main` — see `build-public-apps-matrix.js`. Either way, cover it in
+`test/`: tests are plain `node --test`, discovered automatically. Note this
+package is *not* part of the root Vitest watcher (`pnpm test:watch`), which only
+covers Vitest-based projects.
 
 ## The `.cjs` files
 
