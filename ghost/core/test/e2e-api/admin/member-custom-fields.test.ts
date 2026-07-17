@@ -930,9 +930,9 @@ describe('Member Custom Fields Admin API', function () {
         // Admin parses it before reading `action_name`, and so does this.
         const parseContext = (action: {context: string | null}) => (typeof action.context === 'string' ? JSON.parse(action.context) : action.context);
 
-        // The member's edit history as the history log asks for it: the same
-        // endpoint, filter and include the Admin history modal uses.
-        const memberEditedActions = async (memberId: string) => {
+        // Read back over the API the history log is served from, not the table,
+        // so what Admin receives is what's asserted — `context` included.
+        const memberEditedActionsViaApi = async (memberId: string) => {
             const {body} = await agent
                 .get(`actions/?filter=resource_id:'${memberId}'%2Bresource_type:member&include=actor`)
                 .expectStatus(200);
@@ -947,7 +947,7 @@ describe('Member Custom Fields Admin API', function () {
 
             await setValues(memberId, {[field.key]: 'Ghosts'});
 
-            const actions = await memberEditedActions(memberId);
+            const actions = await memberEditedActionsViaApi(memberId);
             assert.equal(actions.length, 1);
             assert.equal(parseContext(actions[0]).action_name, 'custom_fields_edited');
             assert.equal(actions[0].resource_id, memberId);
@@ -965,7 +965,7 @@ describe('Member Custom Fields Admin API', function () {
                 .body({members: [{name: 'Renamed'}]})
                 .expectStatus(200);
 
-            const actions = await memberEditedActions(memberId);
+            const actions = await memberEditedActionsViaApi(memberId);
             assert.equal(actions.length, 1);
             assert.equal(parseContext(actions[0]).action_name, undefined);
         });
@@ -983,7 +983,7 @@ describe('Member Custom Fields Admin API', function () {
                 .body({members: [{name: 'Renamed', custom_fields: {[field.key]: 'Ghosts'}}]})
                 .expectStatus(200);
 
-            const actions = await memberEditedActions(memberId);
+            const actions = await memberEditedActionsViaApi(memberId);
             assert.equal(actions.length, 1);
             assert.equal(parseContext(actions[0]).action_name, undefined);
         });
@@ -1001,7 +1001,7 @@ describe('Member Custom Fields Admin API', function () {
                 .body({members: [{email, custom_fields: {[field.key]: 'Ghosts'}}]})
                 .expectStatus(200);
 
-            const actions = await memberEditedActions(memberId);
+            const actions = await memberEditedActionsViaApi(memberId);
             assert.equal(actions.length, 1);
             assert.equal(parseContext(actions[0]).action_name, 'custom_fields_edited');
         });
