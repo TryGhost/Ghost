@@ -249,16 +249,32 @@ packageExtensions:
       '@babel/runtime': ^7.26.10
 minimumReleaseAgeExclude:
   # Our own packages are published by us, so the release-age delay doesn't apply
-  - "@tryghost/*"
+  - '@tryghost/*'
   # TryGhost-published packages that live outside the @tryghost/ npm scope.
   # Deliberately NOT listed: sqlite3 — TryGhost stewards it, but legacy
   # (Mapbox-era) npm maintainer accounts can still publish, so the soak
   # retains value there.
-  - "bookshelf-relations"
-  - "eslint-plugin-ghost"
-  - "express-hbs"
-  - "ghost-storage-base"
-  - "gscan"
-  - "knex-migrator"
+  - 'bookshelf-relations'
+  - 'eslint-plugin-ghost'
+  - 'express-hbs'
+  - 'ghost-storage-base'
+  - 'gscan'
+  - 'knex-migrator'
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+
+# configuration for pnpm's changeset functionality
+versioning:
+  ignore:
+    # ignore root ghost-monorepo package
+    - ghost-monorepo
+    # ignore ghost/ghost-admin since they're manually versioned by release scripts
+    - ghost
+    - ghost-admin
+    # ignore public apps since they're deployed outside pnpm's changelog versioning
+    - '@tryghost/announcement-bar'
+    - '@tryghost/admin-toolbar'
+    - '@tryghost/comments-ui'
+    - '@tryghost/portal'
+    - '@tryghost/signup-form'
+    - '@tryghost/sodo-search'
