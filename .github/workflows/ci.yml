@@ -316,7 +316,7 @@ jobs:
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/change-check.js "$PR_BASE_SHA" "$PR_COMPARE_SHA"
+        run: node scripts/change-check.js
 
   job_migration_integrity_check:
     name: Check migration integrity

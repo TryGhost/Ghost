@@ -28,10 +28,19 @@ import {getWorkspace, getPublishablePackages} from './lib/pnpm.js';
  * out-of-band publishes.
  */
 
+// Defaults fall back to PUBLISH_* env vars so CI can set them on the job and
+// invoke the script bare (a passed CLI flag still wins). PUBLISH_PACKAGE is
+// comma-separated to keep the multi-package capability of --package (npm names
+// can't contain commas).
+const envPackages = (process.env.PUBLISH_PACKAGE || '')
+    .split(',')
+    .map(name => name.trim())
+    .filter(Boolean);
+
 const {values} = parseArgs({
     options: {
-        'dry-run': {type: 'boolean', default: false},
-        package: {type: 'string', multiple: true, default: []},
+        'dry-run': {type: 'boolean', default: process.env.PUBLISH_DRY_RUN === 'true'},
+        package: {type: 'string', multiple: true, default: envPackages},
     },
 });
 

@@ -21,16 +21,20 @@ const POLL_INTERVAL_MS = 30 * 1000; // 30 seconds
 // --- Argument parsing ---
 
 function parseArgs() {
+    // Defaults fall back to RELEASE_* env vars so CI can set them on the job and
+    // invoke the script bare (a passed CLI flag still wins). Booleans read the
+    // literal string "true".
+    const env = process.env;
     const {values} = baseParseArgs({
         options: {
-            'bump-type': {type: 'string', default: 'auto'},
-            'branch': {type: 'string', default: 'main'},
-            'dry-run': {type: 'boolean', default: false},
-            'skip-checks': {type: 'boolean', default: false},
+            'bump-type': {type: 'string', default: env.RELEASE_BUMP_TYPE || 'auto'},
+            'branch': {type: 'string', default: env.RELEASE_BRANCH || 'main'},
+            'dry-run': {type: 'boolean', default: env.RELEASE_DRY_RUN === 'true'},
+            'skip-checks': {type: 'boolean', default: env.RELEASE_SKIP_CHECKS === 'true'},
             // Version and commit the pending package changesets without touching
             // Ghost's version, cutting a tag, or publishing. Publishing is a
             // separate step (the "Publish Packages" workflow_dispatch).
-            'packages-only': {type: 'boolean', default: false}
+            'packages-only': {type: 'boolean', default: env.RELEASE_PACKAGES_ONLY === 'true'}
         },
     });
 
