@@ -2,6 +2,7 @@ import logging from '@tryghost/logging';
 import type {RescheduleOpts, Rescheduler, SchedulerAdapter, SchedulerJob} from '@tryghost/adapter-base-scheduling';
 
 // CJS-only module without TS declarations.
+// TODO: replace with dependency injection once the sentry module is TS
 const sentry = require('../../../shared/sentry');
 
 /**
@@ -76,10 +77,7 @@ export class ErrorCapturingSchedulingAdapter implements SchedulingAdapter {
     #capture(run: () => void | Promise<void>, operation: 'schedule' | 'unschedule', job: SchedulerJob): void {
         try {
             const result = run();
-            // Duck-typed rather than `instanceof Promise` so a non-native
-            // thenable still gets its rejection handled instead of surfacing
-            // as an unhandled rejection.
-            if (typeof (result as Promise<void> | undefined)?.then === 'function') {
+            if (result) {
                 Promise.resolve(result).catch(err => report(err, operation, job));
             }
         } catch (err) {

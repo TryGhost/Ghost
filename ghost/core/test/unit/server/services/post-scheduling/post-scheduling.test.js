@@ -8,7 +8,7 @@ const SchedulingDefault = require('../../../../../core/server/adapters/schedulin
 const urlUtils = require('../../../../../core/shared/url-utils');
 const PostScheduling = require('../../../../../core/server/services/post-scheduling/post-scheduling').default;
 const nock = require('nock');
-const adapterManager = require('../../../../../core/server/services/adapter-manager');
+const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 
 describe('PostScheduling', function () {
     let adapter;

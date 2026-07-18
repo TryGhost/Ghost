@@ -1,8 +1,12 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const logging = require('@tryghost/logging');
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
+import {withErrorCapture} from '../../../../../core/server/adapters/scheduling/error-capture';
+// sentry is a CJS module without types. It must be `require`d, not `import`ed:
+// the adapter under test also `require`s it, and tsx's ESM interop hands a
+// default import a different wrapper object than require() returns — stubbing
+// the import wouldn't patch the object the adapter actually calls.
 const sentry = require('../../../../../core/shared/sentry');
-const {withErrorCapture} = require('../../../../../core/server/adapters/scheduling/error-capture');
+import type {SchedulingAdapter} from '../../../../../core/server/adapters/scheduling/error-capture';
 
 describe('Scheduling Adapter Error Capture', function () {
     const job = {
@@ -11,9 +15,9 @@ describe('Scheduling Adapter Error Capture', function () {
         extra: {httpMethod: 'PUT'}
     };
 
-    let adapter;
-    let captureException;
-    let logError;
+    let adapter: sinon.SinonStubbedInstance<SchedulingAdapter>;
+    let captureException: any;
+    let logError: any;
 
     beforeEach(function () {
         adapter = {
@@ -22,7 +26,7 @@ describe('Scheduling Adapter Error Capture', function () {
             schedule: sinon.stub(),
             unschedule: sinon.stub(),
             register: sinon.stub(),
-            rescheduleAll: sinon.stub().resolves('all-rescheduled')
+            rescheduleAll: sinon.stub().resolves('all-rescheduled') as any,
         };
         captureException = sinon.stub(sentry, 'captureException');
         logError = sinon.stub(logging, 'error');
@@ -35,9 +39,9 @@ describe('Scheduling Adapter Error Capture', function () {
     it('reports nothing when the adapter succeeds', function () {
         withErrorCapture(adapter).schedule(job);
 
-        assert.equal(adapter.schedule.calledOnceWithExactly(job), true);
-        assert.equal(captureException.called, false);
-        assert.equal(logError.called, false);
+        sinon.assert.calledOnceWithExactly(adapter.schedule, job);
+        sinon.assert.notCalled(captureException);
+        sinon.assert.notCalled(logError);
     });
 
     it('captures a synchronous throw', function () {
@@ -46,7 +50,8 @@ describe('Scheduling Adapter Error Capture', function () {
 
         withErrorCapture(adapter).schedule(job);
 
-        assert.equal(captureException.calledOnceWithExactly(err), true);
+        sinon.assert.calledOnceWithExactly(adapter.schedule, job);
+        sinon.assert.calledOnceWithExactly(captureException, err);
         assert.equal(logError.firstCall.args[0].event.name, 'scheduler.schedule.failed');
     });
 
@@ -59,23 +64,23 @@ describe('Scheduling Adapter Error Capture', function () {
             setImmediate(resolve);
         });
 
-        assert.equal(adapter.unschedule.calledOnceWithExactly(job, {bootstrap: true}), true);
-        assert.equal(captureException.calledOnceWithExactly(err), true);
+        sinon.assert.calledOnceWithExactly(adapter.unschedule, job, {bootstrap: true});
+        sinon.assert.calledOnceWithExactly(captureException, err);
         assert.equal(logError.firstCall.args[0].event.name, 'scheduler.unschedule.failed');
     });
 
     it('captures a rejected non-native thenable', async function () {
         const err = new Error('thenable boom');
         adapter.schedule.returns({
-            then: (onResolve, onReject) => Promise.resolve().then(() => onReject(err))
-        });
+            then: (_, onReject) => Promise.resolve().then(() => onReject?.(err))
+        } as Promise<void>);
 
         withErrorCapture(adapter).schedule(job);
         await new Promise((resolve) => {
             setImmediate(resolve);
         });
 
-        assert.equal(captureException.calledOnceWithExactly(err), true);
+        sinon.assert.calledOnceWithExactly(adapter.schedule, job);
     });
 
     it('does not swallow the failure into an unhandled rejection', async function () {
@@ -89,7 +94,7 @@ describe('Scheduling Adapter Error Capture', function () {
         });
 
         process.removeListener('unhandledRejection', onUnhandled);
-        assert.equal(onUnhandled.called, false);
+        sinon.assert.notCalled(onUnhandled);
     });
 
     it('strips the signed token from the reported url', function () {
@@ -111,9 +116,9 @@ describe('Scheduling Adapter Error Capture', function () {
         const result = await wrapped.rescheduleAll({previousKey: {id: 'k', secret: 's'}});
 
         assert.equal(wrapped.rescheduleOnBoot, true);
-        assert.equal(adapter.run.calledOnce, true);
-        assert.equal(adapter.register.calledOnceWithExactly(rescheduler), true);
-        assert.equal(adapter.rescheduleAll.calledOnceWithExactly({previousKey: {id: 'k', secret: 's'}}), true);
+        sinon.assert.calledOnce(adapter.run);
+        sinon.assert.calledOnceWithExactly(adapter.register, rescheduler);
+        sinon.assert.calledOnceWithExactly(adapter.rescheduleAll, {previousKey: {id: 'k', secret: 's'}});
         assert.equal(result, 'all-rescheduled');
     });
 });

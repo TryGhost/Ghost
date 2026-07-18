@@ -362,7 +362,7 @@ async function initServices({ghostServer} = {}) {
     const explorePingService = require('./server/services/explore-ping');
     const domainEvents = require('@tryghost/domain-events');
     const automations = require('./server/services/automations');
-    const adapterManager = require('./server/services/adapter-manager');
+    const adapterManager = require('./server/services/adapter-manager').default;
     const {withErrorCapture} = require('./server/adapters/scheduling/error-capture');
 
     const urlUtils = require('./shared/url-utils');

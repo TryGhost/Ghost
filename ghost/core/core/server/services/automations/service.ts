@@ -22,8 +22,6 @@ type AutomationsServiceOptions = {
     apiUrl: string;
     domainEvents: Pick<DomainEvents, 'dispatch' | 'subscribe'>;
     internalKeys: InternalKeys;
-    // Automations only ever queues polls; it never unschedules them or drives
-    // the adapter's run loop.
     schedulerAdapter: Pick<SchedulerAdapter, 'schedule' | 'register'>;
 };
 

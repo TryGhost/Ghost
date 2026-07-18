@@ -2,7 +2,7 @@ import jwt, {type SignOptions} from 'jsonwebtoken'
 import moment from 'moment'
 import type {InternalApiKey} from '../../services/internal-keys'
 
-export interface GetSignedAdminTokenOptions {
+type GetSignedAdminTokenOptions = {
     publishedAt: string
     apiUrl: string
     key: InternalApiKey

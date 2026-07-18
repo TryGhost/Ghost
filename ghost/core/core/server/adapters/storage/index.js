@@ -1,6 +1,8 @@
 const adapterManager = require('../../services/adapter-manager').default;
 
 /**
+ * @TODO: remove this in favor of using adapterManager.getAdapter
+ *
  * @param {'images'|'media'|'files'} [feature] - name for the "feature" to enable through adapter, e.g.: images or media storage
  * @returns {Object} adapter instance
  */
