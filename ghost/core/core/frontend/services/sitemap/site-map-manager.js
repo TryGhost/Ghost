@@ -8,7 +8,9 @@ const PostsMapGenerator = require('./post-map-generator');
 const UsersMapGenerator = require('./user-map-generator');
 const TagsMapGenerator = require('./tags-map-generator');
 
-// This uses events from the routing service and the URL service
+// Frontend-internal routing events (router.created / routers.reset)
+const routingEvents = require('../routing/events');
+// Server events: url.added / url.removed from the URL service, site.changed
 const events = require('../../../server/lib/common/events');
 
 // What the sitemap XML reads off each resource, beyond the columns URL
@@ -53,7 +55,7 @@ class SiteMapManager {
         // every rebuild can replay them after resetting the generators.
         this._routerEntries = [];
 
-        events.on('router.created', (router) => {
+        routingEvents.on('router.created', (router) => {
             if (router.name !== 'StaticRoutesRouter' && router.name !== 'CollectionRouter') {
                 return;
             }
@@ -96,7 +98,7 @@ class SiteMapManager {
             this[obj.resource.config.type].removeUrl(obj.url.absolute, obj.resource.data);
         });
 
-        events.on('routers.reset', () => {
+        routingEvents.on('routers.reset', () => {
             this.pages && this.pages.reset();
             this.posts && this.posts.reset();
             this.users && this.users.reset();

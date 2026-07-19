@@ -67,7 +67,6 @@ module.exports = {
                     '^ghost/core/core/frontend/apps/private-blogging/lib/router\\.js$',
 
                     // Leaks that bypass the proxy (fix first).
-                    '^ghost/core/core/frontend/services/routing/router-manager\\.js$', // server/lib/common/events bus
                     '^ghost/core/core/frontend/services/sitemap/site-map-manager\\.js$' // server/lib/common/events bus
                 ]
             },
