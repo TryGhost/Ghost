@@ -2,13 +2,8 @@
 
 The package serves as a single source of truth when validating requests coming into Ghost's Admin API endpoints. It uses [JSON Schema](https://json-schema.org/) definitions under the hood to describe expected format of validated data.
 
-## Install
-
-`npm install @tryghost/admin-api-schema --save`
-
-or
-
-`yarn add @tryghost/admin-api-schema`
+This is a private workspace package used by Ghost Core. It is bundled into the
+Ghost release artifact and is not published independently.
 
 
 ## Usage
@@ -71,22 +66,12 @@ const validate = async (apiConfig, frame) => await jsonSchema.validate({
 
 ## Develop
 
-This is a mono repository, managed with [lerna](https://lernajs.io/).
+From the Ghost repository root:
 
-Follow the instructions for the top-level repo.
-1. `git clone` this repo & `cd` into it as usual
-2. Run `yarn` to install top-level dependencies.
-
-
-## Run
-
-- `yarn dev`
-
-
-## Test
-
-- `yarn lint` run just eslint
-- `yarn test` run lint and tests
+```bash
+pnpm --filter @tryghost/admin-api-schema test
+pnpm --filter @tryghost/admin-api-schema lint
+```
 
 
 

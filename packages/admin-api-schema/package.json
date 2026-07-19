@@ -1,37 +1,38 @@
 {
   "name": "@tryghost/admin-api-schema",
-  "version": "4.7.5",
+  "version": "0.0.0",
+  "description": "JSON schemas used to validate Ghost Admin API requests",
+  "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TryGhost/SDK.git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "packages/admin-api-schema"
   },
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing c8 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
-    "lint": "eslint . --ext .js --cache",
-    "posttest": "yarn lint"
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test": "pnpm run '/^test:/'",
+    "lint:code": "eslint index.js lib/ --cache",
+    "lint:test": "eslint test/ --cache",
+    "lint": "pnpm run '/^lint:/'"
   },
   "files": [
     "lib/*",
     "index.js"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "devDependencies": {
-    "c8": "12.0.0",
-    "mocha": "11.7.6",
-    "should": "13.2.3",
-    "sinon": "22.0.0"
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "vitest": "catalog:"
   },
   "dependencies": {
-    "@tryghost/errors": "2.2.1",
+    "@tryghost/errors": "1.3.13",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
-    "lodash": "4.18.1"
+    "lodash": "catalog:"
   }
 }
