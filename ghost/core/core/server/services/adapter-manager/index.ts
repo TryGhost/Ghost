@@ -29,9 +29,4 @@ const adapterManager = new AdapterManager({
     }
 });
 
-// NOTE: exported via `module.exports` (rather than ESM named exports) so that
-// consumers keep `require(...).getAdapter` access AND tests can stub methods
-// with sinon — ESM named exports compile to immutable bindings that sinon
-// cannot stub. Using `module.exports` directly (not `export =`) keeps this
-// compatible with the erasableSyntaxOnly compiler option.
-module.exports = adapterManager;
+export default adapterManager;

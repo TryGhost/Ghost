@@ -1,4 +1,4 @@
-const adapterManager = require('../../services/adapter-manager');
+const adapterManager = require('../../services/adapter-manager').default;
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
 

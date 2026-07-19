@@ -1,4 +1,4 @@
-const adapterManager = require('../../services/adapter-manager');
+const adapterManager = require('../../services/adapter-manager').default;
 
 /**
  * @param {'images'|'media'|'files'} [feature] - name for the "feature" to enable through adapter, e.g.: images or media storage
