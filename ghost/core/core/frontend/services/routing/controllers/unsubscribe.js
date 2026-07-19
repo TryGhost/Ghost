@@ -1,9 +1,8 @@
 const debug = require('@tryghost/debug')('services:routing:controllers:unsubscribe');
 const url = require('url');
-const members = require('../../../../server/services/members');
+const {members, settingsHelpers} = require('../../proxy');
 const urlUtils = require('../../../../shared/url-utils');
 const logging = require('@tryghost/logging');
-const settingsHelpers = require('../../../../server/services/settings-helpers');
 const crypto = require('crypto');
 
 module.exports = async function unsubscribeController(req, res) {

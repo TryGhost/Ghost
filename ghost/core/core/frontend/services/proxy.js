@@ -62,7 +62,16 @@ module.exports = {
 
     // Settings helpers for calculated settings
     settingsHelpers: {
-        isWebAnalyticsEnabled: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers)
+        isWebAnalyticsEnabled: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers),
+        // Delegates at call time (not bound at load) so tests that stub the
+        // method on the settings-helpers service are still seen through here.
+        getMembersValidationKey: (...args) => settingsHelpers.getMembersValidationKey(...args)
+    },
+
+    // Member actions needed by the frontend's unsubscribe route. Lazy so that
+    // loading the proxy does not pull the members service in ahead of boot.
+    get members() {
+        return require('../../server/services/members');
     },
 
     // TODO: Expose less of the API to make this safe
