@@ -106,6 +106,8 @@ catalog:
   '@vitejs/plugin-react': 6.0.3
   '@vitest/browser-playwright': 4.1.9
   '@vitest/coverage-v8': 4.1.9
+  ajv: 8.20.0
+  ajv-formats: 3.0.1
   better-sqlite3: 12.11.1
   bson-objectid: 2.0.4
   c8: 11.0.0

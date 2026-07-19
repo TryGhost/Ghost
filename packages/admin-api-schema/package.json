@@ -30,9 +30,9 @@
     "vitest": "catalog:"
   },
   "dependencies": {
-    "@tryghost/errors": "1.3.13",
-    "ajv": "8.20.0",
-    "ajv-formats": "3.0.1",
+    "@tryghost/errors": "catalog:",
+    "ajv": "catalog:",
+    "ajv-formats": "catalog:",
     "lodash": "catalog:"
   }
 }

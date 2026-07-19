@@ -14,13 +14,14 @@ const jsonSchema = require('@tryghost/admin-api-schema');
 jsonSchema.list()
 /*
 > [
-  'images-upload', 'labels-add',
-  'labels-edit',   'members-add',
-  'members-edit',  'members-upload',
-  'pages-add',     'pages-edit',
-  'posts-add',     'posts-edit',
-  'tags-add',      'tags-edit',
-  'webhooks-add',  'webhooks-edit'
+  'comment_bans-add', 'images-upload',  'media-upload',
+  'labels-add',       'labels-edit',    'members-add',
+  'members-edit',     'members-upload', 'pages-add',
+  'pages-edit',       'posts-add',      'posts-edit',
+  'products-add',     'products-edit',  'tiers-add',
+  'tiers-edit',       'snippets-add',   'snippets-edit',
+  'tags-add',         'tags-edit',      'webhooks-add',
+  'webhooks-edit'
 ]
 */
 
@@ -48,11 +49,15 @@ const data = {
     }]
 };
 
-try {
-    await apiSchema.validate({data, schema: 'posts-add'});
-} catch (err) {
-    console.log('validateion error:', err);
+async function validate() {
+    try {
+        await jsonSchema.validate({data, schema: 'posts-add'});
+    } catch (err) {
+        console.log('validation error:', err);
+    }
 }
+
+validate();
 ```
 
 When used from Ghost core in validation layer:
