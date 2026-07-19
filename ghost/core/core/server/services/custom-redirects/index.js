@@ -1,6 +1,6 @@
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
-const adapterManager = require('../adapter-manager');
+const adapterManager = require('../adapter-manager').default;
 
 const DynamicRedirectManager = require('../lib/dynamic-redirect-manager');
 const {RedirectsService} = require('./redirects-service');

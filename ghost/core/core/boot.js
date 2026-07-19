@@ -96,7 +96,7 @@ async function initCore({ghostServer, config, frontend}) {
     // Validate configured adapters up-front so misconfiguration fails at boot
     // rather than on first lazy use (e.g. first image upload or scheduled job)
     debug('Begin: adapters');
-    const adapterManager = require('./server/services/adapter-manager');
+    const adapterManager = require('./server/services/adapter-manager').default;
     adapterManager.init();
     debug('End: adapters');
 

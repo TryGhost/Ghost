@@ -2,7 +2,7 @@ const {agentProvider, fixtureManager, matchers, configUtils} = require('../../ut
 const {restore} = require('../../utils/e2e-framework-mock-manager');
 const {stringMatching} = matchers;
 const sinon = require('sinon');
-const adapterManager = require('../../../core/server/services/adapter-manager');
+const adapterManager = require('../../../core/server/services/adapter-manager').default;
 const {SSOBase} = require('@tryghost/adapter-base-sso');
 
 describe('SSO API', function () {
