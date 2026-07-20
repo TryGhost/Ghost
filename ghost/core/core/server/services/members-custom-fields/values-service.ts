@@ -11,10 +11,16 @@ import {storageCodecFor, storageColumnsFor} from './storage';
 const FIELDS_TABLE = 'members_custom_fields';
 const VALUES_TABLE = 'members_custom_field_values';
 
-// Values arrive keyed by field key. The values themselves stay `unknown` here —
+// Matches the `members_custom_fields.key` column (schema.js), so no key a site
+// could actually have minted is ever refused by it.
+const MAX_KEY_LENGTH = 191;
+
+// Values arrive keyed by field key. Keys are bounded by the column they are
+// minted into, so anything longer cannot name a field that exists and is refused
+// as input rather than looked up. The values themselves stay `unknown` here —
 // each one is validated by its own field type's schema, which isn't known until
 // the key is resolved to a definition.
-const ValuesInput = z.record(z.string(), z.unknown());
+const ValuesInput = z.record(z.string().max(MAX_KEY_LENGTH), z.unknown());
 
 // The field facts the value path needs: the id to write the FK, the key to match
 // input against, the name for error messages, and the type to pick the validator
@@ -47,9 +53,17 @@ interface PlannedWrite {
  */
 export class CustomFieldValuesService {
     private knex: Knex;
+    /**
+     * @private
+     * A getter, not a number: the ceiling is an operator setting that can change
+     * between requests, and reading config belongs to the module that builds this,
+     * not here.
+     */
+    private getMaxDefinitions: () => number;
 
-    constructor({knex}: {knex: Knex}) {
+    constructor({knex, getMaxDefinitions}: {knex: Knex, getMaxDefinitions: () => number}) {
         this.knex = knex;
+        this.getMaxDefinitions = getMaxDefinitions;
     }
 
     /**
@@ -131,7 +145,22 @@ export class CustomFieldValuesService {
             throw new errors.ValidationError({message: 'Custom field values must be an object keyed by field key.', property: 'custom_fields'});
         }
 
-        const byKey = await this.activeFieldsByKey(Object.keys(parsed.data));
+        const keys = Object.keys(parsed.data);
+
+        // A write can't name more fields than the site is allowed to define, so the
+        // ceiling is the same operator setting that bounds definitions rather than a
+        // number invented here. It also keeps the resolving query's bound parameters
+        // in proportion: one per key, against a driver limit that an unbounded object
+        // would otherwise blow past as a 500 carrying the generated SQL.
+        const maxKeys = this.getMaxDefinitions();
+        if (keys.length > maxKeys) {
+            throw new errors.ValidationError({
+                message: `Custom field values are limited to ${maxKeys} fields per request.`,
+                property: 'custom_fields'
+            });
+        }
+
+        const byKey = await this.activeFieldsByKey(keys);
         const writes: PlannedWrite[] = [];
 
         for (const [key, raw] of Object.entries(parsed.data)) {
