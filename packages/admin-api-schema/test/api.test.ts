@@ -1,7 +1,11 @@
-const assert = require('assert/strict');
-const fs = require('fs');
-const path = require('path');
-const apiSchema = require('../index');
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {describe, it} from 'vitest';
+import * as apiSchema from '../src/index.js';
+
+const hasErrorType = (error: unknown, errorType: string): boolean => {
+    return typeof error === 'object' && error !== null && 'errorType' in error && error.errorType === errorType;
+};
 
 describe('Exposes a correct API', function () {
     it('Has all expected methods defined', function () {
@@ -13,24 +17,31 @@ describe('Exposes a correct API', function () {
     describe('get', function () {
         it('Returns schema definition by name', function () {
             const postsDefinition = apiSchema.get('posts-edit');
+            assert.ok(postsDefinition);
             assert.equal(postsDefinition.title, 'posts.edit');
             assert.equal(postsDefinition.properties.posts.items.allOf[0].$ref, 'posts#/definitions/post');
         });
 
         it('Returns null when schema definition does not exist', function () {
-            const nonExistantSchema = apiSchema.get('imaginary');
-            assert.equal(nonExistantSchema, null);
+            const nonexistentSchema = apiSchema.get('imaginary');
+            assert.equal(nonexistentSchema, null);
+        });
+
+        it('Returns null for inherited object properties', function () {
+            assert.equal(apiSchema.get('toString'), null);
         });
     });
 
     describe('list', function () {
-        it('Returns names of all available definitions for default version', async function () {
+        it('Returns names of all available definitions for default version', function () {
             const definitions = apiSchema.list();
-            const files = fs.readdirSync(path.resolve(__dirname, '../src/schemas'));
+            const files = fs.readdirSync(new URL('../src/schemas', import.meta.url));
             // We only export the "action" files rather than definition, e.g. posts-add.json, not posts.json
-            const exportedFiles = files.filter(file => /\w+-\w+.json/.test(file));
-            assert.equal(definitions.length, exportedFiles.length);
-            assert.equal(definitions.includes('posts-add'), true);
+            const exportedFiles = files
+                .filter(file => /\w+-\w+.json/.test(file))
+                .map(file => file.replace(/\.json$/, ''))
+                .sort();
+            assert.deepEqual([...definitions].sort(), exportedFiles);
         });
     });
 
@@ -54,7 +65,7 @@ describe('Exposes a correct API', function () {
 
             await assert.rejects(
                 () => apiSchema.validate({data, schema: 'posts-add', definition: 'posts'}),
-                err => err.errorType === 'ValidationError'
+                error => hasErrorType(error, 'ValidationError')
             );
         });
 
@@ -67,11 +78,11 @@ describe('Exposes a correct API', function () {
                 }]
             };
 
-            assert.equal(data.posts[0].something, 'else');
-            assert.equal(data.posts[0].author, 'Beccy');
+            assert.equal(data.posts[0]!.something, 'else');
+            assert.equal(data.posts[0]!.author, 'Beccy');
             await assert.doesNotReject(() => apiSchema.validate({data, schema: 'posts-add', definition: 'posts'}));
-            assert.equal(data.posts[0].something, undefined);
-            assert.equal(data.posts[0].author, undefined);
+            assert.equal(data.posts[0]!.something, undefined);
+            assert.equal(data.posts[0]!.author, undefined);
         });
 
         it('Incorrect use throws an error', async function () {
@@ -83,7 +94,14 @@ describe('Exposes a correct API', function () {
 
             assert.throws(
                 () => apiSchema.validate({data}),
-                err => err.errorType === 'IncorrectUsageError'
+                error => hasErrorType(error, 'IncorrectUsageError')
+            );
+        });
+
+        it('Throws when an explicit definition does not exist', function () {
+            assert.throws(
+                () => apiSchema.validate({data: {}, schema: 'posts-add', definition: 'imaginary'}),
+                error => hasErrorType(error, 'IncorrectUsageError')
             );
         });
 
@@ -108,8 +126,8 @@ describe('Exposes a correct API', function () {
 
             await assert.rejects(
                 () => apiSchema.validate({data, schema: 'posts-add', definition: 'posts'}),
-                (err) => {
-                    assert.equal(err.errorType, 'ValidationError');
+                (error) => {
+                    assert.equal(hasErrorType(error, 'ValidationError'), true);
                     return true;
                 }
             );
@@ -136,8 +154,8 @@ describe('Exposes a correct API', function () {
 
             await assert.rejects(
                 () => apiSchema.validate({data, schema: 'webhooks-add', definition: 'webhooks'}),
-                (err) => {
-                    assert.equal(err.errorType, 'ValidationError');
+                (error) => {
+                    assert.equal(hasErrorType(error, 'ValidationError'), true);
                     return true;
                 }
             );
@@ -159,9 +177,9 @@ describe('Exposes a correct API', function () {
 
             await assert.rejects(
                 () => apiSchema.validate({data, schema: 'posts-add', definition: 'posts'}),
-                (err) => {
-                    assert.equal(err.errorType, 'ValidationError');
-                    assert.equal(err.property, 'posts');
+                (error) => {
+                    assert.equal(hasErrorType(error, 'ValidationError'), true);
+                    assert.equal(typeof error === 'object' && error !== null && 'property' in error ? error.property : undefined, 'posts');
                     return true;
                 }
             );

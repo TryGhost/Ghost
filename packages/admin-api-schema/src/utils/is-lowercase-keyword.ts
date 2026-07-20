@@ -1,14 +1,13 @@
-module.exports = function defFunc(ajv) {
+import type {Ajv} from 'ajv';
+
+export function addIsLowercaseKeyword(ajv: Ajv): Ajv {
     ajv.addKeyword({
         keyword: 'isLowercase',
+        type: 'string',
+        schemaType: 'boolean',
         errors: false,
-        validate: function (schema, data) {
-            if (data) {
-                return data === data.toLowerCase();
-            }
-
-            return true;
-        }
+        validate: (_schema: boolean, data: string) => data === data.toLowerCase()
     });
+
     return ajv;
-};
+}
