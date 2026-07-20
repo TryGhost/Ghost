@@ -1,14 +1,14 @@
-const messages = {
+export const messages = {
     requestFailedError: 'The {service} service was unable to send a ping request, your site will continue to function.',
     requestFailedHelp: 'If you get this error repeatedly, please seek help on {url}.'
 };
 
-const INDEXNOW_LOG_KEY = '[indexnow]';
+export const INDEXNOW_LOG_KEY = '[indexnow]';
 
 // IndexNow endpoint - this routes to all participating search engines
-const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow';
+export const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow';
 
-const defaultPostSlugs = [
+export const defaultPostSlugs = [
     'welcome',
     'the-editor',
     'using-tags',
@@ -20,7 +20,7 @@ const defaultPostSlugs = [
 ];
 
 // Fields that affect how the post appears in search engine results
-const seoFields = [
+export const seoFields = [
     'html', // Post content
     'title', // Post title (appears in SERP)
     'slug', // URL path
@@ -30,10 +30,3 @@ const seoFields = [
     'status' // Published status change
 ];
 
-module.exports = {
-    messages,
-    INDEXNOW_LOG_KEY,
-    INDEXNOW_ENDPOINT,
-    defaultPostSlugs,
-    seoFields
-};

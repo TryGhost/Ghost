@@ -156,6 +156,9 @@ catalogs:
     '@tryghost/timezone-data':
       specifier: 1.0.0
       version: 1.0.0
+    '@tryghost/tpl':
+      specifier: 2.3.2
+      version: 2.3.2
     '@types/express':
       specifier: 4.17.25
       version: 4.17.25
@@ -2545,7 +2548,7 @@ importers:
         specifier: 'catalog:'
         version: 0.3.5
       '@tryghost/tpl':
-        specifier: 2.3.2
+        specifier: 'catalog:'
         version: 2.3.2
       '@tryghost/url-utils':
         specifier: 5.2.6

@@ -1,7 +1,9 @@
-const IndexNowPingService = require('./indexnow-ping-service');
+import {IndexNowPingService} from './indexnow-ping-service';
 
 class IndexNowPingServiceWrapper {
-    init() {
+    service?: IndexNowPingService;
+
+    init(): void {
         if (this.service) {
             // Already done
             return;
@@ -32,4 +34,4 @@ class IndexNowPingServiceWrapper {
     }
 }
 
-module.exports = new IndexNowPingServiceWrapper();
+export default new IndexNowPingServiceWrapper();
