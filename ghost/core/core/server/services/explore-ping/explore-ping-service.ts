@@ -1,23 +1,91 @@
-module.exports = class ExplorePingService {
-    /**
-     * @param {object} deps
-     * @param {{get: (string) => string}} deps.settingsCache
-     * @param {object} deps.config
-     * @param {object} deps.labs
-     * @param {object} deps.logging
-     * @param {object} deps.ghostVersion
-     * @param {object} deps.request
-     * @param {{stats: {
-     *   getMostRecentlyPublishedPostDate: () => Promise<Date>,
-     *   getFirstPublishedPostDate: () => Promise<Date>,
-     *   getTotalPostsPublished: () => Promise<number>
-     * }}} deps.posts
-     * @param {{stats: {
-     *   getTotalMembers: () => Promise<number>
-     * }}} deps.members
-     * @param {{api: {mrr: {getCurrentMrr: () => Promise<{currency: string, mrr: number}[]>}}}} deps.statsService
-     */
-    constructor({settingsCache, config, labs, logging, ghostVersion, request, posts, members, statsService}) {
+type SettingsCache = {
+    get(key: string): unknown;
+};
+
+type Config = {
+    get(key: string): unknown;
+};
+
+type Labs = {
+    isSet(flag: string): boolean;
+};
+
+type Logging = {
+    info(...args: unknown[]): void;
+    warn(...args: unknown[]): void;
+};
+
+type GhostVersion = {
+    full: string;
+};
+
+type RequestFn = (url: string, options: Record<string, unknown>) => Promise<{statusCode: number; statusMessage?: string}>;
+
+type PostsService = {
+    stats: {
+        getMostRecentlyPublishedPostDate(): Promise<Date | null>;
+        getFirstPublishedPostDate(): Promise<Date | null>;
+        getTotalPostsPublished(): Promise<number | null>;
+    };
+};
+
+type MembersService = {
+    stats: {
+        getTotalMembers(): Promise<number>;
+    };
+};
+
+type MrrByCurrency = {
+    currency: string;
+    mrr: number;
+};
+
+type StatsService = {
+    api?: {
+        mrr?: {
+            getCurrentMrr(): Promise<MrrByCurrency[]>;
+        };
+    };
+} | null;
+
+type ExplorePayload = {
+    ghost: string;
+    site_uuid: unknown;
+    url: unknown;
+    theme: unknown;
+    facebook: unknown;
+    twitter: unknown;
+    posts_total?: number | null;
+    posts_last?: string | null;
+    posts_first?: string | null;
+    members_total?: number | null;
+    mrr?: MrrByCurrency[] | null;
+};
+
+export type ExplorePingServiceDeps = {
+    settingsCache: SettingsCache;
+    config: Config;
+    labs: Labs;
+    logging: Logging;
+    ghostVersion: GhostVersion;
+    request: RequestFn;
+    posts: PostsService;
+    members: MembersService;
+    statsService: StatsService;
+};
+
+export class ExplorePingService {
+    settingsCache: SettingsCache;
+    config: Config;
+    labs: Labs;
+    logging: Logging;
+    ghostVersion: GhostVersion;
+    request: RequestFn;
+    posts: PostsService;
+    members: MembersService;
+    statsService: StatsService;
+
+    constructor({settingsCache, config, labs, logging, ghostVersion, request, posts, members, statsService}: ExplorePingServiceDeps) {
         this.settingsCache = settingsCache;
         this.config = config;
         this.labs = labs;
@@ -29,8 +97,8 @@ module.exports = class ExplorePingService {
         this.statsService = statsService;
     }
 
-    async constructPayload() {
-        const payload = {
+    async constructPayload(): Promise<ExplorePayload> {
+        const payload: ExplorePayload = {
             ghost: this.ghostVersion.full,
             site_uuid: this.settingsCache.get('site_uuid'),
             url: this.config.get('url'),
@@ -51,7 +119,7 @@ module.exports = class ExplorePingService {
             payload.posts_first = firstPublishedAt ? firstPublishedAt.toISOString() : null;
         } catch (err) {
             this.logging.warn('Failed to fetch post statistics', {
-                error: err.message,
+                error: (err as Error).message,
                 context: 'explore-ping-service'
             });
             payload.posts_total = null;
@@ -76,7 +144,7 @@ module.exports = class ExplorePingService {
                 }
             } catch (err) {
                 this.logging.warn('Failed to fetch member statistics', {
-                    error: err.message,
+                    error: (err as Error).message,
                     context: 'explore-ping-service'
                 });
                 payload.members_total = null;
@@ -87,7 +155,7 @@ module.exports = class ExplorePingService {
         return payload;
     }
 
-    async makeRequest(exploreUrl, payload) {
+    async makeRequest(exploreUrl: string, payload: ExplorePayload | Record<string, unknown>): Promise<{statusCode: number; statusMessage?: string} | undefined> {
         const json = JSON.stringify(payload);
         this.logging.info('Pinging Explore with Payload', exploreUrl, json);
 
@@ -104,16 +172,16 @@ module.exports = class ExplorePingService {
 
             return response;
         } catch (err) {
-            this.logging.warn('Explore Error', err.message);
+            this.logging.warn('Explore Error', (err as Error).message);
         }
     }
 
-    async ping() {
+    async ping(): Promise<void> {
         if (!this.labs.isSet('explore')) {
             return;
         }
 
-        const exploreUrl = this.config.get('explore:update_url');
+        const exploreUrl = this.config.get('explore:update_url') as string | undefined;
         if (!exploreUrl) {
             this.logging.warn('Explore URL not set');
             return;
@@ -127,4 +195,4 @@ module.exports = class ExplorePingService {
         const payload = await this.constructPayload();
         await this.makeRequest(exploreUrl, payload);
     }
-};
+}

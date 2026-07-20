@@ -1,4 +1,5 @@
-const ExplorePingService = require('./explore-ping-service');
+import {ExplorePingService} from './explore-ping-service';
+
 const config = require('../../../shared/config');
 const labs = require('../../../shared/labs');
 const logging = require('@tryghost/logging');
@@ -10,7 +11,7 @@ const members = require('../members');
 const statsService = require('../stats');
 
 // Export the creation function for testing
-module.exports.createService = function createService() {
+export function createService(): ExplorePingService {
     return new ExplorePingService({
         settingsCache,
         config,
@@ -22,9 +23,9 @@ module.exports.createService = function createService() {
         members,
         statsService
     });
-};
+}
 
-module.exports.init = async function init() {
+export async function init(): Promise<void> {
     // The explore ping is a background "phone home" request. It should not run
     // in the test environment (cf. the update-check service, which gates on the
     // same environments), where there is no explore URL configured.
@@ -32,10 +33,10 @@ module.exports.init = async function init() {
         return;
     }
 
-    const explorePingService = module.exports.createService();
+    const explorePingService = createService();
 
     // The final intention is to have this run on a schedule
     // For the initial version, we'll just ping when the server starts
     // Without waiting for the response
     explorePingService.ping();
-};
+}
