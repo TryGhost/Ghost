@@ -40,6 +40,19 @@ const AddFieldInput = z.object({
     type: FieldTypeSchema
 });
 
+// A bound on the work one request can ask for, separate from how many definitions
+// a site may hold in total. Every definition in a batch costs several queries
+// inside one open write transaction, so an operator raising the site ceiling must
+// not also mean a single request can ask for an unbounded amount of that work.
+const MAX_FIELDS_PER_REQUEST = 100;
+
+// Create accepts a batch. The framework guarantees a non-empty array by the time a
+// query runs, but the service validates the whole payload up front so a bad item
+// anywhere fails the request before anything is written.
+const AddFieldsInput = z.array(AddFieldInput)
+    .min(1)
+    .max(MAX_FIELDS_PER_REQUEST, {message: `Custom fields can only be created ${MAX_FIELDS_PER_REQUEST} at a time.`});
+
 // Name and status are mutable. `key` and `type` are accepted so the immutability
 // rules can reject a change loudly; they are never persisted.
 const EditFieldInput = z.object({
@@ -84,23 +97,56 @@ export class CustomFieldDefinitionsService {
         return z.decode(customFieldCodec, row);
     }
 
-    async add(context: RequestContext, input: unknown): Promise<CustomField> {
-        const parsed = AddFieldInput.safeParse(input);
+    /**
+     * Create one or more field definitions. All-or-nothing: the batch runs in a
+     * single transaction, so a name clash or the operational cap on the third item
+     * leaves the first two unwritten rather than half-applying the request.
+     *
+     * Running inside the transaction also makes a batch self-consistent for free —
+     * `assertNameAvailable` and `mintKey` see the rows inserted earlier in the same
+     * batch, so two items sharing a name are caught and two items sharing a slug
+     * get distinct keys, exactly as if they had arrived as separate requests.
+     */
+    async add(context: RequestContext, input: unknown): Promise<CustomField[]> {
+        const requestedCount = Array.isArray(input) ? input.length : 0;
+
+        const parsed = AddFieldsInput.safeParse(input);
         if (!parsed.success) {
-            throw new errors.ValidationError({message: parsed.error.issues[0].message, property: parsed.error.issues[0].path[0]?.toString()});
+            const issue = parsed.error.issues[0];
+            throw new errors.ValidationError({
+                message: issue.message,
+                property: propertyOf(issue.path),
+                context: batchContext(issue.path[0], requestedCount)
+            });
         }
+        const fields = parsed.data;
 
-        const base = slugify(parsed.data.name);
-        if (!base) {
-            throw new errors.ValidationError({message: 'Custom field name must contain at least one usable character.', property: 'name'});
-        }
+        // Slugify before opening the transaction: it needs no database access, and
+        // an unusable name is a payload problem worth reporting on its own terms.
+        const bases = fields.map((field, index) => {
+            const base = slugify(field.name);
+            if (!base) {
+                throw new errors.ValidationError({
+                    message: 'Custom field name must contain at least one usable character.',
+                    property: 'name',
+                    context: batchContext(index, requestedCount)
+                });
+            }
+            return base;
+        });
 
-        await this.assertNameAvailable(parsed.data.name);
-
-        const id = new ObjectID().toHexString();
-        const key = await this.mintKey(base);
+        let created: CustomField[];
         try {
-            await this.knex(TABLE).insert({id, key, name: parsed.data.name, type: parsed.data.type, created_at: new Date()});
+            created = await this.knex.transaction(async (trx) => {
+                const keys: string[] = [];
+                for (const [index, field] of fields.entries()) {
+                    await this.assertNameAvailable(trx, field.name);
+                    const key = await this.mintKey(trx, bases[index]);
+                    await trx(TABLE).insert({id: new ObjectID().toHexString(), key, name: field.name, type: field.type, created_at: new Date()});
+                    keys.push(key);
+                }
+                return this.readMany(trx, keys);
+            });
         } catch (err) {
             // mintKey already picked a free key, so a unique violation here only
             // means a concurrent create claimed the same key in between. The index
@@ -110,8 +156,21 @@ export class CustomFieldDefinitionsService {
             }
             throw err;
         }
-        await this.recordAction({context, verb: 'create', subject: key, details: {primary_name: parsed.data.name}});
-        return this.read(key);
+
+        // Logged after the commit: the action log is a separate Bookshelf write
+        // outside this transaction, so recording inside it would leave orphaned
+        // "added" entries for fields a rollback never created.
+        for (const field of created) {
+            await this.recordAction({context, verb: 'create', subject: field.key, details: {primary_name: field.name}});
+        }
+        return created;
+    }
+
+    /** Read back a batch in the order its keys were created, not the table's order. */
+    private async readMany(db: Knex, keys: string[]): Promise<CustomField[]> {
+        const rows = await db(TABLE).whereIn('key', keys).select('*');
+        const byKey = new Map(rows.map(row => [row.key, row]));
+        return keys.map(key => z.decode(customFieldCodec, byKey.get(key)!));
     }
 
     /**
@@ -119,10 +178,10 @@ export class CustomFieldDefinitionsService {
      * Reads the keys already taken by that base — including archived fields, so a
      * slug is never reused once minted. Mirrors how tags/labels generate slugs.
      */
-    private async mintKey(base: string): Promise<string> {
+    private async mintKey(db: Knex, base: string): Promise<string> {
         const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH);
         const taken = new Set(
-            await this.knex(TABLE).where('key', 'like', `${safeBase}%`).pluck('key')
+            await db(TABLE).where('key', 'like', `${safeBase}%`).pluck('key')
         );
         if (!taken.has(safeBase)) {
             return safeBase;
@@ -148,8 +207,8 @@ export class CustomFieldDefinitionsService {
      * allow it in the SQLite test/dev suites. `exceptKey` lets a field keep its
      * own name on an unrelated edit.
      */
-    private async assertNameAvailable(name: string, exceptKey?: string): Promise<void> {
-        const query = this.knex(TABLE).whereRaw('LOWER(name) = ?', [name.toLowerCase()]);
+    private async assertNameAvailable(db: Knex, name: string, exceptKey?: string): Promise<void> {
+        const query = db(TABLE).whereRaw('LOWER(name) = ?', [name.toLowerCase()]);
         if (exceptKey) {
             query.whereNot('key', exceptKey);
         }
@@ -181,7 +240,7 @@ export class CustomFieldDefinitionsService {
         // Only write (and log a rename) when the name actually changes, so
         // re-saving an unchanged field is a no-op rather than a spurious edit.
         if (patch.name !== undefined && patch.name !== existing.name) {
-            await this.assertNameAvailable(patch.name, key);
+            await this.assertNameAvailable(this.knex, patch.name, key);
             try {
                 await this.knex(TABLE)
                     .where('key', key)
@@ -226,6 +285,25 @@ export class CustomFieldDefinitionsService {
         await this.knex(TABLE).where('key', key).del();
         await this.recordAction({context, verb: 'delete', subject: key, details: {primary_name: field.name}});
     }
+}
+
+// The field a zod issue points at. Create validates an array, so an issue's path
+// is prefixed with the item's index (`[0, 'name']`); `property` names the field
+// that is wrong, so the numeric prefix is dropped. Which item it was is reported
+// separately by batchContext, keeping `property` the bare field name a client can
+// map straight onto its form input.
+function propertyOf(path: PropertyKey[]): string | undefined {
+    return path.find(segment => typeof segment === 'string');
+}
+
+// Which definition of a batch an error belongs to. Only set when the request
+// carried more than one: a lone definition needs no pointer, and every client
+// today sends exactly one, so this stays absent on the common path.
+function batchContext(index: PropertyKey | undefined, requestedCount: number): string | undefined {
+    if (requestedCount <= 1 || typeof index !== 'number') {
+        return undefined;
+    }
+    return `Custom field ${index + 1} of ${requestedCount}.`;
 }
 
 function isUniqueConstraintViolation(error: unknown): boolean {

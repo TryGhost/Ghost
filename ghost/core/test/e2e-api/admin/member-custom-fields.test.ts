@@ -141,7 +141,7 @@ describe('Member Custom Fields Admin API', function () {
 
         it('rejects a create with no root key', async function () {
             // The framework rejects an empty/malformed body before the query runs,
-            // which is the invariant the endpoint's `[0]` access relies on.
+            // so the service always receives a non-empty array to create from.
             await agent.post('members/custom_fields/').body({}).expectStatus(400);
         });
 
@@ -313,6 +313,134 @@ describe('Member Custom Fields Admin API', function () {
             // fresh field with the same name reclaims the original (unsuffixed) key.
             const fresh = await createField({name: 'Favourite topic'});
             assert.equal(fresh.key, 'favourite-topic');
+        });
+    });
+
+    describe('Creating several definitions at once', function () {
+        it('creates every definition in the request, in order', async function () {
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Company', type: 'short_text'},
+                    {name: 'Role', type: 'short_text'},
+                    {name: 'Bio', type: 'long_text'}
+                ]})
+                .expectStatus(201);
+
+            assert.deepEqual(
+                body.members_custom_fields.map((field: {key: string}) => field.key),
+                ['company', 'role', 'bio']
+            );
+            assert.equal(body.members_custom_fields[2].type, 'long_text');
+
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+            assert.equal(list.members_custom_fields.length, 3);
+        });
+
+        it('mints distinct keys when two definitions in the batch derive the same slug', async function () {
+            // Within a batch each insert is visible to the next, so slug collision
+            // resolves exactly as it would across two separate requests.
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Favourite topic', type: 'short_text'},
+                    {name: 'Favourite topic!', type: 'short_text'}
+                ]})
+                .expectStatus(201);
+
+            assert.deepEqual(
+                body.members_custom_fields.map((field: {key: string}) => field.key),
+                ['favourite-topic', 'favourite-topic-2']
+            );
+        });
+
+        it('writes nothing when any definition in the batch is invalid', async function () {
+            await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Company', type: 'short_text'},
+                    {name: 'Role', type: 'boolean'}
+                ]})
+                .expectStatus(422);
+
+            // The valid first item must not survive the rejected request.
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+            assert.deepEqual(list.members_custom_fields, []);
+        });
+
+        it('writes nothing when two definitions in the batch share a name', async function () {
+            await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Company', type: 'short_text'},
+                    {name: 'company', type: 'short_text'}
+                ]})
+                .expectStatus(422);
+
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+            assert.deepEqual(list.members_custom_fields, []);
+        });
+
+        it('names the offending field, and which one it was, when a batch item is invalid', async function () {
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Company', type: 'short_text'},
+                    {name: 'Role', type: 'short_text'},
+                    {name: 'Bio', type: 'boolean'}
+                ]})
+                .expectStatus(422);
+
+            // `property` stays the bare field name so a client can map it onto a
+            // form input; the item pointer rides alongside it in context, which is
+            // where the framework relocates the detail of a validation failure.
+            assert.equal(body.errors[0].property, 'type');
+            assert.match(body.errors[0].context, /Custom field 3 of 3\./);
+        });
+
+        it('does not point at an item when only one definition was sent', async function () {
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [{name: 'Bio', type: 'boolean'}]})
+                .expectStatus(422);
+
+            assert.equal(body.errors[0].property, 'type');
+            // context still carries the reason the item was rejected, just no
+            // pointer to which one. Asserted as a string first so that if the
+            // framework ever stops populating it this fails as an assertion
+            // rather than throwing inside doesNotMatch.
+            assert.equal(typeof body.errors[0].context, 'string');
+            assert.doesNotMatch(body.errors[0].context, /Custom field \d+ of \d+/);
+        });
+
+        it('rejects a batch larger than a single request may create', async function () {
+            const oversized = Array.from({length: 101}, (_unused, index) => ({
+                name: `Field ${index}`,
+                type: 'short_text'
+            }));
+
+            await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: oversized})
+                .expectStatus(422);
+
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+            assert.deepEqual(list.members_custom_fields, []);
+        });
+
+        it('writes nothing when a definition in the batch clashes with an existing one', async function () {
+            await createField({name: 'Company'});
+
+            await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Role', type: 'short_text'},
+                    {name: 'Company', type: 'short_text'}
+                ]})
+                .expectStatus(422);
+
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body.members_custom_fields;
+            assert.deepEqual(list.map((field: {key: string}) => field.key), ['company']);
         });
     });
 
