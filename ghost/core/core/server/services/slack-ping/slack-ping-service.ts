@@ -38,8 +38,10 @@ type PostModel = {
 type ModelEventListener = (model: PostModel, options?: {importing?: boolean}) => void;
 
 type ModelEvents = {
-    removeListener(event: string, listener: (...args: never[]) => void): ModelEvents;
-    on(event: string, listener: (...args: never[]) => void): ModelEvents;
+    removeListener(event: 'post.published', listener: ModelEventListener): ModelEvents;
+    removeListener(event: 'slack.test', listener: () => void): ModelEvents;
+    on(event: 'post.published', listener: ModelEventListener): ModelEvents;
+    on(event: 'slack.test', listener: () => void): ModelEvents;
 };
 
 type SlackAuthor = {
