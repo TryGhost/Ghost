@@ -1,7 +1,9 @@
 import fs from 'fs-extra';
 import path from 'path';
 import {
+    CopyObjectCommand,
     GetObjectCommand,
+    HeadObjectCommand,
     NoSuchKey,
     NotFound,
     PutObjectCommand,
@@ -15,6 +17,7 @@ import {RouteSettingsStoreBase, type RouteSettings} from '@tryghost/adapter-base
 
 import parseYaml from '../../services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../services/route-settings/route-settings-parser';
+import {getBackupRouteSettingsFilePath} from './utils';
 
 const YAML_FILENAME = 'routes.yaml';
 const DEFAULT_SETTINGS_FILENAME = 'default-routes.yaml';
@@ -155,9 +158,19 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
     }
 
     async replace(settings: RouteSettings): Promise<void> {
+        const key = this.buildKey();
+
+        if (await this._canonicalExists()) {
+            await this.client.send(new CopyObjectCommand({
+                Bucket: this.bucket,
+                Key: getBackupRouteSettingsFilePath(key),
+                CopySource: `${this.bucket}/${key}`
+            }));
+        }
+
         await this.client.send(new PutObjectCommand({
             Bucket: this.bucket,
-            Key: this.buildKey(),
+            Key: key,
             Body: settings.yamlSource,
             ContentType: CONTENT_TYPE
         }));
@@ -166,6 +179,21 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
     private buildKey(): string {
         const parts = [this.tenantPrefix, this.staticFileURLPrefix, YAML_FILENAME].filter(Boolean);
         return parts.join('/');
+    }
+
+    private async _canonicalExists(): Promise<boolean> {
+        try {
+            await this.client.send(new HeadObjectCommand({
+                Bucket: this.bucket,
+                Key: this.buildKey()
+            }));
+            return true;
+        } catch (err) {
+            if (this._isNotFound(err)) {
+                return false;
+            }
+            throw err;
+        }
     }
 
     private async readDefaultSettings(): Promise<string> {

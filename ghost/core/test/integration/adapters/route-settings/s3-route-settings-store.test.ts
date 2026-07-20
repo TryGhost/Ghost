@@ -53,6 +53,14 @@ const listObjectKeys = async (s3Client: S3Client, bucketName: string): Promise<s
     return (response.Contents ?? []).map(o => o.Key ?? '').filter(Boolean);
 };
 
+const backupKeyPattern = (tenantPrefix = ''): RegExp => new RegExp(
+    `^${tenantPrefix ? `${tenantPrefix}/` : ''}${STATIC_PREFIX}/routes-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}\\.yaml$`
+);
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
+    setTimeout(resolve, ms);
+});
+
 // Skip when MinIO is unreachable. The flag is set by the integration
 // globalSetup (vitest-globalsetup-services.ts), which probes MinIO once before
 // the forks spawn.
@@ -184,6 +192,60 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: S3
                 (await listObjectKeys(adminClient, bucket)).sort(),
                 [canonicalKey('tenant-a'), canonicalKey('tenant-b')]
             );
+        });
+    });
+
+    describe('replace: timestamped backups', function () {
+        it('writes the canonical key without a backup when the bucket is empty', async function () {
+            await createStore().replace(fromYaml(SAMPLE_YAML));
+
+            assert.deepEqual(await listObjectKeys(adminClient, bucket), [canonicalKey()]);
+        });
+
+        it('backs up the prior contents verbatim before overwriting', async function () {
+            const store = createStore();
+
+            await store.replace(fromYaml(SAMPLE_YAML));
+            await store.replace(fromYaml('routes:\n  /new/: new\n'));
+
+            const keys = await listObjectKeys(adminClient, bucket);
+            const backupKey = keys.find(k => backupKeyPattern().test(k));
+            assert.ok(backupKey, `expected a timestamped backup key, got: ${keys.join(', ')}`);
+
+            const backupBody = await getObject(adminClient, bucket, backupKey!);
+            assert.equal(backupBody?.toString('utf-8'), SAMPLE_YAML);
+            assert.equal((await store.get()).yamlSource, 'routes:\n  /new/: new\n');
+        });
+
+        it('creates a new backup on every overwrite', {timeout: 15000}, async function () {
+            // The backup key generator uses a per-second timestamp, so real waits
+            // between writes are needed to guarantee distinct backup keys.
+            const store = createStore();
+
+            await store.replace(fromYaml('routes:\n  /a/: a\n'));
+            await sleep(1100);
+            await store.replace(fromYaml('routes:\n  /b/: b\n'));
+            await sleep(1100);
+            await store.replace(fromYaml('routes:\n  /c/: c\n'));
+
+            const keys = await listObjectKeys(adminClient, bucket);
+            const backupKeys = keys.filter(k => backupKeyPattern().test(k));
+            assert.equal(backupKeys.length, 2, `expected 2 timestamped backups, got: ${keys.join(', ')}`);
+            assert.ok(keys.includes(canonicalKey()), `expected canonical ${canonicalKey()}, got: ${keys.join(', ')}`);
+        });
+
+        it('writes backups under the tenant prefix on overwrite', async function () {
+            const store = createStore({tenantPrefix: 'tenant-abc'});
+
+            await store.replace(fromYaml(SAMPLE_YAML));
+            await store.replace(fromYaml('routes:\n  /new/: new\n'));
+
+            const keys = await listObjectKeys(adminClient, bucket);
+            const backupKey = keys.find(k => backupKeyPattern('tenant-abc').test(k));
+            assert.ok(backupKey, `expected a tenant-scoped backup key, got: ${keys.join(', ')}`);
+
+            const backupBody = await getObject(adminClient, bucket, backupKey!);
+            assert.equal(backupBody?.toString('utf-8'), SAMPLE_YAML);
         });
     });
 });
