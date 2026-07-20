@@ -16,15 +16,20 @@ const settingsCache = require('../../../shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const jobsService = require('../mentions-jobs');
 
-async function getPostUrl(post) {
-    // the lazy URL service needs the post's relations to evaluate collection
-    // filters; event-emitted models don't reliably carry them
+// Serializes a post model to the data the URL service needs, loading the
+// relations it reads for filtered collections (event-emitted models don't
+// reliably carry them).
+async function getPostData(post) {
     const missing = urlService.facade.getRequiredRelations().filter(relation => !post.relations[relation]);
     if (missing.length) {
         await post.load(missing);
     }
-    const jsonModel = post.toJSON();
-    outputSerializerUrlUtil.forPost(post.id, jsonModel, {options: {}});
+    return post.toJSON();
+}
+
+function getPostUrl(id, postData) {
+    const jsonModel = {...postData};
+    outputSerializerUrlUtil.forPost(id, jsonModel, {options: {}});
     return jsonModel.url;
 }
 
@@ -105,7 +110,8 @@ module.exports = {
             discoveryService,
             externalRequest,
             getSiteUrl: () => urlUtils.urlFor('home', true),
-            getPostUrl: post => getPostUrl(post),
+            getPostData: post => getPostData(post),
+            getPostUrl: (id, data) => getPostUrl(id, data),
             isEnabled: () => !settingsCache.get('is_private'),
             jobService: {
                 async addJob(name, fn) {
@@ -124,4 +130,5 @@ module.exports = {
 };
 
 // exposed for testing
+module.exports.getPostData = getPostData;
 module.exports.getPostUrl = getPostUrl;
