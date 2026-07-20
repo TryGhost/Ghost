@@ -5,6 +5,7 @@ import path from 'node:path';
 import sinon from 'sinon';
 import {Provider} from 'nconf';
 import {AdapterManager, type AdapterManagerOptions} from '../../../../../core/server/services/adapter-manager/adapter-manager';
+import {resolveAdapterEntryPoint} from '../../../../../core/server/services/adapter-manager/utils';
 import {bindAll as bindUrlHelpers} from '@tryghost/config-url-helpers';
 import {bindAll as bindHelpers} from '../../../../../core/shared/config/helpers';
 import type {ConfigInstance} from '../../../../../core/shared/config/loader';
@@ -381,6 +382,259 @@ describe('AdapterManager', function () {
                 assert.match(err.message, /storage/);
                 assert.equal((err.errorDetails as unknown[]).length, 2);
                 return true;
+            });
+        });
+    });
+
+    describe('module-style adapter packages', function () {
+        let tmpDir: string;
+
+        beforeEach(function () {
+            tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-adapter-pkg-'));
+        });
+
+        afterEach(function () {
+            fs.rmSync(tmpDir, {recursive: true, force: true});
+        });
+
+        // A self-contained adapter mirroring how a real one extends its base
+        // class: it carries its own copy, and the manager accepts it because the
+        // parent class name matches the registered base class.
+        function adapterSource({esm, className = 'PackagedMailAdapter'}: {esm: boolean; className?: string}) {
+            const body = `class BaseMailAdapter {
+    constructor() {
+        this.requiredFns = ['someMethod'];
+    }
+}
+
+class ${className} extends BaseMailAdapter {
+    someMethod() {}
+}
+`;
+
+            return esm
+                ? `${body}\nexport default ${className};\n`
+                : `${body}\nmodule.exports = ${className};\n`;
+        }
+
+        /**
+         * Write an adapter package to `<tmpDir>/mail/<name>`, with `manifest`
+         * merged into its package.json and the adapter itself at `entry`.
+         */
+        function writeAdapterPackage(name: string, manifest: object, entry: string = 'dist/index.js') {
+            const pkgDir = path.join(tmpDir, 'mail', name);
+            const entryPath = path.join(pkgDir, entry);
+            const esm = (manifest as {type?: string}).type === 'module';
+
+            fs.mkdirSync(path.dirname(entryPath), {recursive: true});
+            fs.writeFileSync(entryPath, adapterSource({esm}));
+            fs.writeFileSync(
+                path.join(pkgDir, 'package.json'),
+                JSON.stringify({name, version: '1.0.0', ...manifest})
+            );
+
+            return pkgDir;
+        }
+
+        function getPackagedAdapter(activeName: string) {
+            const adapterManager = new AdapterManager({
+                loadAdapterFromPath: require,
+                pathsToAdapters: [tmpDir],
+                config: makeConfig({mail: {active: activeName}}),
+                baseClasses: {mail: BaseMailAdapter}
+            });
+
+            return adapterManager.getAdapter('mail');
+        }
+
+        it('loads a package that declares only exports', function () {
+            writeAdapterPackage('exports-adapter', {exports: {'.': './dist/index.js'}});
+
+            const adapter = getPackagedAdapter('exports-adapter');
+
+            assert.equal(adapter.constructor.name, 'PackagedMailAdapter');
+            assert.deepEqual(adapter.requiredFns, ['someMethod']);
+        });
+
+        it('loads an ESM package via exports', function () {
+            writeAdapterPackage('esm-adapter', {
+                type: 'module',
+                exports: {'.': './dist/index.js'}
+            });
+
+            const adapter = getPackagedAdapter('esm-adapter');
+
+            assert.equal(adapter.constructor.name, 'PackagedMailAdapter');
+            assert.deepEqual(adapter.requiredFns, ['someMethod']);
+        });
+
+        it('loads a package using the exports string shorthand', function () {
+            writeAdapterPackage('shorthand-adapter', {
+                type: 'module',
+                exports: './dist/index.js'
+            });
+
+            assert.equal(getPackagedAdapter('shorthand-adapter').constructor.name, 'PackagedMailAdapter');
+        });
+
+        it('resolves nested export conditions', function () {
+            writeAdapterPackage('nested-adapter', {
+                exports: {'.': {node: {default: './dist/index.js'}}}
+            });
+
+            assert.equal(getPackagedAdapter('nested-adapter').constructor.name, 'PackagedMailAdapter');
+        });
+
+        it('resolves a subpath-free conditions object', function () {
+            writeAdapterPackage('sugar-adapter', {
+                exports: {require: './dist/index.js', default: './dist/index.js'}
+            });
+
+            assert.equal(getPackagedAdapter('sugar-adapter').constructor.name, 'PackagedMailAdapter');
+        });
+
+        it('prefers the require condition over import for a dual package', function () {
+            // The import target does not exist, so loading only succeeds if the
+            // require condition was the one selected.
+            writeAdapterPackage('dual-adapter', {
+                exports: {'.': {require: './dist/index.js', import: './dist/missing.js'}}
+            });
+
+            assert.equal(getPackagedAdapter('dual-adapter').constructor.name, 'PackagedMailAdapter');
+        });
+
+        it('does not resolve a package whose root export is conditioned only on import', function () {
+            // @NOTE: documents a known limitation — `require` never matches the
+            // `import` condition, so such a package is unreachable. See
+            // resolveAdapterEntryPoint.
+            writeAdapterPackage('import-only-adapter', {
+                type: 'module',
+                exports: {'.': {import: './dist/index.js'}}
+            });
+
+            assert.throws(() => getPackagedAdapter('import-only-adapter'), {
+                errorType: 'IncorrectUsageError',
+                message: /Unable to find mail adapter import-only-adapter/
+            });
+        });
+
+        it('still loads a package that declares only main', function () {
+            writeAdapterPackage('main-adapter', {type: 'module', main: './dist/index.js'});
+
+            assert.equal(getPackagedAdapter('main-adapter').constructor.name, 'PackagedMailAdapter');
+        });
+
+        it('does not load a same-named package from node_modules up the tree', function () {
+            // Self-referencing needs `exports`; a main-only package instead falls
+            // through to a node_modules walk, which must not be allowed to
+            // resolve an impostor sitting above the adapter directory.
+            const impostorDir = path.join(tmpDir, 'node_modules', 'shadowed-adapter');
+            fs.mkdirSync(impostorDir, {recursive: true});
+            fs.writeFileSync(
+                path.join(impostorDir, 'package.json'),
+                JSON.stringify({name: 'shadowed-adapter', version: '1.0.0', main: './index.js'})
+            );
+            fs.writeFileSync(
+                path.join(impostorDir, 'index.js'),
+                adapterSource({esm: false, className: 'ImpostorMailAdapter'})
+            );
+
+            writeAdapterPackage('shadowed-adapter', {main: './dist/index.js'});
+
+            // The adapter in the adapter directory wins, not the node_modules one.
+            assert.equal(getPackagedAdapter('shadowed-adapter').constructor.name, 'PackagedMailAdapter');
+        });
+
+        it('still loads a plain directory with an index.js and no package.json', function () {
+            const pkgDir = path.join(tmpDir, 'mail', 'plain-adapter');
+            fs.mkdirSync(pkgDir, {recursive: true});
+            fs.writeFileSync(path.join(pkgDir, 'index.js'), adapterSource({esm: false}));
+
+            assert.equal(getPackagedAdapter('plain-adapter').constructor.name, 'PackagedMailAdapter');
+        });
+
+        it('falls back to directory resolution when the manifest has no name', function () {
+            const pkgDir = writeAdapterPackage('unnamed-adapter', {exports: {'.': './dist/index.js'}});
+            // Self-referencing needs a name, so this must fall through to `main`.
+            fs.writeFileSync(
+                path.join(pkgDir, 'package.json'),
+                JSON.stringify({version: '1.0.0', main: './dist/index.js'})
+            );
+
+            assert.equal(getPackagedAdapter('unnamed-adapter').constructor.name, 'PackagedMailAdapter');
+        });
+
+        it('surfaces an error when the manifest is malformed', function () {
+            const pkgDir = writeAdapterPackage('broken-manifest-adapter', {main: './dist/index.js'});
+            fs.writeFileSync(path.join(pkgDir, 'package.json'), '{not valid json');
+            fs.writeFileSync(path.join(pkgDir, 'index.js'), adapterSource({esm: false}));
+
+            // resolveAdapterEntryPoint leaves the path alone, but Node's own
+            // directory resolution then rejects the manifest outright
+            // (ERR_INVALID_PACKAGE_CONFIG) rather than falling back to index.js,
+            // so the operator gets a real error instead of a silent miss.
+            assert.throws(() => getPackagedAdapter('broken-manifest-adapter'), {
+                errorType: 'IncorrectUsageError'
+            });
+        });
+
+        describe('resolveAdapterEntryPoint', function () {
+            it('returns non-absolute paths untouched', function () {
+                // The node_modules lane passes a bare specifier, which Node
+                // already resolves against `exports` itself.
+                assert.equal(resolveAdapterEntryPoint('some-node-module-adapter'), 'some-node-module-adapter');
+                assert.equal(resolveAdapterEntryPoint('relative/path/mail/custom'), 'relative/path/mail/custom');
+            });
+
+            it('returns a directory without a package.json untouched', function () {
+                const pkgDir = path.join(tmpDir, 'mail', 'no-manifest');
+                fs.mkdirSync(pkgDir, {recursive: true});
+
+                assert.equal(resolveAdapterEntryPoint(pkgDir), pkgDir);
+            });
+
+            it('returns the path untouched when the manifest is malformed', function () {
+                const pkgDir = writeAdapterPackage('bad-manifest', {exports: {'.': './dist/index.js'}});
+                fs.writeFileSync(path.join(pkgDir, 'package.json'), '{not valid json');
+
+                assert.equal(resolveAdapterEntryPoint(pkgDir), pkgDir);
+            });
+
+            it('resolves an entry point whose name begins with dots', function () {
+                // Contained, despite looking like traversal at a glance.
+                const pkgDir = writeAdapterPackage(
+                    'dotted-entry',
+                    {exports: {'.': './..hidden.js'}},
+                    '..hidden.js'
+                );
+
+                assert.equal(
+                    fs.realpathSync(resolveAdapterEntryPoint(pkgDir)),
+                    fs.realpathSync(path.join(pkgDir, '..hidden.js'))
+                );
+            });
+
+            it('rejects an entry point that escapes the adapter directory', function () {
+                const pkgDir = path.join(tmpDir, 'mail', 'escaping-adapter');
+                fs.mkdirSync(pkgDir, {recursive: true});
+                fs.writeFileSync(path.join(tmpDir, 'mail', 'outside.js'), adapterSource({esm: false}));
+                fs.writeFileSync(
+                    path.join(pkgDir, 'package.json'),
+                    JSON.stringify({name: 'escaping-adapter', exports: {'.': '../outside.js'}})
+                );
+
+                assert.equal(resolveAdapterEntryPoint(pkgDir), pkgDir);
+            });
+
+            it('resolves the exports entry point to a concrete file', function () {
+                const pkgDir = writeAdapterPackage('resolve-me', {exports: {'.': './dist/index.js'}});
+
+                // Compare realpaths: Node's resolution resolves symlinks, and on
+                // macOS the temp dir is itself a symlink (/var -> /private/var).
+                assert.equal(
+                    fs.realpathSync(resolveAdapterEntryPoint(pkgDir)),
+                    fs.realpathSync(path.join(pkgDir, 'dist', 'index.js'))
+                );
             });
         });
     });
