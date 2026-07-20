@@ -72,6 +72,10 @@ export class MemberDetailsPage extends AdminPage {
 
     readonly screenTitle: Locator;
     readonly logoutConfirmModal: Locator;
+
+    // Custom fields (React screen only, behind the membersCustomFields flag).
+    readonly customFieldsCard: Locator;
+    readonly customFieldModal: Locator;
     readonly newsletterSubscriptionCheckboxes: Locator;
     readonly engagementSection: Locator;
     readonly subscriptionActionsButton: Locator;
@@ -144,6 +148,27 @@ export class MemberDetailsPage extends AdminPage {
         this.emberCompTierOptions = page.locator('[data-test-tier-option]');
         this.reactCompTierOptions = page.locator('[data-tier-id]');
         this.emberSaveCompTierButton = page.locator('[data-test-button="save-comp-tier"]');
+
+        this.customFieldsCard = page.getByTestId('member-custom-fields-field');
+        this.customFieldModal = page.getByTestId('member-custom-field-edit-modal');
+    }
+
+    // The row's accessible name is "Edit {field}" (plus ": {value}" once set), so
+    // a non-exact match finds the row whether or not it holds a value yet.
+    customFieldEditButton(fieldName: string): Locator {
+        return this.customFieldsCard.getByRole('button', {name: `Edit ${fieldName}`});
+    }
+
+    /**
+     * Set a scalar (text) custom field's value through its own editor. Each
+     * field saves on its own Save, outside the page draft; the modal closes on
+     * success.
+     */
+    async setCustomFieldValue(fieldName: string, value: string): Promise<void> {
+        await this.customFieldEditButton(fieldName).click();
+        await this.customFieldModal.getByLabel(fieldName).fill(value);
+        await this.customFieldModal.getByRole('button', {name: 'Save', exact: true}).click();
+        await this.customFieldModal.waitFor({state: 'detached'});
     }
 
     /**

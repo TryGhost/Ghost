@@ -243,7 +243,7 @@ jobs:
           # itself per-app — instead we emit the matrix here and it skips when
           # the result is `[]`. The publish job's own is_main / event gates keep
           # tags and PRs from publishing regardless of what this lists.
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.cjs "$AFFECTED_PROJECTS")
+          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$AFFECTED_PROJECTS")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
     outputs:
@@ -290,11 +290,24 @@ jobs:
       - name: Fetch main branch
         run: git fetch --no-tags origin main
 
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      # The script's only runtime dep is semver, so install @internal/scripts
+      # alone rather than the whole workspace — ~0.5s and a single package.
+      - name: Install scripts dependencies
+        run: pnpm install --frozen-lockfile --filter @internal/scripts --prod --ignore-scripts
+
       - name: Check app version bump
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/check-app-version-bump.cjs
+        run: node scripts/check-app-version-bump.js
 
   job_migration_integrity_check:
     name: Check migration integrity
@@ -2127,7 +2140,7 @@ jobs:
         run: |
           PREV_TAG="${{ steps.prev_tag.outputs.tag }}"
           if [ -n "$PREV_TAG" ]; then
-            node scripts/lib/release-notes.cjs "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
+            node scripts/lib/release-notes.js "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
           else
             echo "This release contains fixes for minor bugs and issues reported by Ghost users." > /tmp/release-notes.md
           fi

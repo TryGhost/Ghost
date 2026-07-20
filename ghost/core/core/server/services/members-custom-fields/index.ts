@@ -1,6 +1,7 @@
 import {CustomFieldDefinitionsService} from './definitions-service';
 import {CustomFieldValuesService} from './values-service';
 import {recordCustomFieldAction, type RecordCustomFieldAction} from './actions';
+import {resolveMaxDefinitions} from './config';
 
 export type {CustomField} from './models';
 export type {RequestContext} from './actions';
@@ -29,8 +30,23 @@ export function init(): void {
     const recordAction: RecordCustomFieldAction = ({context, verb, subject, details}) =>
         recordCustomFieldAction({Action: models.Action, context, verb, subject, details});
 
-    definitions = new CustomFieldDefinitionsService({knex, recordAction});
+    // Resolved here, not in the service: reading config is this module's job, and
+    // the service is handed a number. A getter rather than a value because the
+    // ceiling is an operator setting that can change between requests, and a Ghost
+    // container holds no state across them.
+    const config = require('../../../shared/config');
+
+    definitions = new CustomFieldDefinitionsService({
+        knex,
+        recordAction,
+        getMaxDefinitions: () => resolveMaxDefinitions(config.get('members:customFields:maxDefinitions'))
+    });
     // The values service reads the field definitions straight from the table, so
-    // it needs only knex — no handle on the definitions service.
-    values = new CustomFieldValuesService({knex});
+    // it needs knex and the same ceiling — no handle on the definitions service.
+    // A write can't name more keys than the site is allowed definitions, so the
+    // two share one number rather than the value path inventing its own.
+    values = new CustomFieldValuesService({
+        knex,
+        getMaxDefinitions: () => resolveMaxDefinitions(config.get('members:customFields:maxDefinitions'))
+    });
 }

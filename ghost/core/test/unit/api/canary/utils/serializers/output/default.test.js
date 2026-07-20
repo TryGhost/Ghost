@@ -15,6 +15,18 @@ describe('Unit: endpoints/utils/serializers/output/default', function () {
         sinon.restore();
     });
 
+    it('.destroy() responds without mapping the destroyed model', function () {
+        sinon.stub(mappers, 'tags').returns({});
+        const frame = {options: {context: {}}};
+        const destroyedModel = {toJSON: toJSONStub};
+
+        serializers.output.default.destroy(destroyedModel, {docName: 'tags', method: 'destroy'}, frame);
+
+        assert.deepEqual(frame.response, {tags: []});
+        sinon.assert.notCalled(mappers.tags);
+        sinon.assert.notCalled(toJSONStub);
+    });
+
     it('.all() can map a pojo with one object', function () {
         const response = {
             title: 'foo'

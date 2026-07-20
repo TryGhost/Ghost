@@ -1,8 +1,7 @@
 {
   "name": "@tryghost/adapter-base-sso",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The adapter-base-sso package for Ghost.",
-  "private": true,
   "type": "module",
   "repository": {
     "type": "git",

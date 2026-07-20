@@ -5,6 +5,15 @@ const {createCSVTransform} = require('./posts-csv-transform');
 const {createCSVStreamResponse} = require('./stream-csv-response');
 
 module.exports = {
+    // 204 No Content — bookshelf clears the destroyed model's attributes
+    // (only relations remain), so there is nothing serializable left and
+    // computing its URL would hand the URL service a relations-only resource.
+    destroy(models, apiConfig, frame) {
+        debug('destroy');
+
+        frame.response = {posts: []};
+    },
+
     async all(models, apiConfig, frame) {
         debug('all');
 

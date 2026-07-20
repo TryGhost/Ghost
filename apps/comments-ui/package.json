@@ -29,7 +29,7 @@
         "lint:code": "eslint src --cache",
         "lint:types": "pnpm test:types",
         "preship": "pnpm lint",
-        "ship": "node ../../scripts/release-apps.cjs",
+        "ship": "node ../../scripts/release-apps.js",
         "prepublishOnly": "pnpm build"
     },
     "browserslist": {

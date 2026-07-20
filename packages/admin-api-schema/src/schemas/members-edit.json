@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "members.edit",
+  "title": "members.edit",
+  "description": "Schema for members.edit",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "members": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 191,
+            "pattern": "^([^,]|$)"
+          },
+          "email": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 191,
+            "pattern": "^([^,]|$)"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 2000
+          },
+          "subscribed": {
+            "type": "boolean"
+          },
+          "subscriptions": {
+            "type": "array"
+          },
+          "comped": {
+            "type": "boolean"
+          },
+          "products": {
+            "$ref": "members#/definitions/member-products"
+          },
+          "tiers": {
+            "$ref": "members#/definitions/member-products"
+          },
+          "newsletters": {
+            "$ref": "members#/definitions/member-newsletters"
+          },
+          "labels": {
+            "$ref": "members#/definitions/member-labels"
+          },
+          "can_comment": {
+            "type": "boolean"
+          },
+          "custom_fields": {
+            "description": "Declared so it is not stripped as an unknown property. Deliberately unconstrained: only the site's field-type catalog knows what a given key accepts, so the shape is validated there rather than split across two layers that could disagree."
+          },
+          "comment_ban": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "reason": { "type": "string", "minLength": 1, "maxLength": 2000 },
+                  "expires_at": { "type": ["string", "null"], "format": "date-time" }
+                },
+                "required": ["reason"]
+              },
+              { "type": "null" }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "required": ["members"]
+}

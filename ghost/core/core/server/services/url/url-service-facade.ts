@@ -139,8 +139,11 @@ export class UrlServiceFacade {
         const url = this.urlService.getUrlByResourceId(resource.id, options);
         if (this.isComparing() && !options?.skipComparison) {
             const context = this._compareContext(resource);
+            // Snapshot: callers mutate the resource's nested objects in place
+            // after this returns, but the comparison runs later via setImmediate.
+            const snapshot = _.cloneDeep(resource);
             setImmediate(() => this._compare('getUrlForResource', url,
-                () => this.lazyUrlService!.getUrlForResource(resource, options),
+                () => this.lazyUrlService!.getUrlForResource(snapshot, options),
                 context));
         }
         return url;
@@ -218,8 +221,10 @@ export class UrlServiceFacade {
         const owns = this.urlService.owns(routerIdentifier, resource.id);
         if (this.isComparing()) {
             const context = this._compareContext(resource, {routerIdentifier});
+            // Snapshot, as in getUrlForResource.
+            const snapshot = _.cloneDeep(resource);
             setImmediate(() => this._compare('ownsResource', owns,
-                () => this.lazyUrlService!.ownsResource(routerIdentifier, resource),
+                () => this.lazyUrlService!.ownsResource(routerIdentifier, snapshot),
                 context));
         }
         return owns;
@@ -262,7 +267,9 @@ export class UrlServiceFacade {
         if (this.isComparing()) {
             // Fire-and-forget: don't await lazy so the reverse lookup adds no
             // latency for its callers; the lazy DB read runs in the background.
-            void this._compareAsync('resolveUrl', eagerResult,
+            // Snapshot the eager result, as in getUrlForResource.
+            const eagerSnapshot = _.cloneDeep(eagerResult);
+            void this._compareAsync('resolveUrl', eagerSnapshot,
                 () => this.lazyUrlService!.resolveUrl(urlPath),
                 {path: urlPath},
                 (a, b) => _.isEqual(a, b));

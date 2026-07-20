@@ -2,8 +2,8 @@ import GhostStorageBase from 'ghost-storage-base';
 import {SchedulingBase} from '@tryghost/adapter-base-scheduling';
 import {SSOBase} from '@tryghost/adapter-base-sso';
 import BaseCache from '@tryghost/adapter-base-cache';
-import { RedirectsStoreBase } from '@tryghost/adapter-base-redirects';
-import { RouteSettingsStoreBase } from '@tryghost/adapter-base-route-settings';
+import {RedirectsStoreBase} from '@tryghost/adapter-base-redirects';
+import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
 
 import {AdapterManager} from './adapter-manager';
 import config from '../../../shared/config';
@@ -29,9 +29,4 @@ const adapterManager = new AdapterManager({
     }
 });
 
-// NOTE: exported via `module.exports` (rather than ESM named exports) so that
-// consumers keep `require(...).getAdapter` access AND tests can stub methods
-// with sinon — ESM named exports compile to immutable bindings that sinon
-// cannot stub. Using `module.exports` directly (not `export =`) keeps this
-// compatible with the erasableSyntaxOnly compiler option.
-module.exports = adapterManager;
+export default adapterManager;

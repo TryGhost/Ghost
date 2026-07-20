@@ -20,7 +20,11 @@ async function selectDefaultRecipients(name: string) {
 }
 
 describe("Default recipient settings", () => {
-    it("saves the standard recipient choices", async () => {
+    it.each([
+        {choice: "All members", filter: "status:free,status:-free"},
+        {choice: "Usually nobody", filter: null},
+        {choice: "Paid-members only", filter: "status:-free"},
+    ])("saves the standard recipient choice: $choice", async ({choice, filter}) => {
         fakeSettingsScreens();
         const settingsApi = fakeEditSettings();
         await renderAdminApp("/settings/newsletters");
@@ -28,30 +32,15 @@ describe("Default recipient settings", () => {
         const section = settingsScreen.defaultRecipients();
         await expect.element(section.getByText("Whoever has access to the post", {exact: true})).toBeVisible();
 
-        await selectDefaultRecipients("All members");
+        await selectDefaultRecipients(choice);
+        await expect.element(settingsScreen.defaultRecipientsSelect()).toHaveTextContent(choice);
         await section.getByRole("button", {name: "Save"}).click();
-        await expect.element(section.getByRole("button", {name: "Saved"})).toBeVisible();
-        await expect(settingsApi).toHaveEditedSettings([
-            {key: "editor_default_email_recipients", value: "filter"},
-            {key: "editor_default_email_recipients_filter", value: "status:free,status:-free"},
-        ]);
 
-        await selectDefaultRecipients("Usually nobody");
-        await section.getByRole("button", {name: "Save"}).click();
-        await expect.element(section.getByRole("button", {name: "Saved"})).toBeVisible();
         await expect(settingsApi).toHaveEditedSettings([
             {key: "editor_default_email_recipients", value: "filter"},
-            {key: "editor_default_email_recipients_filter", value: null},
+            {key: "editor_default_email_recipients_filter", value: filter},
         ]);
-
-        await selectDefaultRecipients("Paid-members only");
-        await section.getByRole("button", {name: "Save"}).click();
-        await expect.element(section.getByRole("button", {name: "Saved"})).toBeVisible();
-        await expect.element(settingsScreen.defaultRecipientsSelect()).toHaveTextContent("Paid-members only");
-        await expect(settingsApi).toHaveEditedSettings([
-            {key: "editor_default_email_recipients", value: "filter"},
-            {key: "editor_default_email_recipients_filter", value: "status:-free"},
-        ]);
+        expect(settingsApi.requests).toHaveLength(1);
     });
 
     it("selects tiers, labels, and offers as a specific segment", async () => {
