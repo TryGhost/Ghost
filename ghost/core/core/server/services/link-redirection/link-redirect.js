@@ -1,6 +1,6 @@
 const ObjectID = require('bson-objectid').default;
 
-module.exports = class LinkRedirect {
+class LinkRedirect {
     /** @type {ObjectID} */
     link_id;
     /** @type {URL} */
@@ -23,4 +23,8 @@ module.exports = class LinkRedirect {
         this.to = data.to;
         this.edited = !!data.edited;
     }
+};
+
+module.exports = {
+    LinkRedirect
 };
