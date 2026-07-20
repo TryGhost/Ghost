@@ -65,10 +65,17 @@ const EditFieldInput = z.object({
 export class CustomFieldDefinitionsService {
     private knex: Knex;
     private recordAction: RecordCustomFieldAction;
+    private getMaxDefinitions: () => number;
 
-    constructor({knex, recordAction}: {knex: Knex; recordAction: RecordCustomFieldAction}) {
+    constructor({knex, recordAction, getMaxDefinitions}: {knex: Knex; recordAction: RecordCustomFieldAction; getMaxDefinitions: () => number}) {
         this.knex = knex;
         this.recordAction = recordAction;
+        // A getter, not a value: the ceiling can be raised or lowered at any time,
+        // and a Ghost container holds no state across requests, so the limit that
+        // applies is whatever it resolves to when the request lands. Asking on
+        // every create means a change takes effect on the next one, with no
+        // restart. Where the number comes from is the caller's business.
+        this.getMaxDefinitions = getMaxDefinitions;
     }
 
     async browse(options: {filter?: string} = {}): Promise<CustomField[]> {
@@ -138,6 +145,8 @@ export class CustomFieldDefinitionsService {
         let created: CustomField[];
         try {
             created = await this.knex.transaction(async (trx) => {
+                await this.assertWithinLimit(trx, fields.length);
+
                 const keys: string[] = [];
                 for (const [index, field] of fields.entries()) {
                     await this.assertNameAvailable(trx, field.name);
@@ -164,6 +173,50 @@ export class CustomFieldDefinitionsService {
             await this.recordAction({context, verb: 'create', subject: field.key, details: {primary_name: field.name}});
         }
         return created;
+    }
+
+    /**
+     * The operational ceiling on how many definitions a site can hold. This is a
+     * safeguard against the database load unbounded definitions would create, not
+     * a pricing or packaging limit, so it applies wherever the feature is available
+     * and is deliberately not routed through the entitlement-driven limit service.
+     *
+     * Both active and archived definitions count: an archived field still occupies
+     * a row and still carries its members' values, so archiving alone frees no
+     * space. Deleting an archived field is what releases a slot.
+     *
+     * The count is a consistent read, not a locking one, so two creates landing at
+     * the same instant can both pass and take a site one over. That is deliberate:
+     * this is a ceiling on database load, and holding a table lock across every
+     * create to make it exact would cost more than the overshoot it prevents.
+     *
+     */
+    private async assertWithinLimit(db: Knex, addedCount: number): Promise<void> {
+        const max = this.getMaxDefinitions();
+
+        const row = await db(TABLE).count({count: '*'}).first();
+        const total = Number(row?.count ?? 0);
+        if (total + addedCount <= max) {
+            return;
+        }
+
+        // Two different situations reach here and they need different advice. At or
+        // over the ceiling there is nothing to do but free a slot. With slots still
+        // free the request was simply too big, and telling that operator to delete
+        // something is wrong: they have room, just not this much.
+        const remaining = max - total;
+        const advice = remaining > 0
+            ? `You can add ${remaining} more.`
+            : 'Delete a field you no longer need to make room.';
+
+        throw new errors.HostLimitError({
+            message: `Custom fields are limited to ${max} per site. ${advice}`,
+            code: 'CUSTOM_FIELDS_LIMIT_REACHED',
+            // `requested` is carried alongside the limit-service shape so a batch
+            // rejection is self-describing: without it a client sees free slots and
+            // a refusal, and has to re-derive its own payload size to explain why.
+            errorDetails: {limit: max, total, requested: addedCount}
+        });
     }
 
     /** Read back a batch in the order its keys were created, not the table's order. */
