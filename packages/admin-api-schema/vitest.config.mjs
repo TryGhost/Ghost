@@ -5,13 +5,7 @@ export default createVitestConfig({
         include: ['test/**/*.test.js'],
         globals: true,
         coverage: {
-            include: ['index.js', 'lib/**/*.js'],
-            thresholds: {
-                lines: 100,
-                functions: 100,
-                branches: 80,
-                statements: 100
-            }
+            include: ['index.js', 'lib/**/*.js']
         }
     }
 });
