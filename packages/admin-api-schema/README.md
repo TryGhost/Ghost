@@ -7,8 +7,8 @@ Ghost release artifact and is not published independently.
 
 
 ## Usage
-```js
-const jsonSchema = require('@tryghost/admin-api-schema');
+```ts
+import * as jsonSchema from '@tryghost/admin-api-schema';
 
 // check available schemas
 jsonSchema.list()
@@ -76,6 +76,7 @@ From the Ghost repository root:
 ```bash
 pnpm --filter @tryghost/admin-api-schema test
 pnpm --filter @tryghost/admin-api-schema lint
+pnpm --filter @tryghost/admin-api-schema build
 ```
 
 

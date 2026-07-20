@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "JSON schemas used to validate Ghost Admin API requests",
   "private": true,
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
@@ -10,29 +11,48 @@
   },
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "index.js",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
+  },
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
+    "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
     "test": "pnpm run '/^test:/'",
-    "lint:code": "eslint index.js src/ --cache",
+    "lint:code": "eslint src/ --cache",
     "lint:test": "eslint test/ --cache",
     "lint": "pnpm run '/^lint:/'"
   },
   "files": [
-    "src/*",
-    "index.js"
+    "build"
   ],
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
+    "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "@typescript/native": "catalog:",
     "eslint": "catalog:",
+    "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "dependencies": {
     "@tryghost/errors": "catalog:",
     "ajv": "catalog:",
-    "ajv-formats": "catalog:",
-    "lodash": "catalog:"
+    "ajv-formats": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": ["{projectRoot}/build"]
+      }
+    }
   }
 }

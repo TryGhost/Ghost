@@ -1,51 +1,33 @@
-const errors = require('@tryghost/errors');
-const jsonSchema = require('./utils/json-schema.ts');
+import errors from '@tryghost/errors';
+import {actionSchemaNames, schemas, type SchemaName} from './schemas/index.js';
+import {validate as validateJSONSchema, type IdentifiedSchema} from './utils/json-schema.js';
 
-/**
- *
- * @param {string} name -JSON schema to retreive from "schemas" folder
- *
- * @returns {Object} - JSON schema file content
- */
-const getJSONDefinition = (name) => {
-    const definitionPath = `./schemas/${name}`;
+export type {SchemaName};
 
-    try {
-        return require(definitionPath);
-    } catch (err) {
-        if (err.code === 'MODULE_NOT_FOUND') {
-            return null;
-        }
+export interface ValidateOptions {
+    data: unknown;
+    schema?: string;
+    definition?: string;
+}
+
+function isSchemaName(name: string): name is SchemaName {
+    return Object.hasOwn(schemas, name);
+}
+
+export function get(name: string | undefined): IdentifiedSchema | null {
+    if (!name || !isSchemaName(name)) {
+        return null;
     }
-};
 
-/**
- * Lists available JSON schema definitions
- *
- * @returns {string[]} - list of available JSON schema definitions
- */
-const list = () => {
-    return require('./schemas/index.ts');
-};
+    return schemas[name];
+}
 
-/**
- * Validate method parameters
- *
- * @typedef {Object} ValidateOptions
- * @property {Object} options.data - data to validate
- * @property {string} [options.schema] - name of the schema to validate against. Available schema names are returned by list() function
- * @property {string} [options.definition] - name of the definition where schema belongs
- */
+export function list(): SchemaName[] {
+    return [...actionSchemaNames];
+}
 
-/**
- * Validates objects against predefined JSON Schema
- *
- * @param {ValidateOptions} options
- *
- * @returns {Promise} - resolves a promise if validation is successful and rejects with error details otherwise
- */
-const validate = ({data, schema, definition = schema?.split('-')[0]}) => {
-    const schemaJSON = getJSONDefinition(schema);
+export function validate({data, schema, definition = schema?.split('-')[0]}: ValidateOptions): Promise<void> {
+    const schemaJSON = get(schema);
 
     if (!schemaJSON) {
         throw new errors.IncorrectUsageError({
@@ -54,13 +36,16 @@ const validate = ({data, schema, definition = schema?.split('-')[0]}) => {
         });
     }
 
-    const definitionJSON = getJSONDefinition(definition);
+    const definitionJSON = get(definition);
 
-    return jsonSchema.validate(schemaJSON, definitionJSON, data);
-};
+    if (!definitionJSON) {
+        throw new errors.IncorrectUsageError({
+            message: 'Cannot find schema for provided definition name.',
+            context: `Definition for ${definition} does not exist.`
+        });
+    }
 
-module.exports = {
-    get: getJSONDefinition,
-    list: list,
-    validate: validate
-};
+    return validateJSONSchema(schemaJSON, definitionJSON, data);
+}
+
+export default {get, list, validate};

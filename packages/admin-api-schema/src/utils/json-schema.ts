@@ -1,8 +1,15 @@
-const _ = require('lodash');
-const Ajv = require('ajv');
-const addFormats = require('ajv-formats');
-const isLowercaseKeyword = require('./is-lowercase-keyword.ts');
-const errors = require('@tryghost/errors');
+import {createRequire} from 'node:module';
+import errors from '@tryghost/errors';
+import {Ajv, type SchemaObject} from 'ajv';
+import {addIsLowercaseKeyword} from './is-lowercase-keyword.js';
+
+const require = createRequire(import.meta.url);
+// ajv-formats is CommonJS and its default export is not callable under NodeNext's type resolution.
+const addFormats: typeof import('ajv-formats').default = require('ajv-formats');
+
+export interface IdentifiedSchema extends SchemaObject {
+    $id: string;
+}
 
 const ajv = new Ajv({
     allErrors: true,
@@ -14,48 +21,39 @@ addFormats(ajv);
 
 ajv.addFormat('json-string', {
     type: 'string',
-    validate: (data) => {
+    validate: (data: string) => {
         try {
             JSON.parse(data);
             return true;
-        } catch (e) {
+        } catch {
             return false;
         }
     }
 });
 
-isLowercaseKeyword(ajv);
+addIsLowercaseKeyword(ajv);
 
-const getValidation = (schema, def) => {
-    if (!ajv.getSchema(def.$id)) {
-        ajv.addSchema(def);
+const getValidation = (schema: IdentifiedSchema, definition: IdentifiedSchema) => {
+    if (!ajv.getSchema(definition.$id)) {
+        ajv.addSchema(definition);
     }
-    return ajv.getSchema(schema.$id) || ajv.compile(schema);
+
+    return ajv.getSchema(schema.$id) ?? ajv.compile(schema);
 };
 
-const validate = (schema, definition, data) => {
+export async function validate(schema: IdentifiedSchema, definition: IdentifiedSchema, data: unknown): Promise<void> {
     const validation = getValidation(schema, definition);
 
     validation(data);
 
     if (validation.errors) {
-        let key;
-        const instancePath = _.get(validation, 'errors[0].instancePath');
+        const instancePath = validation.errors[0]?.instancePath;
+        const key = instancePath ? instancePath.split('/').pop() : schema.$id?.split('.')[0];
 
-        if (instancePath) {
-            key = instancePath.split('/').pop();
-        } else {
-            key = schema.$id.split('.')[0];
-        }
-
-        return Promise.reject(new errors.ValidationError({
+        throw new errors.ValidationError({
             message: `Validation failed for ${key}.`,
             property: key,
             errorDetails: validation.errors
-        }));
+        });
     }
-
-    return Promise.resolve();
-};
-
-module.exports.validate = validate;
+}
