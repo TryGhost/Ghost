@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const jsonSchema = require('./utils/json-schema');
+const jsonSchema = require('./utils/json-schema.ts');
 
 /**
  *
@@ -25,7 +25,7 @@ const getJSONDefinition = (name) => {
  * @returns {string[]} - list of available JSON schema definitions
  */
 const list = () => {
-    return require('./schemas');
+    return require('./schemas/index.ts');
 };
 
 /**
