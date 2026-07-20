@@ -290,7 +290,11 @@ export function createDatabaseAutomationsRepository({
                     }
                 }
 
-                for (const [id, opens] of newOpensPerRevision) {
+                // Keep lock acquisition order consistent across concurrent transactions to avoid deadlocks.
+                const revisions = [...newOpensPerRevision.entries()]
+                    .sort(([left], [right]) => left.localeCompare(right));
+
+                for (const [id, opens] of revisions) {
                     await trx('automation_action_revisions')
                         .where({id})
                         .update({
