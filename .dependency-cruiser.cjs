@@ -64,7 +64,6 @@ module.exports = {
                     '^ghost/core/core/frontend/web/middleware/frontend-caching\\.js$',
                     '^ghost/core/core/frontend/web/middleware/handle-image-sizes\\.js$',
                     '^ghost/core/core/frontend/web/routers/link-redirects\\.js$',
-                    '^ghost/core/core/frontend/web/routers/serve-favicon\\.js$',
                     '^ghost/core/core/frontend/apps/private-blogging/lib/router\\.js$',
 
                     // Leaks that bypass the proxy (fix first).

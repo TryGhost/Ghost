@@ -68,7 +68,7 @@ module.exports = class MentionSendingService {
             if (html || previousHtml) {
                 await this.#jobService.addJob('sendWebmentions', async () => {
                     await this.sendForHTMLResource({
-                        url: new URL(this.#getPostUrl(post)),
+                        url: new URL(await this.#getPostUrl(post)),
                         html: html,
                         previousHtml: previousHtml
                     });

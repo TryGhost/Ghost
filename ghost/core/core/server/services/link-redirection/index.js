@@ -1,6 +1,6 @@
 const urlUtils = require('../../../shared/url-utils');
 const LinkRedirectRepository = require('./link-redirect-repository');
-const adapterManager = require('../adapter-manager');
+const adapterManager = require('../adapter-manager').default;
 const config = require('../../../shared/config');
 const EventRegistry = require('../../lib/common/events');
 

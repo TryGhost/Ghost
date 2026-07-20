@@ -50,7 +50,7 @@ export default function renderStandaloneApp<Props extends object>(
                 designSystem={{darkMode: false, fetchKoenigLexical}}
                 framework={{
                     externalNavigate: (link) => {
-                        // Use the expectExternalNavigate helper to test this dummy external linking
+                        // Standalone tests can assert this captured navigation on document.body.
                         document.body.dataset.externalNavigate = JSON.stringify(link);
                     },
                     ghostVersion: '5.x',

@@ -1,10 +1,7 @@
-#!/usr/bin/env node
-'use strict';
+import {resolve} from 'node:path';
+import {execSync} from 'node:child_process';
 
-const {execSync} = require('node:child_process');
-const path = require('node:path');
-
-const ROOT = path.resolve(__dirname, '../..');
+const ROOT = resolve(import.meta.dirname, '../..');
 const REPO_URL = 'https://github.com/TryGhost/Ghost';
 
 // Emoji priority order (lowest index = lowest priority, sorted descending)
@@ -55,7 +52,7 @@ function filterAndSortByEmoji(lines) {
     return emojiLines;
 }
 
-function generateReleaseNotes(fromTag, toTag) {
+export function generateReleaseNotes(fromTag, toTag) {
     const lines = getCommitLog(fromTag, toTag);
     const filtered = filterAndSortByEmoji(lines);
 
@@ -73,7 +70,7 @@ function generateReleaseNotes(fromTag, toTag) {
 }
 
 // CLI: node release-notes.js <from-tag> <to-tag>
-if (require.main === module) {
+if (import.meta.main) {
     const [fromTag, toTag] = process.argv.slice(2);
 
     if (!fromTag || !toTag) {
@@ -83,5 +80,3 @@ if (require.main === module) {
 
     process.stdout.write(generateReleaseNotes(fromTag, toTag));
 }
-
-module.exports = {generateReleaseNotes};

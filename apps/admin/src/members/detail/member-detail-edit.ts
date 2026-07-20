@@ -1,6 +1,15 @@
 import moment from 'moment-timezone';
+import {MEMBER_CUSTOM_FIELD_TYPES} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {dequal} from 'dequal';
 import type {EditMemberData, Member} from '@tryghost/admin-x-framework/api/members';
+import type {MemberCustomField, MemberCustomFieldAddress} from '@tryghost/admin-x-framework/api/member-custom-fields';
+
+// The sub-fields of the address composite, in display order. Partial because a
+// draft mid-edit (or a normalized sparse value) may hold any subset; the shared
+// AddressValue schema — enforced by the server — decides completeness.
+export const ADDRESS_SUBFIELD_KEYS = ['line1', 'line2', 'city', 'state', 'postal_code', 'country'] as const;
+export type EditableAddressValue = Partial<Pick<MemberCustomFieldAddress, typeof ADDRESS_SUBFIELD_KEYS[number]>>;
+export type EditableCustomFieldValue = string | EditableAddressValue;
 
 export interface MemberEditableLabel {
     name: string;
@@ -14,6 +23,9 @@ export interface MemberEditableFields {
     labels: MemberEditableLabel[];
     // Subscribed-newsletter ids, sorted, so order changes never look dirty.
     newsletters: string[];
+    // Custom field values are deliberately NOT part of this slice: they save
+    // individually through their own per-field editor (one field, one Save),
+    // never through the page's draft/Save flow.
 }
 
 // The members API returns null (not just undefined) for unset name/email/note,
@@ -53,6 +65,44 @@ export function getMemberEditableSlice(member: MemberFieldSource): MemberEditabl
             .map(nl => nl.id)
             .sort()
     };
+}
+
+/**
+ * The custom field values from a member's `custom_fields` payload, normalized:
+ * strings trimmed, address sub-fields trimmed with empty ones dropped, and
+ * empty values ('' / {} / null) collapsing to an absent key — so "no value"
+ * reads identically however it's represented. Feeds the read-only value rows
+ * and seeds the per-field editor.
+ */
+export function getEditableCustomFieldValues(customFields: Record<string, unknown> | null | undefined): Record<string, EditableCustomFieldValue> {
+    const values: Record<string, EditableCustomFieldValue> = {};
+    for (const [key, value] of Object.entries(customFields ?? {})) {
+        if (typeof value === 'string' && value.trim() !== '') {
+            values[key] = value.trim();
+        } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            const address = normalizeAddressValue(value as Record<string, unknown>);
+            if (address) {
+                values[key] = address;
+            }
+        }
+    }
+    return values;
+}
+
+/**
+ * An address value reduced to its known sub-fields, trimmed, with empty
+ * sub-fields dropped. Undefined when nothing remains, so an all-blank address
+ * normalizes to "no value" exactly like an empty string does.
+ */
+function normalizeAddressValue(value: Record<string, unknown>): EditableAddressValue | undefined {
+    const address: EditableAddressValue = {};
+    for (const subfield of ADDRESS_SUBFIELD_KEYS) {
+        const subvalue = value[subfield];
+        if (typeof subvalue === 'string' && subvalue.trim() !== '') {
+            address[subfield] = subvalue.trim();
+        }
+    }
+    return Object.keys(address).length ? address : undefined;
 }
 
 /**
@@ -195,6 +245,122 @@ export function buildMemberFieldEditPayload(
         payload.newsletters = normalized.newsletters.map(nlId => ({id: nlId}));
     }
     return payload;
+}
+
+/**
+ * The save payload for ONE custom field, from the per-field editor. Merge
+ * semantics do the rest: only this key is touched, `null` clears it, and an
+ * address is sent whole (the merge is per field, not per sub-field).
+ */
+export function buildCustomFieldSavePayload(
+    memberId: string,
+    fieldKey: string,
+    value: EditableCustomFieldValue
+): EditMemberData {
+    const normalized = typeof value === 'string'
+        ? (value.trim() || undefined)
+        : normalizeAddressValue(value);
+    return {id: memberId, custom_fields: {[fieldKey]: normalized ?? null}};
+}
+
+// What to do about a missing or malformed address sub-field, in plain words.
+// Schema messages (zod's "Invalid input: expected string…") never reach the
+// screen — the schema decides WHETHER a value is valid, this copy says what
+// to do about it.
+const ADDRESS_SUBFIELD_MESSAGES: Record<typeof ADDRESS_SUBFIELD_KEYS[number], string> = {
+    line1: 'Enter a street address.',
+    line2: 'Enter a shorter address line.',
+    city: 'Enter a city.',
+    state: 'Enter a shorter state.',
+    postal_code: 'Enter a postal code.',
+    country: 'Enter a 2-letter country code, like US.'
+};
+
+// Required free-text sub-fields fail as too_small when missing and too_big when
+// over the limit, but their copy above only fits the missing case — so an
+// over-long value defers to the length message. The others already read
+// correctly for their over-long case (line2/state say "shorter"; country is a
+// format hint that fits a too-long code too), so they keep their copy.
+const ADDRESS_SUBFIELDS_LENGTH_ON_TOO_BIG: ReadonlySet<string> = new Set(['line1', 'city', 'postal_code']);
+
+/** A schema issue translated into copy a person can act on. */
+function friendlyValidationMessage(
+    field: MemberCustomField,
+    issue: {code?: string; path: ReadonlyArray<PropertyKey>; maximum?: unknown}
+): string {
+    const tooBigMaximum = issue.code === 'too_big' && typeof issue.maximum === 'number' ? issue.maximum : undefined;
+    if (field.type === 'address') {
+        const subfield = issue.path[0];
+        if (typeof subfield === 'string') {
+            if (tooBigMaximum !== undefined && ADDRESS_SUBFIELDS_LENGTH_ON_TOO_BIG.has(subfield)) {
+                return `Use ${tooBigMaximum} characters or fewer.`;
+            }
+            if (subfield in ADDRESS_SUBFIELD_MESSAGES) {
+                return ADDRESS_SUBFIELD_MESSAGES[subfield as typeof ADDRESS_SUBFIELD_KEYS[number]];
+            }
+        }
+    }
+    if (tooBigMaximum !== undefined) {
+        return `Use ${tooBigMaximum} characters or fewer.`;
+    }
+    // The remaining scalar rule is long_text's byte bound; characters are the
+    // unit a person can reason about, bytes are not.
+    return 'This text is too long to save. Shorten it a little.';
+}
+
+/**
+ * Client-side validation of custom field values against the shared catalog
+ * schemas — the same schemas the server enforces, so the two can never
+ * disagree on substance. Returns messages keyed by `fieldKey` (scalar) or
+ * `fieldKey.subfield` (composite sub-field), matching the path shape of the
+ * server's 422 `property` so both error sources render through one map.
+ * Cleared/empty values are always valid — fields are optional.
+ */
+export function getCustomFieldValidationErrors(
+    draftCustomFields: Record<string, EditableCustomFieldValue>,
+    fields: MemberCustomField[]
+): Record<string, string> {
+    const errors: Record<string, string> = {};
+    const values = getEditableCustomFieldValues(draftCustomFields);
+    for (const field of fields) {
+        const value = values[field.key];
+        if (value === undefined) {
+            continue;
+        }
+        // Runtime guard for a future type this build doesn't know; the server
+        // remains authoritative for those.
+        const definition = MEMBER_CUSTOM_FIELD_TYPES[field.type];
+        if (!definition) {
+            continue;
+        }
+        const result = definition.value.safeParse(value);
+        if (!result.success) {
+            for (const issue of result.error.issues) {
+                const key = [field.key, ...issue.path].join('.');
+                errors[key] ??= friendlyValidationMessage(field, issue);
+            }
+        }
+    }
+    return errors;
+}
+
+/**
+ * Field-level errors from a failed member save. The values service names the
+ * offending field in `property` as `custom_fields.<key>[.<subfield>]` with the
+ * reason in `context` (see members-custom-fields/values-service.ts), so the
+ * message can be rendered under the exact input it belongs to. Returns
+ * undefined when the failure isn't custom-fields shaped, letting callers fall
+ * back to the generic toast.
+ */
+export function parseCustomFieldServerErrors(error: unknown): Record<string, string> | undefined {
+    const data = (error as {data?: {errors?: Array<{property?: string | null; context?: string | null; message?: string | null}>}} | null)?.data;
+    const errors: Record<string, string> = {};
+    for (const apiError of data?.errors ?? []) {
+        if (apiError.property?.startsWith('custom_fields.')) {
+            errors[apiError.property.slice('custom_fields.'.length)] = apiError.context || apiError.message || 'Invalid value.';
+        }
+    }
+    return Object.keys(errors).length ? errors : undefined;
 }
 
 /**

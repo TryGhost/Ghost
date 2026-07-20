@@ -6,6 +6,7 @@ packages:
   - 'packages/**'
   - '!packages/_template'
   - 'configs/*'
+  - 'scripts'
 
 strictDepBuilds: true
 catalogMode: strict
@@ -71,20 +72,22 @@ catalog:
   '@tanstack/react-virtual': 3.14.5
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
-  '@tryghost/api-framework': 3.2.4
-  '@tryghost/brute-knex': 3.2.0
+  '@tryghost/api-framework': 3.3.4
+  '@tryghost/brute-knex': 3.2.1
   '@tryghost/color-utils': 0.2.19
   '@tryghost/custom-fonts': 1.0.11
-  '@tryghost/debug': 2.2.3
-  '@tryghost/domain-events': 3.2.5
-  '@tryghost/errors': 1.3.13
+  '@tryghost/debug': 2.3.4
+  '@tryghost/domain-events': 3.3.4
+  '@tryghost/errors': 3.3.4
   '@tryghost/helpers': 1.1.106
   '@tryghost/limit-service': 1.5.6
-  '@tryghost/logging': 4.2.1
+  '@tryghost/logging': 5.2.1
+  '@tryghost/mongo-knex': 0.10.1
   '@tryghost/nql': 0.13.1
   '@tryghost/nql-lang': 0.6.6
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
+  '@tryghost/tpl': 2.3.4
   '@types/express': 4.17.25
   '@types/html-minifier': ^4.0.6
   '@types/jest': 29.5.14
@@ -94,6 +97,7 @@ catalog:
   '@types/react': 18.3.31
   '@types/react-dom': 18.3.7
   '@types/sanitize-html': 2.16.1
+  '@types/semver': 7.7.1
   '@types/sinon': 22.0.0
   '@types/validator': 13.15.10
   '@typescript-eslint/eslint-plugin': 8.49.0
@@ -103,6 +107,8 @@ catalog:
   '@vitejs/plugin-react': 6.0.3
   '@vitest/browser-playwright': 4.1.9
   '@vitest/coverage-v8': 4.1.9
+  ajv: 8.20.0
+  ajv-formats: 3.0.1
   better-sqlite3: 12.11.1
   bson-objectid: 2.0.4
   c8: 11.0.0
@@ -140,6 +146,7 @@ catalog:
   react-dom: 18.3.1
   react-hot-toast: 2.6.0
   react-router: 7.18.1
+  semver: 7.8.5
   sinon: 22.0.0
   sonner: 2.0.7
   storybook: 10.4.6
@@ -184,7 +191,7 @@ overrides:
   # executes them, so its knex must match Ghost's major or the 3.x runner throws on
   # the 2.x builder. Pin it back to 2.4.2 until ghost/core itself moves to knex 3.x.
   'knex-migrator>knex': 2.4.2
-  '@tryghost/errors': ^1.3.7
+  '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
   jackspeak: 4.2.3
   moment: 2.30.1
@@ -245,16 +252,32 @@ packageExtensions:
       '@babel/runtime': ^7.26.10
 minimumReleaseAgeExclude:
   # Our own packages are published by us, so the release-age delay doesn't apply
-  - "@tryghost/*"
+  - '@tryghost/*'
   # TryGhost-published packages that live outside the @tryghost/ npm scope.
   # Deliberately NOT listed: sqlite3 — TryGhost stewards it, but legacy
   # (Mapbox-era) npm maintainer accounts can still publish, so the soak
   # retains value there.
-  - "bookshelf-relations"
-  - "eslint-plugin-ghost"
-  - "express-hbs"
-  - "ghost-storage-base"
-  - "gscan"
-  - "knex-migrator"
+  - 'bookshelf-relations'
+  - 'eslint-plugin-ghost'
+  - 'express-hbs'
+  - 'ghost-storage-base'
+  - 'gscan'
+  - 'knex-migrator'
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+
+# configuration for pnpm's changeset functionality
+versioning:
+  ignore:
+    # ignore root ghost-monorepo package
+    - ghost-monorepo
+    # ignore ghost/ghost-admin since they're manually versioned by release scripts
+    - ghost
+    - ghost-admin
+    # ignore public apps since they're deployed outside pnpm's changelog versioning
+    - '@tryghost/announcement-bar'
+    - '@tryghost/admin-toolbar'
+    - '@tryghost/comments-ui'
+    - '@tryghost/portal'
+    - '@tryghost/signup-form'
+    - '@tryghost/sodo-search'

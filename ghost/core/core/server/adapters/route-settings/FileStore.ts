@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import {format} from 'date-fns';
+import {z} from 'zod';
 import * as errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 
@@ -8,6 +8,7 @@ import {RouteSettingsStoreBase, type RouteSettings} from '@tryghost/adapter-base
 
 import parseYaml from '../../services/route-settings/yaml-parser';
 import {parseRouteSettings} from '../../services/route-settings/route-settings-parser';
+import {getBackupRouteSettingsFilePath} from './utils';
 
 const YAML_FILENAME = 'routes.yaml';
 const DEFAULT_SETTINGS_FILENAME = 'default-routes.yaml';
@@ -17,16 +18,13 @@ const messages = {
     ensureSettings: 'Error trying to access settings files in {path}.'
 };
 
-export const getBackupRouteSettingsFilePath = (filePath: string): string => {
-    const {dir, name, ext} = path.parse(filePath);
-    return path.join(dir, `${name}-${format(new Date(), 'yyyy-MM-dd-HH-mm-ss')}${ext}`);
-};
+// Validates the required paths sourced from config. Used by `FileStore.validate`.
+const configSchema = z.object({
+    basePath: z.string({error: tpl(messages.missingPaths)}).min(1, {error: tpl(messages.missingPaths)}),
+    defaultSettingsBasePath: z.string({error: tpl(messages.missingPaths)}).min(1, {error: tpl(messages.missingPaths)})
+});
 
-interface FileStoreOptions {
-    basePath: string;
-    defaultSettingsBasePath: string;
-    getBackupFilePath?: (filePath: string) => string;
-}
+type FileStoreOptions = z.infer<typeof configSchema>;
 
 /**
  * Local-disk store for route settings. Reads and writes the user's
@@ -42,18 +40,33 @@ export default class FileStore extends RouteSettingsStoreBase {
     private readonly defaultSettingsBasePath: string;
     private readonly getBackupFilePath: (filePath: string) => string;
 
-    constructor({basePath, defaultSettingsBasePath, getBackupFilePath = getBackupRouteSettingsFilePath}: FileStoreOptions) {
-        super();
-
-        if (!basePath || !defaultSettingsBasePath) {
+    /**
+     * Validate the options FileStore would be constructed with, without
+     * instantiating it. Called by the adapter manager at boot so
+     * misconfiguration fails early, and by the constructor so the two share a
+     * single source of truth. Narrows `config` to `FileStoreOptions`.
+     */
+    static validate(config: unknown): asserts config is FileStoreOptions {
+        const result = configSchema.safeParse(config);
+        if (!result.success) {
             throw new errors.IncorrectUsageError({
-                message: tpl(messages.missingPaths)
+                message: [...new Set(result.error.issues.map(issue => issue.message))].join('; ')
             });
         }
+    }
 
-        this.basePath = basePath;
-        this.defaultSettingsBasePath = defaultSettingsBasePath;
-        this.getBackupFilePath = getBackupFilePath;
+    constructor(config: unknown) {
+        super();
+
+        FileStore.validate(config);
+        this.basePath = config.basePath;
+        this.defaultSettingsBasePath = config.defaultSettingsBasePath;
+
+        // `getBackupFilePath` is a test-only injection seam — it never comes from
+        // config (nconf holds static values), so it's read from the raw input
+        // rather than the validated schema output.
+        this.getBackupFilePath = (config as {getBackupFilePath?: (filePath: string) => string}).getBackupFilePath
+            ?? getBackupRouteSettingsFilePath;
     }
 
     async get(): Promise<RouteSettings> {

@@ -36,7 +36,7 @@ function themeLimits(allowlist: string[], error: string) {
 }
 
 async function archiveBuffer(): Promise<ArrayBuffer> {
-    const fixture = new URL("../../../../admin-x-settings/test/utils/responses/theme.zip", import.meta.url);
+    const fixture = new URL("../../../test-utils/acceptance/fixtures/theme.zip", import.meta.url);
     return await fetch(fixture).then(response => response.arrayBuffer());
 }
 
@@ -344,6 +344,23 @@ describe("Theme settings", () => {
 
         await settingsScreen.themeCodeEditorModal().getByRole("button", { name: "Close" }).click();
         await expect.poll(currentRoute).toBe(destination);
+    });
+
+    it("opens the code editor from the active theme overflow menu and returns to settings on close", async () => {
+        fakeThemeWorld();
+        await fakeThemeDownload("edition");
+        await renderAdminApp("/settings");
+
+        await settingsScreen.theme().getByRole("button", { name: "Menu" }).click();
+        await settingsScreen.menuItem("Edit code").click();
+
+        await expect.element(settingsScreen.themeCodeEditorModal()).toBeVisible();
+        await expect.poll(currentRoute).toContain("/settings/theme/edit/edition");
+
+        await settingsScreen.themeCodeEditorModal().getByRole("button", { name: "Close" }).click();
+        await expect.poll(currentRoute).toBe("/settings");
+        await expect(settingsScreen.themeCodeEditorModal()).toHaveCount(0);
+        await expect.element(settingsScreen.theme()).toBeVisible();
     });
 
     it("redirects invalid editor theme names", async () => {

@@ -2,6 +2,7 @@ import {InfiniteData, useIsFetching, useQueryClient} from '@tanstack/react-query
 import {useEffect} from 'react';
 import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {apiUrl} from '../utils/api/fetch-api';
+import type {Address} from '@tryghost/custom-field-types';
 
 export type MemberLabel = {
     id: string;
@@ -119,6 +120,11 @@ export type Member = {
     };
     last_seen_at: string | null;
     last_commented_at: string | null;
+    // Custom field values keyed by field key, present only when requested via
+    // `include=custom_fields` (behind the `membersCustomFields` flag). Values
+    // are type-dependent: string for text-backed fields, an object for
+    // composites like address — hence `unknown`; consumers narrow per field type.
+    custom_fields?: Record<string, unknown>;
     can_comment?: boolean;
     commenting?: {
         disabled: boolean;
@@ -488,12 +494,20 @@ export interface EditMemberData {
     labels?: Array<{name: string; slug?: string}>;
     newsletters?: Array<{id: string}>;
     tiers?: Array<{id: string; expiry_at?: string | null}>;
+    // Merge semantics: only the keys present are written; `null` clears a
+    // value. Values are strings for text-backed fields and composite objects
+    // for address (Partial because a draft mid-edit may hold an incomplete
+    // address — the server validates completeness, not this type). Requires
+    // the `membersCustomFields` flag server-side.
+    custom_fields?: Record<string, string | Partial<Address> | null>;
 }
 
 export const useEditMember = createMutation<MembersResponseType, EditMemberData>({
     method: 'PUT',
     path: ({id}) => `/members/${id}/`,
-    defaultSearchParams: {include: 'tiers'},
+    // `custom_fields` is asked back only when the payload writes it, so the
+    // request stays valid on sites where the flag (and the include) is off.
+    searchParams: payload => ({include: payload.custom_fields ? 'tiers,custom_fields' : 'tiers'}),
     body: ({id, ...rest}) => ({members: [{id, ...rest}]}),
     invalidateQueries: {dataType}
 });

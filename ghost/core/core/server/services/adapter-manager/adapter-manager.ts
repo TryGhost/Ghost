@@ -1,6 +1,6 @@
 import path from 'node:path';
 import errors from '@tryghost/errors';
-import {resolveAdapterExport, resolveAdapterOptions, normalizeAdapterConfig} from './utils';
+import {resolveAdapterExport, resolveAdapterEntryPoint, resolveAdapterOptions, normalizeAdapterConfig, getConfiguredFeatures} from './utils';
 import type {ConfigInstance} from '../../../shared/config/loader';
 import type {
     Adapter,
@@ -112,72 +112,13 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
             });
         }
 
-        // Re-read config on every call so runtime config changes (and test config
-        // overrides) are reflected, matching the original JS implementation.
-        const adapterServiceConfig = normalizeAdapterConfig(this.config);
-        const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
-
-        const [adapterType] = name.split(':');
+        const {Adapter, adapterConfig, adapterType, adapterClassName} = this.loadAdapter(name);
         const adapterCache = this.instanceCache[adapterType];
-
-        if (!adapterCache) {
-            throw new errors.NotFoundError({
-                message: `Unknown adapter type ${adapterType}. Please register adapter.`
-            });
-        }
-
-        if (!adapterClassName) {
-            throw new errors.IncorrectUsageError({
-                message: `Unable to find ${adapterType} adapter in ${this.pathsToAdapters}.`
-            });
-        }
 
         // @NOTE: example cache key value 'email:newsletters:custom-newsletter-adapter'
         const adapterCacheKey = `${name}:${adapterClassName}`;
         if (adapterCache[adapterCacheKey]) {
             return adapterCache[adapterCacheKey];
-        }
-
-        let Adapter: AdapterConstructor | null = null;
-        for (const pathToAdapters of this.pathsToAdapters) {
-            let pathToAdapter = path.join(pathToAdapters, adapterType, adapterClassName);
-            if (pathToAdapters === '') {
-                // We are loading from node_modules, we can remove the `adapterType` prefix
-                pathToAdapter = path.join(pathToAdapters, adapterClassName);
-            }
-            try {
-                const adapterModule = this.loadAdapterFromPath(pathToAdapter);
-                Adapter = resolveAdapterExport(adapterModule);
-                if (Adapter) {
-                    break;
-                }
-            } catch (err) {
-                // Catch runtime errors
-                if (!(err instanceof Error) || (err as NodeJS.ErrnoException).code !== 'MODULE_NOT_FOUND') {
-                    throw new errors.IncorrectUsageError({err: err as Error});
-                }
-
-                // Catch missing dependencies BUT NOT missing adapter.
-                // Only check the first line — Node appends a "Require stack"
-                // that includes the adapter's own path, which would false-positive.
-                const firstLine = err.message.split('\n')[0];
-                if (!firstLine.includes(pathToAdapter)) {
-                    // Name the unresolved module so the error is actionable, e.g.
-                    // "Cannot find module 'superagent'" -> 'superagent'.
-                    const missingMatch = /Cannot find module '([^']+)'/.exec(firstLine);
-                    const missingModule = missingMatch ? ` '${missingMatch[1]}'` : '';
-                    throw new errors.IncorrectUsageError({
-                        message: `You are missing a dependency${missingModule} in your adapter ${pathToAdapter}`,
-                        err: err as Error
-                    });
-                }
-            }
-        }
-
-        if (!Adapter) {
-            throw new errors.IncorrectUsageError({
-                message: `Unable to find ${adapterType} adapter ${adapterClassName} in ${this.pathsToAdapters}.`
-            });
         }
 
         // `Adapter` is an abstract-compatible constructor type; the runtime value
@@ -211,5 +152,148 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
         adapterCache[adapterCacheKey] = adapter;
 
         return adapter;
+    }
+
+    /**
+     * Resolve the active adapter class name and options for `name` from config,
+     * then locate and load the adapter constructor from `pathsToAdapters`.
+     *
+     * Does not instantiate the adapter or touch the instance cache — shared by
+     * `getAdapter` (which instantiates + caches) and `init` (which validates).
+     */
+    private loadAdapter(name: string): {
+        Adapter: AdapterConstructor;
+        adapterConfig: object;
+        adapterType: string;
+        adapterClassName: string;
+    } {
+        // Re-read config on every call so runtime config changes (and test config
+        // overrides) are reflected, matching the original JS implementation.
+        const adapterServiceConfig = normalizeAdapterConfig(this.config);
+        const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+
+        const [adapterType] = name.split(':');
+
+        if (!this.baseClasses[adapterType]) {
+            throw new errors.NotFoundError({
+                message: `Unknown adapter type ${adapterType}. Please register adapter.`
+            });
+        }
+
+        if (!adapterClassName) {
+            throw new errors.IncorrectUsageError({
+                message: `Unable to find ${adapterType} adapter in ${this.pathsToAdapters}.`
+            });
+        }
+
+        let Adapter: AdapterConstructor | null = null;
+        for (const pathToAdapters of this.pathsToAdapters) {
+            let pathToAdapter = path.join(pathToAdapters, adapterType, adapterClassName);
+            if (pathToAdapters === '') {
+                // We are loading from node_modules, we can remove the `adapterType` prefix
+                pathToAdapter = path.join(pathToAdapters, adapterClassName);
+            }
+            // An adapter directory may be a full module with its own
+            // package.json, in which case this resolves the `exports` entry
+            // point; otherwise the path passes through unchanged.
+            const moduleToLoad = resolveAdapterEntryPoint(pathToAdapter);
+
+            try {
+                const adapterModule = this.loadAdapterFromPath(moduleToLoad);
+                Adapter = resolveAdapterExport(adapterModule);
+                if (Adapter) {
+                    break;
+                }
+            } catch (err) {
+                // Catch runtime errors
+                if (!(err instanceof Error) || (err as NodeJS.ErrnoException).code !== 'MODULE_NOT_FOUND') {
+                    throw new errors.IncorrectUsageError({err: err as Error});
+                }
+
+                // Catch missing dependencies BUT NOT missing adapter.
+                // Only check the first line — Node appends a "Require stack"
+                // that includes the adapter's own path, which would false-positive.
+                const firstLine = err.message.split('\n')[0];
+                if (!firstLine.includes(pathToAdapter)) {
+                    // Name the unresolved module so the error is actionable, e.g.
+                    // "Cannot find module 'superagent'" -> 'superagent'.
+                    const missingMatch = /Cannot find module '([^']+)'/.exec(firstLine);
+                    const missingModule = missingMatch ? ` '${missingMatch[1]}'` : '';
+                    throw new errors.IncorrectUsageError({
+                        message: `You are missing a dependency${missingModule} in your adapter ${pathToAdapter}`,
+                        err: err as Error
+                    });
+                }
+            }
+        }
+
+        if (!Adapter) {
+            throw new errors.IncorrectUsageError({
+                message: `Unable to find ${adapterType} adapter ${adapterClassName} in ${this.pathsToAdapters}.`
+            });
+        }
+
+        return {Adapter, adapterConfig: adapterConfig ?? {}, adapterType, adapterClassName};
+    }
+
+    /**
+     * Validate the config of every configured adapter up-front, so
+     * misconfiguration fails at boot rather than on first lazy `getAdapter`.
+     *
+     * Enumerates the active adapter for each registered type plus every
+     * configured feature variant (e.g. `storage:media`), resolves each to a
+     * distinct class + config, and calls the adapter's optional static
+     * `validate` when present. All failures — bad config or a failure to load a
+     * configured adapter — are aggregated into a single error so an operator
+     * sees every problem at once. Types with no configured adapter are skipped;
+     * presence is still enforced on use by `getAdapter`.
+     */
+    init(): void {
+        const adapterServiceConfig = normalizeAdapterConfig(this.config);
+
+        // 1. Enumerate every configured adapter name (active + feature variants).
+        const names: string[] = [];
+        for (const adapterType of Object.keys(this.baseClasses)) {
+            names.push(adapterType);
+            for (const feature of getConfiguredFeatures(adapterServiceConfig[adapterType])) {
+                names.push(`${adapterType}:${feature}`);
+            }
+        }
+
+        // 2. Resolve to distinct class + config pairs, skipping unconfigured
+        //    types/features and deduping identical class+config combinations.
+        const distinct = new Map<string, string>();
+        for (const name of names) {
+            const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+            if (!adapterClassName) {
+                continue;
+            }
+            const [adapterType] = name.split(':');
+            const key = `${adapterType}:${adapterClassName}:${JSON.stringify(adapterConfig ?? {})}`;
+            if (!distinct.has(key)) {
+                distinct.set(key, name);
+            }
+        }
+
+        // 3. Load + validate each distinct adapter, aggregating all failures.
+        const failures: {name: string; err: Error}[] = [];
+        for (const name of distinct.values()) {
+            try {
+                const {Adapter, adapterConfig} = this.loadAdapter(name);
+                if (typeof Adapter.validate === 'function') {
+                    Adapter.validate(adapterConfig);
+                }
+            } catch (err) {
+                failures.push({name, err: err as Error});
+            }
+        }
+
+        if (failures.length > 0) {
+            const details = failures.map(({name, err}) => `- ${name}: ${err.message}`).join('\n');
+            throw new errors.IncorrectUsageError({
+                message: `Invalid adapter configuration:\n${details}`,
+                errorDetails: failures.map(({name, err}) => ({adapter: name, message: err.message}))
+            });
+        }
     }
 }

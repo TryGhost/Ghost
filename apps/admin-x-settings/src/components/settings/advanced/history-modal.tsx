@@ -1,13 +1,12 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
-import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, type LoadSelectOptions, Modal, Popover, Select, type SelectOption, Toggle, ToggleGroup} from '@tryghost/admin-x-design-system';
+import {Avatar, LoadingIndicator, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
+import {Button, Icon, InfiniteScrollListener, List, ListItem, type LoadSelectOptions, Modal, Popover, Select, type SelectOption, Toggle, ToggleGroup} from '@tryghost/admin-x-design-system';
 import {History} from 'lucide-react';
-import {LoadingIndicator, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type User} from '@tryghost/admin-x-framework/api/users';
 import {debounce} from '../../../utils/debounce';
 import {formatNumber} from '@tryghost/shade/utils';
-import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {keepPreviousData} from '@tanstack/react-query';
 import {useCallback, useState} from 'react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
@@ -31,13 +30,11 @@ const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
     return (
         <div className='relative shrink-0'>
             <Avatar
-                bgColor={generateAvatarColor(action.actor?.name || action.actor?.slug || '')}
-                image={action.actor?.image ?? undefined}
-                label={getInitials(action.actor?.name || action.actor?.slug)}
-                labelColor='white'
-                size='md'
+                className='size-10'
+                name={action.actor?.name || action.actor?.slug}
+                src={action.actor?.image}
             />
-            <div className='absolute -right-1 -bottom-1 z-30 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
+            <div className='absolute -right-1 -bottom-1 z-30 flex items-center justify-center rounded-full border border-border-default bg-background p-1 shadow-sm'>
                 <HistoryIcon action={action} />
             </div>
         </div>

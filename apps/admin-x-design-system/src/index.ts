@@ -66,8 +66,6 @@ export type {ModalPageProps} from './global/modal/modal-page';
 export {default as PreviewModal, PreviewModalContent} from './global/modal/preview-modal';
 export type {PreviewModalProps} from './global/modal/preview-modal';
 
-export {default as Avatar} from './global/avatar';
-export type {AvatarProps} from './global/avatar';
 export {default as Banner} from './global/banner';
 export type {BannerProps} from './global/banner';
 export {default as Breadcrumbs} from './global/breadcrumbs';

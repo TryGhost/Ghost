@@ -111,6 +111,10 @@ jobs:
           filters: |
             shared: &shared
               - '.github/**'
+              # The @internal/scripts workspace sits outside .github but is
+              # invoked by the workflows below, so it needs the same treatment
+              # the '.github/**' glob used to give it when it lived there.
+              - 'scripts/**'
               # Renovate config / workflow files have no Ghost
               # runtime/test impact. Anchored as &renovate_only and
               # referenced from every filter below so a PR touching
@@ -130,6 +134,7 @@ jobs:
               - *renovate_only
               - '.github/actions/**'
               - '.github/scripts/**'
+              - 'scripts/**'
             core:
               - *shared
               - 'ghost/**'
@@ -238,7 +243,7 @@ jobs:
           # itself per-app — instead we emit the matrix here and it skips when
           # the result is `[]`. The publish job's own is_main / event gates keep
           # tags and PRs from publishing regardless of what this lists.
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node .github/scripts/build-public-apps-matrix.js "$AFFECTED_PROJECTS")
+          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$AFFECTED_PROJECTS")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
     outputs:
@@ -285,11 +290,24 @@ jobs:
       - name: Fetch main branch
         run: git fetch --no-tags origin main
 
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      # The script's only runtime dep is semver, so install @internal/scripts
+      # alone rather than the whole workspace — ~0.5s and a single package.
+      - name: Install scripts dependencies
+        run: pnpm install --frozen-lockfile --filter @internal/scripts --prod --ignore-scripts
+
       - name: Check app version bump
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node .github/scripts/check-app-version-bump.js
+        run: node scripts/check-app-version-bump.js
 
   job_migration_integrity_check:
     name: Check migration integrity
@@ -310,7 +328,7 @@ jobs:
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node .github/scripts/check-migration-integrity.js
+        run: node scripts/check-migration-integrity.cjs
 
   job_lint:
     runs-on: ubuntu-latest
@@ -346,7 +364,7 @@ jobs:
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
 
-      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
+      - uses: tryghost/actions/actions/slack-build@3ab34d3d69687764be21eba3768f51f4ecc40ddd # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -412,7 +430,7 @@ jobs:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
+      - uses: tryghost/actions/actions/slack-build@3ab34d3d69687764be21eba3768f51f4ecc40ddd # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -489,7 +507,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
+      - uses: tryghost/actions/actions/slack-build@3ab34d3d69687764be21eba3768f51f4ecc40ddd # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -638,7 +656,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
+      - uses: tryghost/actions/actions/slack-build@3ab34d3d69687764be21eba3768f51f4ecc40ddd # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -728,7 +746,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
+      - uses: tryghost/actions/actions/slack-build@3ab34d3d69687764be21eba3768f51f4ecc40ddd # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -814,7 +832,7 @@ jobs:
           path: ${{ steps.app_name.outputs.root }}/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
+      - uses: tryghost/actions/actions/slack-build@3ab34d3d69687764be21eba3768f51f4ecc40ddd # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -876,7 +894,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
+      - uses: tryghost/actions/actions/slack-build@3ab34d3d69687764be21eba3768f51f4ecc40ddd # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -958,7 +976,7 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
+      - uses: tryghost/actions/actions/slack-build@3ab34d3d69687764be21eba3768f51f4ecc40ddd # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1041,7 +1059,7 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
+      - uses: tryghost/actions/actions/slack-build@3ab34d3d69687764be21eba3768f51f4ecc40ddd # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1646,7 +1664,7 @@ jobs:
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@8293e12a1bd1319dd5bc50ccef4bf82a2ba9029c # main
+      - uses: tryghost/actions/actions/slack-build@3ab34d3d69687764be21eba3768f51f4ecc40ddd # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1882,7 +1900,7 @@ jobs:
           # minor/major line). The patch digit in package.json is otherwise
           # unused — Ghost core resolves apps via <pkg>@~<major.minor> on
           # jsDelivr, so the newest published patch is what sites receive.
-          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/.github/scripts/compute-next-app-version.js" .)
+          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/scripts/compute-next-app-version.cjs" .)
           echo "Publishing ${{ matrix.package_name }}@${NEXT_VERSION}"
 
           # Write it before building so the version baked into the bundle
@@ -2019,7 +2037,7 @@ jobs:
   # only ever sees package versions whose content shipped in a released Ghost.
   # Ghost itself never installs these from npm (dev/CI use workspace links,
   # the production archive embeds them as component tarballs) — publishing is
-  # for external consumers only. See .github/scripts/publish-koenig-packages.js
+  # for external consumers only. See scripts/publish-koenig-packages.cjs
   # --------------------------------------------------------------------------- #
   publish_koenig_packages:
     needs: [publish_ghost]
@@ -2067,7 +2085,7 @@ jobs:
         run: npm install -g npm@11
 
       - name: Publish changed packages
-        run: node .github/scripts/publish-koenig-packages.js "$GITHUB_REF_NAME"
+        run: node scripts/publish-koenig-packages.cjs "$GITHUB_REF_NAME"
 
   # --------------------------------------------------------------------------- #
   # Trigger docker-library-ghost auto-update — runs after the npm package is

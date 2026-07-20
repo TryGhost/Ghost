@@ -678,6 +678,21 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
+    members_custom_field_values: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        custom_field_id: {type: 'string', maxlength: 24, nullable: false, references: 'members_custom_fields.id', cascadeDelete: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        // Exactly one value column is populated per row, chosen by the field
+        // type's storage type in @tryghost/custom-field-types, whose byte bound
+        // on long_text matches this column exactly.
+        value_text: {type: 'text', maxlength: 65535, nullable: true},
+        value_json: {type: 'text', maxlength: 65535, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['member_id', 'custom_field_id']
+        ]
+    },
     members_stripe_customers: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
@@ -1250,7 +1265,6 @@ module.exports = {
         email_lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         email_design_setting_id: {type: 'string', maxlength: 24, nullable: true, references: 'email_design_settings.id', setNullDelete: true},
         email_sent_count: {type: 'integer', nullable: true, unsigned: true},
-        email_tracked_sent_count: {type: 'integer', nullable: true, unsigned: true},
         email_opened_count: {type: 'integer', nullable: true, unsigned: true},
         '@@UNIQUE_CONSTRAINTS@@': [
             ['created_at', 'action_id']

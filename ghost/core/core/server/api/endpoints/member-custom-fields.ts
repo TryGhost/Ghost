@@ -1,4 +1,4 @@
-import {service, type RequestContext} from '../../services/members-custom-fields';
+import {definitions, type RequestContext} from '../../services/members-custom-fields';
 
 const permissionsService = require('../../services/permissions');
 
@@ -35,15 +35,17 @@ const controller = {
 
     browse: {
         headers: noCacheInvalidation,
-        // No filter/pagination/order options: the definition list is small and
-        // global, and returned whole in a fixed order. (A future sort_order column
-        // would change the order server-side, not add a client option.)
-        options: [],
+        // `filter` narrows by status (the definition list is otherwise small and
+        // global, returned whole in a fixed order). Archived fields are hidden by
+        // default; Settings passes `filter=status:[active,archived]` to see both.
+        // No pagination/order options — a future sort_order column would change the
+        // order server-side, not add a client option.
+        options: ['filter'],
         permissions(frame: Frame) {
             return canThis(frame).browse.member_custom_field();
         },
-        query() {
-            return service!.browse();
+        query(frame: Frame) {
+            return definitions!.browse({filter: frame.options.filter as string | undefined});
         }
     },
 
@@ -55,7 +57,7 @@ const controller = {
             return canThis(frame).read.member_custom_field(frame.options.key);
         },
         query(frame: Frame) {
-            return service!.read(frame.options.key);
+            return definitions!.read(frame.options.key);
         }
     },
 
@@ -65,8 +67,11 @@ const controller = {
         permissions(frame: Frame) {
             return canThis(frame).add.member_custom_field();
         },
+        // The whole array is passed through: create is a batch, applied
+        // all-or-nothing. A client sending a single definition (as Admin does)
+        // is just the one-item case and sees no change.
         query(frame: Frame) {
-            return service!.add(requestContextFromFrame(frame), frame.data.members_custom_fields[0]);
+            return definitions!.add(requestContextFromFrame(frame), frame.data.members_custom_fields);
         }
     },
 
@@ -78,7 +83,7 @@ const controller = {
             return canThis(frame).edit.member_custom_field(frame.options.key);
         },
         query(frame: Frame) {
-            return service!.edit(requestContextFromFrame(frame), frame.options.key, frame.data.members_custom_fields[0]);
+            return definitions!.edit(requestContextFromFrame(frame), frame.options.key, frame.data.members_custom_fields[0]);
         }
     },
 
@@ -91,7 +96,7 @@ const controller = {
             return canThis(frame).destroy.member_custom_field(frame.options.key);
         },
         async query(frame: Frame) {
-            await service!.destroy(requestContextFromFrame(frame), frame.options.key);
+            await definitions!.destroy(requestContextFromFrame(frame), frame.options.key);
             return null;
         }
     }
