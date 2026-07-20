@@ -3,6 +3,8 @@ import {useEffect} from 'react';
 import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {apiUrl} from '../utils/api/fetch-api';
 import type {Address} from '@tryghost/custom-field-types';
+import {useCurrentUser} from './current-user';
+import {canManageMembers} from './users';
 
 export type MemberLabel = {
     id: string;
@@ -170,7 +172,10 @@ const useBrowseMemberCount = createQuery<MembersResponseType>({
 });
 
 export function useMemberCount() {
-    const {data} = useBrowseMemberCount();
+    const {data: currentUser} = useCurrentUser();
+    const {data} = useBrowseMemberCount({
+        enabled: Boolean(currentUser && canManageMembers(currentUser))
+    });
 
     return data?.meta?.pagination.total;
 }
