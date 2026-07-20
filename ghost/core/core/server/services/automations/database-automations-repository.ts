@@ -224,6 +224,30 @@ export function createDatabaseAutomationsRepository({
             return await knex.transaction(trx => retryStep(trx, step, retryAt));
         },
 
+        async recordEmailSent(options): Promise<void> {
+            await knex.transaction(async (trx) => {
+                const now = toDatabaseDate(new Date());
+                await trx('automated_email_recipients').insert({
+                    id: ObjectId().toHexString(),
+                    member_id: options.memberId,
+                    member_uuid: options.memberUuid,
+                    member_email: options.memberEmail,
+                    member_name: options.memberName,
+                    automation_action_revision_id: options.automationActionRevisionId,
+                    ...(options.mailgunMessageId ? {mailgun_message_id: options.mailgunMessageId} : {}),
+                    track_opens: options.trackOpens,
+                    created_at: now,
+                    updated_at: now
+                });
+
+                await trx('automation_action_revisions')
+                    .where('id', options.automationActionRevisionId)
+                    .update({
+                        email_sent_count: trx.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1])
+                    });
+            });
+        },
+
         async getAutomatedEmailRecipientsByMailgunIds(mailgunMessageIds) {
             if (mailgunMessageIds.length === 0) {
                 return [];
