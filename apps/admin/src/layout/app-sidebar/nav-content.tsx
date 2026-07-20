@@ -76,13 +76,13 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const postCustomViews = useCustomSidebarViews('posts');
     const memberViews = useMemberSidebarViews();
     const hasMemberViews = memberViews.length > 0;
-    const showMembers = Boolean(currentUser && canManageMembers(currentUser));
-    const memberCount = useMemberCount({enabled: showMembers});
+    const memberCount = useMemberCount();
     const routing = useEmberRouting();
     const automationsEnabled = useFeatureFlag('automations');
     const isMembersRouteActive = useIsActiveLink({path: 'members', activeOnSubpath: true});
 
     const showTags = currentUser && canManageTags(currentUser);
+    const showMembers = currentUser && canManageMembers(currentUser);
     const showAutomations = currentUser && canManageAutomations(currentUser);
     const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
     const showComments = !!showMembers && commentsEnabled !== 'off';
