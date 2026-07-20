@@ -720,10 +720,15 @@ describe('Member Custom Fields Admin API', function () {
             await createField({name: 'Company'});
             await createFieldExpecting('Role', 403);
 
+            // The key identifies the field publicly; it rides in the action's context
+            // because resource_id holds the row id.
             const actions = await models.Base.knex('actions')
                 .where('resource_type', 'member_custom_field')
-                .select('resource_id');
-            assert.deepEqual(actions.map((action: {resource_id: string}) => action.resource_id), ['company']);
+                .select('context');
+            assert.deepEqual(
+                actions.map((action: {context: string | null}) => JSON.parse(action.context ?? '{}').key),
+                ['company']
+            );
         });
     });
 
@@ -1211,6 +1216,12 @@ describe('Member Custom Fields Admin API', function () {
             return body.actions;
         };
 
+        // A field is addressed publicly by its key, and the key rides in the action's
+        // context rather than in resource_id, which holds the row id.
+        const contextOf = (a: {context: unknown}) =>
+            (typeof a.context === 'string' ? JSON.parse(a.context) : a.context) as
+                {primary_name?: string; key?: string; previous_name?: string};
+
         beforeAll(async function () {
             actorId = (await agent.get('users/me/').expectStatus(200)).body.users[0].id;
         });
@@ -1221,9 +1232,24 @@ describe('Member Custom Fields Admin API', function () {
             const actions = await customFieldActions();
             assert.equal(actions.length, 1);
             assert.equal(actions[0].event, 'added');
-            assert.equal(actions[0].resource_id, field.key);
+            assert.equal(contextOf(actions[0]).key, field.key);
             assert.equal(actions[0].actor_type, 'user');
             assert.equal(actions[0].actor_id, actorId);
+        });
+
+        // `resource_id` holds 24 characters and a key derived from a publisher-chosen
+        // name can be far longer, so only the row id fits every field. The action
+        // write is best-effort, so a row that does not fit is dropped without error.
+        it('records an action for a field whose key is longer than resource_id allows', async function () {
+            const field = await createField({name: 'Favourite ice cream flavour'});
+            assert.ok(field.key.length > 24, 'the key needs to be longer than resource_id to be a regression test');
+
+            const actions = await customFieldActions();
+            assert.equal(actions.length, 1);
+            assert.equal(contextOf(actions[0]).key, field.key);
+
+            const row = await models.Base.knex('members_custom_fields').where('key', field.key).first();
+            assert.equal(actions[0].resource_id, row.id);
         });
 
         it('records an "edited" action when a field is renamed', async function () {
@@ -1235,7 +1261,7 @@ describe('Member Custom Fields Admin API', function () {
 
             const edited = (await customFieldActions()).find((a: {event: string}) => a.event === 'edited');
             assert.ok(edited, 'an edited action should be recorded');
-            assert.equal(edited.resource_id, field.key);
+            assert.equal(contextOf(edited).key, field.key);
             assert.equal(edited.actor_id, actorId);
         });
 
@@ -1256,7 +1282,7 @@ describe('Member Custom Fields Admin API', function () {
 
             const archived = (await customFieldActions()).find((a: {event: string}) => a.event === 'archived');
             assert.ok(archived, 'an archived action should be recorded');
-            assert.equal(archived.resource_id, field.key);
+            assert.equal(contextOf(archived).key, field.key);
             assert.equal(archived.actor_id, actorId);
         });
 
@@ -1267,7 +1293,7 @@ describe('Member Custom Fields Admin API', function () {
 
             const restored = (await customFieldActions()).find((a: {event: string}) => a.event === 'restored');
             assert.ok(restored, 'a restored action should be recorded');
-            assert.equal(restored.resource_id, field.key);
+            assert.equal(contextOf(restored).key, field.key);
             assert.equal(restored.actor_id, actorId);
         });
 
@@ -1288,7 +1314,7 @@ describe('Member Custom Fields Admin API', function () {
 
             const deleted = (await customFieldActions()).find((a: {event: string}) => a.event === 'deleted');
             assert.ok(deleted, 'a deleted action should be recorded');
-            assert.equal(deleted.resource_id, field.key);
+            assert.equal(contextOf(deleted).key, field.key);
             assert.equal(deleted.actor_id, actorId);
         });
 
@@ -1309,11 +1335,8 @@ describe('Member Custom Fields Admin API', function () {
             // creation order even for events that land in the same second (which
             // created_at ordering can't disambiguate).
             const timeline = (await customFieldActions())
-                .filter((a: {resource_id: string}) => a.resource_id === field.key)
+                .filter((a: {context: unknown}) => contextOf(a).key === field.key)
                 .sort((a: {id: string}, b: {id: string}) => (a.id < b.id ? -1 : 1));
-
-            const parseContext = (a: {context: unknown}) =>
-                (typeof a.context === 'string' ? JSON.parse(a.context) : a.context) as {primary_name?: string; previous_name?: string};
 
             // The full ordered story, including the repeated archive.
             assert.deepEqual(
@@ -1325,14 +1348,14 @@ describe('Member Custom Fields Admin API', function () {
             // logs, and the delete still says what the field was after its row is gone.
             for (const a of timeline) {
                 assert.equal(a.actor_id, actorId, `the ${a.event} action is attributed`);
-                assert.ok(parseContext(a)?.primary_name, `the ${a.event} action names the field`);
+                assert.ok(contextOf(a)?.primary_name, `the ${a.event} action names the field`);
             }
 
             // Names track the field at each point; the rename also records what it was.
-            assert.equal(parseContext(timeline[0]).primary_name, 'Delivery address');
-            assert.equal(parseContext(timeline[1]).primary_name, 'Shipping address');
-            assert.equal(parseContext(timeline[1]).previous_name, 'Delivery address');
-            assert.equal(parseContext(timeline[5]).primary_name, 'Shipping address');
+            assert.equal(contextOf(timeline[0]).primary_name, 'Delivery address');
+            assert.equal(contextOf(timeline[1]).primary_name, 'Shipping address');
+            assert.equal(contextOf(timeline[1]).previous_name, 'Delivery address');
+            assert.equal(contextOf(timeline[5]).primary_name, 'Shipping address');
         });
     });
 

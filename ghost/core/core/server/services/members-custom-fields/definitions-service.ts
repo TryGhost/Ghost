@@ -183,7 +183,7 @@ export class CustomFieldDefinitionsService {
         // outside this transaction, so recording inside it would leave orphaned
         // "added" entries for fields a rollback never created.
         for (const field of created) {
-            await this.recordAction({context, verb: 'create', subject: field.key, details: {primary_name: field.name}});
+            await this.recordAction({context, verb: 'create', subject: field.id, details: {primary_name: field.name, key: field.key}});
         }
         return created;
     }
@@ -318,7 +318,7 @@ export class CustomFieldDefinitionsService {
                 }
                 throw err;
             }
-            await this.recordAction({context, verb: 'rename', subject: key, details: {primary_name: patch.name, previous_name: existing.name}});
+            await this.recordAction({context, verb: 'rename', subject: existing.id, details: {primary_name: patch.name, key, previous_name: existing.name}});
         }
 
         // A status change is the archive/restore transition. Only write (and log)
@@ -328,7 +328,7 @@ export class CustomFieldDefinitionsService {
                 .where('key', key)
                 .update({status: patch.status, updated_at: new Date()});
             const verb = patch.status === FIELD_STATUS.archived ? 'archive' : 'restore';
-            await this.recordAction({context, verb, subject: key, details: {primary_name: patch.name ?? existing.name}});
+            await this.recordAction({context, verb, subject: existing.id, details: {primary_name: patch.name ?? existing.name, key}});
         }
 
         return this.read(key);
@@ -350,7 +350,7 @@ export class CustomFieldDefinitionsService {
             throw new errors.ValidationError({message: 'Only archived custom fields can be deleted. Archive the field first.'});
         }
         await this.knex(TABLE).where('key', key).del();
-        await this.recordAction({context, verb: 'delete', subject: key, details: {primary_name: field.name}});
+        await this.recordAction({context, verb: 'delete', subject: field.id, details: {primary_name: field.name, key}});
     }
 }
 
