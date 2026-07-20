@@ -27,7 +27,7 @@ function seedMemberCount(queryClient: ReturnType<typeof createTestQueryClient>, 
     queryClient.setQueryData(memberCountKey, membersResponse(total), options);
 }
 
-function createQueryClientWithCurrentUser() {
+function createQueryClientWithCurrentUser(roles: Array<{id: string; name: string}> = [{id: 'role-1', name: 'Administrator'}]) {
     const queryClient = createTestQueryClient();
 
     queryClient.setQueryDefaults(currentUserQueryKey, {staleTime: Infinity});
@@ -37,7 +37,7 @@ function createQueryClientWithCurrentUser() {
             id: 'user-1',
             name: 'Test User',
             email: 'test@example.com',
-            roles: []
+            roles
         }]
     });
 
@@ -241,6 +241,21 @@ describe('members api', () => {
 
         await withMockFetch({}, async (mockFetch) => {
             const {result} = renderHookWithProviders(() => useMemberCount({enabled: false}), {queryClient});
+
+            await act(async () => {
+                await Promise.resolve();
+            });
+
+            expect(result.current).toBeUndefined();
+            expect(mockFetch.calls).toHaveLength(0);
+        });
+    });
+
+    it('does not fetch the member count for roles that cannot manage members', async () => {
+        const queryClient = createQueryClientWithCurrentUser([{id: 'role-1', name: 'Editor'}]);
+
+        await withMockFetch({}, async (mockFetch) => {
+            const {result} = renderHookWithProviders(() => useMemberCount({enabled: true}), {queryClient});
 
             await act(async () => {
                 await Promise.resolve();

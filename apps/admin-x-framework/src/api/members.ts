@@ -166,7 +166,8 @@ export const useBrowseMembers = createQuery<MembersResponseType>({
 const useBrowseMemberCount = createQuery<MembersResponseType>({
     dataType,
     path: membersPath,
-    defaultSearchParams: memberCountSearchParams
+    defaultSearchParams: memberCountSearchParams,
+    permissions: ['Owner', 'Administrator', 'Super Editor']
 });
 
 export function useMemberCount(options?: {enabled?: boolean}) {
