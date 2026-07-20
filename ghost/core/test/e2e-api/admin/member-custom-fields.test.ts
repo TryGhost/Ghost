@@ -908,6 +908,40 @@ describe('Member Custom Fields Admin API', function () {
                 .expectStatus(422);
         });
 
+        it('rejects a key too long to name a field, without echoing it back', async function () {
+            // Keys are minted into a bounded column, so a longer one cannot name a
+            // field that exists. Refused as input rather than looked up, which also
+            // means the response never carries the key back — the unknown-key error
+            // names the key it was given, so an enormous one would otherwise answer
+            // a request with a multiple of its own size.
+            const memberId = await createMember();
+            const hugeKey = 'k'.repeat(200000);
+
+            const body = await setValues(memberId, {[hugeKey]: 'v'}, 422);
+            assert.equal(body.errors[0].property, 'custom_fields');
+            assert.ok(body.errors[0].context.length < 1000, 'the key must not be echoed back');
+        });
+
+        it('rejects a write naming more fields than the site may define', async function () {
+            // A write can't name more fields than the site is allowed definitions, so
+            // the ceiling is the operator's configured one. Without it, each key binds
+            // a query parameter and a big enough object exceeds the driver's limit,
+            // surfacing as a 500 with the generated SQL in the error.
+            configUtils.set('members:customFields:maxDefinitions', 3);
+            const memberId = await createMember();
+
+            const atCeiling = Object.fromEntries(Array.from({length: 3}, (_, i) => [`k${i}`, 'v']));
+            // At the ceiling it gets as far as resolving the keys, which is where an
+            // undefined field is the thing rejected — not the ceiling.
+            const allowed = await setValues(memberId, atCeiling, 422);
+            assert.match(allowed.errors[0].context ?? allowed.errors[0].message, /Unknown custom field/);
+
+            const overCeiling = Object.fromEntries(Array.from({length: 4}, (_, i) => [`k${i}`, 'v']));
+            const refused = await setValues(memberId, overCeiling, 422);
+            assert.equal(refused.errors[0].property, 'custom_fields');
+            assert.match(refused.errors[0].context ?? refused.errors[0].message, /limited to 3 fields/);
+        });
+
         it('clearing a value that was never set is a no-op', async function () {
             const field = await createField({name: 'Favourite topic'});
             const memberId = await createMember();
