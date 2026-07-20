@@ -134,18 +134,42 @@ export class CustomFieldValuesService {
     }
 
     /**
+     * @private
+     * Input as the values object it claims to be, rejecting anything that isn't
+     * one. The single place that decision is made, so every caller asking about
+     * the same body gets the same answer and the same error.
+     */
+    private parseValues(input: unknown): Record<string, unknown> {
+        const parsed = ValuesInput.safeParse(input);
+        if (!parsed.success) {
+            throw new errors.ValidationError({message: 'Custom field values must be an object keyed by field key.', property: 'custom_fields'});
+        }
+
+        return parsed.data;
+    }
+
+    /**
+     * Whether input names any values at all, rejecting a body that isn't a values
+     * object in the first place.
+     *
+     * The shape question on its own, with no catalog lookup, so a caller can ask
+     * before deciding whether a write is even permitted — and get the same verdict,
+     * and the same rejection, that resolving it would have produced. An object
+     * carrying nothing but a `__proto__` key names nothing once parsed.
+     */
+    namesValues(input: unknown): boolean {
+        return Object.keys(this.parseValues(input)).length > 0;
+    }
+
+    /**
      * Resolve input into the writes it implies, rejecting anything invalid, and
      * writing nothing. Returned so a caller can validate before it commits to a
      * change it would have to unwind (the member edit validates up front), then
      * apply the same plan without re-resolving or re-validating.
      */
     async planWrite(input: unknown): Promise<PlannedWrite[]> {
-        const parsed = ValuesInput.safeParse(input);
-        if (!parsed.success) {
-            throw new errors.ValidationError({message: 'Custom field values must be an object keyed by field key.', property: 'custom_fields'});
-        }
-
-        const keys = Object.keys(parsed.data);
+        const values = this.parseValues(input);
+        const keys = Object.keys(values);
 
         // A write can't name more fields than the site is allowed to define, so the
         // ceiling is the same operator setting that bounds definitions rather than a
@@ -163,7 +187,7 @@ export class CustomFieldValuesService {
         const byKey = await this.activeFieldsByKey(keys);
         const writes: PlannedWrite[] = [];
 
-        for (const [key, raw] of Object.entries(parsed.data)) {
+        for (const [key, raw] of Object.entries(values)) {
             const field = byKey.get(key);
             if (!field) {
                 // Unknown (or archived) key. Rejected rather than ignored: a typo

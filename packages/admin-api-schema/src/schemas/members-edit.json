@@ -54,6 +54,9 @@
           "can_comment": {
             "type": "boolean"
           },
+          "custom_fields": {
+            "description": "Declared so it is not stripped as an unknown property. Deliberately unconstrained: only the site's field-type catalog knows what a given key accepts, so the shape is validated there rather than split across two layers that could disagree."
+          },
           "comment_ban": {
             "oneOf": [
               {

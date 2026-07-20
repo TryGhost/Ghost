@@ -942,6 +942,55 @@ describe('Member Custom Fields Admin API', function () {
             assert.match(refused.errors[0].context ?? refused.errors[0].message, /limited to 3 fields/);
         });
 
+        it('refuses a malformed custom_fields identically on create and on edit', async function () {
+            // The schema lets every shape through on purpose, so the service is the
+            // only thing judging it — and both verbs must judge it the same way. A
+            // body too malformed to be a write is refused, not accepted and dropped,
+            // which is the whole reason create refuses rather than ignoring.
+            const memberId = await createMember();
+
+            for (const [index, malformed] of [null, 'not-an-object', 42, true, [], ['a']].entries()) {
+                const created = await agent
+                    .post('members/')
+                    .body({members: [{email: `create-malformed-${index}@example.com`, custom_fields: malformed}]})
+                    .expectStatus(422);
+                assert.equal(created.body.errors[0].property, 'custom_fields');
+
+                const edited = await setValues(memberId, malformed as unknown as Record<string, unknown>, 422);
+                assert.equal(edited.errors[0].property, 'custom_fields');
+            }
+        });
+
+        it('treats a create and an edit the same on what counts as setting values', async function () {
+            // An object carrying only a `__proto__` key names no value once parsed,
+            // so neither path should see it as a write. Create and edit resolve that
+            // question with the same schema, so they cannot drift on it.
+            const payload = JSON.parse('{"__proto__": {"polluted": true}}');
+
+            await agent
+                .post('members/')
+                .body({members: [{email: 'create-proto@example.com', custom_fields: payload}]})
+                .expectStatus(201);
+
+            const memberId = await createMember();
+            await agent
+                .put(`members/${memberId}/`)
+                .body({members: [{custom_fields: payload}]})
+                .expectStatus(200);
+
+            assert.deepEqual(await readValues(memberId), {});
+            assert.equal(({} as Record<string, unknown>).polluted, undefined, 'the prototype must not be polluted');
+        });
+
+        it('accepts an empty custom_fields when creating a member', async function () {
+            // `{}` asks for nothing, and an edit treats it as a no-op, so a client
+            // whose serializer always emits the key can still create members.
+            await agent
+                .post('members/')
+                .body({members: [{email: 'create-empty-values@example.com', custom_fields: {}}]})
+                .expectStatus(201);
+        });
+
         it('clearing a value that was never set is a no-op', async function () {
             const field = await createField({name: 'Favourite topic'});
             const memberId = await createMember();
@@ -1216,6 +1265,11 @@ describe('Member Custom Fields Admin API', function () {
         });
 
         it('ignores custom_fields on a member edit and never returns them', async function () {
+            // The schema declares `custom_fields` on every site, so with the feature
+            // off the key reaches the service and is dropped there. A flag-off site
+            // stays byte-identical to a Ghost that predates the feature: the edit
+            // succeeds, the rest of it applies, and the values are ignored.
+            //
             // The field and value are set up with the flag on, then the flag goes
             // off for the request under test.
             mockManager.restore();
@@ -1239,6 +1293,38 @@ describe('Member Custom Fields Admin API', function () {
             mockManager.restore();
             mockManager.mockLabsEnabled('membersCustomFields');
             assert.deepEqual(await readValues(memberId), {[field.key]: 'Ghosts'});
+        });
+
+        it('ignores custom_fields on a member create', async function () {
+            // The not-yet-supported refusal that create gets with the flag on must
+            // not leak to a site without the feature: there, the key is simply
+            // dropped, exactly as a pre-feature Ghost would have.
+            const {body} = await agent
+                .post('members/')
+                .body({members: [{email: 'create-flag-off@example.com', custom_fields: {'favourite-topic': 'Ghosts'}}]})
+                .expectStatus(201);
+
+            assert.equal(body.members[0].custom_fields, undefined);
+        });
+
+        it('ignores a malformed custom_fields rather than rejecting it', async function () {
+            // The schema declares `custom_fields` on every site, so a shape it might
+            // have judged would be judged everywhere — including sites without the
+            // feature, which accepted anything under this key before it existed.
+            // Leaving the schema permissive is what keeps those callers working.
+            const memberId = await createMember();
+
+            for (const malformed of [null, 'not-an-object', 42, []]) {
+                await agent
+                    .put(`members/${memberId}/`)
+                    .body({members: [{custom_fields: malformed}]})
+                    .expectStatus(200);
+            }
+
+            await agent
+                .post('members/')
+                .body({members: [{email: 'create-malformed@example.com', custom_fields: 'not-an-object'}]})
+                .expectStatus(201);
         });
     });
 
