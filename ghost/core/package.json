@@ -137,7 +137,7 @@
     "@tryghost/security": "1.0.6",
     "@tryghost/social-urls": "0.1.63",
     "@tryghost/string": "catalog:",
-    "@tryghost/tpl": "2.3.2",
+    "@tryghost/tpl": "catalog:",
     "@tryghost/url-utils": "5.2.6",
     "@tryghost/validator": "0.2.22",
     "@tryghost/version": "2.3.2",

@@ -156,6 +156,9 @@ catalogs:
     '@tryghost/timezone-data':
       specifier: 1.0.0
       version: 1.0.0
+    '@tryghost/tpl':
+      specifier: 2.3.2
+      version: 2.3.2
     '@types/express':
       specifier: 4.17.25
       version: 4.17.25
@@ -1320,7 +1323,7 @@ importers:
         version: 2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))(@tiptap/pm@2.27.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.2
+        version: 2.3.2(supports-color@5.5.0)
       react:
         specifier: catalog:react17
         version: 17.0.2
@@ -1414,7 +1417,7 @@ importers:
     dependencies:
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.2
+        version: 2.3.2(supports-color@5.5.0)
     devDependencies:
       '@doist/react-interpolate':
         specifier: 2.2.3
@@ -1686,7 +1689,7 @@ importers:
     dependencies:
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.2
+        version: 2.3.2(supports-color@5.5.0)
       react:
         specifier: 'catalog:'
         version: 18.3.1
@@ -1771,7 +1774,7 @@ importers:
     dependencies:
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.2
+        version: 2.3.2(supports-color@5.5.0)
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
@@ -1909,7 +1912,7 @@ importers:
         version: 1.61.1
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.2
+        version: 2.3.2(supports-color@5.5.0)
       '@tryghost/logging':
         specifier: 4.2.1
         version: 4.2.1(supports-color@5.5.0)
@@ -2426,7 +2429,7 @@ importers:
         version: 2.3.2
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.2
+        version: 2.3.2(supports-color@5.5.0)
       '@tryghost/domain-events':
         specifier: 'catalog:'
         version: 3.3.2
@@ -2539,7 +2542,7 @@ importers:
         specifier: 'catalog:'
         version: 0.3.5
       '@tryghost/tpl':
-        specifier: 2.3.2
+        specifier: 'catalog:'
         version: 2.3.2
       '@tryghost/url-utils':
         specifier: 5.2.6
@@ -2552,7 +2555,7 @@ importers:
         version: 2.3.2
       '@tryghost/zip':
         specifier: 3.5.1
-        version: 3.5.1
+        version: 3.5.1(supports-color@5.5.0)
       body-parser:
         specifier: 1.20.5
         version: 1.20.5
@@ -4130,7 +4133,7 @@ importers:
     dependencies:
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.2
+        version: 2.3.2(supports-color@5.5.0)
       i18next:
         specifier: 23.16.8
         version: 23.16.8
@@ -30608,7 +30611,7 @@ snapshots:
 
   '@tryghost/api-framework@3.3.2':
     dependencies:
-      '@tryghost/debug': 2.3.2
+      '@tryghost/debug': 2.3.2(supports-color@5.5.0)
       '@tryghost/errors': 1.3.13
       '@tryghost/promise': 2.3.2
       '@tryghost/tpl': 2.3.2
@@ -30629,14 +30632,14 @@ snapshots:
 
   '@tryghost/bookshelf-eager-load@2.3.2':
     dependencies:
-      '@tryghost/debug': 2.3.2
+      '@tryghost/debug': 2.3.2(supports-color@5.5.0)
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
   '@tryghost/bookshelf-filter@2.3.2':
     dependencies:
-      '@tryghost/debug': 2.3.2
+      '@tryghost/debug': 2.3.2(supports-color@5.5.0)
       '@tryghost/errors': 1.3.13
       '@tryghost/nql': 0.13.1
       '@tryghost/tpl': 2.3.2
@@ -30645,14 +30648,14 @@ snapshots:
 
   '@tryghost/bookshelf-has-posts@2.4.2':
     dependencies:
-      '@tryghost/debug': 2.3.2
+      '@tryghost/debug': 2.3.2(supports-color@5.5.0)
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
   '@tryghost/bookshelf-include-count@2.3.2':
     dependencies:
-      '@tryghost/debug': 2.3.2
+      '@tryghost/debug': 2.3.2(supports-color@5.5.0)
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
@@ -30746,7 +30749,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/debug@2.3.2':
+  '@tryghost/debug@2.3.2(supports-color@5.5.0)':
     dependencies:
       '@tryghost/root-utils': 2.3.2
       debug: 4.4.3(supports-color@5.5.0)
@@ -31200,18 +31203,18 @@ snapshots:
     dependencies:
       '@tryghost/errors': 1.3.13
       archiver: 8.0.0
-      extract-zip: 2.0.1
+      extract-zip: 2.0.1(supports-color@5.5.0)
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
       - react-native-b4a
       - supports-color
 
-  '@tryghost/zip@3.5.1':
+  '@tryghost/zip@3.5.1(supports-color@5.5.0)':
     dependencies:
       '@tryghost/errors': 1.3.13
       archiver: 8.0.0
-      extract-zip: 2.0.1
+      extract-zip: 2.0.1(supports-color@5.5.0)
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
@@ -39000,7 +39003,7 @@ snapshots:
 
   extract-stack@2.0.0: {}
 
-  extract-zip@2.0.1:
+  extract-zip@2.0.1(supports-color@5.5.0):
     dependencies:
       debug: 4.4.3(supports-color@5.5.0)
       get-stream: 5.2.0
