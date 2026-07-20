@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "webhooks",
+  "title": "webhooks",
+  "description": "Base webhooks definitions",
+  "definitions": {
+    "webhook": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event": {
+          "type": "string",
+          "maxLength": 50,
+          "isLowercase": true
+        },
+        "target_url": {
+          "type": "string",
+          "format": "uri-reference",
+          "maxLength": 2000
+        },
+        "name": {
+          "type": ["string", "null"],
+          "maxLength": 191
+        },
+        "secret": {
+          "type": ["string", "null"],
+          "maxLength": 191
+        },
+        "api_version": {
+          "type": ["string", "null"],
+          "maxLength": 50
+        },
+        "integration_id": {
+          "type": ["string", "null"],
+          "maxLength": 24
+        }
+      }
+    }
+  }
+}
