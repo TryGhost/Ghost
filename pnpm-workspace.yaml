@@ -72,12 +72,12 @@ catalog:
   '@tanstack/react-virtual': 3.14.5
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
-  '@tryghost/api-framework': 3.2.4
+  '@tryghost/api-framework': 3.3.2
   '@tryghost/brute-knex': 3.2.0
   '@tryghost/color-utils': 0.2.19
   '@tryghost/custom-fonts': 1.0.11
-  '@tryghost/debug': 2.2.3
-  '@tryghost/domain-events': 3.2.5
+  '@tryghost/debug': 2.3.2
+  '@tryghost/domain-events': 3.3.2
   '@tryghost/errors': 1.3.13
   '@tryghost/helpers': 1.1.106
   '@tryghost/limit-service': 1.5.6
