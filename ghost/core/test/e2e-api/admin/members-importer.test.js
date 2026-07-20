@@ -324,4 +324,47 @@ describe('Members Importer API', function () {
 
         assert.equal(res.body.errors[0].message, 'Please select a members CSV file.');
     });
+
+    // The admin import UI maps onto the column names a publisher sees, and
+    // "subscribed_to_emails" is not the member model's field name for it. Nothing at
+    // this layer covered a mapping onto it, so a rename lost in the pipeline would
+    // silently unsubscribe every imported member.
+    it('Can import CSV with a column mapped to subscribed_to_emails', async function () {
+        const res = await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .field('mapping[correo_electronico]', 'email')
+            .field('mapping[boletin]', 'subscribed_to_emails')
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-mapped-subscribed.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect(201);
+
+        assert.equal(res.body.meta.stats.imported, 2);
+
+        const browse = await request
+            .get(localUtils.API.getApiQuery('members/?search=mapped_sub&include=newsletters'))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        const subscribed = browse.body.members.find(m => m.email === 'member+mapped_sub_1@example.com');
+        const unsubscribed = browse.body.members.find(m => m.email === 'member+mapped_sub_2@example.com');
+
+        assertExists(subscribed);
+        assertExists(unsubscribed);
+        assert.ok(subscribed.newsletters.length > 0, 'a member mapped to true should be subscribed');
+        assert.equal(unsubscribed.newsletters.length, 0);
+    });
+
+    it('Can handle a CSV with headers but no rows', async function () {
+        const res = await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-headers-only.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        assert.equal(res.body.meta.stats.imported, 0);
+        assert.equal(res.body.meta.stats.invalid.length, 0);
+    });
 });

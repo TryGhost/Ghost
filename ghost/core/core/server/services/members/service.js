@@ -48,8 +48,6 @@ let verificationTrigger;
 
 const initMembersCSVImporter = ({stripeAPIService}) => {
     return makeMembersCSVImporter({
-        storagePath: config.getContentPath('data'),
-        getTimezone: () => settingsCache.get('timezone'),
         getMembersRepository: async () => {
             const api = await module.exports.api;
             return api.members;
