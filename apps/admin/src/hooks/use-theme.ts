@@ -13,7 +13,14 @@ function getSystemTheme(): ResolvedThemeMode {
 }
 
 function applyThemeClass(resolvedTheme: ResolvedThemeMode) {
-    document.documentElement.classList.toggle('dark', resolvedTheme === 'dark');
+    const html = document.documentElement;
+    // `theme-switching` suppresses transitions (rule in shade/styles.css) so the
+    // swap lands in one paint; double-rAF release mirrors Ember's feature.js.
+    html.classList.add('theme-switching');
+    html.classList.toggle('dark', resolvedTheme === 'dark');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        html.classList.remove('theme-switching');
+    }));
 }
 
 // In the embedded admin, Ember owns the DOM theme: it manages both the `dark`
