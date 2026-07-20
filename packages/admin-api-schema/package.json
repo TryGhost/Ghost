@@ -14,12 +14,12 @@
   "scripts": {
     "test:unit": "NODE_ENV=testing vitest run --coverage",
     "test": "pnpm run '/^test:/'",
-    "lint:code": "eslint index.js lib/ --cache",
+    "lint:code": "eslint index.js src/ --cache",
     "lint:test": "eslint test/ --cache",
     "lint": "pnpm run '/^lint:/'"
   },
   "files": [
-    "lib/*",
+    "src/*",
     "index.js"
   ],
   "devDependencies": {

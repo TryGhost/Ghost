@@ -26,7 +26,7 @@ describe('Exposes a correct API', function () {
     describe('list', function () {
         it('Returns names of all available definitions for default version', async function () {
             const definitions = apiSchema.list();
-            const files = fs.readdirSync(path.resolve(__dirname, '../lib/schemas'));
+            const files = fs.readdirSync(path.resolve(__dirname, '../src/schemas'));
             // We only export the "action" files rather than definition, e.g. posts-add.json, not posts.json
             const exportedFiles = files.filter(file => /\w+-\w+.json/.test(file));
             assert.equal(definitions.length, exportedFiles.length);
