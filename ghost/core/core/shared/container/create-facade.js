@@ -11,10 +11,11 @@
 module.exports = function createFacade(registrationName, createLegacy) {
     let legacyInstance;
 
+    const current = require('./current');
+
     const resolve = () => {
-        const {hasDefaultScope, getCurrentScope} = require('./current');
-        if (hasDefaultScope()) {
-            return getCurrentScope().resolve(registrationName);
+        if (current.hasDefaultScope()) {
+            return current.getCurrentScope().resolve(registrationName);
         }
         legacyInstance = legacyInstance || createLegacy();
         return legacyInstance;

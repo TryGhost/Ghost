@@ -25,5 +25,8 @@ const createKnexProxy = (resolveKnex) => {
 
 module.exports = {
     createKnexProxy,
-    knexProxy: createKnexProxy(() => require('./index').knex)
+    knexProxy: (() => {
+        const db = require('./index');
+        return createKnexProxy(() => db.knex);
+    })()
 };
