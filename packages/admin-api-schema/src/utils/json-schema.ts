@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Ajv = require('ajv');
 const addFormats = require('ajv-formats');
-const isLowercaseKeyword = require('./is-lowercase-keyword');
+const isLowercaseKeyword = require('./is-lowercase-keyword.ts');
 const errors = require('@tryghost/errors');
 
 const ajv = new Ajv({
