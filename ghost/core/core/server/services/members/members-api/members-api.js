@@ -81,6 +81,7 @@ module.exports = function MembersAPI({
     sentry,
     settingsHelpers,
     urlUtils,
+    urlService,
     commentsService,
     emailAddressService,
     giftService,
@@ -123,6 +124,7 @@ module.exports = function MembersAPI({
     });
 
     const eventRepository = new EventRepository({
+        urlService,
         DonationPaymentEvent,
         EmailRecipient,
         MemberSubscribeEvent,
