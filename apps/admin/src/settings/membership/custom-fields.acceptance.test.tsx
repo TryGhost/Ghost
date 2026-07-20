@@ -30,12 +30,47 @@ function customFieldsBoot() {
     };
 }
 
-function fakeCustomFields(fields: typeof companyField[] | (() => typeof companyField[]) = [companyField]) {
-    // Settings opts into archived fields (`?filter=status:[active,archived]`),
-    // so the fake matches the path with any query. A getter serves mutable
-    // state for tests whose mutation fakes change the list mid-test.
-    const response = typeof fields === "function" ? () => ({members_custom_fields: fields()}) : {members_custom_fields: fields};
-    return fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), response);
+type CustomField = typeof companyField;
+
+// Settings opts into archived fields (`?filter=status:[active,archived]`),
+// so the fakes match the path with any query.
+const customFieldsBrowsePath = new RegExp("^/members/custom_fields/\\?");
+
+function fakeCustomFields(fields: CustomField[] = [companyField]) {
+    return fakeAdminEndpoint("GET", customFieldsBrowsePath, {members_custom_fields: fields});
+}
+
+/**
+ * Stateful variant for lifecycle specs: every mutation invalidates and
+ * refetches the list, so the GET serves mutable state and each registered
+ * mutation applies its transition to it — created entities are declared by
+ * the spec, edits apply the captured patch, deletes remove by key.
+ */
+function fakeCustomFieldsLifecycle(initial: CustomField[]) {
+    let fields = initial;
+    fakeAdminEndpoint("GET", customFieldsBrowsePath, () => ({members_custom_fields: fields}));
+
+    return {
+        create(created: CustomField) {
+            return fakeAdminEndpoint("POST", "/members/custom_fields/", () => {
+                fields = [...fields, created];
+                return {members_custom_fields: [created]};
+            });
+        },
+        edit(key: string) {
+            return fakeAdminEndpoint("PUT", `/members/custom_fields/${key}/`, ({body}) => {
+                const [patch] = (body as {members_custom_fields: Partial<CustomField>[]}).members_custom_fields;
+                fields = fields.map(field => (field.key === key ? {...field, ...patch} : field));
+                return {members_custom_fields: fields.filter(field => field.key === key)};
+            });
+        },
+        delete(key: string) {
+            return fakeAdminEndpoint("DELETE", `/members/custom_fields/${key}/`, () => {
+                fields = fields.filter(field => field.key !== key);
+                return {};
+            });
+        },
+    };
 }
 
 describe("Custom fields", () => {
@@ -205,17 +240,12 @@ describe("Custom fields", () => {
 
     it("reveals a just-created field even when the list is collapsed", async () => {
         fakeSettingsScreens();
-        let currentFields = Array.from({length: 6}, (_, index) => ({
+        const world = fakeCustomFieldsLifecycle(Array.from({length: 6}, (_, index) => ({
             ...companyField,
             key: `field-${index}`,
             name: `Field ${index}`,
-        }));
-        fakeCustomFields(() => currentFields);
-        fakeAdminEndpoint("POST", "/members/custom_fields/", () => {
-            const created = {...companyField, key: "newest", name: "Newest"};
-            currentFields = [...currentFields, created];
-            return {members_custom_fields: [created]};
-        });
+        })));
+        world.create({...companyField, key: "newest", name: "Newest"});
         await renderAdminApp("/settings", {boot: customFieldsBoot()});
 
         const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
@@ -240,12 +270,8 @@ describe("Custom fields", () => {
 
     it("permanently deletes an archived field from the header menu, after a heavy warning", async () => {
         fakeSettingsScreens();
-        let currentFields = [companyField, archivedField];
-        fakeCustomFields(() => currentFields);
-        const deleteApi = fakeAdminEndpoint("DELETE", "/members/custom_fields/old-hobby/", () => {
-            currentFields = [companyField];
-            return {};
-        });
+        const world = fakeCustomFieldsLifecycle([companyField, archivedField]);
+        const deleteApi = world.delete("old-hobby");
         await renderAdminApp("/settings", {boot: customFieldsBoot()});
 
         await settingsScreen.customFields().getByRole("tab", {name: "Archived"}).click();
@@ -294,12 +320,8 @@ describe("Custom fields", () => {
 
     it("reactivates an archived field after confirmation, as a status edit", async () => {
         fakeSettingsScreens();
-        let currentFields = [companyField, archivedField];
-        fakeCustomFields(() => currentFields);
-        const editApi = fakeAdminEndpoint("PUT", "/members/custom_fields/old-hobby/", () => {
-            currentFields = [companyField, {...archivedField, status: "active"}];
-            return {members_custom_fields: [{...archivedField, status: "active"}]};
-        });
+        const world = fakeCustomFieldsLifecycle([companyField, archivedField]);
+        const editApi = world.edit("old-hobby");
         await renderAdminApp("/settings", {boot: customFieldsBoot()});
 
         await settingsScreen.customFields().getByRole("tab", {name: "Archived"}).click();
