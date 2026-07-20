@@ -1,4 +1,4 @@
-import type {AutomationStepToRun, AutomationsRepository, RecordEmailSentOptions} from './automations-repository';
+import type {AutomationStepToRun, AutomationsRepository} from './automations-repository';
 import {getMailgunMessageId} from './mailgun-message-id';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
@@ -43,10 +43,9 @@ type PollOptions = {
         'fetchAndLockSteps' |
         'finishStepAndEnqueueNext' |
         'markStepTerminal' |
+        'recordEmailSent' |
         'retryStep'
-    > & {
-        recordEmailSent(options: RecordEmailSentOptions): Promise<void>;
-    };
+    >;
     enqueueAnotherPollAt: (date: Readonly<Date>) => unknown;
     scheduleAutomationEmailAnalyticsJob: () => Promise<void>;
     memberWelcomeEmailService: MemberWelcomeEmailService;
