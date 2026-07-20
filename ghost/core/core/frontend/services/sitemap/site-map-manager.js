@@ -10,8 +10,6 @@ const TagsMapGenerator = require('./tags-map-generator');
 
 // Frontend-internal routing events (router.created / routers.reset)
 const routingEvents = require('../routing/events');
-// Server events: url.added / url.removed from the URL service, site.changed
-const events = require('../../../server/lib/common/events');
 
 // What the sitemap XML reads off each resource, beyond the columns URL
 // computation needs: lastmod dates, image nodes, and the canonical_url skip
@@ -43,6 +41,12 @@ class SiteMapManager {
         // url service loads at require time and loading it when this module
         // loads would change boot order.
         this._urlService = options.urlService || null;
+
+        // Server events arrive through the proxy's narrow subscription
+        // surface (site.changed, url.added, url.removed). Injectable for
+        // tests; resolved at construction (not module load) for the same
+        // boot-order reason as the url service above.
+        this._serverEvents = options.serverEvents || require('../proxy').serverEvents;
 
         // Index state for the build path. _indexEpoch increments on every
         // invalidation signal; a build compares the epoch it started with so
@@ -78,7 +82,7 @@ class SiteMapManager {
         // current after the initial build, exactly as before this change —
         // deploying is a no-op until the lazy flip. Pure lazy fires no
         // events, so there the index empties and the next read rebuilds.
-        events.on('site.changed', () => {
+        this._serverEvents.on('site.changed', () => {
             if (this._getUrlService().isLazy()) {
                 this._invalidateIndex();
             }
@@ -90,11 +94,11 @@ class SiteMapManager {
             this[event.data.resourceType].updateURL(event.data);
         });
 
-        events.on('url.added', (obj) => {
+        this._serverEvents.on('url.added', (obj) => {
             this[obj.resource.config.type].addUrl(obj.url.absolute, obj.resource.data);
         });
 
-        events.on('url.removed', (obj) => {
+        this._serverEvents.on('url.removed', (obj) => {
             this[obj.resource.config.type].removeUrl(obj.url.absolute, obj.resource.data);
         });
 
