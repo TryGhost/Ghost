@@ -18,7 +18,7 @@ const themeTest = baseTest.extend<{
     server: SetupServer;
     queryClient: QueryClient;
     wrapper: TestWrapperComponent;
-    animationFrames: FrameRequestCallback[];
+    animationFrames: Map<number, FrameRequestCallback>;
 }>({
     ...serverFixture,
     ...queryClientFixtures,
@@ -26,21 +26,34 @@ const themeTest = baseTest.extend<{
     // `theme-switching` suppression window and release it deterministically.
     animationFrames: async ({ task }, provide) => {
         void task;
-        const callbacks: FrameRequestCallback[] = [];
-        const spy = vi
+        const callbacks = new Map<number, FrameRequestCallback>();
+        let nextFrameId = 1;
+        const requestAnimationFrameSpy = vi
             .spyOn(window, "requestAnimationFrame")
             .mockImplementation((callback) => {
-                callbacks.push(callback);
-                return callbacks.length;
+                const frameId = nextFrameId;
+                nextFrameId += 1;
+                callbacks.set(frameId, callback);
+                return frameId;
+            });
+        const cancelAnimationFrameSpy = vi
+            .spyOn(window, "cancelAnimationFrame")
+            .mockImplementation((frameId) => {
+                callbacks.delete(frameId);
             });
         await provide(callbacks);
-        spy.mockRestore();
+        requestAnimationFrameSpy.mockRestore();
+        cancelAnimationFrameSpy.mockRestore();
     },
 });
 
-function flushAnimationFrames(callbacks: FrameRequestCallback[]) {
-    while (callbacks.length > 0) {
-        callbacks.shift()?.(0);
+function flushAnimationFrames(callbacks: Map<number, FrameRequestCallback>) {
+    while (callbacks.size > 0) {
+        const [frameId, callback] = callbacks.entries().next().value ?? [];
+        if (frameId !== undefined && callback) {
+            callbacks.delete(frameId);
+            callback(0);
+        }
     }
 }
 
@@ -90,6 +103,9 @@ describe("useTheme (standalone)", () => {
         const html = document.documentElement;
         expect(html.classList.contains("dark")).toBe(true);
         expect(html.classList.contains("theme-switching")).toBe(true);
+        // Loading preferences reapplies the theme before the initial suppression
+        // window closes, leaving only the latest release callback scheduled.
+        expect(animationFrames.size).toBe(1);
 
         flushAnimationFrames(animationFrames);
 
