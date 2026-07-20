@@ -51,6 +51,44 @@ class BootLogger {
 }
 
 /**
+ * Flush buffered logs before the process exits.
+ *
+ * `logging.flush` drains any batching transport (e.g. ElasticSearch) and is
+ * itself best-effort — it swallows transport errors. The transport's own client
+ * bounds each request (the ES client defaults to a 30s request timeout), so
+ * `flush` always settles on its own; a healthy ship completes in milliseconds.
+ *
+ * The timeout here is only a last-resort guard against a genuinely wedged
+ * transport that never settles, so it must sit comfortably above any realistic
+ * ship — a tight bound would abandon a slow-but-working request (cold TLS +
+ * product check + cross-region RTT to a remote cluster) and drop the very log
+ * we're trying to ship, exactly the boot-error loss this flush exists to fix.
+ * @param {{flush: () => Promise<void>}} logging
+ * @param {number} [timeoutMs]
+ * @returns {Promise<void>}
+ */
+async function flushLogging(logging, timeoutMs = 10000) {
+    const {setTimeout: sleep} = require('node:timers/promises');
+
+    // Runs in the fatal-error path immediately before `process.exit`, so it must
+    // never throw — a rejection here would skip the exit. `logging.flush` is
+    // already best-effort, but a synchronous throw or rejection is swallowed too.
+    const abortController = new AbortController();
+    try {
+        await Promise.race([
+            logging.flush(),
+            sleep(timeoutMs, undefined, {signal: abortController.signal})
+        ]);
+    } catch {
+        // A broken flush must not block shutdown.
+    } finally {
+        // Cancel the timer as soon as the race settles so it can't keep the
+        // event loop alive past the flush.
+        abortController.abort();
+    }
+}
+
+/**
  * Helper function to handle sending server ready notifications
  * @param {string} [error]
  */
@@ -640,15 +678,19 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         logging.error(serverStartError);
 
+        // `logging.error` may buffer on an async transport (e.g. the
+        // ElasticSearch transport batches writes and only ships on a ~30s
+        // interval). We exit moments later, so without an explicit flush the
+        // crash reason is never shipped anywhere but stdout. Force the buffers
+        // out before exiting.
+        await flushLogging(logging);
+
         // If ghost was started and something else went wrong, we shut it down
         if (ghostServer) {
             notifyServerReady(serverStartError);
             ghostServer.shutdown(2);
         } else {
-            // Ghost server failed to start, set a timeout to give logging a chance to flush
-            setTimeout(() => {
-                process.exit(2);
-            }, 100);
+            process.exit(2);
         }
     }
 }

@@ -116,7 +116,7 @@
     "@tryghost/kg-lexical-html-renderer": "workspace:*",
     "@tryghost/limit-service": "catalog:",
     "@tryghost/logging": "catalog:",
-    "@tryghost/metrics": "1.0.43",
+    "@tryghost/metrics": "3.3.4",
     "@tryghost/mongo-knex": "catalog:",
     "@tryghost/mongo-utils": "0.6.5",
     "@tryghost/mw-error-handler": "1.0.13",
