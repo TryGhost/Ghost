@@ -11,7 +11,6 @@
     justify-content: center;
     left: 0;
     padding-bottom: 8vh;
-    /* Match the active theme background so the loader doesn't flash white in dark mode */
     background-color: var(--main-bg-color);
 }
 
