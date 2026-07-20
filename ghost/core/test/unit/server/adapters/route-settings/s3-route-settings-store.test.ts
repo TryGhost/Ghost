@@ -224,6 +224,20 @@ describe('UNIT: S3RouteSettingsStore', function () {
 
                 assert.equal(copyCommands(fake.sent).length, 0);
             });
+
+            it('propagates a non-NotFound existence-check error and does not overwrite', async function () {
+                const sent: S3Command[] = [];
+                const client = stubbedClient(async (command) => {
+                    sent.push(command);
+                    if (command instanceof HeadObjectCommand) {
+                        throw new Error('access denied');
+                    }
+                    return {};
+                });
+
+                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), /access denied/);
+                assert.equal(putCommands(sent).length, 0);
+            });
         });
 
         describe('get', function () {
