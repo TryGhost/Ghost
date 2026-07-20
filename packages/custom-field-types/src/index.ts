@@ -8,12 +8,19 @@ import {z} from 'zod';
  * imports it to *enforce* validation (and to route storage); admin imports the
  * same schemas for instant form feedback. Neither drifts.
  *
- * It is deliberately pure data: no presentation (labels, icons, input controls
- * stay in the frontend), no storage codecs (columns and serialize/deserialize
- * stay in the backend), and no lookup helpers (consumers index `FIELD_TYPES`
- * directly). Keeping it pure keeps the backend's dependency surface clean and
- * means its behaviour is proven where it matters — the members custom-fields
- * HTTP API integration tests — rather than in isolated unit tests here.
+ * This module is deliberately pure data: no presentation (labels, icons, input
+ * controls stay in the frontend), no storage codecs (columns and
+ * serialize/deserialize stay in the backend), and no lookup helpers (consumers
+ * index `FIELD_TYPES` directly).
+ *
+ * The package admits one thing beyond data, in `./csv`: how a value maps onto
+ * CSV columns. That belongs here rather than in either tier because both need
+ * the same answer — the backend to write the export and read an import, admin to
+ * offer the columns as mapping targets — and a disagreement between them is a
+ * file that silently stops round-tripping.
+ *
+ * Behaviour is proven where it matters, in the members custom-fields and member
+ * export HTTP API integration tests, rather than in isolated unit tests here.
  */
 
 /**
