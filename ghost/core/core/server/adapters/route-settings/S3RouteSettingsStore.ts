@@ -22,9 +22,9 @@ import {getBackupRouteSettingsFilePath} from './utils';
 const YAML_FILENAME = 'routes.yaml';
 const DEFAULT_SETTINGS_FILENAME = 'default-routes.yaml';
 
-// The canonical key and content-type are fixed by the routes.yaml → GCS migration
-// contract (HKG-1836): the migration writes this exact object, so the store must
-// match it or a migrated site reads back an object it can't identify.
+// Fixed by the routes.yaml → GCS migration contract (HKG-1836): the migration
+// writes objects with this exact content-type, so the store must match it rather
+// than "tidy" the charset away.
 const CONTENT_TYPE = 'application/yaml; charset=utf-8';
 
 const messages = {
@@ -130,7 +130,12 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
                 sessionToken: options.sessionToken
             };
         }
-        this.client = new S3Client(clientConfig);
+
+        // `s3Client` is a test-only injection seam — it never comes from config
+        // (nconf holds static values), so it's read from the raw input rather
+        // than the validated schema output.
+        const injectedClient = (config as {s3Client?: S3Client} | null | undefined)?.s3Client;
+        this.client = injectedClient || new S3Client(clientConfig);
     }
 
     async get(): Promise<RouteSettings> {

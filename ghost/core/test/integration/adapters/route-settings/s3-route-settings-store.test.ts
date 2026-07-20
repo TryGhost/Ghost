@@ -199,7 +199,9 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: S3
         it('writes the canonical key without a backup when the bucket is empty', async function () {
             await createStore().replace(fromYaml(SAMPLE_YAML));
 
-            assert.deepEqual(await listObjectKeys(adminClient, bucket), [canonicalKey()]);
+            const keys = await listObjectKeys(adminClient, bucket);
+            assert.deepEqual(keys, [canonicalKey()]);
+            assert.equal(keys.filter(k => backupKeyPattern().test(k)).length, 0);
         });
 
         it('backs up the prior contents verbatim before overwriting', async function () {
