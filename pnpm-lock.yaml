@@ -121,8 +121,8 @@ catalogs:
       specifier: 3.3.2
       version: 3.3.2
     '@tryghost/brute-knex':
-      specifier: 3.2.0
-      version: 3.2.0
+      specifier: 3.2.1
+      version: 3.2.1
     '@tryghost/color-utils':
       specifier: 0.2.19
       version: 0.2.19
@@ -2417,7 +2417,7 @@ importers:
         version: 2.3.2
       '@tryghost/brute-knex':
         specifier: 'catalog:'
-        version: 3.2.0(better-sqlite3@12.11.1)(express@4.22.2)(mysql2@3.22.5(@types/node@22.20.0))(sqlite3@5.1.7)
+        version: 3.2.1(better-sqlite3@12.11.1)(express@4.22.2)(mysql2@3.22.5(@types/node@22.20.0))(sqlite3@5.1.7)
       '@tryghost/color-utils':
         specifier: 'catalog:'
         version: 0.2.19
@@ -9944,8 +9944,8 @@ packages:
   '@tryghost/bookshelf-transaction-events@2.3.2':
     resolution: {integrity: sha512-j1lHAxVp+AZzTM9JlOTiKB5RS0SwbkpFam7aUzzp71DwceKNb6JXhxA7zJhqG1lQS8c71DuG7IRbgQTppFsBSQ==}
 
-  '@tryghost/brute-knex@3.2.0':
-    resolution: {integrity: sha512-x1e/Eh897AT6Q/XkTQz2HcgI0vJqrRtvdQH22qWBMghXIXXoevJuXqYVHrZwq00x9XyIdeoreG0ZzLA3OB3Irg==}
+  '@tryghost/brute-knex@3.2.1':
+    resolution: {integrity: sha512-1Q1CzpDuWNRrejD4sbSZF4CAJ9RTuZWLuQH1BjcC1U6+5sTY3cbnRv4w6mmxGHbUxWJ0kwbP10UM+ODheGaL7A==}
     engines: {node: '>=20.20.0'}
 
   '@tryghost/bunyan-rotating-filestream@0.0.7':
@@ -30725,7 +30725,7 @@ snapshots:
 
   '@tryghost/bookshelf-transaction-events@2.3.2': {}
 
-  '@tryghost/brute-knex@3.2.0(better-sqlite3@12.11.1)(express@4.22.2)(mysql2@3.22.5(@types/node@22.20.0))(sqlite3@5.1.7)':
+  '@tryghost/brute-knex@3.2.1(better-sqlite3@12.11.1)(express@4.22.2)(mysql2@3.22.5(@types/node@22.20.0))(sqlite3@5.1.7)':
     dependencies:
       express-brute: 1.0.1(express@4.22.2)
       knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.20.0))(sqlite3@5.1.7)
