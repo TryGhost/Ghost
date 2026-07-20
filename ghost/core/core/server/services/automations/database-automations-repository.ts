@@ -226,6 +226,12 @@ export function createDatabaseAutomationsRepository({
 
         async recordEmailSent(options): Promise<void> {
             await knex.transaction(async (trx) => {
+                await trx('automation_action_revisions')
+                    .where('id', options.automationActionRevisionId)
+                    .update({
+                        email_sent_count: trx.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1])
+                    });
+
                 const now = toDatabaseDate(new Date());
                 await trx('automated_email_recipients').insert({
                     id: ObjectId().toHexString(),
@@ -239,12 +245,6 @@ export function createDatabaseAutomationsRepository({
                     created_at: now,
                     updated_at: now
                 });
-
-                await trx('automation_action_revisions')
-                    .where('id', options.automationActionRevisionId)
-                    .update({
-                        email_sent_count: trx.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1])
-                    });
             });
         },
 
