@@ -3,6 +3,8 @@ import {useEffect} from 'react';
 import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {apiUrl} from '../utils/api/fetch-api';
 import type {Address} from '@tryghost/custom-field-types';
+import {useCurrentUser} from './current-user';
+import {canManageMembers} from './users';
 
 export type MemberLabel = {
     id: string;
@@ -166,12 +168,14 @@ export const useBrowseMembers = createQuery<MembersResponseType>({
 const useBrowseMemberCount = createQuery<MembersResponseType>({
     dataType,
     path: membersPath,
-    defaultSearchParams: memberCountSearchParams,
-    permissions: ['Owner', 'Administrator', 'Super Editor']
+    defaultSearchParams: memberCountSearchParams
 });
 
-export function useMemberCount(options?: {enabled?: boolean}) {
-    const {data} = useBrowseMemberCount(options);
+export function useMemberCount() {
+    const {data: currentUser} = useCurrentUser();
+    const {data} = useBrowseMemberCount({
+        enabled: Boolean(currentUser && canManageMembers(currentUser))
+    });
 
     return data?.meta?.pagination.total;
 }
