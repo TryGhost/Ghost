@@ -70,6 +70,9 @@
     "members": {
         "contentApiAccess": [],
         "paymentProcessors": [],
+        "customFields": {
+            "maxDefinitions": 100
+        },
         "emailTemplate": {
             "showSiteHeader": true,
             "showPoweredBy": true

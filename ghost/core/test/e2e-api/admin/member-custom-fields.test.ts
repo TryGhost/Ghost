@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager, configUtils} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const events = require('../../../core/server/lib/common/events');
 
@@ -414,6 +414,9 @@ describe('Member Custom Fields Admin API', function () {
         });
 
         it('rejects a batch larger than a single request may create', async function () {
+            // Work per request is bounded independently of the site ceiling: even
+            // with room to spare, one request cannot ask for unbounded work.
+            configUtils.set('members:customFields:maxDefinitions', 100000);
             const oversized = Array.from({length: 101}, (_unused, index) => ({
                 name: `Field ${index}`,
                 type: 'short_text'
@@ -426,6 +429,7 @@ describe('Member Custom Fields Admin API', function () {
 
             const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
             assert.deepEqual(list.members_custom_fields, []);
+            await configUtils.restore();
         });
 
         it('writes nothing when a definition in the batch clashes with an existing one', async function () {
@@ -441,6 +445,221 @@ describe('Member Custom Fields Admin API', function () {
 
             const list = (await agent.get('members/custom_fields/').expectStatus(200)).body.members_custom_fields;
             assert.deepEqual(list.map((field: {key: string}) => field.key), ['company']);
+        });
+    });
+
+    describe('Operational limit on the number of definitions', function () {
+        // The cap is an operator setting, not a release constant. Ghost containers
+        // are stateless, so it is read from config on every create: these tests set
+        // it directly and the very next request honours it, with no re-boot.
+        afterEach(async function () {
+            await configUtils.restore();
+        });
+
+        async function createFieldExpecting(name: string, status: number) {
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [{name, type: 'short_text'}]})
+                .expectStatus(status);
+            return body;
+        }
+
+        it('rejects a create once the site is at the limit', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 2);
+
+            await createField({name: 'Company'});
+            await createField({name: 'Role'});
+
+            const body = await createFieldExpecting('Bio', 403);
+            assert.equal(body.errors[0].code, 'CUSTOM_FIELDS_LIMIT_REACHED');
+            assert.deepEqual(body.errors[0].details, {limit: 2, total: 2, requested: 1});
+            // At the ceiling, freeing a slot is the only way forward.
+            assert.match(body.errors[0].context, /Delete a field you no longer need/);
+
+            // The rejected field was not written.
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+            assert.equal(list.members_custom_fields.length, 2);
+        });
+
+        it('applies a limit change to the very next request, with no restart', async function () {
+            // This is the behaviour that makes the cap operable: raising it must take
+            // effect immediately, which is only true if config is read per request.
+            configUtils.set('members:customFields:maxDefinitions', 1);
+            await createField({name: 'Company'});
+            await createFieldExpecting('Role', 403);
+
+            configUtils.set('members:customFields:maxDefinitions', 2);
+            const created = await createField({name: 'Role'});
+            assert.equal(created.key, 'role');
+
+            // ...and lowering it blocks the next create just as immediately.
+            configUtils.set('members:customFields:maxDefinitions', 1);
+            await createFieldExpecting('Bio', 403);
+        });
+
+        it('leaves definitions already over a lowered limit in place', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 3);
+            await createField({name: 'Company'});
+            await createField({name: 'Role'});
+            await createField({name: 'Bio'});
+
+            // Lowering the cap below the current count is a valid operator action.
+            // It stops new definitions; it never removes existing ones.
+            configUtils.set('members:customFields:maxDefinitions', 1);
+
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+            assert.equal(list.members_custom_fields.length, 3);
+
+            const body = await createFieldExpecting('Location', 403);
+            assert.deepEqual(body.errors[0].details, {limit: 1, total: 3, requested: 1});
+        });
+
+        it('counts archived definitions towards the limit, and frees a slot only on delete', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 2);
+            await createField({name: 'Company'});
+            const spare = await createField({name: 'Role'});
+
+            // Archiving is reversible and keeps the row (and its members' values),
+            // so it releases nothing.
+            await setStatus(spare.key, 'archived');
+            const body = await createFieldExpecting('Bio', 403);
+            assert.deepEqual(body.errors[0].details, {limit: 2, total: 2, requested: 1});
+
+            // Deleting the archived field is what actually frees the slot.
+            await agent.delete(`members/custom_fields/${spare.key}/`).expectStatus(204);
+            const created = await createField({name: 'Bio'});
+            assert.equal(created.key, 'bio');
+        });
+
+        it('restores an archived definition while at the limit', async function () {
+            // Restoring changes no row count, so the cap has nothing to say about it.
+            configUtils.set('members:customFields:maxDefinitions', 2);
+            await createField({name: 'Company'});
+            const archived = await createField({name: 'Role'});
+            await setStatus(archived.key, 'archived');
+
+            const restored = await setStatus(archived.key, 'active');
+            assert.equal(restored.status, 'active');
+        });
+
+        it('rejects a batch that would cross the limit, writing none of it', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 3);
+            await createField({name: 'Company'});
+
+            // Two slots remain, so a batch of three is refused outright rather than
+            // being applied up to the remaining space.
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Role', type: 'short_text'},
+                    {name: 'Bio', type: 'short_text'},
+                    {name: 'Location', type: 'short_text'}
+                ]})
+                .expectStatus(403);
+            assert.deepEqual(body.errors[0].details, {limit: 3, total: 1, requested: 3});
+
+            // The site still has room, just not for three. Telling this operator to
+            // delete something would be wrong, so the message says how much room
+            // is actually left.
+            assert.match(body.errors[0].context, /You can add 2 more\./);
+
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body.members_custom_fields;
+            assert.deepEqual(list.map((field: {key: string}) => field.key), ['company']);
+        });
+
+        it('accepts a batch that exactly fills the remaining space', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 3);
+            await createField({name: 'Company'});
+
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Role', type: 'short_text'},
+                    {name: 'Bio', type: 'short_text'}
+                ]})
+                .expectStatus(201);
+            assert.equal(body.members_custom_fields.length, 2);
+        });
+
+        it('rejects every create when the limit is zero', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 0);
+            const body = await createFieldExpecting('Company', 403);
+            assert.deepEqual(body.errors[0].details, {limit: 0, total: 0, requested: 1});
+        });
+
+        // A setting that can't be read as a ceiling must neither disable the feature
+        // nor remove the safeguard. Several of these coerce to 0 through `Number()`,
+        // which would stop creation site-wide; treating them as "no limit" instead
+        // would mean a typo silently removes the protection. Both are wrong: they
+        // fall back to the default. Only an explicit 0 disables creation.
+        const unreadableSettings: [string, unknown][] = [
+            ['an unreadable string', 'not-a-number'],
+            ['false', false],
+            ['null', null],
+            ['an empty string', ''],
+            ['an array', []],
+            ['a negative number', -5],
+            ['a fraction', 2.5],
+            ['an unsafely large number', 1e21]
+        ];
+
+        unreadableSettings.forEach(([description, value]) => {
+            it(`falls back to the default ceiling when the setting is ${description}`, async function () {
+                configUtils.set('members:customFields:maxDefinitions', value);
+                await createField({name: 'Company'});
+
+                const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+                assert.equal(list.members_custom_fields.length, 1);
+            });
+        });
+
+        it('enforces the shipped ceiling, not an absent one, when the setting is unreadable', async function () {
+            // The checks above only prove creation still works. This proves a
+            // ceiling is genuinely still in force: fill the shipped one exactly,
+            // then watch the next create be refused against it.
+            //
+            // The expected ceiling comes from the config provider rather than from
+            // the module that resolves it, so this asserts against what Ghost
+            // actually ships rather than against the implementation's own idea of
+            // it. Read before the override, which is what makes it unreadable.
+            const shipped = configUtils.config.get('members:customFields:maxDefinitions');
+            configUtils.set('members:customFields:maxDefinitions', 'not-a-number');
+
+            // Filled in batches rather than one create at a time: a hundred-odd
+            // sequential authenticated requests trip Ghost's spam prevention and
+            // leave later tests failing on 403s. The chunk sits comfortably under
+            // the per-request cap so this holds if the shipped ceiling moves.
+            const chunk = 50;
+            for (let created = 0; created < shipped; created += chunk) {
+                await agent
+                    .post('members/custom_fields/')
+                    .body({members_custom_fields: Array.from(
+                        {length: Math.min(chunk, shipped - created)},
+                        (_unused, index) => ({name: `Field ${created + index}`, type: 'short_text'})
+                    )})
+                    .expectStatus(201);
+            }
+
+            const body = await createFieldExpecting('One too many', 403);
+            assert.deepEqual(body.errors[0].details, {limit: shipped, total: shipped, requested: 1});
+        });
+
+        it('honours a numeric limit supplied as a string', async function () {
+            // Config set through an environment variable arrives as a string.
+            configUtils.set('members:customFields:maxDefinitions', '1');
+            await createField({name: 'Company'});
+            await createFieldExpecting('Role', 403);
+        });
+
+        it('does not record an activity-log entry for a create the limit rejected', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 1);
+            await createField({name: 'Company'});
+            await createFieldExpecting('Role', 403);
+
+            const actions = await models.Base.knex('actions')
+                .where('resource_type', 'member_custom_field')
+                .select('resource_id');
+            assert.deepEqual(actions.map((action: {resource_id: string}) => action.resource_id), ['company']);
         });
     });
 
