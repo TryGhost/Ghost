@@ -1,30 +1,97 @@
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-const moment = require('moment');
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import moment from 'moment';
 
-const {messages, defaultPostSlugs} = require('./constants');
+import {messages, defaultPostSlugs} from './constants';
+
+type SettingsCache = {
+    get(key: string): unknown;
+};
+
+type UrlService = {
+    facade: {
+        getUrlForResource(resource: Record<string, unknown>, options: {absolute: boolean}): string | null;
+    };
+};
+
+type UrlUtils = {
+    urlFor(context: string, data: Record<string, unknown>, absolute: boolean): string | null;
+};
+
+type BlogIcon = {
+    getIconUrl(options: {absolute: boolean}): string;
+};
+
+type Logging = {
+    info(...args: unknown[]): void;
+    warn(...args: unknown[]): void;
+    error(...args: unknown[]): void;
+};
+
+type RequestFn = (url: string, options: Record<string, unknown>) => Promise<unknown>;
+
+type PostModel = {
+    related(relation: string): {toJSON(): unknown[]};
+    toJSON(): Record<string, unknown>;
+};
+
+type ModelEventListener = (model: PostModel, options?: {importing?: boolean}) => void;
+
+type ModelEvents = {
+    removeListener(event: 'post.published', listener: ModelEventListener): ModelEvents;
+    removeListener(event: 'slack.test', listener: () => void): ModelEvents;
+    on(event: 'post.published', listener: ModelEventListener): ModelEvents;
+    on(event: 'slack.test', listener: () => void): ModelEvents;
+};
+
+type SlackAuthor = {
+    name?: string;
+    profile_image?: string;
+    [key: string]: unknown;
+};
+
+type SlackPingPayload = {
+    id?: string;
+    slug?: string;
+    type?: string;
+    html?: string | null;
+    title?: string | null;
+    custom_excerpt?: string | null;
+    feature_image?: string | null;
+    authors?: SlackAuthor[];
+    message?: string;
+    [key: string]: unknown;
+};
+
+export type SlackPingServiceDeps = {
+    blogIcon: BlogIcon;
+    events: ModelEvents;
+    logging: Logging;
+    request: RequestFn;
+    settingsCache: SettingsCache;
+    urlService: UrlService;
+    urlUtils: UrlUtils;
+};
 
 /**
  * @TODO: change this function to check for the properties we depend on
- * @param {Object} data
- * @returns {boolean}
  */
-function hasPostProperties(data) {
+function hasPostProperties(data: Record<string, unknown>): boolean {
     return Object.prototype.hasOwnProperty.call(data, 'html') && Object.prototype.hasOwnProperty.call(data, 'title') && Object.prototype.hasOwnProperty.call(data, 'slug');
 }
 
-class SlackPingService {
-    /**
-     * @param {object} deps
-     * @param {{getIconUrl: (options: object) => string}} deps.blogIcon
-     * @param {{removeListener: Function, on: Function}} deps.events
-     * @param {object} deps.logging
-     * @param {Function} deps.request
-     * @param {{get: (key: string) => any}} deps.settingsCache
-     * @param {{facade: {getUrlForResource: (resource: object, options: object) => string}}} deps.urlService
-     * @param {{urlFor: Function}} deps.urlUtils
-     */
-    constructor({blogIcon, events, logging, request, settingsCache, urlService, urlUtils}) {
+export class SlackPingService {
+    blogIcon: BlogIcon;
+    events: ModelEvents;
+    logging: Logging;
+    request: RequestFn;
+    settingsCache: SettingsCache;
+    urlService: UrlService;
+    urlUtils: UrlUtils;
+    postListener: ModelEventListener;
+    testListener: () => void;
+
+    constructor({blogIcon, events, logging, request, settingsCache, urlService, urlUtils}: SlackPingServiceDeps) {
         this.blogIcon = blogIcon;
         this.events = events;
         this.logging = logging;
@@ -38,9 +105,9 @@ class SlackPingService {
         this.testListener = this.handleTestEvent.bind(this);
     }
 
-    getSlackSettings() {
-        const username = this.settingsCache.get('slack_username');
-        const url = this.settingsCache.get('slack_url');
+    getSlackSettings(): {username: string | undefined; url: string | undefined} {
+        const username = this.settingsCache.get('slack_username') as string | undefined;
+        const url = this.settingsCache.get('slack_url') as string | undefined;
 
         return {
             username,
@@ -48,14 +115,14 @@ class SlackPingService {
         };
     }
 
-    ping(post) {
-        let message;
-        let title;
-        let author;
-        let description;
-        let slackData = {};
-        let slackSettings = this.getSlackSettings();
-        let blogTitle = this.settingsCache.get('title');
+    ping(post: SlackPingPayload): Promise<unknown> | undefined {
+        let message: string | null | undefined;
+        let title: string | null = null;
+        let author: SlackAuthor | null = null;
+        let description: string | null | undefined;
+        let slackData: Record<string, unknown> = {};
+        const slackSettings = this.getSlackSettings();
+        const blogTitle = this.settingsCache.get('title');
 
         // If this is a post, we want to send the link of the post
         if (hasPostProperties(post)) {
@@ -101,7 +168,7 @@ class SlackPingService {
 
         // Quit here if slack integration is not activated
         if (slackSettings && slackSettings.url && slackSettings.url !== '') {
-            slackSettings.username = slackSettings.username ? slackSettings.username : 'Ghost';
+            const username = slackSettings.username ? slackSettings.username : 'Ghost';
             // Only ping when not a page
             if (post.type === 'page') {
                 return;
@@ -111,7 +178,7 @@ class SlackPingService {
             // This also handles the case where during Ghost's first run
             // model loading inserts this post but permissions.init() hasn't
             // (can't) run yet.
-            if (defaultPostSlugs.indexOf(post.slug) > -1) {
+            if (post.slug && defaultPostSlugs.indexOf(post.slug) > -1) {
                 return;
             }
 
@@ -122,7 +189,7 @@ class SlackPingService {
                     text: `Notification from *${blogTitle}* :ghost:`,
                     unfurl_links: true,
                     icon_url: this.blogIcon.getIconUrl({absolute: true}),
-                    username: slackSettings.username,
+                    username,
                     // We don't want to send attachment if it is a test notification.
                     attachments: [
                         {
@@ -162,7 +229,7 @@ class SlackPingService {
                     text: message,
                     unfurl_links: true,
                     icon_url: this.blogIcon.getIconUrl({absolute: true}),
-                    username: slackSettings.username
+                    username
                 };
             }
 
@@ -171,7 +238,7 @@ class SlackPingService {
                 headers: {
                     'Content-type': 'application/json'
                 }
-            }).catch((err) => {
+            }).catch((err: Error) => {
                 this.logging.error(new errors.InternalServerError({
                     err: err,
                     context: tpl(messages.requestFailedError, {service: 'slack'}),
@@ -183,10 +250,8 @@ class SlackPingService {
 
     /**
      * Event listener for post.published events
-     * @param {Object} model - The model instance
-     * @param {Object} options - Event options
      */
-    handlePostEvent(model, options) {
+    handlePostEvent(model: PostModel, options?: {importing?: boolean}): void {
         // CASE: do not ping slack if we import a database
         // TODO: refactor post.published events to never fire on importing
         if (options && options.importing) {
@@ -195,7 +260,7 @@ class SlackPingService {
 
         this.ping({
             ...model.toJSON(),
-            authors: model.related('authors').toJSON(),
+            authors: model.related('authors').toJSON() as SlackAuthor[],
             // tags are needed so the lazy URL service can evaluate collection
             // filters (e.g. `tag:foo`) when resolving the post URL; without them
             // a tag-filtered post resolves to /404/
@@ -207,7 +272,7 @@ class SlackPingService {
      * Event listener for the slack.test event fired by the Admin API to
      * verify the webhook configuration.
      */
-    handleTestEvent() {
+    handleTestEvent(): void {
         this.ping({
             message: 'Heya! This is a test notification from your Ghost blog :smile:. Seems to work fine!'
         });
@@ -219,7 +284,7 @@ class SlackPingService {
      * The slack.test event comes from the API rather than a direct call,
      * which was done long ago to avoid circular dependencies.
      */
-    subscribeEvents() {
+    subscribeEvents(): void {
         this.events
             .removeListener('post.published', this.postListener)
             .on('post.published', this.postListener);
@@ -229,5 +294,3 @@ class SlackPingService {
             .on('slack.test', this.testListener);
     }
 }
-
-module.exports = SlackPingService;

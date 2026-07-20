@@ -1,9 +1,9 @@
-const messages = {
+export const messages = {
     requestFailedError: 'The {service} service was unable to send a ping request, your site will continue to function.',
     requestFailedHelp: 'If you get this error repeatedly, please seek help on {url}.'
 };
 
-const defaultPostSlugs = [
+export const defaultPostSlugs = [
     'welcome',
     'the-editor',
     'using-tags',
@@ -13,7 +13,3 @@ const defaultPostSlugs = [
     'themes'
 ];
 
-module.exports = {
-    messages,
-    defaultPostSlugs
-};

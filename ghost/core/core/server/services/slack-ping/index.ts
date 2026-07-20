@@ -1,7 +1,9 @@
-const SlackPingService = require('./slack-ping-service');
+import {SlackPingService} from './slack-ping-service';
 
 class SlackPingServiceWrapper {
-    init() {
+    service?: SlackPingService;
+
+    init(): void {
         if (this.service) {
             // Already done
             return;
@@ -30,4 +32,4 @@ class SlackPingServiceWrapper {
     }
 }
 
-module.exports = new SlackPingServiceWrapper();
+export default new SlackPingServiceWrapper();
