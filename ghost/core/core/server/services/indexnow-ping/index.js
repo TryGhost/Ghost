@@ -1,4 +1,4 @@
-const IndexNowPingService = require('./indexnow-ping-service');
+const {IndexNowPingService} = require('./indexnow-ping-service');
 
 class IndexNowPingServiceWrapper {
     init() {

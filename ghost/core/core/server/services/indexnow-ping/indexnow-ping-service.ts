@@ -20,30 +20,92 @@
  * ghost/core/core/frontend/web/middleware/serve-indexnow-key.js
  */
 
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
 
-const {
+import {
     messages,
     INDEXNOW_LOG_KEY,
     INDEXNOW_ENDPOINT,
     defaultPostSlugs,
     seoFields
-} = require('./constants');
+} from './constants';
 
-class IndexNowPingService {
-    /**
-     * @param {object} deps
-     * @param {{get: (key: string) => any}} deps.settingsCache
-     * @param {{isPrivacyDisabled: (key: string) => boolean}} deps.config
-     * @param {{isSet: (flag: string) => boolean}} deps.labs
-     * @param {{facade: {getUrlForResource: (resource: object, options: object) => string}}} deps.urlService
-     * @param {{urlFor: Function, urlJoin: Function}} deps.urlUtils
-     * @param {Function} deps.request
-     * @param {object} deps.logging
-     * @param {{removeListener: Function, on: Function}} deps.events
-     */
-    constructor({settingsCache, config, labs, urlService, urlUtils, request, logging, events}) {
+type SettingsCache = {
+    get(key: string): unknown;
+};
+
+type Config = {
+    isPrivacyDisabled(key: string): boolean;
+};
+
+type Labs = {
+    isSet(flag: string): boolean;
+};
+
+type UrlService = {
+    facade: {
+        getUrlForResource(resource: Record<string, unknown>, options: {absolute: boolean}): string | null;
+    };
+};
+
+type UrlUtils = {
+    urlFor(context: string, absolute: boolean): string;
+    urlJoin(...parts: string[]): string;
+};
+
+type Logging = {
+    info(...args: unknown[]): void;
+    warn(...args: unknown[]): void;
+    error(...args: unknown[]): void;
+};
+
+type RequestFn = (url: string, options: Record<string, unknown>) => Promise<{statusCode: number}>;
+
+type PostModel = {
+    get(field: string): unknown;
+    previous(field: string): unknown;
+    related(relation: string): {toJSON(): unknown[]};
+    toJSON(): Record<string, unknown>;
+};
+
+type ModelEventListener = (model: PostModel, options?: {importing?: boolean}) => void;
+
+type ModelEvents = {
+    removeListener(event: string, listener: ModelEventListener): ModelEvents;
+    on(event: string, listener: ModelEventListener): ModelEvents;
+};
+
+type Post = {
+    id?: string;
+    slug?: string;
+    type?: string;
+    [key: string]: unknown;
+};
+
+export type IndexNowPingServiceDeps = {
+    settingsCache: SettingsCache;
+    config: Config;
+    labs: Labs;
+    urlService: UrlService;
+    urlUtils: UrlUtils;
+    request: RequestFn;
+    logging: Logging;
+    events: ModelEvents;
+};
+
+export class IndexNowPingService {
+    settingsCache: SettingsCache;
+    config: Config;
+    labs: Labs;
+    urlService: UrlService;
+    urlUtils: UrlUtils;
+    request: RequestFn;
+    logging: Logging;
+    events: ModelEvents;
+    listener: ModelEventListener;
+
+    constructor({settingsCache, config, labs, urlService, urlUtils, request, logging, events}: IndexNowPingServiceDeps) {
         this.settingsCache = settingsCache;
         this.config = config;
         this.labs = labs;
@@ -60,27 +122,23 @@ class IndexNowPingService {
     /**
      * Get existing API key from settings.
      * The key is auto-generated on boot by the settings service.
-     * @returns {string|null} The API key or null if not set
      */
-    getApiKey() {
-        return this.settingsCache.get('indexnow_api_key') || null;
+    getApiKey(): string | null {
+        return (this.settingsCache.get('indexnow_api_key') as string | undefined) || null;
     }
 
     /**
      * Check if any SEO-relevant fields have changed.
      * These are fields that affect how the post appears in search results.
-     * @param {object} model - The model instance
-     * @returns {boolean} True if SEO-relevant content has changed
      */
-    hasSeoRelevantChanges(model) {
+    hasSeoRelevantChanges(model: PostModel): boolean {
         return seoFields.some(field => model.get(field) !== model.previous(field));
     }
 
     /**
      * Ping IndexNow with a URL.
-     * @param {object} post - The post object
      */
-    async ping(post) {
+    async ping(post: Post): Promise<void> {
         // Skip pages - only ping for posts
         if (post.type === 'page') {
             return;
@@ -102,7 +160,7 @@ class IndexNowPingService {
         }
 
         // Don't ping for the default posts
-        if (defaultPostSlugs.indexOf(post.slug) > -1) {
+        if (post.slug && defaultPostSlugs.indexOf(post.slug) > -1) {
             return;
         }
 
@@ -110,7 +168,7 @@ class IndexNowPingService {
         // envelope: the lazy URL service evaluates collection filters during
         // resolution and can throw, and IndexNow failures must never disrupt
         // publishing.
-        let url = null;
+        let url: string | null = null;
         try {
             url = this.urlService.facade.getUrlForResource({...post, type: 'posts'}, {absolute: true});
 
@@ -161,8 +219,9 @@ class IndexNowPingService {
             }, `${INDEXNOW_LOG_KEY} Successfully pinged ${url}`);
         } catch (err) {
             // Log errors but don't throw - IndexNow failures shouldn't disrupt publishing
-            const statusCode = err.statusCode ?? err.response?.statusCode ?? null;
-            const {eventName, error} = this.#classifyError(statusCode, err);
+            const errorLike = err as {statusCode?: number; response?: {statusCode?: number}; message?: string};
+            const statusCode = errorLike.statusCode ?? errorLike.response?.statusCode ?? null;
+            const {eventName, error} = this.#classifyError(statusCode, err as Error);
 
             this.logging.warn({
                 event: {name: eventName},
@@ -177,11 +236,8 @@ class IndexNowPingService {
      * Map an IndexNow response status to a log event name and a structured error.
      * IndexNow-protocol-specific interpretation; when this logic is lifted into a
      * shared ping primitive, this becomes the injected `interpret(status)` hook.
-     * @param {number|null} statusCode
-     * @param {Error} err
-     * @returns {{eventName: string, error: Error}}
      */
-    #classifyError(statusCode, err) {
+    #classifyError(statusCode: number | null, err: Error): {eventName: string; error: Error} {
         if (statusCode === 429) {
             // Rate limited by IndexNow - we have no retry/backoff, so the ping is dropped
             return {
@@ -220,10 +276,8 @@ class IndexNowPingService {
 
     /**
      * Event listener for post.published / post.published.edited.
-     * @param {object} model - The model instance
-     * @param {object} options - Event options
      */
-    handlePostEvent(model, options) {
+    handlePostEvent(model: PostModel, options?: {importing?: boolean}): void {
         // CASE: do not ping if we import a database
         if (options && options.importing) {
             return;
@@ -251,7 +305,7 @@ class IndexNowPingService {
     /**
      * Register event listeners for IndexNow.
      */
-    subscribeEvents() {
+    subscribeEvents(): void {
         // Listen for new posts being published
         this.events
             .removeListener('post.published', this.listener)
@@ -263,5 +317,3 @@ class IndexNowPingService {
             .on('post.published.edited', this.listener);
     }
 }
-
-module.exports = IndexNowPingService;
