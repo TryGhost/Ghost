@@ -32,6 +32,19 @@ const MAX_SLUG_ITERATIONS = 1000;
 // Reserve room for a `-<n>` suffix (n up to MAX_SLUG_ITERATIONS).
 const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_SLUG_ITERATIONS).length + 1);
 
+// A key becomes a property name on the plain objects that carry a member's values —
+// on both sides of the wire, since `custom_fields` is JSON and a client gets a plain
+// object from JSON.parse. A key naming a member of Object.prototype reads back as
+// inherited rather than absent wherever one of those objects is indexed, and
+// `__proto__` holds no value at all: the values schema drops it during parse, and
+// assigning it sets a prototype rather than a property.
+//
+// Derived rather than listed, because the set is a consequence of how keys are
+// minted: slugifying lowercases, so only an already-lowercase prototype name can
+// survive to become a key. Currently `constructor` and `__proto__`.
+const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype)
+    .filter(name => slugify(name) === name);
+
 const FieldName = z.string().trim().min(1, {message: 'Custom field name is required.'}).max(MAX_NAME_LENGTH, {message: 'Custom field name is too long.'});
 
 // The backend mints the key from the name, so create takes just a name and type.
@@ -233,9 +246,10 @@ export class CustomFieldDefinitionsService {
      */
     private async mintKey(db: Knex, base: string): Promise<string> {
         const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH);
-        const taken = new Set(
-            await db(TABLE).where('key', 'like', `${safeBase}%`).pluck('key')
-        );
+        const taken = new Set([
+            ...RESERVED_KEYS,
+            ...await db(TABLE).where('key', 'like', `${safeBase}%`).pluck('key')
+        ]);
         if (!taken.has(safeBase)) {
             return safeBase;
         }

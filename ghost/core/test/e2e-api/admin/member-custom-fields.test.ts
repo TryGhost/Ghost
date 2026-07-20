@@ -125,6 +125,70 @@ describe('Member Custom Fields Admin API', function () {
                 .expectStatus(422);
         });
 
+        // A key names a property on the plain objects carrying a member's values, so
+        // one naming a member of Object.prototype reads back as inherited rather than
+        // absent wherever it is indexed. Those keys are already taken, so the
+        // publisher keeps the name and the key takes a suffix. The match is on the
+        // slug rather than the name, which is what catches every spelling that
+        // collapses onto it.
+        const reservedSpellings = [
+            {name: 'Constructor', key: 'constructor-2'},
+            {name: 'constructor', key: 'constructor-2'},
+            {name: '__proto__', key: '__proto__-2'},
+            {name: '__PROTO__', key: '__proto__-2'},
+            {name: '＿＿ｐｒｏｔｏ＿＿', key: '__proto__-2'}
+        ];
+        for (const {name, key} of reservedSpellings) {
+            it(`mints ${key} for the name ${name}, and the value round-trips`, async function () {
+                const field = await createField({name});
+                assert.equal(field.key, key);
+
+                const memberId = await createMember();
+                await setValues(memberId, {[key]: 'Bex'});
+
+                assert.deepEqual(await readValues(memberId), {[key]: 'Bex'});
+            });
+        }
+
+        // A reserved key is claimed by whichever field takes the suffix first, so the
+        // next one along has to keep counting rather than collide with it.
+        it('keeps counting past a reserved key already claimed by another field', async function () {
+            const first = await createField({name: 'Constructor'});
+            const second = await createField({name: 'Constructor!'});
+
+            assert.equal(first.key, 'constructor-2');
+            assert.equal(second.key, 'constructor-3');
+        });
+
+        // The batch runs in one transaction, so mintKey sees the rows minted earlier
+        // in the same request — reserving a key must hold within a batch too, not
+        // just across separate requests.
+        it('mints distinct keys when two definitions in one batch both slug onto a reserved key', async function () {
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Constructor', type: 'short_text'},
+                    {name: 'Constructor!', type: 'short_text'}
+                ]})
+                .expectStatus(201);
+
+            assert.deepEqual(
+                body.members_custom_fields.map((f: {key: string}) => f.key),
+                ['constructor-2', 'constructor-3']
+            );
+        });
+
+        // A reserved slug must not take a whole prefix with it — only the exact key.
+        it('leaves a name that merely starts with a reserved word unsuffixed', async function () {
+            const field = await createField({name: 'Constructor role'});
+            assert.equal(field.key, 'constructor-role');
+
+            const memberId = await createMember();
+            await setValues(memberId, {[field.key]: 'Foreman'});
+
+            assert.deepEqual(await readValues(memberId), {'constructor-role': 'Foreman'});
+        });
+
         it('rejects a name that exceeds the maximum length', async function () {
             await agent
                 .post('members/custom_fields/')
