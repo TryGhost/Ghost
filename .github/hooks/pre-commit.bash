@@ -111,10 +111,13 @@ echo -e "Checking for changesets ${grey}(pre-commit hook)${no_color} "
 # block work-in-progress commits. CI's "Check app version bump" job is the hard
 # gate — this is only a reminder.
 CHANGESET_BASE=$(git merge-base main HEAD 2>/dev/null || git merge-base origin/main HEAD 2>/dev/null || true)
+# Write the staged index to a tree so the check sees the commit being created,
+# not just what's already in HEAD. change-check.js accepts any tree-ish as head.
+STAGED_TREE=$(git write-tree 2>/dev/null || true)
 
-if [ -z "$CHANGESET_BASE" ] || [ "$CHANGESET_BASE" = "$(git rev-parse HEAD)" ]; then
-    echo "No branch commits to check, continuing..."
-elif node scripts/change-check.js "$CHANGESET_BASE" HEAD; then
+if [ -z "$CHANGESET_BASE" ] || [ -z "$STAGED_TREE" ]; then
+    echo "No merge-base with main, skipping changeset check..."
+elif node scripts/change-check.js "$CHANGESET_BASE" "$STAGED_TREE"; then
     echo "Changesets look good, continuing..."
 else
     echo -e "${grey}⚠️  Reminder only (not blocking) — run 'pnpm change' to add a changeset. CI enforces this.${no_color}"

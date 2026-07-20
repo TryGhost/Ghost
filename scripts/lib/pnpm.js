@@ -131,14 +131,17 @@ export async function getPublishablePackages(workspace) {
     const {packages, versioning = {}} = workspace;
     const igoredPackages = new Set(versioning.ignore ?? []);
 
-    const ignore = packages
+    const exclude = packages
         .filter(p => p.startsWith('!'))
         .map(p => p.slice(1));
     const patterns = packages
         .filter(p => !p.startsWith('!'))
         .map(p => `${p}/package.json`);
 
-    const files = await Array.fromAsync(glob(patterns, {ignore, cwd: ROOT_DIR}));
+    // `exclude`, not `ignore` — node:fs/promises.glob silently ignores unknown
+    // options, so `ignore` would be a no-op and the negated workspace entries
+    // wouldn't be pruned.
+    const files = await Array.fromAsync(glob(patterns, {exclude, cwd: ROOT_DIR}));
 
     const pkgs = await Promise.all(
         files.map(async (file) => {

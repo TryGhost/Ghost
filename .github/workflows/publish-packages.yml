@@ -61,6 +61,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          # Publishing uses OIDC + the public registry; no git operations need
+          # the token, so don't leave it in .git/config for later steps.
+          persist-credentials: false
 
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - name: Set up Node.js
