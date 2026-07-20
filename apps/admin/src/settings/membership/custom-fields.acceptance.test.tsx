@@ -30,10 +30,12 @@ function customFieldsBoot() {
     };
 }
 
-function fakeCustomFields(fields = [companyField]) {
+function fakeCustomFields(fields: typeof companyField[] | (() => typeof companyField[]) = [companyField]) {
     // Settings opts into archived fields (`?filter=status:[active,archived]`),
-    // so the fake matches the path with any query.
-    return fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), {members_custom_fields: fields});
+    // so the fake matches the path with any query. A getter serves mutable
+    // state for tests whose mutation fakes change the list mid-test.
+    const response = typeof fields === "function" ? () => ({members_custom_fields: fields()}) : {members_custom_fields: fields};
+    return fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), response);
 }
 
 describe("Custom fields", () => {
@@ -208,7 +210,7 @@ describe("Custom fields", () => {
             key: `field-${index}`,
             name: `Field ${index}`,
         }));
-        fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), () => ({members_custom_fields: currentFields}));
+        fakeCustomFields(() => currentFields);
         fakeAdminEndpoint("POST", "/members/custom_fields/", () => {
             const created = {...companyField, key: "newest", name: "Newest"};
             currentFields = [...currentFields, created];
@@ -238,8 +240,12 @@ describe("Custom fields", () => {
 
     it("permanently deletes an archived field from the header menu, after a heavy warning", async () => {
         fakeSettingsScreens();
-        fakeCustomFields([companyField, archivedField]);
-        const deleteApi = fakeAdminEndpoint("DELETE", "/members/custom_fields/old-hobby/", {});
+        let currentFields = [companyField, archivedField];
+        fakeCustomFields(() => currentFields);
+        const deleteApi = fakeAdminEndpoint("DELETE", "/members/custom_fields/old-hobby/", () => {
+            currentFields = [companyField];
+            return {};
+        });
         await renderAdminApp("/settings", {boot: customFieldsBoot()});
 
         await settingsScreen.customFields().getByRole("tab", {name: "Archived"}).click();
@@ -256,6 +262,13 @@ describe("Custom fields", () => {
 
         await expect.element(settingsScreen.successToast()).toHaveTextContent("Custom field deleted");
         expect(deleteApi.requests).toHaveLength(1);
+
+        // The refreshed list drops the field from Archived without touching Active.
+        const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
+        await expect(rows).toHaveCount(0);
+        await settingsScreen.customFields().getByRole("tab", {name: "Active"}).click();
+        await expect(rows).toHaveCount(1);
+        await expect.element(rows).toHaveTextContent("Company");
     });
 
     it("does not expose permanent deletion for an active field", async () => {
@@ -281,9 +294,11 @@ describe("Custom fields", () => {
 
     it("reactivates an archived field after confirmation, as a status edit", async () => {
         fakeSettingsScreens();
-        fakeCustomFields([companyField, archivedField]);
-        const editApi = fakeAdminEndpoint("PUT", "/members/custom_fields/old-hobby/", {
-            members_custom_fields: [{...archivedField, status: "active"}],
+        let currentFields = [companyField, archivedField];
+        fakeCustomFields(() => currentFields);
+        const editApi = fakeAdminEndpoint("PUT", "/members/custom_fields/old-hobby/", () => {
+            currentFields = [companyField, {...archivedField, status: "active"}];
+            return {members_custom_fields: [{...archivedField, status: "active"}]};
         });
         await renderAdminApp("/settings", {boot: customFieldsBoot()});
 
@@ -296,5 +311,12 @@ describe("Custom fields", () => {
 
         await expect.element(settingsScreen.successToast()).toHaveTextContent("Custom field reactivated");
         expect(editApi.lastRequest?.body).toEqual({members_custom_fields: [{status: "active"}]});
+
+        // The refreshed list moves the field out of Archived and back under Active.
+        const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
+        await expect(rows).toHaveCount(0);
+        await settingsScreen.customFields().getByRole("tab", {name: "Active"}).click();
+        await expect(rows).toHaveCount(2);
+        await expect.element(rows.last()).toHaveTextContent("Old hobby");
     });
 });
