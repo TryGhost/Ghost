@@ -135,3 +135,11 @@ jobs:
           RENOVATE_REPOSITORIES: TryGhost/Ghost
           # Ghost is already onboarded via Mend; don't open an onboarding PR.
           RENOVATE_ONBOARDING: 'false'
+          # pnpm ≥ 11.13 records a pnpmfileChecksum in pnpm-lock.yaml whenever a
+          # .pnpmfile is present. With allowScripts=false (the default) Renovate
+          # regenerates lockfiles with `pnpm install --ignore-pnpmfile`, which
+          # drops the checksum, and CI's frozen install then rejects the lockfile
+          # (ERR_PNPM_LOCKFILE_CONFIG_MISMATCH). allowScripts=true makes Renovate
+          # honour the pnpmfile; dependency install scripts stay blocked because
+          # the repo-level `ignoreScripts` default (true) keeps --ignore-scripts.
+          RENOVATE_ALLOW_SCRIPTS: 'true'

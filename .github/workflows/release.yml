@@ -105,7 +105,7 @@ jobs:
           if [ "${{ env.RELEASE_SKIP_CHECKS }}" = "true" ]; then
             ARGS="$ARGS --skip-checks"
           fi
-          node scripts/release.js $ARGS
+          node scripts/release.cjs $ARGS
         env:
           GITHUB_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}  # PAT for GitHub API (check polling)
 

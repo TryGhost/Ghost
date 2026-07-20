@@ -45,8 +45,12 @@ COPY --parents \
     packages/**/package.json \
     ./
 
-# Copy root lifecycle scripts/hooks needed by `pnpm install`
-COPY .github/scripts .github/scripts
+# Copy root lifecycle scripts/hooks needed by `pnpm install`. Only the preinstall
+# hook is taken from the scripts/ workspace — copying the whole dir would bust
+# this layer (and the install below) whenever any unrelated script changes. Its
+# package.json comes along so the workspace member pnpm-workspace.yaml declares
+# actually exists; the filtered install below never builds it.
+COPY scripts/package.json scripts/enforce-package-manager.js scripts/
 COPY .github/hooks .github/hooks
 
 # Enable corepack so it can read packageManager from package.json and provide pnpm

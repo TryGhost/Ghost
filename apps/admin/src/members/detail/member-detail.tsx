@@ -1,5 +1,6 @@
 import MemberActionsMenu from './member-actions-menu';
 import MemberActivityFeed from './member-activity-feed';
+import MemberCustomFieldsField from './member-custom-fields-field';
 import MemberDetailForm from './member-detail-form';
 import MemberDetailSidebar from './member-detail-sidebar';
 import MemberNewslettersField from './member-newsletters-field';
@@ -20,6 +21,7 @@ import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {useFeatureFlag} from '@/hooks/use-feature-flag';
 import {useHashLinkNavigationGuard} from '@/hooks/use-hash-link-navigation-guard';
 import type {MemberEditableFields} from './member-detail-edit';
 
@@ -42,10 +44,14 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({paidMembersEnabled, 
     const backPath = deriveMemberDetailBackPath(location.search);
     const isCreating = memberId === CREATE_ID;
 
+    // Values ride the member payload (`include=custom_fields`) but the include
+    // only exists behind the flag, so it must not be sent on flag-off sites.
+    const customFieldsEnabled = useFeatureFlag('membersCustomFields');
+
     // `include=tiers` mirrors the Ember route so complimentary tiers arrive with the member.
     const {data, isLoading, error, refetch} = getMember(memberId, {
         enabled: !!memberId && !isCreating,
-        searchParams: {include: 'tiers'},
+        searchParams: {include: customFieldsEnabled ? 'tiers,custom_fields' : 'tiers'},
         defaultErrorHandler: false
     });
     const member = data?.members?.[0];
@@ -401,6 +407,19 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({paidMembersEnabled, 
                                         />
                                     </CardContent>
                                 </Card>
+
+                                {/* Custom fields: a read-only record of the member's values —
+                                    each field edits and saves individually through its own
+                                    modal, never through this page's Save. Existing members
+                                    only — the create contract doesn't take values yet, and a
+                                    value can't exist before its member does. */}
+                                {customFieldsEnabled && member && (
+                                    <MemberCustomFieldsField
+                                        customFields={member.custom_fields}
+                                        disabled={activeMutation.isPending}
+                                        memberId={member.id}
+                                    />
+                                )}
 
                                 {/* Newsletters section owns its external heading + card so an empty
                                     newsletter list hides the whole thing (returns null). Renders

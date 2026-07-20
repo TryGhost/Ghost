@@ -1,8 +1,7 @@
 {
   "name": "@tryghost/adapter-base-scheduling",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The adapter-base-scheduling package for Ghost.",
-  "private": true,
   "type": "module",
   "repository": {
     "type": "git",

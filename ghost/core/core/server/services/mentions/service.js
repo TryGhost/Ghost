@@ -16,7 +16,13 @@ const settingsCache = require('../../../shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const jobsService = require('../mentions-jobs');
 
-function getPostUrl(post) {
+async function getPostUrl(post) {
+    // the lazy URL service needs the post's relations to evaluate collection
+    // filters; event-emitted models don't reliably carry them
+    const missing = urlService.facade.getRequiredRelations().filter(relation => !post.relations[relation]);
+    if (missing.length) {
+        await post.load(missing);
+    }
     const jsonModel = post.toJSON();
     outputSerializerUrlUtil.forPost(post.id, jsonModel, {options: {}});
     return jsonModel.url;
@@ -116,3 +122,6 @@ module.exports = {
         this.sendingService = sendingService;
     }
 };
+
+// exposed for testing
+module.exports.getPostUrl = getPostUrl;

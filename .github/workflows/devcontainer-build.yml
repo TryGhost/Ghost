@@ -17,7 +17,7 @@ on:
     paths:
       - 'docker/ghost-dev/**'
       - '.github/workflows/devcontainer-build.yml'
-      - '.github/scripts/**'
+      - 'scripts/**'
       - '.github/hooks/**'
       - 'package.json'
       - 'pnpm-lock.yaml'

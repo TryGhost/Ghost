@@ -1,6 +1,6 @@
 import path from 'node:path';
 import errors from '@tryghost/errors';
-import {resolveAdapterExport, resolveAdapterOptions, normalizeAdapterConfig, getConfiguredFeatures} from './utils';
+import {resolveAdapterExport, resolveAdapterEntryPoint, resolveAdapterOptions, normalizeAdapterConfig, getConfiguredFeatures} from './utils';
 import type {ConfigInstance} from '../../../shared/config/loader';
 import type {
     Adapter,
@@ -193,8 +193,13 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
                 // We are loading from node_modules, we can remove the `adapterType` prefix
                 pathToAdapter = path.join(pathToAdapters, adapterClassName);
             }
+            // An adapter directory may be a full module with its own
+            // package.json, in which case this resolves the `exports` entry
+            // point; otherwise the path passes through unchanged.
+            const moduleToLoad = resolveAdapterEntryPoint(pathToAdapter);
+
             try {
-                const adapterModule = this.loadAdapterFromPath(pathToAdapter);
+                const adapterModule = this.loadAdapterFromPath(moduleToLoad);
                 Adapter = resolveAdapterExport(adapterModule);
                 if (Adapter) {
                     break;

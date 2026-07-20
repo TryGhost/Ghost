@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import type {SchedulerAdapter} from '@tryghost/adapter-base-scheduling';
 import type {InternalKeys} from '../internal-keys';
 // @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import type DomainEvents from '@tryghost/domain-events';
@@ -17,22 +18,11 @@ const StartAutomationsPollEvent = require('./events/start-automations-poll-event
 const {welcomeEmailAutomationPoll} = require('./welcome-email-automation-poll');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
 
-type SchedulerAdapter = {
-    schedule(job: {
-        extra: {
-            httpMethod: string;
-        };
-        time: number;
-        url: string;
-    }): void;
-    register(rescheduler: {rescheduleAll: () => unknown}): void;
-};
-
 type AutomationsServiceOptions = {
     apiUrl: string;
     domainEvents: Pick<DomainEvents, 'dispatch' | 'subscribe'>;
     internalKeys: InternalKeys;
-    schedulerAdapter: SchedulerAdapter;
+    schedulerAdapter: Pick<SchedulerAdapter, 'schedule' | 'register'>;
 };
 
 const scheduleAutomationEmailAnalyticsJob = () => (

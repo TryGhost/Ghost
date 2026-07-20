@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "members.upload",
+  "title": "members.upload",
+  "description": "Schema for members.upload",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": true,
+    "required": ["email"],
+    "properties": {
+      "name": {
+        "type": ["string", "null"],
+        "maxLength": 191,
+        "pattern": "^([^,]|$)"
+      },
+      "email": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 191,
+        "pattern": "^([^,]|$)"
+      },
+      "note": {
+        "type": ["string", "null"],
+        "minLength": 0,
+        "maxLength": 2000
+      },
+      "subscribed": {
+        "type": ["string", "null"],
+        "enum": ["true", "false", "TRUE", "FALSE", "", null]
+      },
+      "labels": {
+        "type": ["string", "null"]
+      },
+      "created_at": {
+        "type": ["string", "null"],
+        "format": "date-time"
+      },
+      "stripe_customer_id": {
+        "type": ["string", "null"]
+      },
+      "complimentary_plan": {
+        "type": ["string", "null"],
+        "enum": ["true", "false", "TRUE", "FALSE", "", null]
+      }
+    }
+  }
+}

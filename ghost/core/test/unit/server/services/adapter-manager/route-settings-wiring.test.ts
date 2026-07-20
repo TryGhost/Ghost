@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import type {RouteSettings} from '@tryghost/adapter-base-route-settings';
 
-// the adapter-manager exports via `module.exports` (so its methods stay
+// the adapter-manager is required via its `.default` export (so its methods stay
 // stubbable) and config-utils is untyped JS, so neither can be imported.
 // RouteSettingsStoreBase is required rather than imported so that we compare
 // against the same class the adapter loader resolves - it loads adapters with
 // `require`, which reads the package's compiled build, whereas an ESM import
 // here resolves to the package source and would fail the `instanceof` check.
 const {RouteSettingsStoreBase} = require('@tryghost/adapter-base-route-settings');
-const adapterManager = require('../../../../../core/server/services/adapter-manager');
+const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const configUtils = require('../../../../utils/config-utils');
 
 describe('UNIT: adapter-manager route-settings wiring', function () {

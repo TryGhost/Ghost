@@ -12,6 +12,13 @@ const mapResponse = (docName, mappable, frame) => {
 };
 
 module.exports = {
+    // 204 No Content — see posts.js destroy
+    destroy(response, apiConfig, frame) {
+        debug('destroy', apiConfig.docName);
+
+        frame.response = {[apiConfig.docName]: []};
+    },
+
     all(response, apiConfig, frame) {
         const {docName, method} = apiConfig;
         debug('serializing', docName, method);

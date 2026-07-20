@@ -4,7 +4,7 @@ import config from '../../../shared/config';
 // @ts-expect-error This module lacks type definitions.
 import {NewsletterEmailAnalyticsBatchProcessor} from './newsletter-email-analytics-batch-processor';
 // @ts-expect-error This module lacks type definitions.
-import EmailEventStorage from '../email-service/email-event-storage';
+import NewsletterEmailEventStorage from '../email-service/newsletter-email-event-storage';
 // @ts-expect-error This module lacks type definitions.
 import EmailEventProcessor from '../email-service/email-event-processor';
 // @ts-expect-error This module lacks type definitions.
@@ -39,7 +39,7 @@ export const init = () => {
     const newsletterEmailEventProcessor = new EmailEventProcessor({
         domainEvents,
         db,
-        eventStorage: new EmailEventStorage({
+        eventStorage: new NewsletterEmailEventStorage({
             db,
             membersRepository: membersService.api.members,
             models: {

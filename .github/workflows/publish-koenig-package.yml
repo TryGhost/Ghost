@@ -61,4 +61,4 @@ jobs:
           # Passed via env rather than interpolated into the script: dispatch
           # inputs are untrusted shell data even on a manual workflow.
           PACKAGE: ${{ inputs.package }}
-        run: node .github/scripts/publish-koenig-packages.js --package "$PACKAGE" ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: node scripts/publish-koenig-packages.cjs --package "$PACKAGE" ${{ inputs.dry_run && '--dry-run' || '' }}

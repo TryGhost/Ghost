@@ -108,7 +108,15 @@ const forceUrlRelationsWhenLazy = (frame, routerType) => {
     forceUrlColumnsWhenLazy(frame, routerType);
 };
 
+// Options-object variant of forceUrlColumnsWhenLazy for endpoints that build
+// their query options directly (search index).
+const requiredUrlColumns = (routerType, columns) => {
+    const required = urlService.facade.getRequiredFields(routerType).filter(field => !columns.includes(field));
+    return required.length ? [...columns, ...required] : columns;
+};
+
 module.exports.forPost = forPost;
+module.exports.requiredUrlColumns = requiredUrlColumns;
 module.exports.forUser = forUser;
 module.exports.forTag = forTag;
 module.exports.forSetting = forSetting;
