@@ -1,0 +1,168 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "members",
+  "title": "members",
+  "description": "Base members definitions",
+  "definitions": {
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 191,
+          "pattern": "^([^,]|$)"
+        },
+        "email": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 191,
+          "pattern": "^([^,]|$)"
+        },
+        "note": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 2000
+        },
+        "subscribed": {
+          "type": "boolean"
+        },
+        "comped": {
+          "type": "boolean"
+        },
+        "stripe_customer_id": {
+          "type": "string"
+        },
+        "subscriptions": {
+          "type": "array"
+        },
+        "labels": {
+          "$ref": "#/definitions/member-labels"
+        },
+        "products": {
+          "$ref": "#/definitions/member-products"
+        },
+        "tiers": {
+          "$ref": "#/definitions/member-products"
+        },
+        "newsletters": {
+          "$ref": "#/definitions/member-newsletters"
+        },
+        "can_comment": {
+          "type": "boolean"
+        },
+        "comment_ban": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "reason": { "type": "string", "minLength": 1, "maxLength": 2000 },
+                "expires_at": { "type": ["string", "null"], "format": "date-time" }
+              },
+              "required": ["reason"]
+            },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "member-products": {
+      "description": "Products of the member",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 24
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "slug": {
+                "type": ["string", "null"],
+                "maxLength": 191
+              }
+            },
+            "anyOf": [
+              { "required": ["id"] },
+              { "required": ["name"] },
+              { "required": ["slug"] }
+            ]
+          },
+          {
+            "type": "string",
+            "maxLength": 191
+          }
+        ]
+      }
+    },
+    "member-newsletters": {
+      "description": "Newsletters of the member",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 24
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 191
+              }
+            },
+            "anyOf": [
+              { "required": ["id"] },
+              { "required": ["name"] }
+            ]
+          },
+          {
+            "type": "string",
+            "maxLength": 191
+          }
+        ]
+      }
+    },
+    "member-labels": {
+      "description": "Labels of the member",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 24
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "slug": {
+                "type": ["string", "null"],
+                "maxLength": 191
+              }
+            },
+            "anyOf": [
+              { "required": ["id"] },
+              { "required": ["name"] },
+              { "required": ["slug"] }
+            ]
+          },
+          {
+            "type": "string",
+            "maxLength": 191
+          }
+        ]
+      }
+    }
+  }
+}
