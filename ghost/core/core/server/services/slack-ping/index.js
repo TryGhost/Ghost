@@ -1,4 +1,4 @@
-const SlackPingService = require('./slack-ping-service');
+const {SlackPingService} = require('./slack-ping-service');
 
 class SlackPingServiceWrapper {
     init() {
