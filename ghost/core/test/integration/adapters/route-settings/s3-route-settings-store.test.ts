@@ -1,8 +1,10 @@
 import {describe, it, beforeAll, afterEach, afterAll} from 'vitest';
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import {setTimeout as sleep} from 'node:timers/promises';
 import fs from 'fs-extra';
-import {HeadObjectCommand, ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
+import sinon from 'sinon';
+import {GetObjectCommand, HeadObjectCommand, ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
 
 import S3RouteSettingsStore from '../../../../core/server/adapters/route-settings/S3RouteSettingsStore';
 import parseYaml from '../../../../core/server/services/route-settings/yaml-parser';
@@ -56,10 +58,6 @@ const listObjectKeys = async (s3Client: S3Client, bucketName: string): Promise<s
 const backupKeyPattern = (tenantPrefix = ''): RegExp => new RegExp(
     `^${tenantPrefix ? `${tenantPrefix}/` : ''}${STATIC_PREFIX}/routes-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}\\.yaml$`
 );
-
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
 
 // Skip when MinIO is unreachable. The flag is set by the integration
 // globalSetup (vitest-globalsetup-services.ts), which probes MinIO once before
@@ -184,7 +182,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: S3
             const storeB = createStore({tenantPrefix: 'tenant-b'});
 
             await storeA.replace(fromYaml(SAMPLE_YAML));
-            await storeB.replace(parseRouteSettings(parseYaml('routes:\n  /b/: b\n'), 'routes:\n  /b/: b\n'));
+            await storeB.replace(fromYaml('routes:\n  /b/: b\n'));
 
             assert.equal((await storeA.get()).yamlSource, SAMPLE_YAML);
             assert.deepEqual((await storeB.get()).routes, [{type: 'template', path: '/b/', templates: ['b']}]);
@@ -249,5 +247,73 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: S3
             const backupBody = await getObject(adminClient, bucket, backupKey!);
             assert.equal(backupBody?.toString('utf-8'), SAMPLE_YAML);
         });
+    });
+});
+
+// Config validation and S3 fault branches are exercised without a live bucket:
+// a real GetObject always returns a Body and Head/Get don't surface arbitrary
+// transport errors on demand, so the error paths are driven with an injected
+// failing client. This lives in the integration suite because only that
+// coverage report is uploaded, and it runs regardless of MinIO.
+describe('Integration: S3RouteSettingsStore without a live bucket', function () {
+    afterEach(function () {
+        sinon.restore();
+    });
+
+    const faultyStore = (send: (command: unknown) => Promise<unknown>) => {
+        const client: Pick<S3Client, 'send'> = {send: sinon.stub().callsFake(send)};
+        return new S3RouteSettingsStore({
+            bucket: 'a-bucket',
+            staticFileURLPrefix: STATIC_PREFIX,
+            defaultSettingsBasePath: REAL_DEFAULTS_PATH,
+            s3Client: client as S3Client
+        });
+    };
+
+    it('throws IncorrectUsageError when constructed with invalid config', function () {
+        assert.throws(
+            () => new S3RouteSettingsStore({staticFileURLPrefix: STATIC_PREFIX} as never),
+            {errorType: 'IncorrectUsageError'}
+        );
+    });
+
+    it('validate() accepts valid options and rejects invalid ones', function () {
+        assert.doesNotThrow(() => S3RouteSettingsStore.validate({
+            bucket: 'a-bucket',
+            staticFileURLPrefix: STATIC_PREFIX,
+            defaultSettingsBasePath: REAL_DEFAULTS_PATH
+        }));
+        assert.throws(() => S3RouteSettingsStore.validate({} as never), {errorType: 'IncorrectUsageError'});
+    });
+
+    it('throws InternalServerError when GetObject returns no body', async function () {
+        const store = faultyStore(async () => ({}));
+
+        await assert.rejects(store.get(), (err: {errorType?: string}) => {
+            assert.equal(err.errorType, 'InternalServerError');
+            return true;
+        });
+    });
+
+    it('propagates a non-NotFound error raised while reading', async function () {
+        const store = faultyStore(async (command) => {
+            if (command instanceof GetObjectCommand) {
+                throw new Error('connection reset');
+            }
+            return {};
+        });
+
+        await assert.rejects(store.get(), /connection reset/);
+    });
+
+    it('propagates a non-NotFound error raised by the existence check on replace', async function () {
+        const store = faultyStore(async (command) => {
+            if (command instanceof HeadObjectCommand) {
+                throw new Error('access denied');
+            }
+            return {};
+        });
+
+        await assert.rejects(store.replace(fromYaml(SAMPLE_YAML)), /access denied/);
     });
 });
