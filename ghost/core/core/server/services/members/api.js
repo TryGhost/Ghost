@@ -12,6 +12,7 @@ const subscribeEmail = require('./emails/subscribe');
 const updateEmail = require('./emails/update-email');
 const SingleUseTokenProvider = require('./single-use-token-provider');
 const urlUtils = require('../../../shared/url-utils');
+const urlService = require('../url');
 const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
 const tiersService = require('../tiers');
@@ -53,6 +54,7 @@ function trimLeadingWhitespace(strings, ...values) {
 
 function createApiInstance(config) {
     const membersApiInstance = MembersApi({
+        urlService: urlService.facade,
         tokenConfig: config.getTokenConfig(),
         auth: {
             getSigninURL: config.getSigninURL.bind(config),
