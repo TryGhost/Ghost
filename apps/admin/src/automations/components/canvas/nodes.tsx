@@ -7,6 +7,7 @@ import type {Node, NodeProps} from '@xyflow/react';
 import type {AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {formatRate} from './format-stats';
+import {OffValue} from './off-value';
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
 // these; they are not action IDs and never reach the API.
@@ -24,6 +25,10 @@ export type StepNodeDisplayData = {
   isPlaceholderValue?: boolean;
   showStatsFooter?: boolean;
   stats?: AutomationEmailStats;
+  // Whether opens/clicks tracking is on (from Settings → Analytics); drives the
+  // footer "Off" treatment.
+  opensTracked?: boolean;
+  clicksTracked?: boolean;
   value?: string;
   warningMessage?: string;
 };
@@ -167,21 +172,27 @@ const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
     );
 };
 
-const EmailStepStatsFooter: React.FC<{stats: AutomationEmailStats}> = ({stats}) => (
+// A single footer metric. Tracked → the value; not tracked → a muted, inert "Off"
+// that keeps the column in place (distinct from formatRate's "--" = no data yet).
+// "Off" is non-interactive here; the explanation lives in the side panel.
+const FooterMetric: React.FC<{label: string; tracked: boolean; children: React.ReactNode}> = ({label, tracked, children}) => (
+    <div className='flex flex-col text-left'>
+        <span className={cn('text-xs', tracked ? 'text-text-secondary' : 'text-muted-foreground')}>{label}</span>
+        {tracked
+            ? <span className='text-base font-medium'>{children}</span>
+            : <OffValue className='text-base' />}
+    </div>
+);
+
+const EmailStepStatsFooter: React.FC<{
+    stats: AutomationEmailStats;
+    opensTracked: boolean;
+    clicksTracked: boolean;
+}> = ({stats, opensTracked, clicksTracked}) => (
     <div className='mt-3 grid w-full grid-cols-3 gap-3 border-t border-border-default pt-3'>
-        <div className='flex flex-col text-left'>
-            <span className='text-xs text-text-secondary'>Sent</span>
-            <span className='text-base font-medium'>{formatNumber(stats.email_sent_count)}</span>
-        </div>
-        <div className='flex flex-col text-left'>
-            <span className='text-xs text-text-secondary'>Opened</span>
-            <span className='text-base font-medium'>{formatRate(stats.opened_rate)}</span>
-        </div>
-        {/* @TODO: NY-1457 */}
-        {/* <div className='flex flex-col text-left'>
-            <span className='text-xs text-text-secondary'>Clicked</span>
-            <span className='text-base font-medium'>{formatRate(stats?.clicked_rate)}</span>
-        </div> */}
+        <FooterMetric label='Sent' tracked={true}>{formatNumber(stats.email_sent_count)}</FooterMetric>
+        <FooterMetric label='Opened' tracked={opensTracked}>{formatRate(stats.opened_rate)}</FooterMetric>
+        <FooterMetric label='Clicked' tracked={clicksTracked}>{formatRate(stats.clicked_rate)}</FooterMetric>
     </div>
 );
 
@@ -194,7 +205,7 @@ const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
 TriggerNode.displayName = 'TriggerNode';
 
 const StepNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
-    <NodeShell data={data} footer={data.showStatsFooter && data.stats ? <EmailStepStatsFooter stats={data.stats} /> : undefined}>
+    <NodeShell data={data} footer={data.showStatsFooter && data.stats ? <EmailStepStatsFooter clicksTracked={data.clicksTracked ?? true} opensTracked={data.opensTracked ?? true} stats={data.stats} /> : undefined}>
         <HiddenHandle position={Position.Top} type='target' />
         <StepNodeContent data={data} />
         <HiddenHandle position={Position.Bottom} type='source' />

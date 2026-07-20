@@ -7,6 +7,7 @@ import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {MemberTier, StepSidebarDetail} from '@/automations/components/types';
 import {TRIGGER_CANVAS_ID} from './nodes';
 import {formatWait} from './format-wait';
+import {getSettingValues, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useFeatureFlag} from '@/hooks/use-feature-flag';
 
 const MAX_WAIT_DAYS = 30;
@@ -181,6 +182,10 @@ const SendEmailSidebarBody: React.FC<{
   onDelete: () => void;
 }> = ({action, onUpdateSubject, onEditEmail, onDelete}) => {
     const subjectInputRef = useRef<HTMLInputElement>(null);
+    // Email-performance panel tracking states from Settings → Analytics; default
+    // to tracked until the settings load.
+    const {data: settingsData} = useBrowseSettings();
+    const [emailTrackOpens, emailTrackClicks] = getSettingValues<boolean>(settingsData?.settings || [], ['email_track_opens', 'email_track_clicks']);
     const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
 
     useEffect(() => {
@@ -206,7 +211,13 @@ const SendEmailSidebarBody: React.FC<{
                 <LucideIcon.Pencil className='size-4' />
               Edit email
             </Button>
-            {automationAnalyticsEnabled && action.stats && <EmailPerformanceSection stats={action.stats} />}
+            {/* Gated on the automationAnalytics feature flag. */}
+            {automationAnalyticsEnabled && action.stats && (
+                <EmailPerformanceSection
+                    clicksTracked={emailTrackClicks !== false}
+                    opensTracked={emailTrackOpens !== false}
+                />
+            )}
             <div className='mt-auto pt-6'>
                 <DeleteStepButton onClick={onDelete} />
             </div>
