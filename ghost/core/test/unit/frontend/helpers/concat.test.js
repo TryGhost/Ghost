@@ -60,13 +60,13 @@ describe('{{concat}} helper', function () {
 
     it('can concat strings and global variables', function () {
         let templateString = '{{concat @site.url "?my=param"}}';
-        let expected = 'https://siteurl.com?my=param';
+        let expected = 'https://siteurl.com?my&#x3D;param';
         shouldCompileToExpectedWithGlobals(templateString, {}, expected, defaultGlobals);
     });
 
     it('can concat strings and local variables', function () {
         let templateString = '{{concat tag.slug "?my=param"}}';
-        let expected = 'my-tag?my=param';
+        let expected = 'my-tag?my&#x3D;param';
         shouldCompileToExpected(templateString, {tag: {slug: 'my-tag'}}, expected);
     });
 
@@ -74,20 +74,45 @@ describe('{{concat}} helper', function () {
         // Simulate a post - using a draft to prove url helper gets called
         // because published posts get their urls from a cache that we don't have access to, so we just get 404
         let templateString = '{{concat (url) "?my=param"}}';
-        let expected = '/p/1234/?my=param';
+        let expected = '/p/1234/?my&#x3D;param';
         shouldCompileToExpected(templateString, draftPostData, expected);
     });
 
     it('can concat mixed args', function () {
         let templateString = '{{concat @site.url (url) "?slug=" slug}}';
-        let expected = 'https://siteurl.com/p/1234/?slug=my-post';
+        let expected = 'https://siteurl.com/p/1234/?slug&#x3D;my-post';
         shouldCompileToExpectedWithGlobals(templateString, draftPostData, expected, defaultGlobals);
     });
 
     it('will output object Object for sill args', function () {
         let templateString = '{{concat @site "?my=param"}}';
-        let expected = '[object Object]?my=param';
+        let expected = '[object Object]?my&#x3D;param';
         shouldCompileToExpectedWithGlobals(templateString, {}, expected, defaultGlobals);
+    });
+
+    it('escapes unsafe values', function () {
+        const templateString = '{{concat value "-suffix"}}';
+        const expected = '&lt;strong&gt;hello&lt;/strong&gt;-suffix';
+
+        shouldCompileToExpected(templateString, {value: '<strong>hello</strong>'}, expected);
+    });
+
+    it('preserves safe values while escaping unsafe values', function () {
+        const templateString = '{{concat safe_value unsafe_value}}';
+        const expected = '<strong>safe</strong>&lt;em&gt;unsafe&lt;/em&gt;';
+        const context = {
+            safe_value: new SafeString('<strong>safe</strong>'),
+            unsafe_value: '<em>unsafe</em>'
+        };
+
+        shouldCompileToExpected(templateString, context, expected);
+    });
+
+    it('escapes unsafe separators', function () {
+        const templateString = '{{concat "hello" "world" separator=separator}}';
+        const expected = 'hello&lt;br&gt;world';
+
+        shouldCompileToExpected(templateString, {separator: '<br>'}, expected);
     });
 
     it('can concat empty safestrings', function () {
