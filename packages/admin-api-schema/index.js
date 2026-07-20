@@ -1,1 +1,1 @@
-module.exports = require('./lib/admin-api-schema');
+module.exports = require('./src/admin-api-schema');
