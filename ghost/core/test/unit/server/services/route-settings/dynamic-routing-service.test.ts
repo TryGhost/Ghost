@@ -211,29 +211,12 @@ taxonomies:
     });
 
     describe('upload', function () {
-        let uploadDir: string;
-
-        const writeUpload = async (content: string): Promise<string> => {
-            const filePath = path.join(uploadDir, 'routes-incoming.yaml');
-            await fs.writeFile(filePath, content, 'utf8');
-            return filePath;
-        };
-
-        beforeEach(async function () {
-            uploadDir = path.join(os.tmpdir(), `route-settings-upload-${crypto.randomUUID()}`);
-            await fs.ensureDir(uploadDir);
-        });
-
-        afterEach(async function () {
-            await fs.remove(uploadDir);
-        });
-
         it('persists the parsed upload through the store', async function () {
             sinon.stub(bridge, 'reloadFrontend').resolves();
             sinon.stub(urlService, 'resetGenerators');
             sinon.stub(urlService, 'hasFinished').returns(true);
 
-            await service.upload(await writeUpload(CUSTOM_YAML));
+            await service.upload(CUSTOM_YAML);
 
             assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
         });
@@ -243,7 +226,7 @@ taxonomies:
             await store.replace(fromYaml(CUSTOM_YAML));
 
             await assert.rejects(
-                service.upload(await writeUpload('routes:\n  no-slashes: about\n')),
+                service.upload('routes:\n  no-slashes: about\n'),
                 (err: {errorType?: string}) => {
                     assert.equal(err.errorType, 'ValidationError');
                     return true;
@@ -263,7 +246,7 @@ taxonomies:
             getStub.onFirstCall().rejects(new errors.IncorrectUsageError({message: 'Could not parse provided YAML file: bad indentation of a mapping entry.'}));
             getStub.callThrough();
 
-            await service.upload(await writeUpload(CUSTOM_YAML));
+            await service.upload(CUSTOM_YAML);
 
             assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
         });
@@ -277,7 +260,7 @@ taxonomies:
             getStub.onFirstCall().rejects(new errors.ValidationError({message: 'slug is required for read data entries.'}));
             getStub.callThrough();
 
-            await service.upload(await writeUpload(CUSTOM_YAML));
+            await service.upload(CUSTOM_YAML);
 
             assert.equal((await store.get()).yamlSource, CUSTOM_YAML);
         });
@@ -292,7 +275,7 @@ taxonomies:
             const nextYaml = CUSTOM_YAML.replace('/about/: about', '/contact/: contact');
 
             await assert.rejects(
-                service.upload(await writeUpload(nextYaml)),
+                service.upload(nextYaml),
                 /YAMLException/
             );
 
