@@ -12,7 +12,7 @@ const limits = require('../../../core/server/services/limits');
 const {anyErrorId} = matchers;
 
 // Updated to reflect current total based on test output
-const CURRENT_SETTINGS_COUNT = 108;
+const CURRENT_SETTINGS_COUNT = 112;
 
 const settingsMatcher = {};
 

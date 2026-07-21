@@ -639,6 +639,21 @@
         }
     },
     "gifts": {
+        "gift_page_heading": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "gift_page_description": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "gift_page_image": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC"
+        },
         "gift_durations": {
             "defaultValue": "[1,12]",
             "type": "array"

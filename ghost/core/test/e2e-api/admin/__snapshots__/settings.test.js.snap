@@ -353,6 +353,18 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
+    },
+    Object {
       "key": "gift_durations",
       "value": "[1,12]",
     },
@@ -1260,6 +1272,18 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
+    },
+    Object {
       "key": "gift_durations",
       "value": "[1,12]",
     },
@@ -1716,6 +1740,18 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
     },
     Object {
       "key": "gift_durations",
@@ -2176,6 +2212,18 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
+    },
+    Object {
       "key": "gift_durations",
       "value": "[1,12]",
     },
@@ -2285,7 +2333,7 @@ exports[`Settings API Edit can edit Stripe settings when Stripe Connect limit is
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5516",
+  "content-length": "5683",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2677,6 +2725,18 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
     },
     Object {
       "key": "gift_durations",
@@ -3134,6 +3194,18 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
     },
     Object {
       "key": "gift_durations",
@@ -4080,6 +4152,18 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
+    },
+    Object {
       "key": "gift_durations",
       "value": "[1,12]",
     },
@@ -4538,6 +4622,18 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
+    },
+    Object {
       "key": "gift_durations",
       "value": "[1,12]",
     },
@@ -4994,6 +5090,18 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
     },
     Object {
       "key": "gift_durations",
@@ -5458,6 +5566,18 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
+    },
+    Object {
       "key": "gift_durations",
       "value": "[1,12]",
     },
@@ -5913,6 +6033,18 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
     },
     Object {
       "key": "gift_durations",
@@ -6375,6 +6507,18 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
     },
     Object {
       "key": "gift_durations",
@@ -7227,6 +7371,18 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
+    },
+    Object {
       "key": "gift_durations",
       "value": "[1,12]",
     },
@@ -7683,6 +7839,18 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
     },
     Object {
       "key": "gift_durations",
@@ -8144,6 +8312,18 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
+    },
+    Object {
       "key": "gift_durations",
       "value": "[1,12]",
     },
@@ -8601,6 +8781,18 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
     },
     Object {
       "key": "gift_durations",
@@ -9158,6 +9350,18 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_page_heading",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_description",
+      "value": null,
+    },
+    Object {
+      "key": "gift_page_image",
+      "value": null,
     },
     Object {
       "key": "gift_durations",
