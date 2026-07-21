@@ -14,11 +14,7 @@ const crypto = require('crypto');
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
 const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
 const DEFAULT_BOOKMARK_ICON = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
-
-const isYouTubeUrl = (url) => {
-    const hostname = new URL(url).hostname;
-    return hostname === 'youtu.be' || hostname === 'youtube.com' || hostname.endsWith('.youtube.com');
-};
+const DEFAULT_REQUEST_TIMEOUT = 5000;
 
 // metascraper-amazon's built-in URL test is a substring regex that misfires on
 // any host ending in a letter followed by `.co/` (e.g. `rangemedia.co`), causing
@@ -136,12 +132,13 @@ class OEmbedService {
 
     /**
      * @param {string} url
+     * @param {Object} [options]
      */
-    async knownProvider(url) {
+    async knownProvider(url, options = {}) {
         const {extract} = require('@extractus/oembed-extractor');
 
         try {
-            return await extract(url);
+            return await extract(url, {}, options);
         } catch (err) {
             if (err.message === 'Request failed with error code 401' || err.message === 'Request failed with error code 403') {
                 throw new errors.ValidationError({
@@ -195,60 +192,42 @@ class OEmbedService {
     }
 
     /**
-     * Build YouTube bookmark metadata from its allowlisted oEmbed response
-     * without exposing the provider-supplied HTML that embed cards use.
+     * Fetch bookmark enrichment from an allowlisted oEmbed provider without
+     * exposing provider-supplied HTML.
      *
      * @param {string} url
+     * @param {Object} [options]
      * @returns {Promise<Object|undefined>}
      */
-    async fetchYouTubeBookmarkData(url) {
-        if (!isYouTubeUrl(url)) {
-            return;
-        }
-
+    async fetchBookmarkEnrichment(url, options = {}) {
         const {url: providerUrl, provider} = findUrlWithProvider(url);
         if (!provider) {
             return;
         }
 
+        const configuredTimeout = typeof options.timeout === 'number' ? options.timeout : options.timeout?.request;
+        const timeout = configuredTimeout ?? DEFAULT_REQUEST_TIMEOUT;
+        const signal = timeout > 0 ? AbortSignal.timeout(timeout) : undefined;
+
         let oembed;
         try {
-            oembed = await this.knownProvider(providerUrl);
+            oembed = await this.knownProvider(providerUrl, {signal});
         } catch {
-            // YouTube oEmbed metadata is an enhancement for explicit bookmark
-            // cards. If it fails, fall back to scraping the page as before.
+            // oEmbed metadata is a best-effort enhancement. If it fails, keep
+            // the bookmark metadata scraped from the page.
             return;
         }
 
-        if (!oembed.title) {
+        if (!oembed) {
             return;
         }
 
-        const metadata = {
-            url,
+        return _.pickBy({
             title: oembed.title,
-            description: oembed.description || null,
-            author: oembed.author_name || null,
-            publisher: oembed.provider_name || null,
-            thumbnail: oembed.thumbnail_url || (oembed.type === 'photo' ? oembed.url : null),
-            icon: DEFAULT_BOOKMARK_ICON
-        };
-
-        if (metadata.thumbnail) {
-            await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
-                .then((processedImageUrl) => {
-                    metadata.thumbnail = processedImageUrl;
-                }).catch((err) => {
-                    logging.error(err);
-                });
-        }
-
-        return {
-            version: '1.0',
-            type: 'bookmark',
-            url,
-            metadata
-        };
+            author: oembed.author_name,
+            publisher: oembed.provider_name,
+            thumbnail: oembed.thumbnail_url || (oembed.type === 'photo' ? oembed.url : undefined)
+        }, value => value !== null && value !== undefined && value !== '');
     }
 
     /**
@@ -265,7 +244,7 @@ class OEmbedService {
                     'user-agent': USER_AGENT
                 },
                 timeout: {
-                    request: 5000
+                    request: DEFAULT_REQUEST_TIMEOUT
                 },
                 followRedirect: true,
                 ...options
@@ -341,6 +320,8 @@ class OEmbedService {
     /**
      * @param {string} url
      * @param {string} html
+     * @param {string} type
+     * @param {Object} [enrichment]
      *
      * @returns {Promise<{
      *     version: '1.0',
@@ -352,7 +333,7 @@ class OEmbedService {
      *     }
      * }>}
      */
-    async fetchBookmarkData(url, html, type) {
+    async fetchBookmarkData(url, html, type, enrichment = {}) {
         const requestOptions = this.externalRequest.defaults?.options || {};
         const gotOpts = {
             hooks: requestOptions.hooks,
@@ -441,11 +422,24 @@ class OEmbedService {
         const metadata = Object.assign({}, scraperResponse, {
             thumbnail: scraperResponse.image,
             icon: scraperResponse.logo
-        });
+        }, enrichment);
         // We want to use standard naming for image and logo
         delete metadata.image;
         delete metadata.logo;
 
+        return this.buildBookmarkData(url, metadata, type);
+    }
+
+    /**
+     * Validate and process bookmark metadata after it has been scraped,
+     * enriched, or assembled from enrichment alone.
+     *
+     * @param {string} url
+     * @param {Object} metadata
+     * @param {string} type
+     * @returns {Promise<Object>}
+     */
+    async buildBookmarkData(url, metadata, type) {
         if (!metadata.title) {
             throw new errors.ValidationError({
                 message: tpl(messages.insufficientMetadata),
@@ -582,7 +576,7 @@ class OEmbedService {
      * @param {string} url - oembed URL
      * @param {string} type - card type
      * @param {Object} [options] Specific fetch options
-     * @param {number} [options.timeout] Change the default timeout for fetching html
+     * @param {number|Object} [options.timeout] Change the default request timeout
      *
      * @returns {Promise<Object>}
      */
@@ -626,23 +620,36 @@ class OEmbedService {
                 }
             }
 
-            // YouTube can return generic page metadata to server-side requests,
-            // so use its allowlisted oEmbed metadata for explicit bookmarks.
-            // Keep other providers on the page-scraping path because oEmbed does
-            // not consistently include bookmark fields such as descriptions and icons.
-            if (type === 'bookmark' && isYouTubeUrl(url)) {
-                const youtubeBookmark = await this.fetchYouTubeBookmarkData(url);
-                if (youtubeBookmark) {
-                    return youtubeBookmark;
+            // Not in the list, we need to fetch the content
+            const bookmarkEnrichmentPromise = type === 'bookmark' ? this.fetchBookmarkEnrichment(url, fetchOptions) : undefined;
+            const [pageResult, enrichmentResult] = await Promise.allSettled([
+                this.fetchPageHtml(url, fetchOptions),
+                bookmarkEnrichmentPromise
+            ]);
+            const bookmarkEnrichment = enrichmentResult.status === 'fulfilled' ? enrichmentResult.value : undefined;
+
+            if (pageResult.status === 'rejected') {
+                if (type === 'bookmark' && bookmarkEnrichment?.title) {
+                    return this.buildBookmarkData(url, {
+                        url,
+                        title: null,
+                        description: null,
+                        author: null,
+                        publisher: null,
+                        thumbnail: null,
+                        icon: null,
+                        ...bookmarkEnrichment
+                    }, type);
                 }
+
+                throw pageResult.reason;
             }
 
-            // Not in the list, we need to fetch the content
-            const {url: pageUrl, body, contentType} = await this.fetchPageHtml(url, fetchOptions);
+            const {url: pageUrl, body, contentType} = pageResult.value;
 
             // fetch only bookmark when explicitly requested
             if (type === 'bookmark') {
-                return this.fetchBookmarkData(url, body, type);
+                return this.fetchBookmarkData(url, body, type, bookmarkEnrichment);
             }
 
             // mentions need to return bookmark data (metadata) and body (html) for link verification

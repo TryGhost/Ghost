@@ -278,6 +278,14 @@ describe('oembed-service', function () {
                 .resolves('/content/images/thumbnail/youtube.jpg');
 
             nock('https://www.youtube.com')
+                .get('/watch')
+                .query({v: '0i1Xz-xiYSU'})
+                .reply(200, `<html><head>
+                    <title>Generic YouTube page title</title>
+                    <meta name="description" content="Description from the page">
+                </head></html>`);
+
+            nock('https://www.youtube.com')
                 .get('/oembed')
                 .query(true)
                 .reply(200, {
@@ -302,6 +310,7 @@ describe('oembed-service', function () {
                 assert.equal(response.url, 'https://www.youtube.com/watch?v=0i1Xz-xiYSU');
                 assert.equal(response.metadata.url, 'https://www.youtube.com/watch?v=0i1Xz-xiYSU');
                 assert.equal(response.metadata.title, 'Meet the people who fly spacecraft, without ever leaving Earth!');
+                assert.equal(response.metadata.description, 'Description from the page');
                 assert.equal(response.metadata.author, 'Matt Gray');
                 assert.equal(response.metadata.publisher, 'YouTube');
                 assert.equal(response.metadata.thumbnail, '/content/images/thumbnail/youtube.jpg');
@@ -312,12 +321,16 @@ describe('oembed-service', function () {
             }
         });
 
-        it('keeps non-YouTube bookmarks on the page metadata path', async function () {
+        it('enriches other allowlisted provider bookmarks without discarding page metadata', async function () {
             const knownProviderStub = sinon.stub(oembedService, 'knownProvider')
                 .resolves({
                     title: 'Vimeo oEmbed title',
-                    provider_name: 'Vimeo'
+                    author_name: 'Vimeo author',
+                    provider_name: 'Vimeo',
+                    thumbnail_url: 'https://i.vimeocdn.com/video/123.jpg'
                 });
+
+            sinon.stub(oembedService, 'processImageFromUrl').callsFake(async imageUrl => imageUrl);
 
             nock('https://vimeo.com')
                 .get('/123456')
@@ -325,14 +338,19 @@ describe('oembed-service', function () {
                 .reply(200, `<html><head>
                     <title>Vimeo page title</title>
                     <meta name="description" content="Vimeo page description">
+                    <link rel="icon" href="https://vimeo.com/favicon.ico">
                 </head></html>`);
 
             try {
                 const response = await oembedService.fetchOembedDataFromUrl('https://vimeo.com/123456', 'bookmark');
 
-                assert.equal(response.metadata.title, 'Vimeo page title');
+                assert.equal(response.metadata.title, 'Vimeo oEmbed title');
                 assert.equal(response.metadata.description, 'Vimeo page description');
-                sinon.assert.notCalled(knownProviderStub);
+                assert.equal(response.metadata.author, 'Vimeo author');
+                assert.equal(response.metadata.publisher, 'Vimeo');
+                assert.equal(response.metadata.thumbnail, 'https://i.vimeocdn.com/video/123.jpg');
+                assert.equal(response.metadata.icon, 'https://vimeo.com/favicon.ico');
+                sinon.assert.calledOnce(knownProviderStub);
             } finally {
                 sinon.restore();
             }
@@ -354,6 +372,67 @@ describe('oembed-service', function () {
             const response = await oembedService.fetchOembedDataFromUrl('https://www.youtube.com/watch?v=unavailable', 'bookmark');
 
             assert.equal(response.metadata.title, 'Fallback YouTube page title');
+        });
+
+        it('uses bookmark enrichment when the provider page request fails', async function () {
+            const thumbnailUrl = 'https://i.ytimg.com/vi/blocked/hqdefault.jpg';
+            sinon.stub(oembedService, 'processImageFromUrl').resolves('/content/images/thumbnail/youtube.jpg');
+
+            nock('https://www.youtube.com')
+                .get('/oembed')
+                .query(true)
+                .reply(200, {
+                    title: 'YouTube oEmbed title',
+                    author_name: 'YouTube author',
+                    provider_name: 'YouTube',
+                    thumbnail_url: thumbnailUrl,
+                    type: 'video',
+                    version: '1.0'
+                });
+
+            nock('https://www.youtube.com')
+                .get('/watch')
+                .query({v: 'blocked'})
+                .reply(403);
+
+            try {
+                const response = await oembedService.fetchOembedDataFromUrl('https://www.youtube.com/watch?v=blocked', 'bookmark');
+
+                assert.equal(response.metadata.title, 'YouTube oEmbed title');
+                assert.equal(response.metadata.author, 'YouTube author');
+                assert.equal(response.metadata.publisher, 'YouTube');
+                assert.equal(response.metadata.thumbnail, '/content/images/thumbnail/youtube.jpg');
+                assert.equal(response.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+            } finally {
+                sinon.restore();
+            }
+        });
+
+        it('falls back to page metadata when bookmark enrichment times out', async function () {
+            nock('https://www.youtube.com')
+                .get('/oembed')
+                .query(true)
+                .delayConnection(500)
+                .reply(200, {
+                    title: 'Late YouTube oEmbed title',
+                    type: 'video',
+                    version: '1.0'
+                });
+
+            nock('https://www.youtube.com')
+                .get('/watch')
+                .query({v: 'slow'})
+                .reply(200, `<html><head>
+                    <title>Timely YouTube page title</title>
+                </head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl(
+                'https://www.youtube.com/watch?v=slow',
+                'bookmark',
+                {timeout: {request: 200}}
+            );
+
+            assert.equal(response.metadata.title, 'Timely YouTube page title');
         });
 
         it('does not process missing bookmark images', async function () {
@@ -381,6 +460,13 @@ describe('oembed-service', function () {
             const thumbnailUrl = 'https://i.ytimg.com/vi/0i1Xz-xiYSU/hqdefault.jpg';
             sinon.stub(oembedService, 'processImageFromUrl')
                 .resolves('/content/images/thumbnail/youtube.jpg');
+
+            nock('https://www.youtube.com')
+                .get('/watch')
+                .query({v: '0i1Xz-xiYSU'})
+                .reply(200, `<html><head>
+                    <title>Generic YouTube page title</title>
+                </head></html>`);
 
             nock('https://www.youtube.com')
                 .get('/oembed')
