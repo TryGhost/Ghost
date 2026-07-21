@@ -1,4 +1,4 @@
-import {Breadcrumbs} from '@tryghost/admin-x-design-system';
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator} from '@tryghost/shade/components';
 import {Button} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
@@ -83,20 +83,23 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
         width={1140}
     >
         <div className='-mt-6 flex h-full flex-col items-center justify-center text-center'>
-            <div className='absolute top-5 left-6'>
-                <Breadcrumbs
-                    activeItemClassName='hidden md:block! md:visible!'
-                    containerClassName='whitespace-nowrap'
-                    itemClassName='hidden md:block! md:visible!'
-                    items={[{label: 'Offers', onClick: () => {
-                        updateRoute('offers/edit');
-                    }}, {label: offer?.name || ''}]}
-                    separatorClassName='hidden md:block! md:visible!'
-                    backIcon
-                    onBack={() => {
-                        updateRoute('offers/edit');
-                    }}
-                />
+            <div className='absolute top-5 left-6 flex items-center gap-2'>
+                <Button className='mr-1' icon='arrow-left' size='sm' link onClick={() => {
+                    updateRoute('offers/edit');
+                }} />
+                <Breadcrumb className='max-md:hidden'>
+                    <BreadcrumbList className='whitespace-nowrap'>
+                        <BreadcrumbItem>
+                            <BreadcrumbLink className='cursor-pointer' onClick={() => {
+                                updateRoute('offers/edit');
+                            }}>Offers</BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbPage>{offer?.name || ''}</BreadcrumbPage>
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
             </div>
             <Icon colorClass='text-grey-700 -mt-4' name='tags-check' size='xl' />
             <h1 className='mt-6 text-4xl'>Your new offer is live!</h1>

@@ -68,8 +68,6 @@ export type {PreviewModalProps} from './global/modal/preview-modal';
 
 export {default as Banner} from './global/banner';
 export type {BannerProps} from './global/banner';
-export {default as Breadcrumbs} from './global/breadcrumbs';
-export type {BreadcrumbItem, BreadcrumbsProps} from './global/breadcrumbs';
 export {default as Button} from './global/button';
 export type {ButtonColor, ButtonProps} from './global/button';
 export {default as ButtonGroup} from './global/button-group';

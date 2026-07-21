@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
-import {Breadcrumbs, Button, ButtonGroup, DesktopChrome, MobileChrome, PageHeader, Select, type SelectOption} from '@tryghost/admin-x-design-system';
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator} from '@tryghost/shade/components';
+import {Button, ButtonGroup, DesktopChrome, MobileChrome, PageHeader, Select, type SelectOption} from '@tryghost/admin-x-design-system';
 import {type OfficialTheme, type ThemeVariant} from '../../../providers/settings-app-provider';
 import {type Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
 
@@ -76,18 +77,18 @@ const ThemePreview: React.FC<{
 
     const left =
         <div className='flex items-center gap-2'>
-            <Breadcrumbs
-                activeItemClassName='hidden md:!block md:!visible'
-                containerClassName='whitespace-nowrap'
-                itemClassName='hidden md:!block md:!visible'
-                items={[
-                    {label: 'Change theme', onClick: onBack},
-                    {label: selectedTheme.name}
-                ]}
-                separatorClassName='hidden md:!block md:!visible'
-                backIcon
-                onBack={onBack}
-            />
+            <Button className='mr-1' icon='arrow-left' size='sm' link onClick={onBack} />
+            <Breadcrumb className='max-md:hidden'>
+                <BreadcrumbList className='whitespace-nowrap'>
+                    <BreadcrumbItem>
+                        <BreadcrumbLink className='cursor-pointer' onClick={onBack}>Change theme</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage>{selectedTheme.name}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
             {hasVariants(selectedTheme) ?
                 <>
                     <span className='hidden md:!visible md:!block'>–</span>
