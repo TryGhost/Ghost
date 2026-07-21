@@ -43,8 +43,6 @@ export function init(): void {
     });
     // The values service reads the field definitions straight from the table, so
     // it needs knex and the same ceiling — no handle on the definitions service.
-    // A write can't name more keys than the site is allowed definitions, so the
-    // two share one number rather than the value path inventing its own.
     values = new CustomFieldValuesService({
         knex,
         getMaxDefinitions: () => resolveMaxDefinitions(config.get('members:customFields:maxDefinitions'))

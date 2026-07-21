@@ -15,11 +15,9 @@ const VALUES_TABLE = 'members_custom_field_values';
 // could actually have minted is ever refused by it.
 const MAX_KEY_LENGTH = 191;
 
-// Values arrive keyed by field key. Keys are bounded by the column they are
-// minted into, so anything longer cannot name a field that exists and is refused
-// as input rather than looked up. The values themselves stay `unknown` here —
-// each one is validated by its own field type's schema, which isn't known until
-// the key is resolved to a definition.
+// Values arrive keyed by field key. Each value stays `unknown` here: it is
+// validated by its own field type's schema, which isn't known until the key is
+// resolved to a definition.
 const ValuesInput = z.record(z.string().max(MAX_KEY_LENGTH), z.unknown());
 
 // The field facts the value path needs: the id to write the FK, the key to match
@@ -55,9 +53,8 @@ export class CustomFieldValuesService {
     private knex: Knex;
     /**
      * @private
-     * A getter, not a number: the ceiling is an operator setting that can change
-     * between requests, and reading config belongs to the module that builds this,
-     * not here.
+     * A getter rather than a number: the ceiling is an operator setting that can
+     * change between requests.
      */
     private getMaxDefinitions: () => number;
 
@@ -136,8 +133,8 @@ export class CustomFieldValuesService {
     /**
      * @private
      * Input as the values object it claims to be, rejecting anything that isn't
-     * one. The single place that decision is made, so every caller asking about
-     * the same body gets the same answer and the same error.
+     * one. Shared by every caller so they cannot disagree on what a values object
+     * is, or on the error when it isn't one.
      */
     private parseValues(input: unknown): Record<string, unknown> {
         const parsed = ValuesInput.safeParse(input);
@@ -149,13 +146,11 @@ export class CustomFieldValuesService {
     }
 
     /**
-     * Whether input names any values at all, rejecting a body that isn't a values
-     * object in the first place.
+     * Whether input names any values. Throws if it isn't a values object at all,
+     * with the same error resolving it would have raised.
      *
-     * The shape question on its own, with no catalog lookup, so a caller can ask
-     * before deciding whether a write is even permitted — and get the same verdict,
-     * and the same rejection, that resolving it would have produced. An object
-     * carrying nothing but a `__proto__` key names nothing once parsed.
+     * Answers the shape question alone, with no catalog lookup, so it can be asked
+     * before a write is known to be permitted.
      */
     namesValues(input: unknown): boolean {
         return Object.keys(this.parseValues(input)).length > 0;
@@ -171,11 +166,10 @@ export class CustomFieldValuesService {
         const values = this.parseValues(input);
         const keys = Object.keys(values);
 
-        // A write can't name more fields than the site is allowed to define, so the
-        // ceiling is the same operator setting that bounds definitions rather than a
-        // number invented here. It also keeps the resolving query's bound parameters
-        // in proportion: one per key, against a driver limit that an unbounded object
-        // would otherwise blow past as a 500 carrying the generated SQL.
+        // A write cannot name more fields than the site may define, so the
+        // definitions ceiling bounds it. This also holds the lookup below within the
+        // database driver's bound-parameter limit, which one key per parameter would
+        // otherwise exceed.
         const maxKeys = this.getMaxDefinitions();
         if (keys.length > maxKeys) {
             throw new errors.ValidationError({
