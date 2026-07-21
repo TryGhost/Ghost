@@ -1,14 +1,14 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
-import {Avatar, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, inputSurface} from '@tryghost/shade/components';
-import {Button, Icon, InfiniteScrollListener, List, ListItem, Modal, Toggle, ToggleGroup} from '@tryghost/admin-x-design-system';
+import {Avatar, Field, FieldLabel, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, Switch, inputSurface} from '@tryghost/shade/components';
+import {Button, Icon, InfiniteScrollListener, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
 import {ChevronDown, History, X} from 'lucide-react';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type User} from '@tryghost/admin-x-framework/api/users';
 import {formatNumber} from '@tryghost/shade/utils';
 import {keepPreviousData} from '@tanstack/react-query';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useId, useRef, useState} from 'react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 const HistoryIcon: React.FC<{action: Action}> = ({action}) => {
@@ -47,12 +47,18 @@ const HistoryFilterToggle: React.FC<{
     excludedItems: string[];
     toggleItem: (item: string, included: boolean) => void;
 }> = ({label, item, excludedItems, toggleItem}) => {
-    return <Toggle
-        checked={!excludedItems.includes(item)}
-        direction='rtl'
-        label={label}
-        onChange={e => toggleItem(item, e.target.checked)}
-    />;
+    const id = useId();
+
+    return (
+        <Field orientation='horizontal'>
+            <FieldLabel htmlFor={id}>{label}</FieldLabel>
+            <Switch
+                checked={!excludedItems.includes(item)}
+                id={id}
+                onCheckedChange={checked => toggleItem(item, checked)}
+            />
+        </Field>
+    );
 };
 
 const HistoryFilter: React.FC<{
@@ -150,18 +156,18 @@ const HistoryFilter: React.FC<{
                 </PopoverTrigger>
                 <PopoverContent align='end' className='z-[9999] w-[220px]' data-testid='history-filters'>
                     <Stack gap='2xl'>
-                        <ToggleGroup>
+                        <Stack gap='md'>
                             <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
                             <HistoryFilterToggle excludedItems={excludedEvents} item='edited' label='Edited' toggleItem={toggleEventType} />
                             <HistoryFilterToggle excludedItems={excludedEvents} item='deleted' label='Deleted' toggleItem={toggleEventType} />
-                        </ToggleGroup>
-                        <ToggleGroup>
+                        </Stack>
+                        <Stack gap='md'>
                             <HistoryFilterToggle excludedItems={excludedResources} item='post' label='Posts' toggleItem={toggleResourceType} />
                             <HistoryFilterToggle excludedItems={excludedResources} item='page' label='Pages' toggleItem={toggleResourceType} />
                             <HistoryFilterToggle excludedItems={excludedResources} item='tag' label='Tags' toggleItem={toggleResourceType} />
                             <HistoryFilterToggle excludedItems={excludedResources} item='offer,product' label='Tiers & offers' toggleItem={toggleResourceType} />
                             <HistoryFilterToggle excludedItems={excludedResources} item='api_key,integration,setting,user,webhook' label='Settings & staff' toggleItem={toggleResourceType} />
-                        </ToggleGroup>
+                        </Stack>
                     </Stack>
                 </PopoverContent>
             </Popover>

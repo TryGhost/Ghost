@@ -3,7 +3,6 @@ import {ReactNode, createContext, useContext, useEffect, useId, useMemo, useStat
 import {debounce} from '../../utils/debounce';
 import ColorIndicator, {SwatchOption} from './color-indicator';
 import ColorPicker from './color-picker';
-import {ToggleDirections} from './toggle';
 
 const ColorPickerContext = createContext<{colorPickers: Array<{ id: string; setExpanded: ((expanded: boolean) => void) }>}>({
     colorPickers: []
@@ -20,7 +19,7 @@ const to6DigitHex = (hex: string) => {
 export interface ColorPickerFieldProps {
     testId?: string;
     title?: ReactNode;
-    direction?: ToggleDirections;
+    direction?: 'ltr' | 'rtl';
     hint?: ReactNode;
     error?: boolean;
     value?: string | null;

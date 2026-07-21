@@ -1,7 +1,8 @@
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import pinturaScreenshot from '../../../../assets/images/pintura-screenshot.png';
-import {Button, Form, Icon, Modal, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Button, Form, Icon, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -124,15 +125,13 @@ const PinturaModal = NiceModal.create(() => {
                 </div>}
 
                 <Form marginBottom={false} title='Pintura configuration' grouped>
-                    <Toggle
-                        checked={enabled}
-                        direction='rtl'
-                        hint={<>Enable <a className='text-green' href="https://pqina.nl/pintura/ghost/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Pintura</a> for editing your images in Ghost</>}
-                        label='Enable Pintura'
-                        onChange={(e) => {
-                            setEnabled(e.target.checked);
-                        }}
-                    />
+                    <Field orientation='horizontal'>
+                        <FieldContent>
+                            <FieldLabel htmlFor='pintura-enabled'>Enable Pintura</FieldLabel>
+                            <FieldDescription>Enable <a className='text-green' href="https://pqina.nl/pintura/ghost/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Pintura</a> for editing your images in Ghost</FieldDescription>
+                        </FieldContent>
+                        <Switch checked={enabled} id='pintura-enabled' onCheckedChange={setEnabled} />
+                    </Field>
                     {enabled && !config.pintura && (
                         <>
                             <div className='flex flex-col justify-between gap-1 md:flex-row md:items-center'>

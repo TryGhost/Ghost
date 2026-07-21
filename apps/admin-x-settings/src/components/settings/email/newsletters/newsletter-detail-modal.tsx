@@ -4,12 +4,13 @@ import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, type Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, type Tab, TabView, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator} from '@tryghost/shade/components';
+import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {Stack} from '@tryghost/shade/primitives';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
@@ -269,13 +270,10 @@ const Sidebar: React.FC<{
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
                 </Form>
                 <Form className='mt-6' gap='sm' margins='lg' title='Member settings'>
-                    <Toggle
-                        checked={newsletter.subscribe_on_signup}
-                        direction='rtl'
-                        label='Subscribe new members on signup'
-                        labelStyle='value'
-                        onChange={e => updateNewsletter({subscribe_on_signup: e.target.checked})}
-                    />
+                    <Field orientation='horizontal'>
+                        <FieldLabel htmlFor='newsletter-subscribe-on-signup'>Subscribe new members on signup</FieldLabel>
+                        <Switch checked={Boolean(newsletter.subscribe_on_signup)} id='newsletter-subscribe-on-signup' onCheckedChange={checked => updateNewsletter({subscribe_on_signup: checked})} />
+                    </Field>
                 </Form>
                 <div className='mt-10 mb-5'>
                     {newsletter.status === 'active' ? (!onlyOne && <Button color='red' disabled={activeNewsletters.length === 1} label='Archive newsletter' link onClick={confirmStatusChange}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
@@ -315,84 +313,62 @@ const Sidebar: React.FC<{
                             <Hint>1200×600 recommended. Use a transparent PNG for best results on any background.</Hint>
                         </div>
                     </div>
-                    <ToggleGroup>
-                        {icon && <Toggle
-                            checked={newsletter.show_header_icon}
-                            direction="rtl"
-                            label='Publication icon'
-                            onChange={e => updateNewsletter({show_header_icon: e.target.checked})}
-                        />}
-                        <Toggle
-                            checked={newsletter.show_header_title}
-                            direction="rtl"
-                            label='Publication title'
-                            onChange={e => updateNewsletter({show_header_title: e.target.checked})}
-                        />
-                        <Toggle
-                            checked={newsletter.show_header_name}
-                            direction="rtl"
-                            label='Newsletter name'
-                            onChange={e => updateNewsletter({show_header_name: e.target.checked})}
-                        />
-                    </ToggleGroup>
+                    <Stack gap='md'>
+                        {icon && <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-header-icon'>Publication icon</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_header_icon)} id='newsletter-show-header-icon' onCheckedChange={checked => updateNewsletter({show_header_icon: checked})} />
+                        </Field>}
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-header-title'>Publication title</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_header_title)} id='newsletter-show-header-title' onCheckedChange={checked => updateNewsletter({show_header_title: checked})} />
+                        </Field>
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-header-name'>Newsletter name</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_header_name)} id='newsletter-show-header-name' onCheckedChange={checked => updateNewsletter({show_header_name: checked})} />
+                        </Field>
+                    </Stack>
                 </Form>
 
                 <Form className='mt-6' gap='xs' margins='lg' title='Title section'>
-                    <Toggle
-                        checked={newsletter.show_post_title_section}
-                        direction="rtl"
-                        label='Post title'
-                        onChange={e => updateNewsletter({show_post_title_section: e.target.checked})}
-                    />
+                    <Field orientation='horizontal'>
+                        <FieldLabel htmlFor='newsletter-show-post-title'>Post title</FieldLabel>
+                        <Switch checked={Boolean(newsletter.show_post_title_section)} id='newsletter-show-post-title' onCheckedChange={checked => updateNewsletter({show_post_title_section: checked})} />
+                    </Field>
                     {newsletter.show_post_title_section &&
-                        <Toggle
-                            checked={newsletter.show_excerpt}
-                            direction="rtl"
-                            label="Post excerpt"
-                            onChange={e => updateNewsletter({show_excerpt: e.target.checked})}
-                        />
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-excerpt'>Post excerpt</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_excerpt)} id='newsletter-show-excerpt' onCheckedChange={checked => updateNewsletter({show_excerpt: checked})} />
+                        </Field>
                     }
-                    <Toggle
-                        checked={newsletter.show_feature_image}
-                        direction="rtl"
-                        label='Feature image'
-                        onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
-                    />
+                    <Field orientation='horizontal'>
+                        <FieldLabel htmlFor='newsletter-show-feature-image'>Feature image</FieldLabel>
+                        <Switch checked={Boolean(newsletter.show_feature_image)} id='newsletter-show-feature-image' onCheckedChange={checked => updateNewsletter({show_feature_image: checked})} />
+                    </Field>
                 </Form>
 
                 <Form className='mt-6' gap='sm' margins='lg' title='Footer'>
-                    <ToggleGroup gap='lg'>
-                        <Toggle
-                            checked={newsletter.feedback_enabled}
-                            direction="rtl"
-                            label='Ask your readers for feedback'
-                            onChange={e => updateNewsletter({feedback_enabled: e.target.checked})}
-                        />
-                        {commentsEnabled && <Toggle
-                            checked={newsletter.show_comment_cta}
-                            direction="rtl"
-                            label='Add a link to your comments'
-                            onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
-                        />}
-                        <Toggle
-                            checked={newsletter.show_share_button}
-                            direction="rtl"
-                            label='Show share button'
-                            onChange={e => updateNewsletter({show_share_button: e.target.checked})}
-                        />
-                        <Toggle
-                            checked={newsletter.show_latest_posts}
-                            direction="rtl"
-                            label='Share your latest posts'
-                            onChange={e => updateNewsletter({show_latest_posts: e.target.checked})}
-                        />
-                        <Toggle
-                            checked={newsletter.show_subscription_details}
-                            direction="rtl"
-                            label='Show subscription details'
-                            onChange={e => updateNewsletter({show_subscription_details: e.target.checked})}
-                        />
-                    </ToggleGroup>
+                    <Stack gap='lg'>
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-feedback-enabled'>Ask your readers for feedback</FieldLabel>
+                            <Switch checked={Boolean(newsletter.feedback_enabled)} id='newsletter-feedback-enabled' onCheckedChange={checked => updateNewsletter({feedback_enabled: checked})} />
+                        </Field>
+                        {commentsEnabled && <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-comment-cta'>Add a link to your comments</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_comment_cta)} id='newsletter-show-comment-cta' onCheckedChange={checked => updateNewsletter({show_comment_cta: checked})} />
+                        </Field>}
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-share-button'>Show share button</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_share_button)} id='newsletter-show-share-button' onCheckedChange={checked => updateNewsletter({show_share_button: checked})} />
+                        </Field>
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-latest-posts'>Share your latest posts</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_latest_posts)} id='newsletter-show-latest-posts' onCheckedChange={checked => updateNewsletter({show_latest_posts: checked})} />
+                        </Field>
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-subscription-details'>Show subscription details</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_subscription_details)} id='newsletter-show-subscription-details' onCheckedChange={checked => updateNewsletter({show_subscription_details: checked})} />
+                        </Field>
+                    </Stack>
                     <HtmlField
                         hint='Any extra information or legal text'
                         nodes='MINIMAL_NODES'
@@ -408,18 +384,13 @@ const Sidebar: React.FC<{
                         <Icon className='mt-[-1px] mr-2' colorClass='text-red' name='heart'/>
                     </span>
                     <Form marginBottom={false}>
-                        <Toggle
-                            checked={newsletter.show_badge}
-                            direction='rtl'
-                            label={
-                                <div className='flex flex-col gap-0.5'>
-                                    <span className='md:text-base'>Promote independent publishing</span>
-                                    <span className='text-[11px] leading-tight text-grey-700 md:text-sm md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
-                                </div>
-                            }
-                            labelStyle='value'
-                            onChange={e => updateNewsletter({show_badge: e.target.checked})}
-                        />
+                        <Field orientation='horizontal'>
+                            <FieldContent>
+                                <FieldLabel htmlFor='newsletter-show-badge'>Promote independent publishing</FieldLabel>
+                                <FieldDescription>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</FieldDescription>
+                            </FieldContent>
+                            <Switch checked={Boolean(newsletter.show_badge)} id='newsletter-show-badge' onCheckedChange={checked => updateNewsletter({show_badge: checked})} />
+                        </Field>
                     </Form>
                 </div>
             </>

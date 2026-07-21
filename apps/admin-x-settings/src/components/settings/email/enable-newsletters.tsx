@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Banner} from '@tryghost/shade/components';
-import {Icon, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
+import {Banner, Switch} from '@tryghost/shade/components';
+import {Icon, SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {Inline} from '@tryghost/shade/primitives';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -19,12 +19,12 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const isDisabled = membersSignupAccess === 'none';
 
-    const handleToggleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleToggleChange = async (checked: boolean) => {
         const updates: Setting[] = [
-            {key: 'editor_default_email_recipients', value: (e.target.checked ? 'visibility' : 'disabled')}
+            {key: 'editor_default_email_recipients', value: (checked ? 'visibility' : 'disabled')}
         ];
 
-        if (!e.target.checked) {
+        if (!checked) {
             updates.push({key: 'editor_default_email_recipients_filter', value: null});
         }
 
@@ -37,11 +37,11 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const enableToggle = (
         <>
-            <Toggle
+            <Switch
+                aria-label='Newsletters'
                 checked={newslettersEnabled !== 'disabled' && !isDisabled}
-                direction='rtl'
                 disabled={isDisabled}
-                onChange={handleToggleChange}
+                onCheckedChange={handleToggleChange}
             />
         </>
     );

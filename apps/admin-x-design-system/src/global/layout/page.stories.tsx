@@ -12,7 +12,6 @@ import Hint from '../hint';
 import Heading from '../heading';
 import {tableRowHoverBgClasses} from '../table-row';
 import Button from '../button';
-import {Toggle} from '../..';
 
 const meta = {
     title: 'Global / Layout / Page',
@@ -419,15 +418,15 @@ export const ExampleDetailScreen: Story = {
                         <Heading level={5}>Newsletters</Heading>
                         <div className='flex flex-col gap-3'>
                             <div className='flex items-center gap-2'>
-                                <Toggle />
+                                <input aria-label='Daily news' type='checkbox' />
                                 <span>Daily news</span>
                             </div>
                             <div className='flex items-center gap-2'>
-                                <Toggle />
+                                <input aria-label='Weekly roundup' type='checkbox' />
                                 <span>Weekly roundup</span>
                             </div>
                             <div className='flex items-center gap-2'>
-                                <Toggle checked onChange={() => {}} />
+                                <input aria-label='The Inner Circle' type='checkbox' defaultChecked />
                                 <span>The Inner Circle</span>
                             </div>
                             <div className='mt-5 rounded border border-red p-4 text-sm text-red'>

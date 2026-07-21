@@ -120,6 +120,7 @@
         "@radix-ui/react-hover-card": "1.1.18",
         "@radix-ui/react-label": "2.1.11",
         "@radix-ui/react-popover": "catalog:",
+        "@radix-ui/react-radio-group": "catalog:",
         "@radix-ui/react-select": "2.3.2",
         "@radix-ui/react-separator": "catalog:",
         "@radix-ui/react-slider": "1.4.2",

@@ -1,6 +1,7 @@
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {Form, Icon, Modal, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
+import {Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -80,15 +81,13 @@ const FirstPromoterModal = NiceModal.create(() => {
             />
             <div className='mt-7'>
                 <Form marginBottom={false} title='FirstPromoter configuration' grouped>
-                    <Toggle
-                        checked={enabled}
-                        direction='rtl'
-                        hint={<>Enable <a className='text-green' href="https://firstpromoter.com/?fpr=ghost&fp_sid=admin" rel="noopener noreferrer" target="_blank">FirstPromoter</a> for tracking referrals</>}
-                        label='Enable FirstPromoter'
-                        onChange={(e) => {
-                            setEnabled(e.target.checked);
-                        }}
-                    />
+                    <Field orientation='horizontal'>
+                        <FieldContent>
+                            <FieldLabel htmlFor='firstpromoter-enabled'>Enable FirstPromoter</FieldLabel>
+                            <FieldDescription>Enable <a className='text-green' href="https://firstpromoter.com/?fpr=ghost&fp_sid=admin" rel="noopener noreferrer" target="_blank">FirstPromoter</a> for tracking referrals</FieldDescription>
+                        </FieldContent>
+                        <Switch checked={enabled} id='firstpromoter-enabled' onCheckedChange={setEnabled} />
+                    </Field>
                     {enabled && (
                         <TextField
                             hint={<>

@@ -4,7 +4,8 @@ import useFeatureFlag from '../../../hooks/use-feature-flag';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {FacebookLogo, GoogleLogo, Icon, ImageUpload, SettingGroupContent, TabView, TextField, Toggle, XLogo} from '@tryghost/admin-x-design-system';
+import {FacebookLogo, GoogleLogo, Icon, ImageUpload, SettingGroupContent, TabView, TextField, XLogo} from '@tryghost/admin-x-design-system';
+import {Field, FieldLabel, Switch} from '@tryghost/shade/components';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -142,8 +143,8 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     // Meta data handlers
-    const handleLlmsToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('llms_enabled', e.target.checked);
+    const handleLlmsToggleChange = (checked: boolean) => {
+        updateSetting('llms_enabled', checked);
         if (!isEditing) {
             handleEditingChange(true);
         }
@@ -168,12 +169,10 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <>
             <SettingGroupContent className="my-6 gap-3">
                 {hasLlmsTxt && (
-                    <Toggle
-                        checked={llmsEnabled}
-                        direction='rtl'
-                        label='Enable structured data for LLMs and AI search engines'
-                        onChange={handleLlmsToggleChange}
-                    />
+                    <Field orientation='horizontal'>
+                        <FieldLabel htmlFor='llms-enabled'>Enable structured data for LLMs and AI search engines</FieldLabel>
+                        <Switch checked={llmsEnabled} id='llms-enabled' onCheckedChange={handleLlmsToggleChange} />
+                    </Field>
                 )}
                 <TextField
                     hint="Recommended: 70 characters"
