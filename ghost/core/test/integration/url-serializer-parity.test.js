@@ -11,6 +11,7 @@ const {createFindResource} = require('../../core/server/services/url/lazy-find-r
 const inputSerializer = require('../../core/server/api/endpoints/utils/serializers/input/posts');
 const postsMapper = require('../../core/server/api/endpoints/utils/serializers/output/mappers/posts');
 const memberAttribution = require('../../core/server/services/member-attribution');
+const db = require('../../core/server/data/db');
 
 // Drives the real Content API serializer pipeline (input serializer → model
 // fetch → output mapper → facade) against a lazy backend and compares URLs
@@ -255,6 +256,41 @@ describe('Integration: Content API serializer → lazy URL parity (primary_tag p
                     );
                 }
             });
+        });
+    });
+
+    // Regression for the production divergence where a post's tags share a
+    // sort_order (left behind by bulk/import ops). primary_tag is the first
+    // tag if public, so without a tie-break the lazy path's tag load could
+    // order the tied tags differently per query on MySQL, changing the post's
+    // URL under a {primary_tag} permalink (seen as /disaster-preparedness/ vs
+    // /claremont-elmwood/). The posts_tags.id tie-break pins the lazy path to
+    // the first-attached public tag — the tag eager already serves. Only
+    // diverges on MySQL; on sqlite this pins the expected ordering.
+    describe('tied tag sort_order', function () {
+        beforeAll(async function () {
+            // Two public tags with an internal one between them, all sharing
+            // sort_order 0.
+            const tiedPost = await models.Post.add({
+                title: 'Tied Tags', slug: 'tied-tags', status: 'published', lexical: EMPTY_LEXICAL,
+                tags: [
+                    {name: 'First Public', slug: 'first-public'},
+                    {name: '#internal', slug: 'hash-tied-internal'},
+                    {name: 'Second Public', slug: 'second-public'}
+                ]
+            }, {context: {internal: true}, withRelated: ['tags']});
+            await db.knex('posts_tags').where('post_id', tiedPost.id).update({sort_order: 0});
+        });
+
+        it('resolves the lazy tie to the first-attached public tag', async function () {
+            // The suite's facade routes getUrlForResource through the lazy
+            // backend, so this is the lazy path's primary_tag.
+            const mapped = await browsePipeline({slug: 'tied-tags'});
+            assert.match(
+                mapped.url,
+                /\/first-public\//,
+                `expected the first attached public tag as primary_tag, got ${mapped.url}`
+            );
         });
     });
 });
