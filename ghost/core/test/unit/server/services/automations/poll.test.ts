@@ -435,6 +435,9 @@ describe('automations poll', function () {
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
             trackClicks: true
         }));
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            analytics: {automationActionRevisionId: step.automation_action_revision_id}
+        }));
     });
 
     it('snapshots disabled click tracking on the recipient', async function () {
@@ -446,6 +449,9 @@ describe('automations poll', function () {
 
         sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
             trackClicks: false
+        }));
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            analytics: null
         }));
     });
 

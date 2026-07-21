@@ -65,6 +65,99 @@ describe('LinkRedirectsService', function () {
         });
     });
 
+    describe('getOrAddAutomationRedirect', function () {
+        it('returns an existing revision redirect', async function () {
+            const existing = {from: new URL('https://localhost:2368/r/existing'), to: new URL('https://example.com')};
+            const linkRedirectRepository = {
+                getByAutomationActionRevisionAndURL: sinon.stub().resolves(existing),
+                getByURL: sinon.stub(),
+                save: sinon.stub()
+            };
+            const instance = new LinkRedirectsService({linkRedirectRepository, config: {baseURL: new URL('https://localhost:2368/')}});
+
+            assert.equal(await instance.getOrAddAutomationRedirect('revision-id', new URL('https://example.com')), existing);
+            sinon.assert.notCalled(linkRedirectRepository.save);
+        });
+
+        it('creates a revision redirect when none exists', async function () {
+            const linkRedirectRepository = {
+                getByAutomationActionRevisionAndURL: sinon.stub().resolves(undefined),
+                getByURL: sinon.stub().resolves(undefined),
+                save: sinon.stub().resolves()
+            };
+            const instance = new LinkRedirectsService({linkRedirectRepository, config: {baseURL: new URL('https://localhost:2368/')}});
+
+            const result = await instance.getOrAddAutomationRedirect('revision-id', new URL('https://example.com'));
+
+            assert.equal(result.to.href, 'https://example.com/');
+            assert.match(result.from.pathname, /^\/r\/[0-9a-f]{8}$/);
+            sinon.assert.calledOnceWithExactly(linkRedirectRepository.save, result, {automationActionRevisionId: 'revision-id'});
+        });
+
+        for (const code of ['ER_DUP_ENTRY', 'SQLITE_CONSTRAINT_UNIQUE']) {
+            it(`returns the concurrent winner after ${code}`, async function () {
+                const existing = {from: new URL('https://localhost:2368/r/existing'), to: new URL('https://example.com')};
+                const linkRedirectRepository = {
+                    getByAutomationActionRevisionAndURL: sinon.stub()
+                        .onFirstCall().resolves(undefined)
+                        .onSecondCall().resolves(existing),
+                    getByURL: sinon.stub().resolves(undefined),
+                    save: sinon.stub().rejects(Object.assign(new Error('duplicate'), {code}))
+                };
+                const instance = new LinkRedirectsService({linkRedirectRepository, config: {baseURL: new URL('https://localhost:2368/')}});
+
+                assert.equal(await instance.getOrAddAutomationRedirect('revision-id', new URL('https://example.com')), existing);
+                sinon.assert.calledTwice(linkRedirectRepository.getByAutomationActionRevisionAndURL);
+            });
+        }
+
+        it('rethrows unexpected save errors', async function () {
+            const linkRedirectRepository = {
+                getByAutomationActionRevisionAndURL: sinon.stub().resolves(undefined),
+                getByURL: sinon.stub().resolves(undefined),
+                save: sinon.stub().rejects(new Error('database offline'))
+            };
+            const instance = new LinkRedirectsService({linkRedirectRepository, config: {baseURL: new URL('https://localhost:2368/')}});
+
+            await assert.rejects(instance.getOrAddAutomationRedirect('revision-id', new URL('https://example.com')), /database offline/);
+        });
+
+        it('rethrows duplicate errors when the winning row cannot be read', async function () {
+            const duplicate = Object.assign(new Error('duplicate'), {code: 'ER_DUP_ENTRY'});
+            const linkRedirectRepository = {
+                getByAutomationActionRevisionAndURL: sinon.stub().resolves(undefined),
+                getByURL: sinon.stub().resolves(undefined),
+                save: sinon.stub().rejects(duplicate)
+            };
+            const instance = new LinkRedirectsService({linkRedirectRepository, config: {baseURL: new URL('https://localhost:2368/')}});
+
+            await assert.rejects(instance.getOrAddAutomationRedirect('revision-id', new URL('https://example.com')), error => error === duplicate);
+        });
+
+        it('converges simultaneous creates on one redirect', async function () {
+            let stored;
+            const linkRedirectRepository = {
+                getByAutomationActionRevisionAndURL: sinon.stub().callsFake(async () => stored),
+                getByURL: sinon.stub().resolves(undefined),
+                save: sinon.stub().callsFake(async (link) => {
+                    if (stored) {
+                        throw Object.assign(new Error('duplicate'), {code: 'SQLITE_CONSTRAINT_UNIQUE'});
+                    }
+                    stored = link;
+                })
+            };
+            const instance = new LinkRedirectsService({linkRedirectRepository, config: {baseURL: new URL('https://localhost:2368/')}});
+
+            const [first, second] = await Promise.all([
+                instance.getOrAddAutomationRedirect('revision-id', new URL('https://example.com')),
+                instance.getOrAddAutomationRedirect('revision-id', new URL('https://example.com'))
+            ]);
+
+            assert.equal(first, second);
+            assert.equal(stored, first);
+        });
+    });
+
     describe('relativeRedirectPrefix', function () {
         it('returns relative path without subdirectory for Express routing', function () {
             const instance = new LinkRedirectsService({

@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const lexicalLib = require('../../../../../core/server/lib/lexical');
 const emailDesign = require('../../../../../core/server/services/email-rendering/email-design');
+const linkTracking = require('../../../../../core/server/services/link-tracking');
 const MemberWelcomeEmailRenderer = require('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
 
 describe('MemberWelcomeEmailRenderer', function () {
@@ -506,6 +507,99 @@ describe('MemberWelcomeEmailRenderer', function () {
             const $ = cheerio.load(result.html);
             assert($.text().includes('Gérer vos préférences'));
             assert(!$.text().includes('Manage your preferences'));
+        });
+
+        describe('automation click tracking', function () {
+            const memberUuid = '00000000-0000-4000-8000-000000000001';
+            let addAutomationTrackingToUrl;
+            let originalService;
+
+            beforeEach(function () {
+                sinon.stub(linkTracking, 'init').resolves();
+                addAutomationTrackingToUrl = sinon.stub().callsFake(async (url, revisionId, uuid) => {
+                    assert.equal(revisionId, 'revision-id');
+                    const tracked = new URL('https://example.com/r/abc123');
+                    tracked.searchParams.set('m', uuid);
+                    return tracked;
+                });
+                originalService = linkTracking.service;
+                linkTracking.service = {addAutomationTrackingToUrl};
+            });
+
+            afterEach(function () {
+                linkTracking.service = originalService;
+            });
+
+            const renderTracked = async (html, options = {}) => {
+                lexicalRenderStub.resolves(html);
+                return await createRenderer().render({
+                    lexical: '{}',
+                    subject: 'Welcome!',
+                    member: {name: 'John', email: 'john@example.com', uuid: memberUuid},
+                    siteSettings: defaultSiteSettings,
+                    analytics: {automationActionRevisionId: 'revision-id'},
+                    ...options
+                });
+            };
+
+            it('rewrites absolute content links in HTML and finalized plaintext', async function () {
+                const result = await renderTracked('<p><a href="https://external.com/page">External link</a></p>');
+
+                sinon.assert.calledOnceWithExactly(
+                    addAutomationTrackingToUrl,
+                    sinon.match(url => url.href === 'https://external.com/page'),
+                    'revision-id',
+                    memberUuid
+                );
+                assert(result.html.includes(`https://example.com/r/abc123?m=${memberUuid}`));
+                assert(result.text.includes(`https://example.com/r/abc123?m=${memberUuid}`));
+            });
+
+            it('resolves relative links before tracking them', async function () {
+                await renderTracked('<p><a href="/about">About</a></p>');
+
+                sinon.assert.calledWith(addAutomationTrackingToUrl, sinon.match(url => url.href === 'https://example.com/about'));
+            });
+
+            it('uses the same redirect destination for repeated URLs', async function () {
+                const result = await renderTracked('<p><a href="https://external.com/page">One</a><a href="https://external.com/page">Two</a></p>');
+
+                sinon.assert.calledTwice(addAutomationTrackingToUrl);
+                assert.equal((result.html.match(new RegExp(`https://example.com/r/abc123\\?m=${memberUuid}`, 'g')) || []).length, 2);
+            });
+
+            it('leaves fragment-only, invalid, and non-web links unchanged', async function () {
+                const result = await renderTracked('<p><a href="#section">Fragment</a><a href="mailto:hi@example.com">Mail</a><a href="http://[">Invalid</a></p>');
+
+                sinon.assert.notCalled(addAutomationTrackingToUrl);
+                assert(result.html.includes('href="#section"'));
+                assert(result.html.includes('href="mailto:hi@example.com"'));
+            });
+
+            it('does not touch wrapper and footer links', async function () {
+                const result = await renderTracked('<p><a href="https://external.com/page">Content</a></p>');
+                const $ = cheerio.load(result.html);
+
+                sinon.assert.calledOnce(addAutomationTrackingToUrl);
+                assert.equal($('a[href="https://ghost.org/?via=pbg-newsletter"]').length, 1);
+                assert.equal($('a[href*="#/portal/account/newsletters"]').length, 1);
+            });
+
+            it('does not rewrite links when tracking metadata is absent', async function () {
+                const result = await renderTracked('<p><a href="https://external.com/page">Link</a></p>', {analytics: null});
+                const $ = cheerio.load(result.html);
+
+                sinon.assert.notCalled(addAutomationTrackingToUrl);
+                assert.equal($('a[href="https://external.com/page"]').text(), 'Link');
+            });
+
+            it('does not rewrite links when the member UUID is absent', async function () {
+                await renderTracked('<p><a href="https://external.com/page">Link</a></p>', {
+                    member: {name: 'John', email: 'john@example.com'}
+                });
+
+                sinon.assert.notCalled(addAutomationTrackingToUrl);
+            });
         });
 
         describe('design customization', function () {
