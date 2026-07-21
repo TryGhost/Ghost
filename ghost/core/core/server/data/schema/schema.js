@@ -1341,6 +1341,8 @@ module.exports = {
         delivered_at: {type: 'dateTime', nullable: true},
         opened_at: {type: 'dateTime', nullable: true},
         track_opens: {type: 'boolean', nullable: false, defaultTo: false},
+        clicked_at: {type: 'dateTime', nullable: true},
+        track_clicks: {type: 'boolean', nullable: false, defaultTo: false},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
