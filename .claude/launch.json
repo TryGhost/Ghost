@@ -1,0 +1,11 @@
+{
+    "version": "0.0.1",
+    "configurations": [
+        {
+            "name": "ghost-dev",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": ["dev"],
+            "port": 2368
+        }
+    ]
+}

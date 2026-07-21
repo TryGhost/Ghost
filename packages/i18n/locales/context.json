@@ -277,6 +277,8 @@
     "Show 1 more reply": "Button text to load the last remaining reply for a comment",
     "Show all": "Show all recommendations",
     "Show comment": "Context menu action for a comment, for administrators",
+    "Show less": "Toggle on the gift purchase page that collapses a long publisher-written description back to a few lines",
+    "Show more": "Toggle on the gift purchase page that expands a long publisher-written description that has been collapsed to a few lines",
     "Show more results": "Link shown if there are additional search results available",
     "Show {amount} more replies": "Button text to load more replies in the comments app",
     "Sign in": "A button to sign in",

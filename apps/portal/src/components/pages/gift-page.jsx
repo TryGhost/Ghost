@@ -10,6 +10,7 @@ import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
 import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
+import {sanitizeHtml} from '../../utils/sanitize-html';
 import {ValidateInputForm} from '../../utils/form';
 import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
@@ -104,6 +105,53 @@ export const GiftPageStyles = `
     line-height: 1.45em;
     color: var(--grey3);
     text-wrap: pretty;
+}
+
+.gh-portal-gift-checkout-subtitle p {
+    margin: 0 0 8px;
+}
+
+.gh-portal-gift-checkout-subtitle p:last-child {
+    margin-bottom: 0;
+}
+
+.gh-portal-gift-checkout-subtitle a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.gh-portal-gift-checkout-promo-image {
+    display: block;
+    max-width: 100%;
+    max-height: 140px;
+    object-fit: contain;
+    object-position: left;
+    border-radius: 12px;
+    margin: 0 0 20px;
+}
+
+.gh-portal-gift-checkout-subtitle.gh-portal-gift-checkout-subtitle-clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.gh-portal-gift-checkout-show-more {
+    margin: 4px 0 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--grey5);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.gh-portal-gift-checkout-show-more:hover {
+    color: var(--grey3);
 }
 
 .gh-portal-gift-checkout-section {
@@ -677,6 +725,7 @@ const GiftPage = () => {
     const [selectedProductId, setSelectedProductId] = useState(null);
     const [email, setEmail] = useState('');
     const [errors, setErrors] = useState({});
+    const [descriptionExpanded, setDescriptionExpanded] = useState(false);
     const {cardRef, containerProps: cardTiltProps} = useCardTilt();
     const leftRef = useRef(null);
     const innerRef = useRef(null);
@@ -750,6 +799,15 @@ const GiftPage = () => {
 
     const siteIcon = site.icon;
     const siteTitle = site.title || '';
+    const giftPageHeading = site.gift_page_heading?.trim() || '';
+    const giftPageDescriptionHtml = site.gift_page_description?.trim() || '';
+    const giftPageImage = site.gift_page_image || '';
+
+    // Collapse long promotional descriptions behind a "Show more" toggle so
+    // the checkout form stays reachable no matter how much a publisher writes.
+    const descriptionTextLength = giftPageDescriptionHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().length;
+    const descriptionBlockCount = (giftPageDescriptionHtml.match(/<(p|ul|ol|br)\b/g) || []).length;
+    const isDescriptionCollapsible = descriptionTextLength > 240 || descriptionBlockCount > 2;
 
     if (products.length === 0) {
         return (
@@ -761,7 +819,7 @@ const GiftPage = () => {
                             <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                             <div className='gh-portal-gift-checkout-inner'>
                                 <header className='gh-portal-gift-checkout-header'>
-                                    <h1 className='gh-portal-main-title'>{t('Gift a membership')}</h1>
+                                    <h1 className='gh-portal-main-title'>{giftPageHeading || t('Gift a membership')}</h1>
                                     <p className='gh-portal-gift-checkout-subtitle'>
                                         {t('Gift subscriptions are not available right now.')}
                                     </p>
@@ -842,10 +900,32 @@ const GiftPage = () => {
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                         <div className='gh-portal-gift-checkout-inner' ref={innerRef}>
                             <header className='gh-portal-gift-checkout-header'>
-                                <h1 className='gh-portal-main-title'>{t('Gift a membership')}</h1>
-                                <p className='gh-portal-gift-checkout-subtitle'>
-                                    {t('Share a full membership to {siteTitle} with a friend or colleague', {siteTitle})}
-                                </p>
+                                {giftPageImage && (
+                                    <img alt='' className='gh-portal-gift-checkout-promo-image' src={giftPageImage} />
+                                )}
+                                <h1 className='gh-portal-main-title'>{giftPageHeading || t('Gift a membership')}</h1>
+                                {giftPageDescriptionHtml ? (
+                                    <>
+                                        <div
+                                            className={'gh-portal-gift-checkout-subtitle' + (isDescriptionCollapsible && !descriptionExpanded ? ' gh-portal-gift-checkout-subtitle-clamped' : '')}
+                                            dangerouslySetInnerHTML={{__html: sanitizeHtml(giftPageDescriptionHtml)}}
+                                        />
+                                        {isDescriptionCollapsible && (
+                                            <button
+                                                type='button'
+                                                className='gh-portal-gift-checkout-show-more'
+                                                aria-expanded={descriptionExpanded}
+                                                onClick={() => setDescriptionExpanded(expanded => !expanded)}
+                                            >
+                                                {descriptionExpanded ? t('Show less') : t('Show more')}
+                                            </button>
+                                        )}
+                                    </>
+                                ) : (
+                                    <p className='gh-portal-gift-checkout-subtitle'>
+                                        {t('Share a full membership to {siteTitle} with a friend or colleague', {siteTitle})}
+                                    </p>
+                                )}
                             </header>
 
                             {!isLoggedIn && (
