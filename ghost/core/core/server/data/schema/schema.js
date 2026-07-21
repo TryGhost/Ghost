@@ -1266,6 +1266,7 @@ module.exports = {
         email_design_setting_id: {type: 'string', maxlength: 24, nullable: true, references: 'email_design_settings.id', setNullDelete: true},
         email_sent_count: {type: 'integer', nullable: true, unsigned: true},
         email_opened_count: {type: 'integer', nullable: true, unsigned: true},
+        email_clicked_count: {type: 'integer', nullable: true, unsigned: true},
         '@@UNIQUE_CONSTRAINTS@@': [
             ['created_at', 'action_id']
         ]
