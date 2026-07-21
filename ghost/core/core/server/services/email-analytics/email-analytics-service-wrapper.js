@@ -8,6 +8,7 @@ const domainEvents = require('@tryghost/domain-events');
 
 class EmailAnalyticsServiceWrapper {
     /** @type {string} */ #logName;
+    #fetching = false;
     #restoredSchedule = false;
 
     get #logPrefix() {
@@ -177,11 +178,11 @@ class EmailAnalyticsServiceWrapper {
             await this.service.restoreScheduled();
         }
 
-        if (this.fetching) {
+        if (this.#fetching) {
             logging.info(`Email analytics fetch for ${this.#logName} already running, skipping`);
             return;
         }
-        this.fetching = true;
+        this.#fetching = true;
 
         // NOTE: Data shows we can process ~2500 events per minute on Pro for a large-ish db (150k members).
         //       This can vary locally, but we should be conservative with the number of events we fetch.
@@ -216,18 +217,18 @@ class EmailAnalyticsServiceWrapper {
                 logging.info(`${this.#logPrefix} Job complete - No events`);
             }
 
-            this.fetching = false;
+            this.#fetching = false;
         } catch (e) {
             logging.error(e, `Error while fetching email analytics for ${this.#logName}`);
 
             // Log again only the error, otherwise we lose the stack trace
             logging.error(e);
         }
-        this.fetching = false;
+        this.#fetching = false;
     }
 
     _restartFetch(reason) {
-        this.fetching = false;
+        this.#fetching = false;
         logging.info(`${this.#logPrefix} Restarting fetch due to ${reason}`);
         this.startFetch();
     }
