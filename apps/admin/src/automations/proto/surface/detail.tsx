@@ -5,6 +5,7 @@ import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {getScenario} from '@/automations/proto/shared/mock';
 import {SurfaceAnalyticsPane} from './analytics-pane';
+import {SurfaceFlowCanvas} from './flow-canvas';
 import {useVersionLink} from '@/automations/proto/shared/use-version-link';
 
 type Mode = 'view' | 'edit';
@@ -89,6 +90,7 @@ const AutomationSurface: React.FC = () => {
 
     const {automation} = scenario;
     const isEdit = mode === 'edit';
+    const selectedRun = selectedMemberId ? scenario.runs.find(r => r.id === selectedMemberId) ?? null : null;
 
     // Stands in for a real flow edit: mark dirty and run the autosave beat.
     const simulateEdit = () => {
@@ -200,11 +202,7 @@ const AutomationSurface: React.FC = () => {
                             <Button className="mt-2" size="sm" variant="outline" onClick={simulateEdit}>Simulate an edit</Button>
                         </PanePlaceholder>
                     ) : (
-                        <PanePlaceholder
-                            description={selectedMemberId ? 'Focused on the selected member’s journey.' : 'General flow view. Bring over the per-member flow canvas here in Phase 4.'}
-                            icon={LucideIcon.Workflow}
-                            title="Flow canvas"
-                        />
+                        <SurfaceFlowCanvas automation={automation} selectedRun={selectedRun} />
                     )}
                 </div>
             </div>
