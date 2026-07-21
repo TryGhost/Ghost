@@ -581,13 +581,14 @@ async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<
 
 async function findNextPendingReadyAt(trx: Knex.Transaction, staleLockCutoff: Readonly<Date>): Promise<Date | null> {
     const row = await trx('automation_run_steps')
-        .min({next_ready_at: 'ready_at'})
+        .select({next_ready_at: 'ready_at'})
         .where('status', 'pending')
         .where((builder) => {
             builder
                 .whereNull('locked_by')
                 .orWhere('locked_at', '<', toDatabaseDate(staleLockCutoff));
         })
+        .orderBy('ready_at')
         .first();
     return row?.next_ready_at ? new Date(row.next_ready_at) : null;
 }
