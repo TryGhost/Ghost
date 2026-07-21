@@ -218,6 +218,33 @@ describe('parse', function () {
         assert.deepEqual(result[1].labels, [{name: 'basic'}, {name: 'imported'}]);
     });
 
+    it('falls back to defaultLabels when the labels column is empty', async function () {
+        const filePath = csvPath + 'members-with-empty-labels.csv';
+        const mapping = {
+            email: 'email',
+            labels: 'labels'
+        };
+        const defaultLabels = [{name: 'imported'}];
+        const result = await parse(filePath, mapping, defaultLabels);
+
+        assert.equal(result.length, 2);
+        assert.deepEqual(result[0].labels, [{name: 'imported'}]);
+        assert.deepEqual(result[1].labels, [{name: 'basic'}, {name: 'imported'}]);
+    });
+
+    it('gives each row its own labels array', async function () {
+        const filePath = csvPath + 'members-with-empty-labels.csv';
+        const mapping = {
+            email: 'email',
+            labels: 'labels'
+        };
+        const defaultLabels = [{name: 'imported'}];
+        const result = await parse(filePath, mapping, defaultLabels);
+
+        assert.notEqual(result[0].labels, defaultLabels, 'must not alias the caller\'s array');
+        assert.notEqual(result[0].labels, result[1].labels);
+    });
+
     it('transforms complimentary_plan column to boolean', async function () {
         const filePath = csvPath + 'members-with-complimentary-plan.csv';
         const mapping = {

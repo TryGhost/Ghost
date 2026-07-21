@@ -7,6 +7,7 @@ const transformValue = (header, value) => {
         if (value && typeof value === 'string') {
             return value.split(',').map(name => ({name}));
         }
+        return [];
     }
 
     if (header === 'subscribed') {
@@ -84,11 +85,8 @@ module.exports = (path, headerMapping, defaultLabels = []) => {
                     return;
                 }
 
-                if (row.labels) {
-                    row.labels = row.labels.concat(defaultLabels);
-                } else {
-                    row.labels = defaultLabels;
-                }
+                // labels is absent when the column is unmapped, and an array otherwise
+                row.labels = [...(row.labels ?? []), ...defaultLabels];
 
                 rows.push(row);
             } catch (err) {
