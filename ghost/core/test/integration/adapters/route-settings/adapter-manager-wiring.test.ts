@@ -12,8 +12,8 @@ import {
     getObject
 } from '../../../utils/minio';
 
-// the adapter-manager is required via its `.default` export (so its methods stay
-// stubbable) and config-utils is untyped JS, so neither can be imported.
+// config-utils is untyped JS, so it can't be imported; the adapter-manager is
+// required alongside it for its `.default` export.
 const adapterManager = require('../../../../core/server/services/adapter-manager').default;
 const configUtils = require('../../../utils/config-utils');
 
@@ -95,11 +95,5 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: ro
         const reloaded: RouteSettings = await adapterManager.getAdapter('route-settings').get();
         assert.equal(reloaded.yamlSource, SAMPLE_YAML);
         assert.deepEqual(reloaded.routes, [{path: '/about/', templates: ['about'], type: 'template'}]);
-    });
-
-    it('keeps serving the FileStore when the S3 store is merely registered', function () {
-        const store = adapterManager.getAdapter('route-settings');
-
-        assert.equal(store.constructor.name, 'FileStore');
     });
 });

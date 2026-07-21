@@ -145,9 +145,14 @@ function getSchedulingConfig(config: ConfigInstance) {
 *
 * Resolution happens on every call rather than in place, because
 * `config.get('adapters')` hands back a live reference — baking the first
-* caller's content path into it would survive later config changes. Only stores
-* that are actually present in the config are touched, so a store the operator
-* hasn't configured stays absent; an explicitly configured path always wins.
+* caller's content path into it would survive later config changes. Only keys
+* already present in the config block are filled in, so removing a store from
+* the block keeps it absent rather than resurrecting it; an explicitly
+* configured path always wins.
+*
+* @NOTE: keyed by class name, so a new route-settings store needs an entry here
+* — `defaultSettingsBasePath` is a hard schema requirement, and without one the
+* store fails `init()` validation at boot rather than falling back.
 */
 function normalizeAdapterPaths(config: ConfigInstance, key: 'redirects' | 'route-settings', defaultPathsByAdapter: Record<string, Record<string, string>>) {
     const adapterConfig = config.get(`adapters:${key}`);

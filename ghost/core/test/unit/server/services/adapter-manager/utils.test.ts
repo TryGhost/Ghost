@@ -122,7 +122,10 @@ describe('Adapter Manager: utils', function () {
             });
         });
 
-        it('populates the S3RouteSettingsStore default settings path from config if not explicitly provided', () => {
+        // The shape every install now boots with: both stores present, one of
+        // them active. Asserted as a whole slice so filling in one store's paths
+        // can't quietly disturb the other's.
+        it('populates the paths of both route-settings stores from config if not explicitly provided', () => {
             const conf = loadNconf();
             conf.set('paths:defaultRouteSettings', '/default/route/settings');
             conf.set('adapters', {
@@ -136,10 +139,17 @@ describe('Adapter Manager: utils', function () {
                 },
             });
             const normalizedConfig = normalizeAdapterConfig(conf);
-            assert.deepEqual(normalizedConfig['route-settings'].S3RouteSettingsStore, {
-                bucket: 'a-bucket',
-                staticFileURLPrefix: 'content/settings',
-                defaultSettingsBasePath: '/default/route/settings',
+            assert.deepEqual(normalizedConfig['route-settings'], {
+                active: 'S3RouteSettingsStore',
+                'FileStore': {
+                    basePath: conf.getContentPath('settings'),
+                    defaultSettingsBasePath: '/default/route/settings',
+                },
+                'S3RouteSettingsStore': {
+                    bucket: 'a-bucket',
+                    staticFileURLPrefix: 'content/settings',
+                    defaultSettingsBasePath: '/default/route/settings',
+                },
             });
         });
 
@@ -173,11 +183,15 @@ describe('Adapter Manager: utils', function () {
             assert.equal('S3RouteSettingsStore' in normalizedConfig['route-settings'], false);
         });
 
-        it('leaves the redirects S3 store config untouched', () => {
+        // Redirects resolves a path for FileStore only, so this pins the other
+        // half of the same rule: a store with no defaults to fill is left alone
+        // even when a sibling store in the same block is being filled in.
+        it('fills the redirects FileStore path without touching the S3 store config', () => {
             const conf = loadNconf();
             conf.set('adapters', {
                 redirects: {
                     active: 'S3RedirectsStore',
+                    'FileStore': {},
                     'S3RedirectsStore': {
                         bucket: 'a-bucket',
                         staticFileURLPrefix: 'content/data',
@@ -185,9 +199,15 @@ describe('Adapter Manager: utils', function () {
                 },
             });
             const normalizedConfig = normalizeAdapterConfig(conf);
-            assert.deepEqual(normalizedConfig.redirects.S3RedirectsStore, {
-                bucket: 'a-bucket',
-                staticFileURLPrefix: 'content/data',
+            assert.deepEqual(normalizedConfig.redirects, {
+                active: 'S3RedirectsStore',
+                'FileStore': {
+                    basePath: conf.getContentPath('data'),
+                },
+                'S3RedirectsStore': {
+                    bucket: 'a-bucket',
+                    staticFileURLPrefix: 'content/data',
+                },
             });
         });
 

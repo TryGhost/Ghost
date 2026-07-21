@@ -63,11 +63,13 @@ describe('UNIT: adapter-manager route-settings wiring', function () {
         });
 
         const {adapterConfig} = resolveAdapterOptions('route-settings', normalizeAdapterConfig(configUtils.config));
+        const {defaultSettingsBasePath} = adapterConfig as {defaultSettingsBasePath?: string};
 
-        assert.equal(
-            (adapterConfig as {defaultSettingsBasePath?: string}).defaultSettingsBasePath,
-            configUtils.config.get('paths:defaultRouteSettings')
-        );
+        // Asserted against the literal from overrides.json rather than re-reading
+        // `paths:defaultRouteSettings`, which would pass as undefined === undefined
+        // if the path ever stopped resolving — while the store's schema requires
+        // a non-empty string and would reject it at construction.
+        assert.ok(defaultSettingsBasePath?.endsWith('core/server/services/route-settings/'));
     });
 
     it('rejects a misconfigured S3 store at boot with a clear error', function () {
