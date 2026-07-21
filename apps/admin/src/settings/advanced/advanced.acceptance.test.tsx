@@ -162,6 +162,55 @@ describe("Advanced settings", () => {
         await expect.poll(() => document.querySelector<HTMLIFrameElement>("iframe#iframeDownload")?.src).toContain(downloadPath);
     });
 
+    it.each([
+        {kind: "redirects", modalTestId: "modal-redirects-editor", heading: "Redirects", uploadPath: "/redirects/upload/", downloadPath: "/redirects/download/", yaml: "301:\n  /old/: /new/\n", successText: /redirects updated/i},
+        {kind: "routes", modalTestId: "modal-routes-editor", heading: "Routes", uploadPath: "/settings/routes/yaml/", downloadPath: "/settings/routes/yaml/", yaml: "routes:\n  /about/: about\n", successText: /routes updated/i},
+    ])("edits $kind inline from Labs", async ({kind, modalTestId, heading, uploadPath, downloadPath, yaml, successText}) => {
+        fakeSettingsScreens();
+        const uploadApi = fakeAdminEndpoint("POST", uploadPath, {});
+        fakeAdminEndpoint("GET", downloadPath, new TextEncoder().encode(yaml).buffer, {contentType: "text/yaml"});
+        await renderAdminApp("/settings/labs");
+
+        const section = settingsScreen.section("labs");
+        await section.getByRole("button", {name: "Open"}).click();
+        await section.getByRole("tab", {name: "Beta features"}).click();
+        await section.getByTestId(kind).getByRole("button", {name: "Edit"}).click();
+
+        const modal = page.getByTestId(modalTestId);
+        await expect.element(modal.getByRole("heading", {name: heading})).toBeVisible();
+
+        const editor = modal.getByRole("textbox").first();
+        await expect.element(editor).toBeVisible();
+        await editor.fill(`${yaml}# edited\n`);
+        await modal.getByRole("button", {name: "Save"}).click();
+
+        await expect.element(settingsScreen.successToast()).toHaveTextContent(successText);
+        await expect.poll(() => uploadApi.requests.length).toBe(1);
+        await expect(modal).toHaveCount(0);
+    });
+
+    it("shows a validation error and keeps the editor open when saving invalid redirects", async () => {
+        const errorMessage = "Could not parse YAML: end of the stream or a document separator is expected.";
+        fakeSettingsScreens();
+        fakeAdminEndpoint("GET", "/redirects/download/", new TextEncoder().encode("301:\n  /old/: /new/\n").buffer, {contentType: "text/yaml"});
+        fakeAdminEndpoint("POST", "/redirects/upload/", {errors: [{type: "BadRequestError", message: errorMessage}]}, {status: 400});
+        await renderAdminApp("/settings/labs");
+
+        const section = settingsScreen.section("labs");
+        await section.getByRole("button", {name: "Open"}).click();
+        await section.getByRole("tab", {name: "Beta features"}).click();
+        await section.getByTestId("redirects").getByRole("button", {name: "Edit"}).click();
+
+        const modal = page.getByTestId("modal-redirects-editor");
+        const editor = modal.getByRole("textbox").first();
+        await expect.element(editor).toBeVisible();
+        await modal.getByRole("button", {name: "Save"}).click();
+
+        await expect.element(modal.getByTestId("yaml-editor-error")).toHaveTextContent(errorMessage);
+        await expect.element(modal).toBeVisible();
+        await expect(settingsScreen.successToast()).toHaveCount(0);
+    });
+
     it("browses and filters history using the expected NQL", async () => {
         fakeSettingsScreens();
         const usersApi = fakeUsers(currentUserResponse().users as unknown as StaffUser[]);

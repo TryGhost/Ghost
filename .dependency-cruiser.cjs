@@ -64,12 +64,7 @@ module.exports = {
                     '^ghost/core/core/frontend/web/middleware/frontend-caching\\.js$',
                     '^ghost/core/core/frontend/web/middleware/handle-image-sizes\\.js$',
                     '^ghost/core/core/frontend/web/routers/link-redirects\\.js$',
-                    '^ghost/core/core/frontend/apps/private-blogging/lib/router\\.js$',
-
-                    // Leaks that bypass the proxy (fix first).
-                    '^ghost/core/core/frontend/services/routing/controllers/unsubscribe\\.js$', // services/members + settings-helpers
-                    '^ghost/core/core/frontend/services/routing/router-manager\\.js$', // server/lib/common/events bus
-                    '^ghost/core/core/frontend/services/sitemap/site-map-manager\\.js$' // server/lib/common/events bus
+                    '^ghost/core/core/frontend/apps/private-blogging/lib/router\\.js$'
                 ]
             },
             to: {path: '^ghost/core/core/server/'}

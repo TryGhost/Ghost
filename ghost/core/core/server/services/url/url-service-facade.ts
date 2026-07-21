@@ -242,6 +242,7 @@ export class UrlServiceFacade {
         return {
             type: resource.type,
             id: resource.id,
+            status: (resource as Record<string, unknown>).status,
             resourceKeys: Object.keys(resource),
             caller: caller.stack,
             ...extra
@@ -272,7 +273,7 @@ export class UrlServiceFacade {
             void this._compareAsync('resolveUrl', eagerSnapshot,
                 () => this.lazyUrlService!.resolveUrl(urlPath),
                 {path: urlPath},
-                (a, b) => _.isEqual(a, b));
+                (a, b) => this._resolvesToSameResource(a, b));
         }
         return eagerResult;
     }
@@ -384,6 +385,70 @@ export class UrlServiceFacade {
         this._reportMismatch(method, eagerValue, lazyValue, context, isEqual);
     }
 
+    private _isNotFound(value: unknown): boolean {
+        return typeof value === 'string' && value.endsWith('/404/');
+    }
+
+    // resolveUrl's contract is which resource a path maps to, not the exact
+    // serialized record. Eager (raw-knex) and lazy (model.toJSON) shape the same
+    // DB row differently — lazy carries a `parent` key eager omits, eager keeps
+    // __GHOST_URL__ placeholders lazy expands, timestamps differ in precision —
+    // so comparing whole records reports the same resolved resource as a
+    // mismatch. Compare resolved identity instead.
+    private _resolvesToSameResource(a: unknown, b: unknown): boolean {
+        if (a === null || b === null) {
+            return a === b;
+        }
+        const ra = a as Resource;
+        const rb = b as Resource;
+        return ra.id === rb.id && ra.type === rb.type;
+    }
+
+    // Divergences that are not lazy regressions, so logging them only buries
+    // the ones that are. Each branch is a class confirmed from production
+    // compare data.
+    private _isExpectedDivergence(
+        method: string,
+        eagerValue: unknown,
+        lazyValue: unknown,
+        context: Record<string, unknown>
+    ): boolean {
+        // Eager leaves tags/authors with no published posts out of its URL map
+        // (the shouldHavePosts gate) so they resolve to /404/, while lazy has no
+        // cheap way to run that check and returns the real URL. Eager cache
+        // staleness (a tag gaining its first post after boot) looks the same.
+        // Whether to keep lazy's behaviour is still open, but either way it is
+        // not a lazy bug, so exclude it to surface the divergences that are.
+        if (method === 'getUrlForResource'
+            && (context.type === 'tags' || context.type === 'authors')
+            && this._isNotFound(eagerValue) && !this._isNotFound(lazyValue)) {
+            return true;
+        }
+
+        // A site's owner starts with the default `ghost-user` slug and is
+        // renamed during setup. The rename emits no event the eager cache
+        // consumes, so eager serves /author/ghost-user/ until the next boot
+        // while lazy has the real slug from the database.
+        if (method === 'getUrlForResource'
+            && context.type === 'authors'
+            && typeof eagerValue === 'string' && eagerValue.endsWith('/author/ghost-user/')
+            && !this._isNotFound(lazyValue)) {
+            return true;
+        }
+
+        // lazy returns /404/ where eager serves a real URL: eager cached a
+        // resource that is no longer routable (unpublished or deleted since,
+        // with no event to evict it). Suppress only when the resource is
+        // provably not published — a published resource lazy refuses to route
+        // is a real lazy bug, so that keeps logging.
+        if (method === 'getUrlForResource'
+            && this._isNotFound(lazyValue) && !this._isNotFound(eagerValue)
+            && typeof context.status === 'string' && context.status !== 'published') {
+            return true;
+        }
+        return false;
+    }
+
     private _reportMismatch(
         method: string,
         eagerValue: unknown,
@@ -392,6 +457,9 @@ export class UrlServiceFacade {
         isEqual: (a: unknown, b: unknown) => boolean
     ): void {
         if (!isEqual(eagerValue, lazyValue)) {
+            if (this._isExpectedDivergence(method, eagerValue, lazyValue, context)) {
+                return;
+            }
             const {caller, ...details} = context;
             const report = new errors.InternalServerError({
                 message: 'URL service parity mismatch',

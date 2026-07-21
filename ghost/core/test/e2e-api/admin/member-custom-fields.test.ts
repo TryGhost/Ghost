@@ -125,6 +125,70 @@ describe('Member Custom Fields Admin API', function () {
                 .expectStatus(422);
         });
 
+        // A key names a property on the plain objects carrying a member's values, so
+        // one naming a member of Object.prototype reads back as inherited rather than
+        // absent wherever it is indexed. Those keys are already taken, so the
+        // publisher keeps the name and the key takes a suffix. The match is on the
+        // slug rather than the name, which is what catches every spelling that
+        // collapses onto it.
+        const reservedSpellings = [
+            {name: 'Constructor', key: 'constructor-2'},
+            {name: 'constructor', key: 'constructor-2'},
+            {name: '__proto__', key: '__proto__-2'},
+            {name: '__PROTO__', key: '__proto__-2'},
+            {name: '＿＿ｐｒｏｔｏ＿＿', key: '__proto__-2'}
+        ];
+        for (const {name, key} of reservedSpellings) {
+            it(`mints ${key} for the name ${name}, and the value round-trips`, async function () {
+                const field = await createField({name});
+                assert.equal(field.key, key);
+
+                const memberId = await createMember();
+                await setValues(memberId, {[key]: 'Bex'});
+
+                assert.deepEqual(await readValues(memberId), {[key]: 'Bex'});
+            });
+        }
+
+        // A reserved key is claimed by whichever field takes the suffix first, so the
+        // next one along has to keep counting rather than collide with it.
+        it('keeps counting past a reserved key already claimed by another field', async function () {
+            const first = await createField({name: 'Constructor'});
+            const second = await createField({name: 'Constructor!'});
+
+            assert.equal(first.key, 'constructor-2');
+            assert.equal(second.key, 'constructor-3');
+        });
+
+        // The batch runs in one transaction, so mintKey sees the rows minted earlier
+        // in the same request — reserving a key must hold within a batch too, not
+        // just across separate requests.
+        it('mints distinct keys when two definitions in one batch both slug onto a reserved key', async function () {
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Constructor', type: 'short_text'},
+                    {name: 'Constructor!', type: 'short_text'}
+                ]})
+                .expectStatus(201);
+
+            assert.deepEqual(
+                body.members_custom_fields.map((f: {key: string}) => f.key),
+                ['constructor-2', 'constructor-3']
+            );
+        });
+
+        // A reserved slug must not take a whole prefix with it — only the exact key.
+        it('leaves a name that merely starts with a reserved word unsuffixed', async function () {
+            const field = await createField({name: 'Constructor role'});
+            assert.equal(field.key, 'constructor-role');
+
+            const memberId = await createMember();
+            await setValues(memberId, {[field.key]: 'Foreman'});
+
+            assert.deepEqual(await readValues(memberId), {'constructor-role': 'Foreman'});
+        });
+
         it('rejects a name that exceeds the maximum length', async function () {
             await agent
                 .post('members/custom_fields/')
@@ -656,10 +720,15 @@ describe('Member Custom Fields Admin API', function () {
             await createField({name: 'Company'});
             await createFieldExpecting('Role', 403);
 
+            // The key identifies the field publicly; it rides in the action's context
+            // because resource_id holds the row id.
             const actions = await models.Base.knex('actions')
                 .where('resource_type', 'member_custom_field')
-                .select('resource_id');
-            assert.deepEqual(actions.map((action: {resource_id: string}) => action.resource_id), ['company']);
+                .select('context');
+            assert.deepEqual(
+                actions.map((action: {context: string | null}) => JSON.parse(action.context ?? '{}').key),
+                ['company']
+            );
         });
     });
 
@@ -837,6 +906,84 @@ describe('Member Custom Fields Admin API', function () {
                 .post('members/')
                 .body({members: [{email: 'create-with-values@example.com', custom_fields: {[field.key]: 'Ghosts'}}]})
                 .expectStatus(422);
+        });
+
+        it('rejects a key too long to name a field, without echoing it back', async function () {
+            // Keys are minted into a bounded column, so a longer one cannot name a
+            // field. Refused as input rather than looked up, so the response never
+            // carries it back — the unknown-key error names the key it was given.
+            const memberId = await createMember();
+            const hugeKey = 'k'.repeat(200000);
+
+            const body = await setValues(memberId, {[hugeKey]: 'v'}, 422);
+            assert.equal(body.errors[0].property, 'custom_fields');
+            assert.ok(body.errors[0].context.length < 1000, 'the key must not be echoed back');
+        });
+
+        it('rejects a write naming more fields than the site may define', async function () {
+            // The ceiling is the operator's configured definitions limit, so it moves
+            // with the setting rather than being fixed in the service.
+            configUtils.set('members:customFields:maxDefinitions', 3);
+            const memberId = await createMember();
+
+            const atCeiling = Object.fromEntries(Array.from({length: 3}, (_, i) => [`k${i}`, 'v']));
+            // At the ceiling it gets as far as resolving the keys, which is where an
+            // undefined field is the thing rejected — not the ceiling.
+            const allowed = await setValues(memberId, atCeiling, 422);
+            assert.match(allowed.errors[0].context ?? allowed.errors[0].message, /Unknown custom field/);
+
+            const overCeiling = Object.fromEntries(Array.from({length: 4}, (_, i) => [`k${i}`, 'v']));
+            const refused = await setValues(memberId, overCeiling, 422);
+            assert.equal(refused.errors[0].property, 'custom_fields');
+            assert.match(refused.errors[0].context ?? refused.errors[0].message, /limited to 3 fields/);
+        });
+
+        it('refuses a malformed custom_fields identically on create and on edit', async function () {
+            // The schema lets every shape through, so the service is the only thing
+            // judging it, and both verbs judge it the same way. A body too malformed
+            // to be a write is refused rather than accepted and dropped.
+            const memberId = await createMember();
+
+            for (const [index, malformed] of [null, 'not-an-object', 42, true, [], ['a']].entries()) {
+                const created = await agent
+                    .post('members/')
+                    .body({members: [{email: `create-malformed-${index}@example.com`, custom_fields: malformed}]})
+                    .expectStatus(422);
+                assert.equal(created.body.errors[0].property, 'custom_fields');
+
+                const edited = await setValues(memberId, malformed as unknown as Record<string, unknown>, 422);
+                assert.equal(edited.errors[0].property, 'custom_fields');
+            }
+        });
+
+        it('treats a create and an edit the same on what counts as setting values', async function () {
+            // An object carrying only a `__proto__` key names no value once parsed,
+            // so neither path should see it as a write. Create and edit resolve that
+            // question with the same schema, so they cannot drift on it.
+            const payload = JSON.parse('{"__proto__": {"polluted": true}}');
+
+            await agent
+                .post('members/')
+                .body({members: [{email: 'create-proto@example.com', custom_fields: payload}]})
+                .expectStatus(201);
+
+            const memberId = await createMember();
+            await agent
+                .put(`members/${memberId}/`)
+                .body({members: [{custom_fields: payload}]})
+                .expectStatus(200);
+
+            assert.deepEqual(await readValues(memberId), {});
+            assert.equal(({} as Record<string, unknown>).polluted, undefined, 'the prototype must not be polluted');
+        });
+
+        it('accepts an empty custom_fields when creating a member', async function () {
+            // `{}` asks for nothing, and an edit treats it as a no-op, so a client
+            // whose serializer always emits the key can still create members.
+            await agent
+                .post('members/')
+                .body({members: [{email: 'create-empty-values@example.com', custom_fields: {}}]})
+                .expectStatus(201);
         });
 
         it('clearing a value that was never set is a no-op', async function () {
@@ -1113,6 +1260,10 @@ describe('Member Custom Fields Admin API', function () {
         });
 
         it('ignores custom_fields on a member edit and never returns them', async function () {
+            // The schema declares `custom_fields` on every site, so with the feature
+            // off the key reaches the service and is dropped there: the edit succeeds,
+            // the rest of it applies, and the values are ignored.
+            //
             // The field and value are set up with the flag on, then the flag goes
             // off for the request under test.
             mockManager.restore();
@@ -1137,6 +1288,36 @@ describe('Member Custom Fields Admin API', function () {
             mockManager.mockLabsEnabled('membersCustomFields');
             assert.deepEqual(await readValues(memberId), {[field.key]: 'Ghosts'});
         });
+
+        it('ignores custom_fields on a member create', async function () {
+            // The not-supported-on-create refusal is gated behind the feature too:
+            // with it off, the key is dropped and the create succeeds.
+            const {body} = await agent
+                .post('members/')
+                .body({members: [{email: 'create-flag-off@example.com', custom_fields: {'favourite-topic': 'Ghosts'}}]})
+                .expectStatus(201);
+
+            assert.equal(body.members[0].custom_fields, undefined);
+        });
+
+        it('ignores a malformed custom_fields rather than rejecting it', async function () {
+            // The schema declares `custom_fields` on every site, so any shape it
+            // judged would be judged on sites without the feature too. Leaving it
+            // unconstrained is what keeps the flag the only thing that matters here.
+            const memberId = await createMember();
+
+            for (const malformed of [null, 'not-an-object', 42, []]) {
+                await agent
+                    .put(`members/${memberId}/`)
+                    .body({members: [{custom_fields: malformed}]})
+                    .expectStatus(200);
+            }
+
+            await agent
+                .post('members/')
+                .body({members: [{email: 'create-malformed@example.com', custom_fields: 'not-an-object'}]})
+                .expectStatus(201);
+        });
     });
 
     describe('records actions in the history (via the actions API)', function () {
@@ -1146,6 +1327,12 @@ describe('Member Custom Fields Admin API', function () {
             const {body} = await agent.get('actions/?filter=resource_type:member_custom_field').expectStatus(200);
             return body.actions;
         };
+
+        // A field is addressed publicly by its key, and the key rides in the action's
+        // context rather than in resource_id, which holds the row id.
+        const contextOf = (a: {context: unknown}) =>
+            (typeof a.context === 'string' ? JSON.parse(a.context) : a.context) as
+                {primary_name?: string; key?: string; previous_name?: string};
 
         beforeAll(async function () {
             actorId = (await agent.get('users/me/').expectStatus(200)).body.users[0].id;
@@ -1157,9 +1344,24 @@ describe('Member Custom Fields Admin API', function () {
             const actions = await customFieldActions();
             assert.equal(actions.length, 1);
             assert.equal(actions[0].event, 'added');
-            assert.equal(actions[0].resource_id, field.key);
+            assert.equal(contextOf(actions[0]).key, field.key);
             assert.equal(actions[0].actor_type, 'user');
             assert.equal(actions[0].actor_id, actorId);
+        });
+
+        // `resource_id` holds 24 characters and a key derived from a publisher-chosen
+        // name can be far longer, so only the row id fits every field. The action
+        // write is best-effort, so a row that does not fit is dropped without error.
+        it('records an action for a field whose key is longer than resource_id allows', async function () {
+            const field = await createField({name: 'Favourite ice cream flavour'});
+            assert.ok(field.key.length > 24, 'the key needs to be longer than resource_id to be a regression test');
+
+            const actions = await customFieldActions();
+            assert.equal(actions.length, 1);
+            assert.equal(contextOf(actions[0]).key, field.key);
+
+            const row = await models.Base.knex('members_custom_fields').where('key', field.key).first();
+            assert.equal(actions[0].resource_id, row.id);
         });
 
         it('records an "edited" action when a field is renamed', async function () {
@@ -1171,7 +1373,7 @@ describe('Member Custom Fields Admin API', function () {
 
             const edited = (await customFieldActions()).find((a: {event: string}) => a.event === 'edited');
             assert.ok(edited, 'an edited action should be recorded');
-            assert.equal(edited.resource_id, field.key);
+            assert.equal(contextOf(edited).key, field.key);
             assert.equal(edited.actor_id, actorId);
         });
 
@@ -1192,7 +1394,7 @@ describe('Member Custom Fields Admin API', function () {
 
             const archived = (await customFieldActions()).find((a: {event: string}) => a.event === 'archived');
             assert.ok(archived, 'an archived action should be recorded');
-            assert.equal(archived.resource_id, field.key);
+            assert.equal(contextOf(archived).key, field.key);
             assert.equal(archived.actor_id, actorId);
         });
 
@@ -1203,7 +1405,7 @@ describe('Member Custom Fields Admin API', function () {
 
             const restored = (await customFieldActions()).find((a: {event: string}) => a.event === 'restored');
             assert.ok(restored, 'a restored action should be recorded');
-            assert.equal(restored.resource_id, field.key);
+            assert.equal(contextOf(restored).key, field.key);
             assert.equal(restored.actor_id, actorId);
         });
 
@@ -1224,7 +1426,7 @@ describe('Member Custom Fields Admin API', function () {
 
             const deleted = (await customFieldActions()).find((a: {event: string}) => a.event === 'deleted');
             assert.ok(deleted, 'a deleted action should be recorded');
-            assert.equal(deleted.resource_id, field.key);
+            assert.equal(contextOf(deleted).key, field.key);
             assert.equal(deleted.actor_id, actorId);
         });
 
@@ -1245,11 +1447,8 @@ describe('Member Custom Fields Admin API', function () {
             // creation order even for events that land in the same second (which
             // created_at ordering can't disambiguate).
             const timeline = (await customFieldActions())
-                .filter((a: {resource_id: string}) => a.resource_id === field.key)
+                .filter((a: {context: unknown}) => contextOf(a).key === field.key)
                 .sort((a: {id: string}, b: {id: string}) => (a.id < b.id ? -1 : 1));
-
-            const parseContext = (a: {context: unknown}) =>
-                (typeof a.context === 'string' ? JSON.parse(a.context) : a.context) as {primary_name?: string; previous_name?: string};
 
             // The full ordered story, including the repeated archive.
             assert.deepEqual(
@@ -1261,14 +1460,14 @@ describe('Member Custom Fields Admin API', function () {
             // logs, and the delete still says what the field was after its row is gone.
             for (const a of timeline) {
                 assert.equal(a.actor_id, actorId, `the ${a.event} action is attributed`);
-                assert.ok(parseContext(a)?.primary_name, `the ${a.event} action names the field`);
+                assert.ok(contextOf(a)?.primary_name, `the ${a.event} action names the field`);
             }
 
             // Names track the field at each point; the rename also records what it was.
-            assert.equal(parseContext(timeline[0]).primary_name, 'Delivery address');
-            assert.equal(parseContext(timeline[1]).primary_name, 'Shipping address');
-            assert.equal(parseContext(timeline[1]).previous_name, 'Delivery address');
-            assert.equal(parseContext(timeline[5]).primary_name, 'Shipping address');
+            assert.equal(contextOf(timeline[0]).primary_name, 'Delivery address');
+            assert.equal(contextOf(timeline[1]).primary_name, 'Shipping address');
+            assert.equal(contextOf(timeline[1]).previous_name, 'Delivery address');
+            assert.equal(contextOf(timeline[5]).primary_name, 'Shipping address');
         });
     });
 

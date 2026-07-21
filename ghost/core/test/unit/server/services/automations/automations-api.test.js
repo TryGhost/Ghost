@@ -3,8 +3,6 @@ const ObjectId = require('bson-objectid').default;
 const sinon = require('sinon');
 
 const automationsApi = require('../../../../../core/server/services/automations/automations-api');
-const db = require('../../../../../core/server/data/db');
-const {AutomatedEmailRecipient} = require('../../../../../core/server/models');
 const {EMPTY_EMAIL_LEXICAL, NON_EMPTY_EMAIL_LEXICAL} = require('../../../../utils/automations-fixtures');
 
 const buildSendEmailAction = (dataOverrides = {}) => ({
@@ -21,46 +19,6 @@ const buildSendEmailAction = (dataOverrides = {}) => ({
 describe('automations API', function () {
     afterEach(function () {
         sinon.restore();
-    });
-
-    describe('recordEmailSent', function () {
-        it('records the recipient and increments the action revision count in one transaction', async function () {
-            const emailSentCountExpression = Symbol('email_sent_count_expression');
-            const updateRevision = sinon.stub().resolves();
-            const whereRevision = sinon.stub().returns({update: updateRevision});
-            const transacting = sinon.stub().withArgs('automation_action_revisions').returns({where: whereRevision});
-            transacting.raw = sinon.stub().returns(emailSentCountExpression);
-            const transaction = sinon.stub(db.knex, 'transaction').callsFake(async (callback) => {
-                return await callback(transacting);
-            });
-            const addRecipient = sinon.stub(AutomatedEmailRecipient, 'add').resolves();
-
-            await automationsApi.recordEmailSent({
-                automationActionRevisionId: 'revision-id',
-                mailgunMessageId: 'mailgun-message-id',
-                memberEmail: 'member@example.com',
-                memberId: 'member-id',
-                memberName: 'Test Member',
-                memberUuid: '00000000-0000-4000-8000-000000000001',
-                trackOpens: true
-            });
-
-            sinon.assert.calledOnce(transaction);
-            sinon.assert.calledOnceWithExactly(addRecipient, {
-                member_id: 'member-id',
-                member_uuid: '00000000-0000-4000-8000-000000000001',
-                member_email: 'member@example.com',
-                member_name: 'Test Member',
-                automation_action_revision_id: 'revision-id',
-                mailgun_message_id: 'mailgun-message-id',
-                track_opens: true
-            }, {transacting});
-            sinon.assert.calledOnceWithExactly(whereRevision, 'id', 'revision-id');
-            sinon.assert.calledOnceWithExactly(transacting.raw, 'COALESCE(??, 0) + ?', ['email_sent_count', 1]);
-            sinon.assert.calledOnceWithExactly(updateRevision, {
-                email_sent_count: emailSentCountExpression
-            });
-        });
     });
 
     describe('edit', function () {

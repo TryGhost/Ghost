@@ -42,6 +42,9 @@ export function init(): void {
         getMaxDefinitions: () => resolveMaxDefinitions(config.get('members:customFields:maxDefinitions'))
     });
     // The values service reads the field definitions straight from the table, so
-    // it needs only knex — no handle on the definitions service.
-    values = new CustomFieldValuesService({knex});
+    // it needs knex and the same ceiling — no handle on the definitions service.
+    values = new CustomFieldValuesService({
+        knex,
+        getMaxDefinitions: () => resolveMaxDefinitions(config.get('members:customFields:maxDefinitions'))
+    });
 }

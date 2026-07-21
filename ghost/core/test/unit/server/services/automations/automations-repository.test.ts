@@ -124,9 +124,16 @@ const createDatabase = async (): Promise<Knex> => {
     await database.schema.createTable('automated_email_recipients', (table) => {
         table.text('id').primary();
         table.text('automation_action_revision_id').references('id').inTable('automation_action_revisions');
+        table.text('member_id');
+        table.text('member_uuid');
+        table.text('member_email');
+        table.text('member_name');
         table.text('mailgun_message_id');
         table.datetime('delivered_at');
         table.datetime('opened_at');
+        table.boolean('track_opens').notNullable().defaultTo(false);
+        table.datetime('created_at');
+        table.datetime('updated_at');
     });
 
     const freeAutomationId = id();
@@ -1843,6 +1850,67 @@ describe('automations repository', function () {
             assert.equal(disabled.started_at, lockedStep.started_at);
             assert.equal(disabled.ready_at, stepRow.ready_at);
             assert.equal(typeof disabled.finished_at, 'string');
+        });
+    });
+
+    describe('recordEmailSent', function () {
+        it('records the recipient and increments the action revision count', async function () {
+            const revision = await knex('automation_action_revisions').select('id').first();
+            assert(revision);
+
+            await repo.recordEmailSent({
+                automationActionRevisionId: revision.id,
+                mailgunMessageId: 'mailgun-message-id',
+                memberEmail: 'member@example.com',
+                memberId: 'member-id',
+                memberName: 'Test Member',
+                memberUuid: '00000000-0000-4000-8000-000000000001',
+                trackOpens: true
+            });
+
+            const recipient = await knex('automated_email_recipients').first();
+            assert.deepEqual(recipient, {
+                id: recipient.id,
+                automation_action_revision_id: revision.id,
+                member_id: 'member-id',
+                member_uuid: '00000000-0000-4000-8000-000000000001',
+                member_email: 'member@example.com',
+                member_name: 'Test Member',
+                mailgun_message_id: 'mailgun-message-id',
+                delivered_at: null,
+                opened_at: null,
+                track_opens: 1,
+                created_at: recipient.created_at,
+                updated_at: recipient.updated_at
+            });
+            assert(ObjectId.isValid(recipient.id));
+            assert.equal(typeof recipient.created_at, 'string');
+            assert.equal(recipient.updated_at, recipient.created_at);
+
+            const updatedRevision = await knex('automation_action_revisions')
+                .select('email_sent_count')
+                .where('id', revision.id)
+                .first();
+            assert.equal(updatedRevision.email_sent_count, 1);
+        });
+
+        it('supports recipients without a Mailgun message ID', async function () {
+            const revision = await knex('automation_action_revisions').select('id').first();
+            assert(revision);
+
+            await repo.recordEmailSent({
+                automationActionRevisionId: revision.id,
+                memberEmail: 'member@example.com',
+                memberId: 'member-id',
+                memberName: null,
+                memberUuid: '00000000-0000-4000-8000-000000000001',
+                trackOpens: false
+            });
+
+            const recipient = await knex('automated_email_recipients').first();
+            assert.equal(recipient.mailgun_message_id, null);
+            assert.equal(recipient.member_name, null);
+            assert.equal(recipient.track_opens, 0);
         });
     });
 
