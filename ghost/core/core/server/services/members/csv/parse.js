@@ -83,8 +83,8 @@ module.exports = (path, headerMapping, defaultLabels = []) => {
                     row[mappedHeader] = transformValue(mappedHeader, value);
                 }
 
-                // skip a rows with no data
-                if (!Object.keys(row).length){
+                // skip rows with no data
+                if (!Object.keys(row).length) {
                     return;
                 }
 

@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const papaparse = require('papaparse');
 const DEFAULT_COLUMNS = [
     'id',
@@ -15,18 +14,19 @@ const DEFAULT_COLUMNS = [
     'gift_id'
 ];
 
-const unparse = (rows, columns = DEFAULT_COLUMNS.slice()) => {
-    columns = columns.map((column) => {
+const unparse = (rows, columns = DEFAULT_COLUMNS) => {
+    const outputColumns = columns.map((column) => {
         if (column === 'subscribed') {
             return 'subscribed_to_emails';
         }
         return column;
     });
-    const mappedRows = rows.map((row) => {
-        if (row.error && !columns.includes('error')) {
-            columns.push('error');
-        }
 
+    if (!outputColumns.includes('error') && rows.some(row => row.error)) {
+        outputColumns.push('error');
+    }
+
+    const mappedRows = rows.map((row) => {
         let labels = '';
         if (typeof row.labels === 'string') {
             labels = row.labels;
@@ -51,11 +51,11 @@ const unparse = (rows, columns = DEFAULT_COLUMNS.slice()) => {
             note: row.note,
             subscribed_to_emails: 'subscribed' in row ? row.subscribed : row.subscribed_to_emails,
             complimentary_plan: row.comped || row.complimentary_plan,
-            stripe_customer_id: _.get(row, 'subscriptions[0].customer.id') || row.stripe_customer_id,
+            stripe_customer_id: row.subscriptions?.[0]?.customer?.id || row.stripe_customer_id,
             created_at: row.created_at,
             deleted_at: row.deleted_at,
-            labels: labels,
-            tiers: tiers,
+            labels,
+            tiers,
             import_tier: row.import_tier || null,
             gift_id: row.gift_id || null,
             error: row.error || null
@@ -64,7 +64,7 @@ const unparse = (rows, columns = DEFAULT_COLUMNS.slice()) => {
 
     return papaparse.unparse(mappedRows, {
         escapeFormulae: true,
-        columns
+        columns: outputColumns
     });
 };
 

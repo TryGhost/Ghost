@@ -1,5 +1,5 @@
 const path = require('path');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {parse} = require('../../../../../../core/server/services/members/csv');
 const csvPath = path.join(__dirname, '/fixtures/');
@@ -167,7 +167,7 @@ describe('parse', function () {
         assert.equal(result[1].name, null);
     });
 
-    it(' transforms "subscribed_to_emails" column to "subscribed" property when the mapping is passed in', async function () {
+    it('transforms "subscribed_to_emails" column to "subscribed" property when the mapping is passed in', async function () {
         const filePath = csvPath + 'subscribed-to-emails-header.csv';
         const mapping = {
             email: 'email',
@@ -184,7 +184,7 @@ describe('parse', function () {
         assert.equal(result[1].subscribed, false);
     });
 
-    it('DOES NOT transforms "subscribed_to_emails" column to "subscribed" property when the WITHOUT mapping', async function () {
+    it('does not transform "subscribed_to_emails" column to "subscribed" property without the mapping', async function () {
         const filePath = csvPath + 'subscribed-to-emails-header.csv';
         const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
 

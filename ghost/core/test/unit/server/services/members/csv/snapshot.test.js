@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {parse, unparse} = require('../../../../../../core/server/services/members/csv');
 
 const snapshotDir = path.join(__dirname, 'fixtures', 'snapshots');
