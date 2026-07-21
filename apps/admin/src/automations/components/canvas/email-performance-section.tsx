@@ -1,8 +1,9 @@
 import React from 'react';
-import {ChartContainer, Separator} from '@tryghost/shade/components';
+import {ChartContainer, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, LoadingIndicator, Separator} from '@tryghost/shade/components';
 import type {ChartConfig} from '@tryghost/shade/components';
 import type {AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
-import {Recharts, formatNumber} from '@tryghost/shade/utils';
+import {useBrowseAutomationActionLinks} from '@tryghost/admin-x-framework/api/automations';
+import {Recharts, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {formatRate} from './format-stats';
 
 const EMAIL_PERFORMANCE_CHART_CONFIG = {
@@ -91,7 +92,69 @@ const EmailPerformanceChart: React.FC<{clickRate: number; openRate: number}> = (
 
 const KPI_CLASS_NAME = 'group/kpi -mx-2 -my-1 flex flex-col gap-0.5 rounded-md px-2 py-1 transition-colors hover:bg-muted';
 
-export const EmailPerformanceSection: React.FC<{stats: AutomationEmailStats}> = ({stats}) => (
+const displayUrl = (url: string) => url.replace(/^https?:\/\//i, '');
+
+const TopClickedLinks: React.FC<{
+    actionId: string;
+    automationId: string;
+    clickedCount: number;
+    sentCount: number;
+}> = ({actionId, automationId, clickedCount, sentCount}) => {
+    const {data, isError, isLoading} = useBrowseAutomationActionLinks(automationId, actionId, {
+        enabled: sentCount > 0
+    });
+    const links = data?.automation_action_links.slice(0, 10) ?? [];
+
+    let content: React.ReactNode;
+    if (sentCount === 0) {
+        content = <p className='py-6 text-center text-sm text-text-secondary'>No emails sent yet.</p>;
+    } else if (isLoading) {
+        content = <div className='flex justify-center py-6' data-testid='automation-action-links-loading'><LoadingIndicator size='sm' /></div>;
+    } else if (isError) {
+        content = <p className='py-6 text-center text-sm text-destructive' role='alert'>Couldn&apos;t load clicked links.</p>;
+    } else if (links.length === 0) {
+        content = <p className='py-6 text-center text-sm text-text-secondary'>No links in this email.</p>;
+    } else {
+        content = (
+            <DataList>
+                <DataListBody>
+                    {links.map((link) => {
+                        const percentage = clickedCount > 0 ? link.clicked_count / clickedCount : 0;
+                        return (
+                            <DataListRow key={link.url}>
+                                <DataListBar style={{width: `${Math.min(percentage * 100, 100)}%`}} />
+                                <DataListItemContent>
+                                    <a className='block truncate font-medium hover:underline' href={link.url} rel='noreferrer' target='_blank' title={link.url}>
+                                        {displayUrl(link.url)}
+                                    </a>
+                                </DataListItemContent>
+                                <DataListItemValue>
+                                    <DataListItemValueAbs>{formatNumber(link.clicked_count)}</DataListItemValueAbs>
+                                    <DataListItemValuePerc>{formatPercentage(percentage)}</DataListItemValuePerc>
+                                </DataListItemValue>
+                            </DataListRow>
+                        );
+                    })}
+                </DataListBody>
+            </DataList>
+        );
+    }
+
+    return (
+        <>
+            <Separator />
+            <div className='flex flex-col gap-3'>
+                <div className='flex items-center justify-between'>
+                    <span className='text-sm font-medium text-text-secondary'>Top clicked links</span>
+                    <span className='text-sm font-medium text-muted-foreground'>Members</span>
+                </div>
+                {content}
+            </div>
+        </>
+    );
+};
+
+export const EmailPerformanceSection: React.FC<{actionId: string; automationId: string; stats: AutomationEmailStats}> = ({actionId, automationId, stats}) => (
     <div className='flex flex-col gap-5'>
         <Separator />
         <div className='flex flex-col gap-5'>
@@ -129,11 +192,6 @@ export const EmailPerformanceSection: React.FC<{stats: AutomationEmailStats}> = 
             </div>
             <EmailPerformanceChart clickRate={(stats.clicked_rate ?? 0) / 100} openRate={(stats.opened_rate ?? 0) / 100} />
         </div>
-        {/* @TODO: NY-1457 */}
-        {/* <Separator />
-        <div className='flex items-center justify-between'>
-            <span className='text-sm font-medium text-text-secondary'>Top clicked links</span>
-            <span className='text-sm font-medium text-muted-foreground'>Members</span>
-        </div> */}
+        <TopClickedLinks actionId={actionId} automationId={automationId} clickedCount={stats.email_clicked_count} sentCount={stats.email_sent_count} />
     </div>
 );
