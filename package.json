@@ -84,13 +84,11 @@
     "release": "node scripts/release.js"
   },
   "devDependencies": {
-    "@eslint/compat": "2.1.0",
     "@playwright/test": "catalog:",
     "@secretlint/secretlint-rule-pattern": "13.0.2",
     "@secretlint/secretlint-rule-preset-recommend": "13.0.2",
     "dependency-cruiser": "catalog:",
     "eslint": "catalog:",
-    "globals": "catalog:",
     "husky": "9.1.7",
     "knip": "6.24.0",
     "lint-staged": "17.0.8",

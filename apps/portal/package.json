@@ -52,7 +52,6 @@
         "@tryghost/i18n": "workspace:*",
         "@vitejs/plugin-react": "catalog:",
         "@vitest/coverage-v8": "catalog:",
-        "concurrently": "catalog:",
         "cross-fetch": "catalog:",
         "dompurify": "catalog:",
         "eslint": "catalog:",
