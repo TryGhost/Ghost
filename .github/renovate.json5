@@ -389,7 +389,6 @@
         {
             "groupName": "TryGhost runtime packages",
             "matchPackageNames": [
-                "@tryghost/adapter-base-cache",
                 "@tryghost/api-framework",
                 "@tryghost/bookshelf-plugins",
                 "@tryghost/database-info",
