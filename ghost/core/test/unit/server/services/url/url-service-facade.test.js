@@ -402,6 +402,31 @@ describe('UrlServiceFacade', function () {
             sinon.assert.notCalled(logging.error);
         });
 
+        it('does not report a non-published resource that eager still serves but lazy 404s', async function () {
+            urlService.getUrlByResourceId.returns('/hello-world/');
+            lazyUrlService.getUrlForResource.returns('/404/');
+            compareFacade.getUrlForResource({type: 'posts', id: 'a', status: 'draft'});
+            await flush();
+            sinon.assert.notCalled(logging.error);
+        });
+
+        it('still reports a PUBLISHED resource that lazy 404s (a real lazy bug)', async function () {
+            urlService.getUrlByResourceId.returns('/hello-world/');
+            lazyUrlService.getUrlForResource.returns('/404/');
+            compareFacade.getUrlForResource({type: 'posts', id: 'a', status: 'published'});
+            await flush();
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
+        });
+
+        it('still reports a lazy 404 when the resource carries no status', async function () {
+            urlService.getUrlByResourceId.returns('/hello-world/');
+            lazyUrlService.getUrlForResource.returns('/404/');
+            compareFacade.getUrlForResource({type: 'posts', id: 'a'});
+            await flush();
+            sinon.assert.calledOnce(logging.error);
+        });
+
         it('reports a mismatch when lazy ownership differs', async function () {
             compareFacade.ownsResource('routerA', {type: 'posts', id: 'a'});
             await flush();
