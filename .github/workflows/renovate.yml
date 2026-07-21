@@ -143,3 +143,8 @@ jobs:
           # honour the pnpmfile; dependency install scripts stay blocked because
           # the repo-level `ignoreScripts` default (true) keeps --ignore-scripts.
           RENOVATE_ALLOW_SCRIPTS: 'true'
+          # Allowlist the changeset-generation postUpgradeTask (renovate.json5).
+          # Renovate refuses to run any post-upgrade command that isn't matched
+          # by one of these regexes — arbitrary command execution is opt-in. Both
+          # the dep install and the generator command must be matched.
+          RENOVATE_ALLOWED_POST_UPGRADE_COMMANDS: '["^pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts$", "^node scripts/generate-changeset\\.js$"]'

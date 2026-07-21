@@ -52,9 +52,12 @@ export async function getFileFromCommit(commitHash, filePath, {allowMissing = fa
  */
 export async function getChangedFiles(path, baseCommit, headCommit = 'HEAD', onlyNew = false) {
     try {
-        const {stdout} = onlyNew
-            ? await $`git diff --name-only --diff-filter=A ${baseCommit} ${headCommit} -- ${path}`
-            : await $`git diff --name-only ${baseCommit} ${headCommit} -- ${path}`;
+        // An empty headCommit diffs baseCommit against the working tree (git omits
+        // the second ref), which is what the Renovate/pre-commit flows need —
+        // they inspect uncommitted changes. A ref (commit/tag/tree) diffs the two.
+        const filter = onlyNew ? ['--diff-filter=A'] : [];
+        const refs = headCommit ? [baseCommit, headCommit] : [baseCommit];
+        const {stdout} = await $`git diff --name-only ${filter} ${refs} -- ${path}`;
 
         return stdout.trim().split('\n').filter(Boolean);
     } catch (error) {

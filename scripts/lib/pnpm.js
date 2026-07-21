@@ -1,5 +1,6 @@
 import {glob} from 'node:fs/promises'
 import {dirname, resolve} from 'node:path'
+import {isDeepStrictEqual} from 'node:util'
 import {load} from 'js-yaml'
 import {
     readWorkspaceManifest,
@@ -8,7 +9,7 @@ import {
 import {readChangeIntents, CHANGES_DIR} from '@pnpm/releasing.versioning';
 
 import {ROOT_DIR} from './constants.js';
-import {getFileFromCommit, getChangedFiles} from './git.js';
+import {getFileFromCommit, getChangedFiles, pathHasChanges} from './git.js';
 import {readJson} from './utils.js';
 
 const WORKSPACE_MANIFEST_FILE = 'pnpm-workspace.yaml';
@@ -187,4 +188,57 @@ export async function getPackagesWithChangset(baseCommit, headCommit = 'HEAD') {
             return Object.keys(change.releases);
         })
     );
+}
+
+/**
+ * Finds publishable packages that changed between two refs but have no changeset
+ * covering them. A package counts as changed when a file in its directory
+ * changed (respecting ignorePatterns), it is new (absent from the base commit),
+ * or a catalog entry it references was bumped.
+ *
+ * @param {string} baseCommit - The ref to compare against.
+ * @param {string} [headCommit='HEAD'] - The ref to compare to. Empty compares
+ *   against the working tree (uncommitted changes).
+ * @param {string[]} [ignorePatterns] - Path globs that never warrant a release.
+ * @returns {Promise<string[]>} - Names of packages missing a changeset.
+ */
+export async function findPackagesNeedingChangeset(baseCommit, headCommit = 'HEAD', ignorePatterns = []) {
+    const workspace = await getWorkspace();
+    if (!workspace) {
+        throw new Error('Could not load workspace manifest');
+    }
+
+    const projects = await getPublishablePackages(workspace);
+    if (!projects?.length) {
+        return [];
+    }
+
+    const baseWorkspace = await loadWorkspace(baseCommit);
+
+    async function packageHasChanges(project) {
+        if (await pathHasChanges(project.dir, baseCommit, headCommit, ignorePatterns)) {
+            return true;
+        }
+
+        const basePkg = await loadPackage(baseCommit, project.pkgPath);
+        if (!basePkg) {
+            // no base package.json — this is a new package
+            return true;
+        }
+
+        const resolvedBase = resolvePackageCatalog(baseWorkspace, basePkg);
+        const resolvedHead = resolvePackageCatalog(workspace, project.manifest);
+        return !isDeepStrictEqual(resolvedBase, resolvedHead);
+    }
+
+    const changedPackages = await getPackagesWithChangset(baseCommit, headCommit);
+
+    const results = await Promise.all(projects.map(async (project) => {
+        const hasChanges = await packageHasChanges(project);
+        return hasChanges && !changedPackages.has(project.name)
+            ? project.name
+            : null;
+    }));
+
+    return results.filter(Boolean);
 }
