@@ -30,7 +30,8 @@ const messages = {
     missingDefaultSettingsBasePath: 'S3RouteSettingsStore requires a defaultSettingsBasePath',
     partialCredentials: 'S3RouteSettingsStore requires both accessKeyId and secretAccessKey when either is provided',
     missingResponseBody: 'S3 GetObject returned no body',
-    ensureDefaults: 'Error trying to access the default settings file in {path}.'
+    ensureDefaults: 'Error trying to access the default settings file in {path}.',
+    requestFailed: 'Route settings storage request failed: {operation} returned {code}.'
 };
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
@@ -135,7 +136,7 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
                 const defaultContent = await this.readDefaultSettings();
                 return parseRouteSettings(parseYaml(defaultContent), defaultContent);
             }
-            throw err;
+            throw this.toStoreError(err, 'GetObject', this.buildKey());
         }
 
         return parseRouteSettings(parseYaml(body), body);
@@ -145,19 +146,28 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
         const key = this.buildKey();
 
         if (await this._canonicalExists()) {
-            await this.client.send(new CopyObjectCommand({
-                Bucket: this.bucket,
-                Key: getBackupRouteSettingsFilePath(key),
-                CopySource: `${this.bucket}/${key}`
-            }));
+            const backupKey = getBackupRouteSettingsFilePath(key);
+            try {
+                await this.client.send(new CopyObjectCommand({
+                    Bucket: this.bucket,
+                    Key: backupKey,
+                    CopySource: `${this.bucket}/${key}`
+                }));
+            } catch (err) {
+                throw this.toStoreError(err, 'CopyObject', backupKey);
+            }
         }
 
-        await this.client.send(new PutObjectCommand({
-            Bucket: this.bucket,
-            Key: key,
-            Body: settings.yamlSource,
-            ContentType: CONTENT_TYPE
-        }));
+        try {
+            await this.client.send(new PutObjectCommand({
+                Bucket: this.bucket,
+                Key: key,
+                Body: settings.yamlSource,
+                ContentType: CONTENT_TYPE
+            }));
+        } catch (err) {
+            throw this.toStoreError(err, 'PutObject', key);
+        }
     }
 
     private buildKey(): string {
@@ -166,17 +176,18 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
     }
 
     private async _canonicalExists(): Promise<boolean> {
+        const key = this.buildKey();
         try {
             await this.client.send(new HeadObjectCommand({
                 Bucket: this.bucket,
-                Key: this.buildKey()
+                Key: key
             }));
             return true;
         } catch (err) {
             if (this._isNotFound(err)) {
                 return false;
             }
-            throw err;
+            throw this.toStoreError(err, 'HeadObject', key);
         }
     }
 
@@ -195,5 +206,37 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
 
     private _isNotFound(err: unknown): boolean {
         return err instanceof NotFound || err instanceof NoSuchKey;
+    }
+
+    /**
+     * Convert an S3 failure into a Ghost error naming the operation, key and
+     * S3 error code.
+     *
+     * The SDK's exceptions are deliberately *not* attached: they hold a
+     * reference to the HTTP response, and the API error handler deep-clones
+     * whatever it is given, so a raw SDK error makes the request die with
+     * "Maximum call stack size exceeded" and the real cause never reaches the
+     * operator. Everything useful is copied out by value instead.
+     */
+    private toStoreError(err: unknown, operation: string, key: string): Error {
+        if (err instanceof Error && errors.utils.isGhostError(err)) {
+            return err;
+        }
+
+        const s3Error = err as {name?: string; message?: string; $metadata?: {httpStatusCode?: number}};
+        const code = s3Error.name || 'UnknownError';
+
+        return new errors.InternalServerError({
+            message: tpl(messages.requestFailed, {operation, code}),
+            context: s3Error.message,
+            code: 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED',
+            errorDetails: {
+                operation,
+                bucket: this.bucket,
+                key,
+                s3ErrorCode: code,
+                statusCode: s3Error.$metadata?.httpStatusCode
+            }
+        });
     }
 }
