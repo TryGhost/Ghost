@@ -272,7 +272,7 @@ export class UrlServiceFacade {
             void this._compareAsync('resolveUrl', eagerSnapshot,
                 () => this.lazyUrlService!.resolveUrl(urlPath),
                 {path: urlPath},
-                (a, b) => _.isEqual(a, b));
+                (a, b) => this._resolvesToSameResource(a, b));
         }
         return eagerResult;
     }
@@ -388,9 +388,24 @@ export class UrlServiceFacade {
         return typeof value === 'string' && value.endsWith('/404/');
     }
 
-    // Divergences where eager is the stale side and lazy is authoritative, so
-    // logging them only buries real regressions. Each branch is a class
-    // confirmed from production compare data.
+    // resolveUrl's contract is which resource a path maps to, not the exact
+    // serialized record. Eager (raw-knex) and lazy (model.toJSON) shape the same
+    // DB row differently — lazy carries a `parent` key eager omits, eager keeps
+    // __GHOST_URL__ placeholders lazy expands, timestamps differ in precision —
+    // so comparing whole records reports the same resolved resource as a
+    // mismatch. Compare resolved identity instead.
+    private _resolvesToSameResource(a: unknown, b: unknown): boolean {
+        if (a === null || b === null) {
+            return a === b;
+        }
+        const ra = a as Resource;
+        const rb = b as Resource;
+        return ra.id === rb.id && ra.type === rb.type;
+    }
+
+    // Divergences that are not lazy regressions, so logging them only buries
+    // the ones that are. Each branch is a class confirmed from production
+    // compare data.
     private _isExpectedDivergence(
         method: string,
         eagerValue: unknown,
