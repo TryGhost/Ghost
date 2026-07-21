@@ -391,11 +391,11 @@ describe('AutomationEditor', () => {
                         ? {
                             ...action,
                             stats: {
-                                email_clicked_count: 0,
+                                email_clicked_count: 249,
                                 email_sent_count: 1247,
                                 email_opened_count: 780,
                                 opened_rate: 65,
-                                clicked_rate: null
+                                clicked_rate: 20
                             }
                         }
                         : action))
@@ -415,8 +415,7 @@ describe('AutomationEditor', () => {
         const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
         expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('1,247');
         expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('65%');
-        // @TODO: NY-1457 — Clicked is deferred until click data is available
-        expect(within(emailStep).queryByText('Clicked')).not.toBeInTheDocument();
+        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('20%');
     });
 
     it('does not render send-email node stats when the action has no stats', () => {
@@ -462,6 +461,7 @@ describe('AutomationEditor', () => {
         const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
         expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('0');
         expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('--');
+        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('--');
     });
 
     it('renders styled canvas zoom controls without the interaction toggle', () => {
