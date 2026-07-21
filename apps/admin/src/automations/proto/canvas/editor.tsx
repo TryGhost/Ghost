@@ -21,9 +21,9 @@ import {
 } from '@xyflow/react';
 import {Badge, Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Input, Label, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {getAutomationById, mockAutomations} from './mock-data';
+import {getAutomationById, mockAutomations} from '@/automations/proto/shared/mock-data';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
-import {useVersionLink} from './use-version-link';
+import {useVersionLink} from '@/automations/proto/shared/use-version-link';
 
 const nodeDefaults = {
     sourcePosition: Position.Bottom,
@@ -1064,7 +1064,7 @@ const AutomationEditor: React.FC = () => {
         [setEdges]
     );
 
-    const goBack = () => navigate(toVersioned('/automations-proto'));
+    const goBack = () => navigate(toVersioned('/automations-proto/canvas'));
 
     return (
         <div className="fixed inset-0 z-50 flex flex-col bg-background">

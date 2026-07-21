@@ -104,14 +104,28 @@ export const routes: RouteObject[] = [
                 handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
                 lazy: lazyComponent(() => import("./automations/editor")),
             },
+            // Automations prototype concepts. Each concept owns its own route
+            // subtree under /automations-proto/<concept>, so concepts can diverge
+            // freely in layout and architecture. Reached directly by URL — there's
+            // no index; the sidebar item points at the default concept (canvas).
+            // Adding a concept = a new folder + a route block here (no nav edits).
             {
-                path: "/automations-proto",
-                lazy: lazyComponent(() => import("./automations/proto/list")),
+                path: "/automations-proto/canvas",
+                lazy: lazyComponent(() => import("./automations/proto/canvas/list")),
             },
             {
-                path: "/automations-proto/:id",
+                path: "/automations-proto/canvas/:id",
                 handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
-                lazy: lazyComponent(() => import("./automations/proto/editor")),
+                lazy: lazyComponent(() => import("./automations/proto/canvas/editor")),
+            },
+            {
+                path: "/automations-proto/dashboard",
+                lazy: lazyComponent(() => import("./automations/proto/dashboard/list")),
+            },
+            {
+                path: "/automations-proto/dashboard/:id",
+                handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
+                lazy: lazyComponent(() => import("./automations/proto/dashboard/detail")),
             },
             {
                 // The tag detail route delegates to Ember. It must be declared

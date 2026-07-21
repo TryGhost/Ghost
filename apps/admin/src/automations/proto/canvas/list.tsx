@@ -1,10 +1,10 @@
 import React, {useState} from 'react';
-import {type Automation, type AutomationStatus, mockAutomations} from './mock-data';
+import {type Automation, type AutomationStatus, mockAutomations} from '@/automations/proto/shared/mock-data';
 import {Badge, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Header} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {useNavigate} from '@tryghost/admin-x-framework';
-import {useVersionLink} from './use-version-link';
+import {useVersionLink} from '@/automations/proto/shared/use-version-link';
 
 type AutomationTemplate = {
     id: string;
@@ -40,7 +40,7 @@ const AutomationRow: React.FC<{automation: Automation}> = ({automation}) => {
     const toVersioned = useVersionLink();
 
     return (
-        <TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(toVersioned(`/automations-proto/${automation.id}`))}>
+        <TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(toVersioned(`/automations-proto/canvas/${automation.id}`))}>
             <TableCell className="p-4">
                 <div className="font-medium">{automation.name}</div>
                 <div className="text-muted-foreground">{automation.description}</div>
@@ -67,7 +67,7 @@ const AutomationsList: React.FC = () => {
 
     const handleTemplatePick = (templateId: string) => {
         setTemplateDialogOpen(false);
-        navigate(toVersioned(`/automations-proto/new?template=${templateId}`));
+        navigate(toVersioned(`/automations-proto/canvas/new?template=${templateId}`));
     };
 
     return (
