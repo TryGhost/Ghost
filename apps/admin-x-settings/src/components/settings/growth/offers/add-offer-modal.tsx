@@ -2,7 +2,7 @@ import PortalFrame from '../../membership/portal/portal-frame';
 import toast from 'react-hot-toast';
 import {Button} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldTitle, InputGroup, InputGroupAddon, InputGroupInput, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {formatNumber} from '@tryghost/shade/utils';
@@ -198,13 +198,13 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             {typeOptions.map((option) => {
                                 const id = `offer-type-${option.value}`;
                                 return (
-                                    <FieldLabel key={option.value} className='w-full cursor-pointer items-start' htmlFor={id}>
+                                    <Field key={option.value} orientation='horizontal'>
                                         <RadioGroupItem id={id} value={option.value} />
                                         <FieldContent>
-                                            <FieldTitle>{option.title}</FieldTitle>
+                                            <FieldLabel className='cursor-pointer' htmlFor={id}>{option.title}</FieldLabel>
                                             <FieldDescription>{option.description}</FieldDescription>
                                         </FieldContent>
-                                    </FieldLabel>
+                                    </Field>
                                 );
                             })}
                         </RadioGroup>
