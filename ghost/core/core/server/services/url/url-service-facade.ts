@@ -242,6 +242,7 @@ export class UrlServiceFacade {
         return {
             type: resource.type,
             id: resource.id,
+            status: (resource as Record<string, unknown>).status,
             resourceKeys: Object.keys(resource),
             caller: caller.stack,
             ...extra
@@ -432,6 +433,17 @@ export class UrlServiceFacade {
             && context.type === 'authors'
             && typeof eagerValue === 'string' && eagerValue.endsWith('/author/ghost-user/')
             && !this._isNotFound(lazyValue)) {
+            return true;
+        }
+
+        // lazy returns /404/ where eager serves a real URL: eager cached a
+        // resource that is no longer routable (unpublished or deleted since,
+        // with no event to evict it). Suppress only when the resource is
+        // provably not published — a published resource lazy refuses to route
+        // is a real lazy bug, so that keeps logging.
+        if (method === 'getUrlForResource'
+            && this._isNotFound(lazyValue) && !this._isNotFound(eagerValue)
+            && typeof context.status === 'string' && context.status !== 'published') {
             return true;
         }
         return false;
