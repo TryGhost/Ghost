@@ -128,9 +128,9 @@ class EmailAnalyticsServiceWrapper {
             logging.warn(`${this.#logPrefix} Opened events processing is ${lagMinutes.toFixed(1)} minutes behind (threshold: ${lagThreshold})`);
         }
 
-        const fetchStartDate = new Date();
+        const fetchStartedAt = Date.now();
         const fetchResult = await this.service.fetchLatestOpenedEvents({maxEvents});
-        const totalDuration = Date.now() - fetchStartDate.getTime();
+        const totalDuration = Date.now() - fetchStartedAt;
 
         this._logJobCompletion('latest-opened', fetchResult, totalDuration);
 
@@ -138,9 +138,9 @@ class EmailAnalyticsServiceWrapper {
     }
 
     async fetchLatestNonOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
-        const fetchStartDate = new Date();
+        const fetchStartedAt = Date.now();
         const fetchResult = await this.service.fetchLatestNonOpenedEvents({maxEvents});
-        const totalDuration = Date.now() - fetchStartDate.getTime();
+        const totalDuration = Date.now() - fetchStartedAt;
 
         this._logJobCompletion('latest', fetchResult, totalDuration);
 
@@ -148,9 +148,9 @@ class EmailAnalyticsServiceWrapper {
     }
 
     async fetchMissing({maxEvents} = {maxEvents: Infinity}) {
-        const fetchStartDate = new Date();
+        const fetchStartedAt = Date.now();
         const fetchResult = await this.service.fetchMissing({maxEvents});
-        const totalDuration = Date.now() - fetchStartDate.getTime();
+        const totalDuration = Date.now() - fetchStartedAt;
 
         this._logJobCompletion('missing', fetchResult, totalDuration);
 
@@ -162,9 +162,9 @@ class EmailAnalyticsServiceWrapper {
             return 0;
         }
 
-        const fetchStartDate = new Date();
+        const fetchStartedAt = Date.now();
         const fetchResult = await this.service.fetchScheduled({maxEvents});
-        const totalDuration = Date.now() - fetchStartDate.getTime();
+        const totalDuration = Date.now() - fetchStartedAt;
 
         this._logJobCompletion('scheduled', fetchResult, totalDuration);
 

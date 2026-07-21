@@ -6,7 +6,7 @@ const {assertExists} = require('../../../../utils/assertions');
 const DomainEvents = require('@tryghost/domain-events');
 const {URLResourceUpdatedEvent} = require('../../../../../core/shared/events');
 
-const events = require('../../../../../core/server/lib/common/events');
+const routingEvents = require('../../../../../core/frontend/services/routing/events');
 const urlUtils = require('../../../../../core/shared/url-utils');
 
 const SiteMapManager = require('../../../../../core/frontend/services/sitemap/site-map-manager');
@@ -41,6 +41,13 @@ describe('Unit: sitemap/manager', function () {
                 isLazy: () => false,
                 getRoutableResources: async () => [],
                 getUrlForResource: () => '/x/'
+            },
+            // Server events come through the proxy's narrow surface in
+            // production; injected here like the url service
+            serverEvents: {
+                on: (eventName, callback) => {
+                    eventsToRemember[eventName] = callback;
+                }
             }
         });
     };
@@ -50,7 +57,8 @@ describe('Unit: sitemap/manager', function () {
 
         // @NOTE: the pattern of faking event call is not great, we should be
         //        ideally tasting on real events instead of faking them
-        sinon.stub(events, 'on').callsFake(function (eventName, callback) {
+        // router.created / routers.reset are frontend-internal routing events
+        sinon.stub(routingEvents, 'on').callsFake(function (eventName, callback) {
             eventsToRemember[eventName] = callback;
         });
 
@@ -140,7 +148,12 @@ describe('Unit: sitemap/manager', function () {
                     pages: new PageGenerator(),
                     tags: new TagGenerator(),
                     authors: new UserGenerator(),
-                    urlService
+                    urlService,
+                    serverEvents: {
+                        on: (eventName, callback) => {
+                            eventsToRemember[eventName] = callback;
+                        }
+                    }
                 });
             }
 

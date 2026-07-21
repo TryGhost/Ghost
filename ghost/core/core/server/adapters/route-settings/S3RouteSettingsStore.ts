@@ -22,9 +22,6 @@ import {getBackupRouteSettingsFilePath} from './utils';
 const YAML_FILENAME = 'routes.yaml';
 const DEFAULT_SETTINGS_FILENAME = 'default-routes.yaml';
 
-// Fixed by the routes.yaml → GCS migration contract (HKG-1836): the migration
-// writes objects with this exact content-type, so the store must match it rather
-// than "tidy" the charset away.
 const CONTENT_TYPE = 'application/yaml; charset=utf-8';
 
 const messages = {
@@ -38,10 +35,6 @@ const messages = {
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
 
-// Validates and normalises the config: the slash-trimmed fields
-// (`staticFileURLPrefix`, `tenantPrefix`) are stripped via `transform` so the
-// constructor consumes ready-to-use values, plus the credential-pair rule
-// (accessKeyId and secretAccessKey must be supplied together).
 const configSchema = z.object({
     bucket: z.string({error: tpl(messages.missingBucket)}).min(1, {error: tpl(messages.missingBucket)}),
     staticFileURLPrefix: z.string({error: tpl(messages.missingStaticFileURLPrefix)})
@@ -69,10 +62,7 @@ export type S3RouteSettingsStoreOptions = z.infer<typeof configSchema>;
 /**
  * Remote store for route settings backed by an S3-compatible bucket (MinIO in
  * tests, GCS in production). Reads and writes the operator's original
- * `routes.yaml` verbatim — comments, ordering and formatting survive because
- * `settings.yamlSource` is persisted as-is rather than a re-serialised model.
- * When no object exists the parsed bundled defaults are returned without
- * seeding the bucket, matching FileStore's empty-state semantics.
+ * `routes.yaml` verbatim.
  */
 export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
     private readonly client: S3Client;
@@ -81,11 +71,6 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
     private readonly tenantPrefix: string;
     private readonly defaultSettingsBasePath: string;
 
-    /**
-     * Parse + normalise the config, throwing an actionable IncorrectUsageError
-     * on the first problem. Shared by `validate` (boot-time check) and the
-     * constructor (which uses the normalised result).
-     */
     private static parseConfig(config: unknown): z.infer<typeof configSchema> {
         const result = configSchema.safeParse(config);
         if (!result.success) {
@@ -96,12 +81,6 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
         return result.data;
     }
 
-    /**
-     * Validate the options S3RouteSettingsStore would be constructed with,
-     * without instantiating it (no S3 client is created). Called by the adapter
-     * manager at boot so misconfiguration fails early. Narrows `config` to
-     * `S3RouteSettingsStoreOptions`.
-     */
     static validate(config: unknown): asserts config is S3RouteSettingsStoreOptions {
         S3RouteSettingsStore.parseConfig(config);
     }

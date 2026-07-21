@@ -6,7 +6,8 @@ const moment = require('moment');
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
     memberAlreadyExists: 'Member already exists.',
-    memberNotFound: 'Member not found.'
+    memberNotFound: 'Member not found.',
+    customFieldsOnAdd: 'Custom field values cannot be set while creating a member. Create the member, then set values with an edit.'
 };
 
 // Stored in the action's `context.action_name`; Admin maps it to a display label.
@@ -40,6 +41,7 @@ const CUSTOM_FIELDS_EDITED_ACTION = 'custom_fields_edited';
  * @typedef {object} ICustomFieldsServiceWrapper
  * @prop {{
  *   getValuesForMembers: (memberIds: string[]) => Promise<Map<string, Record<string, unknown>>>,
+ *   namesValues: (values: unknown) => boolean,
  *   planWrite: (values: unknown) => Promise<object[]>,
  *   applyWrite: (memberId: string, writes: object[]) => Promise<void>
  * }} values
@@ -444,7 +446,37 @@ module.exports = class MemberBREADService {
         return member;
     }
 
+    /**
+     * @private
+     * The write-side flag gate, paired with `fetchCustomFieldValues` on the read
+     * side. The schema declares `custom_fields` for every site, so the key arrives
+     * whether or not the feature is on and this is what decides it goes no further.
+     * @param {object} data
+     */
+    dropCustomFieldsWhenDisabled(data) {
+        if (!this.labsService.isSet('membersCustomFields')) {
+            delete data.custom_fields;
+        }
+    }
+
     async add(data, options) {
+        this.dropCustomFieldsWhenDisabled(data);
+
+        // Values cannot be set on create, only on a subsequent edit. `namesValues`
+        // both judges the body and rejects a malformed one, so create and edit agree
+        // on what a write is. Reached only when the key is present, so a create
+        // without custom fields does not depend on the values service.
+        if (data.custom_fields !== undefined && this.customFieldsService.values.namesValues(data.custom_fields)) {
+            throw new errors.ValidationError({
+                message: tpl(messages.customFieldsOnAdd),
+                property: 'custom_fields'
+            });
+        }
+
+        // Not a member column, so it comes off before the repository sees it. Only
+        // an absent key or one naming no values gets this far.
+        delete data.custom_fields;
+
         if (!this.stripeService.configured && (data.comped || data.stripe_customer_id)) {
             const property = data.comped ? 'comped' : 'stripe_customer_id';
             throw new errors.ValidationError({
@@ -527,10 +559,12 @@ module.exports = class MemberBREADService {
     async edit(data, options) {
         delete data.last_seen_at;
 
+        this.dropCustomFieldsWhenDisabled(data);
+
         // Values live in their own table, so they come off the member data before
-        // the repository sees it — `custom_fields` is not a member column. It only
-        // reaches here at all when the flag is on (the input validator strips it
-        // otherwise), so its presence is the signal to write.
+        // the repository sees it — `custom_fields` is not a member column. The gate
+        // above has already dropped it when the feature is off, so by this point its
+        // presence is the signal to write.
         const customFields = data.custom_fields;
         const writeCustomFields = customFields !== undefined;
         delete data.custom_fields;
