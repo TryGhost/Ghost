@@ -58,6 +58,18 @@ describe("Publication language settings", () => {
         await expect.element(settingsScreen.localeSelect()).toHaveTextContent("English (en)");
     });
 
+    it("restores the language dropdown when cancelling Other", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings");
+
+        await settingsScreen.localeSelect().click();
+        await settingsScreen.selectOption("Other").click();
+        await settingsScreen.publicationLanguage().getByRole("button", { name: "Cancel" }).click();
+
+        await expect.element(settingsScreen.localeSelect()).toBeVisible();
+        await expect.element(settingsScreen.localeSelect()).toHaveTextContent("English (en)");
+    });
+
     it("displays a stored custom locale", async () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings", {

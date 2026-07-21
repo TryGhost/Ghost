@@ -1,9 +1,8 @@
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
 import {type Offer} from '@tryghost/admin-x-framework/api/offers';
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
-import {debounce} from '../../../utils/debounce';
 import {isObjectId} from '../../../utils/helpers';
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 export interface SegmentOption {
@@ -32,6 +31,8 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
     const offers = useFilterableApi<Offer, 'offers', 'name'>({path: '/offers/', filterKey: 'name', responseKey: 'offers'});
 
     const [selectedSegments, setSelectedSegments] = useState<SegmentOption[] | null>(null);
+    const mounted = useRef(true);
+    const hydrationSequence = useRef(0);
 
     const tierOption = (tier: Tier): SegmentOption => ({value: tier.id, label: tier.name});
     const labelOption = (label: Label): SegmentOption => ({value: `label:${label.slug}`, label: label.name});
@@ -64,13 +65,15 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
         ];
 
         if (selectedSegments === null) {
-            initSelectedSegments();
+            await initSelectedSegments();
         }
 
         callback(segmentOptionGroups.filter(group => group.options.length > 0));
     };
 
     const initSelectedSegments = async () => {
+        hydrationSequence.current += 1;
+        const request = hydrationSequence.current;
         const filters = defaultEmailRecipientsFilter?.split(',') || [];
         const tierIds: string[] = [], labelSlugs: string[] = [], offerIds: string[] = [];
 
@@ -84,28 +87,39 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
             }
         }
 
-        const options = await Promise.all([
-            tiers.loadInitialValues(tierIds, 'id').then(data => data.map(tierOption)),
-            labels.loadInitialValues(labelSlugs, 'slug').then(data => data.map(labelOption)),
-            offers.loadInitialValues(offerIds, 'id').then(data => data.map(offerOption))
-        ]).then(results => [...SIMPLE_SEGMENT_OPTIONS, ...results.flat()]);
+        try {
+            const options = await Promise.all([
+                tiers.loadInitialValues(tierIds, 'id').then(data => data.map(tierOption)),
+                labels.loadInitialValues(labelSlugs, 'slug').then(data => data.map(labelOption)),
+                offers.loadInitialValues(offerIds, 'id').then(data => data.map(offerOption))
+            ]).then(results => [...SIMPLE_SEGMENT_OPTIONS, ...results.flat()]);
 
-        setSelectedSegments(filters.map(filter => options.find(option => option.value === filter)).filter(option => option !== undefined));
+            if (mounted.current && request === hydrationSequence.current) {
+                setSelectedSegments(filters.map(filter => options.find(option => option.value === filter)).filter(option => option !== undefined));
+            }
+        } catch {
+            if (mounted.current && request === hydrationSequence.current) {
+                setSelectedSegments([]);
+            }
+        }
     };
-    const loadOptionsRef = useRef(loadOptions);
-    loadOptionsRef.current = loadOptions;
-    const debouncedLoadOptions = useMemo(() => debounce((input: string, callback: (options: SegmentOptions) => void) => {
-        void loadOptionsRef.current(input, callback);
-    }, 500), []);
 
     useEffect(() => {
-        if (selectedOption === 'segment') {
-            loadOptions('', () => {});
+        if (selectedOption === 'segment' && selectedSegments === null) {
+            void initSelectedSegments();
         }
-    }, [selectedOption]);  
+    }, [defaultEmailRecipientsFilter, selectedOption, selectedSegments]);
+
+    useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+            hydrationSequence.current += 1;
+        };
+    }, []);
 
     return {
-        loadOptions: debouncedLoadOptions,
+        loadOptions,
         selectedSegments,
         setSelectedSegments
     };

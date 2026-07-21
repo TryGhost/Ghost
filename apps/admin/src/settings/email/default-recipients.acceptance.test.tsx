@@ -90,4 +90,29 @@ describe("Default recipient settings", () => {
         await expect.element(section.getByText(firstLabel.name, {exact: true})).toBeVisible();
         await expect.element(section.getByText(firstOffer.name, {exact: true})).toBeVisible();
     });
+
+    it("restores the saved segment when cancelling changes", async () => {
+        const savedTier = tier({id: "645453f4d254799990dd0e22", name: "Basic Supporter"});
+        const addedTier = tier({id: "645453f4d254799990dd0e23", name: "Premium Supporter"});
+        fakeSettingsScreens();
+        fakeTiers([savedTier, addedTier]);
+        fakeLabels([]);
+        fakeOffers([]);
+        const settings = settingsResponse({settings: {
+            editor_default_email_recipients: "filter",
+            editor_default_email_recipients_filter: savedTier.id,
+        }});
+        await renderAdminApp("/settings/newsletters", {boot: {browseSettings: {response: settings}}});
+
+        const section = settingsScreen.defaultRecipients();
+        const filter = section.getByLabelText("Filter");
+        await expect.element(filter).toHaveTextContent(savedTier.name);
+        await filter.click();
+        await settingsScreen.selectOption(addedTier.name).click();
+        await expect.element(filter).toHaveTextContent(addedTier.name);
+        await section.getByRole("button", {name: "Cancel"}).click();
+
+        await expect.element(filter).toHaveTextContent(savedTier.name);
+        await expect.element(filter).not.toHaveTextContent(addedTier.name);
+    });
 });

@@ -60,6 +60,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [segmentsOpen, setSegmentsOpen] = useState(false);
     const [segmentsLoading, setSegmentsLoading] = useState(false);
     const segmentRequest = useRef(0);
+    const segmentSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const {
         localSettings,
         isEditing,
@@ -82,6 +83,10 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const {loadOptions, selectedSegments, setSelectedSegments} = useDefaultRecipientsOptions(selectedOption, defaultEmailRecipientsFilter);
     const [segmentOptions, setSegmentOptions] = useState<SegmentOptions>([]);
+    const loadOptionsRef = useRef(loadOptions);
+    const selectedSegmentsRef = useRef(selectedSegments);
+    loadOptionsRef.current = loadOptions;
+    selectedSegmentsRef.current = selectedSegments;
 
     useEffect(() => {
         if (selectedSegments) {
@@ -139,17 +144,43 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
             handleEditingChange(true);
         }
     };
-    const requestSegmentOptions = (query: string) => {
+    const requestSegmentOptions = (query: string, deferred = false) => {
         segmentRequest.current += 1;
         const request = segmentRequest.current;
         setSegmentsLoading(true);
-        loadOptions(query, (options) => {
-            if (request === segmentRequest.current) {
-                setSegmentOptions(options);
-                setSegmentsLoading(false);
-            }
-        });
+        if (segmentSearchTimer.current) {
+            clearTimeout(segmentSearchTimer.current);
+        }
+        const runRequest = () => {
+            void loadOptionsRef.current(query, (options) => {
+                if (request === segmentRequest.current) {
+                    setSegmentOptions(options);
+                }
+            }).catch(() => {
+                if (request === segmentRequest.current) {
+                    setSegmentOptions(selectedSegmentsRef.current || []);
+                }
+            }).finally(() => {
+                if (request === segmentRequest.current) {
+                    setSegmentsLoading(false);
+                }
+            });
+        };
+        if (deferred) {
+            segmentSearchTimer.current = setTimeout(runRequest, 500);
+        } else {
+            runRequest();
+        }
     };
+
+    useEffect(() => {
+        return () => {
+            segmentRequest.current += 1;
+            if (segmentSearchTimer.current) {
+                clearTimeout(segmentSearchTimer.current);
+            }
+        };
+    }, []);
     const flattenedSegmentOptions = segmentOptions.flatMap(option => 'options' in option
         ? option.options.map(groupOption => ({...groupOption, metadata: {group: option.label}}))
         : [option]);
@@ -164,7 +195,10 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='default-recipients'
             title='Default recipients'
             hideEditButton
-            onCancel={handleCancel}
+            onCancel={() => {
+                setSelectedSegments(null);
+                handleCancel();
+            }}
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
@@ -217,7 +251,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                     shouldFilter={false}
                                     values={selectedSegments.map(option => option.value)}
                                     onChange={updateSelectedSegments}
-                                    onSearchChange={requestSegmentOptions}
+                                    onSearchChange={query => requestSegmentOptions(query, true)}
                                 />
                             </PopoverContent>
                         </Popover>

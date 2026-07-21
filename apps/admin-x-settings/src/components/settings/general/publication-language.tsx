@@ -58,6 +58,13 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const localeOptionsWithOther = React.useMemo(() => [...localeOptions, {label: 'Other...', value: 'other'}], [localeOptions]);
     const selectedLocale = localeOptionsWithOther.find(option => option.value === publicationLanguage);
 
+    React.useEffect(() => {
+        if (publicationLanguage && localeOptions.some(option => option.value === publicationLanguage)) {
+            setIsOtherSelected(false);
+            setValidationError(null);
+        }
+    }, [localeOptions, publicationLanguage]);
+
     const handleCustomLanguageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setValidationError(validateLocale(value) || (!value ? 'Enter a value' : null));

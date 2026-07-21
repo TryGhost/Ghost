@@ -1,9 +1,8 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Button, ButtonGroup, ColorPickerField, Form, Heading, StickyFooter, TextArea} from '@tryghost/admin-x-design-system';
 import {ChevronDown, Plus} from 'lucide-react';
 import {Field, FieldDescription, FieldLabel, MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger, inputSurface} from '@tryghost/shade/components';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
-import {debounce} from '../../../../utils/debounce';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 export type SelectedLabelTypes = {
@@ -43,35 +42,56 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     const [labelsOpen, setLabelsOpen] = useState(false);
     const [labelsLoading, setLabelsLoading] = useState(false);
     const requestSequence = useRef(0);
+    const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const loadDataRef = useRef(loadData);
     const selectedLabelsRef = useRef(selectedLabels);
     loadDataRef.current = loadData;
     selectedLabelsRef.current = selectedLabels;
 
     const loadOptions = useCallback(async (input: string, request: number) => {
-        const labels = await loadDataRef.current(input);
         const currentSelectedLabels = selectedLabelsRef.current || [];
-        const loadedOptions = labels.map(label => ({label: label.name, value: label.name}));
-        if (request === requestSequence.current) {
-            setLabelOptions([...currentSelectedLabels, ...loadedOptions.filter(option => !currentSelectedLabels.some(selected => selected.value === option.value))]);
-            setLabelsLoading(false);
+        try {
+            const labels = await loadDataRef.current(input);
+            const loadedOptions = labels.map(label => ({label: label.name, value: label.name}));
+            if (request === requestSequence.current) {
+                setLabelOptions([...currentSelectedLabels, ...loadedOptions.filter(option => !currentSelectedLabels.some(selected => selected.value === option.value))]);
+            }
+        } catch {
+            if (request === requestSequence.current) {
+                setLabelOptions(currentSelectedLabels);
+            }
+        } finally {
+            if (request === requestSequence.current) {
+                setLabelsLoading(false);
+            }
         }
     }, []);
-    const debouncedLoadOptions = useMemo(() => debounce((input: string, request: number) => void loadOptions(input, request), 500), [loadOptions]);
     const requestOptions = useCallback((input: string, deferred = false) => {
         requestSequence.current += 1;
         const request = requestSequence.current;
         setLabelsLoading(true);
+        if (searchTimer.current) {
+            clearTimeout(searchTimer.current);
+        }
         if (deferred) {
-            debouncedLoadOptions(input, request);
+            searchTimer.current = setTimeout(() => void loadOptions(input, request), 500);
         } else {
             void loadOptions(input, request);
         }
-    }, [debouncedLoadOptions, loadOptions]);
+    }, [loadOptions]);
 
     useEffect(() => {
         setLabelOptions(current => [...(selectedLabels || []), ...current.filter(option => !selectedLabels?.some(selected => selected.value === option.value))]);
     }, [selectedLabels]);
+
+    useEffect(() => {
+        return () => {
+            requestSequence.current += 1;
+            if (searchTimer.current) {
+                clearTimeout(searchTimer.current);
+            }
+        };
+    }, []);
 
     return (
         <div className='flex h-[calc(100vh-16vmin)] max-h-[645px] flex-col justify-between overflow-y-scroll border-grey-200 p-6 pb-0 max-lg:border-t lg:border-l dark:border-grey-900'>
@@ -153,7 +173,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                                 <MultiSelectCombobox
                                     footer={({searchInput, clearSearch}) => {
                                         const value = searchInput.trim();
-                                        if (!value || labelOptions.some(option => option.label.toLowerCase() === value.toLowerCase())) {
+                                        if (labelsLoading || !value || labelOptions.some(option => option.label.toLowerCase() === value.toLowerCase())) {
                                             return null;
                                         }
                                         return (

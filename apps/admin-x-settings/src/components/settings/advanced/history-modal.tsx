@@ -6,10 +6,9 @@ import {ChevronDown, History, X} from 'lucide-react';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type User} from '@tryghost/admin-x-framework/api/users';
-import {debounce} from '../../../utils/debounce';
 import {formatNumber} from '@tryghost/shade/utils';
 import {keepPreviousData} from '@tanstack/react-query';
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 const HistoryIcon: React.FC<{action: Action}> = ({action}) => {
@@ -70,29 +69,47 @@ const HistoryFilter: React.FC<{
     const [staffOpen, setStaffOpen] = useState(false);
     const [staffLoading, setStaffLoading] = useState(false);
     const requestSequence = useRef(0);
+    const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const usersApiRef = useRef(usersApi);
     usersApiRef.current = usersApi;
     const loadOptions = useCallback(async (input: string, request: number) => {
-        const users = await usersApiRef.current.loadData(input);
-        if (request === requestSequence.current) {
-            setStaffOptions(users.map(user => ({label: user.name, value: user.id})));
-            setStaffLoading(false);
+        try {
+            const users = await usersApiRef.current.loadData(input);
+            if (request === requestSequence.current) {
+                setStaffOptions(users.map(user => ({label: user.name, value: user.id})));
+            }
+        } catch {
+            if (request === requestSequence.current) {
+                setStaffOptions([]);
+            }
+        } finally {
+            if (request === requestSequence.current) {
+                setStaffLoading(false);
+            }
         }
     }, []);
-    const debouncedLoadOptions = useMemo(() => debounce((input: string, request: number) => void loadOptions(input, request), 500), [loadOptions]);
     const requestOptions = useCallback((input: string, deferred = false) => {
         requestSequence.current += 1;
         const request = requestSequence.current;
         setStaffLoading(true);
         if (deferred) {
-            debouncedLoadOptions(input, request);
+            if (searchTimer.current) {
+                clearTimeout(searchTimer.current);
+            }
+            searchTimer.current = setTimeout(() => void loadOptions(input, request), 500);
         } else {
             void loadOptions(input, request);
         }
-    }, [debouncedLoadOptions, loadOptions]);
+    }, [loadOptions]);
 
     useEffect(() => {
         requestOptions('');
+        return () => {
+            requestSequence.current += 1;
+            if (searchTimer.current) {
+                clearTimeout(searchTimer.current);
+            }
+        };
     }, [requestOptions]);
 
     const [searchedStaff, setSearchStaff] = useState<{label: string; value: string} | null>();
@@ -125,7 +142,7 @@ const HistoryFilter: React.FC<{
                 </PopoverContent>
             </Popover>
             <div className='w-[200px]'>
-                <Inline className={`${inputSurface('within')} h-(--control-height) overflow-hidden`} gap='none'>
+                <Inline className={`${inputSurface('within')} relative h-(--control-height) overflow-hidden`} gap='none'>
                     <Popover open={staffOpen} onOpenChange={(open) => {
                         setStaffOpen(open);
                         if (open) {
@@ -134,7 +151,7 @@ const HistoryFilter: React.FC<{
                     }}>
                         <PopoverTrigger asChild>
                             <button aria-label='Staff' className='flex min-w-0 flex-1 items-center justify-between px-3 text-control' data-testid='history-staff-filter' role='combobox' type='button'>
-                                <span className={searchedStaff ? 'truncate' : 'truncate text-muted-foreground'}>{searchedStaff?.label ?? 'Search staff'}</span>
+                                <span className={searchedStaff ? 'truncate pr-8' : 'truncate pr-8 text-muted-foreground'}>{searchedStaff?.label ?? 'Search staff'}</span>
                                 <ChevronDown className='ml-2 size-4 shrink-0 opacity-50' />
                             </button>
                         </PopoverTrigger>
@@ -160,7 +177,7 @@ const HistoryFilter: React.FC<{
                         </PopoverContent>
                     </Popover>
                     {searchedStaff && (
-                        <button aria-label='Clear selection' className='flex shrink-0 items-center px-2 text-muted-foreground hover:text-foreground' type='button' onClick={() => {
+                        <button aria-label='Clear selection' className='absolute top-1/2 right-10 z-10 flex size-8 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground' type='button' onClick={() => {
                             resetStaff();
                             updateRoute('history/view');
                         }}>
