@@ -4,7 +4,6 @@ const moment = require('moment');
 const logging = require('@tryghost/logging');
 const {Transform} = require('stream');
 const labs = require('../../../../shared/labs');
-const customFields = require('../../members-custom-fields');
 const {csvCellsForFields} = require('@tryghost/custom-field-types/csv');
 
 /**
@@ -60,7 +59,7 @@ function processMembersData(members, tiersMap, labelsMap, stripeCustomerMap, sub
  * @param {Object} options - Export options
  * @returns {Promise<Object>} A readable stream of processed members
  */
-async function createExportStream(options) {
+async function createExportStream(options, {definitions, values}) {
     const hasFilter = options.limit !== 'all' || options.filter || options.search;
     const start = Date.now();
     
@@ -99,12 +98,8 @@ async function createExportStream(options) {
     // field mid-export can't leave the header ragged. It can still leave that
     // field's cells empty from the batch after the archive onwards, because the
     // per-batch value read applies its own active filter.
-    const customFieldsEnabled = labs.isSet('membersCustomFields');
-    if (customFieldsEnabled && !customFields.definitions) {
-        logging.warn('[MembersExporter] Custom fields service is not initialised, exporting without custom field columns');
-    }
-    const activeCustomFields = customFieldsEnabled && customFields.definitions
-        ? await customFields.definitions.browse()
+    const activeCustomFields = labs.isSet('membersCustomFields')
+        ? await definitions.browse()
         : [];
 
     // Create a transform stream that will process the members as they come in
@@ -142,7 +137,7 @@ async function createExportStream(options) {
                         .whereIn('redeemer_member_id', memberIds),
 
                     activeCustomFields.length > 0
-                        ? customFields.values.getValuesForMembers(memberIds)
+                        ? values.getValuesForMembers(memberIds)
                         : new Map()
                 ]);
 
@@ -231,6 +226,8 @@ async function createExportStream(options) {
  * @param {Object} options - Export options
  * @returns {Promise<Array|Object>} Array of members or stream of members
  */
-module.exports = async function (options = {}) {
-    return createExportStream(options);
+module.exports = function createExporter({definitions, values}) {
+    return async function (options = {}) {
+        return createExportStream(options, {definitions, values});
+    };
 };

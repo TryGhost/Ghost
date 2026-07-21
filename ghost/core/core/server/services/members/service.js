@@ -151,6 +151,14 @@ module.exports = {
         module.exports.verificationTrigger = verificationTrigger;
 
         const membersCSVImporter = initMembersCSVImporter({stripeAPIService: stripeService.api});
+        // Constructed here rather than required statically: the exporter needs the
+        // custom fields services, which boot builds before this one.
+        const customFields = require('../members-custom-fields');
+        module.exports.export = require('./exporter/query')({
+            definitions: customFields.definitions,
+            values: customFields.values
+        });
+
         module.exports.processImport = async (options) => {
             return await membersCSVImporter.process({...options, verificationTrigger});
         };
@@ -196,7 +204,8 @@ module.exports = {
     processImport: null,
 
     stats: membersStats,
-    export: require('./exporter/query')
+
+    export: null
 };
 
 module.exports.middleware = require('./middleware');
