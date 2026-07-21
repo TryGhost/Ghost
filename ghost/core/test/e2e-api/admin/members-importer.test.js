@@ -314,6 +314,34 @@ describe('Members Importer API', function () {
         assert.equal(postLabelRemoveBrowseResponse.body.members.length, 0);
     });
 
+    // A spreadsheet exported with no rows is a realistic thing for a publisher to
+    // upload, and it used to fail with a 500.
+    it('Can handle a CSV with headers but no rows', async function () {
+        const countMembers = async () => {
+            const res = await request
+                .get(localUtils.API.getApiQuery('members/?limit=1'))
+                .set('Origin', config.get('url'))
+                .expect(200);
+            return res.body.meta.pagination.total;
+        };
+
+        const before = await countMembers();
+
+        const res = await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-headers-only.csv'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        assert.equal(res.body.meta.stats.imported, 0);
+        assert.equal(res.body.meta.stats.invalid.length, 0);
+        assert.equal(res.body.meta.originalImportSize, 0);
+        assert.equal(res.body.meta.import_label, null);
+        assert.equal(await countMembers(), before, 'nobody should have been created');
+    });
+
     it('Can handle empty body', async function () {
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))

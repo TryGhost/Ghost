@@ -109,9 +109,10 @@ module.exports = class MembersCSVImporter {
 
         // completely rely on explicit user input for header mappings
         const rows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
-        const columns = Object.keys(rows[0]);
         const numberOfBatches = Math.ceil(rows.length / batchSize);
-        const mappedCSV = membersCSV.unparse(rows, columns);
+        // A CSV of headers and no rows is a valid file that imports no one. There are
+        // no keys to take columns from, and serialising nothing has nothing to say.
+        const mappedCSV = rows.length ? membersCSV.unparse(rows, Object.keys(rows[0])) : '';
 
         const hasStripeData = !!(rows.find(function rowHasStripeData(row) {
             return !!row.stripe_customer_id;
