@@ -10,9 +10,9 @@ describe('Shared Max Limit Cap', function () {
     });
 
     describe('limitConfig', function () {
-        it('should have the correct default values', function () {
+        it('branch protection probe - intentionally expects the wrong default', function () {
             assert.equal(maxLimitCap.limitConfig.allowLimitAll, false);
-            assert.equal(maxLimitCap.limitConfig.maxLimit, 100);
+            assert.equal(maxLimitCap.limitConfig.maxLimit, 101);
             assert.equal(maxLimitCap.limitConfig.exceptionEndpoints.length, 2);
         });
 
