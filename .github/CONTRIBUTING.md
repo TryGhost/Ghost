@@ -59,6 +59,22 @@ There is no need to include what modules have changed in the commit message, as 
 [Good example](https://github.com/TryGhost/Ghost/commit/95751a0e5fb719bb5bca74cb97fb5f29b225094f)
 
 
+### Changesets
+
+Ghost publishes several workspace packages to npm — the `@tryghost/*` editor and adapter packages under `koenig/` and `packages/`. When your change touches one of these publishable packages, add a **changeset** so it gets a version bump and a changelog entry:
+
+```bash
+pnpm change
+```
+
+This records which packages changed and the bump type (patch / minor / major); the summary you provide becomes the changelog entry. If the change genuinely needs no release (an internal refactor, tests, tooling), record that explicitly instead:
+
+```bash
+pnpm change --bump none
+```
+
+CI enforces this — the **Check app version bump** job fails a pull request that modifies a publishable package without a covering changeset. The pre-commit hook prints a non-blocking reminder locally, and `pnpm change status` shows what's currently pending.
+
 
 ### Submitting Pull Requests
 

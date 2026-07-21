@@ -18,7 +18,7 @@ import {useWelcomeEmailSenderDetails} from '../../../../hooks/use-welcome-email-
 import TestEmailDropdown from './test-email-dropdown';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
-import {Button, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Button, Popover, PopoverTrigger, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
 
 interface EmailPreviewModalContentProps {
@@ -107,7 +107,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const [mode, setMode] = useState<PreviewMode>('edit');
     const [previewSubjectOverride, setPreviewSubjectOverride] = useState<string | null>(null);
-    const dropdownRef = useRef<HTMLDivElement>(null);
     const normalizedLexical = useRef<string>(automatedEmail?.lexical || '');
     const hasEditorBeenInteractedWith = useRef(false);
     const handleError = useHandleError();
@@ -147,23 +146,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
             modal.remove();
         });
     }, [modal, isDirty]);
-
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setShowTestDropdown(false);
-            }
-        };
-
-        if (showTestDropdown) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [showTestDropdown]);
 
     const handleSaveRef = useRef(handleSave);
     useEffect(() => {
@@ -274,18 +256,19 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                             <span className='text-gray-500 dark:text-gray-400'>{`<${resolvedSenderEmail}>`}</span>
                                         </span>
                                     </div>
-                                    <div ref={dropdownRef} className='relative'>
-                                        <LegacyButton
-                                            className='border border-grey-200 font-semibold hover:border-grey-300 hover:bg-white! dark:border-grey-900 dark:hover:border-grey-800 dark:hover:bg-grey-950!'
-                                            color="clear"
-                                            icon='send'
-                                            label="Test"
-                                            onClick={() => setShowTestDropdown(!showTestDropdown)}
-                                        />
+                                    <Popover open={showTestDropdown} onOpenChange={setShowTestDropdown}>
+                                        <PopoverTrigger asChild>
+                                            <LegacyButton
+                                                className='border border-control-border font-semibold hover:bg-button-hover!'
+                                                color="clear"
+                                                icon='send'
+                                                label="Test"
+                                            />
+                                        </PopoverTrigger>
                                         {showTestDropdown && (
-                                            <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} onClose={() => setShowTestDropdown(false)} />
+                                            <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} />
                                         )}
-                                    </div>
+                                    </Popover>
                                 </div>
                                 {hasDistinctReplyTo && (
                                     <div className='flex items-center'>

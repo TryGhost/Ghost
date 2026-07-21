@@ -11,6 +11,12 @@
     "test": "pnpm run '/^test:/'"
   },
   "dependencies": {
+    "@pnpm/releasing.versioning": "1100.1.0",
+    "@pnpm/workspace.workspace-manifest-reader": "1100.1.0",
+    "camelcase-keys": "10.0.2",
+    "execa": "9.6.1",
+    "js-yaml": "catalog:",
+    "picomatch": "4.0.5",
     "semver": "catalog:"
   },
   "devDependencies": {
