@@ -123,24 +123,30 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
     }
 
     async getAll(): Promise<RedirectConfig[]> {
-        let body: string;
+        const key = this.buildKey();
+
+        // Only the S3 call is wrapped, so `toStoreError` only ever sees an SDK
+        // failure and never has to decide whether an error is already ours.
+        let response;
         try {
-            const response = await this.client.send(new GetObjectCommand({
+            response = await this.client.send(new GetObjectCommand({
                 Bucket: this.bucket,
-                Key: this.buildKey()
+                Key: key
             }));
-            if (!response.Body) {
-                throw new errors.InternalServerError({
-                    message: tpl(messages.missingResponseBody)
-                });
-            }
-            body = await response.Body.transformToString('utf-8');
         } catch (err) {
             if (this._isNotFound(err)) {
                 return [];
             }
-            throw this.toStoreError(err, 'GetObject', this.buildKey());
+            throw this.toStoreError(err, 'GetObject', key);
         }
+
+        if (!response.Body) {
+            throw new errors.InternalServerError({
+                message: tpl(messages.missingResponseBody)
+            });
+        }
+
+        const body = await response.Body.transformToString('utf-8');
 
         return parseJson(body);
     }
@@ -209,10 +215,6 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
      * operator. Everything useful is copied out by value instead.
      */
     private toStoreError(err: unknown, operation: string, key: string): Error {
-        if (err instanceof Error && errors.utils.isGhostError(err)) {
-            return err;
-        }
-
         const s3Error = err as {name?: string; message?: string; $metadata?: {httpStatusCode?: number}};
         const code = s3Error.name || 'UnknownError';
 

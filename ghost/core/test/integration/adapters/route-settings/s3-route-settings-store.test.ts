@@ -43,6 +43,12 @@ taxonomies:
   author: /author/{slug}/
 `;
 
+interface StoreErrorShape {
+    errorType?: string;
+    context?: string;
+    errorDetails?: {operation?: string; key?: string; s3ErrorCode?: string};
+}
+
 const canonicalKey = (tenantPrefix = ''): string => [tenantPrefix, STATIC_PREFIX, CANONICAL_FILENAME].filter(Boolean).join('/');
 
 const fromYaml = (yaml: string) => parseRouteSettings(parseYaml(yaml), yaml);
@@ -292,25 +298,36 @@ describe('Integration: S3RouteSettingsStore without a live bucket', function () 
         });
     });
 
-    it('propagates a non-NotFound error raised while reading', async function () {
+    it('reports a non-NotFound error raised while reading', async function () {
         const store = faultyStore(async (command) => {
             if (command instanceof GetObjectCommand) {
-                throw new Error('connection reset');
+                throw Object.assign(new Error('connection reset'), {name: 'NetworkingError'});
             }
             return {};
         });
 
-        await assert.rejects(store.get(), /connection reset/);
+        await assert.rejects(store.get(), (err: StoreErrorShape) => {
+            assert.equal(err.errorType, 'InternalServerError');
+            assert.equal(err.errorDetails?.operation, 'GetObject');
+            assert.equal(err.errorDetails?.s3ErrorCode, 'NetworkingError');
+            assert.equal(err.context, 'connection reset');
+            return true;
+        });
     });
 
-    it('propagates a non-NotFound error raised by the existence check on replace', async function () {
+    it('reports a non-NotFound error raised by the existence check on replace', async function () {
         const store = faultyStore(async (command) => {
             if (command instanceof HeadObjectCommand) {
-                throw new Error('access denied');
+                throw Object.assign(new Error('Access denied.'), {name: 'AccessDenied'});
             }
             return {};
         });
 
-        await assert.rejects(store.replace(fromYaml(SAMPLE_YAML)), /access denied/);
+        await assert.rejects(store.replace(fromYaml(SAMPLE_YAML)), (err: StoreErrorShape) => {
+            assert.equal(err.errorType, 'InternalServerError');
+            assert.equal(err.errorDetails?.operation, 'HeadObject');
+            assert.equal(err.errorDetails?.s3ErrorCode, 'AccessDenied');
+            return true;
+        });
     });
 });
