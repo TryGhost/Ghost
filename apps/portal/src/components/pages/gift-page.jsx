@@ -548,12 +548,12 @@ export const GiftPageStyles = `
     border-radius: 999px;
 }
 
+/* Desktop: the CTA flows at the end of the (vertically-centered) content.
+   Sticky-pinning it here fought the centering and floated it over the
+   duration/tier rows. Mobile re-enables sticky below, where the stacked
+   layout genuinely scrolls. */
 .gh-portal-gift-checkout-cta-wrapper {
-    position: sticky;
-    bottom: 0;
-    margin: 0 0 -64px;
-    padding: 32px 0 64px;
-    background: linear-gradient(0deg, rgba(var(--whitergb), 1) 60%, rgba(var(--whitergb), 0) 100%);
+    margin-top: 28px;
     z-index: 1;
 }
 
@@ -861,9 +861,11 @@ export const GiftPageStyles = `
     }
 
     .gh-portal-gift-checkout-cta-wrapper {
+        position: sticky;
         bottom: 0;
-        margin: 0;
-        padding: 32px 0 24px;
+        margin: 24px 0 0;
+        padding: 24px 0;
+        background: linear-gradient(0deg, rgba(var(--whitergb), 1) 70%, rgba(var(--whitergb), 0) 100%);
     }
 }
 
