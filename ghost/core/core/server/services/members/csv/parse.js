@@ -72,7 +72,10 @@ module.exports = (path, headerMapping, defaultLabels = []) => {
                         continue;
                     }
 
-                    if (!headerMapping || !Reflect.has(headerMapping, header)) {
+                    // hasOwn, not `in`: a column named after an Object.prototype
+                    // member would otherwise pass as mapped and take a function
+                    // as its mapped name
+                    if (!headerMapping || !Object.hasOwn(headerMapping, header)) {
                         continue;
                     }
 
