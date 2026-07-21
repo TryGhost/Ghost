@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Automation, AutomationStatus, mockAutomations} from './mock-data';
+import {type Automation, type AutomationStatus, mockAutomations} from './mock-data';
 import {Badge, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Header} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
