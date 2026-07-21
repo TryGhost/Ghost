@@ -50,14 +50,12 @@
     },
     "devDependencies": {
         "@internal/cfg-eslint-react": "workspace:*",
-        "@vitejs/plugin-react": "catalog:",
+        "@internal/cfg-vite-public-app": "workspace:*",
         "@vitest/coverage-v8": "catalog:",
-        "concurrently": "catalog:",
         "cross-fetch": "catalog:",
         "eslint": "catalog:",
         "jsdom": "catalog:",
         "vite": "catalog:",
-        "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"
     },
     "nx": {

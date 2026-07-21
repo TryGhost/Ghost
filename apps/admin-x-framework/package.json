@@ -92,7 +92,6 @@
         "@types/react-dom": "catalog:",
         "@vitejs/plugin-react": "catalog:",
         "@vitest/coverage-v8": "catalog:",
-        "c8": "catalog:",
         "eslint": "catalog:",
         "glob": "catalog:",
         "jsdom": "catalog:",

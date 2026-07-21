@@ -1,0 +1,23 @@
+{
+    "name": "@internal/cfg-vite-public-app",
+    "version": "0.0.0",
+    "description": "Shared Vite config factory for Ghost's public UMD apps",
+    "private": true,
+    "type": "module",
+    "license": "MIT",
+    "exports": {
+        ".": {
+            "types": "./index.d.mts",
+            "default": "./index.mjs"
+        }
+    },
+    "files": [
+        "index.mjs",
+        "index.d.mts"
+    ],
+    "dependencies": {
+        "@vitejs/plugin-react": "catalog:",
+        "vite-plugin-svgr": "catalog:",
+        "vitest": "catalog:"
+    }
+}
