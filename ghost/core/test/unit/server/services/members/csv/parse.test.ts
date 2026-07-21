@@ -1,7 +1,7 @@
-const path = require('path');
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const {parse} = require('../../../../../../core/server/services/members/csv');
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {vi} from 'vitest';
+import {parse} from '../../../../../../core/server/services/members/csv';
 const csvPath = path.join(__dirname, '/fixtures/');
 
 describe('parse', function () {
@@ -117,12 +117,18 @@ describe('parse', function () {
         assert.equal(result[1].id, '2');
     });
 
-    it('drops a column named after an Object.prototype member', async function () {
-        const filePath = csvPath + 'prototype-named-column.csv';
-        const result = await parse(filePath, {email: 'email'});
+    it('drops every unmapped column when several are unmapped', async function () {
+        const filePath = csvPath + 'two-columns-mapping-header.csv';
+        const mapping = {
+            correo_electronico: 'email'
+        };
+        const result = await parse(filePath, mapping);
 
-        assert.equal(result.length, 1);
+        assert.equal(result.length, 2);
         assert.deepEqual(Object.keys(result[0]), ['email', 'labels']);
+        assert.equal(result[0].email, 'jbloggs@example.com');
+        assert.deepEqual(Object.keys(result[1]), ['email', 'labels']);
+        assert.equal(result[1].email, 'test@example.com');
     });
 
     it('ignores the overflow from a row with more fields than headers', async function () {
@@ -139,8 +145,16 @@ describe('parse', function () {
         assert.deepEqual(result, [{email: 'a@b.com', labels: []}]);
     });
 
+    it('drops a column named after an Object.prototype member', async function () {
+        const filePath = csvPath + 'prototype-named-column.csv';
+        const result = await parse(filePath, {email: 'email'});
+
+        assert.equal(result.length, 1);
+        assert.deepEqual(Object.keys(result[0]), ['email', 'labels']);
+    });
+
     it('keeps the first of two identically named columns', async function () {
-        const warn = sinon.stub(console, 'warn');
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
         try {
             const filePath = csvPath + 'duplicate-headers.csv';
@@ -148,9 +162,9 @@ describe('parse', function () {
 
             assert.equal(result.length, 1);
             assert.equal(result[0].email, 'jbloggs@example.com');
-            assert.equal(warn.callCount, 1, 'papaparse warns that it renamed the duplicate');
+            assert.equal(warn.mock.calls.length, 1, 'papaparse warns that it renamed the duplicate');
         } finally {
-            warn.restore();
+            warn.mockRestore();
         }
     });
 
@@ -283,7 +297,7 @@ describe('parse', function () {
         const filePath = csvPath + 'does-not-exist.csv';
         await assert.rejects(
             () => parse(filePath, DEFAULT_HEADER_MAPPING),
-            (err) => {
+            (err: NodeJS.ErrnoException) => {
                 assert.ok(err);
                 assert.equal(err.code, 'ENOENT');
                 return true;
