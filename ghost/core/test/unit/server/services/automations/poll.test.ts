@@ -410,6 +410,19 @@ describe('automations poll', function () {
         }));
     });
 
+    it('does not schedule email analytics when the send has no Mailgun message ID', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+            messageId: '<smtp-message-id>',
+            response: '250 Message accepted'
+        });
+
+        await poll(options);
+
+        sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
+    });
+
     it('records the automated email recipient without a Mailgun message ID after an SMTP send', async function () {
         const step = buildEmailStep({
             automation_action_revision_id: 'revision-id'
@@ -458,6 +471,7 @@ describe('automations poll', function () {
     it('does not retry the email send when scheduling email analytics fails', async function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({id: '<mailgun-message-id>'});
         scheduleAutomationEmailAnalyticsJob.rejects(new Error('email analytics scheduling failed'));
 
         await poll(options);
