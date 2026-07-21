@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {ChevronDown} from 'lucide-react';
-import {Field, FieldDescription, FieldLabel, MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger, inputSurface} from '@tryghost/shade/components';
+import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox} from '@tryghost/shade/components';
 import {SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {getLocalTime} from '../../../utils/helpers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -81,14 +80,9 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <SettingGroupContent columns={1}>
                 <Field>
                     <FieldLabel>Site timezone</FieldLabel>
-                    <Popover open={timezoneOpen} onOpenChange={setTimezoneOpen}>
-                        <PopoverTrigger asChild>
-                            <button aria-label='Site timezone' className={`${inputSurface('self')} flex h-(--control-height) w-full items-center justify-between px-3 text-control`} data-testid='timezone-select' role='combobox' type='button'>
-                                <span className='truncate'>{selectedTimezone?.label}</span>
-                                <ChevronDown className='ml-2 size-4 shrink-0 opacity-50' />
-                            </button>
-                        </PopoverTrigger>
-                        <PopoverContent align='start' className='z-[9999] w-(--radix-popover-trigger-width) p-0'>
+                    <Combobox open={timezoneOpen} onOpenChange={setTimezoneOpen}>
+                        <ComboboxTrigger aria-label='Site timezone' data-testid='timezone-select'><ComboboxValue>{selectedTimezone?.label}</ComboboxValue></ComboboxTrigger>
+                        <ComboboxContent className='z-[9999]'>
                             <MultiSelectCombobox
                                 i18n={{searchPlaceholder: 'Search timezones...'}}
                                 isMultiSelect={false}
@@ -102,8 +96,8 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 }}
                                 onClose={() => setTimezoneOpen(false)}
                             />
-                        </PopoverContent>
-                    </Popover>
+                        </ComboboxContent>
+                    </Combobox>
                     <FieldDescription><Hint timezone={publicationTimezone} /></FieldDescription>
                 </Field>
             </SettingGroupContent>

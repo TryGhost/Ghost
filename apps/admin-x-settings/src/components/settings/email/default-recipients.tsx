@@ -2,8 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useDefaultRecipientsOptions, {type SegmentOption, type SegmentOptions} from './use-default-recipients-options';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {ChevronDown} from 'lucide-react';
-import {Field, FieldDescription, FieldLabel, MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, inputSurface} from '@tryghost/shade/components';
+import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, MultiSelectCombobox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {withErrorBoundary} from '../../error-boundary';
@@ -81,7 +80,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
     }));
     const selectedRecipientLabel = RECIPIENT_FILTER_OPTIONS.find(option => option.value === selectedOption)?.label;
 
-    const {loadOptions, selectedSegments, setSelectedSegments} = useDefaultRecipientsOptions(selectedOption, defaultEmailRecipientsFilter);
+    const {hydrationState, loadOptions, resetSelectedSegments, retrySelectedSegments, selectedSegments, setSelectedSegments} = useDefaultRecipientsOptions(selectedOption, defaultEmailRecipientsFilter);
     const [segmentOptions, setSegmentOptions] = useState<SegmentOptions>([]);
     const loadOptionsRef = useRef(loadOptions);
     const selectedSegmentsRef = useRef(selectedSegments);
@@ -196,7 +195,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
             title='Default recipients'
             hideEditButton
             onCancel={() => {
-                setSelectedSegments(null);
+                resetSelectedSegments();
                 handleCancel();
             }}
             onEditingChange={handleEditingChange}
@@ -220,41 +219,49 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     </Select>
                     <FieldDescription>Who should receive your posts by default?</FieldDescription>
                 </Field>
-                {(selectedOption === 'segment') && selectedSegments && (
+                {(selectedOption === 'segment') && (
                     <Field>
                         <FieldLabel>Filter</FieldLabel>
-                        <Popover open={segmentsOpen} onOpenChange={(open) => {
-                            setSegmentsOpen(open);
-                            if (open) {
-                                requestSegmentOptions('');
-                            }
-                        }}>
-                            <PopoverTrigger asChild>
-                                <button aria-label='Filter' className={`${inputSurface('self')} flex h-(--control-height) w-full items-center justify-between px-3 text-control`} role='combobox' type='button'>
-                                    {selectedSegments.length ? (
-                                        <span className='flex min-w-0 truncate'>
-                                            {selectedSegments.map((option, index) => (
-                                                <React.Fragment key={option.value}>
-                                                    <span>{option.label}</span>{index < selectedSegments.length - 1 ? <span>,&nbsp;</span> : null}
-                                                </React.Fragment>
-                                            ))}
-                                        </span>
-                                    ) : <span className='truncate text-muted-foreground'>Select...</span>}
-                                    <ChevronDown className='ml-2 size-4 shrink-0 opacity-50' />
-                                </button>
-                            </PopoverTrigger>
-                            <PopoverContent align='start' className='z-[9999] w-(--radix-popover-trigger-width) p-0'>
-                                <MultiSelectCombobox
-                                    groupBy={option => option.metadata?.group as string | undefined}
-                                    isLoading={segmentsLoading}
-                                    options={flattenedSegmentOptions}
-                                    shouldFilter={false}
-                                    values={selectedSegments.map(option => option.value)}
-                                    onChange={updateSelectedSegments}
-                                    onSearchChange={query => requestSegmentOptions(query, true)}
-                                />
-                            </PopoverContent>
-                        </Popover>
+                        {selectedSegments ? (
+                            <Combobox open={segmentsOpen} onOpenChange={(open) => {
+                                setSegmentsOpen(open);
+                                if (open) {
+                                    requestSegmentOptions('');
+                                }
+                            }}>
+                                <ComboboxTrigger aria-label='Filter'>
+                                    <ComboboxValue placeholder={!selectedSegments.length}>
+                                        {selectedSegments.length ? selectedSegments.map((option, index) => (
+                                            <React.Fragment key={option.value}>
+                                                <span>{option.label}</span>{index < selectedSegments.length - 1 ? <span>,&nbsp;</span> : null}
+                                            </React.Fragment>
+                                        )) : 'Select...'}
+                                    </ComboboxValue>
+                                </ComboboxTrigger>
+                                <ComboboxContent className='z-[9999]'>
+                                    <MultiSelectCombobox
+                                        groupBy={option => option.metadata?.group as string | undefined}
+                                        isLoading={segmentsLoading}
+                                        options={flattenedSegmentOptions}
+                                        shouldFilter={false}
+                                        values={selectedSegments.map(option => option.value)}
+                                        onChange={updateSelectedSegments}
+                                        onSearchChange={query => requestSegmentOptions(query, true)}
+                                    />
+                                </ComboboxContent>
+                            </Combobox>
+                        ) : (
+                            <Combobox open={false} onOpenChange={() => {
+                                if (hydrationState === 'error') {
+                                    void retrySelectedSegments();
+                                }
+                            }}>
+                                <ComboboxTrigger aria-label='Filter' disabled={hydrationState !== 'error'}>
+                                    <ComboboxValue placeholder>{hydrationState === 'error' ? 'Retry loading saved filter' : 'Loading saved filter…'}</ComboboxValue>
+                                </ComboboxTrigger>
+                            </Combobox>
+                        )}
+                        {hydrationState === 'error' && <FieldError>Could not load the saved filter. Try again.</FieldError>}
                     </Field>
                 )}
             </SettingGroupContent>

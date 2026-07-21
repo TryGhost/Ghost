@@ -78,4 +78,20 @@ describe("Publication language settings", () => {
 
         await expect.element(settingsScreen.publicationLanguage().getByLabelText("Site language")).toHaveValue("cy");
     });
+
+    it("clears validation when cancelling changes to a stored custom locale", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings", {
+            boot: { browseSettings: { response: settingsResponse({ settings: { locale: "cy" } }) } },
+        });
+
+        const section = settingsScreen.publicationLanguage();
+        const language = section.getByLabelText("Site language");
+        await language.fill("invalid--locale");
+        await expect.element(section.getByText("Invalid locale format")).toBeVisible();
+        await section.getByRole("button", { name: "Cancel" }).click();
+
+        await expect.element(language).toHaveValue("cy");
+        await expect.element(section.getByText("Enter a custom locale code.")).toBeVisible();
+    });
 });

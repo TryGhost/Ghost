@@ -16,6 +16,7 @@ export interface SegmentOptionGroup {
 }
 
 export type SegmentOptions = Array<SegmentOption | SegmentOptionGroup>;
+export type SegmentHydrationState = 'idle' | 'loading' | 'error' | 'ready';
 
 const SIMPLE_SEGMENT_OPTIONS: SegmentOption[] = [{
     label: 'Free members',
@@ -31,7 +32,9 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
     const offers = useFilterableApi<Offer, 'offers', 'name'>({path: '/offers/', filterKey: 'name', responseKey: 'offers'});
 
     const [selectedSegments, setSelectedSegments] = useState<SegmentOption[] | null>(null);
+    const [hydrationState, setHydrationState] = useState<SegmentHydrationState>('idle');
     const mounted = useRef(true);
+    const hydratingFilter = useRef<string | null | undefined>();
     const hydrationSequence = useRef(0);
 
     const tierOption = (tier: Tier): SegmentOption => ({value: tier.id, label: tier.name});
@@ -64,16 +67,14 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
             }
         ];
 
-        if (selectedSegments === null) {
-            await initSelectedSegments();
-        }
-
         callback(segmentOptionGroups.filter(group => group.options.length > 0));
     };
 
     const initSelectedSegments = async () => {
         hydrationSequence.current += 1;
         const request = hydrationSequence.current;
+        hydratingFilter.current = defaultEmailRecipientsFilter;
+        setHydrationState('loading');
         const filters = defaultEmailRecipientsFilter?.split(',') || [];
         const tierIds: string[] = [], labelSlugs: string[] = [], offerIds: string[] = [];
 
@@ -96,19 +97,27 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
 
             if (mounted.current && request === hydrationSequence.current) {
                 setSelectedSegments(filters.map(filter => options.find(option => option.value === filter)).filter(option => option !== undefined));
+                setHydrationState('ready');
             }
         } catch {
             if (mounted.current && request === hydrationSequence.current) {
-                setSelectedSegments([]);
+                setHydrationState('error');
             }
         }
     };
 
+    const resetSelectedSegments = () => {
+        hydrationSequence.current += 1;
+        setSelectedSegments(null);
+        setHydrationState('idle');
+    };
+
     useEffect(() => {
-        if (selectedOption === 'segment' && selectedSegments === null) {
+        const filterChanged = hydratingFilter.current !== defaultEmailRecipientsFilter;
+        if (selectedOption === 'segment' && selectedSegments === null && (hydrationState === 'idle' || filterChanged)) {
             void initSelectedSegments();
         }
-    }, [defaultEmailRecipientsFilter, selectedOption, selectedSegments]);
+    }, [defaultEmailRecipientsFilter, hydrationState, selectedOption, selectedSegments]);
 
     useEffect(() => {
         mounted.current = true;
@@ -120,6 +129,9 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
 
     return {
         loadOptions,
+        hydrationState,
+        retrySelectedSegments: initSelectedSegments,
+        resetSelectedSegments,
         selectedSegments,
         setSelectedSegments
     };

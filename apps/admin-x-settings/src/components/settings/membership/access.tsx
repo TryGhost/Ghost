@@ -1,9 +1,9 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Banner, Field, FieldLabel, MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Button as ShadeButton, inputSurface} from '@tryghost/shade/components';
-import {ChevronDown, RefreshCw} from 'lucide-react';
+import {Banner, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldLabel, MultiSelectCombobox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Button as ShadeButton} from '@tryghost/shade/components';
 import {Hint, SettingGroupContent, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {RefreshCw} from 'lucide-react';
 import {getSettingValues, isSettingReadOnly, useRegenerateAccessCode} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -287,14 +287,11 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className="w-full md:flex-1">
                         <Field>
                             <FieldLabel className='sr-only'>Select specific tiers</FieldLabel>
-                            <Popover open={tiersOpen} onOpenChange={setTiersOpen}>
-                                <PopoverTrigger asChild>
-                                    <button aria-label='Select specific tiers' className={`${inputSurface('self')} flex h-(--control-height) w-full items-center justify-between px-3 text-control`} data-testid='tiers-select' role='combobox' type='button'>
-                                        <span className={selectedTierLabels ? 'truncate' : 'truncate text-muted-foreground'}>{selectedTierLabels || 'Select...'}</span>
-                                        <ChevronDown className='ml-2 size-4 shrink-0 opacity-50' />
-                                    </button>
-                                </PopoverTrigger>
-                                <PopoverContent align='start' className='z-[9999] w-(--radix-popover-trigger-width) p-0'>
+                            <Combobox open={tiersOpen} onOpenChange={setTiersOpen}>
+                                <ComboboxTrigger aria-label='Select specific tiers' data-testid='tiers-select'>
+                                    <ComboboxValue placeholder={!selectedTierLabels}>{selectedTierLabels || 'Select...'}</ComboboxValue>
+                                </ComboboxTrigger>
+                                <ComboboxContent className='z-[9999]'>
                                     <MultiSelectCombobox
                                         groupBy={option => option.metadata?.group as string | undefined}
                                         options={tierOptions}
@@ -304,8 +301,8 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                             handleEditingChange(true);
                                         }}
                                     />
-                                </PopoverContent>
-                            </Popover>
+                                </ComboboxContent>
+                            </Combobox>
                         </Field>
                     </div>
                 </div>

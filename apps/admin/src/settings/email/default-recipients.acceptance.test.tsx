@@ -2,6 +2,7 @@ import {describe, expect, it} from "vitest";
 
 import {
     fakeEditSettings,
+    fakeAdminEndpoint,
     fakeLabels,
     fakeOffers,
     fakeSettingsScreens,
@@ -114,5 +115,40 @@ describe("Default recipient settings", () => {
 
         await expect.element(filter).toHaveTextContent(savedTier.name);
         await expect.element(filter).not.toHaveTextContent(addedTier.name);
+    });
+
+    it("retries failed segment hydration without dropping the saved filter", async () => {
+        const savedTier = tier({id: "645453f4d254799990dd0e22", name: "Basic Supporter"});
+        const addedTier = tier({id: "645453f4d254799990dd0e23", name: "Premium Supporter"});
+        fakeSettingsScreens();
+        fakeLabels([]);
+        fakeOffers([]);
+        fakeAdminEndpoint(
+            "GET",
+            "/tiers/?filter=&limit=20",
+            {errors: [{message: "temporary failure"}]},
+            {status: 400},
+        );
+        const settingsApi = fakeEditSettings();
+        const settings = settingsResponse({settings: {
+            editor_default_email_recipients: "filter",
+            editor_default_email_recipients_filter: savedTier.id,
+        }});
+        await renderAdminApp("/settings/newsletters", {boot: {browseSettings: {response: settings}}});
+
+        const section = settingsScreen.defaultRecipients();
+        const filter = section.getByLabelText("Filter");
+        await expect.element(filter).toHaveTextContent("Retry loading saved filter");
+
+        fakeTiers([savedTier, addedTier]);
+        await filter.click();
+        await expect.element(filter).toHaveTextContent(savedTier.name);
+        await filter.click();
+        await settingsScreen.selectOption(addedTier.name).click();
+        await section.getByRole("button", {name: "Save"}).click();
+
+        await expect(settingsApi).toHaveEditedSettings([
+            {key: "editor_default_email_recipients_filter", value: `${savedTier.id},${addedTier.id}`},
+        ]);
     });
 });

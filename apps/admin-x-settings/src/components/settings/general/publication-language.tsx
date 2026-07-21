@@ -2,8 +2,7 @@ import LOCALE_DATA from '@tryghost/i18n/lib/locale-data.json';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Button, Field, FieldDescription, FieldError, FieldLabel, MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger, inputSurface} from '@tryghost/shade/components';
-import {ChevronDown} from 'lucide-react';
+import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, MultiSelectCombobox} from '@tryghost/shade/components';
 import {SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {validateLocale} from '../../../utils/locale-validation';
@@ -106,22 +105,16 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ) : (
         <Field data-invalid={Boolean(errors.publicationLanguage) || undefined}>
             <FieldLabel>Site language</FieldLabel>
-            <Popover open={languageOpen} onOpenChange={setLanguageOpen}>
-                <PopoverTrigger asChild>
-                    <button
-                        aria-describedby={errors.publicationLanguage ? languageErrorId : undefined}
-                        aria-invalid={Boolean(errors.publicationLanguage) || undefined}
-                        aria-label='Site language'
-                        className={`${inputSurface('self')} flex h-(--control-height) w-full items-center justify-between px-3 text-control`}
-                        data-testid='locale-select'
-                        role='combobox'
-                        type='button'
-                    >
-                        <span className='truncate'>{selectedLocale?.label}</span>
-                        <ChevronDown className='ml-2 size-4 shrink-0 opacity-50' />
-                    </button>
-                </PopoverTrigger>
-                <PopoverContent align='start' className='z-[9999] w-(--radix-popover-trigger-width) p-0'>
+            <Combobox open={languageOpen} onOpenChange={setLanguageOpen}>
+                <ComboboxTrigger
+                    aria-describedby={errors.publicationLanguage ? languageErrorId : undefined}
+                    aria-invalid={Boolean(errors.publicationLanguage) || undefined}
+                    aria-label='Site language'
+                    data-testid='locale-select'
+                >
+                    <ComboboxValue>{selectedLocale?.label}</ComboboxValue>
+                </ComboboxTrigger>
+                <ComboboxContent className='z-[9999]'>
                     <MultiSelectCombobox
                         i18n={{searchPlaceholder: 'Search languages...'}}
                         isMultiSelect={false}
@@ -138,8 +131,8 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         }}
                         onClose={() => setLanguageOpen(false)}
                     />
-                </PopoverContent>
-            </Popover>
+                </ComboboxContent>
+            </Combobox>
             {errors.publicationLanguage ? <FieldError id={languageErrorId}>{errors.publicationLanguage}</FieldError> : <FieldDescription>{hint}</FieldDescription>}
         </Field>
     );
@@ -154,7 +147,10 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='publication-language'
             title="Publication Language"
             hideEditButton
-            onCancel={handleCancel}
+            onCancel={() => {
+                setValidationError(null);
+                handleCancel();
+            }}
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >

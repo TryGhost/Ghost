@@ -3,9 +3,8 @@ import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './tier-detail-preview';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import {Button, type ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
-import {ChevronDown} from 'lucide-react';
+import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldLabel, MultiSelectCombobox} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldLabel, MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger, inputSurface} from '@tryghost/shade/components';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
@@ -227,14 +226,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     <div className='-mr-2 w-20'>
                                         <Field>
                                             <FieldLabel className='sr-only'>Currency</FieldLabel>
-                                            <Popover open={currencyOpen} onOpenChange={setCurrencyOpen}>
-                                                <PopoverTrigger asChild>
-                                                    <button aria-label='Currency' className={`${inputSurface('self')} flex h-(--control-height) w-full items-center justify-between px-3 text-control`} role='combobox' type='button'>
-                                                        <span className='truncate'>{formState.currency}</span>
-                                                        <ChevronDown className='ml-1 size-4 shrink-0 opacity-50' />
-                                                    </button>
-                                                </PopoverTrigger>
-                                                <PopoverContent align='end' className='z-[9999] w-64 p-0'>
+                                            <Combobox open={currencyOpen} onOpenChange={setCurrencyOpen}>
+                                                <ComboboxTrigger aria-label='Currency'><ComboboxValue>{formState.currency}</ComboboxValue></ComboboxTrigger>
+                                                <ComboboxContent align='end' className='z-[9999] w-64'>
                                                     <MultiSelectCombobox
                                                         groupBy={option => ({
                                                             key: option.metadata?.groupKey as string,
@@ -252,8 +246,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                                         }}
                                                         onClose={() => setCurrencyOpen(false)}
                                                     />
-                                                </PopoverContent>
-                                            </Popover>
+                                                </ComboboxContent>
+                                            </Combobox>
                                         </Field>
                                     </div>
                                 </div>

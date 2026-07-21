@@ -1,8 +1,8 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Button, ButtonGroup, ColorPickerField, Form, Heading, StickyFooter, TextArea} from '@tryghost/admin-x-design-system';
-import {ChevronDown, Plus} from 'lucide-react';
-import {Field, FieldDescription, FieldLabel, MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger, inputSurface} from '@tryghost/shade/components';
+import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox} from '@tryghost/shade/components';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
+import {Plus} from 'lucide-react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 export type SelectedLabelTypes = {
@@ -155,21 +155,18 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
 
                     <Field>
                         <FieldLabel>Labels at signup</FieldLabel>
-                        <Popover open={labelsOpen} onOpenChange={(open) => {
+                        <Combobox open={labelsOpen} onOpenChange={(open) => {
                             setLabelsOpen(open);
                             if (open) {
                                 requestOptions('');
                             }
                         }}>
-                            <PopoverTrigger asChild>
-                                <button aria-label='Labels at signup' className={`${inputSurface('self')} flex h-(--control-height) w-full items-center justify-between px-3 text-control`} role='combobox' type='button'>
-                                    <span className={selectedLabels?.length ? 'truncate' : 'truncate text-muted-foreground'}>
-                                        {selectedLabels?.length ? selectedLabels.map(label => label.label).join(', ') : 'Pick one or more labels (optional)'}
-                                    </span>
-                                    <ChevronDown className='ml-2 size-4 shrink-0 opacity-50' />
-                                </button>
-                            </PopoverTrigger>
-                            <PopoverContent align='start' className='z-[9999] w-(--radix-popover-trigger-width) p-0'>
+                            <ComboboxTrigger aria-label='Labels at signup'>
+                                <ComboboxValue placeholder={!selectedLabels?.length}>
+                                    {selectedLabels?.length ? selectedLabels.map(label => label.label).join(', ') : 'Pick one or more labels (optional)'}
+                                </ComboboxValue>
+                            </ComboboxTrigger>
+                            <ComboboxContent className='z-[9999]'>
                                 <MultiSelectCombobox
                                     footer={({searchInput, clearSearch}) => {
                                         const value = searchInput.trim();
@@ -196,8 +193,8 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                                     onChange={handleLabelClick}
                                     onSearchChange={input => requestOptions(input, true)}
                                 />
-                            </PopoverContent>
-                        </Popover>
+                            </ComboboxContent>
+                        </Combobox>
                         <FieldDescription>Will be applied to all members signing up via this form</FieldDescription>
                     </Field>
                     <TextArea
