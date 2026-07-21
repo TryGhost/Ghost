@@ -109,8 +109,8 @@ catalogs:
       specifier: 5.101.2
       version: 5.101.2
     '@tanstack/react-virtual':
-      specifier: 3.14.5
-      version: 3.14.5
+      specifier: 3.14.6
+      version: 3.14.6
     '@testing-library/jest-dom':
       specifier: 6.9.1
       version: 6.9.1
@@ -624,7 +624,7 @@ importers:
         version: 2.0.0
       '@tanstack/react-virtual':
         specifier: 'catalog:'
-        version: 3.14.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 3.14.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/activitypub':
         specifier: workspace:*
         version: link:../activitypub
@@ -1329,7 +1329,7 @@ importers:
         version: 2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))(@tiptap/pm@2.27.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.4
+        version: 2.3.4(supports-color@5.5.0)
       react:
         specifier: catalog:react17
         version: 17.0.2
@@ -1423,7 +1423,7 @@ importers:
     dependencies:
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.4
+        version: 2.3.4(supports-color@5.5.0)
     devDependencies:
       '@doist/react-interpolate':
         specifier: 2.2.3
@@ -1695,7 +1695,7 @@ importers:
     dependencies:
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.4
+        version: 2.3.4(supports-color@5.5.0)
       react:
         specifier: 'catalog:'
         version: 18.3.1
@@ -1780,7 +1780,7 @@ importers:
     dependencies:
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.4
+        version: 2.3.4(supports-color@5.5.0)
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
@@ -1918,10 +1918,10 @@ importers:
         version: 1.61.1
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.4
+        version: 2.3.4(supports-color@5.5.0)
       '@tryghost/logging':
         specifier: 5.2.1
-        version: 5.2.1
+        version: 5.2.1(supports-color@5.5.0)
       '@tryghost/test-data':
         specifier: workspace:*
         version: link:../packages/testing/test-data
@@ -2435,7 +2435,7 @@ importers:
         version: 2.3.2
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.4
+        version: 2.3.4(supports-color@5.5.0)
       '@tryghost/domain-events':
         specifier: 'catalog:'
         version: 3.3.4
@@ -2489,7 +2489,7 @@ importers:
         version: 1.5.6
       '@tryghost/logging':
         specifier: 5.2.1
-        version: 5.2.1
+        version: 5.2.1(supports-color@5.5.0)
       '@tryghost/members-csv':
         specifier: 2.0.7
         version: 2.0.7
@@ -4028,7 +4028,7 @@ importers:
     dependencies:
       '@tryghost/logging':
         specifier: 5.2.1
-        version: 5.2.1
+        version: 5.2.1(supports-color@5.5.0)
     devDependencies:
       '@internal/cfg-eslint':
         specifier: 'workspace:'
@@ -4179,7 +4179,7 @@ importers:
     dependencies:
       '@tryghost/debug':
         specifier: 'catalog:'
-        version: 2.3.4
+        version: 2.3.4(supports-color@5.5.0)
       i18next:
         specifier: 23.16.8
         version: 23.16.8
@@ -8954,8 +8954,17 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
+  '@tanstack/react-virtual@3.14.6':
+    resolution: {integrity: sha512-4+Uq8m0/gzO4kMCHUEpTtGX1RnONK0C+g88b2ltwPMWUBiaVarBuWKoPJaz7gj1cKCVRAdyu+U8GcKhwCc2beA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   '@tanstack/virtual-core@3.17.3':
     resolution: {integrity: sha512-8Np/TFELpI0ySuJoVmjvOrQYXH/8sTX0Biv9szhFhY39xOdAAY+smrMxjxOum/ux3eM8MUJQsEJ0/R0UpvC8dw==}
+
+  '@tanstack/virtual-core@3.17.4':
+    resolution: {integrity: sha512-nGm5KteqxasUdThLc2izl6dHUqLv0LQj7Nuyo5gYalTPf/U8a9ermvsl7reT+6ioBW1l8WfpP/mcU338nLXpqw==}
 
   '@testing-library/dom@10.4.1':
     resolution: {integrity: sha512-o4PXJQidqJl82ckFaXUeoAW+XysPLauYI43Abki5hABd853iMhitooc6znOnczgbTYmEP6U6/y1ZyKAIsvMKGg==}
@@ -24756,16 +24765,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@elastic/elasticsearch@8.19.2':
+  '@elastic/elasticsearch@8.19.2(supports-color@5.5.0)':
     dependencies:
-      '@elastic/transport': 8.10.1
+      '@elastic/transport': 8.10.1(supports-color@5.5.0)
       apache-arrow: 21.1.0
       tslib: 2.8.1
     transitivePeerDependencies:
       - '@75lb/nature'
       - supports-color
 
-  '@elastic/transport@8.10.1':
+  '@elastic/transport@8.10.1(supports-color@5.5.0)':
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/core': 2.9.0(@opentelemetry/api@1.9.1)
@@ -28673,13 +28682,15 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
 
-  '@tanstack/react-virtual@3.14.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tanstack/react-virtual@3.14.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@tanstack/virtual-core': 3.17.3
+      '@tanstack/virtual-core': 3.17.4
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
   '@tanstack/virtual-core@3.17.3': {}
+
+  '@tanstack/virtual-core@3.17.4': {}
 
   '@testing-library/dom@10.4.1':
     dependencies:
@@ -28904,7 +28915,7 @@ snapshots:
 
   '@tryghost/api-framework@3.3.4':
     dependencies:
-      '@tryghost/debug': 2.3.4
+      '@tryghost/debug': 2.3.4(supports-color@5.5.0)
       '@tryghost/errors': 3.3.4
       '@tryghost/promise': 2.3.4
       '@tryghost/tpl': 2.3.4
@@ -29038,7 +29049,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/debug@2.3.4':
+  '@tryghost/debug@2.3.4(supports-color@5.5.0)':
     dependencies:
       '@tryghost/root-utils': 2.3.4
       debug: 4.4.3(supports-color@5.5.0)
@@ -29047,7 +29058,7 @@ snapshots:
 
   '@tryghost/domain-events@3.3.4':
     dependencies:
-      '@tryghost/logging': 5.2.1
+      '@tryghost/logging': 5.2.1(supports-color@5.5.0)
     transitivePeerDependencies:
       - '@75lb/nature'
       - supports-color
@@ -29060,10 +29071,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/elasticsearch@5.4.1':
+  '@tryghost/elasticsearch@5.4.1(supports-color@5.5.0)':
     dependencies:
-      '@elastic/elasticsearch': 8.19.2
-      '@tryghost/debug': 2.3.4
+      '@elastic/elasticsearch': 8.19.2(supports-color@5.5.0)
+      '@tryghost/debug': 2.3.4(supports-color@5.5.0)
       split2: 4.2.0
     transitivePeerDependencies:
       - '@75lb/nature'
@@ -29142,7 +29153,7 @@ snapshots:
     dependencies:
       '@breejs/later': 4.2.0
       '@tryghost/errors': 3.3.4
-      '@tryghost/logging': 5.2.1
+      '@tryghost/logging': 5.2.1(supports-color@5.5.0)
       bree: 6.5.0(supports-color@5.5.0)
       cron-validate: 1.4.5
       fastq: 1.20.1
@@ -29158,10 +29169,10 @@ snapshots:
       lodash: 4.18.1
       luxon: 3.7.2
 
-  '@tryghost/logging@5.2.1':
+  '@tryghost/logging@5.2.1(supports-color@5.5.0)':
     dependencies:
       '@tryghost/bunyan-rotating-filestream': 0.0.10
-      '@tryghost/elasticsearch': 5.4.1
+      '@tryghost/elasticsearch': 5.4.1(supports-color@5.5.0)
       '@tryghost/http-stream': 2.3.4
       '@tryghost/pretty-stream': 2.3.4
       '@tryghost/root-utils': 2.3.4
@@ -29317,7 +29328,7 @@ snapshots:
 
   '@tryghost/prometheus-metrics@1.0.8(supports-color@1.2.0)':
     dependencies:
-      '@tryghost/logging': 5.2.1
+      '@tryghost/logging': 5.2.1(supports-color@5.5.0)
       express: 4.22.1(supports-color@1.2.0)
       prom-client: 15.1.3
       stoppable: 1.1.0
@@ -29370,7 +29381,7 @@ snapshots:
   '@tryghost/server@3.1.1':
     dependencies:
       '@tryghost/debug': 2.3.1(supports-color@5.5.0)
-      '@tryghost/logging': 5.2.1
+      '@tryghost/logging': 5.2.1(supports-color@5.5.0)
     transitivePeerDependencies:
       - '@75lb/nature'
       - supports-color
@@ -38197,7 +38208,7 @@ snapshots:
       '@tryghost/config': 2.3.1
       '@tryghost/debug': 2.3.1(supports-color@5.5.0)
       '@tryghost/errors': 3.3.4
-      '@tryghost/logging': 5.2.1
+      '@tryghost/logging': 5.2.1(supports-color@5.5.0)
       '@tryghost/nql': 0.13.1
       '@tryghost/pretty-cli': 3.3.1
       '@tryghost/server': 3.1.1
@@ -40175,7 +40186,7 @@ snapshots:
     dependencies:
       '@tryghost/database-info': 0.3.35
       '@tryghost/errors': 3.3.4
-      '@tryghost/logging': 5.2.1
+      '@tryghost/logging': 5.2.1(supports-color@5.5.0)
       '@tryghost/promise': 0.3.20
       commander: 5.1.0
       compare-ver: 2.0.2
