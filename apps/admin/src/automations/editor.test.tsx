@@ -391,6 +391,7 @@ describe('AutomationEditor', () => {
                         ? {
                             ...action,
                             stats: {
+                                email_clicked_count: 0,
                                 email_sent_count: 1247,
                                 email_opened_count: 780,
                                 opened_rate: 65,
@@ -442,6 +443,7 @@ describe('AutomationEditor', () => {
                         ? {
                             ...action,
                             stats: {
+                                email_clicked_count: 0,
                                 email_sent_count: 0,
                                 email_opened_count: 0,
                                 opened_rate: null,
