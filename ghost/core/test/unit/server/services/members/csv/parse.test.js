@@ -117,6 +117,14 @@ describe('parse', function () {
         assert.equal(result[1].id, '2');
     });
 
+    it('drops a column named after an Object.prototype member', async function () {
+        const filePath = csvPath + 'prototype-named-column.csv';
+        const result = await parse(filePath, {email: 'email'});
+
+        assert.equal(result.length, 1);
+        assert.deepEqual(Object.keys(result[0]), ['email', 'labels']);
+    });
+
     it('ignores the overflow from a row with more fields than headers', async function () {
         const filePath = csvPath + 'long-row.csv';
         const result = await parse(filePath, {email: 'email', name: 'name'});
