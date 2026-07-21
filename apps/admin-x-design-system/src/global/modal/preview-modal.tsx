@@ -4,7 +4,6 @@ import React, {useEffect, useState} from 'react';
 import useGlobalDirtyState from '../../hooks/use-global-dirty-state';
 import {confirmIfDirty} from '../../utils/modals';
 import {ButtonColor, ButtonProps} from '../button';
-import Breadcrumbs, {BreadcrumbItem} from '../breadcrumbs';
 import ButtonGroup from '../button-group';
 import Heading, {HeadingLevel} from '../heading';
 import Icon from '../icon';
@@ -34,7 +33,7 @@ export interface PreviewModalProps {
     deviceSelector?: boolean;
     siteLink?: string;
     previewToolbarURLs?: SelectOption[];
-    previewToolbarBreadcrumbs?: BreadcrumbItem[];
+    previewToolbarBreadcrumbs?: React.ReactNode;
     previewBgColor?: 'grey' | 'white' | 'greygradient';
     selectedURL?: string;
     previewToolbarTabs?: Tab[];
@@ -52,7 +51,6 @@ export interface PreviewModalProps {
     onSelectURL?: (url: string) => void;
     onSelectDesktopView?: () => void;
     onSelectMobileView?: () => void;
-    onBreadcrumbsBack?: () => void;
 }
 
 export const PreviewModalContent: React.FC<PreviewModalProps> = ({
@@ -91,8 +89,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     afterClose,
     onSelectURL,
     onSelectDesktopView,
-    onSelectMobileView,
-    onBreadcrumbsBack
+    onSelectMobileView
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -135,7 +132,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     }
 
     if (previewToolbar) {
-        let toolbarLeft = (<></>);
+        let toolbarLeft: React.ReactNode = (<></>);
         if (previewToolbarURLs) {
             toolbarLeft = (
                 <Select
@@ -153,15 +150,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                 onTabChange={onSelectURL!}
             />;
         } else if (previewToolbarBreadcrumbs) {
-            toolbarLeft = <Breadcrumbs
-                activeItemClassName='hidden md:!block md:!visible'
-                containerClassName='whitespace-nowrap'
-                itemClassName='hidden md:!block md:!visible'
-                items={previewToolbarBreadcrumbs}
-                separatorClassName='hidden md:!block md:!visible'
-                backIcon
-                onBack={onBreadcrumbsBack}
-            />;
+            toolbarLeft = previewToolbarBreadcrumbs;
         }
 
         const selectedIconColorClass = 'text-black dark:text-green';

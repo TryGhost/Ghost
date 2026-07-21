@@ -4,7 +4,7 @@ const _ = require('lodash');
 const nock = require('nock');
 const testUtils = require('../../../../utils');
 const request = require('@tryghost/request');
-const IndexNowPingService = require('../../../../../core/server/services/indexnow-ping/indexnow-ping-service');
+const {IndexNowPingService} = require('../../../../../core/server/services/indexnow-ping/indexnow-ping-service');
 
 const VALID_API_KEY = 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4';
 

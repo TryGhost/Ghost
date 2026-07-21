@@ -1,8 +1,9 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
-import {Avatar, LoadingIndicator, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
-import {Button, Icon, InfiniteScrollListener, List, ListItem, type LoadSelectOptions, Modal, Popover, Select, type SelectOption, Toggle, ToggleGroup} from '@tryghost/admin-x-design-system';
+import {Avatar, LoadingIndicator, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
+import {Button, Icon, InfiniteScrollListener, List, ListItem, type LoadSelectOptions, Modal, Select, type SelectOption, Toggle, ToggleGroup} from '@tryghost/admin-x-design-system';
 import {History} from 'lucide-react';
+import {Inline, Stack} from '@tryghost/shade/primitives';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type User} from '@tryghost/admin-x-framework/api/users';
 import {debounce} from '../../../utils/debounce';
@@ -77,27 +78,34 @@ const HistoryFilter: React.FC<{
     };
 
     return (
-        <div className='flex items-center gap-4'>
-            <Popover position='end' trigger={<Button color='outline' label='Filter' />}>
-                <div className='flex w-[220px] flex-col gap-8 p-5'>
-                    <ToggleGroup>
-                        <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
-                        <HistoryFilterToggle excludedItems={excludedEvents} item='edited' label='Edited' toggleItem={toggleEventType} />
-                        <HistoryFilterToggle excludedItems={excludedEvents} item='deleted' label='Deleted' toggleItem={toggleEventType} />
-                    </ToggleGroup>
-                    <ToggleGroup>
-                        <HistoryFilterToggle excludedItems={excludedResources} item='post' label='Posts' toggleItem={toggleResourceType} />
-                        <HistoryFilterToggle excludedItems={excludedResources} item='page' label='Pages' toggleItem={toggleResourceType} />
-                        <HistoryFilterToggle excludedItems={excludedResources} item='tag' label='Tags' toggleItem={toggleResourceType} />
-                        <HistoryFilterToggle excludedItems={excludedResources} item='offer,product' label='Tiers & offers' toggleItem={toggleResourceType} />
-                        <HistoryFilterToggle excludedItems={excludedResources} item='api_key,integration,setting,user,webhook' label='Settings & staff' toggleItem={toggleResourceType} />
-                    </ToggleGroup>
-                </div>
+        <Inline align='center' gap='md'>
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button color='outline' label='Filter' />
+                </PopoverTrigger>
+                <PopoverContent align='end' className='z-[9999] w-[220px]' data-testid='history-filters'>
+                    <Stack gap='2xl'>
+                        <ToggleGroup>
+                            <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
+                            <HistoryFilterToggle excludedItems={excludedEvents} item='edited' label='Edited' toggleItem={toggleEventType} />
+                            <HistoryFilterToggle excludedItems={excludedEvents} item='deleted' label='Deleted' toggleItem={toggleEventType} />
+                        </ToggleGroup>
+                        <ToggleGroup>
+                            <HistoryFilterToggle excludedItems={excludedResources} item='post' label='Posts' toggleItem={toggleResourceType} />
+                            <HistoryFilterToggle excludedItems={excludedResources} item='page' label='Pages' toggleItem={toggleResourceType} />
+                            <HistoryFilterToggle excludedItems={excludedResources} item='tag' label='Tags' toggleItem={toggleResourceType} />
+                            <HistoryFilterToggle excludedItems={excludedResources} item='offer,product' label='Tiers & offers' toggleItem={toggleResourceType} />
+                            <HistoryFilterToggle excludedItems={excludedResources} item='api_key,integration,setting,user,webhook' label='Settings & staff' toggleItem={toggleResourceType} />
+                        </ToggleGroup>
+                    </Stack>
+                </PopoverContent>
             </Popover>
             <div className='w-[200px]'>
                 <Select
+                    controlClasses={{clearIndicator: 'mr-2'}}
                     loadOptions={debounce(loadOptions, 500)}
                     placeholder='Search staff'
+                    testId='history-staff-filter'
                     value={searchedStaff}
                     async
                     defaultOptions
@@ -113,7 +121,7 @@ const HistoryFilter: React.FC<{
                     }}
                 />
             </div>
-        </div>
+        </Inline>
     );
 };
 

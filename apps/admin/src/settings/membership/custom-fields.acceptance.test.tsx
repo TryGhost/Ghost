@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {userEvent} from "vitest/browser";
+import {page, userEvent} from "vitest/browser";
 
 import {configResponse, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp, settingsResponse} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
@@ -248,7 +248,7 @@ describe("Custom fields", () => {
         // Deletion hides behind the modal's header menu — never a visible button.
         const modal = settingsScreen.customFieldModal();
         await modal.getByRole("button", {name: "Menu"}).click();
-        await modal.getByRole("button", {name: "Delete custom field"}).click();
+        await page.getByRole("menuitem", {name: "Delete custom field"}).click();
 
         const confirmation = settingsScreen.confirmationModal();
         await expect.element(confirmation).toHaveTextContent("Old hobby and every value collected from your members will be permanently deleted from the database. This can’t be undone.");

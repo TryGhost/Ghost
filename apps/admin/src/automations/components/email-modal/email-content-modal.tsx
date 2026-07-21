@@ -2,7 +2,7 @@ import EmailEditor from './email-editor';
 import EmailPreviewFrame from './preview-frame';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import TestEmailDropdown from './test-email-dropdown';
-import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogTitle, Input, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogTitle, Input, Popover, PopoverTrigger, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {getEmailValidationErrors} from './validation';
 import {useBrowseAutomatedEmails} from '@tryghost/admin-x-framework/api/automated-emails';
@@ -119,7 +119,6 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     const [previewSubjectOverride, setPreviewSubjectOverride] = useState<string | null>(null);
     const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
     const hasEnteredInitialPreview = useRef(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
     const normalizedLexical = useRef<string>(initialLexical || '');
     const hasEditorBeenFocused = useRef(false);
     const allowDirtyCloseRef = useRef(false);
@@ -184,23 +183,6 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     const handleSaveClick = useCallback(async () => {
         await handleSave({fakeWhenUnchanged: true});
     }, [handleSave]);
-
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setShowTestDropdown(false);
-            }
-        };
-
-        if (showTestDropdown) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [showTestDropdown]);
 
     const handleSaveClickRef = useRef(handleSaveClick);
     useEffect(() => {
@@ -358,15 +340,17 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                                                     <span className='text-gray-500 dark:text-gray-400'>{`<${resolvedSenderEmail}>`}</span>
                                                 </span>
                                             </div>
-                                            <div ref={dropdownRef} className='relative'>
-                                                <Button variant="outline" onClick={() => setShowTestDropdown(!showTestDropdown)}>
-                                                    <LucideIcon.Send className='size-4' />
-                                                    Test
-                                                </Button>
+                                            <Popover open={showTestDropdown} onOpenChange={setShowTestDropdown}>
+                                                <PopoverTrigger asChild>
+                                                    <Button variant="outline">
+                                                        <LucideIcon.Send className='size-4' />
+                                                        Test
+                                                    </Button>
+                                                </PopoverTrigger>
                                                 {showTestDropdown && (
-                                                    <TestEmailDropdown automationId={automationId} lexical={formState.lexical} subject={formState.subject} validateForm={validateForTest} onClose={() => setShowTestDropdown(false)} />
+                                                    <TestEmailDropdown automationId={automationId} lexical={formState.lexical} subject={formState.subject} validateForm={validateForTest} />
                                                 )}
-                                            </div>
+                                            </Popover>
                                         </div>
                                         {hasDistinctReplyTo && (
                                             <div className='flex items-center'>

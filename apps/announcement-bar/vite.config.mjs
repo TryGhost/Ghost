@@ -1,6 +1,6 @@
 /* eslint-env node */
 import pkg from './package.json';
-import {publicAppViteConfig} from '../_shared/vite-public-app.mjs';
+import {publicAppViteConfig} from '@internal/cfg-vite-public-app';
 
 export default publicAppViteConfig({
     packageRoot: import.meta.dirname,

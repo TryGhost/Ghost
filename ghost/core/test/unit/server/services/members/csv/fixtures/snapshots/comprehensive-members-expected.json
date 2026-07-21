@@ -1,0 +1,79 @@
+[
+  {
+    "email": "jbloggs@example.com",
+    "name": "Joe Bloggs",
+    "labels": [
+      {
+        "name": "vip"
+      },
+      {
+        "name": "premium"
+      }
+    ],
+    "subscribed": true,
+    "complimentary_plan": true,
+    "note": "Early supporter"
+  },
+  {
+    "email": "test@example.com",
+    "name": "Test User",
+    "labels": [
+      {
+        "name": "basic"
+      }
+    ],
+    "subscribed": false,
+    "complimentary_plan": false,
+    "note": "Regular member"
+  },
+  {
+    "email": "empty@example.com",
+    "name": null,
+    "labels": [],
+    "subscribed": true,
+    "complimentary_plan": false,
+    "note": null
+  },
+  {
+    "email": "noteonly@example.com",
+    "name": "Noted Member",
+    "labels": [],
+    "subscribed": true,
+    "complimentary_plan": false,
+    "note": "A member with only a note, and commas"
+  },
+  {
+    "email": "boolean@example.com",
+    "name": true,
+    "labels": [],
+    "subscribed": true,
+    "complimentary_plan": false,
+    "note": false
+  },
+  {
+    "email": "undef@example.com",
+    "name": null,
+    "labels": [],
+    "subscribed": true,
+    "complimentary_plan": true,
+    "note": null
+  },
+  {
+    "email": "multi@example.com",
+    "name": "Multi Label",
+    "labels": [
+      {
+        "name": "gold"
+      },
+      {
+        "name": "silver"
+      },
+      {
+        "name": "bronze"
+      }
+    ],
+    "subscribed": true,
+    "complimentary_plan": true,
+    "note": "Three labels"
+  }
+]
