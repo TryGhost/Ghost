@@ -423,6 +423,17 @@ export class UrlServiceFacade {
             && this._isNotFound(eagerValue) && !this._isNotFound(lazyValue)) {
             return true;
         }
+
+        // A site's owner starts with the default `ghost-user` slug and is
+        // renamed during setup. The rename emits no event the eager cache
+        // consumes, so eager serves /author/ghost-user/ until the next boot
+        // while lazy has the real slug from the database.
+        if (method === 'getUrlForResource'
+            && context.type === 'authors'
+            && typeof eagerValue === 'string' && eagerValue.endsWith('/author/ghost-user/')
+            && !this._isNotFound(lazyValue)) {
+            return true;
+        }
         return false;
     }
 

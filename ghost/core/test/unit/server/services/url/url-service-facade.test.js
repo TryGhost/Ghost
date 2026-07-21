@@ -394,6 +394,14 @@ describe('UrlServiceFacade', function () {
             assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
         });
 
+        it('does not report an author whose eager URL is the stale ghost-user default', async function () {
+            urlService.getUrlByResourceId.returns('https://site.com/author/ghost-user/');
+            lazyUrlService.getUrlForResource.returns('https://site.com/author/nick/');
+            compareFacade.getUrlForResource({type: 'authors', id: 'u1'});
+            await flush();
+            sinon.assert.notCalled(logging.error);
+        });
+
         it('reports a mismatch when lazy ownership differs', async function () {
             compareFacade.ownsResource('routerA', {type: 'posts', id: 'a'});
             await flush();
