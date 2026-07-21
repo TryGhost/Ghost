@@ -177,11 +177,10 @@ const EmailStepStatsFooter: React.FC<{stats: AutomationEmailStats}> = ({stats}) 
             <span className='text-xs text-text-secondary'>Opened</span>
             <span className='text-base font-medium'>{formatRate(stats.opened_rate)}</span>
         </div>
-        {/* @TODO: NY-1457 */}
-        {/* <div className='flex flex-col text-left'>
+        <div className='flex flex-col text-left'>
             <span className='text-xs text-text-secondary'>Clicked</span>
-            <span className='text-base font-medium'>{formatRate(stats?.clicked_rate)}</span>
-        </div> */}
+            <span className='text-base font-medium'>{formatRate(stats.clicked_rate)}</span>
+        </div>
     </div>
 );
 
