@@ -27,7 +27,7 @@ export function formatLocation(path: readonly PathSegment[]): string {
         if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(segment)) {
             return out ? `${out}.${segment}` : segment;
         }
-        return `${out}['${segment.replace(/'/g, '\\\'')}']`;
+        return `${out}['${segment.replace(/\\/g, '\\\\').replace(/'/g, '\\\'')}']`;
     }, '');
 }
 

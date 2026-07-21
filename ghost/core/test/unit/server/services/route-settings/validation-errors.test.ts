@@ -16,8 +16,10 @@ describe('UNIT: services/route-settings/validation-errors', function () {
             assert.equal(formatLocation(['routes', '/x/', 'template', 1]), 'routes[\'/x/\'].template[1]');
         });
 
-        it('escapes quotes in a path', function () {
+        it('escapes quotes and backslashes in a path', function () {
             assert.equal(formatLocation(['routes', '/it\'s/']), 'routes[\'/it\\\'s/\']');
+            assert.equal(formatLocation(['routes', '/a\\b/']), 'routes[\'/a\\\\b/\']');
+            assert.equal(formatLocation(['routes', '/a\\\'b/']), 'routes[\'/a\\\\\\\'b/\']');
         });
     });
 
