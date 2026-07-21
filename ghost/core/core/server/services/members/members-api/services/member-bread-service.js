@@ -37,16 +37,6 @@ const CUSTOM_FIELDS_EDITED_ACTION = 'custom_fields_edited';
  * @prop {{getActiveByMembers: (memberIds: string[]) => Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>}} service
  */
 
-/**
- * @typedef {object} ICustomFieldsServiceWrapper
- * @prop {{
- *   getValuesForMembers: (memberIds: string[]) => Promise<Map<string, Record<string, unknown>>>,
- *   namesValues: (values: unknown) => boolean,
- *   planWrite: (values: unknown) => Promise<object[]>,
- *   applyWrite: (memberId: string, writes: object[]) => Promise<void>
- * }} values
- */
-
 module.exports = class MemberBREADService {
     /**
      * @param {object} deps
@@ -60,9 +50,9 @@ module.exports = class MemberBREADService {
      * @param {import('../../../settings-helpers/settings-helpers')} deps.settingsHelpers
      * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
      * @param {IGiftServiceWrapper} deps.giftService
-     * @param {ICustomFieldsServiceWrapper} deps.customFieldsService
+     * @param {import('../../../members-custom-fields/values-service').CustomFieldValuesService} deps.customFieldValues Required: boot builds it before the members service
      */
-    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService, giftService, customFieldsService}) {
+    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService, giftService, customFieldValues}) {
         this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
@@ -85,7 +75,7 @@ module.exports = class MemberBREADService {
         /** @private */
         this.giftService = giftService;
         /** @private */
-        this.customFieldsService = customFieldsService;
+        this.customFieldValues = customFieldValues;
     }
 
     /**
@@ -114,7 +104,7 @@ module.exports = class MemberBREADService {
             return null;
         }
 
-        return this.customFieldsService.values.getValuesForMembers(memberIds);
+        return this.customFieldValues.getValuesForMembers(memberIds);
     }
 
     /**
@@ -463,10 +453,9 @@ module.exports = class MemberBREADService {
         this.dropCustomFieldsWhenDisabled(data);
 
         // Values cannot be set on create, only on a subsequent edit. `namesValues`
-        // both judges the body and rejects a malformed one, so create and edit agree
-        // on what a write is. Reached only when the key is present, so a create
-        // without custom fields does not depend on the values service.
-        if (data.custom_fields !== undefined && this.customFieldsService.values.namesValues(data.custom_fields)) {
+        // both judges the body and rejects a malformed one, so a body refused here is
+        // refused on edit for the same reason.
+        if (this.customFieldValues.namesValues(data.custom_fields)) {
             throw new errors.ValidationError({
                 message: tpl(messages.customFieldsOnAdd),
                 property: 'custom_fields'
@@ -574,7 +563,7 @@ module.exports = class MemberBREADService {
         // plan to apply once below, so the values aren't resolved and validated
         // twice.
         const plannedCustomFields = writeCustomFields
-            ? await this.customFieldsService.values.planWrite(customFields)
+            ? await this.customFieldValues.planWrite(customFields)
             : null;
 
         let model;
@@ -623,7 +612,7 @@ module.exports = class MemberBREADService {
         }
 
         if (plannedCustomFields) {
-            await this.customFieldsService.values.applyWrite(model.id, plannedCustomFields);
+            await this.customFieldValues.applyWrite(model.id, plannedCustomFields);
 
             // Custom fields aren't a member column or relation, so an edit touching
             // only them leaves `model._changed` empty and the save fires nothing.
