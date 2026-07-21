@@ -58,7 +58,7 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-checkout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
     min-height: 100vh;
     width: 100%;
 }
@@ -69,7 +69,7 @@ export const GiftPageStyles = `
     align-items: center;
     justify-content: center;
     background: var(--white);
-    padding: 64px 48px;
+    padding: 40px 48px;
 }
 
 /* Selection page only: useLayoutEffect locks the inner's vertical
@@ -135,7 +135,7 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-checkout-subtitle.gh-portal-gift-checkout-subtitle-clamped {
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -1032,7 +1032,7 @@ const GiftPage = () => {
     // the checkout form stays reachable no matter how much a publisher writes.
     const descriptionTextLength = giftPageDescriptionHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().length;
     const descriptionBlockCount = (giftPageDescriptionHtml.match(/<(p|ul|ol|br)\b/g) || []).length;
-    const isDescriptionCollapsible = descriptionTextLength > 240 || descriptionBlockCount > 2;
+    const isDescriptionCollapsible = descriptionTextLength > 160 || descriptionBlockCount > 1;
 
     if (products.length === 0 || !activeDuration) {
         return (
