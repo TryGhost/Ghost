@@ -249,6 +249,46 @@ export function createDatabaseAutomationsRepository({
             });
         },
 
+        async recordAutomationEmailClick(options): Promise<boolean> {
+            return await knex.transaction(async (trx) => {
+                const redirect = await trx('redirects')
+                    .select('automation_action_revision_id')
+                    .where('id', options.redirectId)
+                    .first();
+                const revisionId = redirect?.automation_action_revision_id;
+
+                if (!revisionId) {
+                    return false;
+                }
+
+                const recipients = await trx('automated_email_recipients')
+                    .select('id', 'clicked_at')
+                    .where({
+                        automation_action_revision_id: revisionId,
+                        member_id: options.memberId,
+                        track_clicks: true
+                    })
+                    .forUpdate();
+
+                const unclickedIds = recipients
+                    .filter(recipient => !recipient.clicked_at)
+                    .map(recipient => recipient.id);
+
+                if (unclickedIds.length === 0) {
+                    return false;
+                }
+
+                const isFirstClick = recipients.every(recipient => !recipient.clicked_at);
+                await trx('automated_email_recipients')
+                    .whereIn('id', unclickedIds)
+                    .update({
+                        clicked_at: toDatabaseDate(options.clickedAt)
+                    });
+
+                return isFirstClick;
+            });
+        },
+
         async getAutomatedEmailRecipientsByMailgunIds(mailgunMessageIds) {
             if (mailgunMessageIds.length === 0) {
                 return [];

@@ -2,6 +2,8 @@ const sinon = require('sinon');
 const {setImmediate: flushEventLoop} = require('node:timers/promises');
 
 const StartAutomationsPollEvent = require('../../../../../core/server/services/automations/events/start-automations-poll-event');
+const {MemberLinkClickEvent} = require('../../../../../core/shared/events');
+const logging = require('@tryghost/logging');
 const {AutomationsService} = require('../../../../../core/server/services/automations/service');
 
 describe('automations service', function () {
@@ -43,8 +45,7 @@ describe('automations service', function () {
 
         it('subscribes to StartAutomationsPollEvent', function () {
             automations.init(initOptions);
-            sinon.assert.called(domainEvents.subscribe);
-            sinon.assert.alwaysCalledWith(domainEvents.subscribe, StartAutomationsPollEvent, sinon.match.func);
+            sinon.assert.calledWith(domainEvents.subscribe, StartAutomationsPollEvent, sinon.match.func);
         });
 
         it('subscribes each poller only once when init is called multiple times', function () {
@@ -52,7 +53,44 @@ describe('automations service', function () {
             automations.init(initOptions);
             automations.init(initOptions);
             automations.init(initOptions);
-            sinon.assert.calledTwice(domainEvents.subscribe);
+            sinon.assert.callCount(domainEvents.subscribe, 3);
+        });
+
+        it('records automation clicks from MemberLinkClickEvent data', async function () {
+            const recordAutomationEmailClick = sinon.stub().resolves(true);
+            initOptions.clickTrackingApi = {recordAutomationEmailClick};
+            const clickedAt = new Date('2026-07-21T12:34:56.000Z');
+            automations.init(initOptions);
+            const listener = domainEvents.subscribe.withArgs(MemberLinkClickEvent).firstCall.args[1];
+
+            await listener(MemberLinkClickEvent.create({
+                memberId: 'member-id',
+                memberLastSeenAt: null,
+                linkId: 'redirect-id'
+            }, clickedAt));
+
+            sinon.assert.calledOnceWithExactly(recordAutomationEmailClick, {
+                clickedAt,
+                memberId: 'member-id',
+                redirectId: 'redirect-id'
+            });
+        });
+
+        it('logs click subscriber failures without rejecting', async function () {
+            initOptions.clickTrackingApi = {
+                recordAutomationEmailClick: sinon.stub().rejects(new Error('database unavailable'))
+            };
+            const logError = sinon.stub(logging, 'error');
+            automations.init(initOptions);
+            const listener = domainEvents.subscribe.withArgs(MemberLinkClickEvent).firstCall.args[1];
+
+            await listener(MemberLinkClickEvent.create({
+                memberId: 'member-id',
+                memberLastSeenAt: null,
+                linkId: 'redirect-id'
+            }));
+
+            sinon.assert.calledOnce(logError);
         });
     });
 
