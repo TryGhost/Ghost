@@ -322,7 +322,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             it('still rejects non-numeric string limits', function () {
                 assert.throws(() => {
                     parse({collections: {'/': {permalink: '/{slug}/', limit: 'banana'}}});
-                }, /Invalid input/);
+                }, /The following definition "collections\['\/'\]\.limit" is invalid: limit must be a number or "all" \(e\.g\. limit: 5\), but the text "banana" was provided\./);
             });
 
             it('still accepts the literal "all" limit', function () {
