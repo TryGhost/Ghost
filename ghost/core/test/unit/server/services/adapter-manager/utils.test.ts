@@ -122,6 +122,75 @@ describe('Adapter Manager: utils', function () {
             });
         });
 
+        it('populates the S3RouteSettingsStore default settings path from config if not explicitly provided', () => {
+            const conf = loadNconf();
+            conf.set('paths:defaultRouteSettings', '/default/route/settings');
+            conf.set('adapters', {
+                'route-settings': {
+                    active: 'S3RouteSettingsStore',
+                    'FileStore': {},
+                    'S3RouteSettingsStore': {
+                        bucket: 'a-bucket',
+                        staticFileURLPrefix: 'content/settings',
+                    },
+                },
+            });
+            const normalizedConfig = normalizeAdapterConfig(conf);
+            assert.deepEqual(normalizedConfig['route-settings'].S3RouteSettingsStore, {
+                bucket: 'a-bucket',
+                staticFileURLPrefix: 'content/settings',
+                defaultSettingsBasePath: '/default/route/settings',
+            });
+        });
+
+        it('keeps an explicitly configured S3RouteSettingsStore default settings path', () => {
+            const conf = loadNconf();
+            conf.set('paths:defaultRouteSettings', '/default/route/settings');
+            conf.set('adapters', {
+                'route-settings': {
+                    active: 'S3RouteSettingsStore',
+                    'S3RouteSettingsStore': {
+                        bucket: 'a-bucket',
+                        staticFileURLPrefix: 'content/settings',
+                        defaultSettingsBasePath: '/custom/defaults',
+                    },
+                },
+            });
+            const normalizedConfig = normalizeAdapterConfig(conf);
+            assert.equal(normalizedConfig['route-settings'].S3RouteSettingsStore.defaultSettingsBasePath, '/custom/defaults');
+        });
+
+        it('does not invent adapter config for a store that is not configured', () => {
+            const conf = loadNconf();
+            conf.set('paths:defaultRouteSettings', '/default/route/settings');
+            conf.set('adapters', {
+                'route-settings': {
+                    active: 'FileStore',
+                    'FileStore': {},
+                },
+            });
+            const normalizedConfig = normalizeAdapterConfig(conf);
+            assert.equal('S3RouteSettingsStore' in normalizedConfig['route-settings'], false);
+        });
+
+        it('leaves the redirects S3 store config untouched', () => {
+            const conf = loadNconf();
+            conf.set('adapters', {
+                redirects: {
+                    active: 'S3RedirectsStore',
+                    'S3RedirectsStore': {
+                        bucket: 'a-bucket',
+                        staticFileURLPrefix: 'content/data',
+                    },
+                },
+            });
+            const normalizedConfig = normalizeAdapterConfig(conf);
+            assert.deepEqual(normalizedConfig.redirects.S3RedirectsStore, {
+                bucket: 'a-bucket',
+                staticFileURLPrefix: 'content/data',
+            });
+        });
+
         it('re-resolves route-settings paths when the content path changes', () => {
             // config.get('adapters') hands back a live reference, so resolving
             // the paths in place would bake the first caller's content path in

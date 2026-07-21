@@ -139,21 +139,36 @@ function getSchedulingConfig(config: ConfigInstance) {
     return adapterConfig;
 }
 
-function normalizeFilestoreConfig(config: ConfigInstance, key: 'redirects' | 'route-settings', defaultPaths: Record<string, string>) {
+/**
+* Fill in the on-disk paths a store needs but an operator shouldn't have to spell
+* out, keyed by adapter class name.
+*
+* Resolution happens on every call rather than in place, because
+* `config.get('adapters')` hands back a live reference — baking the first
+* caller's content path into it would survive later config changes. Only stores
+* that are actually present in the config are touched, so a store the operator
+* hasn't configured stays absent; an explicitly configured path always wins.
+*/
+function normalizeAdapterPaths(config: ConfigInstance, key: 'redirects' | 'route-settings', defaultPathsByAdapter: Record<string, Record<string, string>>) {
     const adapterConfig = config.get(`adapters:${key}`);
-    if (!adapterConfig?.FileStore) {
+    if (!adapterConfig) {
         return adapterConfig;
     }
 
-    const fileStoreConfig = {...adapterConfig.FileStore};
-    for (const [pathName, defaultPath] of Object.entries(defaultPaths)) {
-        fileStoreConfig[pathName] ||= defaultPath;
+    const normalized = {...adapterConfig};
+    for (const [adapterClassName, defaultPaths] of Object.entries(defaultPathsByAdapter)) {
+        if (!normalized[adapterClassName]) {
+            continue;
+        }
+
+        const storeConfig = {...normalized[adapterClassName]};
+        for (const [pathName, defaultPath] of Object.entries(defaultPaths)) {
+            storeConfig[pathName] ||= defaultPath;
+        }
+        normalized[adapterClassName] = storeConfig;
     }
 
-    return {
-        ...adapterConfig,
-        FileStore: fileStoreConfig
-    }
+    return normalized;
 }
 
 /**
@@ -167,12 +182,21 @@ export function normalizeAdapterConfig(config: ConfigInstance) {
         ...adapterConfig,
         storage: adapterConfig?.storage ?? config.get('storage'),
         scheduling: getSchedulingConfig(config),
-        redirects: normalizeFilestoreConfig(config, 'redirects', {
-            basePath: config.getContentPath('data')
+        redirects: normalizeAdapterPaths(config, 'redirects', {
+            FileStore: {
+                basePath: config.getContentPath('data')
+            }
         }),
-        'route-settings': normalizeFilestoreConfig(config, 'route-settings', {
-            basePath: config.getContentPath('settings'),
-            defaultSettingsBasePath: config.get('paths:defaultRouteSettings')
+        'route-settings': normalizeAdapterPaths(config, 'route-settings', {
+            FileStore: {
+                basePath: config.getContentPath('settings'),
+                defaultSettingsBasePath: config.get('paths:defaultRouteSettings')
+            },
+            // The S3 store reads the bundled defaults off disk too, for the
+            // empty-state response when the bucket holds no routes.yaml yet.
+            S3RouteSettingsStore: {
+                defaultSettingsBasePath: config.get('paths:defaultRouteSettings')
+            }
         }),
     }
 }
