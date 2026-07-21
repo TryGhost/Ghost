@@ -314,8 +314,32 @@ describe('Members Importer API', function () {
         assert.equal(postLabelRemoveBrowseResponse.body.members.length, 0);
     });
 
-    // A spreadsheet exported with no rows is a realistic thing for a publisher to
-    // upload, and it used to fail with a 500.
+    // Values starting with = + - @ or a tab are what a spreadsheet would treat as a
+    // formula. Guarding against that belongs on the way out to a CSV, not on the way
+    // in to the database.
+    it('Stores values that look like formulas exactly as given', async function () {
+        await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-formula-like-values.csv'))
+            .set('Origin', config.get('url'))
+            .expect(201);
+
+        const res = await request
+            .get(localUtils.API.getApiQuery('members/?search=formula'))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        const member = res.body.members.find(m => m.email === 'formula@example.com');
+        assertExists(member);
+        assert.equal(member.name, '-5');
+        assert.equal(member.note, '+44 123');
+
+        const formulaMember = res.body.members.find(m => m.email === 'formula2@example.com');
+        assertExists(formulaMember);
+        assert.equal(formulaMember.name, '=SUM(A1)');
+        assert.equal(formulaMember.note, '@handle');
+    });
+
     // Spreadsheets produce rows with trailing fields omitted. The columns were taken
     // from the first parsed row, so a short first row decided the schema for the file.
     it('Keeps every column when the first row has fewer fields than the header', async function () {
@@ -336,6 +360,8 @@ describe('Members Importer API', function () {
         assert.equal(member.note, 'a note');
     });
 
+    // A spreadsheet exported with no rows is a realistic thing for a publisher to
+    // upload, and it used to fail with a 500.
     it('Can handle a CSV with headers but no rows', async function () {
         const countMembers = async () => {
             const res = await request

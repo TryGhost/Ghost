@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const metrics = require('@tryghost/metrics');
 const membersCSV = require('@tryghost/members-csv');
+const papaparse = require('papaparse');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const emailTemplate = require('./email-template');
@@ -57,6 +58,51 @@ const DEFAULT_CSV_HEADER_MAPPING = {
  * @property {Object} stripeUtils - An instance of MembersCSVImporterStripeUtils
  */
 
+// The parsed rows are keyed by field name; the file they are written to is read
+// back with the same header mapping that produced them, so the headers have to be
+// the names that mapping expects.
+const FIELD_TO_CSV_HEADER = Object.fromEntries(
+    Object.entries(DEFAULT_CSV_HEADER_MAPPING).map(([header, field]) => [field, header])
+);
+
+/**
+ * Serialises parsed rows to the intermediate CSV the import reads back.
+ *
+ * Written here rather than through the members-csv serialiser because that one
+ * escapes anything a spreadsheet would read as a formula, and nothing strips the
+ * escape character on the way back in — so a member named `-5` was stored as `'-5`.
+ * That guard belongs on a CSV a person opens, which this file is not.
+ *
+ * Columns come from every row, not the first: a row with fewer fields than the
+ * header parses to fewer keys, and taking the schema from one row would drop the
+ * missing columns for the whole file.
+ *
+ * @param {Array<Object>} rows
+ * @returns {string}
+ */
+function serialisePreparedRows(rows) {
+    // Labels reach here as objects, as plain names, or as an already-joined string,
+    // depending on what the caller handed the parser.
+    const serialiseLabels = (labels) => {
+        if (typeof labels === 'string') {
+            return labels;
+        }
+
+        return (labels || []).map(label => (typeof label === 'string' ? label : label.name)).join(',');
+    };
+
+    const csvRows = rows.map(row => Object.fromEntries(
+        Object.entries(row).map(([field, value]) => [
+            FIELD_TO_CSV_HEADER[field] ?? field,
+            field === 'labels' ? serialiseLabels(value) : value
+        ])
+    ));
+
+    const columns = [...new Set(csvRows.flatMap(row => Object.keys(row)))];
+
+    return columns.length ? papaparse.unparse(csvRows, {columns}) : '';
+}
+
 module.exports = class MembersCSVImporter {
     /**
      * @param {MembersCSVImporterOptions} options
@@ -110,12 +156,7 @@ module.exports = class MembersCSVImporter {
         // completely rely on explicit user input for header mappings
         const rows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
         const numberOfBatches = Math.ceil(rows.length / batchSize);
-        // Columns come from every row rather than the first. A row with fewer fields
-        // than the header parses to fewer keys, so reading the schema off one row
-        // drops the missing columns for the whole file. No rows means no columns,
-        // and serialising nothing has nothing to say.
-        const columns = [...new Set(rows.flatMap(row => Object.keys(row)))];
-        const mappedCSV = columns.length ? membersCSV.unparse(rows, columns) : '';
+        const mappedCSV = serialisePreparedRows(rows);
 
         const hasStripeData = !!(rows.find(function rowHasStripeData(row) {
             return !!row.stripe_customer_id;
