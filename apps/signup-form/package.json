@@ -39,6 +39,7 @@
         "@typescript/native": "catalog:",
         "typescript": "catalog:",
         "@internal/cfg-eslint-react": "workspace:*",
+        "@internal/cfg-vite-public-app": "workspace:*",
         "@playwright/test": "catalog:",
         "@storybook/addon-docs": "catalog:",
         "@storybook/addon-links": "catalog:",
@@ -46,7 +47,6 @@
         "@tryghost/i18n": "workspace:*",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
-        "@vitejs/plugin-react": "catalog:",
         "autoprefixer": "10.5.2",
         "eslint": "catalog:",
         "eslint-plugin-tailwindcss": "catalog:tailwind3",
@@ -54,8 +54,7 @@
         "postcss-import": "16.1.1",
         "storybook": "catalog:",
         "tailwindcss": "catalog:tailwind3",
-        "vite": "catalog:",
-        "vite-plugin-svgr": "catalog:"
+        "vite": "catalog:"
     },
     "nx": {
         "targets": {
