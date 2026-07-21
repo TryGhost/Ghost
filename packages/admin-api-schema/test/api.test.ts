@@ -188,10 +188,8 @@ describe('Exposes a correct API', function () {
 
         it('Judges no part of custom_fields, whatever shape it arrives in', async function () {
             // The declaration exists to stop the key being stripped, not to validate
-            // it: only the site's field-type catalog knows what a given key accepts.
-            // Constraining the shape here would also change behaviour for every
-            // existing caller, since the key reaches this schema on every site
-            // regardless of whether the feature is switched on.
+            // it: only a site's field definitions know what a given key accepts, and
+            // this schema applies to every site whether or not the feature is on.
             for (const anyShape of [null, [], 'x', 5, true, {}, {a: 'b'}]) {
                 const data = {members: [{custom_fields: anyShape}]};
                 await apiSchema.validate({data, schema: 'members-edit', definition: 'members'});

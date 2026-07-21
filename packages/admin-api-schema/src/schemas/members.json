@@ -52,7 +52,8 @@
           "type": "boolean"
         },
         "custom_fields": {
-          "description": "Declared so it is not stripped as an unknown property. Deliberately unconstrained: only the site's field-type catalog knows what a given key accepts, so the shape is validated there rather than split across two layers that could disagree."
+          "description": "Custom field values, keyed by field key.",
+          "$comment": "Intentionally unconstrained. Only the site's field definitions know what a given key accepts, so the shape is validated there; constraining it here would split validation across two layers that could disagree. The declaration exists so the property is not stripped as an unknown one."
         },
         "comment_ban": {
           "oneOf": [
