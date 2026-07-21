@@ -41,6 +41,30 @@ const fromYaml = (yaml: string) => parseRouteSettings(parseYaml(yaml), yaml);
 type StubbedClient = Pick<S3Client, 'send'>;
 type S3Command = GetObjectCommand | HeadObjectCommand | CopyObjectCommand | PutObjectCommand;
 
+interface GhostErrorShape {
+    errorType?: string;
+    code?: string;
+    context?: string;
+    errorDetails?: {
+        operation?: string;
+        bucket?: string;
+        key?: string;
+        s3ErrorCode?: string;
+        statusCode?: number;
+    };
+}
+
+// Mimics an AWS SDK exception, including the circular reference back to its own
+// HTTP response that made the API error handler recurse until the stack blew.
+const s3Failure = (): Error => {
+    const err = Object.assign(new Error('Access denied.'), {
+        name: 'AccessDenied',
+        $metadata: {httpStatusCode: 403}
+    }) as Error & {$response?: unknown};
+    err.$response = {error: err};
+    return err;
+};
+
 const createNotFound = () => new NotFound({$metadata: {httpStatusCode: 404}, message: 'Not Found'});
 const createNoSuchKey = () => new NoSuchKey({$metadata: {httpStatusCode: 404}, message: 'The specified key does not exist.'});
 
@@ -227,12 +251,15 @@ describe('UNIT: S3RouteSettingsStore', function () {
                 const client = stubbedClient(async (command) => {
                     sent.push(command);
                     if (command instanceof HeadObjectCommand) {
-                        throw new Error('access denied');
+                        throw s3Failure();
                     }
                     return {};
                 });
 
-                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), /access denied/);
+                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), (err: GhostErrorShape) => {
+                    assert.equal(err.errorDetails?.s3ErrorCode, 'AccessDenied');
+                    return true;
+                });
                 assert.equal(putCommands(sent).length, 0);
             });
         });
@@ -285,10 +312,94 @@ describe('UNIT: S3RouteSettingsStore', function () {
 
             it('propagates non-NotFound S3 errors instead of falling back to defaults', async function () {
                 const client = stubbedClient(async () => {
-                    throw new Error('AccessDenied');
+                    throw s3Failure();
                 });
 
-                await assert.rejects(createStore(client).get(), /AccessDenied/);
+                await assert.rejects(createStore(client).get(), (err: GhostErrorShape) => {
+                    assert.equal(err.errorType, 'InternalServerError');
+                    assert.equal(err.errorDetails?.operation, 'GetObject');
+                    return true;
+                });
+            });
+        });
+
+        // The API error handler deep-clones whatever it is handed. A raw SDK
+        // exception carries a circular reference to its HTTP response, so it
+        // used to surface as "Maximum call stack size exceeded" and the real S3
+        // failure never reached the operator.
+        describe('S3 failure reporting', function () {
+            it('reports the S3 error code, operation and key rather than the raw SDK error', async function () {
+                const client = stubbedClient(async () => {
+                    throw s3Failure();
+                });
+
+                await assert.rejects(createStore(client).get(), (err: GhostErrorShape) => {
+                    assert.equal(err.errorType, 'InternalServerError');
+                    assert.equal(err.code, 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED');
+                    assert.equal(err.context, 'Access denied.');
+                    assert.equal(err.errorDetails?.s3ErrorCode, 'AccessDenied');
+                    assert.equal(err.errorDetails?.statusCode, 403);
+                    assert.equal(err.errorDetails?.operation, 'GetObject');
+                    assert.equal(err.errorDetails?.key, CANONICAL_KEY);
+                    // The details must survive serialisation — that is the bug.
+                    assert.doesNotThrow(() => JSON.stringify(err.errorDetails));
+                    return true;
+                });
+            });
+
+            it('names CopyObject and the backup key when the backup fails', async function () {
+                const client = stubbedClient(async (command) => {
+                    if (command instanceof CopyObjectCommand) {
+                        throw s3Failure();
+                    }
+                    return command instanceof HeadObjectCommand ? {} : {};
+                });
+
+                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), (err: GhostErrorShape) => {
+                    assert.equal(err.errorDetails?.operation, 'CopyObject');
+                    assert.match(String(err.errorDetails?.key), /^content\/settings\/routes-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.yaml$/);
+                    return true;
+                });
+            });
+
+            it('names PutObject and the canonical key when the write fails', async function () {
+                const fake = createFakeS3();
+                const client = stubbedClient(async (command) => {
+                    if (command instanceof PutObjectCommand) {
+                        throw s3Failure();
+                    }
+                    return fake.client.send(command as never);
+                });
+
+                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), (err: GhostErrorShape) => {
+                    assert.equal(err.errorDetails?.operation, 'PutObject');
+                    assert.equal(err.errorDetails?.key, CANONICAL_KEY);
+                    return true;
+                });
+            });
+
+            it('names HeadObject when the existence check fails', async function () {
+                const client = stubbedClient(async (command) => {
+                    if (command instanceof HeadObjectCommand) {
+                        throw s3Failure();
+                    }
+                    return {};
+                });
+
+                await assert.rejects(createStore(client).replace(fromYaml(SAMPLE_YAML)), (err: GhostErrorShape) => {
+                    assert.equal(err.errorDetails?.operation, 'HeadObject');
+                    return true;
+                });
+            });
+
+            it('passes Ghost errors through untouched', async function () {
+                const client = stubbedClient(async () => ({Body: undefined}));
+
+                await assert.rejects(createStore(client).get(), (err: GhostErrorShape) => {
+                    assert.equal(err.errorType, 'InternalServerError');
+                    assert.notEqual(err.code, 'ROUTE_SETTINGS_STORAGE_REQUEST_FAILED');
+                    return true;
+                });
             });
         });
     });
