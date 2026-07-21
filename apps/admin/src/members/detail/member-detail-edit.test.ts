@@ -1,5 +1,6 @@
-import {NOTE_MAX_LENGTH, buildMemberFieldEditPayload, getDefaultNewsletterIdsForNewMember, getEmailErrorMessage, getMemberEditableSlice, getMemberNewslettersUiEnabled, getMemberSuppressionInfo, getNoteCharactersLeft, isDraftInSyncWithServer, isValidMemberEmail, resolveSlugsToLabels, toggleMemberNewsletter} from './member-detail-edit';
+import {NOTE_MAX_LENGTH, buildCustomFieldSavePayload, buildMemberFieldEditPayload, getCustomFieldValidationErrors, getDefaultNewsletterIdsForNewMember, getEditableCustomFieldValues, getEmailErrorMessage, getMemberEditableSlice, getMemberNewslettersUiEnabled, getMemberSuppressionInfo, getNoteCharactersLeft, isDraftInSyncWithServer, isValidMemberEmail, parseCustomFieldServerErrors, resolveSlugsToLabels, toggleMemberNewsletter} from './member-detail-edit';
 import {describe, expect, it} from 'vitest';
+import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 describe('getMemberEditableSlice', () => {
     it('normalizes missing fields to empty strings and empty relation lists', () => {
@@ -68,6 +69,49 @@ describe('buildMemberFieldEditPayload', () => {
     it('sends an empty newsletters array only when the user has explicitly unsubscribed from all', () => {
         const payload = buildMemberFieldEditPayload('mem_1', {...baseline, newsletters: []}, baseline);
         expect(payload.newsletters).toEqual([]);
+    });
+
+    it('never carries custom_fields — those save individually, not through the page', () => {
+        const payload = buildMemberFieldEditPayload('mem_1', {...baseline, name: 'Ada B'}, baseline);
+        expect(payload.custom_fields).toBeUndefined();
+    });
+});
+
+describe('getEditableCustomFieldValues', () => {
+    it('keeps string values trimmed and drops empty/null ones', () => {
+        expect(getEditableCustomFieldValues({job_title: ' Editor ', cleared: null, blank: '', spaces: '   '}))
+            .toEqual({job_title: 'Editor'});
+    });
+
+    it('normalizes address values: trims sub-fields, drops empty and unknown ones', () => {
+        expect(getEditableCustomFieldValues({
+            home_address: {line1: ' 1 Main St ', line2: '', city: 'Berlin', state: '   ', postal_code: '10115', country: 'DE', not_a_subfield: 'ignored'}
+        })).toEqual({
+            home_address: {line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE'}
+        });
+    });
+
+    it('collapses an all-empty address to an absent key, like an empty string', () => {
+        expect(getEditableCustomFieldValues({home_address: {line1: '', city: '  ', postal_code: null}})).toEqual({});
+    });
+});
+
+describe('buildCustomFieldSavePayload', () => {
+    it('sends only this field as a merge patch, trimmed', () => {
+        expect(buildCustomFieldSavePayload('mem_1', 'job_title', ' Publisher '))
+            .toEqual({id: 'mem_1', custom_fields: {job_title: 'Publisher'}});
+    });
+
+    it('sends null to clear an emptied value', () => {
+        expect(buildCustomFieldSavePayload('mem_1', 'job_title', '  '))
+            .toEqual({id: 'mem_1', custom_fields: {job_title: null}});
+    });
+
+    it('sends a normalized address whole, and null when every sub-field is empty', () => {
+        expect(buildCustomFieldSavePayload('mem_1', 'home_address', {line1: ' 1 Main St ', line2: '', city: 'Berlin', postal_code: '10115', country: 'DE'}))
+            .toEqual({id: 'mem_1', custom_fields: {home_address: {line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE'}}});
+        expect(buildCustomFieldSavePayload('mem_1', 'home_address', {line1: '', city: '  '}))
+            .toEqual({id: 'mem_1', custom_fields: {home_address: null}});
     });
 });
 
@@ -267,6 +311,74 @@ describe('isDraftInSyncWithServer', () => {
 
     it('is out of sync when the user has toggled a newsletter', () => {
         expect(isDraftInSyncWithServer({...server, newsletters: []}, server)).toBe(false);
+    });
+});
+
+describe('getCustomFieldValidationErrors', () => {
+    const fields = [
+        {key: 'job_title', name: 'Job title', type: 'short_text', created_at: '', updated_at: null},
+        {key: 'home_address', name: 'Home address', type: 'address', created_at: '', updated_at: null}
+    ] as MemberCustomField[];
+    const validAddress = {line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE'};
+
+    it('returns no errors for valid values', () => {
+        expect(getCustomFieldValidationErrors({job_title: 'Editor', home_address: validAddress}, fields)).toEqual({});
+    });
+
+    it('returns no errors for empty or cleared values — fields are optional', () => {
+        expect(getCustomFieldValidationErrors({job_title: '', home_address: {}}, fields)).toEqual({});
+    });
+
+    it('reports missing required address sub-fields in plain words, keyed by dotted path', () => {
+        const errors = getCustomFieldValidationErrors({home_address: {line1: '1 Main St'}}, fields);
+        expect(errors).toEqual({
+            'home_address.city': 'Enter a city.',
+            'home_address.postal_code': 'Enter a postal code.',
+            'home_address.country': 'Enter a 2-letter country code, like US.'
+        });
+    });
+
+    it('explains a malformed country code rather than echoing the schema message', () => {
+        const errors = getCustomFieldValidationErrors({home_address: {...validAddress, country: 'DEU'}}, fields);
+        expect(errors).toEqual({'home_address.country': 'Enter a 2-letter country code, like US.'});
+    });
+
+    it('reports an over-long short_text value with the limit a person can act on', () => {
+        const errors = getCustomFieldValidationErrors({job_title: 'x'.repeat(256)}, fields);
+        expect(errors).toEqual({job_title: 'Use 255 characters or fewer.'});
+    });
+
+    it('reports an over-long required address sub-field as a length problem, not a missing one', () => {
+        const errors = getCustomFieldValidationErrors({home_address: {...validAddress, line1: 'x'.repeat(256)}}, fields);
+        expect(errors).toEqual({'home_address.line1': 'Use 255 characters or fewer.'});
+    });
+
+    it('validates the normalized value, so whitespace does not dodge a limit', () => {
+        const errors = getCustomFieldValidationErrors({home_address: {line1: '1 Main St', city: '  ', postal_code: '10115', country: 'DE'}}, fields);
+        expect(Object.keys(errors)).toEqual(['home_address.city']);
+    });
+});
+
+describe('parseCustomFieldServerErrors', () => {
+    const serverError = (apiErrors: Array<{property?: string | null; context?: string | null; message?: string | null}>) => ({data: {errors: apiErrors}});
+
+    it('maps a custom-fields 422 onto its dotted field path, preferring context', () => {
+        expect(parseCustomFieldServerErrors(serverError([{
+            property: 'custom_fields.home_address.postal_code',
+            context: 'Required',
+            message: 'Invalid value for custom field \'Home address\'.'
+        }]))).toEqual({'home_address.postal_code': 'Required'});
+    });
+
+    it('falls back to the message when context is empty', () => {
+        expect(parseCustomFieldServerErrors(serverError([{property: 'custom_fields.job_title', context: null, message: 'Nope.'}])))
+            .toEqual({job_title: 'Nope.'});
+    });
+
+    it('returns undefined for failures that are not custom-fields shaped', () => {
+        expect(parseCustomFieldServerErrors(serverError([{property: 'email', context: 'Invalid', message: 'Invalid'}]))).toBeUndefined();
+        expect(parseCustomFieldServerErrors(new Error('network'))).toBeUndefined();
+        expect(parseCustomFieldServerErrors(undefined)).toBeUndefined();
     });
 });
 

@@ -2,11 +2,22 @@ import GhostStorageBase from 'ghost-storage-base';
 import {SchedulingBase} from '@tryghost/adapter-base-scheduling';
 import {SSOBase} from '@tryghost/adapter-base-sso';
 import BaseCache from '@tryghost/adapter-base-cache';
-import { RedirectsStoreBase } from '@tryghost/adapter-base-redirects';
-import { RouteSettingsStoreBase } from '@tryghost/adapter-base-route-settings';
+import {RedirectsStoreBase} from '@tryghost/adapter-base-redirects';
+import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
 
 import {AdapterManager} from './adapter-manager';
 import config from '../../../shared/config';
+
+const adapterPaths = new Set<string>([
+    '', // A blank path will cause us to check node_modules for the adapter
+    config.getContentPath('adapters'),
+    config.get('paths').internalAdaptersPath,
+
+    // custom docker builds may install adapters in a separate path from content,
+    // since the content dir is often bind-mounted into the container. Offering
+    // an escape hatch here to allow for this
+    config.get('paths').installedAdaptersPath ?? '',
+]);
 
 // A singleton adapter manager, preconfigured with the base classes for every
 // known adapter type. `getAdapter` resolves the active adapter and its options
@@ -14,11 +25,7 @@ import config from '../../../shared/config';
 const adapterManager = new AdapterManager({
     loadAdapterFromPath: require,
     config,
-    pathsToAdapters: [
-        '', // A blank path will cause us to check node_modules for the adapter
-        config.getContentPath('adapters'),
-        config.get('paths').internalAdaptersPath
-    ],
+    pathsToAdapters: Array.from(adapterPaths),
     baseClasses: {
         storage: GhostStorageBase,
         scheduling: SchedulingBase,
@@ -29,9 +36,4 @@ const adapterManager = new AdapterManager({
     }
 });
 
-// NOTE: exported via `module.exports` (rather than ESM named exports) so that
-// consumers keep `require(...).getAdapter` access AND tests can stub methods
-// with sinon — ESM named exports compile to immutable bindings that sinon
-// cannot stub. Using `module.exports` directly (not `export =`) keeps this
-// compatible with the erasableSyntaxOnly compiler option.
-module.exports = adapterManager;
+export default adapterManager;

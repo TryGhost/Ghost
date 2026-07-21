@@ -50,6 +50,19 @@ export function formatMemberLocation(rawGeolocation: string | null | undefined):
 }
 
 /**
+ * An address value as one readable line for the custom fields card:
+ * "1 Main St, 12 apt B, New York, NY 00001, US". State and postal code pair
+ * up the way people write them; whatever sub-fields are missing simply drop
+ * out, so a partial address still reads naturally.
+ */
+export function formatAddressValue(address: Partial<Record<'line1' | 'line2' | 'city' | 'state' | 'postal_code' | 'country', string>>): string {
+    const statePostal = [address.state, address.postal_code].filter(Boolean).join(' ');
+    return [address.line1, address.line2, address.city, statePostal, address.country]
+        .filter(Boolean)
+        .join(', ');
+}
+
+/**
  * The signup referrer source for the "Signup info" block. Members created from the
  * admin carry the placeholder source "Created manually", which the Ember screen
  * hides — so we return null for it (and for any empty source).

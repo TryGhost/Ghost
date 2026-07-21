@@ -12,7 +12,7 @@ const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
 const UsersService = require('../../services/users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
-const adapterManager = require('../../services/adapter-manager');
+const adapterManager = require('../../services/adapter-manager').default;
 const schedulerAdapter = adapterManager.getAdapter('scheduling');
 
 async function destroyRequestSession(req) {

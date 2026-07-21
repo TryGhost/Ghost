@@ -235,6 +235,39 @@ describe('EmailAnalyticsService', function () {
         afterEach(function () {
             sinon.restore();
         });
+
+        it('persists the "started" cursor before fetching events', async function () {
+            let resolveStartedTimestamp;
+            const startedTimestamp = new Promise((resolve) => {
+                resolveStartedTimestamp = resolve;
+            });
+            const fetchLatestSpy = sinon.spy();
+            const service = createService({
+                queries: {
+                    getLastEventTimestamp: sinon.stub().resolves(),
+                    setJobTimestamp: sinon.stub().returns(startedTimestamp),
+                    setJobStatus: sinon.stub().resolves()
+                },
+                provider: {
+                    fetchLatest: fetchLatestSpy
+                },
+                createEventProcessor: createStubEventProcessor
+            });
+
+            const fetchPromise = service.fetchLatestOpenedEvents();
+
+            // Flush the event loop.
+            await Promise.resolve();
+            await Promise.resolve();
+
+            sinon.assert.notCalled(fetchLatestSpy);
+
+            resolveStartedTimestamp();
+            await fetchPromise;
+
+            sinon.assert.calledOnce(fetchLatestSpy);
+        });
+
         describe('fetchLatestOpenedEvents', function () {
             it('fetches only opened events', async function () {
                 const fetchLatestSpy = sinon.spy();

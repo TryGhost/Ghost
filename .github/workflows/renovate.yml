@@ -67,7 +67,7 @@ jobs:
           repositories: Ghost
 
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       # Enforce a live cap on open Renovate PRs while still letting Renovate
       # maintain and automerge the PRs that already exist.
@@ -135,3 +135,11 @@ jobs:
           RENOVATE_REPOSITORIES: TryGhost/Ghost
           # Ghost is already onboarded via Mend; don't open an onboarding PR.
           RENOVATE_ONBOARDING: 'false'
+          # pnpm ≥ 11.13 records a pnpmfileChecksum in pnpm-lock.yaml whenever a
+          # .pnpmfile is present. With allowScripts=false (the default) Renovate
+          # regenerates lockfiles with `pnpm install --ignore-pnpmfile`, which
+          # drops the checksum, and CI's frozen install then rejects the lockfile
+          # (ERR_PNPM_LOCKFILE_CONFIG_MISMATCH). allowScripts=true makes Renovate
+          # honour the pnpmfile; dependency install scripts stay blocked because
+          # the repo-level `ignoreScripts` default (true) keeps --ignore-scripts.
+          RENOVATE_ALLOW_SCRIPTS: 'true'

@@ -3,6 +3,7 @@ import {describe, expect, it} from "vitest";
 import {
     configResponse,
     fakeAdminEndpoint,
+    fakeEditSettings,
     fakeSettingsScreens,
     fakeTiers,
     renderAdminApp,
@@ -128,6 +129,66 @@ describe("Tier settings", () => {
         await expect.element(modal.getByRole("button", {name: "Saved"})).toBeVisible();
 
         expect(editApi.lastRequest?.body).toMatchObject({tiers: [{id: freeTier.id, description: updated.description, welcome_page_url: updated.welcome_page_url, benefits: updated.benefits}]});
+    });
+
+    it("moves a tier between the Active and Archived tabs when archived and reactivated", async () => {
+        let currentSupporter = supporterTier;
+        fakeSettingsScreens();
+        fakeTiers(() => [freeTier, currentSupporter]);
+        const editApi = fakeAdminEndpoint("PUT", `/tiers/${supporterTier.id}/`, ({body}) => {
+            currentSupporter = (body as {tiers: [typeof supporterTier]}).tiers[0];
+            return {tiers: [currentSupporter]};
+        });
+        await renderAdminApp("/settings", {boot: {browseSettings: {response: stripeSettings()}}});
+
+        const section = settingsScreen.tiers();
+        const tierName = section.getByText(supporterTier.name, {exact: true});
+        await tierName.click();
+        const modal = settingsScreen.tierDetailModal();
+        await modal.getByRole("button", {name: "Archive tier"}).click();
+        await settingsScreen.confirmationModal().getByRole("button", {name: "Archive"}).click();
+        await expect.poll(() => (editApi.lastRequest?.body as {tiers: [{active: boolean}]} | undefined)?.tiers[0].active).toBe(false);
+        // The success toast overlays the modal's left footer button; dismiss it.
+        await settingsScreen.successToast().getByRole("button").click();
+        await expect(settingsScreen.successToast()).toHaveCount(0);
+        await modal.getByRole("button", {name: "Close"}).click();
+
+        await expect(tierName).toHaveCount(0);
+        await section.getByRole("tab", {name: "Archived"}).click();
+        await expect.element(tierName).toBeVisible();
+
+        await tierName.click();
+        await modal.getByRole("button", {name: "Reactivate tier"}).click();
+        await settingsScreen.confirmationModal().getByRole("button", {name: "Reactivate"}).click();
+        await expect.poll(() => (editApi.lastRequest?.body as {tiers: [{active: boolean}]} | undefined)?.tiers[0].active).toBe(true);
+        await settingsScreen.successToast().getByRole("button").click();
+        await expect(settingsScreen.successToast()).toHaveCount(0);
+        await modal.getByRole("button", {name: "Close"}).click();
+
+        await expect(tierName).toHaveCount(0);
+        await section.getByRole("tab", {name: "Active"}).click();
+        await expect.element(tierName).toBeVisible();
+        expect(editApi.requests).toHaveLength(2);
+    });
+
+    it("shows a hidden paid tier as unchecked in portal signup options and saves enabling it", async () => {
+        const hidden = {...supporterTier, visibility: "none" as const};
+        fakeSettingsScreens();
+        fakeTiers([freeTier, hidden]);
+        fakeEditSettings();
+        const tierApi = fakeAdminEndpoint("PUT", `/tiers/${hidden.id}/`, ({body}) => body);
+        await renderAdminApp("/settings", {boot: {browseSettings: {response: stripeSettings()}}});
+
+        await settingsScreen.portal().getByRole("button", {name: "Customize"}).click();
+        const modal = settingsScreen.portalModal();
+        const checkbox = modal.getByLabelText(hidden.name);
+        await expect.element(checkbox).toBeVisible();
+        await expect.element(checkbox).not.toBeChecked();
+
+        await checkbox.click();
+        await modal.getByRole("button", {name: "Save"}).click();
+        await expect.element(modal.getByRole("button", {name: "Saved"})).toBeVisible();
+        expect(tierApi.lastRequest?.body).toMatchObject({tiers: [{id: hidden.id, visibility: "public"}]});
     });
 
     it("blocks Stripe connection when the plan limit applies", async () => {

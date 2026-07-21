@@ -73,6 +73,68 @@ describe('useKoenigLinkSuggestions', () => {
         ]);
     });
 
+    it('places the share link immediately before Recommendations with the caller-supplied label', async () => {
+        mockUseBrowseOffers.mockReturnValue({data: {offers: []}} as any);
+        mockUseBrowsePosts.mockReturnValue({data: {posts: []}, refetch: vi.fn()} as any);
+        mockUseFilterableApi
+            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])} as any)
+            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])} as any);
+
+        const {result} = renderHook(() => useKoenigLinkSuggestions({
+            siteUrl: 'https://example.com/',
+            membersSignupAccess: 'none',
+            donationsEnabled: false,
+            recommendationsEnabled: true,
+            includeShareLink: true,
+            shareLinkLabel: 'Share page'
+        }));
+
+        const links = await result.current.fetchAutocompleteLinks();
+
+        const shareIndex = links.findIndex(link => link.value === '#/share');
+        expect(links[shareIndex]).toEqual({label: 'Share page', value: '#/share'});
+        expect(links[shareIndex + 1]).toEqual({label: 'Recommendations', value: '#/portal/recommendations'});
+    });
+
+    it('defaults the share link label to "Share" when includeShareLink is true without a label', async () => {
+        mockUseBrowseOffers.mockReturnValue({data: {offers: []}} as any);
+        mockUseBrowsePosts.mockReturnValue({data: {posts: []}, refetch: vi.fn()} as any);
+        mockUseFilterableApi
+            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])} as any)
+            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])} as any);
+
+        const {result} = renderHook(() => useKoenigLinkSuggestions({
+            siteUrl: 'https://example.com/',
+            membersSignupAccess: 'none',
+            donationsEnabled: false,
+            recommendationsEnabled: false,
+            includeShareLink: true
+        }));
+
+        const links = await result.current.fetchAutocompleteLinks();
+
+        expect(links).toContainEqual({label: 'Share', value: '#/share'});
+    });
+
+    it('omits the share link by default', async () => {
+        mockUseBrowseOffers.mockReturnValue({data: {offers: []}} as any);
+        mockUseBrowsePosts.mockReturnValue({data: {posts: []}, refetch: vi.fn()} as any);
+        mockUseFilterableApi
+            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])} as any)
+            .mockReturnValueOnce({loadData: vi.fn().mockResolvedValue([])} as any);
+
+        const {result} = renderHook(() => useKoenigLinkSuggestions({
+            siteUrl: 'https://example.com/',
+            membersSignupAccess: 'none',
+            donationsEnabled: false,
+            recommendationsEnabled: false
+        }));
+
+        const links = await result.current.fetchAutocompleteLinks();
+
+        expect(links.some(link => link.value === '#/share')).toBe(false);
+    });
+
     it('returns cached latest posts links for empty search term', async () => {
         const refetch = vi.fn();
         mockUseBrowseOffers.mockReturnValue({data: {offers: []}} as any);

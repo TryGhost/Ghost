@@ -54,7 +54,8 @@
         },
         "route-settings": {
             "active": "FileStore",
-            "FileStore": {}
+            "FileStore": {},
+            "S3RouteSettingsStore": {}
         }
     },
     "storage": {
@@ -70,6 +71,9 @@
     "members": {
         "contentApiAccess": [],
         "paymentProcessors": [],
+        "customFields": {
+            "maxDefinitions": 100
+        },
         "emailTemplate": {
             "showSiteHeader": true,
             "showPoweredBy": true

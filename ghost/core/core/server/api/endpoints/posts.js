@@ -113,6 +113,22 @@ const controller = {
         }
     },
 
+    importCSV: {
+        statusCode: 202,
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            docName: 'content_imports',
+            method: 'importContent'
+        },
+        async query() {
+            // CSV processing lands in a later milestone — for now the endpoint
+            // only accepts the upload (gated by the csvContentImporter flag)
+            return {};
+        }
+    },
+
     read: {
         headers: {
             cacheInvalidate: false

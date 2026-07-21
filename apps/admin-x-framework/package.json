@@ -112,7 +112,6 @@
         "@tinybirdco/charts": "0.3.0",
         "@tryghost/custom-field-types": "workspace:*",
         "@tryghost/shade": "workspace:*",
-        "@tryghost/test-data": "workspace:*",
         "bson-objectid": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",

@@ -6,7 +6,7 @@ class PostsPublicServiceWrapper {
         }
 
         // Wire up all the dependencies
-        const adapterManager = require('../adapter-manager');
+        const adapterManager = require('../adapter-manager').default;
         const config = require('../../../shared/config');
         const EventRegistry = require('../../lib/common/events');
 
