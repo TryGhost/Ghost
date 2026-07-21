@@ -420,7 +420,6 @@
             "matchPackageNames": [
                 "@tryghost/color-utils",
                 "@tryghost/custom-fonts",
-                "@tryghost/members-csv",
                 "@tryghost/timezone-data"
             ]
         },

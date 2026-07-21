@@ -14,6 +14,12 @@ describe('csv helpers', () => {
         expect(data).toEqual([{name: 'Alice', note: '  hello "friend"  '}]);
     });
 
+    it('strips the byte order mark so the first header still matches', () => {
+        const data = parseCSV('\uFEFFemail,name\nalice@example.com,Alice');
+
+        expect(data).toEqual([{email: 'alice@example.com', name: 'Alice'}]);
+    });
+
     it('skips blank rows', () => {
         const data = parseCSV('name,email\nAlice,alice@example.com\n\nBob,bob@example.com\n');
 
