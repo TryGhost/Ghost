@@ -3,10 +3,12 @@ import SettingsBreadcrumbs from '../../settings-breadcrumbs';
 import toast from 'react-hot-toast';
 import {ButtonSelect, type OfferType} from './add-offer-modal';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Form, PreviewModalContent, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useAddOffer, useBrowseOffers, useEditOffer, useInvalidateOffers} from '@tryghost/admin-x-framework/api/offers';
 import {createOfferRedemptionsFilterUrl, formatOfferTimestamp, generateRetentionOfferName} from './offer-helpers';
+import {formatNumber} from '@tryghost/shade/utils';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useEffect, useMemo, useState} from 'react';
@@ -29,7 +31,7 @@ const typeOptions: OfferType[] = [
     {title: 'Free month(s)', description: 'Give free access for a limited time'}
 ];
 
-const durationOptions: SelectOption[] = [
+const durationOptions = [
     {value: 'once', label: 'First-payment'},
     {value: 'repeating', label: 'Multiple-months'},
     {value: 'forever', label: 'Forever'}
@@ -212,7 +214,7 @@ const RetentionOfferSidebar: React.FC<{
                                 <div className='flex flex-col gap-5'>
                                     <div className='flex flex-col gap-1.5'>
                                         <span className='text-sm leading-none font-semibold text-grey-700'>Performance</span>
-                                        <span>{redemptions} {redemptions === 1 ? 'redemption' : 'redemptions'}</span>
+                                        <span>{formatNumber(redemptions)} {redemptions === 1 ? 'redemption' : 'redemptions'}</span>
                                     </div>
                                     {redemptions > 0 && lastRedeemed ?
                                         <div className='flex flex-col gap-1.5'>
@@ -308,17 +310,18 @@ const RetentionOfferSidebar: React.FC<{
                                             }}
                                             onKeyDown={() => clearError('amount')}
                                         />
-                                        <Select
-                                            options={availableDurationOptions}
-                                            selectedOption={availableDurationOptions.find(option => option.value === formState.duration)}
-                                            title='Duration'
-                                            onSelect={(e) => {
-                                                if (e) {
-                                                    clearError('durationInMonths');
-                                                    updateForm(state => ({...state, duration: e.value}));
-                                                }
-                                            }}
-                                        />
+                                        <Field>
+                                            <FieldLabel>Duration</FieldLabel>
+                                            <Select value={formState.duration} onValueChange={(value) => {
+                                                clearError('durationInMonths');
+                                                updateForm(state => ({...state, duration: value}));
+                                            }}>
+                                                <SelectTrigger aria-label='Duration'><SelectValue /></SelectTrigger>
+                                                <SelectContent className='z-[9999]'>
+                                                    {availableDurationOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        </Field>
                                         {formState.duration === 'repeating' && (
                                             <div className='-mt-4'>
                                                 <TextField

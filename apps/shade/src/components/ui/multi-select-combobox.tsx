@@ -94,6 +94,8 @@ export interface MultiSelectComboboxProps<T = unknown> {
     i18n?: Partial<MultiSelectComboboxI18n>;
     /** Custom item renderer — replaces the default option row */
     renderItem?: (props: RenderItemProps<T>) => React.ReactNode;
+    /** Optional group label resolver for sectioned option lists */
+    groupBy?: (option: FilterOption<T>) => string | undefined;
     /** Render prop for content above the search input */
     header?: (props: HeaderRenderProps<T>) => React.ReactNode;
     /** Render prop for content below the option list */
@@ -173,6 +175,7 @@ export function MultiSelectCombobox<T = unknown>({
     onSearchChange: onSearchChangeProp,
     i18n: i18nOverrides,
     renderItem,
+    groupBy,
     header,
     footer
 }: Readonly<MultiSelectComboboxProps<T>>) {
@@ -236,6 +239,14 @@ export function MultiSelectCombobox<T = unknown>({
         () => resolvedOptions.filter(opt => !values.includes(opt.value)),
         [resolvedOptions, values]
     );
+    const unselectedGroups = useMemo(() => {
+        const groups = new Map<string | undefined, FilterOption<T>[]>();
+        for (const option of unselectedOptions) {
+            const group = groupBy?.(option);
+            groups.set(group, [...(groups.get(group) ?? []), option]);
+        }
+        return [...groups.entries()];
+    }, [groupBy, unselectedOptions]);
     // --- Handlers ---
 
     const handleDeselect = useCallback((option: FilterOption<T>) => {
@@ -338,13 +349,15 @@ export function MultiSelectCombobox<T = unknown>({
                     {unselectedOptions.length > 0 && (
                         <>
                             {visibleSelectedOptions.length > 0 && <CommandSeparator />}
-                            <CommandGroup>
-                                {unselectedOptions.map(option => itemRenderer({
-                                    option,
-                                    isSelected: false,
-                                    onSelect: () => handleSelectUnselected(option)
-                                }))}
-                            </CommandGroup>
+                            {unselectedGroups.map(([group, options]) => (
+                                <CommandGroup key={group ?? 'options'} heading={group}>
+                                    {options.map(option => itemRenderer({
+                                        option,
+                                        isSelected: false,
+                                        onSelect: () => handleSelectUnselected(option)
+                                    }))}
+                                </CommandGroup>
+                            ))}
                         </>
                     )}
 

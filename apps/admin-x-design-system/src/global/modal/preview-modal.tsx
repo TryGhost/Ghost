@@ -10,7 +10,6 @@ import Icon from '../icon';
 import TabView, {Tab} from '../tab-view';
 import DesktopChrome from '../chrome/desktop-chrome';
 import MobileChrome from '../chrome/mobile-chrome';
-import Select, {SelectOption} from '../form/select';
 import Modal, {ModalSize} from './modal';
 
 export interface PreviewModalProps {
@@ -32,7 +31,6 @@ export interface PreviewModalProps {
     rightToolbar?: boolean;
     deviceSelector?: boolean;
     siteLink?: string;
-    previewToolbarURLs?: SelectOption[];
     previewToolbarBreadcrumbs?: React.ReactNode;
     previewBgColor?: 'grey' | 'white' | 'greygradient';
     selectedURL?: string;
@@ -71,7 +69,6 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     rightToolbar = true,
     deviceSelector = true,
     siteLink,
-    previewToolbarURLs,
     previewBgColor = 'grey',
     selectedURL,
     previewToolbarTabs,
@@ -133,15 +130,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
     if (previewToolbar) {
         let toolbarLeft: React.ReactNode = (<></>);
-        if (previewToolbarURLs) {
-            toolbarLeft = (
-                <Select
-                    options={previewToolbarURLs!}
-                    selectedOption={previewToolbarURLs!.find(option => option.value === selectedURL)}
-                    onSelect={option => option && onSelectURL?.(option.value)}
-                />
-            );
-        } else if (previewToolbarTabs) {
+        if (previewToolbarTabs) {
             toolbarLeft = <TabView
                 border={false}
                 selectedTab={selectedURL}

@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {CheckboxGroup, type CheckboxProps, Form, HtmlField, Select, type SelectOption, Toggle} from '@tryghost/admin-x-design-system';
+import {CheckboxGroup, type CheckboxProps, Form, HtmlField, Toggle} from '@tryghost/admin-x-design-system';
+import {Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {type Setting, type SettingValue, checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {type Tier, getPaidActiveTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -96,7 +97,7 @@ const SignupOptions: React.FC<{
 
     const paidActiveTiers = getPaidActiveTiers(localTiers) || [];
 
-    const defaultPlanOptions: SelectOption[] = [
+    const defaultPlanOptions = [
         {value: 'yearly', label: 'Yearly'},
         {value: 'monthly', label: 'Monthly'}
     ];
@@ -154,14 +155,15 @@ const SignupOptions: React.FC<{
                     title='Available prices'
                 />
                 {(portalPlans.includes('yearly') && portalPlans.includes('monthly')) &&
-                    <Select
-                        options={defaultPlanOptions}
-                        selectedOption={defaultPlanOptions.find(option => option.value === portalDefaultPlan)}
-                        title='Default price at signup'
-                        onSelect={(option) => {
-                            updateSetting('portal_default_plan', option?.value ?? 'yearly');
-                        }}
-                    />
+                    <Field>
+                        <FieldLabel>Default price at signup</FieldLabel>
+                        <Select value={typeof portalDefaultPlan === 'string' ? portalDefaultPlan : ''} onValueChange={value => updateSetting('portal_default_plan', value)}>
+                            <SelectTrigger aria-label='Default price at signup'><SelectValue /></SelectTrigger>
+                            <SelectContent className='z-[9999]'>
+                                {defaultPlanOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </Field>
                 }
             </>
         )}

@@ -1,7 +1,8 @@
-import React from 'react';
-import {Button, ButtonGroup, ColorPickerField, Form, Heading, type LoadMultiSelectOptions, MultiSelect, type MultiSelectOption, StickyFooter, TextArea} from '@tryghost/admin-x-design-system';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Button, ButtonGroup, ColorPickerField, Form, Heading, StickyFooter, TextArea} from '@tryghost/admin-x-design-system';
+import {ChevronDown, Plus} from 'lucide-react';
+import {Field, FieldDescription, FieldLabel, MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger, inputSurface} from '@tryghost/shade/components';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
-import {type MultiValue} from 'react-select';
 import {debounce} from '../../../../utils/debounce';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
@@ -14,7 +15,7 @@ type SidebarProps = {
     selectedColor?: string;
     accentColor?: string;
     handleColorToggle: (e: string) => void;
-    handleLabelClick: (selected: MultiValue<MultiSelectOption>) => void;
+    handleLabelClick: (selected: string[]) => void;
     selectedLabels?: SelectedLabelTypes[];
     embedScript: string;
     handleLayoutSelect: React.Dispatch<React.SetStateAction<string>>;
@@ -38,11 +39,27 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     isCopied,
     handleClose}) => {
     const {loadData} = useFilterableApi<Label>({path: '/labels/', filterKey: 'name', responseKey: 'labels'});
+    const [labelOptions, setLabelOptions] = useState<SelectedLabelTypes[]>(selectedLabels || []);
+    const [labelsOpen, setLabelsOpen] = useState(false);
+    const [labelsLoading, setLabelsLoading] = useState(false);
+    const requestSequence = useRef(0);
 
-    const loadOptions: LoadMultiSelectOptions = async (input, callback) => {
+    const loadOptions = useCallback(async (input: string) => {
+        requestSequence.current += 1;
+        const request = requestSequence.current;
+        setLabelsLoading(true);
         const labels = await loadData(input);
-        callback(labels.map(label => ({label: label.name, value: label.name})));
-    };
+        const loadedOptions = labels.map(label => ({label: label.name, value: label.name}));
+        if (request === requestSequence.current) {
+            setLabelOptions([...(selectedLabels || []), ...loadedOptions.filter(option => !selectedLabels?.some(selected => selected.value === option.value))]);
+            setLabelsLoading(false);
+        }
+    }, [loadData, selectedLabels]);
+    const debouncedLoadOptions = useMemo(() => debounce((input: string) => void loadOptions(input), 500), [loadOptions]);
+
+    useEffect(() => {
+        setLabelOptions(current => [...(selectedLabels || []), ...current.filter(option => !selectedLabels?.some(selected => selected.value === option.value))]);
+    }, [selectedLabels]);
 
     return (
         <div className='flex h-[calc(100vh-16vmin)] max-h-[645px] flex-col justify-between overflow-y-scroll border-grey-200 p-6 pb-0 max-lg:border-t lg:border-l dark:border-grey-900'>
@@ -104,17 +121,53 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                         />
                     }
 
-                    <MultiSelect
-                        hint='Will be applied to all members signing up via this form'
-                        loadOptions={debounce(loadOptions, 500)}
-                        placeholder='Pick one or more labels (optional)'
-                        title='Labels at signup'
-                        values={selectedLabels || []}
-                        async
-                        canCreate
-                        defaultOptions
-                        onChange={handleLabelClick}
-                    />
+                    <Field>
+                        <FieldLabel>Labels at signup</FieldLabel>
+                        <Popover open={labelsOpen} onOpenChange={(open) => {
+                            setLabelsOpen(open);
+                            if (open) {
+                                void loadOptions('');
+                            }
+                        }}>
+                            <PopoverTrigger asChild>
+                                <button aria-label='Labels at signup' className={`${inputSurface('self')} flex h-(--control-height) w-full items-center justify-between px-3 text-control`} role='combobox' type='button'>
+                                    <span className={selectedLabels?.length ? 'truncate' : 'truncate text-muted-foreground'}>
+                                        {selectedLabels?.length ? selectedLabels.map(label => label.label).join(', ') : 'Pick one or more labels (optional)'}
+                                    </span>
+                                    <ChevronDown className='ml-2 size-4 shrink-0 opacity-50' />
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent align='start' className='z-[9999] w-(--radix-popover-trigger-width) p-0'>
+                                <MultiSelectCombobox
+                                    footer={({searchInput, clearSearch}) => {
+                                        const value = searchInput.trim();
+                                        if (!value || labelOptions.some(option => option.label.toLowerCase() === value.toLowerCase())) {
+                                            return null;
+                                        }
+                                        return (
+                                            <div className='border-t p-1'>
+                                                <button className='flex h-8 w-full items-center justify-start gap-2 rounded-xs px-2 text-sm hover:bg-interactive-hover' type='button' onClick={() => {
+                                                    const option = {label: value, value};
+                                                    setLabelOptions(current => [...current, option]);
+                                                    handleLabelClick([...(selectedLabels || []).map(label => label.value), value]);
+                                                    clearSearch();
+                                                }}>
+                                                    <Plus className='size-4' />
+                                                    Create “{value}”
+                                                </button>
+                                            </div>
+                                        );
+                                    }}
+                                    isLoading={labelsLoading}
+                                    options={labelOptions}
+                                    values={(selectedLabels || []).map(label => label.value)}
+                                    onChange={handleLabelClick}
+                                    onSearchChange={debouncedLoadOptions}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                        <FieldDescription>Will be applied to all members signing up via this form</FieldDescription>
+                    </Field>
                     <TextArea
                         className='text-grey-800'
                         fontStyle='mono'

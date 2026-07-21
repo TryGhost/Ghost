@@ -248,11 +248,10 @@ describe("Advanced settings", () => {
         await staffFilter.click();
         await page.getByRole("option", {name: "Owner User"}).click();
 
-        const clearIndicator = staffFilter.element().querySelector("svg");
-        const dropdownIndicator = staffFilter.element().querySelector(".absolute");
-        expect(clearIndicator).not.toBeNull();
+        const clearIndicator = modal.getByRole("button", {name: "Clear selection"}).element();
+        const dropdownIndicator = staffFilter.element().querySelector("svg");
         expect(dropdownIndicator).not.toBeNull();
-        const indicatorGap = dropdownIndicator!.getBoundingClientRect().left - clearIndicator!.getBoundingClientRect().right;
+        const indicatorGap = clearIndicator.getBoundingClientRect().left - dropdownIndicator!.getBoundingClientRect().right;
         expect(indicatorGap).toBeGreaterThanOrEqual(8);
 
         await modal.getByRole("button", {name: "Close"}).click();

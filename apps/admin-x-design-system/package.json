@@ -77,8 +77,7 @@
         "@uiw/react-codemirror": "catalog:",
         "clsx": "catalog:",
         "react-colorful": "5.7.0",
-        "react-hot-toast": "catalog:",
-        "react-select": "5.10.2"
+        "react-hot-toast": "catalog:"
     },
     "peerDependencies": {
         "react": "^18.2.0",

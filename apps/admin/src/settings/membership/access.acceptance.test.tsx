@@ -119,7 +119,7 @@ describe("Access settings", () => {
 
         const element = option.element();
         const rect = element.getBoundingClientRect();
-        expect(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)?.closest("[data-testid='select-option']")).toBe(element);
+        expect(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)?.closest("[role='option']")).toBe(element);
     });
 
     it("disables dependent settings when signup is disabled", async () => {

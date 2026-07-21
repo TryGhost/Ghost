@@ -4,9 +4,8 @@ import clsx from 'clsx';
 import usePinturaEditor from '../../../../hooks/use-pintura-editor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
-import {ColorPickerField, Form, Hint, ImageUpload, Select} from '@tryghost/admin-x-design-system';
-import {Icon} from '@tryghost/admin-x-design-system';
-import {type OptionProps, type SingleValueProps, components} from 'react-select';
+import {ColorPickerField, Form, Hint, ImageUpload} from '@tryghost/admin-x-design-system';
+import {Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
@@ -15,17 +14,20 @@ import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {BodyFontName, HeadingFontName} from '@tryghost/custom-fonts';
 
-type BodyFontOption = {
+interface FontSelectOption {
+    className?: string;
+    hint?: string;
+    label: string;
+    value: string;
+}
+
+type BodyFontOption = FontSelectOption & {
     value: BodyFontName | typeof DEFAULT_FONT,
     label: BodyFontName | typeof DEFAULT_FONT,
-    creator?: string,
-    className?: string
 };
-type HeadingFontOption = {
+type HeadingFontOption = FontSelectOption & {
     value: HeadingFontName | typeof DEFAULT_FONT,
     label: HeadingFontName | typeof DEFAULT_FONT,
-    creator?: string,
-    className?: string
 };
 
 export interface GlobalSettingValues {
@@ -43,42 +45,14 @@ export interface GlobalSettingValues {
  */
 const DEFAULT_FONT = 'Theme default';
 
-interface FontSelectOption {
-    value: string;
-    label: string;
-    hint?: string;
-    key?: string;
-    className?: string;
-    creator?: string;
-}
-
-const SingleValue: React.FC<SingleValueProps<FontSelectOption, false>> = ({children, ...optionProps}) => (
-    <components.SingleValue {...optionProps}>
-        <div className='group' data-testid="select-current-option" data-value={optionProps.data.value}>
-            <div className='flex items-center gap-3'>
-                <div className='flex size-12 items-center justify-center rounded-md bg-white text-2xl font-bold dark:bg-black'>Aa</div>
-                <div className='flex flex-col'>
-                    <span className='text-md'>{children}</span>
-                    <span className='font-sans text-sm font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
-                </div>
-            </div>
-        </div>
-    </components.SingleValue>
-);
-
-const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...optionProps}) => (
-    <components.Option {...optionProps}>
-        <div className={optionProps.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={optionProps.data.value}>
-            <div className='flex items-center gap-3'>
-                <div className='flex size-12 items-center justify-center rounded-md bg-grey-100 text-2xl font-bold group-hover:bg-grey-200 dark:bg-grey-900 dark:group-hover:bg-grey-800'>Aa</div>
-                <div className='flex flex-col'>
-                    <span className='text-md'>{children}</span>
-                    <span className='font-sans text-sm font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
-                </div>
-            </div>
-            {optionProps.isSelected && <span><Icon name='check' size={14} /></span>}
-        </div>
-    </components.Option>
+const FontOption: React.FC<{option: FontSelectOption, selected?: boolean}> = ({option, selected}) => (
+    <span className='flex w-full gap-4' data-testid={selected ? 'select-current-option' : 'select-option'} data-value={option.value}>
+        <span className='flex size-12 shrink-0 items-center justify-center rounded-md bg-surface-elevated text-2xl font-bold'>Aa</span>
+        <span className='flex min-w-0 flex-col'>
+            <span className='text-md'>{option.label}</span>
+            <span className='truncate font-sans text-sm font-normal text-muted-foreground'>{option.hint}</span>
+        </span>
+    </span>
 );
 
 const capitalizeWords = (str: string): string => str
@@ -161,15 +135,15 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
     // Populate the heading and body font options
     const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.heading.map((x) => {
         const className = fontClassName(x.name, true);
-        return {label: x.name, value: x.name, creator: x.creator, className};
+        return {label: x.name, value: x.name, hint: x.creator, className};
     });
-    customHeadingFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, creator: themeNameVersion, className: 'font-sans font-normal'});
+    customHeadingFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, hint: themeNameVersion, className: 'font-sans font-normal'});
 
     const customBodyFonts: BodyFontOption[] = CUSTOM_FONTS.body.map((x) => {
         const className = fontClassName(x.name, false);
-        return {label: x.name, value: x.name, creator: x.creator, className};
+        return {label: x.name, value: x.name, hint: x.creator, className};
     });
-    customBodyFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, creator: themeNameVersion, className: 'font-sans font-normal'});
+    customBodyFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, hint: themeNameVersion, className: 'font-sans font-normal'});
 
     const selectFont = (fontName: string, heading: boolean) => {
         if (fontName === DEFAULT_FONT) {
@@ -178,8 +152,8 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
         return fontClassName(fontName, heading);
     };
 
-    const selectedHeadingFont = {label: headingFont.name, value: headingFont.name, creator: headingFont.creator};
-    const selectedBodyFont = {label: bodyFont.name, value: bodyFont.name, creator: bodyFont.creator};
+    const selectedHeadingFont = customHeadingFonts.find(option => option.value === headingFont.name) || customHeadingFonts[0];
+    const selectedBodyFont = customBodyFonts.find(option => option.value === bodyFont.name) || customBodyFonts[0];
 
     return (
         <>
@@ -319,48 +293,44 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 </div>
             </Form>
             <Form className='-mt-4' gap='sm' margins='lg' title='Typography'>
-                <Select
-                    className={selectFont(selectedHeadingFont.label, true)}
-                    components={{Option, SingleValue}}
-                    controlClasses={{control: 'min-h-16! pl-2!', option: 'pl-2!'}}
-                    hint={''}
-                    menuShouldScrollIntoView={true}
-                    options={customHeadingFonts}
-                    selectedOption={selectedHeadingFont}
-                    testId='heading-font-select'
-                    title={'Heading font'}
-                    onSelect={(option) => {
-                        if (option?.value === DEFAULT_FONT) {
+                <Field>
+                    <FieldLabel>Heading font</FieldLabel>
+                    <Select value={selectedHeadingFont.value} onValueChange={(value) => {
+                        if (value === DEFAULT_FONT) {
                             setHeadingFont({name: DEFAULT_FONT, creator: themeNameVersion});
                             updateSetting('heading_font', '');
                         } else {
-                            setHeadingFont({name: option?.value || '', creator: CUSTOM_FONTS.heading.find(f => f.name === option?.value)?.creator || ''});
-                            updateSetting('heading_font', option?.value || '');
+                            setHeadingFont({name: value, creator: CUSTOM_FONTS.heading.find(f => f.name === value)?.creator || ''});
+                            updateSetting('heading_font', value);
                         }
-                    }}
-                />
-                <Select
-                    className={selectFont(selectedBodyFont.label, false)}
-                    components={{Option, SingleValue}}
-                    controlClasses={{control: 'min-h-16! pl-2!', option: 'pl-2!'}}
-                    hint={''}
-                    maxMenuHeight={200}
-                    menuPosition='fixed'
-                    menuShouldScrollIntoView={true}
-                    options={customBodyFonts}
-                    selectedOption={selectedBodyFont}
-                    testId='body-font-select'
-                    title={'Body font'}
-                    onSelect={(option) => {
-                        if (option?.value === DEFAULT_FONT) {
+                    }}>
+                        <SelectTrigger aria-label='Heading font' className={`h-16 pl-2 ${selectFont(selectedHeadingFont.label, true)}`} data-testid='heading-font-select'>
+                            <SelectValue><FontOption option={selectedHeadingFont} selected /></SelectValue>
+                        </SelectTrigger>
+                        <SelectContent className={`z-[9999] ${selectFont(selectedHeadingFont.label, true)}`}>
+                            {customHeadingFonts.map(option => <SelectItem key={option.value} value={option.value}><FontOption option={option} /></SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </Field>
+                <Field>
+                    <FieldLabel>Body font</FieldLabel>
+                    <Select value={selectedBodyFont.value} onValueChange={(value) => {
+                        if (value === DEFAULT_FONT) {
                             setBodyFont({name: DEFAULT_FONT, creator: themeNameVersion});
                             updateSetting('body_font', '');
                         } else {
-                            setBodyFont({name: option?.value || '', creator: CUSTOM_FONTS.body.find(f => f.name === option?.value)?.creator || ''});
-                            updateSetting('body_font', option?.value || '');
+                            setBodyFont({name: value, creator: CUSTOM_FONTS.body.find(f => f.name === value)?.creator || ''});
+                            updateSetting('body_font', value);
                         }
-                    }}
-                />
+                    }}>
+                        <SelectTrigger aria-label='Body font' className={`h-16 pl-2 ${selectFont(selectedBodyFont.label, false)}`} data-testid='body-font-select'>
+                            <SelectValue><FontOption option={selectedBodyFont} selected /></SelectValue>
+                        </SelectTrigger>
+                        <SelectContent className={`z-[9999] max-h-52 ${selectFont(selectedBodyFont.label, false)}`}>
+                            {customBodyFonts.map(option => <SelectItem key={option.value} value={option.value}><FontOption option={option} /></SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </Field>
             </Form>
         </>
     );

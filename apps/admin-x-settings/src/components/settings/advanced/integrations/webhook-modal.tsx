@@ -2,7 +2,8 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import validator from 'validator';
 import webhookEventOptions from './webhook-event-options';
-import {Form, Modal, Select, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldError, FieldLabel, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Form, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {type Webhook, useCreateWebhook, useEditWebhook} from '@tryghost/admin-x-framework/api/webhooks';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -12,6 +13,7 @@ interface WebhookModalProps {
 }
 
 const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => {
+    const eventErrorId = React.useId();
     const modal = useModal();
     const {mutateAsync: createWebhook} = useCreateWebhook();
     const {mutateAsync: editWebhook} = useEditWebhook();
@@ -78,20 +80,29 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                     onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                     onKeyDown={() => clearError('name')}
                 />
-                <Select
-                    error={Boolean(errors.event)}
-                    hint={errors.event}
-                    options={webhookEventOptions}
-                    prompt='Select an event'
-                    selectedOption={webhookEventOptions.flatMap(group => group.options).find(option => option.value === formState.event)}
-                    testId='event-select'
-                    title='Event'
-                    hideTitle
-                    onSelect={(option) => {
-                        updateForm(state => ({...state, event: option?.value}));
-                        clearError('event');
-                    }}
-                />
+                <Field data-invalid={Boolean(errors.event) || undefined}>
+                    <FieldLabel className='sr-only'>Event</FieldLabel>
+                    <Select
+                        value={formState.event ?? ''}
+                        onValueChange={(value) => {
+                            updateForm(state => ({...state, event: value}));
+                            clearError('event');
+                        }}
+                    >
+                        <SelectTrigger aria-describedby={errors.event ? eventErrorId : undefined} aria-invalid={Boolean(errors.event) || undefined} aria-label='Event' data-testid='event-select'>
+                            <SelectValue placeholder='Select an event' />
+                        </SelectTrigger>
+                        <SelectContent className='z-[9999]'>
+                            {webhookEventOptions.map(group => (
+                                <SelectGroup key={group.label}>
+                                    <SelectLabel>{group.label}</SelectLabel>
+                                    {group.options.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                </SelectGroup>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {errors.event && <FieldError id={eventErrorId}>{errors.event}</FieldError>}
+                </Field>
                 <TextField
                     error={Boolean(errors.target_url)}
                     hint={errors.target_url}

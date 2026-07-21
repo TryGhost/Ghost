@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
 import clsx from 'clsx';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Form, Heading, Icon, ImageUpload, Select, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Form, Heading, Icon, ImageUpload, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -78,12 +79,15 @@ const LookAndFeel: React.FC<{
         
         {portalButton && (
             <>
-                <Select
-                    options={portalButtonOptions}
-                    selectedOption={portalButtonOptions.find(option => option.value === portalButtonStyle)}
-                    title='Button style'
-                    onSelect={option => updateSetting('portal_button_style', option?.value || null)}
-                />
+                <Field>
+                    <FieldLabel>Button style</FieldLabel>
+                    <Select value={portalButtonStyle as string} onValueChange={value => updateSetting('portal_button_style', value)}>
+                        <SelectTrigger aria-label='Button style'><SelectValue /></SelectTrigger>
+                        <SelectContent className='z-[9999]'>
+                            {portalButtonOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </Field>
                 {portalButtonStyle?.toString()?.includes('icon') &&
                     <div className='flex flex-col gap-2'>
                         <Heading level={6} grey>Icon</Heading>

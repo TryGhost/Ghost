@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {ColorPickerField, Heading, Hint, ImageUpload, Select, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {ColorPickerField, Heading, Hint, ImageUpload, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
+import {Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {humanizeSettingKey} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -61,14 +62,16 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({setting, setSetting}) => {
         );
     case 'select':
         return (
-            <Select
-                hint={setting.description}
-                options={setting.options.map(option => ({label: option, value: option}))}
-                selectedOption={{label: setting.value, value: setting.value}}
-                testId={`setting-select-${setting.key}`}
-                title={humanizeSettingKey(setting.key)}
-                onSelect={option => setSetting(option?.value || null)}
-            />
+            <Field>
+                <FieldLabel>{humanizeSettingKey(setting.key)}</FieldLabel>
+                <Select value={setting.value} onValueChange={setSetting}>
+                    <SelectTrigger aria-label={humanizeSettingKey(setting.key)} data-testid={`setting-select-${setting.key}`}><SelectValue /></SelectTrigger>
+                    <SelectContent className='z-[9999]'>
+                        {setting.options.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
+            </Field>
         );
     case 'color':
         return (
