@@ -92,17 +92,19 @@ export const GiftPageStyles = `
 }
 
 .gh-portal-gift-checkout-header {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .gh-portal-gift-checkout-header .gh-portal-main-title {
     text-align: start;
-    margin: 0 0 12px;
+    margin: 0 0 8px;
+    font-size: 2.8rem;
+    line-height: 1.15;
 }
 
 .gh-portal-gift-checkout-subtitle {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     line-height: 1.45em;
     color: var(--grey3);
     text-wrap: pretty;
@@ -124,16 +126,16 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-promo-image {
     display: block;
     max-width: 100%;
-    max-height: 140px;
+    max-height: 88px;
     object-fit: contain;
     object-position: left;
     border-radius: 12px;
-    margin: 0 0 20px;
+    margin: 0 0 14px;
 }
 
 .gh-portal-gift-checkout-subtitle.gh-portal-gift-checkout-subtitle-clamped {
     display: -webkit-box;
-    -webkit-line-clamp: 4;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -156,7 +158,7 @@ export const GiftPageStyles = `
 }
 
 .gh-portal-gift-checkout-section {
-    margin-top: 24px;
+    margin-top: 18px;
 }
 
 .gh-portal-gift-checkout-label {
