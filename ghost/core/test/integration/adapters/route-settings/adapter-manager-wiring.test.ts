@@ -1,7 +1,13 @@
 import {describe, it, beforeAll, afterEach, afterAll} from 'vitest';
 import assert from 'node:assert/strict';
 import {S3Client} from '@aws-sdk/client-s3';
+import {Provider} from 'nconf';
 import type {RouteSettings} from '@tryghost/adapter-base-route-settings';
+import {bindAll as bindUrlHelpers} from '@tryghost/config-url-helpers';
+
+import {normalizeAdapterConfig} from '../../../../core/server/services/adapter-manager/utils';
+import {bindAll as bindHelpers} from '../../../../core/shared/config/helpers';
+import type {ConfigInstance} from '../../../../core/shared/config/loader';
 
 import {
     createTestS3Client,
@@ -95,5 +101,47 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: ro
         const reloaded: RouteSettings = await adapterManager.getAdapter('route-settings').get();
         assert.equal(reloaded.yamlSource, SAMPLE_YAML);
         assert.deepEqual(reloaded.routes, [{path: '/about/', templates: ['about'], type: 'template'}]);
+    });
+});
+
+// A booted Ghost always has both adapter types configured, so the guards that
+// skip an unconfigured type — or an unconfigured store within one — never run
+// in an end-to-end suite. They need no bucket, so they run regardless of MinIO.
+describe('Integration: route-settings adapter config normalization', function () {
+    const loadNconf = (): ConfigInstance => {
+        const nconf = new Provider();
+        nconf.use('memory');
+        nconf.set('paths:contentPath', '/some/path');
+        nconf.set('paths:defaultRouteSettings', '/default/route/settings');
+
+        bindUrlHelpers(nconf);
+        bindHelpers(nconf);
+
+        return nconf as unknown as ConfigInstance;
+    };
+
+    it('leaves an adapter type with no configuration untouched', function () {
+        const conf = loadNconf();
+        conf.set('adapters', {});
+
+        const normalized = normalizeAdapterConfig(conf);
+
+        assert.equal(normalized['route-settings'], undefined);
+        assert.equal(normalized.redirects, undefined);
+    });
+
+    it('fills the configured store without inventing config for an absent one', function () {
+        const conf = loadNconf();
+        conf.set('adapters', {
+            'route-settings': {
+                active: 'FileStore',
+                FileStore: {}
+            }
+        });
+
+        const normalized = normalizeAdapterConfig(conf);
+
+        assert.equal(normalized['route-settings'].FileStore.defaultSettingsBasePath, '/default/route/settings');
+        assert.equal('S3RouteSettingsStore' in normalized['route-settings'], false);
     });
 });
