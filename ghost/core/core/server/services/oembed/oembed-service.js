@@ -15,6 +15,11 @@ const crypto = require('crypto');
 const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
 const DEFAULT_BOOKMARK_ICON = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
 
+const isYouTubeUrl = (url) => {
+    const hostname = new URL(url).hostname;
+    return hostname === 'youtu.be' || hostname === 'youtube.com' || hostname.endsWith('.youtube.com');
+};
+
 // metascraper-amazon's built-in URL test is a substring regex that misfires on
 // any host ending in a letter followed by `.co/` (e.g. `rangemedia.co`), causing
 // it to hardcode `publisher: 'Amazon'`. Gate the plugin on the registrable
@@ -190,13 +195,17 @@ class OEmbedService {
     }
 
     /**
-     * Build bookmark metadata from a known oEmbed provider without exposing the
-     * provider-supplied HTML that embed cards use.
+     * Build YouTube bookmark metadata from its allowlisted oEmbed response
+     * without exposing the provider-supplied HTML that embed cards use.
      *
      * @param {string} url
      * @returns {Promise<Object|undefined>}
      */
-    async fetchBookmarkDataFromKnownProvider(url) {
+    async fetchYouTubeBookmarkData(url) {
+        if (!isYouTubeUrl(url)) {
+            return;
+        }
+
         const {url: providerUrl, provider} = findUrlWithProvider(url);
         if (!provider) {
             return;
@@ -206,7 +215,7 @@ class OEmbedService {
         try {
             oembed = await this.knownProvider(providerUrl);
         } catch {
-            // Known-provider metadata is an enhancement for explicit bookmark
+            // YouTube oEmbed metadata is an enhancement for explicit bookmark
             // cards. If it fails, fall back to scraping the page as before.
             return;
         }
@@ -617,10 +626,14 @@ class OEmbedService {
                 }
             }
 
-            if (type === 'bookmark') {
-                const knownProviderBookmark = await this.fetchBookmarkDataFromKnownProvider(url);
-                if (knownProviderBookmark) {
-                    return knownProviderBookmark;
+            // YouTube can return generic page metadata to server-side requests,
+            // so use its allowlisted oEmbed metadata for explicit bookmarks.
+            // Keep other providers on the page-scraping path because oEmbed does
+            // not consistently include bookmark fields such as descriptions and icons.
+            if (type === 'bookmark' && isYouTubeUrl(url)) {
+                const youtubeBookmark = await this.fetchYouTubeBookmarkData(url);
+                if (youtubeBookmark) {
+                    return youtubeBookmark;
                 }
             }
 

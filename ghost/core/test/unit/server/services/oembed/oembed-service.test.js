@@ -312,6 +312,50 @@ describe('oembed-service', function () {
             }
         });
 
+        it('keeps non-YouTube bookmarks on the page metadata path', async function () {
+            const knownProviderStub = sinon.stub(oembedService, 'knownProvider')
+                .resolves({
+                    title: 'Vimeo oEmbed title',
+                    provider_name: 'Vimeo'
+                });
+
+            nock('https://vimeo.com')
+                .get('/123456')
+                .query(true)
+                .reply(200, `<html><head>
+                    <title>Vimeo page title</title>
+                    <meta name="description" content="Vimeo page description">
+                </head></html>`);
+
+            try {
+                const response = await oembedService.fetchOembedDataFromUrl('https://vimeo.com/123456', 'bookmark');
+
+                assert.equal(response.metadata.title, 'Vimeo page title');
+                assert.equal(response.metadata.description, 'Vimeo page description');
+                sinon.assert.notCalled(knownProviderStub);
+            } finally {
+                sinon.restore();
+            }
+        });
+
+        it('falls back to page metadata when YouTube oEmbed fails', async function () {
+            nock('https://www.youtube.com')
+                .get('/oembed')
+                .query(true)
+                .reply(404);
+
+            nock('https://www.youtube.com')
+                .get('/watch')
+                .query({v: 'unavailable'})
+                .reply(200, `<html><head>
+                    <title>Fallback YouTube page title</title>
+                </head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.youtube.com/watch?v=unavailable', 'bookmark');
+
+            assert.equal(response.metadata.title, 'Fallback YouTube page title');
+        });
+
         it('does not process missing bookmark images', async function () {
             const processImageFromUrlStub = sinon.stub(oembedService, 'processImageFromUrl')
                 .callsFake(async imageUrl => imageUrl);
