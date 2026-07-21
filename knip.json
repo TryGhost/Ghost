@@ -28,8 +28,6 @@
         "ghost/core": {
             "ignoreDependencies": [
                 "@slack/webhook",
-                "superagent",
-                "superagent-throttle",
                 "bookshelf-relations",
                 "mysql",
                 "cssnano"
