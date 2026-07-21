@@ -5,7 +5,7 @@ import {Box, Container, Inline, Stack} from '@tryghost/shade/primitives';
 import {type GhAreaChartDataItem, GhAreaChart, TableFilterTab, TableFilterTabs} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
-import {type AutomationRun, type RunStatus, type RunStepState, getScenario} from './mock';
+import {type AutomationRun, type RunStatus, type RunStepState, getScenario} from '@/automations/proto/shared/mock';
 import {useVersionLink} from '@/automations/proto/shared/use-version-link';
 
 // Fixed "now" so relative labels are deterministic against the mock timestamps.

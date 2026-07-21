@@ -128,6 +128,15 @@ export const routes: RouteObject[] = [
                 lazy: lazyComponent(() => import("./automations/proto/dashboard/detail")),
             },
             {
+                path: "/automations-proto/surface",
+                lazy: lazyComponent(() => import("./automations/proto/surface/list")),
+            },
+            {
+                path: "/automations-proto/surface/:id",
+                handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
+                lazy: lazyComponent(() => import("./automations/proto/surface/detail")),
+            },
+            {
                 // The tag detail route delegates to Ember. It must be declared
                 // so navigating from the tag list to a detail page doesn't trip
                 // the router error fallback before Ember takes over.

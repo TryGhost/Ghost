@@ -51,7 +51,7 @@ const AutomationRow: React.FC<{automation: AutomationDetail}> = ({automation}) =
             <TableCell className="static min-w-0 lg:p-4">
                 <Link
                     className="before:absolute before:inset-0 before:z-10 before:rounded-sm focus-visible:outline-hidden focus-visible:before:ring-2 focus-visible:before:ring-focus-ring"
-                    to={toVersioned(`/automations-proto/dashboard/${automation.id}`)}
+                    to={toVersioned(`/automations-proto/surface/${automation.id}`)}
                 >
                     <span className="block text-md font-semibold">{automation.name}</span>
                 </Link>
@@ -70,7 +70,7 @@ const AutomationsList: React.FC = () => {
     const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
 
     // Creating an automation is a canvas/editor activity, so New hands off to the
-    // canvas concept's editor rather than the dashboard (analytics) view.
+    // canvas concept's editor rather than the surface (analytics) view.
     const handleTemplatePick = (templateId: string) => {
         setTemplateDialogOpen(false);
         navigate(toVersioned(`/automations-proto/canvas/new?template=${templateId}`));
@@ -79,7 +79,7 @@ const AutomationsList: React.FC = () => {
     return (
         <Box className="size-full">
             <Container className="relative flex h-full flex-col" size="page">
-                <ListPage data-testid="automations-proto-dashboard">
+                <ListPage data-testid="automations-proto-surface">
                     <ListPage.Header>
                         <PageHeader blurredBackground={false} sticky={false}>
                             <PageHeader.Left>
