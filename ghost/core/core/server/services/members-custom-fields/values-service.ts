@@ -146,13 +146,18 @@ export class CustomFieldValuesService {
     }
 
     /**
-     * Whether input names any values. Throws if it isn't a values object at all,
-     * with the same error resolving it would have raised.
+     * Whether input names any values. An absent key names none; anything present
+     * that isn't a values object throws, with the same error resolving it would
+     * have raised.
      *
      * Answers the shape question alone, with no catalog lookup, so it can be asked
      * before a write is known to be permitted.
      */
     namesValues(input: unknown): boolean {
+        if (input === undefined) {
+            return false;
+        }
+
         return Object.keys(this.parseValues(input)).length > 0;
     }
 

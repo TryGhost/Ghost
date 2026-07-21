@@ -261,7 +261,11 @@ function createApiInstance(config) {
         commentsService,
         emailAddressService: emailAddressService.service,
         giftService,
-        customFieldsService
+        // Resolved here rather than passed as the module: the members service needs
+        // the values service itself, and reading it at construction is what ties the
+        // two together in boot order. Custom fields is initialised in initCore, the
+        // members API is built in initServices, so this is always the live instance.
+        customFieldValues: customFieldsService.values
     });
 
     return membersApiInstance;
