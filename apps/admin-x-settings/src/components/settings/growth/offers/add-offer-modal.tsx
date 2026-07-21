@@ -2,7 +2,8 @@ import PortalFrame from '../../membership/portal/portal-frame';
 import toast from 'react-hot-toast';
 import {Button} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Form, Icon, PreviewModalContent, Select, type SelectOption, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Field, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Form, Icon, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -76,6 +77,11 @@ type formStateTypes = {
     percentAmount?: number;
 };
 
+interface OfferSelectOption {
+    label: string;
+    value: string;
+}
+
 const calculateAmount = (formState: formStateTypes): number => {
     const {fixedAmount = 0, percentAmount = 0, trialAmount = 0, amount = 0} = formState;
 
@@ -92,14 +98,14 @@ const calculateAmount = (formState: formStateTypes): number => {
 };
 
 type SidebarProps = {
-    tierOptions: SelectOption[];
-    handleTierChange: (tier: SelectOption) => void;
-    selectedTier: SelectOption;
+    tierOptions: OfferSelectOption[];
+    handleTierChange: (tier: OfferSelectOption) => void;
+    selectedTier: OfferSelectOption;
     overrides: formStateTypes;
     // handleTextInput: (e: React.ChangeEvent<HTMLInputElement>, key: keyof offerPortalPreviewUrlTypes) => void;
-    amountOptions: SelectOption[];
+    amountOptions: OfferSelectOption[];
     typeOptions: OfferType[];
-    durationOptions: SelectOption[];
+    durationOptions: OfferSelectOption[];
     handleTypeChange: (type: string) => void;
     handleDurationChange: (duration: string) => void;
     handleAmountTypeChange: (amountType: string) => void;
@@ -208,74 +214,82 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 handleTypeChange('trial');
                             }} />
                         </div>
-                        <Select
-                            options={tierOptions}
-                            selectedOption={selectedTier}
-                            testId='tier-cadence-select-offers'
-                            title='Tier — Cadence'
-                            onSelect={(e) => {
-                                if (e) {
-                                    handleTierChange(e);
+                        <Field>
+                            <FieldLabel>Tier — Cadence</FieldLabel>
+                            <Select value={selectedTier.value} onValueChange={(value) => {
+                                const tier = tierOptions.find(option => option.value === value);
+                                if (tier) {
+                                    handleTierChange(tier);
                                 }
-                            }}
-                        />
+                            }}>
+                                <SelectTrigger aria-label='Tier — Cadence' data-testid='tier-cadence-select-offers'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {tierOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </Field>
                         {
-                            overrides.type !== 'trial' && <> <div className='relative'>
-                                <TextField
-                                    error={Boolean(errors.amount)}
-                                    hint={errors.amount}
-                                    title='Amount off'
-                                    type='number'
-                                    value={
-                                        overrides.type === 'fixed'
-                                            ? (overrides.fixedAmount === 0 ? '' : overrides.fixedAmount?.toString())
-                                            : (overrides.percentAmount === 0 ? '' : overrides.percentAmount?.toString())
-                                    }
-                                    onChange={(e) => {
-                                        handleAmountInput(e);
-                                    }}
-                                    onKeyDown={() => clearError('amount')}
-                                />
-                                <div className='absolute top-6 right-1.5 z-10'>
-                                    <Select
-                                        clearBg={true}
-                                        controlClasses={{menu: 'w-20 right-0'}}
-                                        options={amountOptions}
-                                        selectedOption={overrides.type === 'percent' ? amountOptions[0] : amountOptions[1]}
-                                        testId='amount-type-select-offers'
-                                        onSelect={(e) => {
-                                            handleAmountTypeChange(e?.value || '');
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                            <Select
-                                options={filteredDurationOptions}
-                                selectedOption={filteredDurationOptions.find(option => option.value === overrides.duration)}
-                                testId='duration-select-offers'
-                                title='Duration'
-                                onSelect={(e) => {
-                                    clearError('durationInMonths');
-                                    handleDurationChange(e?.value || '');
-                                }}
-                            />
-
-                            {
-                                overrides.duration === 'repeating' && !isYearlyTier && <div className='-mt-4'>
-                                    <TextField
-                                        data-testid='duration-months-input'
-                                        error={Boolean(errors.durationInMonths)}
-                                        hint={errors.durationInMonths}
-                                        rightPlaceholder={`${overrides.durationInMonths === 1 ? 'month' : 'months'}`}
-                                        type='number'
-                                        value={overrides.durationInMonths === 0 ? '' : String(overrides.durationInMonths)}
-                                        onChange={(e) => {
-                                            handleDurationInMonthsInput(e);
-                                        }}
-                                        onKeyDown={() => clearError('durationInMonths')}
-                                    />
-                                </div>
-                            }
+                            overrides.type !== 'trial' && <>
+                                <Field data-invalid={Boolean(errors.amount) || undefined}>
+                                    <FieldLabel htmlFor='offer-amount'>Amount off</FieldLabel>
+                                    <InputGroup data-invalid={Boolean(errors.amount) || undefined}>
+                                        <InputGroupInput
+                                            id='offer-amount'
+                                            type='number'
+                                            value={
+                                                overrides.type === 'fixed'
+                                                    ? (overrides.fixedAmount === 0 ? '' : overrides.fixedAmount?.toString())
+                                                    : (overrides.percentAmount === 0 ? '' : overrides.percentAmount?.toString())
+                                            }
+                                            onChange={(e) => {
+                                                handleAmountInput(e);
+                                            }}
+                                            onKeyDown={() => clearError('amount')}
+                                        />
+                                        <InputGroupAddon align='inline-end'>
+                                            <Select
+                                                value={overrides.type === 'percent' ? amountOptions[0].value : amountOptions[1].value}
+                                                onValueChange={handleAmountTypeChange}
+                                            >
+                                                <SelectTrigger aria-label='Amount type' className='h-7 w-20 border-0 bg-transparent px-2 shadow-none focus-visible:ring-0' data-testid='amount-type-select-offers'>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent align='end'>
+                                                    {amountOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        </InputGroupAddon>
+                                    </InputGroup>
+                                    {errors.amount && <FieldError>{errors.amount}</FieldError>}
+                                </Field>
+                                <Field>
+                                    <FieldLabel>Duration</FieldLabel>
+                                    <Select value={overrides.duration} onValueChange={(value) => {
+                                        clearError('durationInMonths');
+                                        handleDurationChange(value);
+                                    }}>
+                                        <SelectTrigger aria-label='Duration' data-testid='duration-select-offers'><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            {filteredDurationOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </Field>
+                                {
+                                    overrides.duration === 'repeating' && !isYearlyTier && <div className='-mt-4'>
+                                        <TextField
+                                            data-testid='duration-months-input'
+                                            error={Boolean(errors.durationInMonths)}
+                                            hint={errors.durationInMonths}
+                                            rightPlaceholder={`${overrides.durationInMonths === 1 ? 'month' : 'months'}`}
+                                            type='number'
+                                            value={overrides.durationInMonths === 0 ? '' : String(overrides.durationInMonths)}
+                                            onChange={(e) => {
+                                                handleDurationInMonthsInput(e);
+                                            }}
+                                            onKeyDown={() => clearError('durationInMonths')}
+                                        />
+                                    </div>
+                                }
                             </>
                         }
 
@@ -451,7 +465,7 @@ const AddOfferModal = () => {
         {value: 'fixed', label: formState.currency}
     ];
 
-    const handleTierChange = (tier: SelectOption) => {
+    const handleTierChange = (tier: OfferSelectOption) => {
         const parsedTier = parseData(tier.value);
         const isYearlyCadence = parsedTier.period === 'year';
 
@@ -624,7 +638,7 @@ const AddOfferModal = () => {
     }, [formState, siteData.url, formState.type, overrides]);
 
     const sidebar = <Sidebar
-        amountOptions={amountOptions as SelectOption[]}
+        amountOptions={amountOptions}
         clearError={clearError}
         durationOptions={durationOptions}
         errors={errors}

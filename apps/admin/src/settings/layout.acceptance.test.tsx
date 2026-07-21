@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { currentRoute, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
+import { currentRoute, fakeSettingsScreens, fakeTiers, renderAdminApp, settingsResponse, tier } from "@test-utils/acceptance";
 import { settingsScreen } from "./settings.screen";
 
 describe("Settings layout", () => {
@@ -48,14 +48,24 @@ describe("Settings layout", () => {
         await expect.poll(currentRoute).toBe("/settings");
     });
 
-    it("does not leave settings when Escape is pressed with a modal open", async () => {
+    it("closes a modal dropdown with Escape without closing the modal", async () => {
         fakeSettingsScreens();
-        await renderAdminApp("/settings/portal/edit");
+        fakeTiers([tier({name: "Supporter"})]);
+        await renderAdminApp("/settings/portal/edit", {
+            boot: {browseSettings: {response: settingsResponse({settings: {
+                stripe_connect_publishable_key: "pk_test_123",
+                stripe_connect_secret_key: "sk_test_123",
+            }})}},
+        });
 
-        await expect.element(settingsScreen.portalModal()).toBeVisible();
+        const modal = settingsScreen.portalModal();
+        await expect.element(modal).toBeVisible();
+        await modal.getByLabelText("Default price at signup").click();
+        await expect.element(settingsScreen.selectOptionExact("Yearly")).toBeVisible();
         await userEvent.keyboard("{Escape}");
 
-        await expect.element(settingsScreen.portalModal()).toBeVisible();
+        await expect(settingsScreen.selectOptionExact("Yearly")).toHaveCount(0);
+        await expect.element(modal).toBeVisible();
         await expect.poll(currentRoute).toBe("/settings/portal/edit");
     });
 });

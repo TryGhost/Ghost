@@ -23,8 +23,8 @@ export const offersScreen = {
     retentionModal: () => page.getByTestId(testIds.retentionModal),
 
     durationMonthsInput: () => page.getByTestId(testIds.durationMonthsInput),
-    selectOptions: () => page.getByTestId(testIds.selectOption),
-    selectOption: (label: string) => page.getByTestId(testIds.selectOption).filter({ hasText: label }),
+    selectOptions: () => page.getByRole("option"),
+    selectOption: (label: string) => page.getByRole("option").filter({ hasText: label }),
     portalPreview: () => page.getByTestId(testIds.portalPreview),
     errorToast: () => page.getByTestId(testIds.toastError),
 

@@ -47,7 +47,6 @@
         "react": "catalog:",
         "react-dom": "catalog:",
         "react-hot-toast": "catalog:",
-        "react-select": "5.10.2",
         "semver": "catalog:",
         "sonner": "catalog:",
         "validator": "catalog:"

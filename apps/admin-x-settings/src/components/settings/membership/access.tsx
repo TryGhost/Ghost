@@ -1,9 +1,8 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Banner, Separator, Button as ShadeButton} from '@tryghost/shade/components';
-import {type GroupBase, type MultiValue} from 'react-select';
-import {Hint, MultiSelect, type MultiSelectOption, Select, SettingGroupContent, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Banner, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldLabel, MultiSelectCombobox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Button as ShadeButton} from '@tryghost/shade/components';
+import {Hint, SettingGroupContent, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {RefreshCw} from 'lucide-react';
 import {getSettingValues, isSettingReadOnly, useRegenerateAccessCode} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -88,7 +87,19 @@ const COMMENTS_ENABLED_OPTIONS = [
     }
 ];
 
+const renderAccessOptions = (options: Array<{value: string; label: string; hint: string}>) => options.map(option => (
+    <SelectItem key={option.value} value={option.value}>
+        <span className='flex flex-col'>
+            <span>{option.label}</span>
+            <span className='text-sm text-muted-foreground'>{option.hint}</span>
+        </span>
+    </SelectItem>
+));
+
+const getAccessOptionLabel = (options: Array<{value: string; label: string}>, value: string) => options.find(option => option.value === value)?.label;
+
 const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const [tiersOpen, setTiersOpen] = React.useState(false);
     const {settings} = useGlobalData();
     const limiter = useLimiter();
     const isTrialMode = limiter?.isDisabled('publicSiteAccess');
@@ -126,7 +137,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const {data: {tiers} = {}} = useBrowseTiers();
 
-    const tierOptionGroups: GroupBase<MultiSelectOption>[] = [
+    const tierOptionGroups = [
         {
             label: 'Active Tiers',
             options: tiers?.filter(({active}) => active).map(tier => ({value: tier.id, label: tier.name})) || []
@@ -136,13 +147,12 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             options: tiers?.filter(({active}) => !active).map(tier => ({value: tier.id, label: tier.name})) || []
         }
     ];
-
     const contentVisibilityTiers = JSON.parse(defaultContentVisibilityTiers || '[]') as string[];
-    const selectedTierOptions = tierOptionGroups.flatMap(group => group.options).filter(option => contentVisibilityTiers.includes(option.value));
+    const tierOptions = tierOptionGroups.flatMap(group => group.options.map(option => ({...option, metadata: {group: group.label}})));
+    const selectedTierLabels = tierOptions.filter(option => contentVisibilityTiers.includes(option.value)).map(option => option.label).join(', ');
     const privateRssUrl = (savedIsPrivate && effectiveIsPrivate && siteData?.url && savedPublicHash) ? `${siteData.url.replace(/\/$/, '')}/${savedPublicHash}/rss` : null;
 
-    const setSelectedTiers = (selectedOptions: MultiValue<MultiSelectOption>) => {
-        const selectedTiers = selectedOptions.map(option => option.value);
+    const setSelectedTiers = (selectedTiers: string[]) => {
         updateSetting('default_content_visibility_tiers', JSON.stringify(selectedTiers));
     };
 
@@ -184,17 +194,16 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who should be able to browse your site?</div>
                 <div className="w-full md:flex-1">
-                    <Select
-                        containerClassName={isPrivateLocked ? 'relative z-10' : undefined}
-                        disabled={isPrivateLocked}
-                        options={SITE_VISIBILITY_OPTIONS}
-                        selectedOption={SITE_VISIBILITY_OPTIONS.find(option => option.value === (effectiveIsPrivate ? 'private' : 'public'))}
-                        testId='site-visibility-select'
-                        onSelect={(option) => {
-                            updateSetting('is_private', option?.value === 'private');
+                    <Field className={isPrivateLocked ? 'relative z-10' : undefined} data-disabled={isPrivateLocked || undefined}>
+                        <FieldLabel className='sr-only'>Who should be able to browse your site?</FieldLabel>
+                        <Select disabled={isPrivateLocked} value={effectiveIsPrivate ? 'private' : 'public'} onValueChange={(value) => {
+                            updateSetting('is_private', value === 'private');
                             handleEditingChange(true);
-                        }}
-                    />
+                        }}>
+                            <SelectTrigger aria-label='Who should be able to browse your site?' data-testid='site-visibility-select'><SelectValue>{getAccessOptionLabel(SITE_VISIBILITY_OPTIONS, effectiveIsPrivate ? 'private' : 'public')}</SelectValue></SelectTrigger>
+                            <SelectContent>{renderAccessOptions(SITE_VISIBILITY_OPTIONS)}</SelectContent>
+                        </Select>
+                    </Field>
                 </div>
             </div>
             {(effectiveIsPrivate || isPrivateLocked) && (
@@ -244,46 +253,57 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who should be able to subscribe to your site?</div>
                 <div className="w-full md:flex-1">
-                    <Select
-                        options={MEMBERS_SIGNUP_ACCESS_OPTIONS}
-                        selectedOption={MEMBERS_SIGNUP_ACCESS_OPTIONS.find(option => option.value === membersSignupAccess)}
-                        testId='subscription-access-select'
-                        onSelect={(option) => {
-                            updateSetting('members_signup_access', option?.value || null);
+                    <Field>
+                        <FieldLabel className='sr-only'>Who should be able to subscribe to your site?</FieldLabel>
+                        <Select value={membersSignupAccess} onValueChange={(value) => {
+                            updateSetting('members_signup_access', value);
                             handleEditingChange(true);
-                        }}
-                    />
+                        }}>
+                            <SelectTrigger aria-label='Who should be able to subscribe to your site?' data-testid='subscription-access-select'><SelectValue>{getAccessOptionLabel(MEMBERS_SIGNUP_ACCESS_OPTIONS, membersSignupAccess)}</SelectValue></SelectTrigger>
+                            <SelectContent>{renderAccessOptions(MEMBERS_SIGNUP_ACCESS_OPTIONS)}</SelectContent>
+                        </Select>
+                    </Field>
                 </div>
             </div>
             <Separator />
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who should have access to new posts?</div>
                 <div className="w-full md:flex-1">
-                    <Select
-                        options={DEFAULT_CONTENT_VISIBILITY_OPTIONS}
-                        selectedOption={DEFAULT_CONTENT_VISIBILITY_OPTIONS.find(option => option.value === defaultContentVisibility)}
-                        testId='default-post-access-select'
-                        onSelect={(option) => {
-                            updateSetting('default_content_visibility', option?.value || null);
+                    <Field>
+                        <FieldLabel className='sr-only'>Who should have access to new posts?</FieldLabel>
+                        <Select value={defaultContentVisibility} onValueChange={(value) => {
+                            updateSetting('default_content_visibility', value);
                             handleEditingChange(true);
-                        }}
-                    />
+                        }}>
+                            <SelectTrigger aria-label='Who should have access to new posts?' data-testid='default-post-access-select'><SelectValue>{getAccessOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility)}</SelectValue></SelectTrigger>
+                            <SelectContent>{renderAccessOptions(DEFAULT_CONTENT_VISIBILITY_OPTIONS)}</SelectContent>
+                        </Select>
+                    </Field>
                 </div>
             </div>
             {defaultContentVisibility === 'tiers' && (
                 <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                     <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Select specific tiers</div>
                     <div className="w-full md:flex-1">
-                        <MultiSelect
-                            color='black'
-                            options={tierOptionGroups.filter(group => group.options.length > 0)}
-                            testId='tiers-select'
-                            values={selectedTierOptions}
-                            onChange={(selectedOptions) => {
-                                setSelectedTiers(selectedOptions);
-                                handleEditingChange(true);
-                            }}
-                        />
+                        <Field>
+                            <FieldLabel className='sr-only'>Select specific tiers</FieldLabel>
+                            <Combobox open={tiersOpen} onOpenChange={setTiersOpen}>
+                                <ComboboxTrigger aria-label='Select specific tiers' data-testid='tiers-select'>
+                                    <ComboboxValue placeholder={!selectedTierLabels}>{selectedTierLabels || 'Select...'}</ComboboxValue>
+                                </ComboboxTrigger>
+                                <ComboboxContent>
+                                    <MultiSelectCombobox
+                                        groupBy={option => option.metadata?.group as string | undefined}
+                                        options={tierOptions}
+                                        values={contentVisibilityTiers}
+                                        onChange={(values) => {
+                                            setSelectedTiers(values);
+                                            handleEditingChange(true);
+                                        }}
+                                    />
+                                </ComboboxContent>
+                            </Combobox>
+                        </Field>
                     </div>
                 </div>
             )}
@@ -291,16 +311,16 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who can comment on posts?</div>
                 <div className="w-full md:flex-1">
-                    <Select
-                        options={COMMENTS_ENABLED_OPTIONS}
-                        selectedOption={COMMENTS_ENABLED_OPTIONS.find(option => option.value === commentsEnabled)}
-                        testId='commenting-select'
-                        title=""
-                        onSelect={(option) => {
-                            updateSetting('comments_enabled', option?.value || null);
+                    <Field>
+                        <FieldLabel className='sr-only'>Who can comment on posts?</FieldLabel>
+                        <Select value={commentsEnabled} onValueChange={(value) => {
+                            updateSetting('comments_enabled', value);
                             handleEditingChange(true);
-                        }}
-                    />
+                        }}>
+                            <SelectTrigger aria-label='Who can comment on posts?' data-testid='commenting-select'><SelectValue>{getAccessOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled)}</SelectValue></SelectTrigger>
+                            <SelectContent>{renderAccessOptions(COMMENTS_ENABLED_OPTIONS)}</SelectContent>
+                        </Select>
+                    </Field>
                 </div>
             </div>
         </SettingGroupContent>

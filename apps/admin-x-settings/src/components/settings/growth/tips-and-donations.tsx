@@ -1,7 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Button, CurrencyField, Heading, Select, SettingGroupContent, confirmIfDirty} from '@tryghost/admin-x-design-system';
+import {Button, CurrencyField, Heading, SettingGroupContent, confirmIfDirty} from '@tryghost/admin-x-design-system';
+import {ChevronDown} from 'lucide-react';
+import {MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {currencySelectGroups, validateCurrencyAmount} from '../../../utils/currency';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {withErrorBoundary} from '../../error-boundary';
@@ -10,6 +12,7 @@ import {withErrorBoundary} from '../../error-boundary';
 const MAX_AMOUNT = 10_000;
 
 const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const [currencyOpen, setCurrencyOpen] = useState(false);
     const {
         localSettings,
         siteData,
@@ -37,6 +40,7 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const suggestedAmountInCents = parseInt(donationsSuggestedAmount);
     const donateUrl = `${siteData?.url.replace(/\/$/, '')}/#/portal/support`;
+    const currencyOptions = currencySelectGroups().flatMap(group => group.options.map(option => ({...option, metadata: {groupKey: group.key, groupLabel: group.label}})));
 
     useEffect(() => {
         validate();
@@ -103,18 +107,33 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         inputRef={focusRef}
                         placeholder="5"
                         rightPlaceholder={(
-                            <Select
-                                border={false}
-                                clearBg={true}
-                                containerClassName='w-14'
-                                fullWidth={false}
-                                options={currencySelectGroups()}
-                                selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === donationsCurrency)}
-                                title='Currency'
-                                hideTitle
-                                isSearchable
-                                onSelect={option => handleSettingChange('donations_currency', option?.value || 'USD')}
-                            />
+                            <Popover open={currencyOpen} onOpenChange={setCurrencyOpen}>
+                                <PopoverTrigger asChild>
+                                    <button aria-label='Currency' className='flex h-full items-center gap-1 px-2 text-sm' role='combobox' type='button'>
+                                        {donationsCurrency}
+                                        <ChevronDown className='size-3.5 opacity-50' />
+                                    </button>
+                                </PopoverTrigger>
+                                <PopoverContent align='end' className='z-[9999] w-64 p-0'>
+                                    <MultiSelectCombobox
+                                        groupBy={option => ({
+                                            key: option.metadata?.groupKey as string,
+                                            label: option.metadata?.groupLabel as string
+                                        })}
+                                        i18n={{searchPlaceholder: 'Search currencies...'}}
+                                        isMultiSelect={false}
+                                        options={currencyOptions}
+                                        values={[donationsCurrency]}
+                                        autoCloseOnSelect
+                                        onChange={(values) => {
+                                            if (values[0]) {
+                                                handleSettingChange('donations_currency', values[0]);
+                                            }
+                                        }}
+                                        onClose={() => setCurrencyOpen(false)}
+                                    />
+                                </PopoverContent>
+                            </Popover>
                         )}
                         title='Suggested amount'
                         valueInCents={parseInt(donationsSuggestedAmount)}

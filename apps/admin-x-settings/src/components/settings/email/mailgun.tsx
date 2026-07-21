@@ -1,7 +1,8 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {IconLabel, Link, Select, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {IconLabel, Link, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {withErrorBoundary} from '../../error-boundary';
@@ -60,14 +61,15 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const inputs = (
         <SettingGroupContent>
             <div className='grid grid-cols-[120px_auto] gap-x-3 gap-y-6'>
-                <Select
-                    options={MAILGUN_REGIONS}
-                    selectedOption={MAILGUN_REGIONS.find(option => option.value === mailgunRegion)}
-                    title="Mailgun region"
-                    onSelect={(option) => {
-                        updateSetting('mailgun_base_url', option?.value || null);
-                    }}
-                />
+                <Field>
+                    <FieldLabel>Mailgun region</FieldLabel>
+                    <Select value={mailgunRegion ?? ''} onValueChange={value => updateSetting('mailgun_base_url', value)}>
+                        <SelectTrigger aria-label='Mailgun region'><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            {MAILGUN_REGIONS.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </Field>
                 <TextField
                     title='Mailgun domain'
                     value={mailgunDomain ?? ''}

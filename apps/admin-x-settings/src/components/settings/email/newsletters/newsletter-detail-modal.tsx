@@ -4,12 +4,12 @@ import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, type SelectOption, type Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, type Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {Separator} from '@tryghost/shade/components';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
@@ -68,6 +68,7 @@ const Sidebar: React.FC<{
     errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
+    type FontOption = {value: string; label: string; className?: string};
     const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
@@ -89,12 +90,12 @@ const Sidebar: React.FC<{
         setNewsletters(apiNewsletters || []);
     }, [apiNewsletters]);
 
-    const fontOptions: SelectOption[] = [
+    const fontOptions: FontOption[] = [
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
         {value: 'sans_serif', label: 'Clean sans-serif'}
     ];
 
-    const fontWeightOptions: Record<string, {options: SelectOption[], map?: Record<string, string>}> = {
+    const fontWeightOptions: Record<string, {options: FontOption[], map?: Record<string, string>}> = {
         sans_serif: {
             options: [
                 {value: 'normal', label: 'Regular', className: 'font-normal'},
@@ -228,8 +229,7 @@ const Sidebar: React.FC<{
         return option || headingFontWeightOptions[0];
     };
     // changing font category changes available weights so we may need to map to the closest match
-    const changeSelectedTitleFont = (option: SelectOption | null) => {
-        const categoryValue = option?.value || 'sans_serif';
+    const changeSelectedTitleFont = (categoryValue: string) => {
 
         // ensure the weight is valid for the new font by switching to closest match
         const currentWeight = newsletter.title_font_weight;
@@ -448,31 +448,39 @@ const Sidebar: React.FC<{
                     </div>
                     <div className='flex w-full items-center justify-between gap-2'>
                         <div className='shrink-0'>Heading font</div>
-                        <Select
-                            containerClassName='max-w-[200px]'
-                            options={fontOptions}
-                            selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
-                            onSelect={changeSelectedTitleFont}
-                        />
+                        <Field className='max-w-[200px]'>
+                            <FieldLabel className='sr-only'>Heading font</FieldLabel>
+                            <Select value={newsletter.title_font_category} onValueChange={changeSelectedTitleFont}>
+                                <SelectTrigger aria-label='Heading font'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {fontOptions.map(option => <SelectItem key={option.value} value={option.value}><span className={option.className}>{option.label}</span></SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </Field>
                     </div>
                     <div className='flex w-full items-center justify-between gap-2'>
                         <div className='shrink-0'>Heading weight</div>
-                        <Select
-                            containerClassName='max-w-[200px]'
-                            options={headingFontWeightOptions}
-                            selectedOption={getSelectedFontWeightOption()}
-                            onSelect={option => updateNewsletter({title_font_weight: option?.value})}
-                        />
+                        <Field className='max-w-[200px]'>
+                            <FieldLabel className='sr-only'>Heading weight</FieldLabel>
+                            <Select value={getSelectedFontWeightOption().value} onValueChange={value => updateNewsletter({title_font_weight: value})}>
+                                <SelectTrigger aria-label='Heading weight'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {headingFontWeightOptions.map(option => <SelectItem key={option.value} value={option.value}><span className={option.className}>{option.label}</span></SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </Field>
                     </div>
                     <div className='flex w-full items-center justify-between gap-2'>
                         <div className='shrink-0'>Body font</div>
-                        <Select
-                            containerClassName='max-w-[200px]'
-                            options={fontOptions}
-                            selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
-                            testId='body-font-select'
-                            onSelect={option => updateNewsletter({body_font_category: option?.value})}
-                        />
+                        <Field className='max-w-[200px]'>
+                            <FieldLabel className='sr-only'>Body font</FieldLabel>
+                            <Select value={newsletter.body_font_category} onValueChange={value => updateNewsletter({body_font_category: value})}>
+                                <SelectTrigger aria-label='Body font' data-testid='body-font-select'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {fontOptions.map(option => <SelectItem key={option.value} value={option.value}><span className={option.className}>{option.label}</span></SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </Field>
                     </div>
                 </Form>
                 <Form className='mt-6' gap='xs' margins='lg' title='Header'>

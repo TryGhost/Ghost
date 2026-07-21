@@ -2,7 +2,8 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './tier-detail-preview';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, type ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
+import {Button, type ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
+import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldLabel, MultiSelectCombobox} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
@@ -15,6 +16,7 @@ export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
 
 const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const isFreeTier = tier?.type === 'free';
+    const [currencyOpen, setCurrencyOpen] = React.useState(false);
 
     const {updateRoute} = useRouting();
     const {mutateAsync: updateTier} = useEditTier();
@@ -25,6 +27,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const {localSettings, siteData} = useSettingGroup();
     const [portalPlansJson] = getSettingValues(localSettings, ['portal_plans']) as string[];
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
+    const currencyOptions = currencySelectGroups().flatMap(group => group.options.map(option => ({...option, metadata: {groupKey: group.key, groupLabel: group.label}})));
 
     const validators: {[key in keyof Tier]?: () => string | undefined} = {
         name: () => (formState.name ? undefined : 'Enter a name for the tier'),
@@ -220,18 +223,32 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             <div className='basis-1/2'>
                                 <div className='mb-1 flex h-6 items-center justify-between'>
                                     <Heading level={6}>Prices</Heading>
-                                    <div className='-mr-2 w-[50px]'>
-                                        <Select
-                                            border={false}
-                                            containerClassName='font-medium'
-                                            controlClasses={{menu: 'w-18'}}
-                                            options={currencySelectGroups()}
-                                            selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === formState.currency)}
-                                            size='xs'
-                                            clearBg
-                                            isSearchable
-                                            onSelect={option => updateForm(state => ({...state, currency: option?.value}))}
-                                        />
+                                    <div className='-mr-2 w-20'>
+                                        <Field>
+                                            <FieldLabel className='sr-only'>Currency</FieldLabel>
+                                            <Combobox open={currencyOpen} onOpenChange={setCurrencyOpen}>
+                                                <ComboboxTrigger aria-label='Currency'><ComboboxValue>{formState.currency}</ComboboxValue></ComboboxTrigger>
+                                                <ComboboxContent align='end' className='w-64'>
+                                                    <MultiSelectCombobox
+                                                        groupBy={option => ({
+                                                            key: option.metadata?.groupKey as string,
+                                                            label: option.metadata?.groupLabel as string
+                                                        })}
+                                                        i18n={{searchPlaceholder: 'Search currencies...'}}
+                                                        isMultiSelect={false}
+                                                        options={currencyOptions}
+                                                        values={formState.currency ? [formState.currency] : []}
+                                                        autoCloseOnSelect
+                                                        onChange={(values) => {
+                                                            if (values[0]) {
+                                                                updateForm(state => ({...state, currency: values[0]}));
+                                                            }
+                                                        }}
+                                                        onClose={() => setCurrencyOpen(false)}
+                                                    />
+                                                </ComboboxContent>
+                                            </Combobox>
+                                        </Field>
                                     </div>
                                 </div>
                                 <div className='flex flex-col gap-2'>
