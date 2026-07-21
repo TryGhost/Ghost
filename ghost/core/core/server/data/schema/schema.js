@@ -489,6 +489,9 @@ module.exports = {
         currency: {type: 'string', maxlength: 50, nullable: true},
         monthly_price: {type: 'integer', unsigned: true, nullable: true},
         yearly_price: {type: 'integer', unsigned: true, nullable: true},
+        // JSON map of gift duration in months -> one-off gift price amount,
+        // e.g. {"3": 2250}; durations without an entry use derived pricing
+        gift_prices: {type: 'text', maxlength: 65535, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         // To be removed in future

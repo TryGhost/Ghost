@@ -694,6 +694,10 @@
             "defaultValue": null,
             "type": "string",
             "flags": "PUBLIC"
+        },
+        "gift_durations": {
+            "defaultValue": "[1,12]",
+            "type": "array"
         }
     },
     "recommendations": {

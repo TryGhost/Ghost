@@ -4,7 +4,7 @@ import CloseButton from '../common/close-button';
 import GiftCard from '../common/gift-card';
 import GiftDetailsToggle from '../common/gift-details-toggle';
 import copyTextToClipboard from '../../utils/copy-to-clipboard';
-import {getAvailableProducts} from '../../utils/helpers';
+import {getAvailableProducts, getGiftPrice} from '../../utils/helpers';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
 import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
@@ -90,6 +90,7 @@ const GiftSuccessPage = () => {
     const token = pageData?.token;
     const tierId = pageData?.tierId;
     const cadence = pageData?.cadence;
+    const duration = pageData?.duration || 1;
     const siteUrl = site?.url || '';
     const siteIcon = site?.icon;
     const siteTitle = site?.title || '';
@@ -140,9 +141,9 @@ const GiftSuccessPage = () => {
                             <div className='gh-portal-gift-checkout-card-stack' data-revealing={showDetails}>
                                 <GiftCard
                                     cardRef={cardRef}
-                                    duration={tier && cadence ? getGiftDurationLabel({cadence, duration: 1}) : null}
+                                    duration={tier && cadence ? getGiftDurationLabel({cadence, duration}) : null}
                                     tierName={tier && cadence ? tier.name : null}
-                                    giftValue={tier && cadence ? formatGiftValue(cadence === 'month' ? tier.monthlyPrice : tier.yearlyPrice) : null}
+                                    giftValue={tier && cadence ? formatGiftValue(getGiftPrice(tier, cadence === 'year' ? duration * 12 : duration)) : null}
                                     siteIcon={siteIcon}
                                     siteTitle={siteTitle}
                                 />

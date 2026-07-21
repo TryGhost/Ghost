@@ -183,7 +183,16 @@ class PaymentsService {
             customer = await this.getCustomerForMember(member);
         }
 
-        const amount = tier.getPrice(cadence);
+        // The charge is a one-time payment for the full gifted period. A tier
+        // can set an explicit gift price for a duration; otherwise the amount
+        // is derived from the anchor cadence price
+        const months = cadence === 'year' ? duration * 12 : duration;
+        const amount = tier.getGiftPrice(months) ?? tier.getPrice(cadence) * duration;
+        if (!Number.isSafeInteger(amount) || amount <= 0) {
+            throw new BadRequestError({
+                message: `Tier does not have a valid ${cadence}ly price for gifting`
+            });
+        }
         const currency = tier.currency.toLowerCase();
 
         const token = this.giftService.service.generateToken();
@@ -193,6 +202,7 @@ class PaymentsService {
         successUrlObj.searchParams.set('gift_token', token);
         successUrlObj.searchParams.set('gift_tier', tier.id.toHexString());
         successUrlObj.searchParams.set('gift_cadence', cadence);
+        successUrlObj.searchParams.set('gift_duration', String(duration));
 
         const data = {
             amount,

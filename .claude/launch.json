@@ -8,11 +8,17 @@
             "port": 2368
         },
         {
+            "name": "ghost-dev-stripe",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": ["dev:stripe"],
+            "port": 2368,
+            "autoPort": false
+        },
+        {
             "name": "portal-harness",
             "runtimeExecutable": "pnpm",
             "runtimeArgs": ["--filter", "@tryghost/portal", "exec", "vite", "--config", "harness/vite.config.mjs"],
             "port": 5199
-
         }
     ]
 }

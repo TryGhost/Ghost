@@ -81,8 +81,9 @@ describe('RouterController', function () {
             isSet: sinon.stub().returns(true)
         };
         settingsCache = {
-            get: sinon.stub().withArgs('all_blocked_email_domains').returns(['spam.xyz'])
+            get: sinon.stub().returns(undefined)
         };
+        settingsCache.get.withArgs('all_blocked_email_domains').returns(['spam.xyz']);
         settingsHelpers = {
             getMembersSupportAddress: sinon.stub().returns('noreply@example.com'),
             arePaidMembersEnabled: sinon.stub().returns(true),
@@ -907,6 +908,107 @@ describe('RouterController', function () {
                 }, mockRes);
 
                 sinon.assert.calledOnce(getGiftLinkSpy);
+            });
+
+            it('maps a legacy month cadence to a 1 month duration', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({cadence: 'month', duration: 1}));
+            });
+
+            it('maps a legacy year cadence to a 1 year duration', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'year', metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({cadence: 'year', duration: 1}));
+            });
+
+            it('accepts a month-count duration offered by the gift_durations setting', async function () {
+                settingsCache.get.withArgs('gift_durations').returns([3, 6]);
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', duration: 6, metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({cadence: 'month', duration: 6}));
+            });
+
+            it('anchors multiples of 12 months to the yearly cadence', async function () {
+                settingsCache.get.withArgs('gift_durations').returns([1, 12, 24]);
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', duration: 24, metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({cadence: 'year', duration: 2}));
+            });
+
+            it('rejects a duration the site does not offer', async function () {
+                settingsCache.get.withArgs('gift_durations').returns([3, 6]);
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', duration: 12, metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.context, 'Gift duration "12" is not available');
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
+            });
+
+            it('rejects a legacy cadence excluded by the gift_durations setting', async function () {
+                settingsCache.get.withArgs('gift_durations').returns([3, 6]);
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
+            });
+
+            it('rejects a non-integer duration', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', duration: 1.5, metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
+            });
+
+            it('rejects a request with neither duration nor cadence', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
             });
         });
 

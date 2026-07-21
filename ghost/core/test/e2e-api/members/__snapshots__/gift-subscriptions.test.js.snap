@@ -42,6 +42,24 @@ Object {
 }
 `;
 
+exports[`Gift Subscriptions Purchase a gift Rejects a duration the site does not offer 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Gift duration \\"5\\" is not available",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Bad Request.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
 exports[`Gift Subscriptions Purchase a gift Rejects purchase with an offer 1: [body] 1`] = `
 Object {
   "errors": Array [

@@ -33,7 +33,11 @@ import {
     isComplimentaryMember,
     subscriptionHasFreeTrial,
     addMonths,
-    formatPrice
+    formatPrice,
+    getGiftCadenceParts,
+    getOfferedGiftDurations,
+    getGiftPrice,
+    getDefaultGiftDuration
 } from '../../src/utils/helpers';
 import * as Fixtures from '../../src/utils/fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from './test-fixtures';
@@ -988,6 +992,103 @@ describe('Helpers - ', () => {
         test('returns true when editor default email recipients is set to filter', () => {
             const site = {editor_default_email_recipients: 'filter'};
             expect(hasNewsletterSendingEnabled({site})).toBe(true);
+        });
+    });
+
+    describe('getGiftCadenceParts - ', () => {
+        test('anchors multiples of 12 months to the yearly cadence', () => {
+            expect(getGiftCadenceParts(12)).toEqual({cadence: 'year', duration: 1});
+            expect(getGiftCadenceParts(24)).toEqual({cadence: 'year', duration: 2});
+        });
+
+        test('anchors other durations to the monthly cadence', () => {
+            expect(getGiftCadenceParts(1)).toEqual({cadence: 'month', duration: 1});
+            expect(getGiftCadenceParts(3)).toEqual({cadence: 'month', duration: 3});
+            expect(getGiftCadenceParts(6)).toEqual({cadence: 'month', duration: 6});
+        });
+    });
+
+    describe('getOfferedGiftDurations - ', () => {
+        test('defaults to 1 month and 1 year when the setting is absent', () => {
+            const site = {portal_plans: ['monthly', 'yearly']};
+            expect(getOfferedGiftDurations({site})).toEqual([1, 12]);
+        });
+
+        test('layers configured durations on top of the enabled portal plans', () => {
+            const site = {portal_plans: ['monthly'], gift_durations: [1, 3, 6, 12]};
+            expect(getOfferedGiftDurations({site})).toEqual([1, 3, 6]);
+        });
+
+        test('only offers year durations when the yearly plan is enabled', () => {
+            const site = {portal_plans: ['yearly'], gift_durations: [1, 3, 12]};
+            expect(getOfferedGiftDurations({site})).toEqual([12]);
+        });
+
+        test('returns an empty list when no anchor plan is enabled', () => {
+            const site = {portal_plans: ['free'], gift_durations: [3, 6]};
+            expect(getOfferedGiftDurations({site})).toEqual([]);
+        });
+
+        test('sorts durations and drops invalid entries', () => {
+            const site = {portal_plans: ['monthly', 'yearly'], gift_durations: [12, 'nope', 3, 0, -1, 1.5]};
+            expect(getOfferedGiftDurations({site})).toEqual([3, 12]);
+        });
+    });
+
+    describe('getGiftPrice - ', () => {
+        const product = {
+            monthlyPrice: {amount: 500, currency: 'usd'},
+            yearlyPrice: {amount: 5000, currency: 'usd'}
+        };
+
+        test('multiplies the monthly price for month-anchored durations', () => {
+            expect(getGiftPrice(product, 6)).toEqual({amount: 3000, currency: 'usd'});
+        });
+
+        test('uses the yearly price for year-anchored durations', () => {
+            expect(getGiftPrice(product, 12)).toEqual({amount: 5000, currency: 'usd'});
+        });
+
+        test('returns null when the anchor price is missing', () => {
+            expect(getGiftPrice({yearlyPrice: {amount: 5000, currency: 'usd'}}, 3)).toBeNull();
+        });
+
+        test('prefers the tier gift price override for the duration', () => {
+            const withOverrides = {...product, gift_prices: {6: 4450, 12: 8900}};
+            expect(getGiftPrice(withOverrides, 6)).toEqual({amount: 4450, currency: 'usd'});
+            expect(getGiftPrice(withOverrides, 12)).toEqual({amount: 8900, currency: 'usd'});
+        });
+
+        test('derives the price for durations without an override', () => {
+            const withOverrides = {...product, gift_prices: {6: 4450}};
+            expect(getGiftPrice(withOverrides, 3)).toEqual({amount: 1500, currency: 'usd'});
+        });
+
+        test('ignores invalid override values', () => {
+            expect(getGiftPrice({...product, gift_prices: {6: 'nope'}}, 6)).toEqual({amount: 3000, currency: 'usd'});
+            expect(getGiftPrice({...product, gift_prices: {6: 0}}, 6)).toEqual({amount: 3000, currency: 'usd'});
+        });
+    });
+
+    describe('getDefaultGiftDuration - ', () => {
+        test('prefers 1 year when offered', () => {
+            const site = {portal_plans: ['monthly', 'yearly'], gift_durations: [1, 3, 12]};
+            expect(getDefaultGiftDuration({site})).toBe(12);
+        });
+
+        test('prefers 1 month when the default portal plan is monthly', () => {
+            const site = {portal_plans: ['monthly', 'yearly'], portal_default_plan: 'monthly', gift_durations: [1, 12]};
+            expect(getDefaultGiftDuration({site})).toBe(1);
+        });
+
+        test('falls back to the longest offered duration', () => {
+            const site = {portal_plans: ['monthly'], gift_durations: [3, 6]};
+            expect(getDefaultGiftDuration({site})).toBe(6);
+        });
+
+        test('returns null when nothing is offered', () => {
+            const site = {portal_plans: ['free'], gift_durations: [3]};
+            expect(getDefaultGiftDuration({site})).toBeNull();
         });
     });
 });

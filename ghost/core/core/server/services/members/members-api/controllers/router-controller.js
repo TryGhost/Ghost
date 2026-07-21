@@ -683,6 +683,44 @@ module.exports = class RouterController {
      * @param {boolean} options.isAuthenticated
      * @returns
      */
+    /**
+     * Resolves a requested gift duration against the durations the site offers.
+     *
+     * Durations are configured as month-counts in the `gift_durations` setting.
+     * Multiples of 12 are anchored to the tier's yearly price, everything else
+     * to the monthly price.
+     *
+     * @param {object} body
+     * @param {number|string} [body.duration] - requested duration in months
+     * @param {'month'|'year'} [body.cadence] - legacy clients send a cadence instead of a duration
+     * @returns {{cadence: 'month'|'year', duration: number}}
+     */
+    _getGiftDuration(body) {
+        let months;
+        if (body.duration !== undefined && body.duration !== null) {
+            months = Number(body.duration);
+        } else if (body.cadence === 'year') {
+            months = 12;
+        } else if (body.cadence === 'month') {
+            months = 1;
+        }
+
+        const configuredDurations = this._settingsCache.get('gift_durations');
+        const offeredDurations = Array.isArray(configuredDurations) ? configuredDurations.map(Number) : [1, 12];
+
+        if (!Number.isInteger(months) || months <= 0 || !offeredDurations.includes(months)) {
+            throw new BadRequestError({
+                message: tpl(messages.badRequest),
+                context: `Gift duration "${body.duration ?? body.cadence}" is not available`
+            });
+        }
+
+        if (months % 12 === 0) {
+            return {cadence: 'year', duration: months / 12};
+        }
+        return {cadence: 'month', duration: months};
+    }
+
     async _createGiftCheckoutSession(options) {
         if (!this._settingsHelpers.areGiftSubscriptionsEnabled()) {
             throw new DisabledFeatureError({
@@ -842,12 +880,13 @@ module.exports = class RouterController {
                 });
             }
 
-            const data = await this._getSubscriptionCheckoutData(req.body);
+            const {cadence, duration} = this._getGiftDuration(req.body);
+            const data = await this._getSubscriptionCheckoutData({...req.body, cadence});
 
             response = await this._createGiftCheckoutSession({
                 ...options,
                 ...data,
-                duration: 1, // gifts are currently 1 month or 1 year only
+                duration,
                 successUrl: siteUrl,
                 cancelUrl: options.cancelUrl || siteUrl
             });

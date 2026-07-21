@@ -9,7 +9,7 @@ import LoadingPage from './loading-page';
 import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
 import giftCardOrbUrl from '../../images/gift-card-orb.webp';
-import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
+import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getGiftCadenceParts, getOfferedGiftDurations, getGiftPrice, getDefaultGiftDuration} from '../../utils/helpers';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
 import {sanitizeHtml} from '../../utils/sanitize-html';
 import {ValidateInputForm} from '../../utils/form';
@@ -168,8 +168,32 @@ export const GiftPageStyles = `
     margin-bottom: 12px;
 }
 
-.gh-portal-gift-checkout .gh-portal-products-pricetoggle {
+.gh-portal-gift-duration-switch {
+    display: flex;
+    background: #F3F3F3;
+    width: 100%;
+    border-radius: 999px;
+    padding: 4px;
+    height: 44px;
     margin: 0;
+}
+
+.gh-portal-gift-duration-switch .gh-portal-btn {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    height: 100% !important;
+    border-radius: 999px;
+    background: transparent;
+    font-size: 1.4rem;
+    white-space: nowrap;
+    padding: 0 8px;
+}
+
+.gh-portal-gift-duration-switch .gh-portal-btn.active {
+    background: var(--white);
+    box-shadow: 0px 1px 3px rgba(var(--blackrgb), 0.08);
+    color: var(--grey0);
 }
 
 .gh-portal-gift-checkout-email .gh-portal-input-labelcontainer {
@@ -687,30 +711,29 @@ export const GiftPageStyles = `
 }
 `;
 
-function GiftPriceSwitch({selectedInterval, setSelectedInterval}) {
-    const {site} = useContext(AppContext);
-    const {portal_plans: portalPlans} = site;
-
-    if (!portalPlans.includes('monthly') || !portalPlans.includes('yearly')) {
+function GiftDurationSwitch({offeredDurations, activeDuration, setSelectedDuration}) {
+    if (offeredDurations.length < 2) {
         return null;
     }
 
     return (
-        <div className={'gh-portal-products-pricetoggle' + (selectedInterval === 'month' ? ' left' : '')}>
-            <button
-                data-test-button='switch-monthly'
-                className={'gh-portal-btn' + (selectedInterval === 'month' ? ' active' : '')}
-                onClick={() => setSelectedInterval('month')}
-            >
-                {t('1 month')}
-            </button>
-            <button
-                data-test-button='switch-yearly'
-                className={'gh-portal-btn' + (selectedInterval === 'year' ? ' active' : '')}
-                onClick={() => setSelectedInterval('year')}
-            >
-                {t('1 year')}
-            </button>
+        <div className='gh-portal-gift-duration-switch' role='radiogroup' aria-label={t('Gift duration')}>
+            {offeredDurations.map((months) => {
+                const isActive = months === activeDuration;
+                return (
+                    <button
+                        key={months}
+                        type='button'
+                        role='radio'
+                        aria-checked={isActive}
+                        data-test-button={`switch-duration-${months}`}
+                        className={'gh-portal-btn' + (isActive ? ' active' : '')}
+                        onClick={() => setSelectedDuration(months)}
+                    >
+                        {getGiftDurationLabel(getGiftCadenceParts(months))}
+                    </button>
+                );
+            })}
         </div>
     );
 }
@@ -723,14 +746,13 @@ export function formatGiftValue(price) {
     return `${getCurrencySymbol(currency)}${formatNumber(getStripeAmount(amount))}`;
 }
 
-function getTierPriceLabel(product, selectedInterval) {
-    const activePrice = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
-    return formatGiftValue(activePrice);
+function getTierPriceLabel(product, months) {
+    return formatGiftValue(getGiftPrice(product, months));
 }
 
 const GiftPage = () => {
     const {site, member, brandColor, action, doAction, lastPage} = useContext(AppContext);
-    const [selectedInterval, setSelectedInterval] = useState(null);
+    const [selectedDuration, setSelectedDuration] = useState(null);
     const [selectedProductId, setSelectedProductId] = useState(null);
     const [email, setEmail] = useState('');
     const [errors, setErrors] = useState({});
@@ -802,8 +824,10 @@ const GiftPage = () => {
         return <LoadingPage />;
     }
 
-    const {portal_plans: portalPlans, portal_default_plan: portalDefaultPlan} = site;
-    const activeInterval = getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval});
+    const offeredDurations = getOfferedGiftDurations({site});
+    const activeDuration = (selectedDuration && offeredDurations.includes(selectedDuration))
+        ? selectedDuration
+        : getDefaultGiftDuration({site});
     const products = getAvailableProducts({site}).filter(p => p.type === 'paid');
 
     const siteIcon = site.icon;
@@ -818,7 +842,7 @@ const GiftPage = () => {
     const descriptionBlockCount = (giftPageDescriptionHtml.match(/<(p|ul|ol|br)\b/g) || []).length;
     const isDescriptionCollapsible = descriptionTextLength > 240 || descriptionBlockCount > 2;
 
-    if (products.length === 0) {
+    if (products.length === 0 || !activeDuration) {
         return (
             <>
                 <BackButton hidden={!lastPage} onClick={() => doAction('back')} />
@@ -896,7 +920,10 @@ const GiftPage = () => {
 
         doAction('checkoutGift', {
             tierId: activeProduct.id,
-            cadence: activeInterval,
+            duration: activeDuration,
+            // Older Ghost backends only understand a cadence; send the anchor
+            // cadence alongside so the request still resolves there
+            cadence: getGiftCadenceParts(activeDuration).cadence,
             ...(!isLoggedIn ? {email: customerEmail} : {})
         });
     };
@@ -951,9 +978,10 @@ const GiftPage = () => {
 
                             <div className='gh-portal-gift-checkout-section'>
                                 <div className='gh-portal-gift-checkout-label'>{isSingleTier ? t('Membership details') : t('Tier')}</div>
-                                <GiftPriceSwitch
-                                    selectedInterval={activeInterval}
-                                    setSelectedInterval={setSelectedInterval}
+                                <GiftDurationSwitch
+                                    offeredDurations={offeredDurations}
+                                    activeDuration={activeDuration}
+                                    setSelectedDuration={setSelectedDuration}
                                 />
                             </div>
 
@@ -985,7 +1013,7 @@ const GiftPage = () => {
                                                     <div className='gh-portal-gift-checkout-tier-content'>
                                                         <div className='gh-portal-gift-checkout-tier-heading'>
                                                             <span className='gh-portal-gift-checkout-tier-name'>{product.name}</span>
-                                                            <span className='gh-portal-gift-checkout-tier-price'>{getTierPriceLabel(product, activeInterval)}</span>
+                                                            <span className='gh-portal-gift-checkout-tier-price'>{getTierPriceLabel(product, activeDuration)}</span>
                                                         </div>
                                                         {product.description && (
                                                             <p className='gh-portal-gift-checkout-tier-description'>{product.description}</p>
@@ -1042,9 +1070,9 @@ const GiftPage = () => {
                             <div className='gh-portal-gift-checkout-card-stack'>
                                 <GiftCard
                                     cardRef={cardRef}
-                                    duration={getGiftDurationLabel({cadence: activeInterval, duration: 1})}
+                                    duration={getGiftDurationLabel(getGiftCadenceParts(activeDuration))}
                                     tierName={activeProduct.name}
-                                    giftValue={getTierPriceLabel(activeProduct, activeInterval)}
+                                    giftValue={getTierPriceLabel(activeProduct, activeDuration)}
                                     siteIcon={siteIcon}
                                     siteTitle={siteTitle}
                                 />

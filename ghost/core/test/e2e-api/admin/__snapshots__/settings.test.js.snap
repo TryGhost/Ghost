@@ -353,6 +353,10 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
+    },
+    Object {
       "key": "recommendations_enabled",
       "value": false,
     },
@@ -1256,6 +1260,10 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
+    },
+    Object {
       "key": "recommendations_enabled",
       "value": false,
     },
@@ -1710,6 +1718,10 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
+    },
+    Object {
       "key": "recommendations_enabled",
       "value": false,
     },
@@ -2162,6 +2174,10 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
     },
     Object {
       "key": "recommendations_enabled",
@@ -2663,6 +2679,10 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
+    },
+    Object {
       "key": "recommendations_enabled",
       "value": false,
     },
@@ -3114,6 +3134,10 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
     },
     Object {
       "key": "recommendations_enabled",
@@ -4056,6 +4080,10 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
+    },
+    Object {
       "key": "recommendations_enabled",
       "value": false,
     },
@@ -4510,6 +4538,10 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
+    },
+    Object {
       "key": "recommendations_enabled",
       "value": false,
     },
@@ -4962,6 +4994,10 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
     },
     Object {
       "key": "recommendations_enabled",
@@ -5422,6 +5458,10 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
+    },
+    Object {
       "key": "recommendations_enabled",
       "value": false,
     },
@@ -5873,6 +5913,10 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
     },
     Object {
       "key": "recommendations_enabled",
@@ -6331,6 +6375,10 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
     },
     Object {
       "key": "recommendations_enabled",
@@ -7179,6 +7227,10 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
+    },
+    Object {
       "key": "recommendations_enabled",
       "value": false,
     },
@@ -7631,6 +7683,10 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
     },
     Object {
       "key": "recommendations_enabled",
@@ -8088,6 +8144,10 @@ Object {
       "value": "500",
     },
     Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
+    },
+    Object {
       "key": "recommendations_enabled",
       "value": false,
     },
@@ -8541,6 +8601,10 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
     },
     Object {
       "key": "recommendations_enabled",
@@ -9094,6 +9158,10 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "500",
+    },
+    Object {
+      "key": "gift_durations",
+      "value": "[1,12]",
     },
     Object {
       "key": "recommendations_enabled",

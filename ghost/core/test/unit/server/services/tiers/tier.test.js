@@ -96,6 +96,74 @@ describe('Tier', function () {
             assert.equal(tier.getPrice('year'), 5000);
         });
 
+        it('Validates gift prices', async function () {
+            const tier = await Tier.create({
+                ...validInput,
+                giftPrices: {3: 2250, '6': 4450}
+            });
+
+            assert.equal(tier.getGiftPrice(3), 2250);
+            assert.equal(tier.getGiftPrice(6), 4450, 'String month keys should be normalized');
+            assert.equal(tier.getGiftPrice(12), null, 'Durations without an override resolve to null');
+            assert.deepEqual(tier.toJSON().giftPrices, {3: 2250, 6: 4450});
+
+            const missingAmounts = await Tier.create({
+                ...validInput,
+                giftPrices: {3: null, 6: 4450}
+            });
+            assert.equal(missingAmounts.getGiftPrice(3), null, 'Empty amounts mean derived pricing');
+
+            const invalidGiftPrices = [
+                ['nope'],
+                {0: 100},
+                {1.5: 100},
+                {121: 100},
+                {3: -100},
+                {3: 22.5},
+                {3: 10000000000}
+            ];
+            for (const giftPrices of invalidGiftPrices) {
+                await assertError(async function () {
+                    await Tier.create({...validInput, giftPrices});
+                });
+            }
+
+            await assertError(async function () {
+                await Tier.create({
+                    ...validInput,
+                    type: 'free',
+                    currency: null,
+                    monthlyPrice: null,
+                    yearlyPrice: null,
+                    trialDays: null,
+                    giftPrices: {3: 100}
+                });
+            });
+        });
+
+        it('Can update gift prices via updatePricing and adds an event', async function () {
+            const tier = await Tier.create(validInput);
+
+            tier.updatePricing({
+                currency: tier.currency,
+                monthlyPrice: tier.monthlyPrice,
+                yearlyPrice: tier.yearlyPrice,
+                giftPrices: {6: 4450}
+            });
+
+            assert.equal(tier.getGiftPrice(6), 4450);
+            assert(tier.events.find(event => event instanceof TierPriceChangeEvent));
+
+            const eventCount = tier.events.length;
+            tier.updatePricing({
+                currency: tier.currency,
+                monthlyPrice: tier.monthlyPrice,
+                yearlyPrice: tier.yearlyPrice,
+                giftPrices: {6: 4450}
+            });
+            assert.equal(tier.events.length, eventCount, 'Unchanged gift prices should not add an event');
+        });
+
         it('Does not error for valid inputs', async function () {
             for (const validInputItem of validInputs) {
                 let input = {};

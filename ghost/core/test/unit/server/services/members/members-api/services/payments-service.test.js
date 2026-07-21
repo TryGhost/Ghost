@@ -395,6 +395,86 @@ describe('PaymentsService', function () {
             assert.equal(successUrl.searchParams.get('gift_token'), args.metadata.gift_token);
             assert.equal(successUrl.searchParams.get('gift_tier'), tier.id.toHexString());
             assert.equal(successUrl.searchParams.get('gift_cadence'), 'year');
+            assert.equal(successUrl.searchParams.get('gift_duration'), '1');
+        });
+
+        it('charges the cadence price multiplied by the duration', async function () {
+            const tier = await createTier({monthlyPrice: 1000, yearlyPrice: 10000});
+
+            await service.getGiftPaymentLink({
+                ...defaultGiftOptions,
+                tier,
+                cadence: 'month',
+                duration: 6
+            });
+
+            const args = getStripeArgs();
+            assert.equal(args.amount, 6000);
+            assert.equal(args.duration, 6);
+            assert.equal(args.metadata.duration, '6');
+        });
+
+        it('charges the yearly price for year-cadence gifts', async function () {
+            const tier = await createTier({monthlyPrice: 1000, yearlyPrice: 10000});
+
+            await service.getGiftPaymentLink({
+                ...defaultGiftOptions,
+                tier,
+                cadence: 'year',
+                duration: 1
+            });
+
+            assert.equal(getStripeArgs().amount, 10000);
+        });
+
+        it('prefers the tier gift price override for the requested duration', async function () {
+            const tier = await createTier({monthlyPrice: 1000, yearlyPrice: 10000, giftPrices: {6: 4450, 12: 8900}});
+
+            await service.getGiftPaymentLink({
+                ...defaultGiftOptions,
+                tier,
+                cadence: 'month',
+                duration: 6
+            });
+
+            assert.equal(getStripeArgs().amount, 4450);
+        });
+
+        it('uses the gift price override for year-cadence durations', async function () {
+            const tier = await createTier({monthlyPrice: 1000, yearlyPrice: 10000, giftPrices: {12: 8900}});
+
+            await service.getGiftPaymentLink({
+                ...defaultGiftOptions,
+                tier,
+                cadence: 'year',
+                duration: 1
+            });
+
+            assert.equal(getStripeArgs().amount, 8900);
+        });
+
+        it('derives the amount for durations without an override', async function () {
+            const tier = await createTier({monthlyPrice: 1000, yearlyPrice: 10000, giftPrices: {6: 4450}});
+
+            await service.getGiftPaymentLink({
+                ...defaultGiftOptions,
+                tier,
+                cadence: 'month',
+                duration: 3
+            });
+
+            assert.equal(getStripeArgs().amount, 3000);
+        });
+
+        it('rejects when the anchor price is missing', async function () {
+            const tier = await createTier({monthlyPrice: 1000, yearlyPrice: 10000});
+            sinon.stub(tier, 'getPrice').returns(null);
+
+            await assert.rejects(
+                service.getGiftPaymentLink({...defaultGiftOptions, tier, cadence: 'month', duration: 3}),
+                /does not have a valid monthly price/
+            );
+            sinon.assert.notCalled(createGiftCheckoutSessionStub);
         });
 
         it('prevents caller metadata from overwriting gift-specific keys', async function () {

@@ -1,6 +1,18 @@
 const Tier = require('./tier');
 const nql = require('@tryghost/nql');
 
+function parseGiftPrices(value) {
+    if (!value) {
+        return {};
+    }
+    try {
+        const parsed = JSON.parse(value);
+        return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
+    } catch (err) {
+        return {};
+    }
+}
+
 /**
  * @typedef {import('./tiers-api').ITierRepository} ITierRepository
  */
@@ -73,6 +85,9 @@ module.exports = class TierRepository {
             currency: json.currency,
             monthlyPrice: json.monthly_price,
             yearlyPrice: json.yearly_price,
+            // gift_prices is stripped from the model's serialized output, so
+            // read the raw attribute directly
+            giftPrices: parseGiftPrices(model.get('gift_prices')),
             createdAt: json.created_at,
             updatedAt: json.updated_at,
             benefits: json.benefits.map(item => item.name)
@@ -128,6 +143,7 @@ module.exports = class TierRepository {
             currency: tier.currency,
             monthly_price: tier.monthlyPrice,
             yearly_price: tier.yearlyPrice,
+            gift_prices: Object.keys(tier.giftPrices).length ? JSON.stringify(tier.giftPrices) : null,
             created_at: tier.createdAt,
             updated_at: tier.updatedAt,
             benefits: tier.benefits.map(name => ({name}))

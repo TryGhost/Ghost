@@ -142,6 +142,7 @@
     "Gift a membership": "Title of the gift purchase page in Portal",
     "Gift could not be redeemed": "Error message when redeeming a gift subscription",
     "Gift details": "Button label in Portal to reveal the gift tier description and benefits on the gift checkout and redemption pages",
+    "Gift duration": "Accessible label for the duration selector (e.g. 1 month, 3 months, 1 year) on the Portal gift purchase page",
     "Gift redeemed! You're all set.": "Fallback success notification shown in Portal after a gift is redeemed when tier or expiry info is not available",
     "Gift subscription": "Label for a gift subscription, including members who have an active gift subscription and the Stripe Checkout product title when buying one",
     "Gift subscriptions are not available right now.": "Subtitle on the Portal gift purchase page shown when no paid tiers are available",

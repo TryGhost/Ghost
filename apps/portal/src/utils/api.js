@@ -622,7 +622,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async checkoutGift({tierId, cadence, email: customerEmail} = {}) {
+        async checkoutGift({tierId, cadence, duration, email: customerEmail} = {}) {
             const siteUrlObj = new URL(siteUrl);
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
 
@@ -646,6 +646,10 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 cadence,
                 cancelUrl: cancelUrlObj.href
             };
+
+            if (duration) {
+                body.duration = duration;
+            }
 
             if (customerEmail) {
                 body.customerEmail = customerEmail;

@@ -52,6 +52,11 @@ function convertTierInput(input) {
         delete converted.yearly_price;
     }
 
+    if (Reflect.has(converted, 'gift_prices')) {
+        converted.giftPrices = converted.gift_prices;
+        delete converted.gift_prices;
+    }
+
     return converted;
 }
 

@@ -20,6 +20,17 @@ const Product = ghostBookshelf.Model.extend({
         }
     },
 
+    serialize(options) {
+        const defaultSerializedObject = ghostBookshelf.Model.prototype.serialize.call(this, options);
+
+        // The raw gift_prices JSON column is an implementation detail of the
+        // tiers service; the tiers API exposes it as a parsed object, and
+        // product embeds (members, posts, ...) don't need it
+        delete defaultSerializedObject.gift_prices;
+
+        return defaultSerializedObject;
+    },
+
     relationshipBelongsTo: {
         benefits: 'benefits'
     },

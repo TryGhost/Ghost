@@ -638,6 +638,12 @@
             "type": "number"
         }
     },
+    "gifts": {
+        "gift_durations": {
+            "defaultValue": "[1,12]",
+            "type": "array"
+        }
+    },
     "recommendations": {
         "recommendations_enabled": {
             "defaultValue": "false",

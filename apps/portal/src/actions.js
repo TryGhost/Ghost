@@ -371,10 +371,11 @@ async function continueGiftSubscription({state, api}) {
 
 async function checkoutGift({data, state, api}) {
     try {
-        const {tierId, cadence, email} = data;
+        const {tierId, cadence, duration, email} = data;
         await api.member.checkoutGift({
             tierId,
             cadence,
+            duration,
             ...(email ? {email} : {})
         });
         return {

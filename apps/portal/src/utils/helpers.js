@@ -1048,6 +1048,60 @@ export function getActiveInterval({portalPlans, portalDefaultPlan, selectedInter
     return undefined;
 }
 
+// Gift durations are month-counts; multiples of 12 are anchored to the yearly
+// plan and price, everything else to the monthly plan and price.
+export function getGiftCadenceParts(months) {
+    if (months % 12 === 0) {
+        return {cadence: 'year', duration: months / 12};
+    }
+    return {cadence: 'month', duration: months};
+}
+
+export function getOfferedGiftDurations({site}) {
+    const {portal_plans: portalPlans = [], gift_durations: giftDurations} = site || {};
+    const configured = Array.isArray(giftDurations) ? giftDurations : [1, 12];
+
+    return configured
+        .map(Number)
+        .filter(months => Number.isInteger(months) && months > 0)
+        .filter((months) => {
+            const {cadence} = getGiftCadenceParts(months);
+            return portalPlans.includes(cadence === 'year' ? 'yearly' : 'monthly');
+        })
+        .sort((a, b) => a - b);
+}
+
+export function getGiftPrice(product, months) {
+    const {cadence, duration} = getGiftCadenceParts(months);
+    const basePrice = cadence === 'year' ? product?.yearlyPrice : product?.monthlyPrice;
+    if (!basePrice || basePrice.amount === undefined) {
+        return null;
+    }
+
+    // Tiers can set an explicit gift price per duration; fall back to the
+    // anchor cadence price multiplied out
+    const override = product?.gift_prices?.[months];
+    if (Number.isInteger(override) && override > 0) {
+        return {...basePrice, amount: override};
+    }
+
+    return {...basePrice, amount: basePrice.amount * duration};
+}
+
+export function getDefaultGiftDuration({site}) {
+    const offeredDurations = getOfferedGiftDurations({site});
+    if (offeredDurations.length === 0) {
+        return null;
+    }
+    if (site?.portal_default_plan === 'monthly' && offeredDurations.includes(1)) {
+        return 1;
+    }
+    if (offeredDurations.includes(12)) {
+        return 12;
+    }
+    return offeredDurations[offeredDurations.length - 1];
+}
+
 // Translate cadence to human readable string
 export function translateCadence(cadence) {
     if (cadence === 'month') {

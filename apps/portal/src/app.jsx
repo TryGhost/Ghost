@@ -595,7 +595,8 @@ export default class App extends React.Component {
             const token = qParams.get('gift_token');
             const tierId = qParams.get('gift_tier');
             const cadence = qParams.get('gift_cadence');
-            clearURLParams(['stripe', 'gift_token', 'gift_tier', 'gift_cadence']);
+            const duration = Number(qParams.get('gift_duration')) || 1;
+            clearURLParams(['stripe', 'gift_token', 'gift_tier', 'gift_cadence', 'gift_duration']);
             if (token) {
                 return {
                     showPopup: true,
@@ -603,7 +604,8 @@ export default class App extends React.Component {
                     pageData: {
                         token,
                         tierId,
-                        cadence
+                        cadence,
+                        duration
                     }
                 };
             }
