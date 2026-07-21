@@ -1324,7 +1324,7 @@ describe('Member Custom Fields Admin API', function () {
         let actorId: string;
 
         const customFieldActions = async () => {
-            const {body} = await agent.get('actions/?filter=resource_type:member_custom_field').expectStatus(200);
+            const {body} = await agent.get('actions/?filter=resource_type:member_custom_field&include=actor,resource').expectStatus(200);
             return body.actions;
         };
 
@@ -1347,6 +1347,7 @@ describe('Member Custom Fields Admin API', function () {
             assert.equal(contextOf(actions[0]).key, field.key);
             assert.equal(actions[0].actor_type, 'user');
             assert.equal(actions[0].actor_id, actorId);
+            assert.equal(actions[0].resource.name, field.name);
         });
 
         // `resource_id` holds 24 characters and a key derived from a publisher-chosen
@@ -1428,6 +1429,7 @@ describe('Member Custom Fields Admin API', function () {
             assert.ok(deleted, 'a deleted action should be recorded');
             assert.equal(contextOf(deleted).key, field.key);
             assert.equal(deleted.actor_id, actorId);
+            assert.deepEqual(deleted.resource, {});
         });
 
         it('records the whole lifecycle as an ordered, attributed, named timeline', async function () {
@@ -1461,6 +1463,7 @@ describe('Member Custom Fields Admin API', function () {
             for (const a of timeline) {
                 assert.equal(a.actor_id, actorId, `the ${a.event} action is attributed`);
                 assert.ok(contextOf(a)?.primary_name, `the ${a.event} action names the field`);
+                assert.deepEqual(a.resource, {}, `the ${a.event} action tolerates its deleted resource`);
             }
 
             // Names track the field at each point; the rename also records what it was.
