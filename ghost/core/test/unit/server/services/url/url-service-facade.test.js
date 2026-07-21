@@ -470,15 +470,43 @@ describe('UrlServiceFacade', function () {
             await flush();
         });
 
-        it('reports a parity mismatch when the lazy resource differs', async function () {
+        it('reports a parity mismatch when lazy resolves a different resource', async function () {
             urlService.getResource.returns({config: {type: 'posts'}, data: {id: 'eager', slug: 's'}});
-            lazyUrlService.resolveUrl.resolves({type: 'posts', id: 'eager', slug: 'different'});
+            lazyUrlService.resolveUrl.resolves({type: 'posts', id: 'different', slug: 's'});
 
             await compareFacade.resolveUrl('/x/');
             await flush();
 
             sinon.assert.calledOnce(logging.error);
             assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
+        });
+
+        it('reports when the URL resolves on one side but not the other', async function () {
+            urlService.getResource.returns({config: {type: 'posts'}, data: {id: 'eager', slug: 's'}});
+            lazyUrlService.resolveUrl.resolves(null);
+
+            await compareFacade.resolveUrl('/x/');
+            await flush();
+
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
+        });
+
+        it('does not report when both sides resolve the same resource with a different record shape', async function () {
+            // Same resolved resource, different serialization: lazy carries a
+            // `parent` key and an expanded image URL, eager keeps the placeholder.
+            urlService.getResource.returns({config: {type: 'tags'}, data: {
+                id: 'eager', slug: 'news', canonical_url: '__GHOST_URL__/tag/news/'
+            }});
+            lazyUrlService.resolveUrl.resolves({
+                type: 'tags', id: 'eager', slug: 'news', parent: null,
+                canonical_url: 'https://example.com/tag/news/'
+            });
+
+            await compareFacade.resolveUrl('/tag/news/');
+            await flush();
+
+            sinon.assert.notCalled(logging.error);
         });
 
         it('does not report when eager and lazy resources are deep equal', async function () {
