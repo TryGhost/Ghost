@@ -152,7 +152,13 @@ module.exports = class MembersCSVImporter {
         }
 
         // completely rely on explicit user input for header mappings
-        const rows = await membersCSV.parse(inputFilePath, headerMapping);
+        const parsed = await membersCSV.parse(inputFilePath, headerMapping);
+        // A row with more fields than the header puts the overflow under
+        // `__parsed_extra`. That is the parser reporting a ragged row, not a column
+        // anyone mapped, and taking columns from every row would otherwise turn it
+        // into one for the whole file.
+        // eslint-disable-next-line no-unused-vars, camelcase
+        const rows = parsed.map(({__parsed_extra, ...row}) => row);
         const numberOfBatches = Math.ceil(rows.length / batchSize);
         const mappedCSV = serialisePreparedRows(rows);
 

@@ -502,6 +502,18 @@ describe('MembersCSVImporter', function () {
             assert.match(fileContents, /^email,subscribed_to_emails,labels\r\n/);
         });
 
+        // The prepared file's columns come from every row, so the parser's own
+        // overflow key would otherwise become a column of the whole import. There is
+        // no API response that shows this, so it is asserted where it happens.
+        it('does not carry the parser overflow key from a ragged row', async function () {
+            const membersImporter = buildMockImporterInstance();
+
+            await membersImporter.prepare(`${csvPath}/ragged-long-row.csv`, {email: 'email', name: 'name'});
+
+            const header = fsWriteSpy.firstCall.args[1].split('\r\n')[0];
+            assert.equal(header.includes('__parsed_extra'), false, header);
+        });
+
         it('checks for stripe data in the imported file', async function () {
             const membersImporter = buildMockImporterInstance();
 
