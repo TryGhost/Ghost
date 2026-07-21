@@ -1,4 +1,4 @@
-import {useContext, useEffect, useLayoutEffect, useRef, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
@@ -72,10 +72,11 @@ export const GiftPageStyles = `
     padding: 40px 48px;
 }
 
-/* Selection page only: useLayoutEffect locks the inner's vertical
-   position; flex-start lets that JS-applied margin-top do the centering. */
+/* Selection/delivery steps: top-align the content so the copy sits high and
+   makes full use of the vertical space, rather than floating dead-centre. */
 .gh-portal-content.gift .gh-portal-gift-checkout-left {
     align-items: flex-start;
+    padding-top: 56px;
 }
 
 .gh-portal-gift-checkout-bg {
@@ -944,79 +945,12 @@ const GiftPage = () => {
     const [errors, setErrors] = useState({});
     const [descriptionExpanded, setDescriptionExpanded] = useState(false);
     const {cardRef, containerProps: cardTiltProps} = useCardTilt();
-    const leftRef = useRef(null);
-    const innerRef = useRef(null);
 
     // Prefill the "from" name once the logged-in member loads, without
     // clobbering anything the buyer has already typed
     useEffect(() => {
         setBuyerName(current => current || member?.name || '');
     }, [member?.name]);
-
-    // Vertically center the inner content within the left column by computing
-    // the available space and pushing the inner down by half. We recompute on
-    // window resize (otherwise the stale offset leaves the right panel
-    // overlapping the text), but not on every render — so when benefits change
-    // height on tier switch, only the bottom of the column (the CTA) shifts,
-    // leaving the title and tier picker anchored.
-    // Skipped on mobile (single-column stack) where natural top-aligned flow
-    // is what we want; centering would push content under the sticky CTA.
-    useLayoutEffect(() => {
-        const inner = innerRef.current;
-        const left = leftRef.current;
-        if (!inner || !left) {
-            return;
-        }
-
-        const recenter = () => {
-            if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 880px)').matches) {
-                inner.style.marginTop = '';
-                return;
-            }
-            // Reset first so the measurement reflects the natural inner height,
-            // not the previously-applied offset.
-            inner.style.marginTop = '';
-            const leftRect = left.getBoundingClientRect();
-            if (leftRect.height === 0) {
-                return;
-            }
-            const leftStyle = window.getComputedStyle(left);
-            const pTop = parseFloat(leftStyle.paddingTop);
-            const pBottom = parseFloat(leftStyle.paddingBottom);
-            const available = leftRect.height - pTop - pBottom;
-            const space = available - inner.getBoundingClientRect().height;
-            if (space > 0) {
-                // Anchor the content toward the top rather than dead-centering
-                // it — full-height centering left large dead space above the
-                // logo on tall screens. Cap the top offset so the content sits
-                // in the upper third, with the remaining slack falling below.
-                inner.style.marginTop = `${Math.min(space / 2, 72)}px`;
-            }
-        };
-
-        recenter();
-
-        let rafId = null;
-        const onResize = () => {
-            if (rafId !== null) {
-                return;
-            }
-            rafId = window.requestAnimationFrame(() => {
-                rafId = null;
-                recenter();
-            });
-        };
-
-        window.addEventListener('resize', onResize, {passive: true});
-        return () => {
-            window.removeEventListener('resize', onResize);
-            if (rafId !== null) {
-                window.cancelAnimationFrame(rafId);
-            }
-        };
-        // Re-run on step change: each step has a different content height, so
-        // the vertical-centering offset must be recomputed
-    }, [step]);
 
     if (!site) {
         return <LoadingPage />;
@@ -1265,9 +1199,9 @@ const GiftPage = () => {
             <CloseButton />
             <div className='gh-portal-content gift'>
                 <div className='gh-portal-gift-checkout'>
-                    <div className='gh-portal-gift-checkout-left' ref={leftRef}>
+                    <div className='gh-portal-gift-checkout-left'>
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
-                        <div className='gh-portal-gift-checkout-inner' ref={innerRef}>
+                        <div className='gh-portal-gift-checkout-inner'>
                             {step === 'delivery' && (
                                 <button
                                     type='button'
