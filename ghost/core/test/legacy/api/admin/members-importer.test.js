@@ -345,4 +345,37 @@ describe('Members Importer API', function () {
             await restoreEmailVerificationUtils();
         }
     });
+
+    // A queued import is applied after the response has gone out, so the response says
+    // nothing about whether the members arrived. This waits for the outcome rather than
+    // for the queue, so it stays honest if how the work is deferred ever changes.
+    it('Creates the members when a queued import runs', async function () {
+        const countMembersLabelled = async (label) => {
+            const res = await request
+                .get(localUtils.API.getApiQuery(`members/?filter=label:${label}&limit=1`))
+                .set('Origin', config.get('url'))
+                .expect(200);
+
+            return res.body.meta.pagination.total;
+        };
+
+        await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .field('labels', ['queued-import-check'])
+            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-import-large-501.csv'))
+            .set('Origin', config.get('url'))
+            .expect(202);
+
+        const deadline = Date.now() + 30000;
+        let total = await countMembersLabelled('queued-import-check');
+
+        while (total < 501 && Date.now() < deadline) {
+            await new Promise((resolve) => {
+                setTimeout(resolve, 250);
+            });
+            total = await countMembersLabelled('queued-import-check');
+        }
+
+        assert.equal(total, 501, 'every row in the queued import should reach the members table');
+    });
 });
