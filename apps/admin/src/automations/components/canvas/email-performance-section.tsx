@@ -19,7 +19,7 @@ const EmailPerformanceRing: React.FC<{
     const gradientId = `emailRing-${color}`;
     const colorVar = `var(--chart-${color})`;
     return (
-        <ChartContainer className='absolute inset-0 aspect-square' config={EMAIL_PERFORMANCE_CHART_CONFIG}>
+        <ChartContainer aria-label={`${datatype} rate chart ring`} className='absolute inset-0 aspect-square' config={EMAIL_PERFORMANCE_CHART_CONFIG} role='img'>
             <Recharts.RadialBarChart
                 data={[{datatype, value}]}
                 endAngle={-270}
@@ -63,7 +63,7 @@ const EMAIL_CHART_RINGS = {
     clicked: {innerRadius: 38, outerRadius: 60}
 };
 
-const EmailPerformanceChart: React.FC<{openRate: number}> = ({openRate}) => (
+const EmailPerformanceChart: React.FC<{clickRate: number; openRate: number}> = ({clickRate, openRate}) => (
     <div className='relative mx-auto aspect-square size-[240px]'>
         <EmailPerformanceRing
             color='purple'
@@ -79,14 +79,13 @@ const EmailPerformanceChart: React.FC<{openRate: number}> = ({openRate}) => (
             outerRadius={EMAIL_CHART_RINGS.opened.outerRadius}
             value={openRate}
         />
-        {/* @TODO: NY-1457 */}
-        {/* <EmailPerformanceRing
+        <EmailPerformanceRing
             color='teal'
             datatype='Clicked'
             innerRadius={EMAIL_CHART_RINGS.clicked.innerRadius}
             outerRadius={EMAIL_CHART_RINGS.clicked.outerRadius}
             value={clickRate}
-        /> */}
+        />
     </div>
 );
 
@@ -117,16 +116,18 @@ export const EmailPerformanceSection: React.FC<{stats: AutomationEmailStats}> = 
                         <span className='hidden group-hover/kpi:inline'>{stats.email_sent_count > 0 ? formatNumber(stats.email_opened_count) : '--'}</span>
                     </span>
                 </div>
-                {/* @TODO: NY-1457 */}
-                {/* <div className={KPI_CLASS_NAME}>
+                <div className={KPI_CLASS_NAME}>
                     <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
                         <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-teal)'}} />
                         Clicked
                     </span>
-                    <span className='text-xl font-semibold tracking-tight tabular-nums'>{formatRate(stats.clicked_rate)}</span>
-                </div> */}
+                    <span className='text-xl font-semibold tracking-tight tabular-nums'>
+                        <span className='group-hover/kpi:hidden'>{formatRate(stats.clicked_rate)}</span>
+                        <span className='hidden group-hover/kpi:inline'>{stats.email_sent_count > 0 ? formatNumber(stats.email_clicked_count) : '--'}</span>
+                    </span>
+                </div>
             </div>
-            <EmailPerformanceChart openRate={(stats.opened_rate ?? 0) / 100} />
+            <EmailPerformanceChart clickRate={(stats.clicked_rate ?? 0) / 100} openRate={(stats.opened_rate ?? 0) / 100} />
         </div>
         {/* @TODO: NY-1457 */}
         {/* <Separator />

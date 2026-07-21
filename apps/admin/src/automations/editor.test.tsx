@@ -464,6 +464,104 @@ describe('AutomationEditor', () => {
         expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('--');
     });
 
+    it('renders clicked performance in the send-email sidebar', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockUseReadAutomation.mockReturnValue({
+            data: {
+                automations: [{
+                    ...automationDetail,
+                    actions: automationDetail.actions.map(action => (action.type === 'send_email'
+                        ? {
+                            ...action,
+                            stats: {
+                                email_clicked_count: 249,
+                                email_sent_count: 1247,
+                                email_opened_count: 780,
+                                opened_rate: 65,
+                                clicked_rate: 20
+                            }
+                        }
+                        : action))
+                }]
+            },
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        const clickedKpi = within(sidebar).getByText('Clicked').parentElement?.parentElement;
+        expect(clickedKpi).toHaveTextContent('20%');
+        expect(clickedKpi).toHaveTextContent('249');
+        expect(within(sidebar).getByRole('img', {name: 'Clicked rate chart ring'})).toBeInTheDocument();
+    });
+
+    it('renders unavailable clicked performance when no emails were sent', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockUseReadAutomation.mockReturnValue({
+            data: {
+                automations: [{
+                    ...automationDetail,
+                    actions: automationDetail.actions.map(action => (action.type === 'send_email'
+                        ? {
+                            ...action,
+                            stats: {
+                                email_clicked_count: 0,
+                                email_sent_count: 0,
+                                email_opened_count: 0,
+                                opened_rate: null,
+                                clicked_rate: null
+                            }
+                        }
+                        : action))
+                }]
+            },
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByText('Clicked').parentElement?.parentElement).toHaveTextContent('----');
+    });
+
+    it('renders a tracked zero click rate and count in the send-email sidebar', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockUseReadAutomation.mockReturnValue({
+            data: {
+                automations: [{
+                    ...automationDetail,
+                    actions: automationDetail.actions.map(action => (action.type === 'send_email'
+                        ? {
+                            ...action,
+                            stats: {
+                                email_clicked_count: 0,
+                                email_sent_count: 10,
+                                email_opened_count: 5,
+                                opened_rate: 50,
+                                clicked_rate: 0
+                            }
+                        }
+                        : action))
+                }]
+            },
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        const clickedKpi = within(sidebar).getByText('Clicked').parentElement?.parentElement;
+        expect(clickedKpi).toHaveTextContent('0%');
+        expect(clickedKpi).toHaveTextContent('0');
+    });
+
     it('renders styled canvas zoom controls without the interaction toggle', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
