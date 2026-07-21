@@ -109,9 +109,13 @@ module.exports = class MembersCSVImporter {
 
         // completely rely on explicit user input for header mappings
         const rows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
-        const columns = Object.keys(rows[0]);
+        // Columns come from every row, not the first. A row with fewer fields than
+        // the header parses to fewer keys, so reading the schema off one row drops
+        // the columns it happened to omit for the whole file. A file of headers and
+        // no rows has no columns, and serialising nothing has nothing to say.
+        const columns = [...new Set(rows.flatMap(row => Object.keys(row)))];
         const numberOfBatches = Math.ceil(rows.length / batchSize);
-        const mappedCSV = membersCSV.unparse(rows, columns);
+        const mappedCSV = columns.length ? membersCSV.unparse(rows, columns) : '';
 
         const hasStripeData = !!(rows.find(function rowHasStripeData(row) {
             return !!row.stripe_customer_id;
