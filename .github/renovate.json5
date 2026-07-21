@@ -192,6 +192,37 @@
         "ghost/admin/**"
     ],
     "packageRules": [
+        // Auto-generate a changeset when an npm/package.json update (or a pnpm
+        // catalog bump — the npm manager handles both) touches a publishable
+        // package (koenig/*, packages/*), directly or via a catalog entry it
+        // references, so the PR clears the "Check app version bump" gate without
+        // a human authoring one. Scoped to `npm` so Docker/GitHub-Actions updates
+        // never run it. Runs once per branch after the update is applied (working
+        // tree, pre-commit): the script diffs the working tree against the base,
+        // writes a `.changeset/*.md` for any affected publishable package, and
+        // no-ops otherwise. fileFilters scopes Renovate's commit to the generated
+        // changeset. The first command installs the script's deps — Renovate's
+        // own install can be lockfile-only, so @internal/scripts' node_modules
+        // isn't guaranteed present. Both commands must be allowlisted in the
+        // runner via RENOVATE_ALLOWED_POST_UPGRADE_COMMANDS (see
+        // .github/workflows/renovate.yml).
+        {
+            "description": "Auto-generate changesets for publishable package updates",
+            "matchManagers": [
+                "npm"
+            ],
+            "postUpgradeTasks": {
+                "commands": [
+                    "pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts",
+                    "node scripts/generate-changeset.js"
+                ],
+                "fileFilters": [
+                    ".changeset/**"
+                ],
+                "executionMode": "branch"
+            }
+        },
+
         // Always require dashboard approval for major updates
         // This was largely to avoid the noise of major updates which were ESM only
         // The idea was to check and accept major updates if they were NOT ESM
