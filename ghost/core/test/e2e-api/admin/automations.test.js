@@ -82,7 +82,7 @@ describe('Automations API', function () {
 
     beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('users', 'integrations', 'api_keys');
+        await fixtureManager.init('users', 'integrations', 'api_keys', 'members');
         await agent.loginAsOwner();
 
         schedulerKey = await models.Integration.getApiKeyBySlug('ghost-scheduler', 'admin');
@@ -283,6 +283,102 @@ describe('Automations API', function () {
                         clicked_rate: 67
                     });
                 });
+        });
+    });
+
+    describe('action links', function () {
+        it('returns unique member click counts grouped across revisions', async function () {
+            const {body} = await agent.get('automations').expectStatus(200);
+            const automationId = body.automations[0].id;
+            const action = await models.Base.knex('automation_actions')
+                .where({automation_id: automationId, type: 'send_email'})
+                .first();
+            const revision = await models.Base.knex('automation_action_revisions')
+                .where('action_id', action.id)
+                .first();
+            const secondRevisionId = ObjectId().toHexString();
+            await models.Base.knex('automation_action_revisions').insert({
+                id: secondRevisionId,
+                action_id: action.id,
+                created_at: new Date('2026-07-21T12:00:00.000Z'),
+                email_subject: 'Updated email',
+                email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+                email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID
+            });
+
+            const redirects = [{
+                id: ObjectId().toHexString(),
+                from: `/r/${ObjectId().toHexString()}`,
+                to: 'https://example.com/alpha',
+                automation_action_revision_id: revision.id,
+                to_hash: ObjectId().toHexString(),
+                created_at: new Date()
+            }, {
+                id: ObjectId().toHexString(),
+                from: `/r/${ObjectId().toHexString()}`,
+                to: 'https://example.com/alpha',
+                automation_action_revision_id: secondRevisionId,
+                to_hash: ObjectId().toHexString(),
+                created_at: new Date()
+            }, {
+                id: ObjectId().toHexString(),
+                from: `/r/${ObjectId().toHexString()}`,
+                to: 'https://example.com/zero',
+                automation_action_revision_id: secondRevisionId,
+                to_hash: ObjectId().toHexString(),
+                created_at: new Date()
+            }];
+            await models.Base.knex('redirects').insert(redirects);
+            await models.Base.knex('members_click_events').insert([{
+                id: ObjectId().toHexString(),
+                member_id: fixtureManager.get('members', 0).id,
+                redirect_id: redirects[0].id,
+                created_at: new Date()
+            }, {
+                id: ObjectId().toHexString(),
+                member_id: fixtureManager.get('members', 0).id,
+                redirect_id: redirects[1].id,
+                created_at: new Date()
+            }, {
+                id: ObjectId().toHexString(),
+                member_id: fixtureManager.get('members', 1).id,
+                redirect_id: redirects[1].id,
+                created_at: new Date()
+            }]);
+
+            const {body: linksBody} = await agent
+                .get(`automations/${automationId}/actions/${action.id}/links`)
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+            assert.deepEqual(linksBody, {
+                automation_action_links: [{
+                    url: 'https://example.com/alpha',
+                    clicked_count: 2
+                }, {
+                    url: 'https://example.com/zero',
+                    clicked_count: 0
+                }]
+            });
+        });
+
+        it('returns 404 when the action belongs to a different automation', async function () {
+            const {body} = await agent.get('automations').expectStatus(200);
+            const action = await models.Base.knex('automation_actions')
+                .where('automation_id', body.automations[0].id)
+                .first();
+
+            await agent
+                .get(`automations/${body.automations[1].id}/actions/${action.id}/links`)
+                .expectStatus(404)
+                .expect(cacheInvalidateHeaderNotSet());
+        });
+
+        it('requires an authenticated admin', async function () {
+            agent.resetAuthentication();
+            await agent
+                .get(`automations/${ObjectId().toHexString()}/actions/${ObjectId().toHexString()}/links`)
+                .expectStatus(403);
+            await agent.loginAsOwner();
         });
     });
 

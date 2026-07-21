@@ -32,6 +32,11 @@ export interface AutomationEmailStats {
     clicked_rate: number | null;
 }
 
+export interface AutomationActionLink {
+    url: string;
+    clicked_count: number;
+}
+
 export interface SendEmailAction {
     id: string;
     type: 'send_email';
@@ -137,6 +142,7 @@ export type AutomationStepTerminalStatus =
 export interface AutomationsRepository {
     browse(): Promise<Page<AutomationSummary>>;
     getById(id: string): Promise<Automation | null>;
+    getAutomationActionLinks(automationId: string, actionId: string): Promise<AutomationActionLink[] | null>;
     edit(id: string, data: EditAutomationData): Promise<Automation | null>;
     trigger(options: {
         memberEmail: string;
