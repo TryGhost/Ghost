@@ -62,6 +62,13 @@ describe('schema validations', function () {
 
                 assert(Object.keys(VALID_KEYS).includes(column.type));
                 assert.deepEqual(_.difference(Object.keys(column), [...VALID_KEYS[column.type], 'type']), []);
+
+                if ('index' in column) {
+                    assert(
+                        typeof column.index === 'boolean',
+                        'Column index option, if present, should be valid'
+                    );
+                };
             });
         });
     });
