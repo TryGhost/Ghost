@@ -91,6 +91,11 @@ const createDatabase = async (): Promise<Knex> => {
         table.unique(['created_at', 'action_id']);
     });
 
+    await database.schema.createTable('redirects', (table) => {
+        table.text('id').primary();
+        table.text('automation_action_revision_id').references('id').inTable('automation_action_revisions');
+    });
+
     await database.schema.createTable('automation_action_edges', (table) => {
         table.text('source_action_id').notNullable().references('id').inTable('automation_actions');
         table.text('target_action_id').notNullable().references('id').inTable('automation_actions');
@@ -1918,6 +1923,78 @@ describe('automations repository', function () {
             assert.equal(recipient.member_name, null);
             assert.equal(recipient.track_clicks, 0);
             assert.equal(recipient.track_opens, 0);
+        });
+    });
+
+    describe('recordAutomationEmailClick', function () {
+        const clickedAt = new Date('2026-07-21T12:34:56.000Z');
+
+        async function createRedirectAndRecipient({trackClicks = true, clickedAt: existingClickedAt = null} = {}) {
+            const revision = await knex('automation_action_revisions').select('id').first();
+            assert(revision);
+            const redirectId = ObjectId().toHexString();
+            const recipientId = ObjectId().toHexString();
+            await knex('redirects').insert({
+                id: redirectId,
+                automation_action_revision_id: revision.id
+            });
+            await knex('automated_email_recipients').insert({
+                id: recipientId,
+                automation_action_revision_id: revision.id,
+                member_id: 'member-id',
+                clicked_at: existingClickedAt,
+                track_clicks: trackClicks,
+                track_opens: false,
+                created_at: '2026-07-21 12:00:00',
+                updated_at: '2026-07-21 12:00:00'
+            });
+            return {redirectId, recipientId, revisionId: revision.id};
+        }
+
+        it('stamps the first tracked click and ignores repeats', async function () {
+            const {redirectId, recipientId} = await createRedirectAndRecipient();
+
+            assert.equal(await repo.recordAutomationEmailClick({memberId: 'member-id', redirectId, clickedAt}), true);
+            assert.equal(await repo.recordAutomationEmailClick({memberId: 'member-id', redirectId, clickedAt: new Date('2026-07-21T13:00:00.000Z')}), false);
+
+            const recipient = await knex('automated_email_recipients').where('id', recipientId).first();
+            assert.equal(recipient.clicked_at, '2026-07-21 12:34:56');
+        });
+
+        it('does not stamp an untracked recipient', async function () {
+            const {redirectId, recipientId} = await createRedirectAndRecipient({trackClicks: false});
+
+            assert.equal(await repo.recordAutomationEmailClick({memberId: 'member-id', redirectId, clickedAt}), false);
+            const recipient = await knex('automated_email_recipients').where('id', recipientId).first();
+            assert.equal(recipient.clicked_at, null);
+        });
+
+        it('ignores newsletter, unknown redirect, and unknown member clicks', async function () {
+            const {redirectId} = await createRedirectAndRecipient();
+            const newsletterRedirectId = ObjectId().toHexString();
+            await knex('redirects').insert({id: newsletterRedirectId, automation_action_revision_id: null});
+
+            assert.equal(await repo.recordAutomationEmailClick({memberId: 'member-id', redirectId: newsletterRedirectId, clickedAt}), false);
+            assert.equal(await repo.recordAutomationEmailClick({memberId: 'member-id', redirectId: ObjectId().toHexString(), clickedAt}), false);
+            assert.equal(await repo.recordAutomationEmailClick({memberId: 'unknown-member', redirectId, clickedAt}), false);
+        });
+
+        it('stamps duplicate recipient rows together but reports one member click', async function () {
+            const {redirectId, revisionId} = await createRedirectAndRecipient();
+            await knex('automated_email_recipients').insert({
+                id: ObjectId().toHexString(),
+                automation_action_revision_id: revisionId,
+                member_id: 'member-id',
+                track_clicks: true,
+                track_opens: false,
+                created_at: '2026-07-21 12:00:00',
+                updated_at: '2026-07-21 12:00:00'
+            });
+
+            assert.equal(await repo.recordAutomationEmailClick({memberId: 'member-id', redirectId, clickedAt}), true);
+            const recipients = await knex('automated_email_recipients').where({automation_action_revision_id: revisionId, member_id: 'member-id'});
+            assert.equal(recipients.length, 2);
+            assert(recipients.every(recipient => recipient.clicked_at === '2026-07-21 12:34:56'));
         });
     });
 

@@ -92,6 +92,12 @@ export type RecordEmailSentOptions = Readonly<{
     trackOpens: boolean;
 }>;
 
+export type RecordAutomationEmailClickOptions = Readonly<{
+    clickedAt: Date;
+    memberId: string;
+    redirectId: string;
+}>;
+
 type AutomationStepBase = {
     id: string;
     locked_by: string;
@@ -182,6 +188,11 @@ export interface AutomationsRepository {
      * Record a sent email and increment its action revision's sent count.
      */
     recordEmailSent(options: RecordEmailSentOptions): Promise<void>;
+    /**
+     * Stamp tracked recipients on their first click for an action revision.
+     * Returns whether this was the member's first recorded click for the revision.
+     */
+    recordAutomationEmailClick(options: RecordAutomationEmailClickOptions): Promise<boolean>;
     /**
      * Fetch sent emails by their Mailgun IDs.
      */

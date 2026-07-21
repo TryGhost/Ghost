@@ -364,6 +364,10 @@ export async function recordEmailSent(...args: Parameters<AutomationsRepository[
     return await repository.recordEmailSent(...args);
 }
 
+export async function recordAutomationEmailClick(...args: Parameters<AutomationsRepository['recordAutomationEmailClick']>) {
+    return await repository.recordAutomationEmailClick(...args);
+}
+
 export async function getAutomatedEmailRecipientsByMailgunIds(
     ...args: Parameters<AutomationsRepository['getAutomatedEmailRecipientsByMailgunIds']>
 ) {
