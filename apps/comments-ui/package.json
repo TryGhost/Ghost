@@ -77,7 +77,6 @@
         "@vitest/coverage-v8": "catalog:",
         "autoprefixer": "10.5.2",
         "bson-objectid": "catalog:",
-        "concurrently": "catalog:",
         "eslint": "catalog:",
         "eslint-plugin-tailwindcss": "catalog:tailwind3",
         "jsdom": "catalog:",

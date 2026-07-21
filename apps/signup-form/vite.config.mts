@@ -25,14 +25,6 @@ export default publicAppViteConfig({
             rollupOptions: {
                 output: {}
             }
-        },
-        test: {
-            include: ['./test/unit/*'],
-            testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
-            ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
-                minThreads: 1,
-                maxThreads: 2
-            })
         }
     }
 });
