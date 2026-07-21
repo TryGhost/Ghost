@@ -1,4 +1,6 @@
-const papaparse = require('papaparse');
+import papaparse from 'papaparse';
+import type {MemberCsvRow} from './types';
+
 const DEFAULT_COLUMNS = [
     'id',
     'email',
@@ -14,7 +16,7 @@ const DEFAULT_COLUMNS = [
     'gift_id'
 ];
 
-const unparse = (rows, columns = DEFAULT_COLUMNS) => {
+export default function unparse(rows: MemberCsvRow[], columns: string[] = DEFAULT_COLUMNS): string {
     const outputColumns = columns.map((column) => {
         if (column === 'subscribed') {
             return 'subscribed_to_emails';
@@ -66,6 +68,4 @@ const unparse = (rows, columns = DEFAULT_COLUMNS) => {
         escapeFormulae: true,
         columns: outputColumns
     });
-};
-
-module.exports = unparse;
+}

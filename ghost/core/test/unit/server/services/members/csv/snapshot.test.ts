@@ -1,8 +1,8 @@
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
-const assert = require('node:assert/strict');
-const {parse, unparse} = require('../../../../../../core/server/services/members/csv');
+import path from 'node:path';
+import fs from 'node:fs';
+import os from 'node:os';
+import assert from 'node:assert/strict';
+import {parse, unparse} from '../../../../../../core/server/services/members/csv';
 
 const snapshotDir = path.join(__dirname, 'fixtures', 'snapshots');
 
@@ -51,7 +51,7 @@ describe('snapshot', function () {
     });
 
     describe('round-trip (unparse then re-parse)', function () {
-        let tmpFile;
+        let tmpFile: string | undefined;
 
         afterEach(function () {
             if (tmpFile && fs.existsSync(tmpFile)) {

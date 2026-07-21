@@ -1,5 +1,5 @@
-const assert = require('node:assert/strict');
-const {unparse} = require('../../../../../../core/server/services/members/csv');
+import assert from 'node:assert/strict';
+import {unparse} from '../../../../../../core/server/services/members/csv';
 
 describe('unparse', function () {
     it('serializes json to CSV and adds standard members fields with no explicit columns parameter', async function () {
