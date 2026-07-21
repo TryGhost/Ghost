@@ -97,7 +97,10 @@ function parseDataEntry(value: unknown, path: PathSegment[]): DataEntry {
             const at = formatLocation(path);
             const record = value as Record<string, unknown>;
 
-            if (issue.message.includes('discriminator')) {
+            // A failed `type` discriminator surfaces as a union issue on that
+            // key — matched on the code rather than the wording, which zod
+            // is free to change.
+            if (issue.code === 'invalid_union' && issue.path[0] === 'type') {
                 if (record.type === undefined) {
                     throw validationError(at, 'type is required. Please use read or browse.', DATA_ENTRY_HELP);
                 }
@@ -138,7 +141,7 @@ function parseRouteData(data: unknown, path: PathSegment[]): RouteData {
         return data as DataShortForm;
     }
 
-    if (typeof data !== 'object' || data === null) {
+    if (typeof data !== 'object' || data === null || Array.isArray(data)) {
         throw validationError(
             formatLocation(path),
             `data must be a shorthand like tag.recipes, or a map of named data entries, but ${describeValue(data)} was provided.`,

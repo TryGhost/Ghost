@@ -418,6 +418,11 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
                 messageFor({routes: {'/x/': {template: 'x', data: {episodes: ['tag.recipes']}}}}),
                 'The following definition "routes[\'/x/\'].data.episodes" is invalid: a data entry must be a shorthand like tag.recipes, or a map with type and resource, but a list was provided.'
             );
+            // A list of shorthands would otherwise be read as a map keyed "0", "1", …
+            assert.equal(
+                messageFor({routes: {'/x/': {template: 'x', data: ['tag.recipes', 'post.hello']}}}),
+                'The following definition "routes[\'/x/\'].data" is invalid: data must be a shorthand like tag.recipes, or a map of named data entries, but a list was provided.'
+            );
         });
 
         it('names the reserved data key that needs wrapping', function () {
