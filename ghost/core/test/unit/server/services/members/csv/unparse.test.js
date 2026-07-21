@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {unparse} = require('../../../../../../core/server/services/members/csv');
 
 describe('unparse', function () {
@@ -50,6 +50,14 @@ describe('unparse', function () {
         const result = unparse(json, ['email', 'stripe_customer_id']);
 
         assert.equal(result, 'email,stripe_customer_id\r\npaid@example.com,cus_fallback');
+    });
+
+    it('does not leak the error column into a later call', function () {
+        unparse([{email: 'failed@example.com', error: 'things went south here!'}]);
+
+        const result = unparse([{email: 'fine@example.com'}]);
+
+        assert.ok(!result.split('\r\n')[0].split(',').includes('error'));
     });
 
     it('maps the subscribed property to subscribed_to_emails', function () {
