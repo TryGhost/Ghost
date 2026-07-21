@@ -496,6 +496,18 @@ export const GiftPageStyles = `
     line-height: 1.5em;
 }
 
+.gh-portal-gift-checkout-field-hint.gh-portal-gift-checkout-match {
+    color: var(--green);
+}
+
+.gh-portal-gift-checkout-message-count {
+    margin: 6px 0 0;
+    text-align: right;
+    color: var(--grey8);
+    font-size: 1.2rem;
+    letter-spacing: 0.02em;
+}
+
 .gh-portal-gift-checkout-label-optional {
     text-transform: none;
     letter-spacing: 0;
@@ -1335,6 +1347,13 @@ const GiftPage = () => {
                                             {...confirmEmailField}
                                             onChange={handleConfirmEmailChange}
                                         />
+                                        {recipientEmail.trim() && confirmEmail.trim() && (
+                                            confirmEmail.trim() === recipientEmail.trim() ? (
+                                                <p className='gh-portal-gift-checkout-field-hint gh-portal-gift-checkout-match'>{t('Email addresses match')}</p>
+                                            ) : (
+                                                <p className='gh-portal-gift-checkout-field-hint'>{t('Keep typing — the emails don\'t match yet')}</p>
+                                            )
+                                        )}
                                     </div>
 
                                     <div className='gh-portal-gift-checkout-section'>
@@ -1392,6 +1411,7 @@ const GiftPage = () => {
                                         value={giftMessage}
                                         onChange={event => setGiftMessage(event.target.value)}
                                     />
+                                    <p className='gh-portal-gift-checkout-message-count'>{giftMessage.length}/{GIFT_MESSAGE_MAX_LENGTH}</p>
                                 </div>
 
                                 <button
