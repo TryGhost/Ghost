@@ -601,7 +601,7 @@ export const GiftPageStyles = `
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 280px;
+    max-width: 360px;
     margin-block: auto;
     flex-shrink: 0;
 }
@@ -986,7 +986,11 @@ const GiftPage = () => {
             const available = leftRect.height - pTop - pBottom;
             const space = available - inner.getBoundingClientRect().height;
             if (space > 0) {
-                inner.style.marginTop = `${space / 2}px`;
+                // Anchor the content toward the top rather than dead-centering
+                // it — full-height centering left large dead space above the
+                // logo on tall screens. Cap the top offset so the content sits
+                // in the upper third, with the remaining slack falling below.
+                inner.style.marginTop = `${Math.min(space / 2, 72)}px`;
             }
         };
 
