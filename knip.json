@@ -7,11 +7,60 @@
         "ghost/core/test/utils/fixtures/themes/**/assets/built/**"
     ],
     "workspaces": {
+        ".": {
+            "vitest": {
+                "config": []
+            },
+            "ignoreDependencies": [
+                "@vitejs/plugin-react",
+                "vite-plugin-svgr"
+            ]
+        },
         "ghost/core": {
             "ignoreDependencies": [
                 "@slack/webhook",
                 "superagent",
-                "superagent-throttle"
+                "superagent-throttle",
+                "bookshelf-relations"
+            ]
+        },
+        "apps/admin": {
+            "ignoreDependencies": [
+                "@tryghost/kg-unsplash-selector"
+            ]
+        },
+        "apps/announcement-bar": {
+            "ignoreDependencies": [
+                "@vitejs/plugin-react",
+                "vite-plugin-svgr"
+            ]
+        },
+        "apps/comments-ui": {
+            "ignoreDependencies": [
+                "@tryghost/debug",
+                "@vitejs/plugin-react",
+                "vite-plugin-svgr"
+            ]
+        },
+        "apps/portal": {
+            "ignoreDependencies": [
+                "@tryghost/debug",
+                "@vitejs/plugin-react",
+                "vite-plugin-svgr"
+            ]
+        },
+        "apps/signup-form": {
+            "ignoreDependencies": [
+                "@tryghost/debug",
+                "@vitejs/plugin-react",
+                "vite-plugin-svgr"
+            ]
+        },
+        "apps/sodo-search": {
+            "ignoreDependencies": [
+                "@tryghost/debug",
+                "@vitejs/plugin-react",
+                "vite-plugin-svgr"
             ]
         }
     }

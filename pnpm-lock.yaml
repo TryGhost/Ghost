@@ -1145,9 +1145,6 @@ importers:
       '@tryghost/nql':
         specifier: 'catalog:'
         version: 0.13.1
-      '@tryghost/string':
-        specifier: 'catalog:'
-        version: 0.3.5
       '@tryghost/timezone-data':
         specifier: 'catalog:'
         version: 1.0.0
@@ -1163,9 +1160,6 @@ importers:
       lucide-react:
         specifier: 'catalog:'
         version: 1.23.0(react@18.3.1)
-      mingo:
-        specifier: 'catalog:'
-        version: 2.5.3
       react:
         specifier: 'catalog:'
         version: 18.3.1
@@ -2463,9 +2457,6 @@ importers:
       '@tryghost/kg-card-factory':
         specifier: workspace:*
         version: link:../../koenig/kg-card-factory
-      '@tryghost/kg-clean-basic-html':
-        specifier: workspace:*
-        version: link:../../koenig/kg-clean-basic-html
       '@tryghost/kg-converters':
         specifier: workspace:*
         version: link:../../koenig/kg-converters
@@ -2481,9 +2472,6 @@ importers:
       '@tryghost/kg-lexical-html-renderer':
         specifier: workspace:*
         version: link:../../koenig/kg-lexical-html-renderer
-      '@tryghost/kg-markdown-html-renderer':
-        specifier: workspace:*
-        version: link:../../koenig/kg-markdown-html-renderer
       '@tryghost/limit-service':
         specifier: 'catalog:'
         version: 1.5.6
@@ -3121,10 +3109,6 @@ importers:
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@22.20.0)(@vitest/browser-playwright@4.1.9)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
 
   koenig/kg-converters:
-    dependencies:
-      lodash:
-        specifier: 'catalog:'
-        version: 4.18.1
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -3407,9 +3391,6 @@ importers:
   koenig/kg-lexical-html-renderer:
     dependencies:
       '@lexical/clipboard':
-        specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)
-      '@lexical/code':
         specifier: 0.13.1
         version: 0.13.1(lexical@0.13.1)
       '@lexical/headless':
