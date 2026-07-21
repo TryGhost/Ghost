@@ -316,6 +316,26 @@ describe('Members Importer API', function () {
 
     // A spreadsheet exported with no rows is a realistic thing for a publisher to
     // upload, and it used to fail with a 500.
+    // Spreadsheets produce rows with trailing fields omitted. The columns were taken
+    // from the first parsed row, so a short first row decided the schema for the file.
+    it('Keeps every column when the first row has fewer fields than the header', async function () {
+        await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-ragged-row.csv'))
+            .set('Origin', config.get('url'))
+            .expect(201);
+
+        const res = await request
+            .get(localUtils.API.getApiQuery('members/?search=ragged-full'))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        const member = res.body.members.find(m => m.email === 'ragged-full@example.com');
+        assertExists(member);
+        assert.equal(member.name, 'Bob');
+        assert.equal(member.note, 'a note');
+    });
+
     it('Can handle a CSV with headers but no rows', async function () {
         const countMembers = async () => {
             const res = await request
