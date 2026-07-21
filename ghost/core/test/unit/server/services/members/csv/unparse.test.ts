@@ -161,6 +161,19 @@ third-member-email@email.com,"banana, avocado"`;
         assert.equal(result, expected);
     });
 
+    it('leaves CSV injection characters unescaped when escapeFormulae is off', async function () {
+        const json = [{
+            email: 'email@example.com',
+            name: '=1+2',
+            note: '-5'
+        }];
+
+        const result = unparse(json, undefined, {escapeFormulae: false});
+
+        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id\r\n,email@example.com,=1+2,-5,,,,,,,,`;
+        assert.equal(result, expected);
+    });
+
     it('escapes fields with CSV injection characters and quotes', async function () {
         const json = [{
             email: 'email@example.com',
