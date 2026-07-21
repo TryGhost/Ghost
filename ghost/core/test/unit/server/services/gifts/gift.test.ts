@@ -8,13 +8,17 @@ describe('Gift', function () {
         token: 'abc-123',
         buyerEmail: 'buyer@example.com',
         buyerMemberId: 'member_1',
+        buyerName: null,
+        recipientEmail: null,
+        message: null,
         tierId: 'tier_1',
         cadence: 'year',
         duration: 1,
         currency: 'usd',
         amount: 5000,
         stripeCheckoutSessionId: 'cs_123',
-        stripePaymentIntentId: 'pi_456'
+        stripePaymentIntentId: 'pi_456',
+        deliverAt: null
     };
 
     describe('fromPurchase', function () {
@@ -67,6 +71,98 @@ describe('Gift', function () {
             assert.equal(gift.amount, 5000);
             assert.equal(gift.stripeCheckoutSessionId, 'cs_123');
             assert.equal(gift.stripePaymentIntentId, 'pi_456');
+        });
+
+        it('passes through personalisation data', function () {
+            const gift = Gift.fromPurchase({
+                ...purchaseData,
+                buyerName: 'Sarah',
+                recipientEmail: 'taylor@example.com',
+                message: 'Happy birthday!'
+            });
+
+            assert.equal(gift.buyerName, 'Sarah');
+            assert.equal(gift.recipientEmail, 'taylor@example.com');
+            assert.equal(gift.message, 'Happy birthday!');
+            assert.equal(gift.deliverAt, null);
+            assert.equal(gift.deliveredAt, null);
+        });
+
+        it('starts the expiry clock at deliverAt for scheduled deliveries', function () {
+            const deliverAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
+            const gift = Gift.fromPurchase({
+                ...purchaseData,
+                recipientEmail: 'taylor@example.com',
+                deliverAt
+            });
+
+            assert.equal(gift.deliverAt?.getTime(), deliverAt.getTime());
+
+            const daysDiff = Math.round(
+                (gift.expiresAt.getTime() - deliverAt.getTime()) / (1000 * 60 * 60 * 24)
+            );
+
+            assert.equal(daysDiff, GIFT_EXPIRY_DAYS);
+        });
+
+        it('treats a past deliverAt as immediate delivery', function () {
+            const gift = Gift.fromPurchase({
+                ...purchaseData,
+                recipientEmail: 'taylor@example.com',
+                deliverAt: new Date(Date.now() - 60 * 1000)
+            });
+
+            assert.equal(gift.deliverAt, null);
+
+            const daysDiff = Math.round(
+                (gift.expiresAt.getTime() - gift.purchasedAt.getTime()) / (1000 * 60 * 60 * 24)
+            );
+
+            assert.equal(daysDiff, GIFT_EXPIRY_DAYS);
+        });
+    });
+
+    describe('deliver', function () {
+        it('marks a pending delivery as delivered', function () {
+            const gift = buildGift({
+                status: 'purchased',
+                recipientEmail: 'taylor@example.com',
+                deliveredAt: null
+            });
+
+            const delivered = gift.deliver();
+
+            assert.ok(delivered);
+            assert.ok(delivered.deliveredAt instanceof Date);
+        });
+
+        it('returns null when already delivered', function () {
+            const gift = buildGift({
+                status: 'purchased',
+                recipientEmail: 'taylor@example.com',
+                deliveredAt: new Date('2026-04-01T09:00:00.000Z')
+            });
+
+            assert.equal(gift.deliver(), null);
+        });
+
+        it('returns null when there is no recipient email', function () {
+            const gift = buildGift({
+                status: 'purchased',
+                recipientEmail: null
+            });
+
+            assert.equal(gift.deliver(), null);
+        });
+
+        it('returns null when the gift is no longer purchased', function () {
+            const gift = buildGift({
+                status: 'refunded',
+                recipientEmail: 'taylor@example.com',
+                refundedAt: new Date('2026-03-01T00:00:00.000Z')
+            });
+
+            assert.equal(gift.deliver(), null);
         });
     });
 

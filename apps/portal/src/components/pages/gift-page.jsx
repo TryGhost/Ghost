@@ -1,4 +1,4 @@
-import {useContext, useLayoutEffect, useRef, useState} from 'react';
+import {useContext, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
@@ -377,6 +377,133 @@ export const GiftPageStyles = `
     stroke: rgba(255, 255, 255, 0.85);
 }
 
+.gh-portal-gift-checkout-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.gh-portal-gift-checkout-method {
+    border: 1px solid var(--grey12);
+    border-radius: 8px;
+    transition: border-color 0.15s ease;
+}
+
+.gh-portal-gift-checkout-method:hover {
+    border-color: var(--grey10);
+}
+
+.gh-portal-gift-checkout-method.selected {
+    border-color: var(--brandcolor);
+}
+
+.gh-portal-gift-checkout-method-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: start;
+}
+
+.gh-portal-gift-checkout-method.selected .gh-portal-gift-checkout-tier-radio {
+    border-color: var(--brandcolor);
+    background: var(--brandcolor);
+}
+
+.gh-portal-gift-checkout-method.selected .gh-portal-gift-checkout-tier-radio::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--white);
+    transform: translate(-50%, -50%);
+}
+
+.gh-portal-gift-checkout-method-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.gh-portal-gift-checkout-method-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--grey1);
+}
+
+.gh-portal-gift-checkout-method-description {
+    font-size: 1.35rem;
+    line-height: 1.4em;
+    color: var(--grey6);
+}
+
+.gh-portal-gift-checkout-method-body {
+    padding: 0 16px 16px;
+}
+
+.gh-portal-gift-checkout-method-body .gh-portal-input-label {
+    font-size: 1.3rem;
+}
+
+.gh-portal-gift-checkout-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    margin-bottom: 16px;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--grey6);
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.gh-portal-gift-checkout-back:hover {
+    color: var(--grey1);
+}
+
+.gh-portal-gift-checkout-note {
+    margin: -8px 0 16px;
+    font-size: 1.3rem;
+    line-height: 1.45em;
+    color: var(--grey6);
+}
+
+.gh-portal-gift-checkout-textarea {
+    height: auto;
+    min-height: 96px;
+    padding: 10px 12px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5em;
+}
+
+.gh-portal-gift-checkout-delivery-date {
+    margin-top: 12px;
+}
+
+.gh-portal-gift-checkout-delivery-date .gh-portal-input {
+    margin-bottom: 0;
+}
+
+.gh-portal-gift-checkout-delivery-error {
+    margin: 8px 0 0;
+    color: var(--red);
+    font-size: 1.3rem;
+    letter-spacing: 0.35px;
+    line-height: 1.6em;
+}
+
 .gh-portal-gift-checkout .gh-portal-btn-primary {
     border-radius: 999px;
 }
@@ -738,6 +865,16 @@ function GiftDurationSwitch({offeredDurations, activeDuration, setSelectedDurati
     );
 }
 
+const GIFT_MESSAGE_MAX_LENGTH = 500;
+const GIFT_MAX_SCHEDULE_DAYS = 365;
+
+function toDateInputValue(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 export function formatGiftValue(price) {
     const {amount, currency} = price ?? {};
     if (amount === null || amount === undefined || !currency) {
@@ -752,14 +889,27 @@ function getTierPriceLabel(product, months) {
 
 const GiftPage = () => {
     const {site, member, brandColor, action, doAction, lastPage} = useContext(AppContext);
+    const [step, setStep] = useState('plan');
     const [selectedDuration, setSelectedDuration] = useState(null);
     const [selectedProductId, setSelectedProductId] = useState(null);
     const [email, setEmail] = useState('');
+    const [recipientEmail, setRecipientEmail] = useState('');
+    const [buyerName, setBuyerName] = useState(member?.name || '');
+    const [giftMessage, setGiftMessage] = useState('');
+    const [deliveryMethod, setDeliveryMethod] = useState('email');
+    const [deliveryOption, setDeliveryOption] = useState('now');
+    const [deliveryDate, setDeliveryDate] = useState('');
     const [errors, setErrors] = useState({});
     const [descriptionExpanded, setDescriptionExpanded] = useState(false);
     const {cardRef, containerProps: cardTiltProps} = useCardTilt();
     const leftRef = useRef(null);
     const innerRef = useRef(null);
+
+    // Prefill the "from" name once the logged-in member loads, without
+    // clobbering anything the buyer has already typed
+    useEffect(() => {
+        setBuyerName(current => current || member?.name || '');
+    }, [member?.name]);
 
     // Vertically center the inner content within the left column by computing
     // the available space and pushing the inner down by half. We recompute on
@@ -818,7 +968,9 @@ const GiftPage = () => {
                 window.cancelAnimationFrame(rafId);
             }
         };
-    }, []);
+        // Re-run on step change: each step has a different content height, so
+        // the vertical-centering offset must be recomputed
+    }, [step]);
 
     if (!site) {
         return <LoadingPage />;
@@ -884,6 +1036,34 @@ const GiftPage = () => {
         errorMessage: errors.email || ''
     };
 
+    const recipientEmailField = {
+        type: 'email',
+        value: recipientEmail,
+        placeholder: t('taylor@example.com'),
+        label: t('Recipient email'),
+        name: 'recipientEmail',
+        required: false,
+        errorMessage: errors.recipientEmail || ''
+    };
+
+    const buyerNameField = {
+        type: 'text',
+        value: buyerName,
+        placeholder: t('Jamie Larson'),
+        label: t('Your name'),
+        name: 'buyerName',
+        required: false,
+        errorMessage: errors.buyerName || ''
+    };
+
+    const today = new Date();
+    const minDeliveryDay = new Date(today);
+    minDeliveryDay.setDate(minDeliveryDay.getDate() + 1);
+    const maxDeliveryDay = new Date(today);
+    maxDeliveryDay.setDate(maxDeliveryDay.getDate() + GIFT_MAX_SCHEDULE_DAYS);
+    const minDeliveryDate = toDateInputValue(minDeliveryDay);
+    const maxDeliveryDate = toDateInputValue(maxDeliveryDay);
+
     const handleEmailChange = (event) => {
         setErrors(currentErrors => ({
             ...currentErrors,
@@ -892,9 +1072,67 @@ const GiftPage = () => {
         setEmail(event.target.value);
     };
 
+    const handleRecipientEmailChange = (event) => {
+        setErrors(currentErrors => ({
+            ...currentErrors,
+            recipientEmail: '',
+            deliveryDate: ''
+        }));
+        setRecipientEmail(event.target.value);
+    };
+
+    const handleDeliveryMethodChange = (method) => {
+        setErrors(currentErrors => ({
+            ...currentErrors,
+            recipientEmail: '',
+            deliveryDate: ''
+        }));
+        setDeliveryMethod(method);
+    };
+
+    const handleDeliveryOptionChange = (option) => {
+        setErrors(currentErrors => ({
+            ...currentErrors,
+            recipientEmail: '',
+            deliveryDate: ''
+        }));
+        setDeliveryOption(option);
+    };
+
+    const handleDeliveryDateChange = (event) => {
+        setErrors(currentErrors => ({
+            ...currentErrors,
+            deliveryDate: ''
+        }));
+        setDeliveryDate(event.target.value);
+    };
+
+    const handleContinueToDelivery = (e) => {
+        e.preventDefault();
+
+        if (!isLoggedIn) {
+            const formErrors = ValidateInputForm({fields: [{...emailField, value: email.trim()}]});
+            const formHasErrors = Object.values(formErrors).some(errorMessage => !!errorMessage);
+
+            setErrors(formErrors);
+
+            if (formHasErrors) {
+                return;
+            }
+        }
+
+        setStep('delivery');
+    };
+
+    const handleBackToPlan = (e) => {
+        e.preventDefault();
+        setErrors({});
+        setStep('plan');
+    };
+
     const handleEmailKeyDown = (event) => {
         if (event.keyCode === 13 && !isPurchasing) {
-            handlePurchase(event);
+            handleContinueToDelivery(event);
         }
     };
 
@@ -906,16 +1144,48 @@ const GiftPage = () => {
         }
 
         const customerEmail = email.trim();
+        const trimmedRecipientEmail = recipientEmail.trim();
+        const trimmedBuyerName = buyerName.trim();
+        const trimmedGiftMessage = giftMessage.trim();
+        const isEmailDelivery = deliveryMethod === 'email';
+        const isScheduled = isEmailDelivery && deliveryOption === 'scheduled';
 
+        const fieldsToValidate = [];
         if (!isLoggedIn) {
-            const formErrors = ValidateInputForm({fields: [{...emailField, value: customerEmail}]});
-            const formHasErrors = Object.values(formErrors).some(errorMessage => !!errorMessage);
+            fieldsToValidate.push({...emailField, value: customerEmail});
+        }
+        if (isEmailDelivery && trimmedRecipientEmail) {
+            fieldsToValidate.push({...recipientEmailField, value: trimmedRecipientEmail});
+        }
 
+        const formErrors = ValidateInputForm({fields: fieldsToValidate});
+
+        // The buyer email lives on the first step — bounce back if it went
+        // bad (e.g. cleared via browser autofill undo) so the error is visible
+        if (formErrors.email) {
             setErrors(formErrors);
+            setStep('plan');
+            return;
+        }
 
-            if (formHasErrors) {
-                return;
+        if (isEmailDelivery && !trimmedRecipientEmail) {
+            formErrors.recipientEmail = t('Enter the recipient\'s email address');
+        }
+
+        if (isScheduled && !formErrors.recipientEmail) {
+            if (!deliveryDate) {
+                formErrors.deliveryDate = t('Choose a delivery date');
+            } else if (deliveryDate < minDeliveryDate || deliveryDate > maxDeliveryDate) {
+                formErrors.deliveryDate = t('Choose a date within the next year');
             }
+        }
+
+        const formHasErrors = Object.values(formErrors).some(errorMessage => !!errorMessage);
+
+        setErrors(formErrors);
+
+        if (formHasErrors) {
+            return;
         }
 
         doAction('checkoutGift', {
@@ -924,7 +1194,11 @@ const GiftPage = () => {
             // Older Ghost backends only understand a cadence; send the anchor
             // cadence alongside so the request still resolves there
             cadence: getGiftCadenceParts(activeDuration).cadence,
-            ...(!isLoggedIn ? {email: customerEmail} : {})
+            ...(!isLoggedIn ? {email: customerEmail} : {}),
+            ...(isEmailDelivery ? {recipientEmail: trimmedRecipientEmail} : {}),
+            ...(trimmedBuyerName ? {buyerName: trimmedBuyerName} : {}),
+            ...(trimmedGiftMessage ? {giftMessage: trimmedGiftMessage} : {}),
+            ...(isScheduled && deliveryDate ? {deliveryDate} : {})
         });
     };
 
@@ -937,36 +1211,58 @@ const GiftPage = () => {
                     <div className='gh-portal-gift-checkout-left' ref={leftRef}>
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                         <div className='gh-portal-gift-checkout-inner' ref={innerRef}>
+                            {step === 'delivery' && (
+                                <button
+                                    type='button'
+                                    className='gh-portal-gift-checkout-back'
+                                    data-test-button='gift-back'
+                                    onClick={handleBackToPlan}
+                                >
+                                    &larr; {t('Back')}
+                                </button>
+                            )}
+
                             <header className='gh-portal-gift-checkout-header'>
-                                {giftPageImage && (
-                                    <img alt='' className='gh-portal-gift-checkout-promo-image' src={giftPageImage} />
-                                )}
-                                <h1 className='gh-portal-main-title'>{giftPageHeading || t('Gift a membership')}</h1>
-                                {giftPageDescriptionHtml ? (
+                                {step === 'plan' ? (
                                     <>
-                                        <div
-                                            className={'gh-portal-gift-checkout-subtitle' + (isDescriptionCollapsible && !descriptionExpanded ? ' gh-portal-gift-checkout-subtitle-clamped' : '')}
-                                            dangerouslySetInnerHTML={{__html: sanitizeHtml(giftPageDescriptionHtml)}}
-                                        />
-                                        {isDescriptionCollapsible && (
-                                            <button
-                                                type='button'
-                                                className='gh-portal-gift-checkout-show-more'
-                                                aria-expanded={descriptionExpanded}
-                                                onClick={() => setDescriptionExpanded(expanded => !expanded)}
-                                            >
-                                                {descriptionExpanded ? t('Show less') : t('Show more')}
-                                            </button>
+                                        {giftPageImage && (
+                                            <img alt='' className='gh-portal-gift-checkout-promo-image' src={giftPageImage} />
+                                        )}
+                                        <h1 className='gh-portal-main-title'>{giftPageHeading || t('Gift a membership')}</h1>
+                                        {giftPageDescriptionHtml ? (
+                                            <>
+                                                <div
+                                                    className={'gh-portal-gift-checkout-subtitle' + (isDescriptionCollapsible && !descriptionExpanded ? ' gh-portal-gift-checkout-subtitle-clamped' : '')}
+                                                    dangerouslySetInnerHTML={{__html: sanitizeHtml(giftPageDescriptionHtml)}}
+                                                />
+                                                {isDescriptionCollapsible && (
+                                                    <button
+                                                        type='button'
+                                                        className='gh-portal-gift-checkout-show-more'
+                                                        aria-expanded={descriptionExpanded}
+                                                        onClick={() => setDescriptionExpanded(expanded => !expanded)}
+                                                    >
+                                                        {descriptionExpanded ? t('Show less') : t('Show more')}
+                                                    </button>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <p className='gh-portal-gift-checkout-subtitle'>
+                                                {t('Share a full membership to {siteTitle} with a friend or colleague', {siteTitle})}
+                                            </p>
                                         )}
                                     </>
                                 ) : (
-                                    <p className='gh-portal-gift-checkout-subtitle'>
-                                        {t('Share a full membership to {siteTitle} with a friend or colleague', {siteTitle})}
-                                    </p>
+                                    <>
+                                        <h1 className='gh-portal-main-title'>{giftPageHeading || t('Gift a membership')}</h1>
+                                        <p className='gh-portal-gift-checkout-subtitle'>
+                                            {t('Choose how your gift is delivered')}
+                                        </p>
+                                    </>
                                 )}
                             </header>
 
-                            {!isLoggedIn && (
+                            {step === 'plan' && !isLoggedIn && (
                                 <div className='gh-portal-gift-checkout-section gh-portal-gift-checkout-email'>
                                     <InputField
                                         {...emailField}
@@ -976,16 +1272,18 @@ const GiftPage = () => {
                                 </div>
                             )}
 
-                            <div className='gh-portal-gift-checkout-section'>
-                                <div className='gh-portal-gift-checkout-label'>{isSingleTier ? t('Membership details') : t('Tier')}</div>
-                                <GiftDurationSwitch
-                                    offeredDurations={offeredDurations}
-                                    activeDuration={activeDuration}
-                                    setSelectedDuration={setSelectedDuration}
-                                />
-                            </div>
+                            {step === 'plan' && (
+                                <div className='gh-portal-gift-checkout-section'>
+                                    <div className='gh-portal-gift-checkout-label'>{isSingleTier ? t('Membership details') : t('Tier')}</div>
+                                    <GiftDurationSwitch
+                                        offeredDurations={offeredDurations}
+                                        activeDuration={activeDuration}
+                                        setSelectedDuration={setSelectedDuration}
+                                    />
+                                </div>
+                            )}
 
-                            <div className='gh-portal-gift-checkout-section'>
+                            {step === 'plan' && <div className='gh-portal-gift-checkout-section'>
                                 <div
                                     className={'gh-portal-gift-checkout-tiers' + (isSingleTier ? ' single' : '')}
                                     role={isSingleTier ? undefined : 'radiogroup'}
@@ -1045,22 +1343,132 @@ const GiftPage = () => {
                                         );
                                     })}
                                 </div>
-                            </div>
+                            </div>}
+
+                            {step === 'delivery' && <div className='gh-portal-gift-checkout-section'>
+                                <div className='gh-portal-gift-checkout-label'>{t('Delivery')}</div>
+                                <div className='gh-portal-gift-checkout-methods' role='radiogroup' aria-label={t('Delivery')}>
+                                    <div className={'gh-portal-gift-checkout-method' + (deliveryMethod === 'email' ? ' selected' : '')}>
+                                        <button
+                                            type='button'
+                                            role='radio'
+                                            aria-checked={deliveryMethod === 'email'}
+                                            className='gh-portal-gift-checkout-method-choice'
+                                            data-test-button='delivery-method-email'
+                                            onClick={() => handleDeliveryMethodChange('email')}
+                                        >
+                                            <span className='gh-portal-gift-checkout-tier-radio' aria-hidden='true' />
+                                            <span className='gh-portal-gift-checkout-method-content'>
+                                                <span className='gh-portal-gift-checkout-method-name'>{t('Email it to them')}</span>
+                                                <span className='gh-portal-gift-checkout-method-description'>{t('We\'ll send the gift straight to their inbox')}</span>
+                                            </span>
+                                        </button>
+                                        {deliveryMethod === 'email' && (
+                                            <div className='gh-portal-gift-checkout-method-body'>
+                                                <InputField
+                                                    {...recipientEmailField}
+                                                    onChange={handleRecipientEmailChange}
+                                                />
+                                                <div className={'gh-portal-products-pricetoggle' + (deliveryOption === 'now' ? ' left' : '')}>
+                                                    <button
+                                                        data-test-button='delivery-now'
+                                                        type='button'
+                                                        className={'gh-portal-btn' + (deliveryOption === 'now' ? ' active' : '')}
+                                                        onClick={() => handleDeliveryOptionChange('now')}
+                                                    >
+                                                        {t('Send now')}
+                                                    </button>
+                                                    <button
+                                                        data-test-button='delivery-scheduled'
+                                                        type='button'
+                                                        className={'gh-portal-btn' + (deliveryOption === 'scheduled' ? ' active' : '')}
+                                                        onClick={() => handleDeliveryOptionChange('scheduled')}
+                                                    >
+                                                        {t('Send on a date')}
+                                                    </button>
+                                                </div>
+                                                {deliveryOption === 'scheduled' && (
+                                                    <div className='gh-portal-gift-checkout-delivery-date'>
+                                                        <input
+                                                            data-test-input='gift-delivery-date'
+                                                            className={'gh-portal-input' + (errors.deliveryDate ? ' error' : '')}
+                                                            type='date'
+                                                            aria-label={t('Delivery date')}
+                                                            min={minDeliveryDate}
+                                                            max={maxDeliveryDate}
+                                                            value={deliveryDate}
+                                                            onChange={handleDeliveryDateChange}
+                                                        />
+                                                        {errors.deliveryDate && (
+                                                            <p className='gh-portal-gift-checkout-delivery-error'>{errors.deliveryDate}</p>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className={'gh-portal-gift-checkout-method' + (deliveryMethod === 'link' ? ' selected' : '')}>
+                                        <button
+                                            type='button'
+                                            role='radio'
+                                            aria-checked={deliveryMethod === 'link'}
+                                            className='gh-portal-gift-checkout-method-choice'
+                                            data-test-button='delivery-method-link'
+                                            onClick={() => handleDeliveryMethodChange('link')}
+                                        >
+                                            <span className='gh-portal-gift-checkout-tier-radio' aria-hidden='true' />
+                                            <span className='gh-portal-gift-checkout-method-content'>
+                                                <span className='gh-portal-gift-checkout-method-name'>{t('Share a link yourself')}</span>
+                                                <span className='gh-portal-gift-checkout-method-description'>{t('We\'ll give you a link to pass on however you like')}</span>
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>}
+
+                            {step === 'delivery' && <div className='gh-portal-gift-checkout-section'>
+                                <div className='gh-portal-gift-checkout-label'>{t('Personal message')}</div>
+                                <InputField
+                                    {...buyerNameField}
+                                    onChange={(event) => {
+                                        setErrors(currentErrors => ({...currentErrors, buyerName: ''}));
+                                        setBuyerName(event.target.value);
+                                    }}
+                                />
+                                <textarea
+                                    data-test-input='gift-message'
+                                    className='gh-portal-input gh-portal-gift-checkout-textarea'
+                                    aria-label={t('Personal message')}
+                                    placeholder={t('Add a short note to go with your gift (optional)')}
+                                    maxLength={GIFT_MESSAGE_MAX_LENGTH}
+                                    value={giftMessage}
+                                    onChange={event => setGiftMessage(event.target.value)}
+                                />
+                            </div>}
 
                             <div className='gh-portal-gift-checkout-cta-wrapper'>
-                                <ActionButton
-                                    dataTestId='purchase-gift'
-                                    label={t('Continue')}
-                                    onClick={handlePurchase}
-                                    disabled={isDisabled}
-                                    isRunning={isPurchasing}
-                                    brandColor={brandColor}
-                                    classes='gh-portal-gift-checkout-cta'
-                                    style={{width: '100%'}}
-                                />
-                                <p className='gh-portal-gift-checkout-cta-note'>
-                                    {t('One-time payment. You\'ll get a gift link to send however you like.')}
-                                </p>
+                                {step === 'plan' ? (
+                                    <ActionButton
+                                        dataTestId='gift-continue'
+                                        label={t('Continue')}
+                                        onClick={handleContinueToDelivery}
+                                        disabled={isDisabled}
+                                        brandColor={brandColor}
+                                        classes='gh-portal-gift-checkout-cta'
+                                        style={{width: '100%'}}
+                                    />
+                                ) : (
+                                    <ActionButton
+                                        dataTestId='purchase-gift'
+                                        label={t('Continue to payment')}
+                                        onClick={handlePurchase}
+                                        disabled={isDisabled}
+                                        isRunning={isPurchasing}
+                                        brandColor={brandColor}
+                                        classes='gh-portal-gift-checkout-cta'
+                                        style={{width: '100%'}}
+                                    />
+                                )}
                             </div>
                         </div>
                     </div>

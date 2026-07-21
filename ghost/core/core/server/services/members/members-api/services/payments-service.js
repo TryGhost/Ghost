@@ -174,10 +174,14 @@ class PaymentsService {
      * @param {object} [params.member]
      * @param {boolean} params.isAuthenticated
      * @param {string} [params.email]
+     * @param {string | null} [params.recipientEmail]
+     * @param {string | null} [params.buyerName]
+     * @param {string | null} [params.giftMessage]
+     * @param {Date | null} [params.deliverAt]
      *
      * @returns {Promise<string>}
      */
-    async getGiftPaymentLink({tier, cadence, duration, metadata, successUrl, cancelUrl, member, isAuthenticated, email}) {
+    async getGiftPaymentLink({tier, cadence, duration, metadata, successUrl, cancelUrl, member, isAuthenticated, email, recipientEmail, buyerName, giftMessage, deliverAt}) {
         let customer = null;
         if (member && isAuthenticated) {
             customer = await this.getCustomerForMember(member);
@@ -203,6 +207,14 @@ class PaymentsService {
         successUrlObj.searchParams.set('gift_tier', tier.id.toHexString());
         successUrlObj.searchParams.set('gift_cadence', cadence);
         successUrlObj.searchParams.set('gift_duration', String(duration));
+        // Only a delivery flag and date go in the URL — the recipient's email
+        // is deliberately kept out of query params (server logs, referrers)
+        if (recipientEmail) {
+            successUrlObj.searchParams.set('gift_delivery', deliverAt ? 'scheduled' : 'sent');
+            if (deliverAt) {
+                successUrlObj.searchParams.set('gift_deliver_date', deliverAt.toISOString());
+            }
+        }
 
         const data = {
             amount,
@@ -216,7 +228,11 @@ class PaymentsService {
                 gift_token: token,
                 tier_id: tier.id.toHexString(),
                 cadence,
-                duration: String(duration)
+                duration: String(duration),
+                ...(recipientEmail ? {gift_recipient_email: recipientEmail} : {}),
+                ...(buyerName ? {gift_buyer_name: buyerName} : {}),
+                ...(giftMessage ? {gift_message: giftMessage} : {}),
+                ...(deliverAt ? {gift_deliver_at: deliverAt.toISOString()} : {})
             },
             successUrl: successUrlObj.toString(),
             cancelUrl,

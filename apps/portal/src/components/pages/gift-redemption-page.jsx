@@ -19,6 +19,29 @@ export const GiftRedemptionStyles = `
 .gh-portal-gift-redemption-form + .gh-portal-gift-checkout-cta {
     margin-top: 16px;
 }
+
+.gh-portal-gift-redemption-message {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: var(--grey13);
+    border-radius: 8px;
+}
+
+.gh-portal-gift-redemption-message-text {
+    margin: 0;
+    font-size: 1.6rem;
+    line-height: 1.5em;
+    font-style: italic;
+    color: var(--grey1);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.gh-portal-gift-redemption-message-from {
+    margin: 8px 0 0;
+    font-size: 1.4rem;
+    color: var(--grey6);
+}
 `;
 
 const GiftRedemptionPage = () => {
@@ -142,9 +165,15 @@ const GiftRedemptionPage = () => {
         : t('Redeem your membership');
     const siteIcon = site?.icon;
     const siteTitle = site?.title || '';
-    const headerText = siteTitle
-        ? t('You\'ve been gifted a membership to {siteTitle}', {siteTitle})
-        : t('You\'ve been gifted a membership');
+    const buyerName = gift.buyer_name || '';
+    let headerText;
+    if (buyerName && siteTitle) {
+        headerText = t('{buyerName} has gifted you a membership to {siteTitle}', {buyerName, siteTitle});
+    } else if (siteTitle) {
+        headerText = t('You\'ve been gifted a membership to {siteTitle}', {siteTitle});
+    } else {
+        headerText = t('You\'ve been gifted a membership');
+    }
     const benefits = gift.tier.benefits || [];
     const tierDescription = gift.tier.description || '';
 
@@ -160,6 +189,15 @@ const GiftRedemptionPage = () => {
                                 <h1 className='gh-portal-main-title'>{t('A gift, just for you')}</h1>
                                 <p className='gh-portal-gift-checkout-subtitle'>{headerText}</p>
                             </header>
+
+                            {gift.message && (
+                                <div className='gh-portal-gift-redemption-message' data-testid='gift-message'>
+                                    <p className='gh-portal-gift-redemption-message-text'>&ldquo;{gift.message}&rdquo;</p>
+                                    {buyerName && (
+                                        <p className='gh-portal-gift-redemption-message-from'>&mdash; {buyerName}</p>
+                                    )}
+                                </div>
+                            )}
 
                             {!isLoggedIn && (
                                 <div className='gh-portal-gift-redemption-form'>

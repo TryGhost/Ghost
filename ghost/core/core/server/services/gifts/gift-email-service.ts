@@ -32,6 +32,8 @@ interface PurchaseConfirmationData {
     cadence: 'month' | 'year';
     duration: number;
     expiresAt: Date;
+    recipientEmail: string | null;
+    deliverAt: Date | null;
 }
 
 interface ReminderData {
@@ -39,6 +41,27 @@ interface ReminderData {
     memberName: string | null;
     tierName: string;
     consumesAt: Date;
+}
+
+interface GiftDeliverySendData {
+    recipientEmail: string;
+    buyerName: string | null;
+    message: string | null;
+    token: string;
+    tierName: string;
+    cadence: 'month' | 'year';
+    duration: number;
+    expiresAt: Date;
+}
+
+interface GiftDeliveredConfirmationSendData {
+    buyerEmail: string;
+    recipientEmail: string;
+    token: string;
+    tierName: string;
+    cadence: 'month' | 'year';
+    duration: number;
+    expiresAt: Date;
 }
 
 export class GiftEmailService {
@@ -89,7 +112,7 @@ export class GiftEmailService {
         }).format(date);
     }
 
-    async sendPurchaseConfirmation({buyerEmail, token, tierName, cadence, duration, expiresAt}: PurchaseConfirmationData): Promise<void> {
+    async sendPurchaseConfirmation({buyerEmail, token, tierName, cadence, duration, expiresAt, recipientEmail, deliverAt}: PurchaseConfirmationData): Promise<void> {
         const siteDomain = this.siteDomain;
         const siteUrl = this.urlUtils.getSiteUrl();
         const siteTitle = this.settingsCache.get('title') ?? siteDomain;
@@ -108,13 +131,103 @@ export class GiftEmailService {
                 tierName,
                 cadenceLabel,
                 link: giftLink,
+                expiresAt: this.formatDate(expiresAt),
+                recipientEmail,
+                deliverAt: deliverAt ? this.formatDate(deliverAt) : null
+            }
+        });
+
+        // Lead the subject with what actually happens next: for a scheduled
+        // gift the useful fact is the date, for an immediate send it's that
+        // the gift is already on its way to the recipient
+        let subject;
+        if (recipientEmail && deliverAt) {
+            subject = this.t('Your gift will be delivered on {deliverAt}', {
+                deliverAt: this.formatDate(deliverAt),
+                interpolation: {escapeValue: false}
+            });
+        } else if (recipientEmail) {
+            subject = this.t('Your gift is on its way');
+        } else {
+            subject = this.t('Your gift is ready');
+        }
+
+        await this.mailer.send({
+            to: buyerEmail,
+            subject,
+            html,
+            text,
+            from: this.getFromAddress(),
+            forceTextContent: true
+        });
+    }
+
+    async sendGiftDelivery({recipientEmail, buyerName, message, token, tierName, cadence, duration, expiresAt}: GiftDeliverySendData): Promise<void> {
+        const siteDomain = this.siteDomain;
+        const siteUrl = this.urlUtils.getSiteUrl();
+        const siteTitle = this.settingsCache.get('title') ?? siteDomain;
+
+        const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
+        const cadenceLabel = this.getCadenceLabel(cadence, duration);
+
+        const {html, text} = await this.renderer.renderDelivery({
+            siteTitle,
+            siteUrl,
+            siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
+            siteDomain,
+            accentColor: this.settingsCache.get('accent_color'),
+            toEmail: recipientEmail,
+            buyerName,
+            message,
+            gift: {
+                tierName,
+                cadenceLabel,
+                link: giftLink,
+                expiresAt: this.formatDate(expiresAt)
+            }
+        });
+
+        const subject = buyerName
+            ? this.t('{buyerName} sent you a gift', {buyerName, interpolation: {escapeValue: false}})
+            : this.t('You\'ve received a gift');
+
+        await this.mailer.send({
+            to: recipientEmail,
+            subject,
+            html,
+            text,
+            from: this.getFromAddress(),
+            forceTextContent: true
+        });
+    }
+
+    async sendDeliveredConfirmation({buyerEmail, recipientEmail, token, tierName, cadence, duration, expiresAt}: GiftDeliveredConfirmationSendData): Promise<void> {
+        const siteDomain = this.siteDomain;
+        const siteUrl = this.urlUtils.getSiteUrl();
+        const siteTitle = this.settingsCache.get('title') ?? siteDomain;
+
+        const giftLink = `${siteUrl.replace(/\/$/, '')}/gift/${token}`;
+        const cadenceLabel = this.getCadenceLabel(cadence, duration);
+
+        const {html, text} = await this.renderer.renderDeliveredConfirmation({
+            siteTitle,
+            siteUrl,
+            siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
+            siteDomain,
+            accentColor: this.settingsCache.get('accent_color'),
+            toEmail: buyerEmail,
+            gift: {
+                tierName,
+                cadenceLabel,
+                recipientEmail,
+                link: giftLink,
                 expiresAt: this.formatDate(expiresAt)
             }
         });
 
         await this.mailer.send({
             to: buyerEmail,
-            subject: this.t('Your gift is ready'),
+            subject: this.t('Your gift has been delivered'),
             html,
             text,
             from: this.getFromAddress(),

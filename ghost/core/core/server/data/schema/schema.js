@@ -1350,6 +1350,10 @@ module.exports = {
 
         buyer_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
         buyer_member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
+        buyer_name: {type: 'string', maxlength: 191, nullable: true},
+
+        recipient_email: {type: 'string', maxlength: 191, nullable: true},
+        message: {type: 'string', maxlength: 500, nullable: true},
 
         redeemer_member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
 
@@ -1369,6 +1373,8 @@ module.exports = {
 
         consumes_at: {type: 'dateTime', nullable: true},
         expires_at: {type: 'dateTime', nullable: false},
+        deliver_at: {type: 'dateTime', nullable: true},
+        delivered_at: {type: 'dateTime', nullable: true},
 
         status: {
             type: 'string', maxlength: 50, nullable: false, validations: {
@@ -1383,7 +1389,8 @@ module.exports = {
         consumes_soon_reminder_sent_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
             ['status', 'consumes_at'],
-            ['status', 'expires_at']
+            ['status', 'expires_at'],
+            ['status', 'deliver_at']
         ]
     }
 };

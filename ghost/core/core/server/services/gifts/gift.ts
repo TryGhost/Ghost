@@ -17,6 +17,9 @@ interface GiftData {
     token: string;
     buyerEmail: string;
     buyerMemberId: string | null;
+    buyerName: string | null;
+    recipientEmail: string | null;
+    message: string | null;
     redeemerMemberId: string | null;
     tierId: string;
     cadence: GiftCadence;
@@ -27,6 +30,8 @@ interface GiftData {
     stripePaymentIntentId: string;
     consumesAt: Date | null;
     expiresAt: Date;
+    deliverAt: Date | null;
+    deliveredAt: Date | null;
     status: GiftStatus;
     purchasedAt: Date;
     redeemedAt: Date | null;
@@ -40,6 +45,9 @@ export interface GiftFromPurchaseData {
     token: string;
     buyerEmail: string;
     buyerMemberId: string | null;
+    buyerName: string | null;
+    recipientEmail: string | null;
+    message: string | null;
     tierId: string;
     cadence: GiftCadence;
     duration: number;
@@ -47,12 +55,16 @@ export interface GiftFromPurchaseData {
     amount: number;
     stripeCheckoutSessionId: string;
     stripePaymentIntentId: string;
+    deliverAt: Date | null;
 }
 
 export class Gift {
     token: string;
     buyerEmail: string;
     buyerMemberId: string | null;
+    buyerName: string | null;
+    recipientEmail: string | null;
+    message: string | null;
     redeemerMemberId: string | null;
     tierId: string;
     cadence: GiftCadence;
@@ -63,6 +75,8 @@ export class Gift {
     stripePaymentIntentId: string;
     consumesAt: Date | null;
     expiresAt: Date;
+    deliverAt: Date | null;
+    deliveredAt: Date | null;
     status: GiftStatus;
     purchasedAt: Date;
     redeemedAt: Date | null;
@@ -75,6 +89,9 @@ export class Gift {
         this.token = data.token;
         this.buyerEmail = data.buyerEmail;
         this.buyerMemberId = data.buyerMemberId;
+        this.buyerName = data.buyerName;
+        this.recipientEmail = data.recipientEmail;
+        this.message = data.message;
         this.redeemerMemberId = data.redeemerMemberId;
         this.tierId = data.tierId;
         this.cadence = data.cadence;
@@ -85,6 +102,8 @@ export class Gift {
         this.stripePaymentIntentId = data.stripePaymentIntentId;
         this.consumesAt = data.consumesAt;
         this.expiresAt = data.expiresAt;
+        this.deliverAt = data.deliverAt;
+        this.deliveredAt = data.deliveredAt;
         this.status = data.status;
         this.purchasedAt = data.purchasedAt;
         this.redeemedAt = data.redeemedAt;
@@ -96,12 +115,18 @@ export class Gift {
 
     static fromPurchase(data: GiftFromPurchaseData) {
         const now = new Date();
-        const expiresAt = new Date(now);
+
+        // The expiry clock starts when the gift reaches the recipient — a gift
+        // scheduled for delivery months out shouldn't burn its redemption
+        // window while it waits to be sent
+        const deliverAt = data.deliverAt && data.deliverAt.getTime() > now.getTime() ? data.deliverAt : null;
+        const expiresAt = new Date(deliverAt ?? now);
 
         expiresAt.setDate(expiresAt.getDate() + GIFT_EXPIRY_DAYS);
 
         return new Gift({
             ...data,
+            deliverAt,
             redeemerMemberId: null,
             consumesAt: null,
             expiresAt,
@@ -111,7 +136,25 @@ export class Gift {
             consumedAt: null,
             expiredAt: null,
             refundedAt: null,
+            deliveredAt: null,
             consumesSoonReminderSentAt: null
+        });
+    }
+
+    hasPendingDelivery(): boolean {
+        return this.status === 'purchased'
+            && this.recipientEmail !== null
+            && this.deliveredAt === null;
+    }
+
+    deliver(): Gift | null {
+        if (!this.hasPendingDelivery()) {
+            return null;
+        }
+
+        return new Gift({
+            ...this,
+            deliveredAt: new Date()
         });
     }
 

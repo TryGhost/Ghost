@@ -1,5 +1,6 @@
 const dns = require('node:dns/promises');
 const crypto = require('node:crypto');
+const moment = require('moment-timezone');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const sanitizeHtml = require('sanitize-html');
@@ -34,7 +35,9 @@ const messages = {
     otcNotSupported: 'OTC verification not supported.',
     invalidCode: 'Invalid verification code.',
     failedToVerifyCode: 'Failed to verify code, please try again.',
-    signInRequired: 'You must be signed in to continue.'
+    signInRequired: 'You must be signed in to continue.',
+    invalidGiftRecipientEmail: 'Recipient email is not valid.',
+    invalidGiftDeliveryDate: 'Gift delivery date is not valid.'
 };
 
 // helper utility for logic shared between sendMagicLink and verifyOTC
@@ -69,6 +72,10 @@ const RESERVED_CHECKOUT_METADATA_KEYS = new Set([
     'ghost_gift',
     'ghostSignupContext',
     'gift_token',
+    'gift_recipient_email',
+    'gift_buyer_name',
+    'gift_message',
+    'gift_deliver_at',
     'tier_id',
     'cadence',
     'duration'
@@ -882,10 +889,12 @@ module.exports = class RouterController {
 
             const {cadence, duration} = this._getGiftDuration(req.body);
             const data = await this._getSubscriptionCheckoutData({...req.body, cadence});
+            const giftOptions = parseGiftOptions(req.body, this._settingsCache.get('timezone'));
 
             response = await this._createGiftCheckoutSession({
                 ...options,
                 ...data,
+                ...giftOptions,
                 duration,
                 successUrl: siteUrl,
                 cancelUrl: options.cancelUrl || siteUrl
@@ -1290,6 +1299,78 @@ module.exports = class RouterController {
         return sendOffersResponse(offers);
     }
 };
+
+const GIFT_MESSAGE_MAX_LENGTH = 500; // bounded by Stripe's 500-char metadata value limit
+const GIFT_BUYER_NAME_MAX_LENGTH = 191;
+const GIFT_MAX_SCHEDULE_DAYS = 365;
+const GIFT_DELIVERY_HOUR = 9; // deliver at 9am in the site's timezone
+
+/**
+ * Parse and validate the optional gift personalisation fields on a gift
+ * checkout request: recipient email, buyer name, personal message and
+ * scheduled delivery date.
+ *
+ * The buyer name and message are allowed without a recipient email (they're
+ * shown on the redemption page even when the buyer shares the link
+ * themselves); a delivery date requires a recipient email, since there's
+ * nobody to deliver to otherwise.
+ *
+ * @param {object} body - request body
+ * @param {string} timezone - the site timezone, used to anchor the delivery date
+ * @returns {{recipientEmail: string | null, buyerName: string | null, giftMessage: string | null, deliverAt: Date | null}}
+ */
+function parseGiftOptions(body, timezone) {
+    let recipientEmail = null;
+    if (body.recipientEmail) {
+        if (typeof body.recipientEmail !== 'string' || !isEmail(body.recipientEmail)) {
+            throw new BadRequestError({message: tpl(messages.invalidGiftRecipientEmail)});
+        }
+
+        recipientEmail = normalizeEmail(body.recipientEmail);
+
+        if (!recipientEmail) {
+            throw new BadRequestError({message: tpl(messages.invalidGiftRecipientEmail)});
+        }
+    }
+
+    let buyerName = null;
+    if (body.buyerName && typeof body.buyerName === 'string') {
+        buyerName = sanitizeHtml(body.buyerName, {allowedTags: [], allowedAttributes: {}}).trim().slice(0, GIFT_BUYER_NAME_MAX_LENGTH) || null;
+    }
+
+    let giftMessage = null;
+    if (body.giftMessage && typeof body.giftMessage === 'string') {
+        if (body.giftMessage.length > GIFT_MESSAGE_MAX_LENGTH) {
+            logging.warn('Gift message is too long, ignoring');
+        } else {
+            giftMessage = sanitizeHtml(body.giftMessage, {allowedTags: [], allowedAttributes: {}}).trim() || null;
+        }
+    }
+
+    let deliverAt = null;
+    if (body.deliveryDate) {
+        if (!recipientEmail
+            || typeof body.deliveryDate !== 'string'
+            || !/^\d{4}-\d{2}-\d{2}$/.test(body.deliveryDate)
+        ) {
+            throw new BadRequestError({message: tpl(messages.invalidGiftDeliveryDate)});
+        }
+
+        const safeTimezone = (typeof timezone === 'string' && moment.tz.zone(timezone)) ? timezone : 'Etc/UTC';
+        const delivery = moment.tz(body.deliveryDate, 'YYYY-MM-DD', true, safeTimezone).hour(GIFT_DELIVERY_HOUR);
+
+        if (!delivery.isValid()
+            || delivery.valueOf() <= Date.now()
+            || delivery.valueOf() > moment().add(GIFT_MAX_SCHEDULE_DAYS, 'days').valueOf()
+        ) {
+            throw new BadRequestError({message: tpl(messages.invalidGiftDeliveryDate)});
+        }
+
+        deliverAt = delivery.toDate();
+    }
+
+    return {recipientEmail, buyerName, giftMessage, deliverAt};
+}
 
 function parsePersonalNote(rawText) {
     if (rawText && typeof rawText !== 'string') {

@@ -91,6 +91,8 @@ const GiftSuccessPage = () => {
     const tierId = pageData?.tierId;
     const cadence = pageData?.cadence;
     const duration = pageData?.duration || 1;
+    const delivery = pageData?.delivery;
+    const deliveryDate = pageData?.deliveryDate;
     const siteUrl = site?.url || '';
     const siteIcon = site?.icon;
     const siteTitle = site?.title || '';
@@ -105,6 +107,14 @@ const GiftSuccessPage = () => {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    let subtitleText = t('Send the link below to share it with whoever you\'d like.');
+    if (delivery === 'scheduled' && deliveryDate) {
+        const formattedDate = new Date(deliveryDate).toLocaleDateString(undefined, {day: 'numeric', month: 'short', year: 'numeric'});
+        subtitleText = t('We\'ll deliver your gift to the recipient by email on {deliveryDate}. You can also share the link below yourself.', {deliveryDate: formattedDate});
+    } else if (delivery === 'sent') {
+        subtitleText = t('We\'ve emailed your gift to the recipient. You can also share the link below yourself.');
+    }
+
     return (
         <>
             <CloseButton />
@@ -116,7 +126,7 @@ const GiftSuccessPage = () => {
                             <header className='gh-portal-gift-checkout-header'>
                                 <h1 className='gh-portal-main-title'>{t('Your gift is ready')}</h1>
                                 <p className='gh-portal-gift-checkout-subtitle'>
-                                    {t('Send the link below to share it with whoever you\'d like.')}
+                                    {subtitleText}
                                 </p>
                             </header>
 

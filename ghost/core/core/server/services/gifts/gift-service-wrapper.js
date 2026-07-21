@@ -27,6 +27,7 @@ class GiftServiceWrapper {
         const {GiftBookshelfRepository} = require('./gift-bookshelf-repository');
         const {GiftService} = require('./gift-service');
         const {GiftReminderScheduler} = require('./gift-reminder-scheduler');
+        const {GiftDeliveryScheduler} = require('./gift-delivery-scheduler');
         const {GiftEmailService} = require('./gift-email-service');
         const {GiftController} = require('./gift-controller');
         const membersService = require('../members');
@@ -36,6 +37,7 @@ class GiftServiceWrapper {
         const logging = require('@tryghost/logging');
         const {SubscriptionActivatedEvent} = require('../../../shared/events');
         const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');
+        const StartGiftDeliveryFlushEvent = require('./events/start-gift-delivery-flush-event');
         const StartGiftCleanupEvent = require('./events/start-gift-cleanup-event');
         const jobs = require('./jobs');
 
@@ -67,6 +69,13 @@ class GiftServiceWrapper {
             findUnsentReminders: () => repository.findUnsentReminders()
         });
 
+        const giftDeliveryScheduler = new GiftDeliveryScheduler({
+            apiUrl: options.apiUrl,
+            adapter: options.schedulerAdapter,
+            internalKeys: options.internalKeys,
+            findUnsentDeliveries: () => repository.findUnsentDeliveries()
+        });
+
         this.service = new GiftService({
             giftRepository: repository,
             get memberRepository() {
@@ -77,7 +86,8 @@ class GiftServiceWrapper {
             get staffServiceEmails() {
                 return staffService.api.emails;
             },
-            giftReminderScheduler
+            giftReminderScheduler,
+            giftDeliveryScheduler
         });
 
         this.controller = new GiftController({
@@ -110,6 +120,17 @@ class GiftServiceWrapper {
             }
         });
 
+        DomainEvents.subscribe(StartGiftDeliveryFlushEvent, async () => {
+            const start = Date.now();
+            try {
+                const {deliveredCount, skippedCount, failedCount} = await this.service.processDeliveries();
+
+                logging.info(`Sent ${deliveredCount} gift deliveries, skipped ${skippedCount}, failed ${failedCount} in ${Date.now() - start}ms`);
+            } catch (err) {
+                logging.error(err, 'Failed to process gift deliveries');
+            }
+        });
+
         DomainEvents.subscribe(StartGiftCleanupEvent, async () => {
             const consumedStart = Date.now();
             try {
@@ -132,6 +153,7 @@ class GiftServiceWrapper {
 
         jobs.scheduleGiftCleanupJob();
         jobs.scheduleGiftReminderJob();
+        jobs.scheduleGiftDeliveryJob();
 
         this.#initialized = true;
     }

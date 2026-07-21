@@ -21,6 +21,8 @@ export interface GiftRepository {
     findPendingExpiration(): Promise<Gift[]>;
     findPendingReminder(options: FindPendingReminderOptions): Promise<Gift[]>;
     findUnsentReminders(): Promise<Gift[]>;
+    findPendingDelivery(): Promise<Gift[]>;
+    findUnsentDeliveries(): Promise<Gift[]>;
     getActiveByMember(memberId: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
     getActiveByMembers(memberIds: string[], options?: RepositoryTransactionOptions): Promise<Map<string, Gift>>;
     create(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;

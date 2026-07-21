@@ -886,6 +886,198 @@ describe('RouterController', function () {
                 }
             });
 
+            it('passes sanitized personalisation options through to getGiftPaymentLink', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {
+                        type: 'gift',
+                        tierId: 'tier_123',
+                        cadence: 'month',
+                        metadata: {},
+                        recipientEmail: 'taylor@example.com',
+                        buyerName: '<b>Sarah</b>',
+                        giftMessage: 'Happy <script>alert(1)</script>birthday!'
+                    }
+                }, mockRes);
+
+                sinon.assert.calledOnce(getGiftLinkSpy);
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    recipientEmail: 'taylor@example.com',
+                    buyerName: 'Sarah',
+                    giftMessage: 'Happy birthday!',
+                    deliverAt: null
+                }));
+            });
+
+            it('defaults personalisation options to null when not provided', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    recipientEmail: null,
+                    buyerName: null,
+                    giftMessage: null,
+                    deliverAt: null
+                }));
+            });
+
+            it('converts a valid delivery date into a deliverAt Date', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+                const future = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                const deliveryDate = future.toISOString().slice(0, 10);
+
+                await controller.createCheckoutSession({
+                    body: {
+                        type: 'gift',
+                        tierId: 'tier_123',
+                        cadence: 'month',
+                        metadata: {},
+                        recipientEmail: 'taylor@example.com',
+                        deliveryDate
+                    }
+                }, mockRes);
+
+                sinon.assert.calledOnce(getGiftLinkSpy);
+
+                const {deliverAt} = getGiftLinkSpy.getCall(0).args[0];
+
+                assert.ok(deliverAt instanceof Date);
+                assert.ok(deliverAt.getTime() > Date.now());
+            });
+
+            it('rejects an invalid recipient email', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {
+                            type: 'gift',
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            metadata: {},
+                            recipientEmail: 'not-an-email'
+                        }
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
+            });
+
+            it('rejects a delivery date without a recipient email', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+                const future = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {
+                            type: 'gift',
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            metadata: {},
+                            deliveryDate: future.toISOString().slice(0, 10)
+                        }
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
+            });
+
+            it('rejects a delivery date in the past', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {
+                            type: 'gift',
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            metadata: {},
+                            recipientEmail: 'taylor@example.com',
+                            deliveryDate: '2020-01-01'
+                        }
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
+            });
+
+            it('rejects a delivery date more than a year out', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+                const tooFar = new Date(Date.now() + 500 * 24 * 60 * 60 * 1000);
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {
+                            type: 'gift',
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            metadata: {},
+                            recipientEmail: 'taylor@example.com',
+                            deliveryDate: tooFar.toISOString().slice(0, 10)
+                        }
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
+            });
+
+            it('ignores an over-long gift message instead of failing checkout', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {
+                        type: 'gift',
+                        tierId: 'tier_123',
+                        cadence: 'month',
+                        metadata: {},
+                        recipientEmail: 'taylor@example.com',
+                        giftMessage: 'a'.repeat(501)
+                    }
+                }, mockRes);
+
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    recipientEmail: 'taylor@example.com',
+                    giftMessage: null
+                }));
+            });
+
+            it('strips reserved gift metadata keys from client-supplied metadata', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {
+                        type: 'gift',
+                        tierId: 'tier_123',
+                        cadence: 'month',
+                        metadata: {
+                            gift_recipient_email: 'attacker@example.com',
+                            gift_buyer_name: 'Mallory',
+                            gift_message: 'injected',
+                            gift_deliver_at: '2030-01-01T00:00:00.000Z'
+                        }
+                    }
+                }, mockRes);
+
+                const {metadata} = getGiftLinkSpy.getCall(0).args[0];
+
+                assert.equal(metadata.gift_recipient_email, undefined);
+                assert.equal(metadata.gift_buyer_name, undefined);
+                assert.equal(metadata.gift_message, undefined);
+                assert.equal(metadata.gift_deliver_at, undefined);
+            });
+
             it('does not block paid members from purchasing gifts', async function () {
                 const controller = createGiftController({
                     tiersService: paidTierService(),

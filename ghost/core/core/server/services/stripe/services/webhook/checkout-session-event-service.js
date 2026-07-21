@@ -93,7 +93,11 @@ module.exports = class CheckoutSessionEventService {
             currency: session.currency,
             amount: session.amount_total,
             stripeCheckoutSessionId: session.id,
-            stripePaymentIntentId: session.payment_intent
+            stripePaymentIntentId: session.payment_intent,
+            buyerName: session.metadata?.gift_buyer_name ?? null,
+            recipientEmail: session.metadata?.gift_recipient_email ?? null,
+            message: session.metadata?.gift_message ?? null,
+            deliverAt: session.metadata?.gift_deliver_at ?? null
         });
     }
 
