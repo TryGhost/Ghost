@@ -1,10 +1,12 @@
 import React, {useState} from 'react';
+import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
 import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator} from '@tryghost/shade/components';
-import {Inline, Stack} from '@tryghost/shade/primitives';
+import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {getScenario} from '@/automations/proto/shared/mock';
 import {SurfaceAnalyticsPane} from './analytics-pane';
+import {SurfaceEditCanvas} from './edit-canvas';
 import {SurfaceFlowCanvas} from './flow-canvas';
 import {useVersionLink} from '@/automations/proto/shared/use-version-link';
 
@@ -39,15 +41,6 @@ const SaveIndicator: React.FC<{state: SaveState}> = ({state}) => (
     </span>
 );
 
-const PanePlaceholder: React.FC<{icon: React.ElementType; title: string; description: string; children?: React.ReactNode}> = ({icon: Icon, title, description, children}) => (
-    <Stack align="center" className="h-full justify-center p-8 text-center" gap="sm">
-        <Icon className="size-6 text-muted-foreground" />
-        <span className="font-medium">{title}</span>
-        <span className="max-w-sm text-sm text-muted-foreground">{description}</span>
-        {children}
-    </Stack>
-);
-
 /**
  * Surface concept — single-surface automation detail.
  *
@@ -59,8 +52,8 @@ const PanePlaceholder: React.FC<{icon: React.ElementType; title: string; descrip
  *
  * Edit-mode actions follow the "improved flow": the draft is always autosaved
  * (SaveIndicator), status lives in the pill + ⋯ menu (never a disabled button),
- * and one adaptive Publish is the deliberate go-live. The editable canvas itself
- * is still a placeholder — "Simulate an edit" exercises the state machine.
+ * and one adaptive Publish is the deliberate go-live. Editing mutates a local
+ * AutomationDetail draft through the real framework graph helpers.
  */
 const AutomationSurface: React.FC = () => {
     const {id} = useParams<{id: string}>();
@@ -76,6 +69,7 @@ const AutomationSurface: React.FC = () => {
     const [saveState, setSaveState] = useState<SaveState>('saved');
     const [publishOpen, setPublishOpen] = useState(false);
     const [turnOffOpen, setTurnOffOpen] = useState(false);
+    const [draft, setDraft] = useState<AutomationDetail | null>(null);
 
     const goBack = () => navigate(toVersioned('/automations-proto/surface'));
 
@@ -91,9 +85,11 @@ const AutomationSurface: React.FC = () => {
     const {automation} = scenario;
     const isEdit = mode === 'edit';
     const selectedRun = selectedMemberId ? scenario.runs.find(r => r.id === selectedMemberId) ?? null : null;
+    const activeDraft = draft ?? automation;
 
-    // Stands in for a real flow edit: mark dirty and run the autosave beat.
-    const simulateEdit = () => {
+    // Every flow edit updates the local draft and runs the autosave beat.
+    const handleDraftChange = (next: AutomationDetail) => {
+        setDraft(next);
         setDirty(true);
         setSaveState('saving');
         window.setTimeout(() => setSaveState('saved'), 700);
@@ -194,13 +190,7 @@ const AutomationSurface: React.FC = () => {
                 {/* Right — the flow canvas. Persists across modes and expands to fill in edit. */}
                 <div className="min-h-0 flex-1 overflow-hidden bg-muted/30">
                     {isEdit ? (
-                        <PanePlaceholder
-                            description="In edit mode the left pane slides away and the flow becomes editable. Real editing (reusing the existing editor) lands in Phase 5."
-                            icon={LucideIcon.Pencil}
-                            title="Editable flow"
-                        >
-                            <Button className="mt-2" size="sm" variant="outline" onClick={simulateEdit}>Simulate an edit</Button>
-                        </PanePlaceholder>
+                        <SurfaceEditCanvas draft={activeDraft} onChange={handleDraftChange} />
                     ) : (
                         <SurfaceFlowCanvas automation={automation} selectedRun={selectedRun} />
                     )}

@@ -1,44 +1,15 @@
 import '@xyflow/react/dist/style.css';
-import React, {useMemo, useRef} from 'react';
-import {Background, type Edge, Handle, type Node, type NodeProps, Position, ReactFlow} from '@xyflow/react';
-import type {AutomationAction, AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import {Background, type Edge, Handle, type Node, type NodeProps, Position, ReactFlow, type ReactFlowInstance} from '@xyflow/react';
+import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {AutomationRun, RunStepState} from '@/automations/proto/shared/mock';
+import {formatWait, orderActions} from './flow-utils';
 
 const NODE_WIDTH = 320;
 const NODE_GAP = 200;
 
 const fmtDateTime = (iso: string): string => new Date(iso).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'});
-
-const formatWait = (hours: number): string => {
-    if (hours % 24 === 0) {
-        const days = hours / 24;
-        return `${days} day${days === 1 ? '' : 's'}`;
-    }
-    return `${hours} hour${hours === 1 ? '' : 's'}`;
-};
-
-// Follow the edge chain from the head so nodes render in flow order.
-const orderActions = (automation: AutomationDetail): AutomationAction[] => {
-    const {actions, edges} = automation;
-    if (edges.length === 0) {
-        return actions;
-    }
-    const targets = new Set(edges.map(e => e.target_action_id));
-    const byId = new Map(actions.map(a => [a.id, a]));
-    const nextOf = new Map(edges.map(e => [e.source_action_id, e.target_action_id]));
-    const head = actions.find(a => !targets.has(a.id)) ?? actions[0];
-
-    const ordered: AutomationAction[] = [];
-    const seen = new Set<string>();
-    let cursor: string | undefined = head?.id;
-    while (cursor && byId.has(cursor) && !seen.has(cursor)) {
-        seen.add(cursor);
-        ordered.push(byId.get(cursor)!);
-        cursor = nextOf.get(cursor);
-    }
-    return ordered;
-};
 
 type NodeKind = 'trigger' | 'email' | 'wait' | 'terminal';
 
@@ -224,10 +195,29 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
         return {nodes: built, edges: builtEdges};
     }, [automation, selectedRun, focused]);
 
-    const snapToTop = (instance: {setViewport: (v: {x: number; y: number; zoom: number}) => void}) => {
-        const width = canvasRef.current?.clientWidth ?? 800;
-        instance.setViewport({x: Math.round(width / 2 - NODE_WIDTH / 2), y: 48, zoom: 1});
-    };
+    const flowRef = useRef<ReactFlowInstance | null>(null);
+
+    // Keep the flow column horizontally centred, re-running on resize (window,
+    // sidebar collapse) while preserving the user's pan and zoom.
+    const centerColumn = useCallback(() => {
+        const instance = flowRef.current;
+        const el = canvasRef.current;
+        if (!instance || !el) {
+            return;
+        }
+        const {y, zoom} = instance.getViewport();
+        void instance.setViewport({x: Math.round(el.clientWidth / 2 - (NODE_WIDTH * zoom) / 2), y, zoom});
+    }, []);
+
+    useEffect(() => {
+        const el = canvasRef.current;
+        if (!el) {
+            return;
+        }
+        const observer = new ResizeObserver(() => centerColumn());
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [centerColumn]);
 
     return (
         <div ref={canvasRef} className="size-full">
@@ -241,7 +231,11 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
                 zoomOnScroll={false}
                 panOnDrag
                 panOnScroll
-                onInit={snapToTop}
+                onInit={(instance) => {
+                    flowRef.current = instance;
+                    const width = canvasRef.current?.clientWidth ?? 800;
+                    void instance.setViewport({x: Math.round(width / 2 - NODE_WIDTH / 2), y: 48, zoom: 1});
+                }}
             >
                 <Background color="var(--color-grey-300)" />
             </ReactFlow>
