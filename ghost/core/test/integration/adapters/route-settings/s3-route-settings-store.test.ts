@@ -25,9 +25,6 @@ const CANONICAL_FILENAME = 'routes.yaml';
 const CONTENT_TYPE = 'application/yaml; charset=utf-8';
 const REAL_DEFAULTS_PATH = path.join(__dirname, '../../../../core/server/services/route-settings');
 
-// A comment-bearing, non-canonical source: its bytes differ from
-// serializeRouteSettings output, so a store that re-serialises the model instead
-// of persisting yamlSource verbatim cannot pass the round-trip assertions below.
 const SAMPLE_YAML = `# Custom routing for the site
 routes:
   /about/: about
