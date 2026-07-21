@@ -2424,9 +2424,6 @@ importers:
       '@tryghost/logging':
         specifier: 5.2.1
         version: 5.2.1(supports-color@5.5.0)
-      '@tryghost/members-csv':
-        specifier: 2.0.7
-        version: 2.0.7
       '@tryghost/metrics':
         specifier: 1.0.43
         version: 1.0.43(supports-color@5.5.0)
@@ -9191,9 +9188,6 @@ packages:
   '@tryghost/logging@5.2.1':
     resolution: {integrity: sha512-AAPopZkmPiWNCpQXkBjTw3NFGtS+sYXqypYLkpFViDBbU3e7ivK4dEbpnLUa/OJhnYSu276jZ4U5cuPtoUWINw==}
 
-  '@tryghost/members-csv@2.0.7':
-    resolution: {integrity: sha512-RnpaY2jKXC2waJTH4tI34vW541YBoDu7rX3NPZeHIdzoRP1102NCrzhPrFB/edmcyJ9fMMj5XpcvoQWw7FR/5A==}
-
   '@tryghost/metrics@1.0.43':
     resolution: {integrity: sha512-zTpO/VWhhsDgT/NPeXTa2UNO6KRoMVroo5oHpvKCB29eSE2td6uSarxZCzoxZ9c6rgA2TW0tiGuNu7sB3bMY7g==}
 
@@ -14880,10 +14874,6 @@ packages:
     resolution: {integrity: sha512-oRXApq54ETRj4eMiFzGnHWGy+zo5raudjuxN0b8H7s/RU2oW0Wvsx9O0ACRN/kRq9E8Vu/ReskGB5o3ji+FzHQ==}
     engines: {node: '>=12'}
 
-  fs-extra@11.3.0:
-    resolution: {integrity: sha512-Z4XaCL6dUDHfP/jT25jJKMmtxvuwbkrD1vNSMFlo9lNLY2c5FHYSQgHPRZUjAB26TpDEoW9HCOgplrdbaPV/ew==}
-    engines: {node: '>=14.14'}
-
   fs-extra@11.3.6:
     resolution: {integrity: sha512-w8ZNZr2mKIc7qeNaQ9AVPT1+iFaI+Avd4xudVOvdDJ8VytREi1Ft5Ih7hd9jjehod8vAM5GMsfQ/TpPf4EyoEA==}
     engines: {node: '>=14.14'}
@@ -18602,9 +18592,6 @@ packages:
   pako@2.2.0:
     resolution: {integrity: sha512-zJq6RP/5q+TO2OpFV3FHzlPnFjmkb7Nc99a5SNjJE+uu/PkpChs+NIZSSzbBoD+6kjiISXjfYdwj1ZRQ81dz/w==}
 
-  papaparse@5.3.2:
-    resolution: {integrity: sha512-6dNZu0Ki+gyV0eBsFKJhYr+MdQYAzFUGlBMNj3GNrmHxmz1lfRa24CjFObPXtjcetlOv5Ad299MhIK0znp3afw==}
-
   papaparse@5.5.4:
     resolution: {integrity: sha512-SwzWD9gl/ElwYLCI0nUja1mFJzjq2D8ziShfNBa7zCHzkOozeOGDwHWQ+tvCzEZcewecWZ5U7kUopDnG+DFYEQ==}
 
@@ -19745,9 +19732,6 @@ packages:
 
   pump@2.0.1:
     resolution: {integrity: sha512-ruPMNRkN3MHP1cWJc9OWr+T/xDP0jhXYCLfJcBuX54hhfIBnaQmAUMfDcG4DM5UMWByBbJY69QSphm3jtDKIkA==}
-
-  pump@3.0.2:
-    resolution: {integrity: sha512-tUPXtzlGM8FE3P0ZL6DVs/3P58k9nk8/jZeQCurTJylQA8qFYzHFfhBJkuqyE0FifOsQ0uKWekiZ5g8wtr28cw==}
 
   pump@3.0.4:
     resolution: {integrity: sha512-VS7sjc6KR7e1ukRFhQSY5LM2uBWAUPiOPa/A3mkKmiMwSmRFUITt0xuj+/lesgnCv+dPIEYlkzrcyXgquIHMcA==}
@@ -29219,13 +29203,6 @@ snapshots:
       - '@75lb/nature'
       - supports-color
 
-  '@tryghost/members-csv@2.0.7':
-    dependencies:
-      fs-extra: 11.3.0
-      lodash: 4.18.1
-      papaparse: 5.3.2
-      pump: 3.0.2
-
   '@tryghost/metrics@1.0.43(supports-color@5.5.0)':
     dependencies:
       '@tryghost/elasticsearch': 3.0.29(supports-color@5.5.0)
@@ -38414,12 +38391,6 @@ snapshots:
       jsonfile: 6.2.1
       universalify: 2.0.1
 
-  fs-extra@11.3.0:
-    dependencies:
-      graceful-fs: 4.2.11
-      jsonfile: 6.2.1
-      universalify: 2.0.1
-
   fs-extra@11.3.6:
     dependencies:
       graceful-fs: 4.2.11
@@ -43720,8 +43691,6 @@ snapshots:
 
   pako@2.2.0: {}
 
-  papaparse@5.3.2: {}
-
   papaparse@5.5.4: {}
 
   parallel-transform@1.2.0:
@@ -44967,11 +44936,6 @@ snapshots:
       safe-buffer: 5.2.1
 
   pump@2.0.1:
-    dependencies:
-      end-of-stream: 1.4.5
-      once: 1.4.0
-
-  pump@3.0.2:
     dependencies:
       end-of-stream: 1.4.5
       once: 1.4.0
