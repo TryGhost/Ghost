@@ -566,6 +566,7 @@ async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<
         .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
         .innerJoin('automation_action_revisions as revision', 'revision.id', 'step.automation_action_revision_id')
         .innerJoin('automation_actions as action', 'action.id', 'revision.action_id')
+        .whereIn('step.id', candidateIds)
         .where('step.locked_by', lockId)
         .orderBy([
             'step.ready_at',
