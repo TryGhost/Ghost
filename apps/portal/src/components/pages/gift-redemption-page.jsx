@@ -9,7 +9,6 @@ import {ValidateInputForm} from '../../utils/form';
 import {getGiftDurationLabel, getGiftRedemptionErrorMessage} from '../../utils/gift-redemption-notification';
 import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
-import {formatGiftValue} from './gift-page';
 
 export const GiftRedemptionStyles = `
 .gh-portal-gift-redemption-form {
@@ -225,7 +224,6 @@ const GiftRedemptionPage = () => {
                                     duration={getGiftDurationLabel(gift)}
                                     tierName={gift.tier.name}
                                     name={name.trim() || null}
-                                    giftValue={formatGiftValue(gift)}
                                     siteIcon={siteIcon}
                                     siteTitle={siteTitle}
                                 />

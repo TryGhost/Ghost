@@ -916,6 +916,7 @@ const GiftPage = () => {
     const [buyerName, setBuyerName] = useState(member?.name || '');
     const [giftMessage, setGiftMessage] = useState('');
     const [deliveryMethod, setDeliveryMethod] = useState('email');
+    const [deliveryOption, setDeliveryOption] = useState('now');
     const [confirmEmail, setConfirmEmail] = useState('');
     const [deliveryDate, setDeliveryDate] = useState('');
     const [errors, setErrors] = useState({});
@@ -1067,6 +1068,17 @@ const GiftPage = () => {
         setDeliveryDate(event.target.value);
     };
 
+    const handleDeliveryOptionChange = (option) => {
+        setErrors(currentErrors => ({
+            ...currentErrors,
+            deliveryDate: ''
+        }));
+        setDeliveryOption(option);
+        if (option === 'now') {
+            setDeliveryDate('');
+        }
+    };
+
     const handleContinueToDelivery = (e) => {
         e.preventDefault();
 
@@ -1110,7 +1122,7 @@ const GiftPage = () => {
         const isEmailDelivery = deliveryMethod === 'email';
         // With the linear form, a chosen date means "schedule"; an empty date
         // means "send as soon as payment completes".
-        const isScheduled = isEmailDelivery && !!deliveryDate;
+        const isScheduled = isEmailDelivery && deliveryOption === 'schedule';
 
         const fieldsToValidate = [];
         if (!isLoggedIn) {
@@ -1136,8 +1148,12 @@ const GiftPage = () => {
             formErrors.confirmEmail = t('Email addresses do not match');
         }
 
-        if (isScheduled && !formErrors.recipientEmail && (deliveryDate < minDeliveryDate || deliveryDate > maxDeliveryDate)) {
-            formErrors.deliveryDate = t('Choose a date within the next year');
+        if (isScheduled && !formErrors.recipientEmail) {
+            if (!deliveryDate) {
+                formErrors.deliveryDate = t('Choose a delivery date');
+            } else if (deliveryDate < minDeliveryDate || deliveryDate > maxDeliveryDate) {
+                formErrors.deliveryDate = t('Choose a date within the next year');
+            }
         }
 
         const formHasErrors = Object.values(formErrors).some(errorMessage => !!errorMessage);
@@ -1220,9 +1236,9 @@ const GiftPage = () => {
                                 </div>
                             )}
 
-                            {step === 'plan' && (
+                            {step === 'plan' && offeredDurations.length > 1 && (
                                 <div className='gh-portal-gift-checkout-section'>
-                                    <div className='gh-portal-gift-checkout-label'>{isSingleTier ? t('Membership details') : t('Tier')}</div>
+                                    <div className='gh-portal-gift-checkout-label'>{t('Duration')}</div>
                                     <GiftDurationSwitch
                                         offeredDurations={offeredDurations}
                                         activeDuration={activeDuration}
@@ -1232,10 +1248,13 @@ const GiftPage = () => {
                             )}
 
                             {step === 'plan' && <div className='gh-portal-gift-checkout-section'>
+                                {!isSingleTier && (
+                                    <div className='gh-portal-gift-checkout-label'>{t('Choose a tier')}</div>
+                                )}
                                 <div
                                     className={'gh-portal-gift-checkout-tiers' + (isSingleTier ? ' single' : '')}
                                     role={isSingleTier ? undefined : 'radiogroup'}
-                                    aria-label={isSingleTier ? undefined : t('Tier')}
+                                    aria-label={isSingleTier ? undefined : t('Choose a tier')}
                                 >
                                     {products.map((product) => {
                                         const isSelected = product.id === activeProduct.id;
@@ -1320,21 +1339,44 @@ const GiftPage = () => {
 
                                     <div className='gh-portal-gift-checkout-section'>
                                         <div className='gh-portal-gift-checkout-label'>{t('When to send it')}</div>
-                                        <input
-                                            data-test-input='gift-delivery-date'
-                                            className={'gh-portal-input' + (errors.deliveryDate ? ' error' : '')}
-                                            type='date'
-                                            aria-label={t('Delivery date')}
-                                            min={minDeliveryDate}
-                                            max={maxDeliveryDate}
-                                            value={deliveryDate}
-                                            onChange={handleDeliveryDateChange}
-                                        />
-                                        <p className='gh-portal-gift-checkout-field-hint'>
-                                            {deliveryDate ? t('We\'ll email the gift to them on this date.') : t('Leave empty to send it as soon as your payment is complete.')}
-                                        </p>
-                                        {errors.deliveryDate && (
-                                            <p className='gh-portal-gift-checkout-delivery-error'>{errors.deliveryDate}</p>
+                                        <div className='gh-portal-gift-duration-switch' role='radiogroup' aria-label={t('When to send it')}>
+                                            <button
+                                                type='button'
+                                                role='radio'
+                                                aria-checked={deliveryOption === 'now'}
+                                                data-test-button='delivery-now'
+                                                className={'gh-portal-btn' + (deliveryOption === 'now' ? ' active' : '')}
+                                                onClick={() => handleDeliveryOptionChange('now')}
+                                            >
+                                                {t('Send right away')}
+                                            </button>
+                                            <button
+                                                type='button'
+                                                role='radio'
+                                                aria-checked={deliveryOption === 'schedule'}
+                                                data-test-button='delivery-scheduled'
+                                                className={'gh-portal-btn' + (deliveryOption === 'schedule' ? ' active' : '')}
+                                                onClick={() => handleDeliveryOptionChange('schedule')}
+                                            >
+                                                {t('Schedule')}
+                                            </button>
+                                        </div>
+                                        {deliveryOption === 'schedule' && (
+                                            <div className='gh-portal-gift-checkout-delivery-date'>
+                                                <input
+                                                    data-test-input='gift-delivery-date'
+                                                    className={'gh-portal-input' + (errors.deliveryDate ? ' error' : '')}
+                                                    type='date'
+                                                    aria-label={t('Delivery date')}
+                                                    min={minDeliveryDate}
+                                                    max={maxDeliveryDate}
+                                                    value={deliveryDate}
+                                                    onChange={handleDeliveryDateChange}
+                                                />
+                                                {errors.deliveryDate && (
+                                                    <p className='gh-portal-gift-checkout-delivery-error'>{errors.deliveryDate}</p>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 </>}
