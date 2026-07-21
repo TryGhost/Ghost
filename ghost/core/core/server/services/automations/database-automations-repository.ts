@@ -166,6 +166,36 @@ export function createDatabaseAutomationsRepository({
             });
         },
 
+        async getAutomationActionLinks(automationId, actionId) {
+            const action = await knex('automation_actions')
+                .select('id')
+                .where({
+                    id: actionId,
+                    automation_id: automationId
+                })
+                .whereNull('deleted_at')
+                .first();
+
+            if (!action) {
+                return null;
+            }
+
+            const rows = await knex('redirects as redirects')
+                .select('redirects.to as url')
+                .countDistinct({clicked_count: 'members_click_events.member_id'})
+                .innerJoin('automation_action_revisions as revisions', 'revisions.id', 'redirects.automation_action_revision_id')
+                .leftJoin('members_click_events', 'members_click_events.redirect_id', 'redirects.id')
+                .where('revisions.action_id', actionId)
+                .groupBy('redirects.to')
+                .orderBy('clicked_count', 'desc')
+                .orderBy('redirects.to', 'asc');
+
+            return rows.map(row => ({
+                url: row.url,
+                clicked_count: Number(row.clicked_count)
+            }));
+        },
+
         async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
             return await knex.transaction(async (trx) => {
                 const automation = await loadAutomation(trx, id);
