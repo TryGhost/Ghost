@@ -48,6 +48,11 @@ export interface FooterRenderProps {
     clearSearch: () => void;
 }
 
+export interface ComboboxGroup {
+    key: string;
+    label?: string;
+}
+
 export interface ComboboxOptionSource<T = unknown> {
     options: FilterOption<T>[];
     isInitialLoad: boolean;
@@ -94,8 +99,8 @@ export interface MultiSelectComboboxProps<T = unknown> {
     i18n?: Partial<MultiSelectComboboxI18n>;
     /** Custom item renderer — replaces the default option row */
     renderItem?: (props: RenderItemProps<T>) => React.ReactNode;
-    /** Optional group label resolver for sectioned option lists */
-    groupBy?: (option: FilterOption<T>) => string | undefined;
+    /** Optional group resolver for sectioned option lists */
+    groupBy?: (option: FilterOption<T>) => ComboboxGroup | string | undefined;
     /** Render prop for content above the search input */
     header?: (props: HeaderRenderProps<T>) => React.ReactNode;
     /** Render prop for content below the option list */
@@ -240,12 +245,18 @@ export function MultiSelectCombobox<T = unknown>({
         [resolvedOptions, values]
     );
     const unselectedGroups = useMemo(() => {
-        const groups = new Map<string | undefined, FilterOption<T>[]>();
+        const groups = new Map<string | undefined, {label?: string; options: FilterOption<T>[]}>();
         for (const option of unselectedOptions) {
             const group = groupBy?.(option);
-            groups.set(group, [...(groups.get(group) ?? []), option]);
+            const key = typeof group === 'string' ? group : group?.key;
+            const label = typeof group === 'string' ? group : group?.label;
+            const currentGroup = groups.get(key);
+            groups.set(key, {
+                label,
+                options: [...(currentGroup?.options ?? []), option]
+            });
         }
-        return [...groups.entries()];
+        return [...groups.entries()].map(([key, group]) => ({key, ...group}));
     }, [groupBy, unselectedOptions]);
     // --- Handlers ---
 
@@ -349,9 +360,9 @@ export function MultiSelectCombobox<T = unknown>({
                     {unselectedOptions.length > 0 && (
                         <>
                             {visibleSelectedOptions.length > 0 && <CommandSeparator />}
-                            {unselectedGroups.map(([group, options]) => (
-                                <CommandGroup key={group ?? 'options'} heading={group}>
-                                    {options.map(option => itemRenderer({
+                            {unselectedGroups.map(group => (
+                                <CommandGroup key={group.key ?? 'options'} heading={group.label}>
+                                    {group.options.map(option => itemRenderer({
                                         option,
                                         isSelected: false,
                                         onSelect: () => handleSelectUnselected(option)

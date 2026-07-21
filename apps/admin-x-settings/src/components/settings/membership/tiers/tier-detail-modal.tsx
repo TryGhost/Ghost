@@ -28,7 +28,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const {localSettings, siteData} = useSettingGroup();
     const [portalPlansJson] = getSettingValues(localSettings, ['portal_plans']) as string[];
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
-    const currencyOptions = currencySelectGroups().flatMap(group => group.options.map(option => ({...option, metadata: {group: group.label}})));
+    const currencyOptions = currencySelectGroups().flatMap(group => group.options.map(option => ({...option, metadata: {groupKey: group.key, groupLabel: group.label}})));
 
     const validators: {[key in keyof Tier]?: () => string | undefined} = {
         name: () => (formState.name ? undefined : 'Enter a name for the tier'),
@@ -236,7 +236,10 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                                 </PopoverTrigger>
                                                 <PopoverContent align='end' className='z-[9999] w-64 p-0'>
                                                     <MultiSelectCombobox
-                                                        groupBy={option => option.metadata?.group as string | undefined}
+                                                        groupBy={option => ({
+                                                            key: option.metadata?.groupKey as string,
+                                                            label: option.metadata?.groupLabel as string
+                                                        })}
                                                         i18n={{searchPlaceholder: 'Search currencies...'}}
                                                         isMultiSelect={false}
                                                         options={currencyOptions}

@@ -46,7 +46,7 @@ export interface GlobalSettingValues {
 const DEFAULT_FONT = 'Theme default';
 
 const FontOption: React.FC<{option: FontSelectOption, selected?: boolean}> = ({option, selected}) => (
-    <span className='flex w-full gap-4' data-testid={selected ? 'select-current-option' : 'select-option'} data-value={option.value}>
+    <span className={`flex w-full gap-4 ${option.className ?? ''}`} data-testid={selected ? 'select-current-option' : 'select-option'} data-value={option.value}>
         <span className='flex size-12 shrink-0 items-center justify-center rounded-md bg-surface-elevated text-2xl font-bold'>Aa</span>
         <span className='flex min-w-0 flex-col'>
             <span className='text-md'>{option.label}</span>
@@ -307,7 +307,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         <SelectTrigger aria-label='Heading font' className={`h-16 pl-2 ${selectFont(selectedHeadingFont.label, true)}`} data-testid='heading-font-select'>
                             <SelectValue><FontOption option={selectedHeadingFont} selected /></SelectValue>
                         </SelectTrigger>
-                        <SelectContent className={`z-[9999] ${selectFont(selectedHeadingFont.label, true)}`}>
+                        <SelectContent className='z-[9999]'>
                             {customHeadingFonts.map(option => <SelectItem key={option.value} value={option.value}><FontOption option={option} /></SelectItem>)}
                         </SelectContent>
                     </Select>
@@ -326,7 +326,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         <SelectTrigger aria-label='Body font' className={`h-16 pl-2 ${selectFont(selectedBodyFont.label, false)}`} data-testid='body-font-select'>
                             <SelectValue><FontOption option={selectedBodyFont} selected /></SelectValue>
                         </SelectTrigger>
-                        <SelectContent className={`z-[9999] max-h-52 ${selectFont(selectedBodyFont.label, false)}`}>
+                        <SelectContent className='z-[9999] max-h-52'>
                             {customBodyFonts.map(option => <SelectItem key={option.value} value={option.value}><FontOption option={option} /></SelectItem>)}
                         </SelectContent>
                     </Select>

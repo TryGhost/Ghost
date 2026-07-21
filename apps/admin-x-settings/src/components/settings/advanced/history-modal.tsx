@@ -70,21 +70,30 @@ const HistoryFilter: React.FC<{
     const [staffOpen, setStaffOpen] = useState(false);
     const [staffLoading, setStaffLoading] = useState(false);
     const requestSequence = useRef(0);
-    const loadOptions = useCallback(async (input: string) => {
-        requestSequence.current += 1;
-        const request = requestSequence.current;
-        setStaffLoading(true);
-        const users = await usersApi.loadData(input);
+    const usersApiRef = useRef(usersApi);
+    usersApiRef.current = usersApi;
+    const loadOptions = useCallback(async (input: string, request: number) => {
+        const users = await usersApiRef.current.loadData(input);
         if (request === requestSequence.current) {
             setStaffOptions(users.map(user => ({label: user.name, value: user.id})));
             setStaffLoading(false);
         }
-    }, [usersApi]);
-    const debouncedLoadOptions = useMemo(() => debounce((input: string) => void loadOptions(input), 500), [loadOptions]);
+    }, []);
+    const debouncedLoadOptions = useMemo(() => debounce((input: string, request: number) => void loadOptions(input, request), 500), [loadOptions]);
+    const requestOptions = useCallback((input: string, deferred = false) => {
+        requestSequence.current += 1;
+        const request = requestSequence.current;
+        setStaffLoading(true);
+        if (deferred) {
+            debouncedLoadOptions(input, request);
+        } else {
+            void loadOptions(input, request);
+        }
+    }, [debouncedLoadOptions, loadOptions]);
 
     useEffect(() => {
-        void loadOptions('');
-    }, []);
+        requestOptions('');
+    }, [requestOptions]);
 
     const [searchedStaff, setSearchStaff] = useState<{label: string; value: string} | null>();
 
@@ -120,7 +129,7 @@ const HistoryFilter: React.FC<{
                     <Popover open={staffOpen} onOpenChange={(open) => {
                         setStaffOpen(open);
                         if (open) {
-                            void loadOptions('');
+                            requestOptions('');
                         }
                     }}>
                         <PopoverTrigger asChild>
@@ -146,7 +155,7 @@ const HistoryFilter: React.FC<{
                                     }
                                 }}
                                 onClose={() => setStaffOpen(false)}
-                                onSearchChange={debouncedLoadOptions}
+                                onSearchChange={input => requestOptions(input, true)}
                             />
                         </PopoverContent>
                     </Popover>

@@ -78,6 +78,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
         defaultEmailRecipients,
         defaultEmailRecipientsFilter
     }));
+    const selectedRecipientLabel = RECIPIENT_FILTER_OPTIONS.find(option => option.value === selectedOption)?.label;
 
     const {loadOptions, selectedSegments, setSelectedSegments} = useDefaultRecipientsOptions(selectedOption, defaultEmailRecipientsFilter);
     const [segmentOptions, setSegmentOptions] = useState<SegmentOptions>([]);
@@ -171,7 +172,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <Field>
                     <FieldLabel>Default Newsletter recipients</FieldLabel>
                     <Select value={selectedOption} onValueChange={setDefaultRecipientValue}>
-                        <SelectTrigger aria-label='Default Newsletter recipients' data-testid='default-recipients-select'><SelectValue /></SelectTrigger>
+                        <SelectTrigger aria-label='Default Newsletter recipients' data-testid='default-recipients-select'><SelectValue>{selectedRecipientLabel}</SelectValue></SelectTrigger>
                         <SelectContent className='z-[9999]'>
                             {RECIPIENT_FILTER_OPTIONS.map(option => (
                                 <SelectItem key={option.value} value={option.value}>

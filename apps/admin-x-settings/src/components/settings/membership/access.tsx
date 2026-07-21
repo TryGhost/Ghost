@@ -96,6 +96,8 @@ const renderAccessOptions = (options: Array<{value: string; label: string; hint:
     </SelectItem>
 ));
 
+const getAccessOptionLabel = (options: Array<{value: string; label: string}>, value: string) => options.find(option => option.value === value)?.label;
+
 const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [tiersOpen, setTiersOpen] = React.useState(false);
     const {settings} = useGlobalData();
@@ -198,7 +200,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             updateSetting('is_private', value === 'private');
                             handleEditingChange(true);
                         }}>
-                            <SelectTrigger aria-label='Who should be able to browse your site?' data-testid='site-visibility-select'><SelectValue /></SelectTrigger>
+                            <SelectTrigger aria-label='Who should be able to browse your site?' data-testid='site-visibility-select'><SelectValue>{getAccessOptionLabel(SITE_VISIBILITY_OPTIONS, effectiveIsPrivate ? 'private' : 'public')}</SelectValue></SelectTrigger>
                             <SelectContent className='z-[9999]'>{renderAccessOptions(SITE_VISIBILITY_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
@@ -257,7 +259,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             updateSetting('members_signup_access', value);
                             handleEditingChange(true);
                         }}>
-                            <SelectTrigger aria-label='Who should be able to subscribe to your site?' data-testid='subscription-access-select'><SelectValue /></SelectTrigger>
+                            <SelectTrigger aria-label='Who should be able to subscribe to your site?' data-testid='subscription-access-select'><SelectValue>{getAccessOptionLabel(MEMBERS_SIGNUP_ACCESS_OPTIONS, membersSignupAccess)}</SelectValue></SelectTrigger>
                             <SelectContent className='z-[9999]'>{renderAccessOptions(MEMBERS_SIGNUP_ACCESS_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
@@ -273,7 +275,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             updateSetting('default_content_visibility', value);
                             handleEditingChange(true);
                         }}>
-                            <SelectTrigger aria-label='Who should have access to new posts?' data-testid='default-post-access-select'><SelectValue /></SelectTrigger>
+                            <SelectTrigger aria-label='Who should have access to new posts?' data-testid='default-post-access-select'><SelectValue>{getAccessOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility)}</SelectValue></SelectTrigger>
                             <SelectContent className='z-[9999]'>{renderAccessOptions(DEFAULT_CONTENT_VISIBILITY_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
@@ -318,7 +320,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             updateSetting('comments_enabled', value);
                             handleEditingChange(true);
                         }}>
-                            <SelectTrigger aria-label='Who can comment on posts?' data-testid='commenting-select'><SelectValue /></SelectTrigger>
+                            <SelectTrigger aria-label='Who can comment on posts?' data-testid='commenting-select'><SelectValue>{getAccessOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled)}</SelectValue></SelectTrigger>
                             <SelectContent className='z-[9999]'>{renderAccessOptions(COMMENTS_ENABLED_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>

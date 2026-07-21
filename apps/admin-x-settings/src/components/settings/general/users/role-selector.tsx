@@ -66,11 +66,14 @@ const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }>
         );
     }
 
+    const selectedRoleValue = user.roles[0].name.toLowerCase();
+    const selectedRoleLabel = optionsArray.find(option => option.value.toLowerCase() === selectedRoleValue)?.label;
+
     return (
         <Field>
             <FieldLabel>Role</FieldLabel>
             <Select
-                value={user.roles[0].name.toLowerCase()}
+                value={selectedRoleValue}
                 onValueChange={(value) => {
                     const role = roles?.find(r => r.name.toLowerCase() === value.toLowerCase());
                     if (role) {
@@ -78,7 +81,7 @@ const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }>
                     }
                 }}
             >
-                <SelectTrigger aria-label='Role' data-testid='role-select'><SelectValue /></SelectTrigger>
+                <SelectTrigger aria-label='Role' data-testid='role-select'><SelectValue>{selectedRoleLabel}</SelectValue></SelectTrigger>
                 <SelectContent className='z-[9999]'>
                     {optionsArray.map(option => (
                         <SelectItem key={option.value} value={option.value}>

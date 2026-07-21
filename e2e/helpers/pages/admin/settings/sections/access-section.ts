@@ -29,7 +29,7 @@ export class AccessSection extends BasePage {
 
     private async selectVisibility(label: 'Public' | 'Private'): Promise<void> {
         await this.visibilitySelect.click();
-        const option = this.page.getByRole('option', {name: label, exact: true});
+        const option = this.page.getByRole('option', {name: new RegExp(`^${label}\\b`)});
         await option.waitFor({state: 'visible'});
         await option.click();
     }

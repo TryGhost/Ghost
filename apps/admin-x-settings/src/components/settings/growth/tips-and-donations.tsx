@@ -40,7 +40,7 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const suggestedAmountInCents = parseInt(donationsSuggestedAmount);
     const donateUrl = `${siteData?.url.replace(/\/$/, '')}/#/portal/support`;
-    const currencyOptions = currencySelectGroups().flatMap(group => group.options.map(option => ({...option, metadata: {group: group.label}})));
+    const currencyOptions = currencySelectGroups().flatMap(group => group.options.map(option => ({...option, metadata: {groupKey: group.key, groupLabel: group.label}})));
 
     useEffect(() => {
         validate();
@@ -116,7 +116,10 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 </PopoverTrigger>
                                 <PopoverContent align='end' className='z-[9999] w-64 p-0'>
                                     <MultiSelectCombobox
-                                        groupBy={option => option.metadata?.group as string | undefined}
+                                        groupBy={option => ({
+                                            key: option.metadata?.groupKey as string,
+                                            label: option.metadata?.groupLabel as string
+                                        })}
                                         i18n={{searchPlaceholder: 'Search currencies...'}}
                                         isMultiSelect={false}
                                         options={currencyOptions}

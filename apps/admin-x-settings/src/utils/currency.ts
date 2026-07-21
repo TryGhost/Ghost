@@ -1,4 +1,5 @@
 export interface CurrencySelectOptionGroup {
+    key: string;
     label: string;
     options: Array<{label: string; value: string}>;
 }

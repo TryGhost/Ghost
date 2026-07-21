@@ -3,7 +3,7 @@ import {type Offer} from '@tryghost/admin-x-framework/api/offers';
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 import {debounce} from '../../../utils/debounce';
 import {isObjectId} from '../../../utils/helpers';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 export interface SegmentOption {
@@ -92,6 +92,11 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
 
         setSelectedSegments(filters.map(filter => options.find(option => option.value === filter)).filter(option => option !== undefined));
     };
+    const loadOptionsRef = useRef(loadOptions);
+    loadOptionsRef.current = loadOptions;
+    const debouncedLoadOptions = useMemo(() => debounce((input: string, callback: (options: SegmentOptions) => void) => {
+        void loadOptionsRef.current(input, callback);
+    }, 500), []);
 
     useEffect(() => {
         if (selectedOption === 'segment') {
@@ -100,7 +105,7 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
     }, [selectedOption]);  
 
     return {
-        loadOptions: debounce(loadOptions, 500),
+        loadOptions: debouncedLoadOptions,
         selectedSegments,
         setSelectedSegments
     };

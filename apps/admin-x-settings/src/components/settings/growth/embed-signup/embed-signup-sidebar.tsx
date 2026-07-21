@@ -43,19 +43,31 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     const [labelsOpen, setLabelsOpen] = useState(false);
     const [labelsLoading, setLabelsLoading] = useState(false);
     const requestSequence = useRef(0);
+    const loadDataRef = useRef(loadData);
+    const selectedLabelsRef = useRef(selectedLabels);
+    loadDataRef.current = loadData;
+    selectedLabelsRef.current = selectedLabels;
 
-    const loadOptions = useCallback(async (input: string) => {
+    const loadOptions = useCallback(async (input: string, request: number) => {
+        const labels = await loadDataRef.current(input);
+        const currentSelectedLabels = selectedLabelsRef.current || [];
+        const loadedOptions = labels.map(label => ({label: label.name, value: label.name}));
+        if (request === requestSequence.current) {
+            setLabelOptions([...currentSelectedLabels, ...loadedOptions.filter(option => !currentSelectedLabels.some(selected => selected.value === option.value))]);
+            setLabelsLoading(false);
+        }
+    }, []);
+    const debouncedLoadOptions = useMemo(() => debounce((input: string, request: number) => void loadOptions(input, request), 500), [loadOptions]);
+    const requestOptions = useCallback((input: string, deferred = false) => {
         requestSequence.current += 1;
         const request = requestSequence.current;
         setLabelsLoading(true);
-        const labels = await loadData(input);
-        const loadedOptions = labels.map(label => ({label: label.name, value: label.name}));
-        if (request === requestSequence.current) {
-            setLabelOptions([...(selectedLabels || []), ...loadedOptions.filter(option => !selectedLabels?.some(selected => selected.value === option.value))]);
-            setLabelsLoading(false);
+        if (deferred) {
+            debouncedLoadOptions(input, request);
+        } else {
+            void loadOptions(input, request);
         }
-    }, [loadData, selectedLabels]);
-    const debouncedLoadOptions = useMemo(() => debounce((input: string) => void loadOptions(input), 500), [loadOptions]);
+    }, [debouncedLoadOptions, loadOptions]);
 
     useEffect(() => {
         setLabelOptions(current => [...(selectedLabels || []), ...current.filter(option => !selectedLabels?.some(selected => selected.value === option.value))]);
@@ -126,7 +138,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                         <Popover open={labelsOpen} onOpenChange={(open) => {
                             setLabelsOpen(open);
                             if (open) {
-                                void loadOptions('');
+                                requestOptions('');
                             }
                         }}>
                             <PopoverTrigger asChild>
@@ -162,7 +174,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                                     options={labelOptions}
                                     values={(selectedLabels || []).map(label => label.value)}
                                     onChange={handleLabelClick}
-                                    onSearchChange={debouncedLoadOptions}
+                                    onSearchChange={input => requestOptions(input, true)}
                                 />
                             </PopoverContent>
                         </Popover>

@@ -31,6 +31,7 @@ export interface PreviewModalProps {
     rightToolbar?: boolean;
     deviceSelector?: boolean;
     siteLink?: string;
+    previewToolbarSelect?: React.ReactNode;
     previewToolbarBreadcrumbs?: React.ReactNode;
     previewBgColor?: 'grey' | 'white' | 'greygradient';
     selectedURL?: string;
@@ -69,6 +70,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     rightToolbar = true,
     deviceSelector = true,
     siteLink,
+    previewToolbarSelect,
     previewBgColor = 'grey',
     selectedURL,
     previewToolbarTabs,
@@ -130,7 +132,9 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
     if (previewToolbar) {
         let toolbarLeft: React.ReactNode = (<></>);
-        if (previewToolbarTabs) {
+        if (previewToolbarSelect) {
+            toolbarLeft = previewToolbarSelect;
+        } else if (previewToolbarTabs) {
             toolbarLeft = <TabView
                 border={false}
                 selectedTab={selectedURL}
