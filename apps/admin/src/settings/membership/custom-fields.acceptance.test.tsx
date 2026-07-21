@@ -30,10 +30,31 @@ function customFieldsBoot() {
     };
 }
 
-function fakeCustomFields(fields = [companyField]) {
-    // Settings opts into archived fields (`?filter=status:[active,archived]`),
-    // so the fake matches the path with any query.
-    return fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), {members_custom_fields: fields});
+type CustomField = typeof companyField;
+
+// Settings opts into archived fields (`?filter=status:[active,archived]`),
+// so the fakes match the path with any query.
+const customFieldsBrowsePath = new RegExp("^/members/custom_fields/\\?");
+
+function fakeCustomFields(fields: CustomField[] = [companyField]) {
+    return fakeAdminEndpoint("GET", customFieldsBrowsePath, {members_custom_fields: fields});
+}
+
+/**
+ * Mutations invalidate and refetch the list, so a spec observing the list
+ * after a create serves it from state that grows when the POST lands; the
+ * created entity is declared by the spec, the fake invents nothing.
+ * Post-mutation outcomes of edits and deletes are server behavior, owned by
+ * the API suite (ghost/core e2e-api member-custom-fields) — those specs
+ * assert the outgoing request and the refetch instead.
+ */
+function fakeCustomFieldsWithCreate(initial: CustomField[], created: CustomField) {
+    let fields = initial;
+    fakeAdminEndpoint("GET", customFieldsBrowsePath, () => ({members_custom_fields: fields}));
+    return fakeAdminEndpoint("POST", "/members/custom_fields/", () => {
+        fields = [...fields, created];
+        return {members_custom_fields: [created]};
+    });
 }
 
 describe("Custom fields", () => {
@@ -203,17 +224,12 @@ describe("Custom fields", () => {
 
     it("reveals a just-created field even when the list is collapsed", async () => {
         fakeSettingsScreens();
-        let currentFields = Array.from({length: 6}, (_, index) => ({
+        const initialFields = Array.from({length: 6}, (_, index) => ({
             ...companyField,
             key: `field-${index}`,
             name: `Field ${index}`,
         }));
-        fakeAdminEndpoint("GET", new RegExp("^/members/custom_fields/\\?"), () => ({members_custom_fields: currentFields}));
-        fakeAdminEndpoint("POST", "/members/custom_fields/", () => {
-            const created = {...companyField, key: "newest", name: "Newest"};
-            currentFields = [...currentFields, created];
-            return {members_custom_fields: [created]};
-        });
+        fakeCustomFieldsWithCreate(initialFields, {...companyField, key: "newest", name: "Newest"});
         await renderAdminApp("/settings", {boot: customFieldsBoot()});
 
         const rows = settingsScreen.customFields().getByTestId("custom-field-list-item");
@@ -238,7 +254,7 @@ describe("Custom fields", () => {
 
     it("permanently deletes an archived field from the header menu, after a heavy warning", async () => {
         fakeSettingsScreens();
-        fakeCustomFields([companyField, archivedField]);
+        const customFieldsApi = fakeCustomFields([companyField, archivedField]);
         const deleteApi = fakeAdminEndpoint("DELETE", "/members/custom_fields/old-hobby/", {});
         await renderAdminApp("/settings", {boot: customFieldsBoot()});
 
@@ -252,10 +268,15 @@ describe("Custom fields", () => {
 
         const confirmation = settingsScreen.confirmationModal();
         await expect.element(confirmation).toHaveTextContent("Old hobby and every value collected from your members will be permanently deleted from the database. This can’t be undone.");
+        const fetchesBeforeConfirm = customFieldsApi.requests.length;
         await confirmation.getByRole("button", {name: "Delete"}).click();
 
         await expect.element(settingsScreen.successToast()).toHaveTextContent("Custom field deleted");
         expect(deleteApi.requests).toHaveLength(1);
+
+        // The list refetches after the delete; the refreshed outcome (the
+        // field leaving Archived) is server behavior, owned by the API suite.
+        await expect.poll(() => customFieldsApi.requests.length).toBeGreaterThan(fetchesBeforeConfirm);
     });
 
     it("does not expose permanent deletion for an active field", async () => {
@@ -281,7 +302,7 @@ describe("Custom fields", () => {
 
     it("reactivates an archived field after confirmation, as a status edit", async () => {
         fakeSettingsScreens();
-        fakeCustomFields([companyField, archivedField]);
+        const customFieldsApi = fakeCustomFields([companyField, archivedField]);
         const editApi = fakeAdminEndpoint("PUT", "/members/custom_fields/old-hobby/", {
             members_custom_fields: [{...archivedField, status: "active"}],
         });
@@ -292,9 +313,14 @@ describe("Custom fields", () => {
         await settingsScreen.customFieldModal().getByRole("button", {name: "Reactivate"}).click();
         const confirmation = settingsScreen.confirmationModal();
         await expect.element(confirmation).toHaveTextContent("Values already collected for this field will remain unchanged");
+        const fetchesBeforeConfirm = customFieldsApi.requests.length;
         await confirmation.getByRole("button", {name: "Reactivate"}).click();
 
         await expect.element(settingsScreen.successToast()).toHaveTextContent("Custom field reactivated");
         expect(editApi.lastRequest?.body).toEqual({members_custom_fields: [{status: "active"}]});
+
+        // The list refetches after the edit; the refreshed outcome (the field
+        // moving back under Active) is server behavior, owned by the API suite.
+        await expect.poll(() => customFieldsApi.requests.length).toBeGreaterThan(fetchesBeforeConfirm);
     });
 });
