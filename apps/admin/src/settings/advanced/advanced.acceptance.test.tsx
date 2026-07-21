@@ -235,7 +235,7 @@ describe("Advanced settings", () => {
         expect(initialQuery.get("filter")).toBe("resource_type:-[label]");
 
         await modal.getByRole("button", {name: "Filter"}).click();
-        const filters = modal.getByTestId("popover-content");
+        const filters = page.getByTestId("history-filters");
         await filters.getByLabelText("Posts").click();
         await expect(actionsApi).toHaveSentFilter("resource_type:-[label,post]");
         await expect(modal.getByText(/Page edited/)).toHaveCount(0);
@@ -243,6 +243,18 @@ describe("Advanced settings", () => {
         await filters.getByLabelText("Deleted").click();
         await expect(actionsApi).toHaveSentFilter("event:-[deleted]+resource_type:-[label,post]");
         await expect.poll(() => usersApi.requests.some(request => request.limit === 20)).toBe(true);
+
+        const staffFilter = modal.getByTestId("history-staff-filter");
+        await staffFilter.click();
+        await page.getByRole("option", {name: "Owner User"}).click();
+
+        const clearIndicator = staffFilter.element().querySelector("svg");
+        const dropdownIndicator = staffFilter.element().querySelector(".absolute");
+        expect(clearIndicator).not.toBeNull();
+        expect(dropdownIndicator).not.toBeNull();
+        const indicatorGap = dropdownIndicator!.getBoundingClientRect().left - clearIndicator!.getBoundingClientRect().right;
+        expect(indicatorGap).toBeGreaterThanOrEqual(8);
+
         await modal.getByRole("button", {name: "Close"}).click();
         await expect(modal).toHaveCount(0);
     });

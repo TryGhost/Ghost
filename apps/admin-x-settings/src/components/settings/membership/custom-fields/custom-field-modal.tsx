@@ -1,6 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import {ConfirmationModal, Form, Icon, Menu, Modal, Select, type SelectOption, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, Icon, Modal, Select, type SelectOption, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {type OptionProps, type SingleValueProps, components} from 'react-select';
 import {ValidationError, getErrorMessage} from '@tryghost/admin-x-framework/errors';
 import {memberCustomFieldUserTypes, useCreateMemberCustomField, useDeleteMemberCustomField, useEditMemberCustomField, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -181,10 +182,17 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
     };
 
     const archivedFieldMenu = (
-        <Menu
-            items={[{id: 'delete-field', label: 'Delete custom field', icon: 'trash', destructive: true, onClick: confirmDeleteField}]}
-            position='end'
-        />
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button icon='ellipsis' label='Menu' hideLabel />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end' className='z-[9999]'>
+                <DropdownMenuItem className='text-destructive focus:text-destructive' onSelect={confirmDeleteField}>
+                    <Icon name='trash' size='sm' />
+                    Delete custom field
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 
     return (
