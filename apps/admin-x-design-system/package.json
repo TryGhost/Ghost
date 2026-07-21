@@ -67,7 +67,6 @@
         "@ebay/nice-modal-react": "catalog:",
         "@radix-ui/react-checkbox": "catalog:",
         "@radix-ui/react-form": "catalog:",
-        "@radix-ui/react-popover": "catalog:",
         "@radix-ui/react-radio-group": "1.4.2",
         "@radix-ui/react-separator": "catalog:",
         "@radix-ui/react-switch": "catalog:",
