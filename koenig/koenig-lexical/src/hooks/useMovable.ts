@@ -1,56 +1,62 @@
 import {useCallback, useEffect, useRef} from 'react';
 
 // TODO: this is a temporary fix, replacement for ember's id, need better solution
-function guidFor() {
+function guidFor(): string {
     // create unique id
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        let r = Math.random() * 16 | 0;
-        let v = c === 'x' ? r : ((r & 0x3) | 0x8);
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : ((r & 0x3) | 0x8);
         return v.toString(16);
     });
 }
 
+export interface Position {
+    x: number;
+    y: number;
+    lastSpacing?: Spacing;
+}
+
+export interface Spacing {
+    top: number;
+    left: number;
+    right: number;
+    bottom: number;
+}
+
+export interface UseMovableOptions {
+    adjustOnResize?: (elem: HTMLElement, position: Position) => Position;
+    adjustOnDrag?: (elem: HTMLElement, position: Position) => Position;
+}
+
 /**
  * useMovable
- * @param {Object} options
- * @param {Function} options.adjustOnResize - function called when panel size was changed
- * @returns {Object} ref - a ref that should be attached to the element that should be movable
- *
- * @description
  * useMovable is a hook that allows an element to be moved around the screen by dragging it.
- *
- * @example
- * const {ref} = useMovable();
  */
-export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
-    const ref = useRef(null);
+export default function useMovable({adjustOnResize, adjustOnDrag}: UseMovableOptions = {}) {
+    const ref = useRef<HTMLElement | null>(null);
 
     const moveThreshold = 3;
 
     // Use refs to avoid re-renders, see https://reactjs.org/docs/hooks-faq.html#is-there-something-like-instance-variables
     const active = useRef(false);
-    const currentX = useRef();
-    const currentY = useRef();
+    const currentX = useRef<number | undefined>();
+    const currentY = useRef<number | undefined>();
 
-    /**
-     * Cursor offset from the left top side of the panel on touchstart/mousedown
-     */
-    const offsetX = useRef();
-    const offsetY = useRef();
+    const offsetX = useRef<number>(0);
+    const offsetY = useRef<number>(0);
 
     // Keep track of spacing, so we can allow negative spacing when resizing if the user placed the window outside the canvas
     // Contains an object with top, left, right and bottom spacing between the panel and the viewport
-    const lastSpacing = useRef();
-
-    const originalOverflow = useRef();
+    const lastSpacing = useRef<Spacing | undefined>();
+    const originalOverflow = useRef<string | undefined>();
     const guid = guidFor();
 
     // React event handlers get added to the root element, so if we add listeners to the ref directly
     // and call stopPropagation they stop any React events on child nodes from firing.
     // Instead we add the listeners to the body and check if the event target is the ref.
-    const addRefEventListener = (event, handler) => {
-        const listener = (e) => {
-            if (ref.current?.contains(e.target)) {
+    const addRefEventListener = (event: string, handler: (e: Event) => void) => {
+        const listener = (e: Event) => {
+            if (ref.current?.contains(e.target as Node)) {
                 handler(e);
             }
         };
@@ -60,24 +66,24 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
         return listener;
     };
 
-    const cancelClick = useCallback((e) => {
+    const cancelClick = useCallback((e: Event) => {
         e.preventDefault();
         e.stopPropagation();
     }, []);
 
-    const setTranslate = useCallback((xPos, yPos) => {
-        ref.current.style.transform = `translate(${xPos}px, ${yPos}px)`;
+    const setTranslate = useCallback((xPos: number, yPos: number) => {
+        ref.current!.style.transform = `translate(${xPos}px, ${yPos}px)`;
     }, [ref]);
 
-    const setPosition = useCallback(({x, y}) => {
+    const setPosition = useCallback(({x, y}: Position) => {
         currentX.current = x;
         currentY.current = y;
 
-        const width = ref.current.offsetWidth;
-        const height = ref.current.offsetHeight;
+        const width = ref.current!.offsetWidth;
+        const height = ref.current!.offsetHeight;
 
         // Update spacing
-        const spacing = {
+        const spacing: Spacing = {
             top: y,
             left: x,
             right: window.innerWidth - x - width,
@@ -90,30 +96,30 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
 
     const getPosition = useCallback(() => {
         return {
-            x: currentX.current,
-            y: currentY.current,
+            x: currentX.current!,
+            y: currentY.current!,
             lastSpacing: lastSpacing.current
         };
     }, []);
 
     const disableScroll = useCallback(() => {
         originalOverflow.current = ref.current?.style.overflow;
-        ref.current.style.overflow = 'hidden';
+        ref.current!.style.overflow = 'hidden';
     }, [ref]);
 
     const enableScroll = useCallback(() => {
-        ref.current.style.overflow = originalOverflow.current;
+        ref.current!.style.overflow = originalOverflow.current || '';
     }, [ref]);
 
     const disableSelection = useCallback(() => {
-        window.getSelection().removeAllRanges();
+        window.getSelection()?.removeAllRanges();
 
         const stylesheet = document.createElement('style');
         stylesheet.id = `stylesheet-${guid}`;
 
         document.head.appendChild(stylesheet);
 
-        stylesheet.sheet.insertRule('* { user-select: none !important; }', 0);
+        stylesheet.sheet!.insertRule('* { user-select: none !important; }', 0);
     }, [guid]);
 
     const enableSelection = useCallback(() => {
@@ -135,24 +141,24 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
         if (ref.current) {
             ref.current.style.pointerEvents = '';
         }
-        window.removeEventListener('click', cancelClick, {capture: true, passive: false});
+        window.removeEventListener('click', cancelClick, {capture: true});
     }, [ref, cancelClick]);
 
-    const drag = useCallback((e) => {
-        let eventX, eventY;
+    const drag = useCallback((e: Event) => {
+        let eventX: number, eventY: number;
 
-        if (e.type === 'touchmove') {
-            eventX = e.touches[0].clientX;
-            eventY = e.touches[0].clientY;
+        if ((e as TouchEvent).type === 'touchmove') {
+            eventX = (e as TouchEvent).touches[0].clientX;
+            eventY = (e as TouchEvent).touches[0].clientY;
         } else {
-            eventX = e.clientX;
-            eventY = e.clientY;
+            eventX = (e as MouseEvent).clientX;
+            eventY = (e as MouseEvent).clientY;
         }
 
         if (!active.current) {
             if (
-                Math.abs(eventX - offsetX.current - currentX.current) > moveThreshold ||
-                Math.abs(eventY - offsetY.current - currentY.current) > moveThreshold
+                Math.abs(eventX - offsetX.current - (currentX.current || 0)) > moveThreshold ||
+                Math.abs(eventY - offsetY.current - (currentY.current || 0)) > moveThreshold
             ) {
                 disableScroll();
                 disableSelection();
@@ -162,32 +168,32 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
         }
 
         if (active.current) {
-            let position = {
+            let position: Position = {
                 x: eventX - offsetX.current,
                 y: eventY - offsetY.current
             };
 
             if (adjustOnDrag) {
-                position = adjustOnDrag(ref.current, {...position, lastSpacing: lastSpacing.current});
+                position = adjustOnDrag(ref.current!, {...position, lastSpacing: lastSpacing.current});
             }
 
             setPosition(position);
         }
     }, [moveThreshold, setPosition, disableScroll, disableSelection, disablePointerEvents, adjustOnDrag]);
 
-    const dragEnd = useCallback((e) => {
+    const dragEnd = useCallback(() => {
         active.current = false;
 
-        window.removeEventListener('touchend', dragEnd, {capture: true, passive: true});
-        window.removeEventListener('touchmove', drag, {capture: true, passive: true});
-        window.removeEventListener('mouseup', dragEnd, {capture: true, passive: true});
-        window.removeEventListener('mousemove', drag, {capture: true, passive: true});
+        window.removeEventListener('touchend', dragEnd, {capture: true});
+        window.removeEventListener('touchmove', drag, {capture: true});
+        window.removeEventListener('mouseup', dragEnd, {capture: true});
+        window.removeEventListener('mousemove', drag, {capture: true});
 
-        // Removing this immediately results in the click event behind re-enabled in the same
+        // Removing this immediately results in the click event being re-enabled in the same
         // event loop meaning that it doesn't have the desired effect when dragging out of the canvas.
         // Putting in the next tick stops the immediate click event firing when finishing drag
         setTimeout(() => {
-            window.removeEventListener('click', cancelClick.bind(this), {capture: true, passive: false});
+            window.removeEventListener('click', cancelClick, {capture: true});
         }, 1);
 
         enableScroll();
@@ -206,21 +212,24 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
         window.addEventListener('mousemove', drag, {capture: true, passive: true});
     }, [dragEnd, drag]);
 
-    const dragStart = useCallback((e) => {
+    const dragStart = useCallback((e: Event) => {
         e.stopPropagation();
         active.current = false;
 
-        if (e.type === 'touchstart' || e.button === 0) {
+        const mouseEvent = e as MouseEvent;
+        const touchEvent = e as TouchEvent;
+
+        if (e.type === 'touchstart' || mouseEvent.button === 0) {
             if (e.type === 'touchstart') {
-                offsetX.current = e.touches[0].clientX - (currentX.current || 0);
-                offsetY.current = e.touches[0].clientY - (currentY.current || 0);
+                offsetX.current = touchEvent.touches[0].clientX - (currentX.current || 0);
+                offsetY.current = touchEvent.touches[0].clientY - (currentY.current || 0);
             } else {
-                offsetX.current = e.clientX - (currentX.current || 0);
-                offsetY.current = e.clientY - (currentY.current || 0);
+                offsetX.current = mouseEvent.clientX - (currentX.current || 0);
+                offsetY.current = mouseEvent.clientY - (currentY.current || 0);
             }
 
-            for (const element of (e.path || e.composedPath())) {
-                if (element?.matches?.('input, .ember-basic-dropdown-trigger')) {
+            for (const element of ((e as unknown as {path?: EventTarget[]}).path || e.composedPath())) {
+                if ((element as HTMLElement)?.matches?.('input, .ember-basic-dropdown-trigger')) {
                     break;
                 }
 
@@ -237,30 +246,30 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
         const mouseDownListener = addRefEventListener('mousedown', dragStart);
 
         return () => {
-            ref.current?.removeEventListener('touchstart', touchStartListener);
-            ref.current?.removeEventListener('mousedown', mouseDownListener);
+            document.body.removeEventListener('touchstart', touchStartListener);
+            document.body.removeEventListener('mousedown', mouseDownListener);
         };
     }, [dragStart]);
 
     const removeActiveEventListeners = useCallback(() => {
-        window.removeEventListener('touchend', dragEnd, {capture: true, passive: true});
-        window.removeEventListener('touchmove', drag, {capture: true, passive: true});
-        window.removeEventListener('mouseup', dragEnd, {capture: true, passive: true});
-        window.removeEventListener('mousemove', drag, {capture: true, passive: true});
+        window.removeEventListener('touchend', dragEnd, {capture: true});
+        window.removeEventListener('touchmove', drag, {capture: true});
+        window.removeEventListener('mouseup', dragEnd, {capture: true});
+        window.removeEventListener('mousemove', drag, {capture: true});
 
-        // Removing this immediately results in the click event behind re-enabled in the same
+        // Removing this immediately results in the click event being re-enabled in the same
         // event loop meaning that it doesn't have the desired effect when dragging out of the canvas.
         // Putting in the next tick stops the immediate click event firing when finishing drag
         setTimeout(() => {
-            window.removeEventListener('click', cancelClick.bind(this), {capture: true, passive: false});
+            window.removeEventListener('click', cancelClick, {capture: true});
         }, 1);
     }, [dragEnd, drag, cancelClick]);
 
     useEffect(() => {
-        const elem = ref.current;
-        elem.setAttribute('draggable', true);
+        const elem = ref.current!;
+        elem.setAttribute('draggable', 'true');
         ref.current?.classList.add('kg-card-movable');
-        let _resizeObserver;
+        let _resizeObserver: ResizeObserver | undefined;
         const removeStartEventListeners = addStartEventListeners();
 
         if (adjustOnResize) {

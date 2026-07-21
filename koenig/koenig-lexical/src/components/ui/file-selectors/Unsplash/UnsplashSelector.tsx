@@ -1,9 +1,16 @@
 import CloseIcon from '../../../../assets/icons/kg-close.svg?react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import SearchIcon from '../../../../assets/icons/kg-search.svg?react';
 import UnsplashIcon from '../../../../assets/icons/kg-card-type-unsplash.svg?react';
 
-function UnsplashSelector({closeModal, handleSearch, children, galleryRef}) {
+interface UnsplashSelectorProps {
+    closeModal: () => void;
+    handleSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    children?: React.ReactNode;
+    galleryRef?: React.Ref<HTMLDivElement>;
+}
+
+function UnsplashSelector({closeModal, handleSearch, children, galleryRef}: UnsplashSelectorProps) {
     return (
         <>
             <div className="fixed inset-0 z-40 h-[100vh] bg-black opacity-60"></div>
@@ -32,10 +39,5 @@ function UnsplashSelector({closeModal, handleSearch, children, galleryRef}) {
         </>
     );
 }
-
-UnsplashSelector.propTypes = {
-    closeModal: PropTypes.func,
-    handleSearch: PropTypes.func
-};
 
 export default UnsplashSelector;

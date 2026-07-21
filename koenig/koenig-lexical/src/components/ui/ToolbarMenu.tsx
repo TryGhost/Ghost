@@ -18,7 +18,7 @@ import TrashIcon from '../../assets/icons/kg-trash.svg?react';
 import WandIcon from '../../assets/icons/kg-wand.svg?react';
 import {Tooltip} from './Tooltip';
 
-export const TOOLBAR_ICONS = {
+export const TOOLBAR_ICONS: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
     bold: BoldIcon,
     italic: ItalicIcon,
     headingTwo: HeadingTwoIcon,
@@ -39,7 +39,13 @@ export const TOOLBAR_ICONS = {
     remove: TrashIcon
 };
 
-export function ToolbarMenu({children, hide, ...props}) {
+export interface ToolbarMenuProps {
+    children?: React.ReactNode;
+    hide?: boolean;
+    [key: string]: unknown;
+}
+
+export function ToolbarMenu({children, hide, ...props}: ToolbarMenuProps) {
     if (hide) {
         return null;
     }
@@ -51,7 +57,19 @@ export function ToolbarMenu({children, hide, ...props}) {
     );
 }
 
-export function ToolbarMenuItem({label, isActive, onClick, icon, shortcutKeys, secondary, dataTestId, hide, ...props}) {
+export interface ToolbarMenuItemProps {
+    label: string;
+    isActive?: boolean;
+    onClick?: React.MouseEventHandler<HTMLButtonElement>;
+    icon: string;
+    shortcutKeys?: string[];
+    secondary?: boolean;
+    dataTestId?: string;
+    hide?: boolean;
+    [key: string]: unknown;
+}
+
+export function ToolbarMenuItem({label, isActive, onClick, icon, shortcutKeys, secondary, dataTestId, hide, ...props}: ToolbarMenuItemProps) {
     if (hide) {
         return null;
     }
@@ -75,7 +93,11 @@ export function ToolbarMenuItem({label, isActive, onClick, icon, shortcutKeys, s
     );
 }
 
-export function ToolbarMenuSeparator({hide}) {
+interface ToolbarMenuSeparatorProps {
+    hide?: boolean;
+}
+
+export function ToolbarMenuSeparator({hide}: ToolbarMenuSeparatorProps) {
     if (hide) {
         return null;
     }

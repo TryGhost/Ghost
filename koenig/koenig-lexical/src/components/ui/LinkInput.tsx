@@ -1,13 +1,18 @@
 import CloseIcon from '../../assets/icons/kg-close.svg?react';
-import PropTypes from 'prop-types';
 import React, {useEffect, useRef} from 'react';
 
-export function LinkInput({href, update, cancel}) {
+export interface LinkInputProps {
+    href?: string;
+    update: (href: string) => void;
+    cancel: () => void;
+}
+
+export function LinkInput({href, update, cancel}: LinkInputProps) {
     const [_href, setHref] = React.useState(href);
 
     // add refs for input and container
-    const inputRef = useRef(null);
-    const containerRef = useRef(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     // update the href when the prop changes
     React.useEffect(() => {
@@ -16,13 +21,13 @@ export function LinkInput({href, update, cancel}) {
 
     // when link is open, focus the input
     useEffect(() => {
-        inputRef.current.focus();
+        inputRef.current?.focus();
     }, []);
 
     // when link is open, watch the window for mousedown events so that we can
     // close it when we detect a click outside
-    const closeOnClickOutside = React.useCallback((event) => {
-        if (containerRef.current && !containerRef.current.contains(event.target)) {
+    const closeOnClickOutside = React.useCallback((event: MouseEvent) => {
+        if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
             cancel();
         }
     }, [cancel]);
@@ -35,7 +40,7 @@ export function LinkInput({href, update, cancel}) {
     }, [closeOnClickOutside]);
 
     // when link is open, watch the window for escape keydown events so that we can exit
-    const onEscape = React.useCallback((event) => {
+    const onEscape = React.useCallback((event: KeyboardEvent) => {
         if (event.key === 'Escape') {
             cancel();
         }
@@ -59,13 +64,13 @@ export function LinkInput({href, update, cancel}) {
                 value={_href}
                 data-kg-link-input
                 onInput={(e) => {
-                    setHref(e.target.value);
+                    setHref((e.target as HTMLInputElement).value);
                 }}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                         // prevent Enter from triggering in the editor and removing text
                         e.preventDefault();
-                        update(_href);
+                        update(_href || '');
                         return;
                     }
                 }}
@@ -76,7 +81,7 @@ export function LinkInput({href, update, cancel}) {
                     <button aria-label="Close" className="absolute right-3 cursor-pointer" type="button" onClick={(e) => {
                         e.stopPropagation();
                         setHref('');
-                        inputRef.current.focus();
+                        inputRef.current?.focus();
                     }}>
                         <CloseIcon className="size-4 stroke-2 text-grey" />
                     </button>
@@ -85,7 +90,3 @@ export function LinkInput({href, update, cancel}) {
         </div>
     );
 }
-
-LinkInput.propTypes = {
-    href: PropTypes.string
-};

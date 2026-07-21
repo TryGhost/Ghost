@@ -1,21 +1,28 @@
 import CardContext from '../context/CardContext';
-import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {EmailCard} from '../components/ui/cards/EmailCard';
-import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {LexicalEditor} from 'lexical';
 
-export function EmailNodeComponent({nodeKey, htmlEditor, htmlEditorInitialState}) {
+interface EmailNodeComponentProps {
+    nodeKey: string;
+    htmlEditor: LexicalEditor;
+    htmlEditorInitialState: unknown;
+}
+
+export function EmailNodeComponent({nodeKey, htmlEditor, htmlEditorInitialState}: EmailNodeComponentProps) {
     const [editor] = useLexicalComposerContext();
     const cardContext = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const {isEditing, isSelected} = cardContext;
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: false});
@@ -29,7 +36,7 @@ export function EmailNodeComponent({nodeKey, htmlEditor, htmlEditorInitialState}
         <>
             <EmailCard
                 htmlEditor={htmlEditor}
-                htmlEditorInitialState={htmlEditorInitialState}
+                htmlEditorInitialState={htmlEditorInitialState as string | undefined}
                 isEditing={isEditing}
             />
 

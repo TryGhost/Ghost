@@ -6,19 +6,23 @@ import InitialContentToggle from './components/InitialContentToggle';
 import LockIcon from './assets/icons/kg-lock.svg?react';
 import React, {useState} from 'react';
 import Sidebar from './components/Sidebar';
-import TitleTextBox from './components/TitleTextBox';
+import TitleTextBox, {type TitleTextBoxHandle} from './components/TitleTextBox';
 import Watermark from './components/Watermark';
 import WordCount from './components/WordCount';
 import basicContent from './content/basic-content.json';
 import content from './content/content.json';
 import emailContent from './content/email-content.json';
 import minimalContent from './content/minimal-content.json';
-import {$getRoot, $isDecoratorNode} from 'lexical';
+import {$getRoot, $isDecoratorNode, type Klass, type LexicalNode, type LexicalNodeReplacement} from 'lexical';
 import {
-    BASIC_NODES, BASIC_TRANSFORMERS, EmailEditor,
-    KoenigComposableEditor, KoenigComposer, KoenigEditor, MINIMAL_NODES,
-    MINIMAL_TRANSFORMERS, RestrictContentPlugin, TKCountPlugin, WordCountPlugin
+    BASIC_NODES, BASIC_TRANSFORMERS, BookmarkPlugin,
+    ButtonPlugin, CallToActionPlugin, CalloutPlugin, CardMenuPlugin, EMAIL_EDITOR_NODES,
+    EMAIL_TRANSFORMERS, EmEnDashPlugin, EmailCtaPlugin, EmbedPlugin, EmojiPickerPlugin,
+    HorizontalRulePlugin, HtmlPlugin, ImagePlugin,
+    KoenigComposableEditor, KoenigComposer, KoenigEditor, KoenigSelectorPlugin, KoenigSnippetPlugin, ListPlugin, MINIMAL_NODES,
+    MINIMAL_TRANSFORMERS, ProductPlugin, ReplacementStringsPlugin, RestrictContentPlugin, TKCountPlugin, TransistorPlugin, WordCountPlugin
 } from '../src';
+import {VISIBILITY_SETTINGS} from '../src/utils/visibility';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
@@ -33,7 +37,7 @@ const WEBSOCKET_ID = params.get('multiplayerId') || '0';
 
 // show deprecated cards by default so they can be tested, unless explicitly hidden
 // so we can test they are removed from the menu when deprecated/behind a feature flag
-function hideDeprecatedCardInMenu(searchParams) {
+function hideDeprecatedCardInMenu(searchParams: URLSearchParams) {
     // allow tests to opt in to hiding deprecated cards
     if (searchParams.get('hideDeprecatedCards') === 'true') {
         return true;
@@ -63,7 +67,7 @@ const defaultCardConfig = {
         transistor: false
     },
     // this enables the internal linking feature, can be disabled with `/#/?searchLinks=false`
-    searchLinks: async (term) => {
+    searchLinks: async (term = '') => {
         // default to showing latest posts when search is empty
         // no delay to simulate posts being pre-loaded in editor
         if (!term) {
@@ -111,7 +115,7 @@ const defaultCardConfig = {
     }
 };
 
-function getDefaultContent({editorType}) {
+function getDefaultContent({editorType}: {editorType?: string}) {
     if (editorType === 'basic') {
         return basicContent;
     } else if (editorType === 'minimal') {
@@ -122,16 +126,37 @@ function getDefaultContent({editorType}) {
     return content;
 }
 
-function getAllowedNodes({editorType}) {
+function getAllowedNodes({editorType}: {editorType?: string}): ReadonlyArray<Klass<LexicalNode> | LexicalNodeReplacement> | undefined {
     if (editorType === 'basic') {
-        return BASIC_NODES;
+        return BASIC_NODES as ReadonlyArray<Klass<LexicalNode> | LexicalNodeReplacement>;
     } else if (editorType === 'minimal') {
-        return MINIMAL_NODES;
+        return MINIMAL_NODES as ReadonlyArray<Klass<LexicalNode> | LexicalNodeReplacement>;
+    } else if (editorType === 'email') {
+        return EMAIL_EDITOR_NODES as ReadonlyArray<Klass<LexicalNode> | LexicalNodeReplacement>;
     }
     return undefined;
 }
 
-function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setWordCount, setTKCount}) {
+interface DemoEditorAPI {
+    editorInstance: unknown;
+    editorIsEmpty: () => boolean;
+    insertParagraphAtTop: (options: {focus: boolean}) => void;
+    insertParagraphAtBottom: () => void;
+    focusEditor: (options: {position: string}) => void;
+    insertFiles: (files: File[]) => void;
+    serialize: () => string;
+    [key: string]: unknown;
+}
+
+interface DemoEditorProps {
+    editorType?: string;
+    registerAPI: (api: unknown) => void;
+    cursorDidExitAtTop: () => void;
+    setWordCount: (count: number) => void;
+    setTKCount: (count: number) => void;
+}
+
+function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, setWordCount, setTKCount}: DemoEditorProps) {
     if (editorType === 'basic') {
         return (
             <KoenigComposableEditor
@@ -154,12 +179,40 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
                 <WordCountPlugin onChange={setWordCount} />
             </KoenigComposableEditor>
         );
+    } else if (editorType === 'email') {
+        return (
+            <KoenigComposableEditor
+                cursorDidExitAtTop={cursorDidExitAtTop}
+                markdownTransformers={EMAIL_TRANSFORMERS}
+                placeholderText="Begin writing your email..."
+                registerAPI={registerAPI}
+            >
+                <BookmarkPlugin />
+                <ButtonPlugin />
+                <CalloutPlugin />
+                <CallToActionPlugin />
+                <CardMenuPlugin />
+                <EmbedPlugin />
+                <EmailCtaPlugin />
+                <EmEnDashPlugin />
+                <EmojiPickerPlugin />
+                <HorizontalRulePlugin />
+                <HtmlPlugin />
+                <ImagePlugin />
+                <KoenigSelectorPlugin />
+                <KoenigSnippetPlugin />
+                <ListPlugin />
+                <ProductPlugin />
+                <ReplacementStringsPlugin />
+                <TransistorPlugin />
+                <WordCountPlugin onChange={setWordCount} />
+            </KoenigComposableEditor>
+        );
     }
 
     return (
         <KoenigEditor
             cursorDidExitAtTop={cursorDidExitAtTop}
-            darkMode={darkMode}
             registerAPI={registerAPI}
         >
             <WordCountPlugin onChange={setWordCount} />
@@ -168,7 +221,14 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
     );
 }
 
-function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
+interface DemoComposerProps {
+    editorType?: string;
+    isMultiplayer?: boolean;
+    setWordCount: (count: number) => void;
+    setTKCount: (count: number) => void;
+}
+
+function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}: DemoComposerProps) {
     const [searchParams, setSearchParams] = useSearchParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
@@ -196,9 +256,9 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
     }, [isMultiplayer, contentParam, defaultContent]);
 
     const [title, setTitle] = useState(initialContent ? 'Meet the Koenig editor.' : '');
-    const [editorAPI, setEditorAPI] = useState(null);
-    const titleRef = React.useRef(null);
-    const containerRef = React.useRef(null);
+    const [editorAPI, setEditorAPI] = useState<DemoEditorAPI | null>(null);
+    const titleRef = React.useRef<TitleTextBoxHandle>(null);
+    const containerRef = React.useRef<HTMLDivElement>(null);
 
     function openSidebar(view = 'json') {
         if (isSidebarOpen && sidebarView === view) {
@@ -216,27 +276,29 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
     // mouseup/click event can occur outside of the initially clicked node, in
     // which case we don't want to then "re-focus" the editor and cause unexpected
     // selection changes
-    function maybeSkipFocusEditor(event) {
-        const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
-        const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
-        const clickedOnPortal = (event.target.closest('[data-kg-portal]') !== null) || event.target.hasAttribute('data-kg-portal');
+    function maybeSkipFocusEditor(event: React.MouseEvent<HTMLDivElement>) {
+        const target = event.target as HTMLElement;
+        const clickedOnDecorator = (target.closest('[data-lexical-decorator]') !== null) || target.hasAttribute('data-lexical-decorator');
+        const clickedOnSlashMenu = (target.closest('[data-kg-slash-menu]') !== null) || target.hasAttribute('data-kg-slash-menu');
+        const clickedOnPortal = (target.closest('[data-kg-portal]') !== null) || target.hasAttribute('data-kg-portal');
 
         if (clickedOnDecorator || clickedOnSlashMenu || clickedOnPortal) {
             skipFocusEditor.current = true;
         }
     }
 
-    function focusEditor(event) {
-        const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
-        const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
-        const clickedOnPortal = (event.target.closest('[data-kg-portal]') !== null) || event.target.hasAttribute('data-kg-portal');
+    function focusEditor(event: React.MouseEvent<HTMLDivElement>) {
+        const target = event.target as HTMLElement;
+        const clickedOnDecorator = (target.closest('[data-lexical-decorator]') !== null) || target.hasAttribute('data-lexical-decorator');
+        const clickedOnSlashMenu = (target.closest('[data-kg-slash-menu]') !== null) || target.hasAttribute('data-kg-slash-menu');
+        const clickedOnPortal = (target.closest('[data-kg-portal]') !== null) || target.hasAttribute('data-kg-portal');
 
         if (!skipFocusEditor.current && editorAPI && !clickedOnDecorator && !clickedOnSlashMenu && !clickedOnPortal) {
-            let editor = editorAPI.editorInstance;
+            const editor = editorAPI.editorInstance as {_rootElement: HTMLElement; getEditorState: () => {read: (fn: () => void) => void}};
 
             // if a mousedown and subsequent mouseup occurs below the editor
             // canvas, focus the editor and put the cursor at the end of the document
-            let {bottom} = editor._rootElement.getBoundingClientRect();
+            const {bottom} = editor._rootElement.getBoundingClientRect();
             if (event.pageY > bottom && event.clientY > bottom) {
                 event.preventDefault();
 
@@ -262,7 +324,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
                 editorAPI.focusEditor({position: 'bottom'});
 
                 //scroll to the bottom of the container
-                containerRef.current.scrollTop = containerRef.current.scrollHeight;
+                containerRef.current!.scrollTop = containerRef.current!.scrollHeight;
             }
         }
 
@@ -279,19 +341,19 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
     }
 
     function saveContent() {
-        const serializedState = editorAPI.serialize();
+        const serializedState = editorAPI!.serialize();
         const encodedContent = encodeURIComponent(serializedState);
         searchParams.set('content', encodedContent);
         setSearchParams(searchParams);
     }
 
     React.useEffect(() => {
-        const handleFileDrag = (event) => {
+        const handleFileDrag = (event: DragEvent) => {
             event.preventDefault();
         };
 
-        const handleFileDrop = (event) => {
-            if (event.dataTransfer.files.length > 0) {
+        const handleFileDrop = (event: DragEvent) => {
+            if (event.dataTransfer && event.dataTransfer.files.length > 0) {
                 event.preventDefault();
                 editorAPI?.insertFiles(Array.from(event.dataTransfer.files));
             }
@@ -306,7 +368,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         };
     }, [editorAPI]);
 
-    const showTitle = !isMultiplayer && !['basic', 'minimal', 'email'].includes(editorType);
+    const showTitle = !isMultiplayer && !['basic', 'minimal', 'email'].includes(editorType || '');
     const isEmailEditor = editorType === 'email';
 
     const cardConfig = {
@@ -324,99 +386,83 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         deprecated: {
             headerV1: hideDeprecatedCardInMenu(searchParams),
             emailCta: hideDeprecatedCardInMenu(searchParams)
-        }
+        },
+        ...(isEmailEditor ? {
+            image: {
+                ...((defaultCardConfig as Record<string, unknown>).image as Record<string, unknown> || {}),
+                allowedWidths: ['regular']
+            },
+            visibilitySettings: VISIBILITY_SETTINGS.EMAIL_ONLY
+        } : {})
     };
-
-    const fileUploader = {useFileUpload: useFileUpload({isMultiplayer}), fileTypes};
-
-    // Sidebar uses useLexicalComposerContext so it must be inside a KoenigComposer.
-    // The email editor manages its own composer, so the sidebar is only available
-    // for non-email editor types.
-    const demoChrome = (
-        <>
-            <Watermark editorType={editorType || 'full'} />
-            {!isEmailEditor && (
-                <div className="absolute z-20 flex h-full flex-col items-end sm:relative">
-                    <Sidebar isOpen={isSidebarOpen} saveContent={saveContent} view={sidebarView} />
-                    <FloatingButton isOpen={isSidebarOpen} onClick={openSidebar} />
-                </div>
-            )}
-        </>
-    );
-
-    const demoLayout = (children) => (
-        <div className={`koenig-demo relative h-full grow ${darkMode ? 'dark' : ''}`} style={isSidebarOpen ? {'--kg-breakout-adjustment': '440px'} : {}}>
-            {
-                !isMultiplayer && !isEmailEditor && contentParam !== 'false'
-                    ? <InitialContentToggle defaultContent={defaultContent} searchParams={searchParams} setSearchParams={setSearchParams} setTitle={setTitle} />
-                    : null
-            }
-            <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-            <div ref={containerRef} className="h-full overflow-auto overflow-x-hidden" onClick={focusEditor} onMouseDown={maybeSkipFocusEditor}>
-                <div className="mx-auto max-w-[740px] px-6 py-[15vmin] lg:px-0">
-                    {showTitle
-                        ? <TitleTextBox ref={titleRef} editorAPI={editorAPI} setTitle={setTitle} title={title} />
-                        : null
-                    }
-                    {children}
-                </div>
-            </div>
-        </div>
-    );
-
-    // Email editor includes its own KoenigComposer, so it renders outside the shared one
-    if (isEmailEditor) {
-        return (
-            <>
-                {demoLayout(
-                    <EmailEditorWrapper>
-                        <EmailEditor
-                            cardConfig={cardConfig}
-                            cursorDidExitAtTop={focusTitle}
-                            darkMode={darkMode}
-                            fileUploader={fileUploader}
-                            initialEditorState={initialContent}
-                            registerAPI={setEditorAPI}
-                        >
-                            <WordCountPlugin onChange={setWordCount} />
-                        </EmailEditor>
-                    </EmailEditorWrapper>
-                )}
-                {demoChrome}
-            </>
-        );
-    }
 
     return (
         <KoenigComposer
             cardConfig={cardConfig}
             darkMode={darkMode}
             enableMultiplayer={isMultiplayer}
-            fileUploader={fileUploader}
-            initialEditorState={initialContent}
-            isTKEnabled={true}
+            fileUploader={{useFileUpload: useFileUpload({isMultiplayer}), fileTypes}}
+            initialEditorState={initialContent ?? undefined}
+            isTKEnabled={editorType !== 'email'}
             multiplayerDocId={`demo/${WEBSOCKET_ID}`}
             multiplayerEndpoint={WEBSOCKET_ENDPOINT}
             nodes={getAllowedNodes({editorType})}
         >
-            {demoLayout(
-                <DemoEditor
-                    cursorDidExitAtTop={focusTitle}
-                    darkMode={darkMode}
-                    editorType={editorType}
-                    registerAPI={setEditorAPI}
-                    setTKCount={setTKCount}
-                    setWordCount={setWordCount}
-                />
-            )}
-            {demoChrome}
+            <div className={`koenig-demo relative h-full grow ${darkMode ? 'dark' : ''}`} style={isSidebarOpen ? {'--kg-breakout-adjustment': '440px'} as React.CSSProperties : {}}>
+                {
+                    !isMultiplayer
+                        ? <InitialContentToggle defaultContent={defaultContent} searchParams={searchParams} setSearchParams={setSearchParams} setTitle={setTitle} />
+                        : null
+                }
+                <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                <div ref={containerRef} className="h-full overflow-auto overflow-x-hidden" onClick={focusEditor} onMouseDown={maybeSkipFocusEditor}>
+                    <div className="mx-auto max-w-[740px] px-6 py-[15vmin] lg:px-0">
+                        {showTitle
+                            ? <TitleTextBox ref={titleRef} editorAPI={editorAPI} setTitle={setTitle} title={title} />
+                            : null
+                        }
+                        {editorType === 'email' ? (
+                            <EmailEditorWrapper>
+                                <DemoEditor
+                                    cursorDidExitAtTop={focusTitle}
+                                    editorType={editorType}
+                                    registerAPI={setEditorAPI as (api: unknown) => void}
+                                    setTKCount={setTKCount}
+                                    setWordCount={setWordCount}
+                                />
+                            </EmailEditorWrapper>
+                        ) : (
+                            <DemoEditor
+                                cursorDidExitAtTop={focusTitle}
+                                editorType={editorType}
+                                registerAPI={setEditorAPI as (api: unknown) => void}
+                                setTKCount={setTKCount}
+                                setWordCount={setWordCount}
+                            />
+                        )}
+                    </div>
+                </div>
+            </div>
+            <Watermark
+                editorType={editorType || 'full'}
+            />
+            <div className="absolute z-20 flex h-full flex-col items-end sm:relative">
+                <Sidebar isOpen={isSidebarOpen} saveContent={saveContent} view={sidebarView} />
+                <FloatingButton isOpen={isSidebarOpen} onClick={openSidebar} />
+            </div>
         </KoenigComposer>
     );
 }
 
 const MemoizedDemoComposer = React.memo(DemoComposer);
 
-function DemoApp({editorType, isMultiplayer}) {
+interface DemoAppProps {
+    editorType?: string;
+    isMultiplayer?: boolean;
+    introContent?: boolean;
+}
+
+function DemoApp({editorType, isMultiplayer}: DemoAppProps) {
     const [wordCount, setWordCount] = useState(0);
     const [tkCount, setTKCount] = useState(0);
 

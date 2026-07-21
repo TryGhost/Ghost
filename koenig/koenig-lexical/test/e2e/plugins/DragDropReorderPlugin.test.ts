@@ -2,11 +2,13 @@ import path from 'path';
 import {assertHTML, dragMouse, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import type {BoundingBox} from '../../utils/e2e';
+import type {Page} from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Drag Drop Reorder Plugin', async function () {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -160,7 +162,7 @@ test.describe('Drag Drop Reorder Plugin', async function () {
 
         const imageBBox = await page.locator('[data-kg-card="image"]').boundingBox();
 
-        await twoPhaseDragToBottom(page, imageBBox);
+        await twoPhaseDragToBottom(page, imageBBox!);
         await page.waitForTimeout(100);
         await page.mouse.up();
 
@@ -212,7 +214,7 @@ test.describe('Drag Drop Reorder Plugin', async function () {
 
         const imageBBox = await page.locator('[data-kg-card="image"]').boundingBox();
 
-        await twoPhaseDragToBottom(page, imageBBox);
+        await twoPhaseDragToBottom(page, imageBBox!);
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -232,7 +234,7 @@ test.describe('Drag Drop Reorder Plugin', async function () {
     });
 });
 
-async function insertDivider(page) {
+async function insertDivider(page: Page) {
     await insertCard(page, {cardName: 'divider'});
 }
 
@@ -241,12 +243,12 @@ async function insertDivider(page) {
 // bottom half. A single fast drag races against the 250ms CSS transition
 // that shifts the paragraph during drag. Leaves the mouse held down so
 // the caller can mouse.up() (for drop tests) or assert mid-drag state.
-async function twoPhaseDragToBottom(page, imageBBox) {
+async function twoPhaseDragToBottom(page: Page, imageBBox: BoundingBox) {
     await page.mouse.move(imageBBox.x, imageBBox.y);
     await page.mouse.down();
 
     // Move past the HR card to trigger the drop indicator and transforms
-    const hrBBox = await page.locator('hr').boundingBox();
+    const hrBBox = (await page.locator('hr').boundingBox())!;
     await page.mouse.move(imageBBox.x, hrBBox.y + hrBBox.height, {steps: 50});
 
     // Wait for caption appearance and CSS transitions to settle
@@ -254,7 +256,7 @@ async function twoPhaseDragToBottom(page, imageBBox) {
 
     // Measure paragraph's actual visual position (includes caption shift + transform)
     // :not(figure p) avoids the p element that is the nested editor for the image card caption
-    const shiftedParagraphBBox = await page.locator('p:not(figure p)').boundingBox();
+    const shiftedParagraphBBox = (await page.locator('p:not(figure p)').boundingBox())!;
     const targetY = shiftedParagraphBBox.y + shiftedParagraphBBox.height * 0.75;
     await page.mouse.move(imageBBox.x, targetY, {steps: 10});
 }

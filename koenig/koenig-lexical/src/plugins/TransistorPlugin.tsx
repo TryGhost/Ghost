@@ -15,7 +15,7 @@ export const TransistorPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_TRANSISTOR_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     const cardNode = $createTransistorNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 

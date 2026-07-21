@@ -23,7 +23,7 @@ export class PaywallNode extends BasePaywallNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper className="inline-block" nodeKey={this.getKey()}>
+            <KoenigCardWrapper nodeKey={this.getKey()}>
                 <PaywallCard />
             </KoenigCardWrapper>
         );
@@ -34,6 +34,6 @@ export function $createPaywallNode() {
     return new PaywallNode();
 }
 
-export function $isPaywallNode(node) {
+export function $isPaywallNode(node: unknown): node is PaywallNode {
     return node instanceof PaywallNode;
 }

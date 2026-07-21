@@ -1,11 +1,17 @@
-import PropTypes from 'prop-types';
-
 import UnsplashImage from './UnsplashImage';
+import type {UnsplashPhotoPayload} from './UnsplashImage';
 
-function UnsplashZoomed({payload, insertImage, selectImg, zoomed}) {
+export interface UnsplashZoomedProps {
+    payload: UnsplashPhotoPayload;
+    insertImage: (image: {src: string; caption: string; height: number; width: number; alt?: string; links: unknown}) => void;
+    selectImg: (payload: UnsplashPhotoPayload | null) => void;
+    zoomed?: UnsplashPhotoPayload | null | false;
+}
+
+function UnsplashZoomed({payload, insertImage, selectImg, zoomed}: UnsplashZoomedProps) {
     return (
         <div className="flex h-full grow basis-0 justify-center" data-kg-unsplash-zoomed onClick={() => selectImg(null)}>
-            <UnsplashImage 
+            <UnsplashImage
                 alt={payload.alt_description}
                 height={payload.height}
                 insertImage={insertImage}
@@ -25,18 +31,3 @@ function UnsplashZoomed({payload, insertImage, selectImg, zoomed}) {
 }
 
 export default UnsplashZoomed;
-
-UnsplashZoomed.propTypes = {
-    payload: PropTypes.object,
-    insertImage: PropTypes.func,
-    selectImg: PropTypes.func,
-    zoomed: PropTypes.object || PropTypes.bool,
-    srcUrl: PropTypes.string,
-    alt: PropTypes.string,
-    links: PropTypes.object,
-    likes: PropTypes.number,
-    user: PropTypes.object,
-    urls: PropTypes.object,
-    height: PropTypes.number,
-    width: PropTypes.number
-};

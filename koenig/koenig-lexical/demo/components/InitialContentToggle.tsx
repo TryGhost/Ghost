@@ -4,7 +4,14 @@ import React from 'react';
 import {$createParagraphNode, $getRoot} from 'lexical';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-const InitialContentToggle = ({defaultContent, setTitle, searchParams, setSearchParams}) => {
+interface InitialContentToggleProps {
+    defaultContent: string;
+    setTitle: (title: string) => void;
+    searchParams: URLSearchParams;
+    setSearchParams: (params: URLSearchParams) => void;
+}
+
+const InitialContentToggle = ({defaultContent, setTitle, searchParams, setSearchParams}: InitialContentToggleProps) => {
     const [editor] = useLexicalComposerContext();
     const [isOn, setIsOn] = React.useState(searchParams.get('content') !== 'false');
 

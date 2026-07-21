@@ -1,6 +1,7 @@
 import {ColorPicker} from './ColorPicker';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
-const story = {
+const story: Meta<typeof ColorPicker> = {
     title: 'Generic/Color picker (New)',
     component: ColorPicker,
     parameters: {
@@ -9,12 +10,12 @@ const story = {
         }
     },
     argTypes: {
-        selectedName: {control: 'select', options: ['grey', 'blue', 'green', 'yellow', 'red', 'pink', 'purple']}
+        value: {control: 'text'}
     }
 };
 export default story;
 
-const Template = (args) => {
+const Template: StoryFn<typeof ColorPicker> = (args) => {
     return (
         <div className="w-[240px]">
             <ColorPicker {...args} />
@@ -22,11 +23,9 @@ const Template = (args) => {
     );
 };
 
-export const Default = Template.bind({});
+export const Default: StoryFn<typeof ColorPicker> = Template.bind({});
 Default.args = {
-    swatches: [
-        {title: 'Brand color', accent: true},
-        {title: 'Black', hex: '#000000'},
-        {title: 'Transparent', transparent: true}
-    ]
+    value: '#000000',
+    hasTransparentOption: true,
+    onChange: () => {}
 };

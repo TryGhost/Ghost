@@ -1,4 +1,6 @@
-const EmailEditorWrapper = ({children}) => {
+import React from 'react';
+
+const EmailEditorWrapper = ({children}: {children: React.ReactNode}) => {
     return (
         <div>
             <div className="mb-6">

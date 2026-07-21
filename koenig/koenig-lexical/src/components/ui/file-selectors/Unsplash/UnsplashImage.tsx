@@ -1,5 +1,36 @@
 import UnsplashButton from './UnsplashButton';
 
+export interface UnsplashPhotoPayload {
+    id: string;
+    alt_description?: string;
+    height: number;
+    width: number;
+    likes: number;
+    links: {html: string; download: string; [key: string]: string};
+    urls: {regular: string; [key: string]: string};
+    user: {
+        name: string;
+        links: {html: string; [key: string]: string};
+        profile_image: {small: string; [key: string]: string};
+    };
+    [key: string]: unknown;
+}
+
+export interface UnsplashImageProps {
+    payload: UnsplashPhotoPayload;
+    srcUrl: string;
+    links: {html: string; download: string; [key: string]: string};
+    likes: number;
+    user: UnsplashPhotoPayload['user'];
+    alt?: string;
+    urls: {regular: string; [key: string]: string};
+    height: number;
+    width: number;
+    zoomed?: UnsplashPhotoPayload | null | false;
+    insertImage: (image: {src: string; caption: string; height: number; width: number; alt?: string; links: unknown}) => void;
+    selectImg: (payload: UnsplashPhotoPayload | null) => void;
+}
+
 function UnsplashImage({payload,
     srcUrl,
     links,
@@ -9,13 +40,13 @@ function UnsplashImage({payload,
     urls,
     height,
     width,
-    zoomed, 
-    insertImage, 
-    selectImg}) {
+    zoomed,
+    insertImage,
+    selectImg}: UnsplashImageProps) {
     return (
-        <div 
+        <div
             className={`relative mb-6 block bg-grey-100 ${zoomed ? 'h-full w-[max-content] cursor-zoom-out' : 'w-full cursor-zoom-in'}`}
-            data-kg-unsplash-gallery-item 
+            data-kg-unsplash-gallery-item
             onClick={(e) => {
                 e.stopPropagation();
                 selectImg(zoomed ? null : payload);
@@ -27,23 +58,22 @@ function UnsplashImage({payload,
                 loading='lazy'
                 src={srcUrl}
                 width={width}
-                data-kg-unsplash-gallery-img 
+                data-kg-unsplash-gallery-img
             />
             <div className="absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/5 via-black/5 to-black/30 p-5 opacity-0 transition-all ease-in-out hover:opacity-100">
                 <div className="flex items-center justify-end">
-                    {/* TODO: we may want to pass in the Ghost referral data from consuming app and parse to the urls */}
                     <UnsplashButton
                         data-kg-button="unsplash-like"
-                        href={`${links.html}/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit`} 
-                        icon="heart" 
-                        label={likes} 
-                        rel="noopener noreferrer" 
-                        target="_blank" 
+                        href={`${links.html}/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit`}
+                        icon="heart"
+                        label={likes}
+                        rel="noopener noreferrer"
+                        target="_blank"
                     />
                     <UnsplashButton
                         data-kg-button="unsplash-download"
-                        href={`${links.download}/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit&amp;force=true`} 
-                        icon="download" 
+                        href={`${links.download}/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit&amp;force=true`}
+                        icon="download"
                     />
                 </div>
                 <div className="flex items-center justify-between">

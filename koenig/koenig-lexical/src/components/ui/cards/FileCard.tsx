@@ -1,14 +1,14 @@
 import FileUploadForm from '../FileUploadForm';
 import FileUploadIcon from '../../../assets/icons/kg-file-upload.svg?react';
-import PropTypes from 'prop-types';
-import {MediaPlaceholder} from '../MediaPlaceholder.jsx';
+import React from 'react';
+import {MediaPlaceholder} from '../MediaPlaceholder';
 import {ProgressBar} from '../ProgressBar';
-import {TextInput} from '../TextInput.jsx';
+import {TextInput} from '../TextInput';
 import {openFileSelection} from '../../../utils/openFileSelection';
 
-function FileUploading({progress}) {
+function FileUploading({progress}: {progress?: number}) {
     const progressStyle = {
-        width: `${progress?.toFixed(0)}%`
+        width: `${(progress ?? 0).toFixed(0)}%`
     };
 
     return (
@@ -22,7 +22,13 @@ function FileUploading({progress}) {
     );
 }
 
-function EmptyFileCard({handleSelectorClick, fileDragHandler, errors}) {
+interface EmptyFileCardProps {
+    handleSelectorClick: () => void;
+    fileDragHandler: {isDraggedOver?: boolean; setRef?: React.Ref<HTMLDivElement>};
+    errors?: {message: string}[];
+}
+
+function EmptyFileCard({handleSelectorClick, fileDragHandler, errors}: EmptyFileCardProps) {
     return (
         <MediaPlaceholder
             desc="Click to upload a file"
@@ -36,7 +42,20 @@ function EmptyFileCard({handleSelectorClick, fileDragHandler, errors}) {
     );
 }
 
-function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceholder, name, size, handleFileTitle, handleFileDesc, ...args}) {
+interface PopulatedFileCardProps {
+    isEditing?: boolean;
+    title?: string;
+    titlePlaceholder?: string;
+    desc?: string;
+    descPlaceholder?: string;
+    name?: string;
+    size?: string;
+    handleFileTitle?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleFileDesc?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    [key: string]: unknown;
+}
+
+function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceholder, name, size, handleFileTitle, handleFileDesc, ...args}: PopulatedFileCardProps) {
     return (
         <div>
             <div className="flex justify-between rounded-md border border-grey/30 p-2">
@@ -47,10 +66,10 @@ function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceh
                                 <TextInput
                                     className="h-[30px] bg-transparent text-lg font-bold leading-none tracking-tight text-black dark:text-grey-200"
                                     data-kg-file-card="fileTitle"
-                                    maxLength="80"
+                                    maxLength={80}
                                     placeholder={titlePlaceholder}
                                     value={title}
-                                    onChange={handleFileTitle}
+                                    onChange={handleFileTitle!}
                                 />
                             )
                         }
@@ -58,10 +77,10 @@ function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceh
                             <TextInput
                                 className="h-[26px] bg-transparent pb-1 text-[1.6rem] font-normal leading-none text-grey-700 placeholder:text-grey-500 dark:text-grey-300 dark:placeholder:text-grey-800"
                                 data-kg-file-card="fileDescription"
-                                maxLength="100"
+                                maxLength={100}
                                 placeholder={descPlaceholder}
                                 value={desc}
-                                onChange={handleFileDesc}
+                                onChange={handleFileDesc!}
                             />
                         )}
                     </div>}
@@ -80,6 +99,24 @@ function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceh
     );
 }
 
+interface FileCardProps {
+    isPopulated?: boolean;
+    fileTitle?: string;
+    fileTitlePlaceholder?: string;
+    fileDesc?: string;
+    fileDescPlaceholder?: string;
+    fileName?: string;
+    fileSize?: string;
+    fileDragHandler: {isDraggedOver?: boolean; setRef?: React.Ref<HTMLDivElement>};
+    isEditing?: boolean;
+    fileInputRef?: React.MutableRefObject<HTMLInputElement | null>;
+    onFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleFileTitle?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleFileDesc?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    fileUploader?: {isLoading?: boolean; progress?: number; errors?: {message: string}[]};
+    [key: string]: unknown;
+}
+
 export function FileCard(
     {isPopulated,
         fileTitle,
@@ -95,19 +132,21 @@ export function FileCard(
         handleFileTitle,
         handleFileDesc,
         fileUploader,
-        ...args}) {
+        ...args}: FileCardProps) {
     const {isLoading: isUploading, progress, errors} = fileUploader || {};
-    const setFileInputRef = (ref) => {
+    const setFileInputRef = (ref: React.RefObject<HTMLInputElement | null>) => {
         if (fileInputRef) {
             fileInputRef.current = ref.current;
         }
     };
-    const onFileInputRef = (element) => {
-        fileInputRef.current = element;
-        setFileInputRef(fileInputRef);
+    const onFileInputRef = (element: HTMLInputElement | null) => {
+        if (fileInputRef) {
+            fileInputRef.current = element;
+            setFileInputRef(fileInputRef as React.RefObject<HTMLInputElement | null>);
+        }
     };
     const handleOpenFileSelection = () => {
-        openFileSelection({fileInputRef: fileInputRef});
+        openFileSelection({fileInputRef: fileInputRef as React.RefObject<HTMLInputElement | null>});
     };
     if (isUploading) {
         return (
@@ -141,47 +180,8 @@ export function FileCard(
             <FileUploadForm
                 fileInputRef={onFileInputRef}
                 setFileInputRef={setFileInputRef}
-                onFileChange={onFileChange}
+                onFileChange={onFileChange!}
             />
         </>
     );
 }
-
-FileCard.propTypes = {
-    isPopulated: PropTypes.bool,
-    fileTitle: PropTypes.string,
-    fileTitlePlaceholder: PropTypes.string,
-    fileDesc: PropTypes.string,
-    fileDescPlaceholder: PropTypes.string,
-    fileName: PropTypes.string,
-    fileSize: PropTypes.string,
-    fileDragHandler: PropTypes.object,
-    isEditing: PropTypes.bool,
-    fileInputRef: PropTypes.object,
-    onFileChange: PropTypes.func,
-    handleFileTitle: PropTypes.func,
-    handleFileDesc: PropTypes.func,
-    fileUploader: PropTypes.object
-};
-
-FileUploading.propTypes = {
-    progress: PropTypes.number
-};
-
-EmptyFileCard.propTypes = {
-    errors: PropTypes.array,
-    fileDragHandler: PropTypes.object,
-    handleSelectorClick: PropTypes.func
-};
-
-PopulatedFileCard.propTypes = {
-    desc: PropTypes.string,
-    descPlaceholder: PropTypes.string,
-    handleFileDesc: PropTypes.func,
-    handleFileTitle: PropTypes.func,
-    isEditing: PropTypes.bool,
-    name: PropTypes.string,
-    size: PropTypes.string,
-    title: PropTypes.string,
-    titlePlaceholder: PropTypes.string
-};

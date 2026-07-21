@@ -3,7 +3,7 @@ import mdx from '@mdx-js/rollup';
 import pkg from './package.json';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
-import {defineConfig, esmExternalRequirePlugin, loadEnv} from 'vite';
+import {defineConfig, esmExternalRequirePlugin, loadEnv, type ConfigEnv} from 'vite';
 import {resolve, dirname} from 'path';
 import {fileURLToPath} from 'url';
 import {createRequire} from 'node:module';
@@ -15,7 +15,7 @@ const require = createRequire(import.meta.url);
 const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
 // https://vitejs.dev/config/
-export default (function viteConfig({mode}) {
+export default (function viteConfig({mode}: ConfigEnv) {
     const env = loadEnv(mode, process.cwd());
     process.env = {...process.env, ...env};
 

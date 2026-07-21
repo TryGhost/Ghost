@@ -1,6 +1,7 @@
 import {InputList} from './InputList';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
-const story = {
+const story: Meta<typeof InputList> = {
     title: 'Generic/InputList',
     component: InputList,
     parameters: {
@@ -12,7 +13,7 @@ const story = {
 export default story;
 
 // One at the top, one at the bottom using flexbox
-const Template = args => (
+const Template: StoryFn<typeof InputList> = args => (
     <div className="flex h-screen w-[240px] flex-col justify-between">
         <InputList {...args} />
 
@@ -22,7 +23,7 @@ const Template = args => (
     </div>
 );
 
-export const Default = Template.bind({});
+export const Default: StoryFn<typeof InputList> = Template.bind({});
 Default.args = {
     listOptions: [
         {value: 'https://google.com', label: 'Google'},

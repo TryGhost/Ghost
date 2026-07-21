@@ -11,6 +11,7 @@ import {
 import {getParentEditor} from '../utils/lexical-internals';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
+import type {LexicalEditor} from 'lexical';
 
 function KoenigNestedEditorPlugin({
     autoFocus,
@@ -18,6 +19,11 @@ function KoenigNestedEditorPlugin({
     hasSettingsPanel,
     // Enter will focus the next card if this is true
     defaultKoenigEnterBehaviour = false
+}: {
+    autoFocus?: boolean;
+    focusNext?: LexicalEditor;
+    hasSettingsPanel?: boolean;
+    defaultKoenigEnterBehaviour?: boolean;
 }) {
     const [editor] = useLexicalComposerContext();
     const {isEditing: isParentCardEditing, nodeKey: parentCardNodeKey} = React.useContext(CardContext);
@@ -45,7 +51,7 @@ function KoenigNestedEditorPlugin({
 
         if (shouldFocus) {
             editor.focus(() => {
-                editor.getRootElement().focus({preventScroll: true});
+                editor.getRootElement()?.focus({preventScroll: true});
             });
         }
     }, [shouldFocus, editor, isParentCardEditing]);
@@ -68,38 +74,38 @@ function KoenigNestedEditorPlugin({
             }),
             editor.registerCommand(
                 KEY_ENTER_COMMAND,
-                (event) => {
+                (event: KeyboardEvent | null) => {
                     // TODO: wait for new lexical version, see https://github.com/facebook/lexical/commit/df2a50bc88e0778af26e109502cfcfb9cbe245d5
                     if (document.querySelector(`#typeahead-menu`)) {
                         return false;
                     }
 
                     // let the parent editor handle the edit mode product
-                    if (event.metaKey || event.ctrlKey) {
-                        event._fromNested = true;
+                    if (event?.metaKey || event?.ctrlKey) {
+                        (event as KeyboardEvent & {_fromNested?: boolean})._fromNested = true;
                         getParentEditor(editor)?.dispatchCommand(KEY_ENTER_COMMAND, event);
                         return true;
                     }
 
                     // move focus to the next editor if it exists (e.g. from header to content editor)
-                    if (focusNext && !event.shiftKey) {
-                        event.preventDefault();
+                    if (focusNext && !event?.shiftKey) {
+                        event?.preventDefault();
                         focusNext.focus(() => {
-                            focusNext.getRootElement().focus({preventScroll: true});
+                            focusNext.getRootElement()?.focus({preventScroll: true});
                         });
                         return true;
                     }
 
                     if (defaultKoenigEnterBehaviour) {
                         // allow shift+enter to create a line break
-                        if (event.shiftKey) {
+                        if (event?.shiftKey) {
                             return false;
                         }
 
                         // otherwise, let the parent editor handle the enter key
                         // - with ctrl/cmd+enter toggles edit mode
                         // - or creates paragraph after card and moves cursor
-                        event._fromNested = true;
+                        (event as KeyboardEvent & {_fromNested?: boolean})._fromNested = true;
                         getParentEditor(editor)?.dispatchCommand(KEY_ENTER_COMMAND, event);
 
                         // prevent normal/KoenigBehaviourPlugin enter key behaviour

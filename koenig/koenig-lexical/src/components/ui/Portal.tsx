@@ -2,7 +2,14 @@ import KoenigComposerContext from '../../context/KoenigComposerContext';
 import React from 'react';
 import {createPortal} from 'react-dom';
 
-function Portal({children, to, className, ...props}) {
+interface PortalProps {
+    children: React.ReactNode;
+    to?: Element;
+    className?: string;
+    [key: string]: unknown;
+}
+
+function Portal({children, to, className, ...props}: PortalProps) {
     const {darkMode} = React.useContext(KoenigComposerContext);
 
     const container = to || document.body;
@@ -10,7 +17,7 @@ function Portal({children, to, className, ...props}) {
         return children;
     }
 
-    function cancelEvents(event) {
+    function cancelEvents(event: React.MouseEvent) {
         // prevent card from losing selection when interacting with element in portal
         event.stopPropagation();
     }

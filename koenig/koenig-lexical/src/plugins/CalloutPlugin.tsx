@@ -16,7 +16,7 @@ export const CalloutPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_CALLOUT_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     const cardNode = $createCalloutNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 

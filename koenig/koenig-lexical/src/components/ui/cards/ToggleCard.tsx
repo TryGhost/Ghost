@@ -1,7 +1,17 @@
 import ArrowDownIcon from '../../../assets/icons/kg-toggle-arrow.svg?react';
 import KoenigNestedEditor from '../../KoenigNestedEditor';
-import PropTypes from 'prop-types';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
+import type {LexicalEditor} from 'lexical';
+
+interface ToggleCardProps {
+    contentEditor: LexicalEditor;
+    contentEditorInitialState?: string;
+    contentPlaceholder?: string;
+    headingEditor: LexicalEditor;
+    headingEditorInitialState?: string;
+    headingPlaceholder?: string;
+    isEditing?: boolean;
+}
 
 export function ToggleCard({
     contentEditor,
@@ -11,7 +21,7 @@ export function ToggleCard({
     headingEditorInitialState,
     headingPlaceholder = 'Toggle header',
     isEditing = false
-}) {
+}: ToggleCardProps) {
     return (
         <>
             <div className='rounded-md border border-grey/40 px-6 py-4 dark:border-grey/30'>
@@ -47,13 +57,3 @@ export function ToggleCard({
         </>
     );
 }
-
-ToggleCard.propTypes = {
-    contentEditor: PropTypes.object,
-    contentPlaceholder: PropTypes.string,
-    headingEditor: PropTypes.object,
-    headingPlaceholder: PropTypes.string,
-    isEditing: PropTypes.bool,
-    contentEditorInitialState: PropTypes.object,
-    headingEditorInitialState: PropTypes.object
-};

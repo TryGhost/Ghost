@@ -1,16 +1,21 @@
 import React, {useEffect, useRef} from 'react';
 import {Picker} from 'emoji-mart';
 
-export default function EmojiPicker({setInstanceRef, ...props}) {
-    const ref = useRef(null);
-    const instance = useRef(null);
+interface EmojiPickerProps {
+    setInstanceRef?: (instance: unknown) => void;
+    [key: string]: unknown;
+}
 
-    function setInstance(newInstance) {
+export default function EmojiPicker({setInstanceRef, ...props}: EmojiPickerProps) {
+    const ref = useRef<HTMLDivElement>(null);
+    const instance = useRef<{update: (props: Record<string, unknown>) => void} | null>(null);
+
+    function setInstance(newInstance: {update: (props: Record<string, unknown>) => void} | null) {
         instance.current = newInstance;
         setInstanceRef?.(newInstance);
     }
 
-    if (instance.current) {
+    if (instance.current && typeof instance.current.update === 'function') {
         instance.current.update(props);
     }
 
@@ -21,7 +26,7 @@ export default function EmojiPicker({setInstanceRef, ...props}) {
         // copy's class gets registered with customElements.define(). Instantiating
         // an unregistered class throws "Illegal constructor".
         const RegisteredPicker = customElements.get('em-emoji-picker') || Picker;
-        setInstance(new RegisteredPicker({...props, ref}));
+        setInstance(new (RegisteredPicker as unknown as new (opts: unknown) => {update: (props: Record<string, unknown>) => void})({...props, ref}));
 
         return () => {
             setInstance(null);

@@ -5,20 +5,27 @@ import {$insertDataTransferForRichText} from '@lexical/clipboard';
 import {DRAG_DROP_PASTE} from '@lexical/rich-text';
 import {createCommand} from 'lexical';
 import {getEditorCardNodes} from '../utils/getEditorCardNodes';
+import {getKoenigCardNodeClass} from '../utils/koenig-node-class';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {LexicalEditor} from 'lexical';
 
-export const INSERT_MEDIA_COMMAND = createCommand();
+export const INSERT_MEDIA_COMMAND = createCommand<ProcessedMedia>();
 
-function isMimeType(file, acceptableMimeTypes) {
+export interface ProcessedMedia {
+    type: string | undefined;
+    file: File;
+}
+
+function isMimeType(file: File, acceptableMimeTypes: Record<string, string[]>): string | undefined {
     const mimeType = file.type;
-    let key = Object.keys(acceptableMimeTypes).find(k => acceptableMimeTypes[k].includes(mimeType));
+    const key = Object.keys(acceptableMimeTypes).find(k => acceptableMimeTypes[k].includes(mimeType));
     return key;
 }
 
-function mediaFileReader(files, acceptableMimeTypes) {
+function mediaFileReader(files: File[], acceptableMimeTypes: Record<string, string[]>): Promise<{processed: ProcessedMedia[]}> {
     const filesIterator = files[Symbol.iterator]();
     return new Promise((resolve, reject) => {
-        const processed = [];
+        const processed: ProcessedMedia[] = [];
         const handleNextFile = () => {
             const {done, value: file} = filesIterator.next();
             if (done) {
@@ -46,12 +53,14 @@ function mediaFileReader(files, acceptableMimeTypes) {
     });
 }
 
-async function getListOfAcceptableMimeTypes(editor, uploadFileTypes) {
+async function getListOfAcceptableMimeTypes(editor: LexicalEditor, uploadFileTypes: Record<string, {mimeTypes: string[]}>) {
     const nodes = getEditorCardNodes(editor);
-    let acceptableMimeTypes = {};
+    const acceptableMimeTypes: Record<string, string[]> = {};
     for (const [nodeType, node] of nodes) {
-        if (nodeType && node.uploadType) {
-            acceptableMimeTypes[nodeType] = uploadFileTypes[node.uploadType].mimeTypes;
+        const nodeWithUpload = getKoenigCardNodeClass(node);
+        const uploadConfig = nodeWithUpload.uploadType ? uploadFileTypes[nodeWithUpload.uploadType] : undefined;
+        if (nodeType && uploadConfig) {
+            acceptableMimeTypes[nodeType] = uploadConfig.mimeTypes;
         }
     }
     return {
@@ -63,14 +72,14 @@ function DragDropPastePlugin() {
     const [editor] = useLexicalComposerContext();
     const {fileUploader} = React.useContext(KoenigComposerContext);
 
-    const handleFileUpload = React.useCallback(async (files) => {
+    const handleFileUpload = React.useCallback(async (files: File[]) => {
         if (!fileUploader) {
             return;
         }
 
         const {acceptableMimeTypes} = await getListOfAcceptableMimeTypes(editor, fileUploader.fileTypes);
-        const {processed} = await mediaFileReader(files, acceptableMimeTypes);
-        processed.forEach((item) => {
+        const result = await mediaFileReader(files, acceptableMimeTypes);
+        result.processed.forEach((item: ProcessedMedia) => {
             editor.dispatchCommand(INSERT_MEDIA_COMMAND, item);
         });
     }, [editor, fileUploader]);
@@ -80,8 +89,8 @@ function DragDropPastePlugin() {
     React.useEffect(() => {
         return editor.registerCommand(
             DROP_COMMAND,
-            (event) => {
-                const files = Array.from(event.dataTransfer.files);
+            (event: DragEvent) => {
+                const files = Array.from(event.dataTransfer?.files ?? []);
 
                 if (files.length > 0) {
                     event.preventDefault();
@@ -100,8 +109,8 @@ function DragDropPastePlugin() {
     // rather than the drop location
     React.useEffect(() => {
         const rootElement = editor.getRootElement();
-        const handleDragOver = (event) => {
-            if (!event.dataTransfer || event.target.closest('[data-kg-card]')) {
+        const handleDragOver = (event: DragEvent) => {
+            if (!event.dataTransfer || (event.target as Element)?.closest?.('[data-kg-card]')) {
                 return;
             }
 
@@ -109,13 +118,13 @@ function DragDropPastePlugin() {
             event.preventDefault();
         };
 
-        const handleDragLeave = (event) => {
+        const handleDragLeave = (event: DragEvent) => {
             event.preventDefault();
         };
 
-        const handleDrop = (event) => {
+        const handleDrop = (event: DragEvent) => {
             // handle image drop from a browser window
-            const html = event.dataTransfer.getData('text/html');
+            const html = event.dataTransfer?.getData('text/html');
             if (html) {
                 event.preventDefault();
 
@@ -126,11 +135,16 @@ function DragDropPastePlugin() {
                         $getRoot().selectEnd();
                         selection = $getSelection();
                     }
-                    $insertDataTransferForRichText(event.dataTransfer, selection, editor);
+                    if (event.dataTransfer && selection) {
+                        $insertDataTransferForRichText(event.dataTransfer, selection, editor);
+                    }
                 });
             }
         };
 
+        if (!rootElement) {
+            return;
+        }
         rootElement.addEventListener('dragover', handleDragOver);
         rootElement.addEventListener('dragleave', handleDragLeave);
         rootElement.addEventListener('drop', handleDrop);
@@ -145,13 +159,12 @@ function DragDropPastePlugin() {
     React.useEffect(() => {
         return editor.registerCommand(
             DRAG_DROP_PASTE,
-            async (files) => {
-                try {
-                    editor.focus();
-                    return await handleFileUpload(files);
-                } catch (error) {
+            (files: File[]) => {
+                editor.focus();
+                handleFileUpload(files).catch((error: unknown) => {
                     console.error(error);
-                }
+                });
+                return true;
             },
             COMMAND_PRIORITY_LOW
         );

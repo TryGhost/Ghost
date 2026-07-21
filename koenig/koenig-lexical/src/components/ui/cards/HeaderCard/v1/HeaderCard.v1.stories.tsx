@@ -1,9 +1,11 @@
 import populateEditor from '../../../../../utils/storybook/populate-storybook-editor';
 import {CardWrapper} from '../../../CardWrapper';
 import {HeaderCard} from './HeaderCard';
-import {MINIMAL_NODES} from '../../../../../index.js';
+import {MINIMAL_NODES} from '../../../../../index';
 import {createEditor} from 'lexical';
 import {editorEmptyState} from '../../../../../../.storybook/editorEmptyState';
+import type {ComponentProps} from 'react';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -11,14 +13,15 @@ const displayOptions = {
     Editing: {isSelected: true, isEditing: true}
 };
 
-const story = {
+type StoryArgs = ComponentProps<typeof HeaderCard> & {display: keyof typeof displayOptions; header?: string; subheader?: string};
+
+const story: Meta<StoryArgs> = {
     title: 'Primary cards/Header card v1',
     component: HeaderCard,
-    subcomponent: {CardWrapper},
+    subcomponents: {CardWrapper},
     argTypes: {
         display: {
             options: Object.keys(displayOptions),
-            mapping: displayOptions,
             control: {
                 type: 'radio',
                 labels: {
@@ -38,7 +41,7 @@ const story = {
 };
 export default story;
 
-const Template = ({display, header, subheader, ...args}) => {
+const Template: StoryFn<StoryArgs> = ({display, header, subheader, ...args}) => {
     const headerTextEditor = createEditor({nodes: MINIMAL_NODES});
     const subheaderTextEditor = createEditor({nodes: MINIMAL_NODES});
 
@@ -47,9 +50,9 @@ const Template = ({display, header, subheader, ...args}) => {
 
     return (<div className="kg-prose">
         <div className="mx-auto my-8 w-full min-w-[initial]">
-            <CardWrapper {...display} {...args}>
+            <CardWrapper {...displayOptions[display]} {...args}>
                 <HeaderCard
-                    {...display}
+                    {...displayOptions[display]}
                     {...args}
                     header={header}
                     headerTextEditor={headerTextEditor}
@@ -61,49 +64,41 @@ const Template = ({display, header, subheader, ...args}) => {
     </div>);
 };
 
-export const Empty = Template.bind({});
+export const Empty: StoryFn<StoryArgs> = Template.bind({});
 Empty.args = {
     display: 'Editing',
     size: 'small',
     type: 'dark',
     header: '',
-    headerPlaceholder: 'Enter heading text',
     subheader: '',
-    subheaderPlaceholder: 'Enter subheading text',
     button: false,
     buttonText: '',
-    buttonPlaceholder: 'Add button text',
     buttonUrl: '',
     headerTextEditorInitialState: editorEmptyState,
     subheaderTextEditorInitialState: editorEmptyState
 };
 
-export const Populated = Template.bind({});
+export const Populated: StoryFn<StoryArgs> = Template.bind({});
 Populated.args = {
     display: 'Editing',
     size: 'small',
     handleButtonToggle: () => {},
     header: 'This is a heading',
-    headerPlaceholder: 'Enter heading text',
     subheader: 'And here is some subheading text.',
-    subheaderPlaceholder: 'Enter subheading text',
     button: false,
     buttonText: 'Subscribe',
-    buttonPlaceholder: 'Add button text',
     buttonUrl: 'https://ghost.org/',
     backgroundImageSrc: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
     type: 'image'
 };
 
-export const Loading = Template.bind({});
+export const Loading: StoryFn<StoryArgs> = Template.bind({});
 Loading.args = {
     display: 'Editing',
     size: 'small',
     handleButtonToggle: () => {},
-    heading: 'This is a heading',
-    headerPlaceholder: 'Enter heading text',
+    header: 'This is a heading',
     subheader: 'And here is some subheading text.',
-    subheaderPlaceholder: 'Enter subheading text',
     button: false,
     buttonText: 'Subscribe',
     buttonUrl: 'https://ghost.org/',

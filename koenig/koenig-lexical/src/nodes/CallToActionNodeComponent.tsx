@@ -1,18 +1,41 @@
 import CardContext from '../context/CardContext';
-import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React, {useRef} from 'react';
 import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import {$getNodeByKey} from 'lexical';
-import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
-import {CallToActionCard} from '../components/ui/cards/CallToActionCard.jsx';
-import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
-import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {ActionToolbar} from '../components/ui/ActionToolbar';
+import {CallToActionCard} from '../components/ui/cards/CallToActionCard';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {getImageDimensions} from '../utils/getImageDimensions';
-import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext.jsx';
+import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
+import {useVisibilityToggle} from '../hooks/useVisibilityToggle';
+import type {CallToActionNode} from '@tryghost/kg-default-nodes';
+import type {LexicalEditor} from 'lexical';
 
-export const CallToActionNodeComponent = ({
+interface CallToActionNodeComponentProps {
+    nodeKey: string;
+    alignment: string;
+    backgroundColor: string;
+    buttonText: string;
+    buttonUrl: string;
+    hasSponsorLabel: boolean;
+    imageUrl: string | null;
+    layout: string;
+    linkColor: string;
+    showButton: boolean;
+    showDividers: boolean;
+    textValue: string;
+    buttonColor: string;
+    htmlEditor: LexicalEditor;
+    htmlEditorInitialState: unknown;
+    buttonTextColor: string;
+    sponsorLabelHtmlEditor: LexicalEditor;
+    sponsorLabelHtmlEditorInitialState: unknown;
+}
+
+export const CallToActionNodeComponent: React.FC<CallToActionNodeComponentProps> = ({
     nodeKey,
     alignment,
     backgroundColor,
@@ -24,7 +47,7 @@ export const CallToActionNodeComponent = ({
     linkColor,
     showButton,
     showDividers,
-    textValue,
+    textValue: _textValue,
     buttonColor,
     htmlEditor,
     htmlEditorInitialState,
@@ -42,82 +65,95 @@ export const CallToActionNodeComponent = ({
 
     const {showVisibilitySettings} = useKoenigSelectedCardContext();
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         setEditing(true);
     };
 
-    const fileInputRef = useRef(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const imageUploader = fileUploader.useFileUpload('image');
 
-    const toggleShowButton = (event) => {
+    const toggleShowButton = (_event: unknown) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as CallToActionNode | null;
+            if (!node) {return;}
             node.showButton = !node.showButton;
         });
     };
 
-    const toggleShowDividers = (event) => {
+    const toggleShowDividers = (_event: unknown) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as CallToActionNode | null;
+            if (!node) {return;}
             node.showDividers = !node.showDividers;
         });
     };
 
-    const handleButtonTextChange = (event) => {
+    const handleButtonTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as CallToActionNode | null;
+            if (!node) {return;}
             node.buttonText = event.target.value;
         });
     };
 
-    const handleButtonUrlChange = (val) => {
+    const handleButtonUrlChange = (val: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as CallToActionNode | null;
+            if (!node) {return;}
             node.buttonUrl = val;
         });
     };
 
-    const handleButtonColorChange = (val, matchingTextColor) => {
+    const handleButtonColorChange = (val: string, matchingTextColor: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as CallToActionNode | null;
+            if (!node) {return;}
             node.buttonColor = val;
             node.buttonTextColor = matchingTextColor;
         });
     };
-    const handleHasSponsorLabelChange = (val) => {
+    const handleHasSponsorLabelChange = (_val: unknown) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as CallToActionNode | null;
+            if (!node) {return;}
             // get the current value and toggle it
             node.hasSponsorLabel = !node.hasSponsorLabel;
         });
     };
 
-    const handleBackgroundColorChange = (val) => {
+    const handleBackgroundColorChange = (val: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as CallToActionNode | null;
+            if (!node) {return;}
             node.backgroundColor = val;
         });
     };
 
-    const handleLinkColorChange = (val) => {
+    const handleLinkColorChange = (val: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as CallToActionNode | null;
+            if (!node) {return;}
             node.linkColor = val;
         });
     };
 
-    const handleImageChange = async (files) => {
+    const handleImageChange = async (files: FileList | File[] | null) => {
+        if (!files || files.length === 0) {
+            return;
+        }
+
         const imgPreviewUrl = URL.createObjectURL(files[0]);
         try {
             const {width, height} = await getImageDimensions(imgPreviewUrl);
-            const result = await imageUploader.upload(files);
+            const result = await imageUploader.upload(Array.from(files));
             // reset original src so it can be replaced with preview and upload progress
             editor.update(() => {
-                const node = $getNodeByKey(nodeKey);
-                node.imageUrl = result?.[0].url;
+                const node = $getNodeByKey(nodeKey) as CallToActionNode | null;
+                if (!node) {return;}
+                node.imageUrl = result?.[0]?.url ?? null;
                 node.imageWidth = width;
                 node.imageHeight = height;
             });
@@ -126,69 +162,75 @@ export const CallToActionNodeComponent = ({
         }
     };
 
-    const onFileChange = async (e) => {
-        handleImageChange(e.target.files);
+    const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const {files} = e.target;
+        if (!files || files.length === 0) {
+            return;
+        }
+
+        handleImageChange(files);
     };
 
     const onRemoveMedia = () => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as CallToActionNode | null;
+            if (!node) {return;}
             node.imageUrl = null;
             node.imageWidth = null;
             node.imageHeight = null;
         });
     };
-    const handleUpdatingLayout = (val) => {
+    const handleUpdatingLayout = (val: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as CallToActionNode | null;
+            if (!node) {return;}
             node.layout = val;
         });
     };
 
-    const handleUpdatingAlignment = (val) => {
+    const handleUpdatingAlignment = (val: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
+            const node = $getNodeByKey(nodeKey) as CallToActionNode | null;
+            if (!node) {return;}
             node.alignment = val;
         });
     };
 
-    async function handleImageDrop(files) {
+    async function handleImageDrop(files: FileList | File[]) {
         await handleImageChange(files);
     }
 
     React.useEffect(() => {
-        htmlEditor.setEditable(isEditing);
+        (htmlEditor as {setEditable: (editable: boolean) => void}).setEditable(isEditing);
     }, [isEditing, htmlEditor]);
 
     return (
         <>
             <CallToActionCard
-                alignment={alignment}
+                alignment={alignment as 'left' | 'center' | undefined}
                 buttonColor={buttonColor}
                 buttonText={buttonText}
                 buttonTextColor={buttonTextColor}
                 buttonUrl={buttonUrl}
-                color={backgroundColor}
+                color={backgroundColor as 'none' | 'grey' | 'white' | 'blue' | 'green' | 'yellow' | 'red' | 'pink' | 'purple'}
                 handleButtonColor={handleButtonColorChange}
                 handleColorChange={handleBackgroundColorChange}
                 handleLinkColorChange={handleLinkColorChange}
                 hasSponsorLabel={hasSponsorLabel}
                 htmlEditor={htmlEditor}
-                htmlEditorInitialState={htmlEditorInitialState}
+                htmlEditorInitialState={htmlEditorInitialState as string | undefined}
                 imageDragHandler={imageDragHandler}
-                imageSrc={imageUrl}
+                imageSrc={imageUrl ?? undefined}
                 imageUploader={imageUploader}
                 isEditing={isEditing}
-                layout={layout}
-                linkColor={linkColor}
-                setEditing={setEditing}
-                setFileInputRef={ref => fileInputRef.current = ref}
+                layout={layout as 'minimal' | 'immersive' | undefined}
+                linkColor={linkColor as 'text' | 'accent' | undefined}
+                setFileInputRef={(ref: HTMLInputElement | null) => fileInputRef.current = ref}
                 showButton={showButton}
                 showDividers={showDividers}
                 showVisibilitySettings={isVisibilityEnabled && showVisibilitySettings}
                 sponsorLabelHtmlEditor={sponsorLabelHtmlEditor}
-                sponsorLabelHtmlEditorInitialState={sponsorLabelHtmlEditorInitialState}
-                text={textValue}
+                sponsorLabelHtmlEditorInitialState={sponsorLabelHtmlEditorInitialState as string | undefined}
                 toggleVisibility={toggleVisibility}
                 updateAlignment={handleUpdatingAlignment}
                 updateButtonText={handleButtonTextChange}

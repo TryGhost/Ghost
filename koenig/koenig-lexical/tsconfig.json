@@ -5,7 +5,7 @@
     "moduleResolution": "bundler",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "jsx": "react-jsx",
-    "strict": false,
+    "strict": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

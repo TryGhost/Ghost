@@ -3,7 +3,7 @@ import {$getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, createCommand} f
 import {$insertDataTransferForRichText} from '@lexical/clipboard';
 import {render as markdownRender} from '@tryghost/kg-markdown-html-renderer';
 import {mergeRegister} from '@lexical/utils';
-import {sanitizeHtml} from '../utils/sanitize-html.js';
+import {sanitizeHtml} from '../utils/sanitize-html';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 export const PASTE_MARKDOWN_COMMAND = createCommand('PASTE_MARKDOWN_COMMAND');
 export const MIME_TEXT_PLAIN = 'text/plain';
@@ -14,7 +14,7 @@ export const MarkdownPastePlugin = () => {
     const [isShiftDown, setShiftDown] = React.useState(false);
 
     React.useEffect(() => {
-        const handleKeyUp = (e) => {
+        const handleKeyUp = (e: KeyboardEvent) => {
             if (e.key === 'Shift') {
                 setShiftDown(false);
             }
@@ -26,7 +26,7 @@ export const MarkdownPastePlugin = () => {
     }, [setShiftDown]);
 
     React.useEffect(() => {
-        const handleKeyDown = (e) => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Shift') {
                 setShiftDown(true);
             }
@@ -41,7 +41,7 @@ export const MarkdownPastePlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 PASTE_MARKDOWN_COMMAND,
-                ({text, allowBr}) => {
+                ({text, allowBr}: {text: string; allowBr: boolean}) => {
                     const selection = $getSelection();
                     if (!$isRangeSelection(selection)) {
                         return false;

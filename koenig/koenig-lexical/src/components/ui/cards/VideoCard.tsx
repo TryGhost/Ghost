@@ -2,7 +2,7 @@ import ImgFullIcon from '../../../assets/icons/kg-img-full.svg?react';
 import ImgRegularIcon from '../../../assets/icons/kg-img-regular.svg?react';
 import ImgWideIcon from '../../../assets/icons/kg-img-wide.svg?react';
 import PlayIcon from '../../../assets/icons/kg-play.svg?react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import {ButtonGroupSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {MediaPlaceholder} from '../MediaPlaceholder';
@@ -10,6 +10,36 @@ import {MediaPlayer} from '../MediaPlayer';
 import {ProgressBar} from '../ProgressBar';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 import {openFileSelection} from '../../../utils/openFileSelection';
+import type {CardWidth} from '@tryghost/kg-default-nodes';
+import type {LexicalEditor} from 'lexical';
+
+interface FileUploader {
+    isLoading?: boolean;
+    progress?: number;
+    errors?: {message: string}[];
+}
+
+interface DragHandler {
+    isDraggedOver?: boolean;
+    setRef?: React.Ref<HTMLDivElement>;
+}
+
+interface PopulatedVideoCardProps {
+    thumbnail?: string;
+    customThumbnail?: string;
+    onCustomThumbnailChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    videoUploader?: FileUploader;
+    customThumbnailUploader?: FileUploader;
+    onRemoveCustomThumbnail?: () => void;
+    totalDuration?: string;
+    cardWidth?: CardWidth;
+    isLoopChecked?: boolean;
+    onLoopChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onCardWidthChange?: (name: string) => void;
+    isEditing?: boolean;
+    thumbnailMimeTypes?: string[];
+    thumbnailDragHandler?: DragHandler;
+}
 
 function PopulatedVideoCard({
     thumbnail,
@@ -26,9 +56,9 @@ function PopulatedVideoCard({
     isEditing,
     thumbnailMimeTypes,
     thumbnailDragHandler = {}
-}) {
+}: PopulatedVideoCardProps) {
     const progressStyle = {
-        width: `${videoUploader.progress?.toFixed(0)}%`
+        width: `${(videoUploader.progress ?? 0).toFixed(0)}%`
     };
 
     const buttonGroupChildren = [
@@ -83,8 +113,8 @@ function PopulatedVideoCard({
                         <ButtonGroupSetting
                             buttons={buttonGroupChildren}
                             label="Video width"
-                            selectedName={cardWidth}
-                            onClick={onCardWidthChange}
+                            selectedName={cardWidth || ''}
+                            onClick={onCardWidthChange!}
                         />
                         <ToggleSetting
                             dataTestId="loop-video"
@@ -107,7 +137,7 @@ function PopulatedVideoCard({
                             progress={customThumbnailUploader.progress}
                             size='xsmall'
                             src={customThumbnail}
-                            onFileChange={onCustomThumbnailChange}
+                            onFileChange={onCustomThumbnailChange!}
                             onRemoveMedia={onRemoveCustomThumbnail}
                         />
                     </SettingsPanel>
@@ -117,7 +147,15 @@ function PopulatedVideoCard({
     );
 }
 
-function EmptyVideoCard({onFileChange, fileInputRef, errors, videoMimeTypes = [], videoDragHandler = {}}) {
+interface EmptyVideoCardProps {
+    onFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    fileInputRef: React.RefObject<HTMLInputElement | null>;
+    errors?: {message: string}[];
+    videoMimeTypes?: string[];
+    videoDragHandler?: DragHandler;
+}
+
+function EmptyVideoCard({onFileChange, fileInputRef, errors, videoMimeTypes = [], videoDragHandler = {}}: EmptyVideoCardProps) {
     return (
         <>
             <MediaPlaceholder
@@ -128,9 +166,9 @@ function EmptyVideoCard({onFileChange, fileInputRef, errors, videoMimeTypes = []
                 isDraggedOver={videoDragHandler.isDraggedOver}
                 placeholderRef={videoDragHandler.setRef}
             />
-            <form onChange={onFileChange}>
+            <form onChange={onFileChange as unknown as React.FormEventHandler<HTMLFormElement>}>
                 <input
-                    ref={fileInputRef}
+                    ref={fileInputRef as React.RefObject<HTMLInputElement>}
                     accept={videoMimeTypes.join(',')}
                     hidden={true}
                     name="image-input"
@@ -141,6 +179,14 @@ function EmptyVideoCard({onFileChange, fileInputRef, errors, videoMimeTypes = []
     );
 }
 
+interface VideoHolderProps extends PopulatedVideoCardProps {
+    fileInputRef: React.RefObject<HTMLInputElement | null>;
+    onVideoFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    videoDragHandler?: DragHandler;
+    videoUploadErrors?: {message: string}[];
+    videoMimeTypes?: string[];
+}
+
 const VideoHolder = ({
     fileInputRef,
     onVideoFileChange,
@@ -149,7 +195,7 @@ const VideoHolder = ({
     videoUploadErrors,
     videoMimeTypes,
     ...props
-}) => {
+}: VideoHolderProps) => {
     const showPopulatedCard = props.customThumbnail || props.thumbnail || videoUploader.isLoading;
     if (showPopulatedCard) {
         return (
@@ -168,66 +214,31 @@ const VideoHolder = ({
     }
 };
 
+interface VideoCardProps extends VideoHolderProps {
+    captionEditor?: LexicalEditor;
+    captionEditorInitialState?: string;
+    isSelected?: boolean;
+}
+
 export function VideoCard({
     captionEditor,
     captionEditorInitialState,
     isSelected,
     isEditing,
     ...props
-}) {
+}: VideoCardProps) {
     return (
         <figure className="not-kg-prose">
             <VideoHolder {...props} isEditing={isEditing} />
-            <CardCaptionEditor
-                captionEditor={captionEditor}
-                captionEditorInitialState={captionEditorInitialState}
-                captionPlaceholder="Type caption for video (optional)"
-                dataTestId="video-card-caption"
-                isSelected={isSelected}
-            />
+            {captionEditor && (
+                <CardCaptionEditor
+                    captionEditor={captionEditor}
+                    captionEditorInitialState={captionEditorInitialState}
+                    captionPlaceholder="Type caption for video (optional)"
+                    dataTestId="video-card-caption"
+                    isSelected={isSelected}
+                />
+            )}
         </figure>
     );
 }
-
-VideoCard.propTypes = {
-    captionEditor: PropTypes.object,
-    captionEditorInitialState: PropTypes.object,
-    isSelected: PropTypes.bool,
-    isEditing: PropTypes.bool
-};
-
-PopulatedVideoCard.propTypes = {
-    thumbnail: PropTypes.string,
-    customThumbnail: PropTypes.string,
-    onCustomThumbnailChange: PropTypes.func,
-    videoUploader: PropTypes.object,
-    customThumbnailUploader: PropTypes.object,
-    onRemoveCustomThumbnail: PropTypes.func,
-    totalDuration: PropTypes.string,
-    cardWidth: PropTypes.string,
-    isLoopChecked: PropTypes.bool,
-    onLoopChange: PropTypes.func,
-    onCardWidthChange: PropTypes.func,
-    isEditing: PropTypes.bool,
-    thumbnailMimeTypes: PropTypes.array,
-    thumbnailDragHandler: PropTypes.object
-};
-
-EmptyVideoCard.propTypes = {
-    onFileChange: PropTypes.func,
-    fileInputRef: PropTypes.object,
-    errors: PropTypes.array,
-    videoMimeTypes: PropTypes.array,
-    videoDragHandler: PropTypes.object
-};
-
-VideoHolder.propTypes = {
-    fileInputRef: PropTypes.object,
-    onVideoFileChange: PropTypes.func,
-    videoDragHandler: PropTypes.object,
-    videoUploader: PropTypes.object,
-    videoUploadErrors: PropTypes.array,
-    videoMimeTypes: PropTypes.array,
-    customThumbnail: PropTypes.string,
-    thumbnail: PropTypes.string
-};

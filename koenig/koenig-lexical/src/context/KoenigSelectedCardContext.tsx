@@ -1,9 +1,31 @@
 import React from 'react';
 
-const Context = React.createContext({});
+interface KoenigSelectedCardContextType {
+    selectedCardKey: string | null;
+    setSelectedCardKey: (value: string | null) => void;
+    isEditingCard: boolean;
+    setIsEditingCard: (value: boolean) => void;
+    isDragging: boolean;
+    setIsDragging: (value: boolean) => void;
+    showVisibilitySettings: boolean;
+    setShowVisibilitySettings: (value: boolean) => void;
+}
 
-export const KoenigSelectedCardContext = ({children}) => {
-    const [selectedCardKey, setSelectedCardKey] = React.useState(null);
+const noop = () => {};
+
+const Context = React.createContext<KoenigSelectedCardContextType>({
+    selectedCardKey: null,
+    setSelectedCardKey: noop,
+    isEditingCard: false,
+    setIsEditingCard: noop,
+    isDragging: false,
+    setIsDragging: noop,
+    showVisibilitySettings: false,
+    setShowVisibilitySettings: noop
+});
+
+export const KoenigSelectedCardContext = ({children}: {children: React.ReactNode}) => {
+    const [selectedCardKey, setSelectedCardKey] = React.useState<string | null>(null);
     const [isEditingCard, setIsEditingCard] = React.useState(false);
     const [isDragging, setIsDragging] = React.useState(false);
     const [showVisibilitySettings, setShowVisibilitySettings] = React.useState(false);

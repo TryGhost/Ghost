@@ -16,7 +16,7 @@ export const HtmlPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_HTML_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     const cardNode = $createHtmlNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 

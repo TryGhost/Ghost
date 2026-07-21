@@ -1,4 +1,5 @@
 import CardContext from '../context/CardContext';
+import React from 'react';
 import {$createTKNode, $isTKNode, ExtendedTextNode, TKNode} from '@tryghost/kg-default-nodes';
 import {$getNodeByKey, $getSelection, $isDecoratorNode, $isRangeSelection, TextNode} from 'lexical';
 import {SELECT_CARD_COMMAND} from './KoenigBehaviourPlugin';
@@ -7,11 +8,12 @@ import {useCallback, useContext, useEffect, useState} from 'react';
 import {useKoenigTextEntity} from '../hooks/useKoenigTextEntity';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useTKContext} from '../context/TKContext';
+import type {LexicalEditor} from 'lexical';
 
 const REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK|Tk|tk)+[^\p{L}\p{N}\s]*)(.)?/u);
 const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
 
-function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
+function TKIndicator({editor, rootElement, parentKey, nodeKeys}: {editor: LexicalEditor; rootElement: HTMLElement; parentKey: string; nodeKeys: string[]}) {
     const tkClasses = editor._config.theme.tk?.split(' ') || [];
     const tkHighlightClasses = editor._config.theme.tkHighlighted?.split(' ') || [];
 
@@ -23,6 +25,10 @@ function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
         let right = -56;
 
         const rootElementRect = rootElement.getBoundingClientRect();
+
+        if (!containingElement) {
+            return {top, right};
+        }
 
         const positioningElement = containingElement.querySelector('[data-kg-card]') || containingElement;
         const positioningElementRect = positioningElement.getBoundingClientRect();
@@ -41,7 +47,7 @@ function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
     // select the TK node when the indicator is clicked,
     // cycle selection through associated TK nodes when clicked multiple times
     // TODO: may be some competition with the listener for clicking outside the editor since clicking on the indicator sometimes focuses the document body
-    const onClick = (e) => {
+    const onClick = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -65,11 +71,12 @@ function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
             }
 
             const node = $getNodeByKey(nodeKeyToSelect);
-            node.select(0, node.getTextContentSize());
+            if (!node) {return;}
+            (node as TextNode).select(0, node.getTextContentSize());
         });
     };
 
-    const toggleHighlightClasses = (isHighlighted) => {
+    const toggleHighlightClasses = (isHighlighted: boolean) => {
         let isCard;
 
         editor.getEditorState().read(() => {
@@ -82,23 +89,25 @@ function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
             return;
         }
 
-        nodeKeys.forEach((key) => {
+        nodeKeys.forEach((key: string) => {
+            const element = editor.getElementByKey(key);
+            if (!element) {return;}
             if (isHighlighted) {
-                editor.getElementByKey(key).classList.remove(...tkClasses);
-                editor.getElementByKey(key).classList.add(...tkHighlightClasses);
+                element.classList.remove(...tkClasses);
+                element.classList.add(...tkHighlightClasses);
             } else {
-                editor.getElementByKey(key).classList.add(...tkClasses);
-                editor.getElementByKey(key).classList.remove(...tkHighlightClasses);
+                element.classList.add(...tkClasses);
+                element.classList.remove(...tkHighlightClasses);
             }
         });
     };
 
     // highlight all associated TK nodes when the indicator is hovered
-    const onMouseEnter = (e) => {
+    const onMouseEnter = (_e: React.MouseEvent) => {
         toggleHighlightClasses(true);
     };
 
-    const onMouseLeave = (e) => {
+    const onMouseLeave = (_e: React.MouseEvent) => {
         toggleHighlightClasses(false);
     };
 
@@ -108,7 +117,9 @@ function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
         const observer = new ResizeObserver(() => (setPosition(calculatePosition())));
 
         observer.observe(rootElement);
-        observer.observe(containingElement);
+        if (containingElement) {
+            observer.observe(containingElement);
+        }
 
         return () => {
             observer.disconnect();
@@ -153,11 +164,11 @@ export default function TKPlugin() {
         return editor.registerMutationListener(TKNode, (mutatedNodes) => {
             editor.getEditorState().read(() => {
                 // mutatedNodes is a Map where each key is the NodeKey, and the value is the state of mutation.
-                for (let [tkNodeKey, mutation] of mutatedNodes) {
+                for (const [tkNodeKey, mutation] of mutatedNodes) {
                     if (mutation === 'destroyed') {
                         removeEditorTkNode(editor.getKey(), tkNodeKey);
                     } else {
-                        const parentNodeKey = $getNodeByKey(tkNodeKey).getTopLevelElement()?.getKey();
+                        const parentNodeKey = $getNodeByKey(tkNodeKey)?.getTopLevelElement()?.getKey();
                         const topLevelNodeKey = parentEditorNodeKey || parentNodeKey;
                         addEditorTkNode(editor.getKey(), topLevelNodeKey, tkNodeKey);
                     }
@@ -166,18 +177,18 @@ export default function TKPlugin() {
         });
     }, [editor, addEditorTkNode, removeEditorTkNode, parentEditorNodeKey]);
 
-    const createTKNode = useCallback((textNode) => {
+    const createTKNode = useCallback((textNode: TextNode) => {
         return $createTKNode(textNode.getTextContent());
     }, []);
 
-    const getTKMatch = useCallback((text) => {
+    const getTKMatch = useCallback((text: string) => {
         let matchArr = REGEX.exec(text);
 
         if (matchArr === null) {
             return null;
         }
 
-        function isValidMatch(match) {
+        function isValidMatch(match: RegExpExecArray) {
             // negative lookbehind isn't supported before Safari 16.4
             // so we capture the preceding char and test it here
             if (match[1] && match[1].trim() && WORD_CHAR_REGEX.test(match[1]) && match[2].slice(0, 1) !== '—') {
@@ -243,7 +254,7 @@ export default function TKPlugin() {
         return null;
     }
 
-    const TKIndicators = Object.entries(tkNodeMap).map(([parentKey, nodeKeys]) => {
+    const TKIndicators = (Object.entries(tkNodeMap) as [string, string[]][]).map(([parentKey, nodeKeys]) => {
         const parentContainer = editor.getElementByKey(parentKey);
 
         if (!parentContainer) {
@@ -256,7 +267,7 @@ export default function TKPlugin() {
                 editor={editor}
                 nodeKeys={nodeKeys}
                 parentKey={parentKey}
-                rootElement={editorRoot}
+                rootElement={editorRoot!}
             />
         );
     }).filter(Boolean);

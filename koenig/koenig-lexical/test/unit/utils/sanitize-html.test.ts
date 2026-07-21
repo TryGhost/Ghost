@@ -16,6 +16,11 @@ describe('Utils: sanitize-html', () => {
         expect(sanitizedHtml).toEqual('<span>Hey</span><pre class="js-embed-placeholder">Embedded JavaScript</pre>');
     });
 
+    test('can replace iframes with whitespace in the closing tag', function () {
+        const sanitizedHtml = sanitizeHtml('<span>Hey</span><iframe src="https://example.com"></iframe >');
+        expect(sanitizedHtml).toEqual('<span>Hey</span><pre class="iframe-embed-placeholder">Embedded iFrame</pre>');
+    });
+
     it('can render html', function () {
         const sanitizedHtml = sanitizeHtml('<strong>bold</strong>');
         expect(sanitizedHtml).toEqual('<strong>bold</strong>');

@@ -1,7 +1,8 @@
 import {assertHTML, createSnippet, ctrlOrCmd, focusEditor, html, initialize} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
-async function insertToggleCard(page) {
+async function insertToggleCard(page: Page) {
     await page.keyboard.type('/toggle');
     await page.waitForSelector('[data-kg-card-menu-item="Toggle"][data-kg-cardmenu-selected="true"]');
     await page.keyboard.press('Enter');
@@ -9,7 +10,7 @@ async function insertToggleCard(page) {
 }
 
 test.describe('Toggle card', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

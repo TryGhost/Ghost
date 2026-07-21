@@ -1,13 +1,12 @@
-/* eslint-disable react/jsx-key */
-
 import CenterAlignIcon from '../../assets/icons/kg-align-center.svg?react';
 import ImgFullIcon from '../../assets/icons/kg-img-full.svg?react';
 import ImgRegularIcon from '../../assets/icons/kg-img-regular.svg?react';
 import ImgWideIcon from '../../assets/icons/kg-img-wide.svg?react';
 import LeftAlignIcon from '../../assets/icons/kg-align-left.svg?react';
 import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, DropdownSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsPanel, ToggleSetting} from './SettingsPanel';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
-const story = {
+const story: Meta<typeof SettingsPanel> = {
     title: 'Settings panel/Settings panel',
     component: SettingsPanel,
     subcomponents: {ToggleSetting, InputSetting, ButtonGroupSetting},
@@ -19,7 +18,7 @@ const story = {
 };
 export default story;
 
-const Template = (args) => {
+const Template: StoryFn<typeof SettingsPanel> = (args) => {
     return (
         <div className="relative">
             <SettingsPanel {...args} />
@@ -73,46 +72,50 @@ const sizeButtonGroup = [
     }
 ];
 
-export const EmailCtaCard = Template.bind({});
+export const EmailCtaCard: StoryFn<typeof SettingsPanel> = Template.bind({});
 EmailCtaCard.args = {
     children: [
         <DropdownSetting
+            key='visibility'
             description='Visible for this audience when delivered by email. This card is not published on your site.'
             label='Visibility'
             menu={[{label: 'Free members', name: 'status:free'}, {label: 'Paid members', name: 'status:-free'}]}
             value='status:free'
+            onChange={() => {}}
         />,
-        <ButtonGroupSetting buttons={alignmentButtonGroup} label='Content alignment' />,
-        <ToggleSetting label='Separators' />,
-        <ToggleSetting label='Button' />,
-        <InputSetting label='Button text' placeholder='Add button text' />,
-        <InputSetting label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
+        <ButtonGroupSetting key='alignment' buttons={alignmentButtonGroup} label='Content alignment' selectedName='left' onClick={() => {}} />,
+        <ToggleSetting key='separators' label='Separators' />,
+        <ToggleSetting key='button' label='Button' />,
+        <InputSetting key='button-text' label='Button text' placeholder='Add button text' />,
+        <InputSetting key='button-url' label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
     ]
 };
 
-export const SignupCard = Template.bind({});
+export const SignupCard: StoryFn<typeof SettingsPanel> = Template.bind({});
 SignupCard.args = {
     children: [
-        <ColorPickerSetting label='Background color' swatches={[
+        <ColorPickerSetting key='background-color' label='Background color' swatches={[
             {title: 'Brand color', accent: true},
             {title: 'Black', hex: '#000000'},
             {title: 'Transparent', transparent: true}
-        ]} value='#777777' />,
+        ]} value='#777777' onPickerChange={() => {}} onSwatchChange={() => {}} onTogglePicker={() => {}} />,
         <MultiSelectDropdownSetting
-            availableItems={[{id: '1', name: 'Free members'}, {id: '2', name: 'Paid members'}]}
+            key='labels'
+            availableItems={['Free members', 'Paid members']}
             description='These labels will be applied to members who sign up via this form.'
-            items={['1']}
+            items={['Free members']}
             label='Labels'
+            onChange={() => {}}
         />
     ]
 };
 
-export const ButtonCard = Template.bind({});
+export const ButtonCard: StoryFn<typeof SettingsPanel> = Template.bind({});
 ButtonCard.args = {
     children: [
-        <ButtonGroupSetting buttons={alignmentButtonGroup} label='Content alignment' />,
-        <InputSetting label='Button text' placeholder='Add button text' />,
-        <InputSetting label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
+        <ButtonGroupSetting key='alignment' buttons={alignmentButtonGroup} label='Content alignment' selectedName='left' onClick={() => {}} />,
+        <InputSetting key='button-text' label='Button text' placeholder='Add button text' />,
+        <InputSetting key='button-url' label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
     ]
 };
 
@@ -164,67 +167,76 @@ const calloutColorPicker = [
     }
 ];
 
-export const CalloutCard = Template.bind({});
+export const CalloutCard: StoryFn<typeof SettingsPanel> = Template.bind({});
 CalloutCard.args = {
     children: [
-        <ColorOptionSetting buttons={calloutColorPicker} label='Background color' layout='stacked' />,
-        <ToggleSetting label='Emoji' />
+        <ColorOptionSetting key='background-color' buttons={calloutColorPicker} label='Background color' layout='stacked' onClick={() => {}} />,
+        <ToggleSetting key='emoji' label='Emoji' />
     ]
 };
 
-export const VideoCard = Template.bind({});
+export const VideoCard: StoryFn<typeof SettingsPanel> = Template.bind({});
 VideoCard.args = {
     children: [
         <ButtonGroupSetting
+            key='video-width'
             buttons={widthButtonGroup}
             label='Video width'
+            selectedName='regular'
+            onClick={() => {}}
         />,
         <ToggleSetting
+            key='loop'
             description='Autoplay your video on a loop without sound.'
             label='Loop'
         />,
         <MediaUploadSetting
+            key='custom-thumbnail'
             borderStyle='rounded'
             desc=''
             icon='file'
             label='Custom thumbnail'
             size='xsmall'
+            onFileChange={() => {}}
         />
     ]
 };
 
-export const ProductCard = Template.bind({});
+export const ProductCard: StoryFn<typeof SettingsPanel> = Template.bind({});
 ProductCard.args = {
     children: [
-        <ToggleSetting label='Rating' />,
-        <ToggleSetting label='Button' />,
-        <InputSetting label='Button text' placeholder='Add button text' />,
-        <InputSetting label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
+        <ToggleSetting key='rating' label='Rating' />,
+        <ToggleSetting key='button' label='Button' />,
+        <InputSetting key='button-text' label='Button text' placeholder='Add button text' />,
+        <InputSetting key='button-url' label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
     ]
 };
 
 const headerColorPicker = [
     {
         label: 'Dark',
+        name: 'dark',
         color: 'black'
     },
     {
         label: 'Light',
+        name: 'light',
         color: 'grey-50'
     },
     {
         label: 'Accent',
+        name: 'accent',
         color: 'pink'
     }
 ];
 
-export const HeaderCard = Template.bind({});
+export const HeaderCard: StoryFn<typeof SettingsPanel> = Template.bind({});
 HeaderCard.args = {
     children: [
-        <ButtonGroupSetting buttons={sizeButtonGroup} label='Size' />,
-        <ColorOptionSetting buttons={headerColorPicker} label='Style' />,
-        <ToggleSetting label='Button' />,
-        <InputSetting label='Button text' placeholder='Add button text' />,
-        <InputSetting label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
+        <ButtonGroupSetting key='size' buttons={sizeButtonGroup} label='Size' selectedName='S' onClick={() => {}} />,
+        <ColorOptionSetting key='style' buttons={headerColorPicker} label='Style' onClick={() => {}} />,
+        <ToggleSetting key='button' label='Button' />,
+        <InputSetting key='button-text' label='Button text' placeholder='Add button text' />,
+        <InputSetting key='button-url' label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
     ]
 };

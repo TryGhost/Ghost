@@ -16,7 +16,7 @@ export const EmbedPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_EMBED_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     const cardNode = $createEmbedNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
 

@@ -7,7 +7,7 @@ import ImgWideIcon from '../../../assets/icons/kg-img-wide.svg?react';
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import LayoutSplitIcon from '../../../assets/icons/kg-layout-split.svg?react';
 import LeftAlignIcon from '../../../assets/icons/kg-align-left.svg?react';
-import PropTypes from 'prop-types';
+import React, {useEffect, useState} from 'react';
 import ShrinkIcon from '../../../assets/icons/kg-shrink.svg?react';
 import clsx from 'clsx';
 import trackEvent from '../../../utils/analytics';
@@ -21,7 +21,55 @@ import {SubscribeForm} from '../SubscribeForm';
 import {Tooltip} from '../Tooltip';
 import {getAccentColor} from '../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
-import {useEffect, useState} from 'react';
+import type {LexicalEditor} from 'lexical';
+import type {OpenImageEditor} from '../../../hooks/usePinturaEditor';
+
+type Layout = 'regular' | 'wide' | 'full' | 'split';
+type Alignment = 'left' | 'center';
+type BackgroundSize = 'cover' | 'contain';
+
+interface SignupCardProps {
+    alignment: Alignment;
+    buttonText?: string;
+    showBackgroundImage?: boolean;
+    backgroundImageSrc?: string;
+    backgroundSize?: BackgroundSize;
+    backgroundColor: string;
+    buttonColor?: string;
+    buttonTextColor?: string;
+    textColor?: string;
+    isEditing?: boolean;
+    fileUploader?: {isLoading?: boolean; progress?: number; errors?: {message: string}[]};
+    handleAlignment: (name: string) => void;
+    handleButtonText?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleShowBackgroundImage?: () => void;
+    handleHideBackgroundImage?: () => void;
+    handleClearBackgroundImage?: () => void;
+    handleBackgroundColor: (color: string, textColor: string) => void;
+    handleButtonColor: (color: string, textColor: string) => void;
+    handleLayout: (name: string) => void;
+    handleTextColor: (color: string) => void;
+    isPinturaEnabled?: boolean;
+    labels?: string[];
+    layout: Layout;
+    availableLabels?: string[];
+    handleLabels?: (labels: string[]) => void;
+    onFileChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    openImageEditor?: OpenImageEditor;
+    imageDragHandler?: {isDraggedOver?: boolean; setRef?: React.Ref<HTMLDivElement>};
+    headerTextEditor: LexicalEditor;
+    headerTextEditorInitialState?: string;
+    renderLabels?: boolean;
+    subheaderTextEditor: LexicalEditor;
+    subheaderTextEditorInitialState?: string;
+    disclaimerTextEditor: LexicalEditor;
+    disclaimerTextEditorInitialState?: string;
+    isSwapped?: boolean;
+    handleSwapLayout?: () => void;
+    handleBackgroundSize?: (size: string) => void;
+    handleButtonTextBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+    setFileInputRef?: (el: HTMLInputElement | null) => void;
+}
 
 export function SignupCard({alignment,
     buttonText,
@@ -62,18 +110,18 @@ export function SignupCard({alignment,
     handleSwapLayout,
     handleBackgroundSize,
     handleButtonTextBlur,
-    setFileInputRef}) {
+    setFileInputRef}: SignupCardProps) {
     const [backgroundColorPickerExpanded, setBackgroundColorPickerExpanded] = useState(false);
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
 
-    const matchingTextColor = (color) => {
+    const matchingTextColor = (color: string) => {
         return color === 'transparent' ? '' : textColorForBackgroundColor(hexColorValue(color)).hex();
     };
 
     /**
      * Convert a semi transparent color to a fully opaque color by merging it with a white background
      */
-    const mergeWhiteColor = ({r, g, b, a}) => {
+    const mergeWhiteColor = ({r, g, b, a}: {r: number; g: number; b: number; a: number}) => {
         const aPercentage = a / 255;
 
         return Color({
@@ -159,7 +207,7 @@ export function SignupCard({alignment,
     const subheaderPlaceholder = layout === 'split' ? 'Subheading text' : 'Enter subheading text';
     const disclaimerPlaceholder = layout === 'split' ? 'Disclaimer text' : 'Enter disclaimer text';
 
-    const hexColorValue = (color) => {
+    const hexColorValue = (color: string) => {
         if (color === 'accent') {
             const accentColor = getAccentColor().trim();
             return accentColor;
@@ -167,7 +215,7 @@ export function SignupCard({alignment,
         return color.trim();
     };
 
-    const wrapperStyle = () => {
+    const wrapperStyle = (): React.CSSProperties => {
         if (backgroundImageSrc && layout !== 'split' && textColor) {
             return {
                 backgroundImage: `url(${backgroundImageSrc})`,
@@ -186,24 +234,24 @@ export function SignupCard({alignment,
         return {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3ERectangle%3C/title%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23F2F6F8' d='M0 0h24v24H0z'/%3E%3Cpath fill='%23E5ECF0' d='M0 0h12v12H0zM12 12h12v12H12z'/%3E%3C/g%3E%3C/svg%3E")`,
             backgroundColor: 'transparent',
-            color: hexColorValue(textColor)
+            color: textColor ? hexColorValue(textColor) : ''
         };
     };
 
-    const toggleBackgroundSize = (event) => {
+    const toggleBackgroundSize = (event: React.MouseEvent) => {
         event.stopPropagation();
         if (backgroundSize === 'cover') {
-            handleBackgroundSize('contain');
+            handleBackgroundSize?.('contain');
             trackEvent('Signup Card Toggle Size', {size: 'contain'});
         } else {
-            handleBackgroundSize('cover');
+            handleBackgroundSize?.('cover');
             trackEvent('Signup Card Toggle Size', {size: 'cover'});
         }
     };
 
     const toggleSwapped = () => {
         trackEvent('Signup Card Toggle Swapped', {swapped: !isSwapped});
-        handleSwapLayout();
+        handleSwapLayout?.();
     };
 
     const correctedBackgroundSize = backgroundSize === 'contain' && backgroundImageSrc ? 'contain' : 'cover';
@@ -245,7 +293,7 @@ export function SignupCard({alignment,
                             progress={progress}
                             size='large'
                             src={backgroundImageSrc}
-                            onFileChange={onFileChange}
+                            onFileChange={onFileChange!}
                             onRemoveMedia={handleClearBackgroundImage}
                         />
                     )}
@@ -280,7 +328,6 @@ export function SignupCard({alignment,
                             )}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            style={{color: matchingTextColor(backgroundColor)}}
                             textClassName={clsx(
                                 'koenig-lexical-heading relative w-full whitespace-normal font-bold caret-current',
                                 (!isEditing && isEditorEmpty(headerTextEditor)) ? 'hidden' : 'peer',
@@ -308,7 +355,6 @@ export function SignupCard({alignment,
                             )}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
-                            style={{color: matchingTextColor(backgroundColor)}}
                             textClassName={clsx(
                                 'koenig-lexical-subheading relative w-full whitespace-normal caret-current',
                                 (!isEditing && isEditorEmpty(subheaderTextEditor)) ? 'hidden' : 'peer',
@@ -325,7 +371,7 @@ export function SignupCard({alignment,
                                 buttonSize={`${(layout === 'regular') ? 'medium' : 'large'}`}
                                 buttonStyle={buttonColor ? {
                                     backgroundColor: hexColorValue(buttonColor),
-                                    color: hexColorValue(buttonTextColor)
+                                    color: buttonTextColor ? hexColorValue(buttonTextColor) : '#ffffff'
                                 } : {backgroundColor: `#000000`,
                                     color: `#ffffff`}}
                                 buttonText={buttonText}
@@ -346,7 +392,6 @@ export function SignupCard({alignment,
                             placeholderClassName={`opacity-60 !leading-snug !font-normal !text-[1.6rem] !tracking-tight`}
                             placeholderText={disclaimerPlaceholder}
                             singleParagraph={true}
-                            style={{color: matchingTextColor(backgroundColor)}}
                             textClassName={clsx(
                                 'koenig-lexical-subheading subheading-xsmall relative !mt-4 w-full whitespace-normal caret-current',
                                 (!isEditing && isEditorEmpty(disclaimerTextEditor)) && 'hidden',
@@ -367,7 +412,7 @@ export function SignupCard({alignment,
             }
 
             {isEditing && (
-                <SettingsPanel cardWidth={layout} className="mt-0">
+                <SettingsPanel cardWidth={layout}>
                     <ButtonGroupSetting
                         buttons={layoutChildren}
                         label='Layout'
@@ -413,7 +458,7 @@ export function SignupCard({alignment,
                                         title="Image"
                                         type="button"
                                         onClick={() => {
-                                            handleShowBackgroundImage();
+                                            handleShowBackgroundImage?.();
                                             setBackgroundColorPickerExpanded(false);
                                             setButtonColorPickerExpanded(false);
                                         }}
@@ -426,17 +471,17 @@ export function SignupCard({alignment,
                             {title: 'Grey', hex: '#F0F0F0'},
                             {title: 'Black', hex: '#000000'},
                             {title: 'Brand color', accent: true}
-                        ].filter(Boolean)}
+                        ].filter(Boolean) as {hex?: string; accent?: boolean; transparent?: boolean; image?: boolean; title: string; customContent?: React.ReactNode}[]}
                         value={(showBackgroundImage && layout !== 'split') ? 'image' : backgroundColor}
-                        onPickerChange={color => handleBackgroundColor(color, matchingTextColor(color))}
-                        onSwatchChange={(color) => {
+                        onPickerChange={(color: string) => handleBackgroundColor(color, matchingTextColor(color))}
+                        onSwatchChange={(color: string) => {
                             handleBackgroundColor(color, matchingTextColor(color));
                             setBackgroundColorPickerExpanded(false);
                         }}
-                        onTogglePicker={ (isExpanded) => {
+                        onTogglePicker={ (isExpanded: boolean) => {
                             if (isExpanded) {
                                 if (layout !== 'split') {
-                                    handleHideBackgroundImage();
+                                    handleHideBackgroundImage?.();
                                 }
 
                                 if (backgroundColor) {
@@ -473,9 +518,9 @@ export function SignupCard({alignment,
                             size='xsmall'
                             src={backgroundImageSrc}
                             stacked={true}
-                            onFileChange={onFileChange}
+                            onFileChange={onFileChange!}
                             onRemoveMedia={() => {
-                                handleClearBackgroundImage();
+                                handleClearBackgroundImage?.();
                                 handleTextColor(matchingTextColor(backgroundColor));
                             }}
                         />
@@ -492,12 +537,12 @@ export function SignupCard({alignment,
                             {title: 'Brand color', accent: true}
                         ]}
                         value={buttonColor}
-                        onPickerChange={color => handleButtonColor(color, matchingTextColor(color))}
-                        onSwatchChange={(color) => {
+                        onPickerChange={(color: string) => handleButtonColor(color, matchingTextColor(color))}
+                        onSwatchChange={(color: string) => {
                             handleButtonColor(color, matchingTextColor(color));
                             setButtonColorPickerExpanded(false);
                         }}
-                        onTogglePicker={(isExpanded) => {
+                        onTogglePicker={(isExpanded: boolean) => {
                             setButtonColorPickerExpanded(isExpanded);
                             if (isExpanded) {
                                 setBackgroundColorPickerExpanded(!isExpanded);
@@ -514,13 +559,13 @@ export function SignupCard({alignment,
                     />
                     { renderLabels && (
                         <MultiSelectDropdownSetting
-                            availableItems={availableLabels}
+                            availableItems={availableLabels || []}
                             dataTestId='labels-dropdown'
                             description='Added to members created using this form'
-                            items={labels}
+                            items={labels || []}
                             label='Labels'
                             placeholder='Type to search'
-                            onChange={handleLabels}
+                            onChange={handleLabels!}
                         />
                     )}
                 </SettingsPanel>
@@ -528,49 +573,3 @@ export function SignupCard({alignment,
         </>
     );
 }
-
-SignupCard.propTypes = {
-    alignment: PropTypes.oneOf(['left', 'center']),
-    buttonColor: PropTypes.string,
-    buttonText: PropTypes.string,
-    buttonTextColor: PropTypes.string,
-    buttonPlaceholder: PropTypes.string,
-    backgroundImageSrc: PropTypes.string,
-    backgroundSize: PropTypes.oneOf(['cover', 'contain']),
-    backgroundColor: PropTypes.string,
-    textColor: PropTypes.string,
-    showBackgroundImage: PropTypes.bool,
-    isEditing: PropTypes.bool,
-    isPinturaEnabled: PropTypes.bool,
-    fileUploader: PropTypes.object,
-    fileInputRef: PropTypes.object,
-    handleLayout: PropTypes.func,
-    handleAlignment: PropTypes.func,
-    handleButtonText: PropTypes.func,
-    handleClearBackgroundImage: PropTypes.func,
-    handleBackgroundColor: PropTypes.func,
-    handleShowBackgroundImage: PropTypes.func,
-    handleHideBackgroundImage: PropTypes.func,
-    handleButtonColor: PropTypes.func,
-    handleLabels: PropTypes.func,
-    handleTextColor: PropTypes.func,
-    labels: PropTypes.arrayOf(PropTypes.string),
-    layout: PropTypes.oneOf(['regular', 'wide', 'full', 'split']),
-    availableLabels: PropTypes.arrayOf(PropTypes.string),
-    openFilePicker: PropTypes.func,
-    onFileChange: PropTypes.func,
-    openImageEditor: PropTypes.func,
-    imageDragHandler: PropTypes.object,
-    headerTextEditor: PropTypes.object,
-    headerTextEditorInitialState: PropTypes.object,
-    renderLabels: PropTypes.bool,
-    subheaderTextEditor: PropTypes.object,
-    subheaderTextEditorInitialState: PropTypes.object,
-    disclaimerTextEditor: PropTypes.object,
-    disclaimerTextEditorInitialState: PropTypes.object,
-    isSwapped: PropTypes.bool,
-    handleSwapLayout: PropTypes.func,
-    handleBackgroundSize: PropTypes.func,
-    setFileInputRef: PropTypes.func,
-    handleButtonTextBlur: PropTypes.func
-};

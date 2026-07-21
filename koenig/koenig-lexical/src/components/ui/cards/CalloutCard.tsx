@@ -1,12 +1,14 @@
 import EmojiPickerPortal from '../EmojiPickerPortal';
-import KoenigComposerContext from '../../../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../../../context/KoenigComposerContext';
 import KoenigNestedEditor from '../../KoenigNestedEditor';
-import PropTypes from 'prop-types';
 import React from 'react';
 import {ColorOptionSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
+import type {LexicalEditor} from 'lexical';
 
-export const CALLOUT_COLORS = {
+export type CalloutColor = 'white' | 'grey' | 'blue' | 'green' | 'yellow' | 'red' | 'pink' | 'purple' | 'accent';
+
+export const CALLOUT_COLORS: Record<CalloutColor, string> = {
     white: 'bg-transparent border-grey/30',
     grey: 'bg-grey/10 border-transparent',
     blue: 'bg-blue/10 border-transparent',
@@ -21,7 +23,7 @@ export const CALLOUT_COLORS = {
 const TEXT_BLACK = 'text-black dark:text-grey-300 caret-black dark:caret-grey-300';
 const TEXT_WHITE = 'text-white caret-white';
 
-export const CALLOUT_TEXT_COLORS = {
+export const CALLOUT_TEXT_COLORS: Record<CalloutColor, string> = {
     white: TEXT_BLACK,
     grey: TEXT_BLACK,
     blue: TEXT_BLACK,
@@ -82,6 +84,22 @@ export const calloutColorPicker = [
     }
 ];
 
+interface CalloutCardProps {
+    color?: CalloutColor;
+    isEditing?: boolean;
+    setShowEmojiPicker: (show: boolean) => void;
+    toggleEmoji?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    hasEmoji?: boolean;
+    handleColorChange: (name: string) => void;
+    changeEmoji?: (emoji: {native: string}) => void;
+    calloutEmoji?: string;
+    textEditor: LexicalEditor;
+    textEditorInitialState?: string;
+    nodeKey?: string;
+    toggleEmojiPicker?: () => void;
+    showEmojiPicker?: boolean;
+}
+
 export function CalloutCard({
     color = 'green',
     isEditing,
@@ -90,14 +108,14 @@ export function CalloutCard({
     hasEmoji = true,
     handleColorChange,
     changeEmoji,
-    calloutEmoji = '💡',
+    calloutEmoji = '\u{1F4A1}',
     textEditor,
     textEditorInitialState,
-    nodeKey,
+    nodeKey: _nodeKey,
     toggleEmojiPicker,
     showEmojiPicker
-}) {
-    const emojiButtonRef = React.useRef(null);
+}: CalloutCardProps) {
+    const emojiButtonRef = React.useRef<HTMLButtonElement>(null);
     const {darkMode} = React.useContext(KoenigComposerContext);
 
     React.useEffect(() => {
@@ -169,22 +187,3 @@ export function CalloutCard({
         </>
     );
 }
-
-CalloutCard.propTypes = {
-    color: PropTypes.oneOf(['white', 'grey', 'blue', 'green', 'yellow', 'red', 'pink', 'purple', 'accent']),
-    text: PropTypes.string,
-    hasEmoji: PropTypes.bool,
-    placeholder: PropTypes.string,
-    isEditing: PropTypes.bool,
-    updateText: PropTypes.func,
-    calloutEmoji: PropTypes.string,
-    setShowEmojiPicker: PropTypes.func,
-    toggleEmoji: PropTypes.func,
-    handleColorChange: PropTypes.func,
-    changeEmoji: PropTypes.func,
-    textEditor: PropTypes.object,
-    textEditorInitialState: PropTypes.object,
-    nodeKey: PropTypes.string,
-    toggleEmojiPicker: PropTypes.func,
-    showEmojiPicker: PropTypes.bool
-};

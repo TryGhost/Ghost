@@ -1,13 +1,15 @@
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import TransistorIcon from '../assets/icons/kg-card-type-transistor.svg?react';
-import {TransistorNode as BaseTransistorNode} from '@tryghost/kg-default-nodes';
+import {TransistorNode as BaseTransistorNode, type TransistorData} from '@tryghost/kg-default-nodes';
 import {TransistorNodeComponent} from './TransistorNodeComponent';
 import {createCommand} from 'lexical';
+import type {CardMenuItem} from '../utils/buildCardMenu';
+import type {LexicalCommand} from 'lexical';
 
-export const INSERT_TRANSISTOR_COMMAND = createCommand();
+export const INSERT_TRANSISTOR_COMMAND: LexicalCommand<TransistorData> = createCommand();
 
 export class TransistorNode extends BaseTransistorNode {
-    static kgMenu = [{
+    static kgMenu: CardMenuItem[] = [{
         section: 'Embeds',
         label: 'Transistor',
         desc: 'Embed a Transistor podcast player',
@@ -16,12 +18,12 @@ export class TransistorNode extends BaseTransistorNode {
         matches: ['transistor', 'podcast'],
         priority: 2,
         shortcut: '/transistor',
-        isHidden: ({config}) => {
-            return !(config?.feature?.transistor === true);
+        isHidden: ({config}: {config?: Record<string, unknown>}) => {
+            return !((config?.feature as Record<string, unknown> | undefined)?.transistor === true);
         }
     }];
 
-    constructor(dataset = {}, key) {
+    constructor(dataset: TransistorData = {}, key?: string) {
         super(dataset, key);
     }
 
@@ -42,10 +44,10 @@ export class TransistorNode extends BaseTransistorNode {
     }
 }
 
-export function $createTransistorNode(dataset) {
+export function $createTransistorNode(dataset: TransistorData) {
     return new TransistorNode(dataset);
 }
 
-export function $isTransistorNode(node) {
+export function $isTransistorNode(node: unknown): node is TransistorNode {
     return node instanceof TransistorNode;
 }
