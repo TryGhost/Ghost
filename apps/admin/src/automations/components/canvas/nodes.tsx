@@ -5,6 +5,7 @@ import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, 
 import {Handle, Position} from '@xyflow/react';
 import type {Node, NodeProps} from '@xyflow/react';
 import type {AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
+import {useAppContext} from '@tryghost/admin-x-framework';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {formatRate} from './format-stats';
 
@@ -167,22 +168,28 @@ const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
     );
 };
 
-const EmailStepStatsFooter: React.FC<{stats: AutomationEmailStats}> = ({stats}) => (
-    <div className='mt-3 grid w-full grid-cols-3 gap-3 border-t border-border-default pt-3'>
+const EmailStepStatsFooter: React.FC<{stats: AutomationEmailStats}> = ({stats}) => {
+    const {appSettings} = useAppContext();
+    const emailTrackOpens = appSettings?.analytics.emailTrackOpens ?? false;
+    const emailTrackClicks = appSettings?.analytics.emailTrackClicks ?? false;
+
+    return (
+        <div className='mt-3 grid w-full grid-cols-3 gap-3 border-t border-border-default pt-3'>
         <div className='flex flex-col text-left'>
             <span className='text-xs text-text-secondary'>Sent</span>
             <span className='text-base font-medium'>{formatNumber(stats.email_sent_count)}</span>
         </div>
         <div className='flex flex-col text-left'>
             <span className='text-xs text-text-secondary'>Opened</span>
-            <span className='text-base font-medium'>{formatRate(stats.opened_rate)}</span>
+            <span className={cn('text-base font-medium', !emailTrackOpens && 'text-muted-foreground')}>{emailTrackOpens ? formatRate(stats.opened_rate) : 'Off'}</span>
         </div>
         <div className='flex flex-col text-left'>
             <span className='text-xs text-text-secondary'>Clicked</span>
-            <span className='text-base font-medium'>{formatRate(stats.clicked_rate)}</span>
+            <span className={cn('text-base font-medium', !emailTrackClicks && 'text-muted-foreground')}>{emailTrackClicks ? formatRate(stats.clicked_rate) : 'Off'}</span>
         </div>
-    </div>
-);
+        </div>
+    );
+};
 
 const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
     <NodeShell data={data}>

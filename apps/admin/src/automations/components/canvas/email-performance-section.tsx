@@ -3,6 +3,7 @@ import {ChartContainer, DataList, DataListBar, DataListBody, DataListItemContent
 import type {ChartConfig} from '@tryghost/shade/components';
 import type {AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
 import {useBrowseAutomationActionLinks} from '@tryghost/admin-x-framework/api/automations';
+import {useAppContext} from '@tryghost/admin-x-framework';
 import {Recharts, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {formatRate} from './format-stats';
 
@@ -64,7 +65,7 @@ const EMAIL_CHART_RINGS = {
     clicked: {innerRadius: 38, outerRadius: 60}
 };
 
-const EmailPerformanceChart: React.FC<{clickRate: number; openRate: number}> = ({clickRate, openRate}) => (
+const EmailPerformanceChart: React.FC<{clickRate: number; openRate: number; showClicks: boolean; showOpens: boolean}> = ({clickRate, openRate, showClicks, showOpens}) => (
     <div className='relative mx-auto aspect-square size-[240px]'>
         <EmailPerformanceRing
             color='purple'
@@ -73,20 +74,20 @@ const EmailPerformanceChart: React.FC<{clickRate: number; openRate: number}> = (
             outerRadius={EMAIL_CHART_RINGS.sent.outerRadius}
             value={1}
         />
-        <EmailPerformanceRing
+        {showOpens && <EmailPerformanceRing
             color='blue'
             datatype='Opened'
             innerRadius={EMAIL_CHART_RINGS.opened.innerRadius}
             outerRadius={EMAIL_CHART_RINGS.opened.outerRadius}
             value={openRate}
-        />
-        <EmailPerformanceRing
+        />}
+        {showClicks && <EmailPerformanceRing
             color='teal'
             datatype='Clicked'
             innerRadius={EMAIL_CHART_RINGS.clicked.innerRadius}
             outerRadius={EMAIL_CHART_RINGS.clicked.outerRadius}
             value={clickRate}
-        />
+        />}
     </div>
 );
 
@@ -154,8 +155,13 @@ const TopClickedLinks: React.FC<{
     );
 };
 
-export const EmailPerformanceSection: React.FC<{actionId: string; automationId: string; stats: AutomationEmailStats}> = ({actionId, automationId, stats}) => (
-    <div className='flex flex-col gap-5'>
+export const EmailPerformanceSection: React.FC<{actionId: string; automationId: string; stats: AutomationEmailStats}> = ({actionId, automationId, stats}) => {
+    const {appSettings} = useAppContext();
+    const emailTrackOpens = appSettings?.analytics.emailTrackOpens ?? false;
+    const emailTrackClicks = appSettings?.analytics.emailTrackClicks ?? false;
+
+    return (
+        <div className='flex flex-col gap-5'>
         <Separator />
         <div className='flex flex-col gap-5'>
             <h3 className='text-sm font-medium tracking-normal text-text-secondary'>
@@ -175,8 +181,10 @@ export const EmailPerformanceSection: React.FC<{actionId: string; automationId: 
                         Opened
                     </span>
                     <span className='text-xl font-semibold tracking-tight tabular-nums'>
-                        <span className='group-hover/kpi:hidden'>{formatRate(stats.opened_rate)}</span>
-                        <span className='hidden group-hover/kpi:inline'>{stats.email_sent_count > 0 ? formatNumber(stats.email_opened_count) : '--'}</span>
+                        {emailTrackOpens ? <>
+                            <span className='group-hover/kpi:hidden'>{formatRate(stats.opened_rate)}</span>
+                            <span className='hidden group-hover/kpi:inline'>{stats.email_sent_count > 0 ? formatNumber(stats.email_opened_count) : '--'}</span>
+                        </> : <span className='text-muted-foreground'>Off</span>}
                     </span>
                 </div>
                 <div className={KPI_CLASS_NAME}>
@@ -185,13 +193,16 @@ export const EmailPerformanceSection: React.FC<{actionId: string; automationId: 
                         Clicked
                     </span>
                     <span className='text-xl font-semibold tracking-tight tabular-nums'>
-                        <span className='group-hover/kpi:hidden'>{formatRate(stats.clicked_rate)}</span>
-                        <span className='hidden group-hover/kpi:inline'>{stats.email_sent_count > 0 ? formatNumber(stats.email_clicked_count) : '--'}</span>
+                        {emailTrackClicks ? <>
+                            <span className='group-hover/kpi:hidden'>{formatRate(stats.clicked_rate)}</span>
+                            <span className='hidden group-hover/kpi:inline'>{stats.email_sent_count > 0 ? formatNumber(stats.email_clicked_count) : '--'}</span>
+                        </> : <span className='text-muted-foreground'>Off</span>}
                     </span>
                 </div>
             </div>
-            <EmailPerformanceChart clickRate={(stats.clicked_rate ?? 0) / 100} openRate={(stats.opened_rate ?? 0) / 100} />
+            <EmailPerformanceChart clickRate={(stats.clicked_rate ?? 0) / 100} openRate={(stats.opened_rate ?? 0) / 100} showClicks={emailTrackClicks} showOpens={emailTrackOpens} />
         </div>
-        <TopClickedLinks actionId={actionId} automationId={automationId} clickedCount={stats.email_clicked_count} sentCount={stats.email_sent_count} />
-    </div>
-);
+        {emailTrackClicks && <TopClickedLinks actionId={actionId} automationId={automationId} clickedCount={stats.email_clicked_count} sentCount={stats.email_sent_count} />}
+        </div>
+    );
+};
