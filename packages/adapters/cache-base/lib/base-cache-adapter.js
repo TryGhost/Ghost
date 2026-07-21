@@ -1,4 +1,4 @@
-class BaseCacheAdapter {
+module.exports = class BaseCacheAdapter {
     constructor() {
         Object.defineProperty(this, 'requiredFns', {
             // NOTE: "keys" method is only here to provide smooth migration from deprecated "getAll" method
@@ -7,6 +7,4 @@ class BaseCacheAdapter {
             writable: false
         });
     }
-}
-
-module.exports = BaseCacheAdapter;
+};

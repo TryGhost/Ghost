@@ -1,33 +1,18 @@
-# Adapter Base Cache
+# @tryghost/adapter-base-cache
 
-## Install
+Base class for Ghost cache adapters.
 
-`npm install @tryghost/adapter-base-cache --save`
-
-or
-
-`yarn add @tryghost/adapter-base-cache`
-
-## Usage
-
+Concrete adapters extend `BaseCacheAdapter` and implement the methods listed in
+`requiredFns`: `get`, `set`, `reset` and `keys`.
 
 ## Develop
 
-This is a monorepo package.
+This is a workspace package in the Ghost monorepo. From the repo root:
 
-Follow the instructions for the top-level repo.
-1. `git clone` this repo & `cd` into it as usual
-2. Run `yarn` to install top-level dependencies.
+```bash
+pnpm --filter @tryghost/adapter-base-cache test    # unit tests + coverage
+pnpm --filter @tryghost/adapter-base-cache lint    # lint code + tests
+```
 
-
-
-## Test
-
-- `yarn lint` run just eslint
-- `yarn test` run lint and tests
-
-
-
-# Copyright & License 
-
-Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).
+This package is CommonJS with no build step — `ghost/core` consumes it directly
+via `require()`. Type definitions are hand-maintained in `index.d.ts`.
