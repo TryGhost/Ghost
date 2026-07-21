@@ -263,4 +263,18 @@ describe("Advanced settings", () => {
         await modal.getByRole("button", {name: "Close"}).click();
         await expect(modal).toHaveCount(0);
     });
+
+    it("hydrates the staff filter from a history route", async () => {
+        const user = currentUserResponse().users[0] as unknown as StaffUser;
+        fakeSettingsScreens();
+        fakeUsers([user]);
+        fakeActions([]);
+
+        await renderAdminApp(`/settings/history/view/${user.id}`);
+
+        const modal = settingsScreen.section("history-modal");
+        const staffFilter = modal.getByTestId("history-staff-filter");
+        await expect.element(staffFilter).toHaveTextContent(user.name);
+        await expect.element(modal.getByRole("button", {name: "Clear selection"})).toBeVisible();
+    });
 });

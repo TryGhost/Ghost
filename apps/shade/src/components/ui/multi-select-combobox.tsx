@@ -361,7 +361,7 @@ export function MultiSelectCombobox<T = unknown>({
                         <>
                             {visibleSelectedOptions.length > 0 && <CommandSeparator />}
                             {unselectedGroups.map(group => (
-                                <CommandGroup key={group.key ?? 'options'} heading={group.label}>
+                                <CommandGroup key={group.key === undefined ? 'ungrouped' : `group:${group.key}`} heading={group.label}>
                                     {group.options.map(option => itemRenderer({
                                         option,
                                         isSelected: false,

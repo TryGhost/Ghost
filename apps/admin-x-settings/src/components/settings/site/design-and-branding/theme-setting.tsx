@@ -66,7 +66,7 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({setting, setSetting}) => {
                 <FieldLabel>{humanizeSettingKey(setting.key)}</FieldLabel>
                 <Select value={setting.value} onValueChange={setSetting}>
                     <SelectTrigger aria-label={humanizeSettingKey(setting.key)} data-testid={`setting-select-${setting.key}`}><SelectValue /></SelectTrigger>
-                    <SelectContent className='z-[9999]'>
+                    <SelectContent>
                         {setting.options.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
                     </SelectContent>
                 </Select>

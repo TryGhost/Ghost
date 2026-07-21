@@ -83,7 +83,7 @@ const PortalLinks: React.FC = () => {
                             <FieldLabel className='sr-only'>Tier</FieldLabel>
                             <Select value={selectedTier} onValueChange={setSelectedTier}>
                                 <SelectTrigger aria-label='Tier'><SelectValue /></SelectTrigger>
-                                <SelectContent className='z-[9999]'>
+                                <SelectContent>
                                     {tierOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>

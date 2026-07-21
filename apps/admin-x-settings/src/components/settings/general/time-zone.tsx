@@ -82,7 +82,7 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <FieldLabel>Site timezone</FieldLabel>
                     <Combobox open={timezoneOpen} onOpenChange={setTimezoneOpen}>
                         <ComboboxTrigger aria-label='Site timezone' data-testid='timezone-select'><ComboboxValue>{selectedTimezone?.label}</ComboboxValue></ComboboxTrigger>
-                        <ComboboxContent className='z-[9999]'>
+                        <ComboboxContent>
                             <MultiSelectCombobox
                                 i18n={{searchPlaceholder: 'Search timezones...'}}
                                 isMultiSelect={false}

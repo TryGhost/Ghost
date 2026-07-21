@@ -207,7 +207,7 @@ const TestimonialsModal = NiceModal.create(() => {
                                             <SelectTrigger aria-describedby={errors.prev_platform ? platformErrorId : undefined} aria-invalid={Boolean(errors.prev_platform) || undefined} aria-label='Previous platform' data-testid='migrated-from'>
                                                 <SelectValue placeholder='Previous platform' />
                                             </SelectTrigger>
-                                            <SelectContent className='z-[9999]'>
+                                            <SelectContent>
                                                 {migratedFromOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                                             </SelectContent>
                                         </Select>

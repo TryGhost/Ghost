@@ -92,7 +92,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                         <SelectTrigger aria-describedby={errors.event ? eventErrorId : undefined} aria-invalid={Boolean(errors.event) || undefined} aria-label='Event' data-testid='event-select'>
                             <SelectValue placeholder='Select an event' />
                         </SelectTrigger>
-                        <SelectContent className='z-[9999]'>
+                        <SelectContent>
                             {webhookEventOptions.map(group => (
                                 <SelectGroup key={group.label}>
                                     <SelectLabel>{group.label}</SelectLabel>

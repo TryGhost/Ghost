@@ -83,7 +83,7 @@ const LookAndFeel: React.FC<{
                     <FieldLabel>Button style</FieldLabel>
                     <Select value={portalButtonStyle as string} onValueChange={value => updateSetting('portal_button_style', value)}>
                         <SelectTrigger aria-label='Button style'><SelectValue /></SelectTrigger>
-                        <SelectContent className='z-[9999]'>
+                        <SelectContent>
                             {portalButtonOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                         </SelectContent>
                     </Select>

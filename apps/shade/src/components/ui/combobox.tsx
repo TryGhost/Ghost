@@ -50,7 +50,7 @@ const ComboboxContent = React.forwardRef<
     <PopoverContent
         ref={ref}
         align={align}
-        className={cn('w-(--radix-popover-trigger-width) p-0', className)}
+        className={cn('z-[9999] w-(--radix-popover-trigger-width) p-0', className)}
         {...props}
     />
 ));

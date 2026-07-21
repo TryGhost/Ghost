@@ -1,4 +1,5 @@
 import {describe, expect, it} from "vitest";
+import {page} from "vitest/browser";
 
 import {
     fakeEditSettings,
@@ -59,6 +60,7 @@ describe("Default recipient settings", () => {
         await selectDefaultRecipients("Specific people");
         await section.getByLabelText("Filter").click();
         await settingsScreen.selectOption(supporter.name).click();
+        await expect.element(page.getByText("Labels", {exact: true})).toBeVisible();
         await settingsScreen.selectOption(firstLabel.name).click();
         await settingsScreen.selectOption(firstOffer.name).click();
         await section.getByRole("button", {name: "Save"}).click();

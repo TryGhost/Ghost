@@ -90,7 +90,7 @@ const ThemePreview: React.FC<{
                         <FieldLabel className='sr-only'>Theme variant</FieldLabel>
                         <Select value={selectedVariant} onValueChange={setSelectedVariant}>
                             <SelectTrigger aria-label='Theme variant' className='w-auto border-0 bg-transparent shadow-none'><SelectValue /></SelectTrigger>
-                            <SelectContent className='z-[9999] min-w-max'>
+                            <SelectContent className='min-w-max'>
                                 {variantOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                             </SelectContent>
                         </Select>

@@ -317,7 +317,7 @@ const RetentionOfferSidebar: React.FC<{
                                                 updateForm(state => ({...state, duration: value}));
                                             }}>
                                                 <SelectTrigger aria-label='Duration'><SelectValue /></SelectTrigger>
-                                                <SelectContent className='z-[9999]'>
+                                                <SelectContent>
                                                     {availableDurationOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>

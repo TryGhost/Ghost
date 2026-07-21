@@ -114,7 +114,7 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 >
                     <ComboboxValue>{selectedLocale?.label}</ComboboxValue>
                 </ComboboxTrigger>
-                <ComboboxContent className='z-[9999]'>
+                <ComboboxContent>
                     <MultiSelectCombobox
                         i18n={{searchPlaceholder: 'Search languages...'}}
                         isMultiSelect={false}

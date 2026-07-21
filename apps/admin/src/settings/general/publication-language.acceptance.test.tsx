@@ -92,6 +92,7 @@ describe("Publication language settings", () => {
         await section.getByRole("button", { name: "Cancel" }).click();
 
         await expect.element(language).toHaveValue("cy");
+        await expect(section.getByText("Invalid locale format")).toHaveCount(0);
         await expect.element(section.getByText("Enter a custom locale code.")).toBeVisible();
     });
 });

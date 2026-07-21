@@ -223,7 +223,7 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                         <SelectTrigger aria-label='Type' data-testid='custom-field-type'>
                             <SelectValue placeholder='Select type'>{selectedType && renderTypeOption(selectedType)}</SelectValue>
                         </SelectTrigger>
-                        <SelectContent className='z-[9999]'>
+                        <SelectContent>
                             {typeOptions.map(option => <SelectItem key={option.value} value={option.value}>{renderTypeOption(option)}</SelectItem>)}
                         </SelectContent>
                     </Select>

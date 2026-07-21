@@ -223,7 +223,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 }
                             }}>
                                 <SelectTrigger aria-label='Tier — Cadence' data-testid='tier-cadence-select-offers'><SelectValue /></SelectTrigger>
-                                <SelectContent className='z-[9999]'>
+                                <SelectContent>
                                     {tierOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
@@ -254,7 +254,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                                 <SelectTrigger aria-label='Amount type' className='h-7 w-20 border-0 bg-transparent px-2 shadow-none focus-visible:ring-0' data-testid='amount-type-select-offers'>
                                                     <SelectValue />
                                                 </SelectTrigger>
-                                                <SelectContent align='end' className='z-[9999]'>
+                                                <SelectContent align='end'>
                                                     {amountOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>
@@ -269,7 +269,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                         handleDurationChange(value);
                                     }}>
                                         <SelectTrigger aria-label='Duration' data-testid='duration-select-offers'><SelectValue /></SelectTrigger>
-                                        <SelectContent className='z-[9999]'>
+                                        <SelectContent>
                                             {filteredDurationOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                                         </SelectContent>
                                     </Select>

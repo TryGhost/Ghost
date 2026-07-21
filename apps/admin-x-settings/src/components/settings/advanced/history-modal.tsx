@@ -61,11 +61,12 @@ const HistoryFilter: React.FC<{
     excludedResources: string[];
     toggleEventType: (event: string, included: boolean) => void;
     toggleResourceType: (resource: string, included: boolean) => void;
-}> = ({excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
+}> = ({userId, excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
     const {updateRoute} = useRouting();
     const usersApi = useFilterableApi<User, 'users', 'name'>({path: '/users/', filterKey: 'name', responseKey: 'users'});
 
     const [staffOptions, setStaffOptions] = useState<Array<{label: string; value: string}>>([]);
+    const [searchedStaff, setSearchStaff] = useState<{label: string; value: string} | null>();
     const [staffOpen, setStaffOpen] = useState(false);
     const [staffLoading, setStaffLoading] = useState(false);
     const requestSequence = useRef(0);
@@ -92,10 +93,10 @@ const HistoryFilter: React.FC<{
         requestSequence.current += 1;
         const request = requestSequence.current;
         setStaffLoading(true);
+        if (searchTimer.current) {
+            clearTimeout(searchTimer.current);
+        }
         if (deferred) {
-            if (searchTimer.current) {
-                clearTimeout(searchTimer.current);
-            }
             searchTimer.current = setTimeout(() => void loadOptions(input, request), 500);
         } else {
             void loadOptions(input, request);
@@ -112,7 +113,30 @@ const HistoryFilter: React.FC<{
         };
     }, [requestOptions]);
 
-    const [searchedStaff, setSearchStaff] = useState<{label: string; value: string} | null>();
+    useEffect(() => {
+        let cancelled = false;
+
+        if (!userId) {
+            setSearchStaff(null);
+            return;
+        }
+
+        void usersApiRef.current.loadInitialValues([userId], 'id').then(([user]) => {
+            if (!cancelled && user) {
+                const selected = {label: user.name, value: user.id};
+                setSearchStaff(selected);
+                setStaffOptions(options => options.some(option => option.value === selected.value) ? options : [selected, ...options]);
+            }
+        }).catch(() => {
+            if (!cancelled) {
+                setSearchStaff(null);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [userId]);
 
     const resetStaff = () => {
         setSearchStaff(null);

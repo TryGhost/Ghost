@@ -201,7 +201,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             handleEditingChange(true);
                         }}>
                             <SelectTrigger aria-label='Who should be able to browse your site?' data-testid='site-visibility-select'><SelectValue>{getAccessOptionLabel(SITE_VISIBILITY_OPTIONS, effectiveIsPrivate ? 'private' : 'public')}</SelectValue></SelectTrigger>
-                            <SelectContent className='z-[9999]'>{renderAccessOptions(SITE_VISIBILITY_OPTIONS)}</SelectContent>
+                            <SelectContent>{renderAccessOptions(SITE_VISIBILITY_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
                 </div>
@@ -260,7 +260,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             handleEditingChange(true);
                         }}>
                             <SelectTrigger aria-label='Who should be able to subscribe to your site?' data-testid='subscription-access-select'><SelectValue>{getAccessOptionLabel(MEMBERS_SIGNUP_ACCESS_OPTIONS, membersSignupAccess)}</SelectValue></SelectTrigger>
-                            <SelectContent className='z-[9999]'>{renderAccessOptions(MEMBERS_SIGNUP_ACCESS_OPTIONS)}</SelectContent>
+                            <SelectContent>{renderAccessOptions(MEMBERS_SIGNUP_ACCESS_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
                 </div>
@@ -276,7 +276,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             handleEditingChange(true);
                         }}>
                             <SelectTrigger aria-label='Who should have access to new posts?' data-testid='default-post-access-select'><SelectValue>{getAccessOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility)}</SelectValue></SelectTrigger>
-                            <SelectContent className='z-[9999]'>{renderAccessOptions(DEFAULT_CONTENT_VISIBILITY_OPTIONS)}</SelectContent>
+                            <SelectContent>{renderAccessOptions(DEFAULT_CONTENT_VISIBILITY_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
                 </div>
@@ -291,7 +291,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 <ComboboxTrigger aria-label='Select specific tiers' data-testid='tiers-select'>
                                     <ComboboxValue placeholder={!selectedTierLabels}>{selectedTierLabels || 'Select...'}</ComboboxValue>
                                 </ComboboxTrigger>
-                                <ComboboxContent className='z-[9999]'>
+                                <ComboboxContent>
                                     <MultiSelectCombobox
                                         groupBy={option => option.metadata?.group as string | undefined}
                                         options={tierOptions}
@@ -318,7 +318,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             handleEditingChange(true);
                         }}>
                             <SelectTrigger aria-label='Who can comment on posts?' data-testid='commenting-select'><SelectValue>{getAccessOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled)}</SelectValue></SelectTrigger>
-                            <SelectContent className='z-[9999]'>{renderAccessOptions(COMMENTS_ENABLED_OPTIONS)}</SelectContent>
+                            <SelectContent>{renderAccessOptions(COMMENTS_ENABLED_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
                 </div>

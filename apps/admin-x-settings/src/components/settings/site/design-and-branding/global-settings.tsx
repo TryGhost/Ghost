@@ -307,7 +307,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         <SelectTrigger aria-label='Heading font' className={`h-16 pl-2 ${selectFont(selectedHeadingFont.label, true)}`} data-testid='heading-font-select'>
                             <SelectValue><FontOption option={selectedHeadingFont} selected /></SelectValue>
                         </SelectTrigger>
-                        <SelectContent className='z-[9999]'>
+                        <SelectContent>
                             {customHeadingFonts.map(option => <SelectItem key={option.value} value={option.value}><FontOption option={option} /></SelectItem>)}
                         </SelectContent>
                     </Select>
@@ -326,7 +326,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         <SelectTrigger aria-label='Body font' className={`h-16 pl-2 ${selectFont(selectedBodyFont.label, false)}`} data-testid='body-font-select'>
                             <SelectValue><FontOption option={selectedBodyFont} selected /></SelectValue>
                         </SelectTrigger>
-                        <SelectContent className='z-[9999] max-h-52'>
+                        <SelectContent className='max-h-52'>
                             {customBodyFonts.map(option => <SelectItem key={option.value} value={option.value}><FontOption option={option} /></SelectItem>)}
                         </SelectContent>
                     </Select>

@@ -228,7 +228,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                             <FieldLabel className='sr-only'>Currency</FieldLabel>
                                             <Combobox open={currencyOpen} onOpenChange={setCurrencyOpen}>
                                                 <ComboboxTrigger aria-label='Currency'><ComboboxValue>{formState.currency}</ComboboxValue></ComboboxTrigger>
-                                                <ComboboxContent align='end' className='z-[9999] w-64'>
+                                                <ComboboxContent align='end' className='w-64'>
                                                     <MultiSelectCombobox
                                                         groupBy={option => ({
                                                             key: option.metadata?.groupKey as string,

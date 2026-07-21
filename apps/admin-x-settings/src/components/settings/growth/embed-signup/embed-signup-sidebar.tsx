@@ -166,7 +166,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                                     {selectedLabels?.length ? selectedLabels.map(label => label.label).join(', ') : 'Pick one or more labels (optional)'}
                                 </ComboboxValue>
                             </ComboboxTrigger>
-                            <ComboboxContent className='z-[9999]'>
+                            <ComboboxContent>
                                 <MultiSelectCombobox
                                     footer={({searchInput, clearSearch}) => {
                                         const value = searchInput.trim();

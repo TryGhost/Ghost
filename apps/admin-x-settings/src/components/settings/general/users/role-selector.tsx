@@ -55,12 +55,12 @@ const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }>
                 <FieldLabel>Role</FieldLabel>
                 <Select value={ownerOption.value} disabled>
                     <SelectTrigger aria-label='Role'><SelectValue /></SelectTrigger>
-                    <SelectContent className='z-[9999]'>
+                    <SelectContent>
                         <SelectItem value={ownerOption.value}>{ownerOption.label}</SelectItem>
                     </SelectContent>
                 </Select>
                 <FieldDescription>
-                    This user is the owner of the site. <a className='font-medium text-muted-foreground transition-colors hover:text-foreground' href='https://ghost.org/help/transfer-publication-ownership/' rel='noopener noreferrer' target='_blank'>Transfer ownership</a> first to change their role.
+                    This user is the owner of the site. <a href='https://ghost.org/help/transfer-publication-ownership/' rel='noopener noreferrer' target='_blank'>Transfer ownership</a> first to change their role.
                 </FieldDescription>
             </Field>
         );
@@ -82,7 +82,7 @@ const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }>
                 }}
             >
                 <SelectTrigger aria-label='Role' data-testid='role-select'><SelectValue>{selectedRoleLabel}</SelectValue></SelectTrigger>
-                <SelectContent className='z-[9999]'>
+                <SelectContent>
                     {optionsArray.map(option => (
                         <SelectItem key={option.value} value={option.value}>
                             <span className='flex flex-col'>

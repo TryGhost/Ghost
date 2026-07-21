@@ -89,7 +89,11 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     useEffect(() => {
         if (selectedSegments) {
-            setSegmentOptions(current => [...selectedSegments, ...flattenSegmentOptions(current).filter(option => !selectedSegments.some(selected => selected.value === option.value))]);
+            setSegmentOptions((current) => {
+                const currentValues = new Set(flattenSegmentOptions(current).map(option => option.value));
+                const missingSelected = selectedSegments.filter(option => !currentValues.has(option.value));
+                return missingSelected.length ? [...missingSelected, ...current] : current;
+            });
         }
     }, [selectedSegments]);
 
@@ -206,7 +210,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <FieldLabel>Default Newsletter recipients</FieldLabel>
                     <Select value={selectedOption} onValueChange={setDefaultRecipientValue}>
                         <SelectTrigger aria-label='Default Newsletter recipients' data-testid='default-recipients-select'><SelectValue>{selectedRecipientLabel}</SelectValue></SelectTrigger>
-                        <SelectContent className='z-[9999]'>
+                        <SelectContent>
                             {RECIPIENT_FILTER_OPTIONS.map(option => (
                                 <SelectItem key={option.value} value={option.value}>
                                     <span className='flex flex-col'>
@@ -238,7 +242,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                         )) : 'Select...'}
                                     </ComboboxValue>
                                 </ComboboxTrigger>
-                                <ComboboxContent className='z-[9999]'>
+                                <ComboboxContent>
                                     <MultiSelectCombobox
                                         groupBy={option => option.metadata?.group as string | undefined}
                                         isLoading={segmentsLoading}

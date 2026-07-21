@@ -452,7 +452,7 @@ const Sidebar: React.FC<{
                             <FieldLabel className='sr-only'>Heading font</FieldLabel>
                             <Select value={newsletter.title_font_category} onValueChange={changeSelectedTitleFont}>
                                 <SelectTrigger aria-label='Heading font'><SelectValue /></SelectTrigger>
-                                <SelectContent className='z-[9999]'>
+                                <SelectContent>
                                     {fontOptions.map(option => <SelectItem key={option.value} value={option.value}><span className={option.className}>{option.label}</span></SelectItem>)}
                                 </SelectContent>
                             </Select>
@@ -464,7 +464,7 @@ const Sidebar: React.FC<{
                             <FieldLabel className='sr-only'>Heading weight</FieldLabel>
                             <Select value={getSelectedFontWeightOption().value} onValueChange={value => updateNewsletter({title_font_weight: value})}>
                                 <SelectTrigger aria-label='Heading weight'><SelectValue /></SelectTrigger>
-                                <SelectContent className='z-[9999]'>
+                                <SelectContent>
                                     {headingFontWeightOptions.map(option => <SelectItem key={option.value} value={option.value}><span className={option.className}>{option.label}</span></SelectItem>)}
                                 </SelectContent>
                             </Select>
@@ -476,7 +476,7 @@ const Sidebar: React.FC<{
                             <FieldLabel className='sr-only'>Body font</FieldLabel>
                             <Select value={newsletter.body_font_category} onValueChange={value => updateNewsletter({body_font_category: value})}>
                                 <SelectTrigger aria-label='Body font' data-testid='body-font-select'><SelectValue /></SelectTrigger>
-                                <SelectContent className='z-[9999]'>
+                                <SelectContent>
                                     {fontOptions.map(option => <SelectItem key={option.value} value={option.value}><span className={option.className}>{option.label}</span></SelectItem>)}
                                 </SelectContent>
                             </Select>

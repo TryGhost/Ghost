@@ -159,7 +159,7 @@ const SignupOptions: React.FC<{
                         <FieldLabel>Default price at signup</FieldLabel>
                         <Select value={typeof portalDefaultPlan === 'string' ? portalDefaultPlan : ''} onValueChange={value => updateSetting('portal_default_plan', value)}>
                             <SelectTrigger aria-label='Default price at signup'><SelectValue /></SelectTrigger>
-                            <SelectContent className='z-[9999]'>
+                            <SelectContent>
                                 {defaultPlanOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                             </SelectContent>
                         </Select>
