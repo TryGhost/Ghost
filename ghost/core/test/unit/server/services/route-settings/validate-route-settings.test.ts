@@ -482,14 +482,14 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
             const cases: [string, unknown, string][] = [
                 ['route missing a leading slash', {routes: {'about/': 'about'}}, 'The following definition "routes[\'about/\']" is invalid: "about/" is missing a leading slash. Please use e.g. /about/.'],
                 ['route missing a trailing slash', {routes: {'/about': 'about'}}, 'The following definition "routes[\'/about\']" is invalid: "/about" is missing a trailing slash. Please use e.g. /about/.'],
-                ['route using :param', {routes: {'/foo/:slug/': 'post'}}, 'The following definition "routes[\'/foo/:slug/\']" is invalid: "/foo/:slug/" uses the :param notation. Ghost uses curly braces — please use "/foo/{slug}/".'],
+                ['route using :param', {routes: {'/foo/:slug/': 'post'}}, 'The following definition "routes[\'/foo/:slug/\']" is invalid: "/foo/:slug/" uses the :param notation. Please use "/foo/{slug}/".'],
                 ['collection missing a leading slash', {collections: {'blog/': {permalink: '/{slug}/'}}}, 'The following definition "collections[\'blog/\']" is invalid: "blog/" is missing a leading slash. Please use e.g. /blog/.'],
                 ['collection missing a trailing slash', {collections: {'/blog': {permalink: '/{slug}/'}}}, 'The following definition "collections[\'/blog\']" is invalid: "/blog" is missing a trailing slash. Please use e.g. /blog/.'],
                 ['permalink missing a leading slash', {collections: {'/blog/': {permalink: '{slug}/'}}}, 'The following definition "collections[\'/blog/\'].permalink" is invalid: "{slug}/" is missing a leading slash. Please use e.g. /{slug}/.'],
                 ['permalink missing a trailing slash', {collections: {'/blog/': {permalink: '/{slug}'}}}, 'The following definition "collections[\'/blog/\'].permalink" is invalid: "/{slug}" is missing a trailing slash. Please use e.g. /{slug}/.'],
-                ['permalink using :param', {collections: {'/blog/': {permalink: '/:slug/'}}}, 'The following definition "collections[\'/blog/\'].permalink" is invalid: "/:slug/" uses the :param notation. Ghost uses curly braces — please use "/{slug}/".'],
+                ['permalink using :param', {collections: {'/blog/': {permalink: '/:slug/'}}}, 'The following definition "collections[\'/blog/\'].permalink" is invalid: "/:slug/" uses the :param notation. Please use "/{slug}/".'],
                 ['taxonomy missing a leading slash', {taxonomies: {tag: 'tag/{slug}/'}}, 'The following definition "taxonomies.tag" is invalid: "tag/{slug}/" is missing a leading slash. Please use e.g. /tag/{slug}/.'],
-                ['taxonomy using :param', {taxonomies: {author: '/author/:slug/'}}, 'The following definition "taxonomies.author" is invalid: "/author/:slug/" uses the :param notation. Ghost uses curly braces — please use "/author/{slug}/".']
+                ['taxonomy using :param', {taxonomies: {author: '/author/:slug/'}}, 'The following definition "taxonomies.author" is invalid: "/author/:slug/" uses the :param notation. Please use "/author/{slug}/".']
             ];
 
             cases.forEach(([name, raw, expected]) => {

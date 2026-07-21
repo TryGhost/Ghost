@@ -283,7 +283,7 @@ function validatePath(value: string, path: PathSegment[], example: string): void
     if (/\/:\w+/.test(value)) {
         // Suggest the same path in the notation Ghost expects, rather than a
         // generic example the author then has to translate.
-        throw validationError(at, `"${value}" uses the :param notation. Ghost uses curly braces — please use "${value.replace(/\/:(\w+)/g, '/{$1}')}".`);
+        throw validationError(at, `"${value}" uses the :param notation. Please use "${value.replace(/\/:(\w+)/g, '/{$1}')}".`);
     }
 }
 
