@@ -285,6 +285,14 @@ export function createDatabaseAutomationsRepository({
                         clicked_at: toDatabaseDate(options.clickedAt)
                     });
 
+                if (isFirstClick) {
+                    await trx('automation_action_revisions')
+                        .where('id', revisionId)
+                        .update({
+                            email_clicked_count: trx.raw('COALESCE(??, 0) + ?', ['email_clicked_count', 1])
+                        });
+                }
+
                 return isFirstClick;
             });
         },

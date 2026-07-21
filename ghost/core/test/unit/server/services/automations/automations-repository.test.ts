@@ -88,6 +88,7 @@ const createDatabase = async (): Promise<Knex> => {
         table.integer('email_sent_count');
         table.integer('email_tracked_sent_count');
         table.integer('email_opened_count');
+        table.integer('email_clicked_count');
         table.unique(['created_at', 'action_id']);
     });
 
@@ -1952,13 +1953,46 @@ describe('automations repository', function () {
         }
 
         it('stamps the first tracked click and ignores repeats', async function () {
-            const {redirectId, recipientId} = await createRedirectAndRecipient();
+            const {redirectId, recipientId, revisionId} = await createRedirectAndRecipient();
 
             assert.equal(await repo.recordAutomationEmailClick({memberId: 'member-id', redirectId, clickedAt}), true);
             assert.equal(await repo.recordAutomationEmailClick({memberId: 'member-id', redirectId, clickedAt: new Date('2026-07-21T13:00:00.000Z')}), false);
 
             const recipient = await knex('automated_email_recipients').where('id', recipientId).first();
             assert.equal(recipient.clicked_at, '2026-07-21 12:34:56');
+            const revision = await knex('automation_action_revisions').where('id', revisionId).first();
+            assert.equal(revision.email_clicked_count, 1);
+        });
+
+        it('does not count a different link twice for the same member', async function () {
+            const {redirectId, revisionId} = await createRedirectAndRecipient();
+            const secondRedirectId = ObjectId().toHexString();
+            await knex('redirects').insert({id: secondRedirectId, automation_action_revision_id: revisionId});
+
+            assert.equal(await repo.recordAutomationEmailClick({memberId: 'member-id', redirectId, clickedAt}), true);
+            assert.equal(await repo.recordAutomationEmailClick({memberId: 'member-id', redirectId: secondRedirectId, clickedAt}), false);
+
+            const revision = await knex('automation_action_revisions').where('id', revisionId).first();
+            assert.equal(revision.email_clicked_count, 1);
+        });
+
+        it('counts two different members once each', async function () {
+            const {redirectId, revisionId} = await createRedirectAndRecipient();
+            await knex('automated_email_recipients').insert({
+                id: ObjectId().toHexString(),
+                automation_action_revision_id: revisionId,
+                member_id: 'second-member',
+                track_clicks: true,
+                track_opens: false,
+                created_at: '2026-07-21 12:00:00',
+                updated_at: '2026-07-21 12:00:00'
+            });
+
+            assert.equal(await repo.recordAutomationEmailClick({memberId: 'member-id', redirectId, clickedAt}), true);
+            assert.equal(await repo.recordAutomationEmailClick({memberId: 'second-member', redirectId, clickedAt}), true);
+
+            const revision = await knex('automation_action_revisions').where('id', revisionId).first();
+            assert.equal(revision.email_clicked_count, 2);
         });
 
         it('does not stamp an untracked recipient', async function () {
@@ -1995,6 +2029,21 @@ describe('automations repository', function () {
             const recipients = await knex('automated_email_recipients').where({automation_action_revision_id: revisionId, member_id: 'member-id'});
             assert.equal(recipients.length, 2);
             assert(recipients.every(recipient => recipient.clicked_at === '2026-07-21 12:34:56'));
+            const revision = await knex('automation_action_revisions').where('id', revisionId).first();
+            assert.equal(revision.email_clicked_count, 1);
+        });
+
+        it('counts concurrent duplicate events once', async function () {
+            const {redirectId, revisionId} = await createRedirectAndRecipient();
+
+            const results = await Promise.all([
+                repo.recordAutomationEmailClick({memberId: 'member-id', redirectId, clickedAt}),
+                repo.recordAutomationEmailClick({memberId: 'member-id', redirectId, clickedAt})
+            ]);
+
+            assert.deepEqual(results.sort(), [false, true]);
+            const revision = await knex('automation_action_revisions').where('id', revisionId).first();
+            assert.equal(revision.email_clicked_count, 1);
         });
     });
 
