@@ -175,11 +175,12 @@ const WaitSidebarBody: React.FC<{
 };
 
 const SendEmailSidebarBody: React.FC<{
+  automationId: string;
   action: AutomationSendEmailAction;
   onUpdateSubject: (subject: string) => void;
   onEditEmail: () => void;
   onDelete: () => void;
-}> = ({action, onUpdateSubject, onEditEmail, onDelete}) => {
+}> = ({automationId, action, onUpdateSubject, onEditEmail, onDelete}) => {
     const subjectInputRef = useRef<HTMLInputElement>(null);
     const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
 
@@ -206,7 +207,7 @@ const SendEmailSidebarBody: React.FC<{
                 <LucideIcon.Pencil className='size-4' />
               Edit email
             </Button>
-            {automationAnalyticsEnabled && action.stats && <EmailPerformanceSection stats={action.stats} />}
+            {automationAnalyticsEnabled && action.stats && <EmailPerformanceSection actionId={action.id} automationId={automationId} stats={action.stats} />}
             <div className='mt-auto pt-6'>
                 <DeleteStepButton onClick={onDelete} />
             </div>
@@ -221,7 +222,7 @@ const StepSidebarBody: React.FC<{detail: StepSidebarDetail}> = ({detail}) => {
     case 'wait':
         return <WaitSidebarBody key={detail.action.id} action={detail.action} onDelete={detail.onDelete} onUpdate={detail.onUpdate} />;
     case 'send_email':
-        return <SendEmailSidebarBody key={detail.action.id} action={detail.action} onDelete={detail.onDelete} onEditEmail={detail.onEditEmail} onUpdateSubject={detail.onUpdateSubject} />;
+        return <SendEmailSidebarBody key={detail.action.id} action={detail.action} automationId={detail.automationId} onDelete={detail.onDelete} onEditEmail={detail.onEditEmail} onUpdateSubject={detail.onUpdateSubject} />;
     default: {
         const _exhaustive: never = detail;
         throw new Error(`Unknown sidebar type: ${String(_exhaustive)}`);
@@ -300,6 +301,7 @@ const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait, onUpd
     }
     case 'send_email':
         return {
+            automationId: automation.id,
             icon: LucideIcon.Mail,
             label: 'Send email',
             isPlaceholderTitle: !action.data.email_subject,
