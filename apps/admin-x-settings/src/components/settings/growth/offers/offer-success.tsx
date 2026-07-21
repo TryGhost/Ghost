@@ -1,4 +1,4 @@
-import {Breadcrumbs} from '@tryghost/shade/patterns';
+import SettingsBreadcrumbs from '../../settings-breadcrumbs';
 import {Button} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
@@ -83,10 +83,10 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
         width={1140}
     >
         <div className='-mt-6 flex h-full flex-col items-center justify-center text-center'>
-            <Breadcrumbs
+            <SettingsBreadcrumbs
                 className='absolute top-5 left-6'
                 current={offer?.name || ''}
-                items={[{label: 'Offers', onClick: () => updateRoute('offers/edit')}]}
+                label='Offers'
                 onBack={() => updateRoute('offers/edit')}
             />
             <Icon colorClass='text-grey-700 -mt-4' name='tags-check' size='xl' />

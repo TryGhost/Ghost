@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Breadcrumbs} from '@tryghost/shade/patterns';
+import SettingsBreadcrumbs from '../../settings-breadcrumbs';
 import {Button, ButtonGroup, DesktopChrome, MobileChrome, PageHeader, Select, type SelectOption} from '@tryghost/admin-x-design-system';
 import {type OfficialTheme, type ThemeVariant} from '../../../providers/settings-app-provider';
 import {type Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
@@ -77,9 +77,9 @@ const ThemePreview: React.FC<{
 
     const left =
         <div className='flex items-center gap-2'>
-            <Breadcrumbs
+            <SettingsBreadcrumbs
                 current={selectedTheme.name}
-                items={[{label: 'Change theme', onClick: onBack}]}
+                label='Change theme'
                 onBack={onBack}
             />
             {hasVariants(selectedTheme) ?

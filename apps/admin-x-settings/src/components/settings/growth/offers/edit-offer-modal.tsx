@@ -1,7 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/portal-frame';
+import SettingsBreadcrumbs from '../../settings-breadcrumbs';
 import toast from 'react-hot-toast';
-import {Breadcrumbs} from '@tryghost/shade/patterns';
 import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
@@ -275,9 +275,9 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         okLabel={okProps.label || 'Save'}
         preview={iframe}
         previewToolbarBreadcrumbs={
-            <Breadcrumbs
+            <SettingsBreadcrumbs
                 current={formState?.name || 'Offer'}
-                items={[{label: 'Offers', onClick: goBack}]}
+                label='Offers'
                 onBack={goBack}
             />
         }

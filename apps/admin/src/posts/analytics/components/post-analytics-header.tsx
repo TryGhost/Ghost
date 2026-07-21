@@ -1,7 +1,6 @@
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Navbar, PageMenu, PageMenuItem} from '@tryghost/shade/components';
-import {Breadcrumbs} from '@tryghost/shade/patterns';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Navbar, PageMenu, PageMenuItem} from '@tryghost/shade/components';
 import {H1} from '@tryghost/shade/primitives';
 import {LucideIcon, formatDisplayDate, formatDisplayTime, formatNumber} from '@tryghost/shade/utils';
 import {useAnalyticsData} from '@/shared/analytics/use-analytics-data';
@@ -117,10 +116,25 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                 >
                     <div className='flex w-full flex-col gap-6'>
                         <div className='flex w-full flex-col justify-between md:flex-row md:items-center'>
-                            <Breadcrumbs
-                                current='Post analytics'
-                                items={[{label: 'Analytics', onClick: () => navigate('/analytics/', {crossApp: true})}]}
-                            />
+                            <Breadcrumb>
+                                <BreadcrumbList>
+                                    <BreadcrumbItem>
+                                        <BreadcrumbLink asChild>
+                                            <button
+                                                className='cursor-pointer rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden'
+                                                type='button'
+                                                onClick={() => navigate('/analytics/', {crossApp: true})}
+                                            >
+                                                Analytics
+                                            </button>
+                                        </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <BreadcrumbPage>Post analytics</BreadcrumbPage>
+                                    </BreadcrumbItem>
+                                </BreadcrumbList>
+                            </Breadcrumb>
                             <div className='flex w-full items-center gap-2 md:w-auto'>
                                 {appSettings?.analytics.webAnalytics && !post?.email_only && (
                                     <div className='mr-3 flex grow items-center gap-2 md:grow-0'>

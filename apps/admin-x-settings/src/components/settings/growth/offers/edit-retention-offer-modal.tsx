@@ -1,6 +1,6 @@
 import PortalFrame from '../../membership/portal/portal-frame';
+import SettingsBreadcrumbs from '../../settings-breadcrumbs';
 import toast from 'react-hot-toast';
-import {Breadcrumbs} from '@tryghost/shade/patterns';
 import {ButtonSelect, type OfferType} from './add-offer-modal';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
@@ -657,9 +657,9 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             okLabel={okProps.label || 'Save'}
             preview={preview}
             previewToolbarBreadcrumbs={
-                <Breadcrumbs
+                <SettingsBreadcrumbs
                     current={breadcrumbTitle}
-                    items={[{label: 'Offers', onClick: goBack}]}
+                    label='Offers'
                     onBack={goBack}
                 />
             }

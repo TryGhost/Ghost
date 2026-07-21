@@ -1,5 +1,4 @@
 // Feature-level compositions and pattern contracts
-export * from './components/patterns/breadcrumbs';
 export * from './components/patterns/page-header';
 export * from './components/patterns/view-bar';
 export * from './components/patterns/filter-bar';
