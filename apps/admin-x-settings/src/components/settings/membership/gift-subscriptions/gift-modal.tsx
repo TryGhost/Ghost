@@ -2,8 +2,9 @@ import GiftPreview from './gift-preview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo} from 'react';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Button, Checkbox, CurrencyField, Heading, HtmlField, ImageUpload, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
+import {Checkbox, CurrencyField, Heading, HtmlField, ImageUpload, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {Separator} from '@tryghost/shade/components';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {type Tier, getPaidActiveTiers, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
@@ -28,15 +29,6 @@ const getDerivedPriceInCents = (tier: Tier, months: number) => {
     return (tier.monthly_price || 0) * months;
 };
 
-const formatDefaultPrice = (tier: Tier, months: number) => {
-    const amount = getDerivedPriceInCents(tier, months) / 100;
-    return new Intl.NumberFormat('en', {
-        style: 'currency',
-        currency: tier.currency || 'USD',
-        maximumFractionDigits: 0
-    }).format(amount);
-};
-
 const GiftSidebar: React.FC<{
     localSettings: Setting[]
     updateSetting: (key: string, value: SettingValue) => void
@@ -59,8 +51,9 @@ const GiftSidebar: React.FC<{
 
     const paidTiers = getPaidActiveTiers(localTiers || []);
 
-    // Text over this length is collapsed behind a "Show more" toggle on the gift page
-    const descriptionRecommendedLength = 240;
+    // The gift page shows the description in full (no "Show more"), so cap it at
+    // a length that always fits on screen alongside the form.
+    const descriptionMaxLength = 350;
     const descriptionLength = useMemo(() => {
         const div = document.createElement('div');
         div.innerHTML = giftPageDescription?.toString() || '';
@@ -110,7 +103,8 @@ const GiftSidebar: React.FC<{
                     onChange={e => updateSetting('gift_page_heading', e.target.value || null)}
                 />
                 <HtmlField
-                    hint={<>Sell the value of a gift membership to potential buyers. Recommended: <strong>{descriptionRecommendedLength}</strong> characters. You&apos;ve used <strong className={descriptionLength > descriptionRecommendedLength ? 'text-yellow-500' : 'text-green'}>{descriptionLength}</strong>{descriptionLength > descriptionRecommendedLength ? ' — longer text is collapsed behind a "Show more" toggle' : ''}</>}
+                    hint={<>Sell the value of a gift membership to potential buyers. Shown in full on the gift page — keep it under <strong>{descriptionMaxLength}</strong> characters so it fits. You&apos;ve used <strong className={descriptionLength > descriptionMaxLength ? 'text-red' : 'text-green'}>{descriptionLength}</strong></>}
+                    maxLength={descriptionMaxLength}
                     nodes='MINIMAL_NODES'
                     placeholder={`Share a full membership to ${siteData?.title || 'your site'} with a friend or colleague`}
                     title="Description"
@@ -118,7 +112,7 @@ const GiftSidebar: React.FC<{
                     onChange={html => updateSetting('gift_page_description', html || null)}
                 />
                 <div>
-                    <Heading className='mb-2' level={6} grey>Image</Heading>
+                    <Heading className='mb-2' level={6}>Image</Heading>
                     <ImageUpload
                         deleteButtonClassName='!top-1 !right-1'
                         height={giftPageImage ? '120px' : '52px'}
@@ -159,27 +153,29 @@ const GiftSidebar: React.FC<{
             {showPricing && (
                 <div>
                     <Heading level={6}>Pricing</Heading>
-                    <p className='mt-1 text-sm text-grey-700'>The greyed prices are the defaults we&apos;ll charge if you leave a field empty — the {paidTiers.length > 1 ? 'tier&apos;s ' : ''}monthly price × the duration, and the yearly price for a year.</p>
-                    <div className='mt-3 flex flex-col gap-4'>
-                        {paidTiers.map(tier => (
-                            <div key={tier.id}>
-                                {paidTiers.length > 1 && (
-                                    <div className='mb-2 text-sm font-medium'>{tier.name}</div>
-                                )}
-                                <div className='grid grid-cols-2 gap-3 md:grid-cols-4'>
-                                    {offeredDurations.map(({months, label}) => (
-                                        <CurrencyField
-                                            key={months}
-                                            hint={`Default ${formatDefaultPrice(tier, months)}`}
-                                            placeholder={String(getDerivedPriceInCents(tier, months) / 100)}
-                                            rightPlaceholder={tier.currency}
-                                            title={label}
-                                            valueInCents={tier.gift_prices?.[months] ?? ''}
-                                            onChange={cents => updateGiftPrice(tier, months, cents)}
-                                        />
-                                    ))}
+                    <p className='mt-1 text-sm text-grey-700'>Set a one-time gift price per duration, or leave a field blank to charge the default shown in grey (the monthly price × the duration, and the yearly price for a year).</p>
+                    <div className='mt-4 flex flex-col gap-6'>
+                        {paidTiers.map((tier, i) => (
+                            <React.Fragment key={tier.id}>
+                                {i > 0 && <Separator />}
+                                <div>
+                                    {paidTiers.length > 1 && (
+                                        <Heading className='mb-3' level={6}>{tier.name}</Heading>
+                                    )}
+                                    <div className='flex flex-col gap-3'>
+                                        {offeredDurations.map(({months, label}) => (
+                                            <CurrencyField
+                                                key={months}
+                                                placeholder={String(getDerivedPriceInCents(tier, months) / 100)}
+                                                rightPlaceholder={tier.currency}
+                                                title={label}
+                                                valueInCents={tier.gift_prices?.[months] ?? ''}
+                                                onChange={cents => updateGiftPrice(tier, months, cents)}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            </React.Fragment>
                         ))}
                     </div>
                 </div>
@@ -191,7 +187,7 @@ const GiftSidebar: React.FC<{
 const GiftModal: React.FC = () => {
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
-    const {settings, siteData} = useGlobalData();
+    const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     const {mutateAsync: editTier} = useEditTier();
@@ -239,8 +235,6 @@ const GiftModal: React.FC = () => {
         }));
     };
 
-    const giftUrl = `${siteData?.url.replace(/\/$/, '')}/#/portal/gift`;
-
     const sidebar = (
         <div className='pt-4'>
             <GiftSidebar
@@ -249,14 +243,6 @@ const GiftModal: React.FC = () => {
                 updateSetting={updateSetting}
                 updateTier={updateTier}
             />
-            <div className='mt-8 border-t border-grey-200 pt-6'>
-                <Heading level={6}>Shareable link</Heading>
-                <p className='mt-1 text-sm text-grey-700'>Anyone with this link can buy a gift, even when the gift option is hidden from Portal.</p>
-                <div className='group relative mt-2 flex w-full items-center justify-between gap-2 overflow-hidden border-b border-grey-200 pb-2'>
-                    <span className='truncate text-sm' data-testid='gift-url'>{giftUrl}</span>
-                    <Button color='light-grey' label='Copy' size='sm' onClick={() => navigator.clipboard.writeText(giftUrl)} />
-                </div>
-            </div>
         </div>
     );
 

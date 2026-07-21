@@ -1,6 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, Heading, Toggle} from '@tryghost/admin-x-design-system';
+import {Button, Heading, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
+import {Separator} from '@tryghost/shade/components';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -36,29 +37,33 @@ const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='gift-subscriptions'
             title="Gift subscriptions"
         >
-            <div className='flex flex-col gap-4'>
-                <div className='flex items-start justify-between gap-4'>
-                    <div>
-                        <Heading level={6}>Show in Portal</Heading>
-                        <p className='mt-0.5 max-w-xl text-sm text-grey-700'>Display the gift option inside Portal. The shareable link below keeps working even when this is off.</p>
-                    </div>
-                    <Toggle checked={isVisibleInPortal} disabled={!canGift} testId='gift-subscriptions-toggle' onChange={handleToggle} />
-                </div>
+            <SettingGroupContent columns={1}>
+                <Toggle
+                    checked={isVisibleInPortal}
+                    direction='rtl'
+                    disabled={!canGift}
+                    gap='gap-0'
+                    hint='Display the gift option inside Portal. Your shareable link keeps working even when this is off.'
+                    label='Show in Portal'
+                    testId='gift-subscriptions-toggle'
+                    onChange={handleToggle}
+                />
                 {canGift && (
-                    <div className='w-full border-t border-grey-100 pt-3'>
-                        <div className='flex items-center gap-2'>
+                    <>
+                        <Separator />
+                        <div>
                             <Heading level={6}>Shareable link</Heading>
-                        </div>
-                        <div className='group relative mt-0 flex w-full items-center justify-between gap-2 overflow-hidden border-b border-transparent pt-1 pb-2 hover:border-grey-300 dark:hover:border-grey-600'>
-                            <span className='truncate' data-testid='gift-url'>{giftUrl}</span>
-                            <div className='flex gap-1 bg-white pl-1 dark:bg-black'>
-                                <Button color='clear' data-testid='preview-shareable-link' label='Preview' size='sm' onClick={() => window.open(giftUrl, '_blank')} />
-                                <Button color='light-grey' data-testid='copy-shareable-link' label='Copy link' size='sm' onClick={() => navigator.clipboard.writeText(giftUrl)} />
+                            <div className='mt-2 flex items-center justify-between gap-3'>
+                                <span className='truncate text-sm text-grey-700' data-testid='gift-url'>{giftUrl}</span>
+                                <div className='flex shrink-0 gap-1'>
+                                    <Button color='clear' data-testid='preview-shareable-link' label='Preview' size='sm' onClick={() => window.open(giftUrl, '_blank')} />
+                                    <Button color='light-grey' data-testid='copy-shareable-link' label='Copy' size='sm' onClick={() => navigator.clipboard.writeText(giftUrl)} />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </>
                 )}
-            </div>
+            </SettingGroupContent>
         </TopLevelGroup>
     );
 };

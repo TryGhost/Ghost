@@ -134,30 +134,6 @@ export const GiftPageStyles = `
     margin: 0 0 14px;
 }
 
-.gh-portal-gift-checkout-subtitle.gh-portal-gift-checkout-subtitle-clamped {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.gh-portal-gift-checkout-show-more {
-    margin: 4px 0 0;
-    padding: 0;
-    border: none;
-    background: none;
-    font-size: 1.4rem;
-    font-weight: 500;
-    color: var(--grey5);
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-}
-
-.gh-portal-gift-checkout-show-more:hover {
-    color: var(--grey3);
-}
-
 .gh-portal-gift-checkout-section {
     margin-top: 18px;
 }
@@ -943,7 +919,6 @@ const GiftPage = () => {
     const [confirmEmail, setConfirmEmail] = useState('');
     const [deliveryDate, setDeliveryDate] = useState('');
     const [errors, setErrors] = useState({});
-    const [descriptionExpanded, setDescriptionExpanded] = useState(false);
     const {cardRef, containerProps: cardTiltProps} = useCardTilt();
 
     // Prefill the "from" name once the logged-in member loads, without
@@ -967,12 +942,6 @@ const GiftPage = () => {
     const giftPageHeading = site.gift_page_heading?.trim() || '';
     const giftPageDescriptionHtml = site.gift_page_description?.trim() || '';
     const giftPageImage = site.gift_page_image || '';
-
-    // Collapse long promotional descriptions behind a "Show more" toggle so
-    // the checkout form stays reachable no matter how much a publisher writes.
-    const descriptionTextLength = giftPageDescriptionHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().length;
-    const descriptionBlockCount = (giftPageDescriptionHtml.match(/<(p|ul|ol|br)\b/g) || []).length;
-    const isDescriptionCollapsible = descriptionTextLength > 160 || descriptionBlockCount > 1;
 
     if (products.length === 0 || !activeDuration) {
         return (
@@ -1221,22 +1190,10 @@ const GiftPage = () => {
                                         )}
                                         <h1 className='gh-portal-main-title'>{giftPageHeading || t('Gift a membership')}</h1>
                                         {giftPageDescriptionHtml ? (
-                                            <>
-                                                <div
-                                                    className={'gh-portal-gift-checkout-subtitle' + (isDescriptionCollapsible && !descriptionExpanded ? ' gh-portal-gift-checkout-subtitle-clamped' : '')}
-                                                    dangerouslySetInnerHTML={{__html: sanitizeHtml(giftPageDescriptionHtml)}}
-                                                />
-                                                {isDescriptionCollapsible && (
-                                                    <button
-                                                        type='button'
-                                                        className='gh-portal-gift-checkout-show-more'
-                                                        aria-expanded={descriptionExpanded}
-                                                        onClick={() => setDescriptionExpanded(expanded => !expanded)}
-                                                    >
-                                                        {descriptionExpanded ? t('Show less') : t('Show more')}
-                                                    </button>
-                                                )}
-                                            </>
+                                            <div
+                                                className='gh-portal-gift-checkout-subtitle'
+                                                dangerouslySetInnerHTML={{__html: sanitizeHtml(giftPageDescriptionHtml)}}
+                                            />
                                         ) : (
                                             <p className='gh-portal-gift-checkout-subtitle'>
                                                 {t('Share a full membership to {siteTitle} with a friend or colleague', {siteTitle})}
