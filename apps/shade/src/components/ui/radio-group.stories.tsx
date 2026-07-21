@@ -74,6 +74,34 @@ export const WithDescriptions: Story = {
     }
 };
 
+export const CheckIndicator: Story = {
+    render: () => (
+        <RadioGroup defaultValue="free-months">
+            <Field orientation="horizontal">
+                <RadioGroupItem id="percentage-discount" indicator="check" value="percentage-discount" />
+                <FieldContent>
+                    <FieldLabel htmlFor="percentage-discount">Percentage discount</FieldLabel>
+                    <FieldDescription>Offer a special reduced price.</FieldDescription>
+                </FieldContent>
+            </Field>
+            <Field orientation="horizontal">
+                <RadioGroupItem id="free-months" indicator="check" value="free-months" />
+                <FieldContent>
+                    <FieldLabel htmlFor="free-months">Free month(s)</FieldLabel>
+                    <FieldDescription>Give free access for a limited time.</FieldDescription>
+                </FieldContent>
+            </Field>
+        </RadioGroup>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Use the check indicator when preserving an established checked-circle treatment for a mutually exclusive choice.'
+            }
+        }
+    }
+};
+
 export const Disabled: Story = {
     render: () => (
         <RadioGroup defaultValue="enabled">

@@ -199,7 +199,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 const id = `offer-type-${option.value}`;
                                 return (
                                     <Field key={option.value} orientation='horizontal'>
-                                        <RadioGroupItem id={id} value={option.value} />
+                                        <RadioGroupItem id={id} indicator='check' value={option.value} />
                                         <FieldContent>
                                             <FieldLabel className='cursor-pointer' htmlFor={id}>{option.title}</FieldLabel>
                                             <FieldDescription>{option.description}</FieldDescription>
