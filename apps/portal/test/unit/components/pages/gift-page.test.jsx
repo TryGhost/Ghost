@@ -1,4 +1,4 @@
-import {fireEvent, render} from '../../../utils/test-utils';
+import {render} from '../../../utils/test-utils';
 import GiftPage from '../../../../src/components/pages/gift-page';
 import {testSite} from '../../../../src/utils/fixtures';
 
@@ -49,33 +49,19 @@ describe('GiftPage', () => {
         expect(container.querySelector('.gh-portal-gift-checkout-subtitle img')).toBeNull();
     });
 
-    test('collapses long descriptions behind a Show more toggle', () => {
-        const longDescription = `<p>${'Give the gift of quality journalism. '.repeat(10).trim()}</p>`;
-        const {container, getByRole, queryByRole} = renderGiftPage({
+    test('renders the full description with no Show more toggle', () => {
+        // The gift page no longer collapses long descriptions — the admin caps
+        // the input at 350 chars so it always fits, and it renders in full.
+        const longDescription = `<p>${'Give the gift of quality journalism. '.repeat(9).trim()}</p>`;
+        const {container, queryByRole} = renderGiftPage({
             gift_page_description: longDescription
         });
 
         const subtitle = container.querySelector('.gh-portal-gift-checkout-subtitle');
-        expect(subtitle.className).toContain('gh-portal-gift-checkout-subtitle-clamped');
-
-        const toggle = getByRole('button', {name: 'Show more'});
-        fireEvent.click(toggle);
-
         expect(subtitle.className).not.toContain('gh-portal-gift-checkout-subtitle-clamped');
-        expect(getByRole('button', {name: 'Show less'})).toBeInTheDocument();
-
-        fireEvent.click(getByRole('button', {name: 'Show less'}));
-        expect(subtitle.className).toContain('gh-portal-gift-checkout-subtitle-clamped');
-        expect(queryByRole('button', {name: 'Show more'})).toBeInTheDocument();
-    });
-
-    test('short descriptions render without a Show more toggle', () => {
-        const {queryByRole, container} = renderGiftPage({
-            gift_page_description: '<p>Short and sweet pitch.</p>'
-        });
-
         expect(queryByRole('button', {name: 'Show more'})).not.toBeInTheDocument();
-        expect(container.querySelector('.gh-portal-gift-checkout-subtitle-clamped')).toBeNull();
+        expect(queryByRole('button', {name: 'Show less'})).not.toBeInTheDocument();
+        expect(subtitle.textContent).toContain('Give the gift of quality journalism.');
     });
 
     test('falls back to defaults for whitespace-only customization', () => {
