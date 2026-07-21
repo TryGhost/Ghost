@@ -45,12 +45,12 @@
         "typescript": "catalog:",
         "@doist/react-interpolate": "2.2.3",
         "@internal/cfg-eslint-react": "workspace:*",
+        "@internal/cfg-vite-public-app": "workspace:*",
         "@sentry/react": "catalog:",
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:react17",
         "@testing-library/user-event": "14.6.1",
         "@tryghost/i18n": "workspace:*",
-        "@vitejs/plugin-react": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "cross-fetch": "catalog:",
         "dompurify": "catalog:",
@@ -59,7 +59,6 @@
         "react": "catalog:react17",
         "react-dom": "catalog:react17",
         "vite": "catalog:",
-        "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"
     },
     "dependencies": {

@@ -17,8 +17,6 @@
                 "config": []
             },
             "ignoreDependencies": [
-                "@vitejs/plugin-react",
-                "vite-plugin-svgr",
                 "lint-staged",
                 "secretlint",
                 "@secretlint/secretlint-rule-pattern",
@@ -76,16 +74,12 @@
         },
         "apps/announcement-bar": {
             "ignoreDependencies": [
-                "@vitejs/plugin-react",
-                "vite-plugin-svgr",
                 "cross-fetch"
             ]
         },
         "apps/comments-ui": {
             "ignoreDependencies": [
                 "@tryghost/debug",
-                "@vitejs/plugin-react",
-                "vite-plugin-svgr",
                 "@testing-library/jest-dom",
                 "eslint-plugin-tailwindcss"
             ]
@@ -93,8 +87,6 @@
         "apps/portal": {
             "ignoreDependencies": [
                 "@tryghost/debug",
-                "@vitejs/plugin-react",
-                "vite-plugin-svgr",
                 "cross-fetch",
                 "@testing-library/jest-dom"
             ]
@@ -119,8 +111,6 @@
         "apps/signup-form": {
             "ignoreDependencies": [
                 "@tryghost/debug",
-                "@vitejs/plugin-react",
-                "vite-plugin-svgr",
                 "@storybook/addon-links",
                 "@storybook/addon-docs",
                 "eslint-plugin-tailwindcss"
@@ -129,8 +119,6 @@
         "apps/sodo-search": {
             "ignoreDependencies": [
                 "@tryghost/debug",
-                "@vitejs/plugin-react",
-                "vite-plugin-svgr",
                 "cross-fetch",
                 "@testing-library/jest-dom"
             ]
