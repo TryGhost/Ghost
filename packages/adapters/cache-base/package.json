@@ -1,0 +1,33 @@
+{
+  "name": "@tryghost/adapter-base-cache",
+  "version": "0.1.27",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/SDK.git",
+    "directory": "packages/adapter-base-cache"
+  },
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test:unit": "NODE_ENV=testing c8 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test": "yarn test:unit",
+    "lint:code": "eslint *.js lib/ --ext .js --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "c8": "12.0.0",
+    "mocha": "11.7.6",
+    "sinon": "22.0.0"
+  }
+}
