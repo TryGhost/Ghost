@@ -1340,7 +1340,9 @@ module.exports = {
         mailgun_message_id: {type: 'string', maxlength: 1000, nullable: true},
         delivered_at: {type: 'dateTime', nullable: true},
         opened_at: {type: 'dateTime', nullable: true},
+        clicked_at: {type: 'dateTime', nullable: true},
         track_opens: {type: 'boolean', nullable: false, defaultTo: false},
+        track_clicks: {type: 'boolean', nullable: false, defaultTo: false},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
