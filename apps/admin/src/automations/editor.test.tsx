@@ -11,6 +11,10 @@ import {flushSync} from 'react-dom';
 const {mockToastError} = vi.hoisted(() => ({
     mockToastError: vi.fn()
 }));
+const mockAnalyticsSettings = vi.hoisted(() => ({
+    emailTrackClicks: true,
+    emailTrackOpens: true
+}));
 
 const NON_EMPTY_EMAIL_LEXICAL = '{"root":{"children":[{"type":"paragraph","children":[{"type":"text","text":"Welcome email body"}]}]}}';
 
@@ -19,6 +23,26 @@ vi.mock('sonner', () => ({
         error: mockToastError
     }
 }));
+
+vi.mock('@tryghost/admin-x-framework', async () => {
+    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework')>('@tryghost/admin-x-framework');
+    return {
+        ...actual,
+        useAppContext: () => ({
+            appSettings: {
+                analytics: {
+                    ...mockAnalyticsSettings,
+                    membersTrackSources: true,
+                    outboundLinkTagging: true,
+                    webAnalytics: true
+                },
+                newslettersEnabled: true,
+                paidMembersEnabled: true
+            },
+            externalNavigate: vi.fn()
+        })
+    };
+});
 
 // Stub the email content editor modal — its real internals (Koenig + email API
 // hooks) are out of scope here. The stub exposes the seed props and a save button
@@ -308,6 +332,8 @@ describe('AutomationEditor', () => {
         mockEditMutation.variables = undefined;
         mockToastError.mockReset();
         mockLabs.current = {};
+        mockAnalyticsSettings.emailTrackClicks = true;
+        mockAnalyticsSettings.emailTrackOpens = true;
     });
 
     it('renders the loading state while the automation is fetching', () => {
@@ -683,6 +709,58 @@ describe('AutomationEditor', () => {
         expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
         fireEvent.click(screen.getByRole('button', {name: 'Wait: 1 day'}));
         expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        {opens: true, clicks: true, openedValue: '65%', clickedValue: '20%'},
+        {opens: true, clicks: false, openedValue: '65%', clickedValue: 'Off'},
+        {opens: false, clicks: true, openedValue: 'Off', clickedValue: '20%'},
+        {opens: false, clicks: false, openedValue: 'Off', clickedValue: 'Off'}
+    ])('respects open=$opens and click=$clicks tracking settings across canvas and sidebar', ({opens, clicks, openedValue, clickedValue}) => {
+        mockAnalyticsSettings.emailTrackOpens = opens;
+        mockAnalyticsSettings.emailTrackClicks = clicks;
+        mockLabs.current = {automationAnalytics: true};
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [withEmailStats({
+                email_clicked_count: 20,
+                email_sent_count: 100,
+                email_opened_count: 65,
+                opened_rate: 65,
+                clicked_rate: 20
+            })]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent(openedValue);
+        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent(clickedValue);
+        expect(within(emailStep).getByText('Sent').parentElement?.parentElement).toHaveClass('grid-cols-3');
+
+        fireEvent.click(emailStep);
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByText('Opened').parentElement?.parentElement).toHaveTextContent(openedValue);
+        expect(within(sidebar).getByText('Clicked').parentElement?.parentElement).toHaveTextContent(clickedValue);
+        if (opens) {
+            expect(within(sidebar).getByRole('img', {name: 'Opened rate chart ring'})).toBeInTheDocument();
+        } else {
+            expect(within(sidebar).queryByRole('img', {name: 'Opened rate chart ring'})).not.toBeInTheDocument();
+        }
+        if (clicks) {
+            expect(within(sidebar).getByRole('img', {name: 'Clicked rate chart ring'})).toBeInTheDocument();
+        } else {
+            expect(within(sidebar).queryByRole('img', {name: 'Clicked rate chart ring'})).not.toBeInTheDocument();
+        }
+
+        if (clicks) {
+            expect(within(sidebar).getByText('Top clicked links')).toBeInTheDocument();
+            expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith('automation-id-1', 'action-email', {enabled: true});
+        } else {
+            expect(within(sidebar).queryByText('Top clicked links')).not.toBeInTheDocument();
+            expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
+        }
     });
 
     it('renders styled canvas zoom controls without the interaction toggle', () => {
