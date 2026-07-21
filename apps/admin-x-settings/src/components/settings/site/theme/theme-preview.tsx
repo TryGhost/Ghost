@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator} from '@tryghost/shade/components';
+import {Breadcrumbs} from '@tryghost/shade/patterns';
 import {Button, ButtonGroup, DesktopChrome, MobileChrome, PageHeader, Select, type SelectOption} from '@tryghost/admin-x-design-system';
 import {type OfficialTheme, type ThemeVariant} from '../../../providers/settings-app-provider';
 import {type Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
@@ -77,18 +77,11 @@ const ThemePreview: React.FC<{
 
     const left =
         <div className='flex items-center gap-2'>
-            <Button className='mr-1' icon='arrow-left' size='sm' link onClick={onBack} />
-            <Breadcrumb className='max-md:hidden'>
-                <BreadcrumbList className='whitespace-nowrap'>
-                    <BreadcrumbItem>
-                        <BreadcrumbLink className='cursor-pointer' onClick={onBack}>Change theme</BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                        <BreadcrumbPage>{selectedTheme.name}</BreadcrumbPage>
-                    </BreadcrumbItem>
-                </BreadcrumbList>
-            </Breadcrumb>
+            <Breadcrumbs
+                current={selectedTheme.name}
+                items={[{label: 'Change theme', onClick: onBack}]}
+                onBack={onBack}
+            />
             {hasVariants(selectedTheme) ?
                 <>
                     <span className='hidden md:!visible md:!block'>–</span>

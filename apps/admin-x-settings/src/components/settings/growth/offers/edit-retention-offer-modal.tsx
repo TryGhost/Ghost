@@ -1,9 +1,9 @@
 import PortalFrame from '../../membership/portal/portal-frame';
 import toast from 'react-hot-toast';
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator} from '@tryghost/shade/components';
-import {Button, Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Breadcrumbs} from '@tryghost/shade/patterns';
 import {ButtonSelect, type OfferType} from './add-offer-modal';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
+import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useAddOffer, useBrowseOffers, useEditOffer, useInvalidateOffers} from '@tryghost/admin-x-framework/api/offers';
 import {createOfferRedemptionsFilterUrl, formatOfferTimestamp, generateRetentionOfferName} from './offer-helpers';
@@ -657,20 +657,11 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             okLabel={okProps.label || 'Save'}
             preview={preview}
             previewToolbarBreadcrumbs={
-                <div className='flex items-center gap-2'>
-                    <Button className='mr-1' icon='arrow-left' size='sm' link onClick={goBack} />
-                    <Breadcrumb className='max-md:hidden'>
-                        <BreadcrumbList className='whitespace-nowrap'>
-                            <BreadcrumbItem>
-                                <BreadcrumbLink className='cursor-pointer' onClick={goBack}>Offers</BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator />
-                            <BreadcrumbItem>
-                                <BreadcrumbPage>{breadcrumbTitle}</BreadcrumbPage>
-                            </BreadcrumbItem>
-                        </BreadcrumbList>
-                    </Breadcrumb>
-                </div>
+                <Breadcrumbs
+                    current={breadcrumbTitle}
+                    items={[{label: 'Offers', onClick: goBack}]}
+                    onBack={goBack}
+                />
             }
             sidebar={sidebar}
             size='lg'

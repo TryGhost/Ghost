@@ -1,4 +1,4 @@
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator} from '@tryghost/shade/components';
+import {Breadcrumbs} from '@tryghost/shade/patterns';
 import {Button} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
@@ -83,24 +83,12 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
         width={1140}
     >
         <div className='-mt-6 flex h-full flex-col items-center justify-center text-center'>
-            <div className='absolute top-5 left-6 flex items-center gap-2'>
-                <Button className='mr-1' icon='arrow-left' size='sm' link onClick={() => {
-                    updateRoute('offers/edit');
-                }} />
-                <Breadcrumb className='max-md:hidden'>
-                    <BreadcrumbList className='whitespace-nowrap'>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink className='cursor-pointer' onClick={() => {
-                                updateRoute('offers/edit');
-                            }}>Offers</BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>{offer?.name || ''}</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-            </div>
+            <Breadcrumbs
+                className='absolute top-5 left-6'
+                current={offer?.name || ''}
+                items={[{label: 'Offers', onClick: () => updateRoute('offers/edit')}]}
+                onBack={() => updateRoute('offers/edit')}
+            />
             <Icon colorClass='text-grey-700 -mt-4' name='tags-check' size='xl' />
             <h1 className='mt-6 text-4xl'>Your new offer is live!</h1>
             <p className='mt-3 max-w-[510px] text-[1.6rem]'>You can share the link anywhere. In your newsletter, social media, a podcast, or in-person. It all just works.</p>

@@ -352,16 +352,7 @@ export const ExampleDetailScreen: Story = {
     name: 'Example: Detail Page',
     args: {
         showAppMenu: true,
-        breadCrumbs: <div className='flex items-center gap-2'>
-            <Button className='mr-1' icon='arrow-left' size='sm' link onClick={() => {
-                alert('Clicked back');
-            }} />
-            <button className='cursor-pointer' type='button' onClick={() => {
-                alert('Clicked back');
-            }}>Members</button>
-            <span>/</span>
-            <span className='font-bold'>Emerson Vaccaro</span>
-        </div>,
+        breadCrumbs: <span className='text-sm text-grey-500'>Breadcrumbs slot</span>,
         showGlobalActions: true,
         children: <>
             <ViewContainer

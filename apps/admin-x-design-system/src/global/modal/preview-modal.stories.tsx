@@ -102,12 +102,7 @@ export const BreadcrumbsToolbar: Story = {
         ...Default.args,
         previewToolbarTabs: undefined,
         previewToolbarBreadcrumbs: (
-            <div className='flex items-center gap-2 whitespace-nowrap'>
-                <Button className='mr-1' icon='arrow-left' size='sm' link onClick={() => {}} />
-                <button className='cursor-pointer' type='button' onClick={() => {}}>Previous</button>
-                <span>/</span>
-                <span className='font-bold'>Current</span>
-            </div>
+            <span className='text-sm text-grey-500'>Toolbar breadcrumbs slot</span>
         )
     }
 };
