@@ -132,7 +132,7 @@
     "@tryghost/prometheus-metrics": "1.0.8",
     "@tryghost/promise": "2.3.2",
     "@tryghost/referrer-parser": "0.1.21",
-    "@tryghost/request": "1.0.17",
+    "@tryghost/request": "3.3.4",
     "@tryghost/root-utils": "2.3.2",
     "@tryghost/security": "1.0.6",
     "@tryghost/social-urls": "0.1.63",

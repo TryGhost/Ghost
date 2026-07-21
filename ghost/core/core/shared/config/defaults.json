@@ -54,7 +54,8 @@
         },
         "route-settings": {
             "active": "FileStore",
-            "FileStore": {}
+            "FileStore": {},
+            "S3RouteSettingsStore": {}
         }
     },
     "storage": {

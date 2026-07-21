@@ -1,13 +1,17 @@
 const debug = require('@tryghost/debug')('services:routing:controllers:unsubscribe');
 const url = require('url');
-const members = require('../../../../server/services/members');
+const proxy = require('../../proxy');
+const {settingsHelpers} = proxy;
 const urlUtils = require('../../../../shared/url-utils');
 const logging = require('@tryghost/logging');
-const settingsHelpers = require('../../../../server/services/settings-helpers');
 const crypto = require('crypto');
 
 module.exports = async function unsubscribeController(req, res) {
     debug('unsubscribeController');
+
+    // Resolved per-request so requiring this controller never triggers the
+    // proxy's lazy members getter ahead of boot
+    const {members} = proxy;
 
     const {query} = url.parse(req.url, true);
 

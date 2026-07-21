@@ -5,14 +5,16 @@ module.exports = class MentionSendingService {
     #discoveryService;
     #externalRequest;
     #getSiteUrl;
+    #getPostData;
     #getPostUrl;
     #isEnabled;
     #jobService;
 
-    constructor({discoveryService, externalRequest, getSiteUrl, getPostUrl, isEnabled, jobService}) {
+    constructor({discoveryService, externalRequest, getSiteUrl, getPostData, getPostUrl, isEnabled, jobService}) {
         this.#discoveryService = discoveryService;
         this.#externalRequest = externalRequest;
         this.#getSiteUrl = getSiteUrl;
+        this.#getPostData = getPostData;
         this.#getPostUrl = getPostUrl;
         this.#isEnabled = isEnabled;
         this.#jobService = jobService;
@@ -66,9 +68,12 @@ module.exports = class MentionSendingService {
             let html = post.get('status') === 'published' ? post.get('html') : null;
             let previousHtml = post.previous('status') === 'published' ? post.previous('html') : null;
             if (html || previousHtml) {
+                // Capture the source URL now, from the event's data, rather than
+                // deferring the model into the job.
+                const url = new URL(await this.#resolvePostUrl(post));
                 await this.#jobService.addJob('sendWebmentions', async () => {
                     await this.sendForHTMLResource({
-                        url: new URL(await this.#getPostUrl(post)),
+                        url,
                         html: html,
                         previousHtml: previousHtml
                     });
@@ -78,6 +83,21 @@ module.exports = class MentionSendingService {
             logging.error('Error in webmention sending service post update event handler:');
             logging.error(e);
         }
+    }
+
+    // Deleting a published post fires `unpublished` from onDestroyed with the
+    // model already destroyed: its own attributes are cleared, but its previous
+    // state and loaded relations remain. Resolve the URL from that previous
+    // data, the same way we read previous('html') above; live models resolve
+    // straight from the model.
+    async #resolvePostUrl(post) {
+        // A deleted post arrives destroyed: its own attributes are cleared, so
+        // its data lives in the previous attributes (its relations remain).
+        // A live post loads whatever the URL service still needs.
+        if (post.attributes && Object.keys(post.attributes).length === 0) {
+            return this.#getPostUrl(post.previous('id'), {...post.toJSON(), ...post.previousAttributes()});
+        }
+        return this.#getPostUrl(post.id, await this.#getPostData(post));
     }
 
     /**
