@@ -1,7 +1,7 @@
 import GhostStorageBase from 'ghost-storage-base';
 import {SchedulingBase} from '@tryghost/adapter-base-scheduling';
 import {SSOBase} from '@tryghost/adapter-base-sso';
-import BaseCache from '@tryghost/adapter-base-cache';
+import {CacheBase} from '@tryghost/adapter-base-cache';
 import {RedirectsStoreBase} from '@tryghost/adapter-base-redirects';
 import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
 
@@ -34,7 +34,7 @@ const adapterManager = new AdapterManager({
         storage: GhostStorageBase,
         scheduling: SchedulingBase,
         sso: SSOBase,
-        cache: BaseCache,
+        cache: CacheBase,
         redirects: RedirectsStoreBase,
         'route-settings': RouteSettingsStoreBase
     }
