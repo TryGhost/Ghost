@@ -1,7 +1,7 @@
 {
   "name": "ghost-storage-base",
   "version": "2.1.5",
-  "packageManager": "pnpm@11.14.0",
+  "packageManager": "pnpm@11.15.0",
   "description": "Base storage adapter.",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
