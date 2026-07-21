@@ -25,6 +25,7 @@ export interface WaitAction {
 }
 
 export interface AutomationEmailStats {
+    email_clicked_count: number;
     email_sent_count: number;
     email_opened_count: number;
     opened_rate: number | null;

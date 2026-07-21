@@ -258,6 +258,32 @@ describe('Automations API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('returns aggregate click stats for email actions', async function () {
+            const {body: browseBody} = await agent.get('automations').expectStatus(200);
+            const automationId = browseBody.automations[0].id;
+            const action = await models.Base.knex('automation_actions')
+                .where({automation_id: automationId, type: 'send_email'})
+                .whereNull('deleted_at')
+                .first();
+            await models.Base.knex('automation_action_revisions')
+                .where('action_id', action.id)
+                .update({email_sent_count: 3, email_clicked_count: 2});
+
+            await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const emailAction = body.automations[0].actions.find(candidate => candidate.id === action.id);
+                    assert.deepEqual(emailAction.stats, {
+                        email_clicked_count: 2,
+                        email_sent_count: 3,
+                        email_opened_count: 0,
+                        opened_rate: 0,
+                        clicked_rate: 67
+                    });
+                });
+        });
     });
 
     describe('email preview', function () {

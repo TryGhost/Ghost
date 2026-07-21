@@ -153,6 +153,7 @@ Object {
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "stats": Object {
             "clicked_rate": null,
+            "email_clicked_count": 0,
             "email_opened_count": 0,
             "email_sent_count": 0,
             "opened_rate": null,
@@ -175,6 +176,7 @@ Object {
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "stats": Object {
             "clicked_rate": null,
+            "email_clicked_count": 0,
             "email_opened_count": 0,
             "email_sent_count": 0,
             "opened_rate": null,
