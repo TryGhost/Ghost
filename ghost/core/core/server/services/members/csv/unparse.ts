@@ -16,7 +16,15 @@ const DEFAULT_COLUMNS = [
     'gift_id'
 ];
 
-export default function unparse(rows: MemberCsvRow[], columns: string[] = DEFAULT_COLUMNS): string {
+interface UnparseOptions {
+    // Prefixes a leading =, +, -, @ or tab with an apostrophe so a spreadsheet does
+    // not read the value as a formula. On by default: it belongs on any CSV a person
+    // opens. The importer's own intermediate file is not one, and turns it off, so a
+    // member named "-5" is not read back as "'-5".
+    escapeFormulae?: boolean;
+}
+
+export default function unparse(rows: MemberCsvRow[], columns: string[] = DEFAULT_COLUMNS, {escapeFormulae = true}: UnparseOptions = {}): string {
     const outputColumns = columns.map((column) => {
         if (column === 'subscribed') {
             return 'subscribed_to_emails';
@@ -65,7 +73,7 @@ export default function unparse(rows: MemberCsvRow[], columns: string[] = DEFAUL
     });
 
     return papaparse.unparse(mappedRows, {
-        escapeFormulae: true,
+        escapeFormulae,
         columns: outputColumns
     });
 }

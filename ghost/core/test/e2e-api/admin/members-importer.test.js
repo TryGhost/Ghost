@@ -353,6 +353,29 @@ describe('Members Importer API', function () {
         assert.equal(member.note, 'a note');
     });
 
+    it('Stores values that look like formulas exactly as given', async function () {
+        await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-formula-like-values.csv'))
+            .set('Origin', config.get('url'))
+            .expect(201);
+
+        const res = await request
+            .get(localUtils.API.getApiQuery('members/?search=formula'))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        const dash = res.body.members.find(m => m.email === 'formula@example.com');
+        assertExists(dash);
+        assert.equal(dash.name, '-5');
+        assert.equal(dash.note, '+44 123');
+
+        const symbols = res.body.members.find(m => m.email === 'formula2@example.com');
+        assertExists(symbols);
+        assert.equal(symbols.name, '=SUM(A1)');
+        assert.equal(symbols.note, '@handle');
+    });
+
     it('Can handle empty body', async function () {
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))

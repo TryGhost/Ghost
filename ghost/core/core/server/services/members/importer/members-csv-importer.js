@@ -115,7 +115,9 @@ module.exports = class MembersCSVImporter {
         // no rows has no columns, and serialising nothing has nothing to say.
         const columns = [...new Set(rows.flatMap(row => Object.keys(row)))];
         const numberOfBatches = Math.ceil(rows.length / batchSize);
-        const mappedCSV = columns.length ? membersCSV.unparse(rows, columns) : '';
+        // No formula escaping: this file is only ever read back by the import, not
+        // opened by a person, and escaping would be stored on the member verbatim.
+        const mappedCSV = columns.length ? membersCSV.unparse(rows, columns, {escapeFormulae: false}) : '';
 
         const hasStripeData = !!(rows.find(function rowHasStripeData(row) {
             return !!row.stripe_customer_id;
