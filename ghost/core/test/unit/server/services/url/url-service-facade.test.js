@@ -374,6 +374,26 @@ describe('UrlServiceFacade', function () {
             sinon.assert.notCalled(logging.error);
         });
 
+        it('does not report a tag/author whose eager URL is /404/ but lazy resolves it', async function () {
+            // Eager cache missing a routable tag/author (no model event) — lazy
+            // is authoritative, so this eager staleness is expected noise.
+            urlService.getUrlByResourceId.returns('/404/');
+            lazyUrlService.getUrlForResource.returns('/tag/news/');
+            compareFacade.getUrlForResource({type: 'tags', id: 't1'});
+            compareFacade.getUrlForResource({type: 'authors', id: 'u1'});
+            await flush();
+            sinon.assert.notCalled(logging.error);
+        });
+
+        it('still reports a post whose eager URL is /404/ (not the tag/author class)', async function () {
+            urlService.getUrlByResourceId.returns('/404/');
+            lazyUrlService.getUrlForResource.returns('/hello-world/');
+            compareFacade.getUrlForResource({type: 'posts', id: 'a'});
+            await flush();
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
+        });
+
         it('reports a mismatch when lazy ownership differs', async function () {
             compareFacade.ownsResource('routerA', {type: 'posts', id: 'a'});
             await flush();

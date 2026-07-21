@@ -384,6 +384,33 @@ export class UrlServiceFacade {
         this._reportMismatch(method, eagerValue, lazyValue, context, isEqual);
     }
 
+    private _isNotFound(value: unknown): boolean {
+        return typeof value === 'string' && value.endsWith('/404/');
+    }
+
+    // Divergences where eager is the stale side and lazy is authoritative, so
+    // logging them only buries real regressions. Each branch is a class
+    // confirmed from production compare data.
+    private _isExpectedDivergence(
+        method: string,
+        eagerValue: unknown,
+        lazyValue: unknown,
+        context: Record<string, unknown>
+    ): boolean {
+        // Eager leaves tags/authors with no published posts out of its URL map
+        // (the shouldHavePosts gate) so they resolve to /404/, while lazy has no
+        // cheap way to run that check and returns the real URL. Eager cache
+        // staleness (a tag gaining its first post after boot) looks the same.
+        // Whether to keep lazy's behaviour is still open, but either way it is
+        // not a lazy bug, so exclude it to surface the divergences that are.
+        if (method === 'getUrlForResource'
+            && (context.type === 'tags' || context.type === 'authors')
+            && this._isNotFound(eagerValue) && !this._isNotFound(lazyValue)) {
+            return true;
+        }
+        return false;
+    }
+
     private _reportMismatch(
         method: string,
         eagerValue: unknown,
@@ -392,6 +419,9 @@ export class UrlServiceFacade {
         isEqual: (a: unknown, b: unknown) => boolean
     ): void {
         if (!isEqual(eagerValue, lazyValue)) {
+            if (this._isExpectedDivergence(method, eagerValue, lazyValue, context)) {
+                return;
+            }
             const {caller, ...details} = context;
             const report = new errors.InternalServerError({
                 message: 'URL service parity mismatch',
