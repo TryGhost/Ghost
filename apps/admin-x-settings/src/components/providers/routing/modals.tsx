@@ -15,6 +15,7 @@ import DesignAndThemeModal from '../../settings/site/design-and-theme-modal';
 import EditRecommendationModal from '../../settings/growth/recommendations/edit-recommendation-modal';
 import EmbedSignupFormModal from '../../settings/growth/embed-signup/embed-signup-form-modal';
 import FirstPromoterModal from '../../settings/advanced/integrations/first-promoter-modal';
+import GiftModal from '../../settings/membership/gift-subscriptions/gift-modal';
 import HistoryModal from '../../settings/advanced/history-modal';
 import InviteUserModal from '../../settings/general/invite-user-modal';
 import NavigationModal from '../../settings/site/navigation-modal';
@@ -42,6 +43,7 @@ const modals = {
     DesignAndThemeModal,
     EditRecommendationModal,
     FirstPromoterModal,
+    GiftModal,
     HistoryModal,
     InviteUserModal,
     NavigationModal,

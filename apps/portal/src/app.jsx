@@ -15,7 +15,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import {getGiftRedemptionErrorMessage} from './utils/gift-redemption-notification';
 import './app.css';
-import {hasRecommendations, areGiftSubscriptionsEnabled, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, canGiftSubscriptions, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
 
@@ -189,7 +189,7 @@ export default class App extends React.Component {
             }
             const {page, pageQuery, pageData} = linkData;
             if (this.state.initStatus === 'success') {
-                if (page === 'gift' && !areGiftSubscriptionsEnabled({site: this.state.site})) {
+                if (page === 'gift' && !canGiftSubscriptions({site: this.state.site})) {
                     this.invalidateGiftRedemptionRequest();
                     removePortalLinkFromUrl();
 
@@ -494,6 +494,20 @@ export default class App extends React.Component {
                 data.site.portal_default_plan = value;
             } else if (key === 'transistorPortalSettings' && value) {
                 data.site.transistor_portal_settings = JSON.parse(value);
+            } else if (key === 'giftPageHeading') {
+                data.site.gift_page_heading = value || null;
+            } else if (key === 'giftPageDescription') {
+                data.site.gift_page_description = value || null;
+            } else if (key === 'giftPageImage') {
+                data.site.gift_page_image = value || null;
+            } else if (key === 'giftDurations' && value) {
+                // The members site API returns gift_durations pre-parsed as an
+                // array; preview params arrive as a JSON string, so match that.
+                try {
+                    data.site.gift_durations = JSON.parse(value);
+                } catch (e) {
+                    // ignore malformed preview durations
+                }
             }
         }
         data.site.portal_plans = allowedPlans;
@@ -732,7 +746,7 @@ export default class App extends React.Component {
                 };
             }
 
-            if (page === 'gift' && !areGiftSubscriptionsEnabled({site})) {
+            if (page === 'gift' && !canGiftSubscriptions({site})) {
                 removePortalLinkFromUrl();
 
                 return {};

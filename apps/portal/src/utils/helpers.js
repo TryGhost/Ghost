@@ -274,10 +274,19 @@ export function arePaidMembersEnabled({site}) {
     return site?.paid_members_enabled === true;
 }
 
+// Whether gifting is possible at all. Gifting works via the /portal/gift URL
+// whenever paid tiers exist — it is NOT gated by the visibility setting, so a
+// shared gift link always works even when the option is hidden from Portal.
+export function canGiftSubscriptions({site}) {
+    return arePaidMembersEnabled({site});
+}
+
+// Whether the gift option is surfaced inside Portal (e.g. the "Give a gift"
+// account action). This is what the `gift_subscriptions_enabled` setting now
+// controls — visibility only. Missing setting (older Ghost versions) counts as
+// visible: the feature shipped default-on and only an explicit opt-out hides it.
 export function areGiftSubscriptionsEnabled({site}) {
-    // Missing setting (older Ghost versions) counts as enabled — the feature
-    // shipped default-on and only an explicit opt-out disables it.
-    return arePaidMembersEnabled({site}) && site?.gift_subscriptions_enabled !== false;
+    return canGiftSubscriptions({site}) && site?.gift_subscriptions_enabled !== false;
 }
 
 export function isSigninAllowed({site}) {
