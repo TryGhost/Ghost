@@ -11,7 +11,7 @@
     justify-content: center;
     left: 0;
     padding-bottom: 8vh;
-    background-color: #fff;
+    background-color: var(--main-bg-color);
 }
 
 .gh-loading-content.basic-auth {
