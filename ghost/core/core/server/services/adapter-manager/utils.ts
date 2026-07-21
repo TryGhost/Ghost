@@ -147,8 +147,12 @@ function getSchedulingConfig(config: ConfigInstance) {
 * `config.get('adapters')` hands back a live reference — baking the first
 * caller's content path into it would survive later config changes. Only keys
 * already present in the config block are filled in, so removing a store from
-* the block keeps it absent rather than resurrecting it; an explicitly
-* configured path always wins.
+* the block keeps it absent rather than resurrecting it.
+*
+* A configured path wins only if it is truthy: an empty string is treated as
+* unset and falls back to the default. That's deliberate — these paths arrive
+* via nconf, where an env override like `..._basePath=` yields `''`, and a
+* usable default beats handing a store an empty path.
 *
 * @NOTE: keyed by class name, so a new route-settings store needs an entry here
 * — `defaultSettingsBasePath` is a hard schema requirement, and without one the

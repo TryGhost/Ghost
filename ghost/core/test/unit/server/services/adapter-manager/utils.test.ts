@@ -170,6 +170,26 @@ describe('Adapter Manager: utils', function () {
             assert.equal(normalizedConfig['route-settings'].S3RouteSettingsStore.defaultSettingsBasePath, '/custom/defaults');
         });
 
+        // Pins the `||=` semantics the helper has always had: nconf turns an env
+        // override like `..._defaultSettingsBasePath=` into an empty string, and a
+        // usable default beats handing the store an empty path.
+        it('treats an empty configured path as unset and falls back to the default', () => {
+            const conf = loadNconf();
+            conf.set('paths:defaultRouteSettings', '/default/route/settings');
+            conf.set('adapters', {
+                'route-settings': {
+                    active: 'S3RouteSettingsStore',
+                    'S3RouteSettingsStore': {
+                        bucket: 'a-bucket',
+                        staticFileURLPrefix: 'content/settings',
+                        defaultSettingsBasePath: '',
+                    },
+                },
+            });
+            const normalizedConfig = normalizeAdapterConfig(conf);
+            assert.equal(normalizedConfig['route-settings'].S3RouteSettingsStore.defaultSettingsBasePath, '/default/route/settings');
+        });
+
         it('does not invent adapter config for a store that is not configured', () => {
             const conf = loadNconf();
             conf.set('paths:defaultRouteSettings', '/default/route/settings');
