@@ -11,7 +11,6 @@ import DynamicTable from '../table/dynamic-table';
 import Hint from '../hint';
 import Heading from '../heading';
 import {tableRowHoverBgClasses} from '../table-row';
-import Breadcrumbs from '../breadcrumbs';
 import Button from '../button';
 import {Toggle} from '../..';
 
@@ -353,20 +352,16 @@ export const ExampleDetailScreen: Story = {
     name: 'Example: Detail Page',
     args: {
         showAppMenu: true,
-        breadCrumbs: <Breadcrumbs
-            items={[
-                {
-                    label: 'Members',
-                    onClick: () => {
-                        alert('Clicked back');
-                    }
-                },
-                {
-                    label: 'Emerson Vaccaro'
-                }
-            ]}
-            backIcon
-        />,
+        breadCrumbs: <div className='flex items-center gap-2'>
+            <Button className='mr-1' icon='arrow-left' size='sm' link onClick={() => {
+                alert('Clicked back');
+            }} />
+            <button className='cursor-pointer' type='button' onClick={() => {
+                alert('Clicked back');
+            }}>Members</button>
+            <span>/</span>
+            <span className='font-bold'>Emerson Vaccaro</span>
+        </div>,
         showGlobalActions: true,
         children: <>
             <ViewContainer

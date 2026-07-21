@@ -1,6 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/portal-frame';
 import toast from 'react-hot-toast';
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator} from '@tryghost/shade/components';
 import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
@@ -273,16 +274,27 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
         preview={iframe}
-        previewToolbarBreadcrumbs={[
-            {label: 'Offers', onClick: goBack},
-            {label: formState?.name || 'Offer'}
-        ]}
+        previewToolbarBreadcrumbs={
+            <div className='flex items-center gap-2'>
+                <Button className='mr-1' icon='arrow-left' size='sm' link onClick={goBack} />
+                <Breadcrumb className='max-md:hidden'>
+                    <BreadcrumbList className='whitespace-nowrap'>
+                        <BreadcrumbItem>
+                            <BreadcrumbLink className='cursor-pointer' onClick={goBack}>Offers</BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbPage>{formState?.name || 'Offer'}</BreadcrumbPage>
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
+            </div>
+        }
         sidebar={sidebar}
         size='lg'
         testId='offer-update-modal'
         title='Offer'
         width={1140}
-        onBreadcrumbsBack={goBack}
         onCancel={goBack}
         onOk={async () => {
             try {

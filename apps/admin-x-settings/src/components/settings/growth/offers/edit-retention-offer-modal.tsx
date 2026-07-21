@@ -1,8 +1,9 @@
 import PortalFrame from '../../membership/portal/portal-frame';
 import toast from 'react-hot-toast';
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator} from '@tryghost/shade/components';
+import {Button, Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {ButtonSelect, type OfferType} from './add-offer-modal';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useAddOffer, useBrowseOffers, useEditOffer, useInvalidateOffers} from '@tryghost/admin-x-framework/api/offers';
 import {createOfferRedemptionsFilterUrl, formatOfferTimestamp, generateRetentionOfferName} from './offer-helpers';
@@ -655,16 +656,27 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
             preview={preview}
-            previewToolbarBreadcrumbs={[
-                {label: 'Offers', onClick: goBack},
-                {label: breadcrumbTitle}
-            ]}
+            previewToolbarBreadcrumbs={
+                <div className='flex items-center gap-2'>
+                    <Button className='mr-1' icon='arrow-left' size='sm' link onClick={goBack} />
+                    <Breadcrumb className='max-md:hidden'>
+                        <BreadcrumbList className='whitespace-nowrap'>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink className='cursor-pointer' onClick={goBack}>Offers</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>{breadcrumbTitle}</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </div>
+            }
             sidebar={sidebar}
             size='lg'
             testId='retention-offer-modal'
             title='Offer'
             width={1140}
-            onBreadcrumbsBack={goBack}
             onCancel={goBack}
             onOk={handleSaveClick}
         />
