@@ -4,7 +4,6 @@ import clsx from 'clsx';
 import AppMenu from './app-menu';
 import GlobalActions from './global-actions';
 import Button from '../button';
-import {BreadcrumbsProps} from '../breadcrumbs';
 import PageHeader from './page-header';
 
 export interface PageTab {
@@ -42,7 +41,7 @@ interface PageProps {
      * TK. Part of the Page Toolbar
      */
     customGlobalActions?: CustomGlobalAction[];
-    breadCrumbs?: React.ReactElement<BreadcrumbsProps>;
+    breadCrumbs?: React.ReactNode;
 
     /**
      * TK. Part of the Page Toolbar
