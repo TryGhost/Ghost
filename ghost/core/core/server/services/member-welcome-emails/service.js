@@ -368,10 +368,11 @@ class MemberWelcomeEmailService {
      * @param {null | object} options.email.designSettings
      * @param {'welcome' | 'automation'} options.emailType
      * @param {boolean} [options.trackOpens]
+     * @param {null | {automationActionRevisionId: string}} [options.analytics]
      * @param {null | {url: string, oneClickUrl: string}} [options.unsubscribe] - When set, the footer links to an unsubscribe URL and the email carries one-click List-Unsubscribe headers
      * @returns {Promise<unknown>}
      */
-    async #sendEmail({member, memberStatus, email, emailType, trackOpens, unsubscribe = null}) {
+    async #sendEmail({member, memberStatus, email, emailType, trackOpens, analytics = null, unsubscribe = null}) {
         if (!member.email) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.MISSING_RECIPIENT_EMAIL
@@ -396,7 +397,8 @@ class MemberWelcomeEmailService {
                 uuid: member.uuid
             },
             siteSettings: this.#getSiteSettings(),
-            unsubscribeUrl: unsubscribe?.url
+            unsubscribeUrl: unsubscribe?.url,
+            analytics
         });
 
         const senderOptions = await this.#getEffectiveSenderOptions(
@@ -474,9 +476,10 @@ class MemberWelcomeEmailService {
      * @param {string} options.member.uuid
      * @param {'free' | 'paid'} options.memberStatus
      * @param {boolean} options.trackOpens
+     * @param {null | {automationActionRevisionId: string}} [options.analytics]
      * @returns {Promise<unknown>}
      */
-    async sendAutomationEmail({email, member, memberStatus, trackOpens}) {
+    async sendAutomationEmail({email, member, memberStatus, trackOpens, analytics = null}) {
         const designSettings = email.designSettingId ?
             await EmailDesignSetting.findOne({id: email.designSettingId}) :
             null;
@@ -502,6 +505,7 @@ class MemberWelcomeEmailService {
                 designSettings: designSettingsJson
             },
             trackOpens,
+            analytics,
             unsubscribe
         });
     }

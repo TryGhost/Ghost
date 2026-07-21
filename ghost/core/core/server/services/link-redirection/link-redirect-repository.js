@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const {LinkRedirect} = require('./link-redirect');
 const ObjectID = require('bson-objectid').default;
 const debug = require('@tryghost/debug')('LinkRedirectRepository');
@@ -42,14 +43,19 @@ module.exports = class LinkRedirectRepository {
     /**
      * Save a new LinkRedirect to the DB
      * @param {InstanceType<LinkRedirect>} linkRedirect
+     * @param {{automationActionRevisionId?: string}} [options]
      * @returns {Promise<void>}
      */
-    async save(linkRedirect) {
+    async save(linkRedirect, options = {}) {
         debug('Saving link redirect', linkRedirect.from.pathname, '->', linkRedirect.to.href);
         const model = await this.#LinkRedirect.add({
             // Only store the pathname (no support for variable query strings)
             from: this.stripSubdirectoryFromPath(linkRedirect.from.pathname),
-            to: linkRedirect.to.href
+            to: linkRedirect.to.href,
+            ...(options.automationActionRevisionId ? {
+                automation_action_revision_id: options.automationActionRevisionId,
+                to_hash: this.#getToHash(linkRedirect.to)
+            } : {})
         }, {});
 
         linkRedirect.link_id = ObjectID.createFromHexString(model.id);
@@ -178,6 +184,32 @@ module.exports = class LinkRedirectRepository {
             }
             return linkRedirect;
         }
+    }
+
+    /**
+     * Get an automation LinkRedirect by action revision and destination URL
+     * @param {string} automationActionRevisionId
+     * @param {URL} url
+     * @returns {Promise<InstanceType<LinkRedirect>|undefined>} LinkRedirect
+     */
+    async getByAutomationActionRevisionAndURL(automationActionRevisionId, url) {
+        const linkRedirectModel = await this.#LinkRedirect.findOne({
+            automation_action_revision_id: automationActionRevisionId,
+            to_hash: this.#getToHash(url)
+        }, {});
+
+        if (linkRedirectModel) {
+            return this.fromModel(linkRedirectModel);
+        }
+    }
+
+    /**
+     * The destination column is too long to index, so unique lookups use its SHA-256 digest
+     * @param {URL} url
+     * @returns {string}
+     */
+    #getToHash(url) {
+        return crypto.createHash('sha256').update(url.href).digest('hex');
     }
 
     /**
