@@ -205,6 +205,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
+    },
+    Object {
       "key": "portal_name",
       "value": true,
     },
@@ -1104,6 +1108,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
+    },
+    Object {
       "key": "portal_name",
       "value": true,
     },
@@ -1552,6 +1560,10 @@ Object {
     Object {
       "key": "members_yearly_price_id",
       "value": null,
+    },
+    Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
     },
     Object {
       "key": "portal_name",
@@ -2004,6 +2016,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
+    },
+    Object {
       "key": "portal_name",
       "value": true,
     },
@@ -2253,7 +2269,7 @@ exports[`Settings API Edit can edit Stripe settings when Stripe Connect limit is
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5466",
+  "content-length": "5516",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2497,6 +2513,10 @@ Object {
     Object {
       "key": "members_yearly_price_id",
       "value": null,
+    },
+    Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
     },
     Object {
       "key": "portal_name",
@@ -2946,6 +2966,10 @@ Object {
     Object {
       "key": "members_yearly_price_id",
       "value": null,
+    },
+    Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
     },
     Object {
       "key": "portal_name",
@@ -3884,6 +3908,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
+    },
+    Object {
       "key": "portal_name",
       "value": true,
     },
@@ -4334,6 +4362,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
+    },
+    Object {
       "key": "portal_name",
       "value": true,
     },
@@ -4782,6 +4814,10 @@ Object {
     Object {
       "key": "members_yearly_price_id",
       "value": null,
+    },
+    Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
     },
     Object {
       "key": "portal_name",
@@ -5238,6 +5274,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
+    },
+    Object {
       "key": "portal_name",
       "value": true,
     },
@@ -5685,6 +5725,10 @@ Object {
     Object {
       "key": "members_yearly_price_id",
       "value": null,
+    },
+    Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
     },
     Object {
       "key": "portal_name",
@@ -6139,6 +6183,10 @@ Object {
     Object {
       "key": "members_yearly_price_id",
       "value": null,
+    },
+    Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
     },
     Object {
       "key": "portal_name",
@@ -6983,6 +7031,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
+    },
+    Object {
       "key": "portal_name",
       "value": true,
     },
@@ -7431,6 +7483,10 @@ Object {
     Object {
       "key": "members_yearly_price_id",
       "value": null,
+    },
+    Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
     },
     Object {
       "key": "portal_name",
@@ -7883,6 +7939,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
+    },
+    Object {
       "key": "portal_name",
       "value": true,
     },
@@ -8332,6 +8392,10 @@ Object {
     Object {
       "key": "members_yearly_price_id",
       "value": null,
+    },
+    Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
     },
     Object {
       "key": "portal_name",
@@ -8882,6 +8946,10 @@ Object {
     Object {
       "key": "members_yearly_price_id",
       "value": null,
+    },
+    Object {
+      "key": "gift_subscriptions_enabled",
+      "value": true,
     },
     Object {
       "key": "portal_name",

@@ -86,6 +86,7 @@ describe('RouterController', function () {
         settingsHelpers = {
             getMembersSupportAddress: sinon.stub().returns('noreply@example.com'),
             arePaidMembersEnabled: sinon.stub().returns(true),
+            areGiftSubscriptionsEnabled: sinon.stub().returns(true),
             areDonationsEnabled: sinon.stub().returns(true)
         };
     });
@@ -848,7 +849,28 @@ describe('RouterController', function () {
                     tiersService: paidTierService(),
                     settingsHelpers: {
                         ...settingsHelpers,
-                        arePaidMembersEnabled: sinon.stub().returns(false)
+                        arePaidMembersEnabled: sinon.stub().returns(false),
+                        areGiftSubscriptionsEnabled: sinon.stub().returns(false)
+                    }
+                });
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.DisabledFeatureError);
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
+            });
+
+            it('throws DisabledFeatureError when gift subscriptions are disabled', async function () {
+                const controller = createGiftController({
+                    tiersService: paidTierService(),
+                    settingsHelpers: {
+                        ...settingsHelpers,
+                        areGiftSubscriptionsEnabled: sinon.stub().returns(false)
                     }
                 });
 

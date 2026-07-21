@@ -43,6 +43,7 @@ module.exports = {
     members_invite_only: 'members_invite_only',
     members_signup_access: 'members_signup_access',
     paid_members_enabled: 'paid_members_enabled',
+    gift_subscriptions_enabled: 'gift_subscriptions_enabled',
     firstpromoter_account: 'firstpromoter_account',
     portal_button_style: 'portal_button_style',
     portal_button_signup_text: 'portal_button_signup_text',

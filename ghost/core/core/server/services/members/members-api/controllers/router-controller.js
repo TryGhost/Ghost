@@ -684,7 +684,7 @@ module.exports = class RouterController {
      * @returns
      */
     async _createGiftCheckoutSession(options) {
-        if (!this._settingsHelpers.arePaidMembersEnabled()) {
+        if (!this._settingsHelpers.areGiftSubscriptionsEnabled()) {
             throw new DisabledFeatureError({
                 message: tpl(messages.notConfigured)
             });

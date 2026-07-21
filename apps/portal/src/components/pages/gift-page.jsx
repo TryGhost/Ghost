@@ -1,6 +1,7 @@
 import {useContext, useLayoutEffect, useRef, useState} from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
+import BackButton from '../common/back-button';
 import ActionButton from '../common/action-button';
 import GiftCard from '../common/gift-card';
 import InputField from '../common/input-field';
@@ -372,6 +373,14 @@ export const GiftPageStyles = `
     font-weight: 600;
 }
 
+.gh-portal-gift-checkout-cta-note {
+    margin: 12px 0 0;
+    text-align: center;
+    font-size: 1.3rem;
+    line-height: 1.4em;
+    color: var(--grey6);
+}
+
 .gh-portal-gift-checkout-right {
     position: sticky;
     top: 0;
@@ -720,7 +729,7 @@ function getTierPriceLabel(product, selectedInterval) {
 }
 
 const GiftPage = () => {
-    const {site, member, brandColor, action, doAction} = useContext(AppContext);
+    const {site, member, brandColor, action, doAction, lastPage} = useContext(AppContext);
     const [selectedInterval, setSelectedInterval] = useState(null);
     const [selectedProductId, setSelectedProductId] = useState(null);
     const [email, setEmail] = useState('');
@@ -812,6 +821,7 @@ const GiftPage = () => {
     if (products.length === 0) {
         return (
             <>
+                <BackButton hidden={!lastPage} onClick={() => doAction('back')} />
                 <CloseButton />
                 <div className='gh-portal-content gift'>
                     <div className='gh-portal-gift-checkout'>
@@ -893,6 +903,7 @@ const GiftPage = () => {
 
     return (
         <>
+            <BackButton hidden={!lastPage} onClick={() => doAction('back')} />
             <CloseButton />
             <div className='gh-portal-content gift'>
                 <div className='gh-portal-gift-checkout'>
@@ -1019,6 +1030,9 @@ const GiftPage = () => {
                                     classes='gh-portal-gift-checkout-cta'
                                     style={{width: '100%'}}
                                 />
+                                <p className='gh-portal-gift-checkout-cta-note'>
+                                    {t('One-time payment. You\'ll get a gift link to send however you like.')}
+                                </p>
                             </div>
                         </div>
                     </div>

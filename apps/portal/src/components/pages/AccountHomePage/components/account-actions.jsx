@@ -3,6 +3,7 @@ import {useContext} from 'react';
 import {hasCommentsEnabled, hasMultipleNewsletters, isEmailSuppressed, hasNewsletterSendingEnabled} from '../../../../utils/helpers';
 
 import PaidAccountActions from './paid-account-actions';
+import GiveGiftAction from './give-gift-action';
 import TransistorPodcastsAction from './transistor-podcasts-action';
 import EmailNewsletterAction from './email-newsletter-action';
 import EmailPreferencesAction from './email-preferences-action';
@@ -81,6 +82,7 @@ const AccountActions = () => {
                         settings={transistor.settings}
                     />
                 )}
+                <GiveGiftAction />
             </div>
 
         </div>

@@ -369,6 +369,14 @@
             },
             "type": "boolean"
         },
+        "gift_subscriptions_enabled": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
         "blocked_email_domains": {
             "defaultValue": "[]",
             "type": "array"

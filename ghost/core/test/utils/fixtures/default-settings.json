@@ -368,6 +368,14 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "gift_subscriptions_enabled": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "portal": {

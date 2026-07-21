@@ -20,6 +20,7 @@ Object {
     "gift_page_description": null,
     "gift_page_heading": null,
     "gift_page_image": null,
+    "gift_subscriptions_enabled": true,
     "icon": null,
     "instagram": null,
     "labs": Any<Object>,

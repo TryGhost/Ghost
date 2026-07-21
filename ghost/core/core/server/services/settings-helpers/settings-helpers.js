@@ -81,6 +81,10 @@ class SettingsHelpers {
         return this.isMembersEnabled() && this.isStripeConnected();
     }
 
+    areGiftSubscriptionsEnabled() {
+        return this.arePaidMembersEnabled() && this.settingsCache.get('gift_subscriptions_enabled') !== false;
+    }
+
     getFirstpromoterId() {
         if (!this.settingsCache.get('firstpromoter')) {
             return null;

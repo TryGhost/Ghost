@@ -6,6 +6,13 @@
             "runtimeExecutable": "pnpm",
             "runtimeArgs": ["dev"],
             "port": 2368
+        },
+        {
+            "name": "portal-harness",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": ["--filter", "@tryghost/portal", "exec", "vite", "--config", "harness/vite.config.mjs"],
+            "port": 5199
+
         }
     ]
 }

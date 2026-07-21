@@ -274,6 +274,12 @@ export function arePaidMembersEnabled({site}) {
     return site?.paid_members_enabled === true;
 }
 
+export function areGiftSubscriptionsEnabled({site}) {
+    // Missing setting (older Ghost versions) counts as enabled — the feature
+    // shipped default-on and only an explicit opt-out disables it.
+    return arePaidMembersEnabled({site}) && site?.gift_subscriptions_enabled !== false;
+}
+
 export function isSigninAllowed({site}) {
     return site?.members_signup_access !== 'none';
 }
