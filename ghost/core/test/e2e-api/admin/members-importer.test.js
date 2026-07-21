@@ -314,6 +314,28 @@ describe('Members Importer API', function () {
         assert.equal(postLabelRemoveBrowseResponse.body.members.length, 0);
     });
 
+    // A label typed into the import form is one name. Per-row labels in the CSV are
+    // comma-separated by design, but a global label is not, so a comma in it should
+    // not split it in two.
+    it('Keeps a global label that contains a comma as one label', async function () {
+        await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .field('labels', ['Bristol, UK'])
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/valid-members-labels.csv'))
+            .set('Origin', config.get('url'))
+            .expect(201);
+
+        const res = await request
+            .get(localUtils.API.getApiQuery("members/?filter=label:'bristol-uk'"))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        assert.equal(res.body.meta.pagination.total, 2, 'both members should carry the whole label');
+        const labels = res.body.members[0].labels.map(l => l.name);
+        assert.ok(labels.includes('Bristol, UK'), `expected a "Bristol, UK" label, got ${JSON.stringify(labels)}`);
+        assert.equal(labels.includes('Bristol'), false, 'the label should not have been split');
+    });
+
     // Values starting with = + - @ or a tab are what a spreadsheet would treat as a
     // formula. Guarding against that belongs on the way out to a CSV, not on the way
     // in to the database.

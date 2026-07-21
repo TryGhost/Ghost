@@ -133,11 +133,9 @@ module.exports = class MembersCSVImporter {
      *
      * @param {string} inputFilePath - The path to the CSV to prepare
      * @param {Object.<string, string>} [headerMapping] - An object whose keys are headers in the input CSV and values are the header to replace it with
-     * @param {Array<string>} [defaultLabels] - A list of labels to apply to every member
-     *
      * @returns {Promise<{filePath: string, batches: number, metadata: Object.<string, any>}>} - A promise resolving to the data including filePath of "prepared" CSV
      */
-    async prepare(inputFilePath, headerMapping, defaultLabels) {
+    async prepare(inputFilePath, headerMapping) {
         headerMapping = headerMapping || DEFAULT_CSV_HEADER_MAPPING;
         // @NOTE: investigate why is it "1" and do we even need this concept anymore?
         const batchSize = 1;
@@ -154,7 +152,7 @@ module.exports = class MembersCSVImporter {
         }
 
         // completely rely on explicit user input for header mappings
-        const rows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
+        const rows = await membersCSV.parse(inputFilePath, headerMapping);
         const numberOfBatches = Math.ceil(rows.length / batchSize);
         const mappedCSV = serialisePreparedRows(rows);
 
@@ -177,9 +175,15 @@ module.exports = class MembersCSVImporter {
      * Performs an import of a CSV file
      *
      * @param {string} filePath - the path to a "prepared" CSV file
+     * @param {Array<string|{name: string}>} [globalLabels] - labels to apply to every member
      */
-    async perform(filePath) {
+    async perform(filePath, globalLabels = []) {
         const performStart = Date.now();
+        // Copied rather than passed through: the member model stamps ids and trims
+        // names onto label objects in place, and these are the caller's — one of them
+        // is the import label it looks up again once the import has finished.
+        const toLabel = label => (typeof label === 'string' ? {name: label} : {...label});
+        const normalisedGlobalLabels = (globalLabels || []).map(toLabel);
         const rows = await membersCSV.parse(filePath, DEFAULT_CSV_HEADER_MAPPING);
 
         const defaultTier = await this._getDefaultTier();
@@ -227,7 +231,13 @@ module.exports = class MembersCSVImporter {
                     note: row.note,
                     subscribed: row.subscribed,
                     created_at: createdAt,
-                    labels: row.labels
+                    // Applied here rather than folded into the parsed rows, so they
+                    // never go through the prepared file's comma-separated labels
+                    // column, which would split a name that contains a comma.
+                    // Fresh copies per row for the same reason: each row runs in its
+                    // own transaction, so rows sharing label objects would carry one
+                    // row's mutations into the next.
+                    labels: [...(row.labels || []), ...normalisedGlobalLabels.map(toLabel)]
                 };
                 const existingMember = await membersRepository.get({email: memberValues.email}, {
                     ...options,
@@ -464,12 +474,12 @@ module.exports = class MembersCSVImporter {
      */
     async process({pathToCSV, headerMapping, globalLabels, importLabel, user, LabelModel, forceInline, verificationTrigger}) {
         const meta = {};
-        const job = await this.prepare(pathToCSV, headerMapping, globalLabels);
+        const job = await this.prepare(pathToCSV, headerMapping);
 
         meta.originalImportSize = job.batches;
 
         if ((job.batches <= 500 && !job.metadata.hasStripeData) || forceInline) {
-            const result = await this.perform(job.filePath);
+            const result = await this.perform(job.filePath, globalLabels);
             const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
             await verificationTrigger.testImportThreshold();
 
@@ -487,7 +497,7 @@ module.exports = class MembersCSVImporter {
             this._addJob({
                 job: async () => {
                     try {
-                        const result = await this.perform(job.filePath);
+                        const result = await this.perform(job.filePath, globalLabels);
                         const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
                         const emailContent = this.generateCompletionEmail(result, {
                             emailRecipient,
