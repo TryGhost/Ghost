@@ -145,6 +145,11 @@
                     "object_type": "db"
                 },
                 {
+                    "name": "Import content",
+                    "action_type": "importContent",
+                    "object_type": "content_import"
+                },
+                {
                     "name": "Send mail",
                     "action_type": "send",
                     "object_type": "mail"
@@ -966,6 +971,7 @@
             "entries": {
                 "Administrator": {
                     "db": "all",
+                    "content_import": "all",
                     "mail": "all",
                     "notification": "all",
                     "post": "all",
@@ -1020,6 +1026,7 @@
                 },
                 "Self-Serve Migration Integration": {
                     "db": "importContent",
+                    "content_import": "importContent",
                     "member": "add",
                     "tag": "read"
                 },
