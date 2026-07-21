@@ -11,6 +11,14 @@ const models = require('../../../core/server/models');
 
 let request;
 
+async function countMembers(agent) {
+    const res = await agent
+        .get(localUtils.API.getApiQuery('members/?limit=1'))
+        .set('Origin', config.get('url'))
+        .expect(200);
+    return res.body.meta.pagination.total;
+}
+
 async function getNewsletters() {
     return (await models.Newsletter.findAll({filter: 'status:active'})).models;
 }
@@ -312,6 +320,37 @@ describe('Members Importer API', function () {
             .expect(200);
 
         assert.equal(postLabelRemoveBrowseResponse.body.members.length, 0);
+    });
+
+    it('Imports a CSV of headers with no rows without failing', async function () {
+        const before = await countMembers(request);
+
+        const res = await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-headers-only.csv'))
+            .set('Origin', config.get('url'))
+            .expect(201);
+
+        assert.equal(res.body.meta.stats.imported, 0);
+        assert.equal(await countMembers(request), before, 'nobody should have been created');
+    });
+
+    it('Keeps every column when the first row has fewer fields than the header', async function () {
+        await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-ragged-row.csv'))
+            .set('Origin', config.get('url'))
+            .expect(201);
+
+        const res = await request
+            .get(localUtils.API.getApiQuery('members/?search=ragged-full'))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        const member = res.body.members.find(m => m.email === 'ragged-full@example.com');
+        assertExists(member);
+        assert.equal(member.name, 'Bob');
+        assert.equal(member.note, 'a note');
     });
 
     it('Can handle empty body', async function () {
