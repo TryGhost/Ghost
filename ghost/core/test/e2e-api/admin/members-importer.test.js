@@ -376,6 +376,25 @@ describe('Members Importer API', function () {
         assert.equal(symbols.note, '@handle');
     });
 
+    it('Keeps a form label that contains a comma as one label', async function () {
+        await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .field('labels', ['Bristol, UK'])
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/valid-members-labels.csv'))
+            .set('Origin', config.get('url'))
+            .expect(201);
+
+        const res = await request
+            .get(localUtils.API.getApiQuery("members/?filter=label:'bristol-uk'"))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        assert.equal(res.body.meta.pagination.total, 2, 'both members should carry the whole label');
+        const labels = res.body.members[0].labels.map(l => l.name);
+        assert.ok(labels.includes('Bristol, UK'), `expected "Bristol, UK", got ${JSON.stringify(labels)}`);
+        assert.equal(labels.includes('Bristol'), false, 'the label must not have been split');
+    });
+
     it('Can handle empty body', async function () {
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
