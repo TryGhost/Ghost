@@ -4,12 +4,16 @@ import {type Setting} from '@tryghost/admin-x-framework/api/settings';
 import {getGiftPreviewUrl} from '../../../../utils/get-gift-preview-url';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
-// The gift page is a full-bleed, full-screen two-column layout — it can't be
-// crammed into the narrow modal preview pane without cropping the branded card.
-// Instead we render it at a real desktop size and contain-scale the whole thing
-// down to fit the pane, so the full page shows proportionally.
+// The gift page is a full-bleed, full-screen two-column layout. We render it into
+// a virtual desktop-width viewport whose height tracks the preview pane's aspect,
+// then scale it to fill the pane edge-to-edge (never upscaling past 1:1).
+//
+// The scaled frame is positioned ABSOLUTELY so it can't inflate the container we
+// measure against. The preview area (deviceSelector=false → a `flex grow
+// items-center` wrapper, no DesktopChrome) gives the container a real height only
+// when nothing in-flow forces it taller; an in-flow fixed/derived height fed back
+// on the measurement and pushed the page's content out of view.
 const DESIGN_WIDTH = 1280;
-const DESIGN_HEIGHT = 832;
 
 interface GiftPreviewProps {
     localSettings: Setting[];
@@ -18,7 +22,7 @@ interface GiftPreviewProps {
 const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings}) => {
     const {siteData, config} = useGlobalData();
     const containerRef = useRef<HTMLDivElement>(null);
-    const [scale, setScale] = useState(0);
+    const [frame, setFrame] = useState({scale: 0, width: 0, height: 0});
 
     const href = getGiftPreviewUrl({
         settings: localSettings,
@@ -34,8 +38,8 @@ const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings}) => {
         const update = () => {
             const {width, height} = el.getBoundingClientRect();
             if (width && height) {
-                // Contain: fit within the pane on both axes, never upscale
-                setScale(Math.min(width / DESIGN_WIDTH, height / DESIGN_HEIGHT, 1));
+                const scale = Math.min(width / DESIGN_WIDTH, 1);
+                setFrame({scale, width: width / scale, height: height / scale});
             }
         };
         update();
@@ -45,21 +49,17 @@ const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings}) => {
     }, []);
 
     return (
-        <div
-            ref={containerRef}
-            className='flex size-full items-start justify-center overflow-hidden'
-        >
-            {scale > 0 && (
+        <div ref={containerRef} className='relative size-full overflow-hidden bg-white dark:bg-black'>
+            {frame.scale > 0 && (
                 <div
                     style={{
-                        width: DESIGN_WIDTH,
-                        height: DESIGN_HEIGHT,
-                        transform: `scale(${scale})`,
-                        transformOrigin: 'top center',
-                        flexShrink: 0,
-                        borderRadius: 12,
-                        overflow: 'hidden',
-                        boxShadow: '0 1px 20px rgba(0,0,0,0.09)'
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: frame.width,
+                        height: frame.height,
+                        transform: `scale(${frame.scale})`,
+                        transformOrigin: 'top left'
                     }}
                 >
                     <PortalFrame href={href || ''} portalParent='preview' />
