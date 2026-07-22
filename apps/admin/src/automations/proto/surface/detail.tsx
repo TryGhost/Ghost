@@ -1,10 +1,10 @@
 import React, {useState} from 'react';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
-import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator} from '@tryghost/shade/components';
+import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
-import {getScenario} from '@/automations/proto/shared/mock';
+import {getScenario, mockAutomations} from '@/automations/proto/shared/mock';
 import {SurfaceAnalyticsPane} from './analytics-pane';
 import {SurfaceEditCanvas} from './edit-canvas';
 import {SurfaceFlowCanvas} from './flow-canvas';
@@ -15,7 +15,7 @@ type LiveStatus = 'active' | 'inactive';
 type SaveState = 'saved' | 'saving';
 
 // Fixed left-pane width so it can cleanly slide out / in without reflowing.
-const LEFT_PANE = 'w-[420px]';
+const LEFT_PANE = 'w-[480px]';
 
 const StatusPill: React.FC<{status: LiveStatus}> = ({status}) => (
     status === 'active'
@@ -117,7 +117,41 @@ const AutomationSurface: React.FC = () => {
                             <LucideIcon.ArrowLeft strokeWidth={2} />
                         </Button>
                     )}
-                    <span className="text-lg font-semibold">{automation.name}</span>
+                    {isEdit ? (
+                        <span className="text-lg font-semibold">{automation.name}</span>
+                    ) : (
+                        // Discreet flat switcher — jump straight to any other automation.
+                        // Prototype-only convenience; no chevron, opens on hover. HoverCard
+                        // (not DropdownMenu) is used deliberately — it has native hover-intent
+                        // timing and none of the menu/focus-trap semantics that made a
+                        // hand-rolled hover version of DropdownMenu flicker.
+                        <HoverCard closeDelay={150} openDelay={150}>
+                            <HoverCardTrigger asChild>
+                                <button
+                                    className="-mx-2 -my-1 rounded-sm px-2 py-1 text-lg font-semibold transition-colors hover:bg-interactive-hover"
+                                    type="button"
+                                >
+                                    {automation.name}
+                                </button>
+                            </HoverCardTrigger>
+                            <HoverCardContent align="start" className="max-h-80 w-64 overflow-y-auto p-1">
+                                {mockAutomations.map(a => (
+                                    <button
+                                        key={a.id}
+                                        className={cn(
+                                            'flex w-full items-center justify-between gap-3 rounded-xs px-2 py-1.5 text-left text-control transition-colors hover:bg-interactive-hover',
+                                            a.id === automation.id && 'bg-muted-foreground/10 font-medium'
+                                        )}
+                                        type="button"
+                                        onClick={() => a.id !== automation.id && navigate(toVersioned(`/automations-proto/surface/${a.id}`))}
+                                    >
+                                        <span className="truncate">{a.name}</span>
+                                        <StatusPill status={a.status} />
+                                    </button>
+                                ))}
+                            </HoverCardContent>
+                        </HoverCard>
+                    )}
                     <StatusPill status={liveStatus} />
                 </Inline>
                 <Inline align="center" gap="sm">
