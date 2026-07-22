@@ -39,7 +39,12 @@ describe('PaywallNode', function () {
             nodes: editorNodes
         });
 
-        dataset = {};
+        dataset = {
+            emailTitle: 'Keep reading',
+            emailBody: 'Join to read the rest of this post.',
+            emailButtonText: 'Join now',
+            emailButtonUrl: 'https://example.com/join'
+        };
 
         exportOptions = {
             exportFormat: 'html',
@@ -53,11 +58,21 @@ describe('PaywallNode', function () {
     }));
 
     describe('exportJSON', function () {
+        it('uses the paid signup URL by default', editorTest(function () {
+            const paywallNode = $createPaywallNode();
+
+            expect(paywallNode.getDataset().emailButtonUrl).toBe('#/portal/signup');
+        }));
+
         it('contains all data', editorTest(function () {
             const paywallNode = $createPaywallNode(dataset);
             const json = paywallNode.exportJSON();
 
             expect(json).toEqual({
+                emailBody: 'Join to read the rest of this post.',
+                emailButtonText: 'Join now',
+                emailButtonUrl: 'https://example.com/join',
+                emailTitle: 'Keep reading',
                 type: 'paywall',
                 version: 1
             });
@@ -85,6 +100,7 @@ describe('PaywallNode', function () {
                     try {
                         const [paywallNode] = $getRoot().getChildren();
                         expect(paywallNode).toBeInstanceOf(PaywallNode);
+                        expect((paywallNode as PaywallNode).getDataset()).toEqual(dataset);
 
                         resolve();
                     } catch (e) {

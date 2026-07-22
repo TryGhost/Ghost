@@ -94,7 +94,7 @@ export function InputSetting({label, hideLabel, description, onChange, value, pl
 /**
  * Enter a link with autocompletion
  */
-export function InputUrlSetting({dataTestId, label, value, onChange}) {
+export function InputUrlSetting({dataTestId, excludedValues = [], label, value, onChange}) {
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [listOptions, setListOptions] = React.useState([]);
 
@@ -109,7 +109,7 @@ export function InputUrlSetting({dataTestId, label, value, onChange}) {
     }, [cardConfig]);
 
     const filteredSuggestedUrls = listOptions.filter((u) => {
-        return u.label.toLocaleLowerCase().includes(value.toLocaleLowerCase());
+        return !excludedValues.includes(u.value) && u.label.toLocaleLowerCase().includes(value.toLocaleLowerCase());
     });
 
     return (
@@ -202,10 +202,10 @@ export function DropdownSetting({label, description, value, menu, onChange, data
  * @param {boolean} options.allowAdd Whether to allow adding new items
  * @returns
  */
-export function MultiSelectDropdownSetting({label, description, placeholder = '', items, availableItems, onChange, dataTestId, allowAdd = true}) {
+export function MultiSelectDropdownSetting({label, hideLabel, description, placeholder = '', items, availableItems, onChange, dataTestId, allowAdd = true}) {
     return (
         <div className="flex w-full flex-col justify-between gap-1">
-            <div className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">{label}</div>
+            <div className={hideLabel ? 'sr-only' : 'text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300'}>{label}</div>
             <MultiSelectDropdown
                 allowAdd={allowAdd}
                 availableItems={availableItems}

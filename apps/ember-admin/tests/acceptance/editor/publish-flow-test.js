@@ -12,6 +12,47 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
+function lexicalParagraph(text) {
+    return {
+        children: text ? [{detail: 0, format: 0, mode: 'normal', style: '', text, type: 'text', version: 1}] : [],
+        direction: text ? 'ltr' : null,
+        format: '',
+        indent: 0,
+        type: 'paragraph',
+        version: 1
+    };
+}
+
+function lexicalWithPublicPreview({before = 'Public preview content', after = 'Full post content'} = {}) {
+    return JSON.stringify({
+        root: {
+            children: [
+                lexicalParagraph(before),
+                {type: 'paywall', version: 1},
+                lexicalParagraph(after)
+            ],
+            type: 'root',
+            version: 1
+        }
+    });
+}
+
+const LEXICAL_WITH_PUBLIC_PREVIEW = lexicalWithPublicPreview();
+
+function expectSinglePreviewNotice(copy) {
+    expect(findAll('[data-test-publish-preview-notice]')).to.have.length(1);
+    expect(find('[data-test-publish-preview-notice] .gh-publish-preview-notice-title')).to.not.exist;
+    expect(find('[data-test-publish-preview-notice-body] strong')).to.not.exist;
+    expect(find('[data-test-publish-preview-notice-body]')).to.have.trimmed.rendered.text(copy);
+}
+
+function expectPublicPreviewWarning(title, copy) {
+    expect(findAll('[data-test-modal="public-preview-warning"]')).to.have.length(1);
+    expect(find('[data-test-modal="public-preview-warning"]')).to.have.class('gh-tk-reminder');
+    expect(find('[data-test-modal="public-preview-warning"] h1')).to.have.trimmed.rendered.text(title);
+    expect(find('[data-test-modal="public-preview-warning"] .modal-body')).to.have.trimmed.rendered.text(copy);
+}
+
 describe('Acceptance: Publish flow', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
@@ -178,6 +219,326 @@ describe('Acceptance: Publish flow', function () {
             const label = this.server.create('label');
             this.server.createList('member', 3, {status: 'free', email_disabled: 0, labels: [label]});
             this.server.createList('member', 4, {status: 'paid', email_disabled: 0});
+        });
+
+        it('warns when there is no content above the public preview', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                lexical: lexicalWithPublicPreview({before: ''}),
+                status: 'draft',
+                visibility: 'paid'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expectPublicPreviewWarning(
+                'Nothing above the public preview',
+                'Add some content above the public preview so everyone has something to read before the paywall.'
+            );
+
+            await click('[data-test-button="continue-with-public-preview-warning"]');
+            expect(find('[data-test-publish-flow="options"]')).to.exist;
+        });
+
+        it('warns when there is no content below the public preview', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                lexical: lexicalWithPublicPreview({after: ''}),
+                status: 'draft',
+                visibility: 'paid'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expectPublicPreviewWarning(
+                'Nothing below the public preview',
+                'Add some content below the public preview for subscribers who have access to the full post.'
+            );
+
+            await click('[data-test-button="back-to-editor"]');
+            expect(find('[data-test-modal="public-preview-warning"]')).to.not.exist;
+            expect(find('[data-test-publish-flow="options"]')).to.not.exist;
+        });
+
+        it('warns when a public post contains a public preview', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                lexical: LEXICAL_WITH_PUBLIC_PREVIEW,
+                status: 'draft',
+                visibility: 'public'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expectPublicPreviewWarning(
+                'Public preview has no effect',
+                'This post is public, so everyone can read the full post and the public preview won’t have any effect.'
+            );
+        });
+
+        it('prioritizes the public-post warning over placement warnings', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                lexical: lexicalWithPublicPreview({before: '', after: ''}),
+                status: 'draft',
+                visibility: 'public'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expectPublicPreviewWarning(
+                'Public preview has no effect',
+                'This post is public, so everyone can read the full post and the public preview won’t have any effect.'
+            );
+            expect(findAll('[data-test-modal="public-preview-warning"]')).to.have.length(1);
+        });
+
+        it('does not show an email preview notice for a members-only post', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                lexical: LEXICAL_WITH_PUBLIC_PREVIEW,
+                status: 'draft',
+                visibility: 'members'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expect(find('[data-test-publish-preview-notice]')).to.not.exist;
+        });
+
+        it('describes paid post preview recipients and opens the email audience', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                lexical: LEXICAL_WITH_PUBLIC_PREVIEW,
+                status: 'draft',
+                visibility: 'paid'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expectSinglePreviewNotice('Free subscribers won’t receive the preview by email. You can change this by adding them to the email audience.');
+            expect(find('[data-test-button="edit-email-audience"]')).to.exist;
+            expect(find('[data-test-button="edit-email-audience"]')).to.have.class('green');
+
+            expect(find('[data-test-button="preview-audience"]')).to.not.exist;
+
+            await click('[data-test-button="edit-email-audience"]');
+
+            expect(find('[data-test-setting="email-recipients"] .gh-publish-setting-form')).to.exist;
+            expect(find('[data-test-checkbox="free-members"]')).to.not.be.checked;
+            await click('[data-test-checkbox="free-members"]');
+            expect(find('[data-test-checkbox="free-members"]')).to.be.checked;
+            expectSinglePreviewNotice('3 free subscribers will receive the preview by email.');
+        });
+
+        it('does not suggest free recipients for a paid-only newsletter', async function () {
+            await loginAsRole('Administrator', this.server);
+            this.server.schema.newsletters.all().models[0].update({visibility: 'paid'});
+            const post = this.server.create('post', {
+                lexical: LEXICAL_WITH_PUBLIC_PREVIEW,
+                status: 'draft',
+                visibility: 'paid'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expect(find('[data-test-publish-preview-notice]')).to.not.exist;
+            expect(find('[data-test-button="edit-email-audience"]')).to.not.exist;
+        });
+
+        it('counts some free preview recipients selected through a label', async function () {
+            await loginAsRole('Administrator', this.server);
+            this.server.create('member', {status: 'free', email_disabled: 0});
+            const post = this.server.create('post', {
+                lexical: LEXICAL_WITH_PUBLIC_PREVIEW,
+                status: 'draft',
+                visibility: 'paid'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-setting="email-recipients"] [data-test-setting-title]');
+            await click('[data-test-checkbox="specific-members"]');
+            await clickTrigger('[data-test-select="specific-members"]');
+            await selectChoose('[data-test-select="specific-members"]', 'Label 0');
+
+            expectSinglePreviewNotice('3 free subscribers will receive the preview by email.');
+        });
+
+        it('warns before final review when recipients without access will receive a full paid email without a public preview', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                status: 'draft',
+                visibility: 'paid'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-setting="email-recipients"] [data-test-setting-title]');
+            await click('[data-test-checkbox="free-members"]');
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-modal="paid-post-preview-warning"]')).to.exist;
+            expect(find('[data-test-modal="paid-post-preview-warning"] h1')).to.have.trimmed.rendered
+                .text('Send without a public preview?');
+            expect(find('[data-test-modal="paid-post-preview-warning"] .modal-body')).to.have.trimmed.rendered
+                .text('Without a public preview, any recipients who don’t have access will receive the full email.');
+
+            await click('[data-test-button="continue-without-preview"]');
+
+            expect(find('[data-test-publish-flow="confirm"]')).to.exist;
+            expect(post.status).to.equal('draft');
+
+            await click('[data-test-button="confirm-publish"]');
+
+            expect(find('[data-test-modal="paid-post-preview-warning"]')).to.not.exist;
+            expect(post.status).to.equal('published');
+        });
+
+        it('shows one ordered preview notice for tier-gated recipient states', async function () {
+            await loginAsRole('Administrator', this.server);
+            const tier = this.server.create('tier', {name: 'Gold', slug: 'gold'});
+            const post = this.server.create('post', {
+                lexical: LEXICAL_WITH_PUBLIC_PREVIEW,
+                status: 'draft',
+                tiers: [tier],
+                visibility: 'tiers'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            this.owner.lookup('service:store').peekRecord('post', post.id).tiers = [{id: tier.id, name: tier.name, slug: tier.slug}];
+            await click('[data-test-button="publish-flow"]');
+
+            expectSinglePreviewNotice('No subscribers will receive the preview by email. You can change this by editing the email audience.');
+            await click('[data-test-button="edit-email-audience"]');
+            expect(find('[data-test-setting="email-recipients"] .gh-publish-setting-form')).to.exist;
+
+            await click('[data-test-checkbox="paid-members"]');
+            expectSinglePreviewNotice('4 subscribers will receive the preview by email.');
+
+            await click('[data-test-checkbox="free-members"]');
+            expect(find('[data-test-checkbox="free-members"]')).to.be.checked;
+            expect(find('[data-test-checkbox="paid-members"]')).to.be.checked;
+            expectSinglePreviewNotice('7 subscribers will receive the preview by email.');
+
+            await click('[data-test-checkbox="paid-members"]');
+
+            expectSinglePreviewNotice('3 subscribers will receive the preview by email.');
+        });
+
+        it('shows deterministic and label fallback states without counts for editors', async function () {
+            await loginAsRole('Editor', this.server);
+            const post = this.server.create('post', {
+                lexical: LEXICAL_WITH_PUBLIC_PREVIEW,
+                status: 'draft',
+                visibility: 'paid'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expectSinglePreviewNotice('Free subscribers won’t receive the preview by email. You can change this by adding them to the email audience.');
+            await click('[data-test-button="edit-email-audience"]');
+            expect(find('[data-test-checkbox="free-members"]')).to.not.be.checked;
+            await click('[data-test-checkbox="free-members"]');
+            expectSinglePreviewNotice('Free subscribers in your email audience will receive the preview by email.');
+
+            await click('[data-test-checkbox="specific-members"]');
+            await clickTrigger('[data-test-select="specific-members"]');
+            await selectChoose('[data-test-select="specific-members"]', 'Label 0');
+            expectSinglePreviewNotice('Free subscribers in your email audience will receive the preview by email.');
+
+            await click('[data-test-checkbox="free-members"]');
+
+            expectSinglePreviewNotice('If any free subscribers are in your email audience, they’ll receive the preview by email.');
+        });
+
+        it('shows ordered tier and label fallback states without counts for editors', async function () {
+            await loginAsRole('Editor', this.server);
+            const tier = this.server.create('tier', {name: 'Gold', slug: 'gold'});
+            const post = this.server.create('post', {
+                lexical: LEXICAL_WITH_PUBLIC_PREVIEW,
+                status: 'draft',
+                tiers: [tier],
+                visibility: 'tiers'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            this.owner.lookup('service:store').peekRecord('post', post.id).tiers = [{id: tier.id, name: tier.name, slug: tier.slug}];
+            await click('[data-test-button="publish-flow"]');
+
+            expectSinglePreviewNotice('No subscribers will receive the preview by email. You can change this by editing the email audience.');
+            await click('[data-test-button="edit-email-audience"]');
+            await click('[data-test-checkbox="paid-members"]');
+            expectSinglePreviewNotice('Specific subscribers in your email audience will receive the preview by email.');
+
+            await clickTrigger('[data-test-select="specific-members"]');
+            await selectChoose('[data-test-select="specific-members"]', 'Label 0');
+            expectSinglePreviewNotice('If any subscribers in your email audience don’t have access to the full post, they’ll receive the preview by email.');
+        });
+
+        it('shows the label fallback state without counts for authors', async function () {
+            await loginAsRole('Author', this.server);
+            const post = this.server.create('post', {
+                lexical: LEXICAL_WITH_PUBLIC_PREVIEW,
+                status: 'draft',
+                visibility: 'paid'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-setting="email-recipients"] [data-test-setting-title]');
+            await click('[data-test-checkbox="specific-members"]');
+            await clickTrigger('[data-test-select="specific-members"]');
+            await selectChoose('[data-test-select="specific-members"]', 'Label 0');
+
+            expectSinglePreviewNotice('If any free subscribers are in your email audience, they’ll receive the preview by email.');
+        });
+
+        it('warns when tier-gated posts without a preview can email members without access', async function () {
+            await loginAsRole('Administrator', this.server);
+            const tier = this.server.create('tier', {name: 'Gold', slug: 'gold'});
+            const post = this.server.create('post', {
+                status: 'draft',
+                tiers: [tier],
+                visibility: 'tiers'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            this.owner.lookup('service:store').peekRecord('post', post.id).tiers = [{id: tier.id, name: tier.name, slug: tier.slug}];
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-setting="email-recipients"] [data-test-setting-title]');
+            await click('[data-test-checkbox="paid-members"]');
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-modal="paid-post-preview-warning"]')).to.exist;
+            expect(find('[data-test-modal="paid-post-preview-warning"] .modal-body')).to.have.trimmed.rendered
+                .text('Without a public preview, any recipients who don’t have access will receive the full email.');
+        });
+
+        it('returns to the editor to add a public preview from the warning', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                status: 'draft',
+                visibility: 'paid'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-setting="email-recipients"] [data-test-setting-title]');
+            await click('[data-test-checkbox="free-members"]');
+            await click('[data-test-button="continue"]');
+
+            await click('[data-test-button="add-public-preview"]');
+
+            expect(find('[data-test-modal="publish-flow"]')).to.not.exist;
         });
 
         it('can publish+send with single newsletter', async function () {

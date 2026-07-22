@@ -2393,6 +2393,35 @@ describe('Email renderer', function () {
             assert(!responsePaid.html.includes('Become a paid member of Test Blog to get access to all'));
         });
 
+        it('renders per-post email paywall content', async function () {
+            renderedPost = '<div>Public preview</div><!--members-only--><div>Paid content</div>';
+            const lexical = JSON.stringify({
+                root: {
+                    children: [{
+                        emailTitle: 'Keep reading this post',
+                        emailBody: 'Join today to unlock the rest.',
+                        emailButtonText: 'Join now',
+                        emailButtonUrl: 'https://example.com/join',
+                        type: 'paywall',
+                        version: 1
+                    }],
+                    type: 'root',
+                    version: 1
+                }
+            });
+            const post = createModel({...basePost, lexical, visibility: 'paid'});
+            const newsletter = createModel(baseNewsletter);
+
+            const response = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+
+            assert(response.html.includes('Keep reading this post'));
+            assert(response.html.includes('Join today to unlock the rest.'));
+            assert(response.html.includes('Join now'));
+            assert(response.html.includes('href="https://example.com/join"'));
+            assert(!response.html.includes('Upgrade to continue reading.'));
+            assert(!response.html.includes('Become a paid member of Test Blog'));
+        });
+
         it('paywalls a tiers post for the no-access segment and not for the access segment', async function () {
             renderedPost = '<div> Lexical Test </div> some text for both <!--members-only--> finishing part only for members';
             const post = {

@@ -8,6 +8,10 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {koenigFileUploadTypes, useKoenigFileUpload} from '@tryghost/admin-x-framework/hooks';
 import {inject as service} from '@ember/service';
 
+const EMPTY_TIERS = [];
+const NOOP = () => {};
+const FILE_UPLOADER = {useFileUpload: useKoenigFileUpload, fileTypes: koenigFileUploadTypes};
+
 function LockIcon({...props}) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" {...props}>
@@ -55,6 +59,40 @@ export function getCardVisibilitySettings(cardConfig = {}) {
     const isPage = post?.isPage || post?.displayName === 'page';
 
     return isPage ? 'web only' : 'web and email';
+}
+
+export function getPostAccessConfig({post, defaultContentVisibility, fetchTiers, updatePostAccess, updatePostTiers} = {}) {
+    if (!post) {
+        return null;
+    }
+
+    return {
+        fetchTiers,
+        getSelectedTiers: () => post.tiers || EMPTY_TIERS,
+        getValue: () => post.visibility || defaultContentVisibility || 'public',
+        subscribe: (notify) => {
+            // React's external-store subscription needs to mirror Ember Data property changes.
+            // eslint-disable-next-line ghost/ember/no-observers
+            post.addObserver('visibility', notify);
+            // eslint-disable-next-line ghost/ember/no-observers
+            post.addObserver('tiers', notify);
+            return () => {
+                post.removeObserver('visibility', notify);
+                post.removeObserver('tiers', notify);
+            };
+        },
+        onChange: (visibility) => {
+            if (updatePostAccess) {
+                updatePostAccess(visibility);
+            } else {
+                post.set('visibility', visibility);
+                if (visibility !== 'tiers') {
+                    post.set('tiers', []);
+                }
+            }
+        },
+        onTiersChange: updatePostTiers
+    };
 }
 
 /**
@@ -129,6 +167,33 @@ const WordCountPlugin = ({editorResource, ...props}) => {
 const TKCountPlugin = ({editorResource, ...props}) => {
     const {TKCountPlugin: _TKCountPlugin} = editorResource.read();
     return <_TKCountPlugin {...props} />;
+};
+
+const KGEditorComponent = ({cardConfig, darkMode, editorArgs, editorResource, isInitInstance, onError}) => {
+    return (
+        <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
+            <KoenigComposer
+                editorResource={editorResource}
+                cardConfig={cardConfig}
+                fileUploader={FILE_UPLOADER}
+                initialEditorState={editorArgs.lexical}
+                onError={onError}
+                darkMode={darkMode}
+                isTKEnabled={true}
+            >
+                <KoenigEditor
+                    editorResource={editorResource}
+                    cursorDidExitAtTop={isInitInstance ? null : editorArgs.cursorDidExitAtTop}
+                    placeholderText={isInitInstance ? null : editorArgs.placeholderText}
+                    darkMode={isInitInstance ? null : darkMode}
+                    onChange={isInitInstance ? editorArgs.updateSecondaryInstanceModel : editorArgs.onChange}
+                    registerAPI={isInitInstance ? editorArgs.registerSecondaryAPI : editorArgs.registerAPI}
+                />
+                <WordCountPlugin editorResource={editorResource} onChange={isInitInstance ? NOOP : editorArgs.updateWordCount} />
+                <TKCountPlugin editorResource={editorResource} onChange={isInitInstance ? NOOP : editorArgs.updatePostTkCount} />
+            </KoenigComposer>
+        </div>
+    );
 };
 
 export default class KoenigLexicalEditor extends Component {
@@ -427,6 +492,17 @@ export default class KoenigLexicalEditor extends Component {
             return hasDirectKeys || hasConnectKeys;
         };
 
+        const postAccess = getPostAccessConfig({
+            defaultContentVisibility: this.settings.defaultContentVisibility,
+            fetchTiers: async () => {
+                const tiers = await this.store.query('tier', {filter: 'type:paid', limit: 'all'});
+                return tiers.map(tier => ({id: tier.id, name: tier.name, slug: tier.slug}));
+            },
+            post: props.cardConfig?.post,
+            updatePostAccess: props.cardConfig?.updatePostAccess,
+            updatePostTiers: props.cardConfig?.updatePostTiers
+        });
+
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             klipy: this.config.klipy?.apiKey ? this.config.klipy : null,
@@ -441,6 +517,7 @@ export default class KoenigLexicalEditor extends Component {
                 headerV1: true // if false, shows header v1 in the menu
             },
             membersEnabled: this.settings.membersSignupAccess === 'all',
+            postAccess,
             searchLinks,
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,
@@ -451,39 +528,26 @@ export default class KoenigLexicalEditor extends Component {
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig, visibilitySettings: defaultCardConfig.visibilitySettings});
 
-        const KGEditorComponent = ({isInitInstance}) => {
-            return (
-                <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
-                    <KoenigComposer
-                        editorResource={this.editorResource}
-                        cardConfig={cardConfig}
-                        fileUploader={{useFileUpload: useKoenigFileUpload, fileTypes: koenigFileUploadTypes}}
-                        initialEditorState={this.args.lexical}
-                        onError={this.onError}
-                        darkMode={this.feature.nightShift}
-                        isTKEnabled={true}
-                    >
-                        <KoenigEditor
-                            editorResource={this.editorResource}
-                            cursorDidExitAtTop={isInitInstance ? null : this.args.cursorDidExitAtTop}
-                            placeholderText={isInitInstance ? null : this.args.placeholderText}
-                            darkMode={isInitInstance ? null : this.feature.nightShift}
-                            onChange={isInitInstance ? this.args.updateSecondaryInstanceModel : this.args.onChange}
-                            registerAPI={isInitInstance ? this.args.registerSecondaryAPI : this.args.registerAPI}
-                        />
-                        <WordCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updateWordCount} />
-                        <TKCountPlugin editorResource={this.editorResource} onChange={isInitInstance ? () => {} : this.args.updatePostTkCount} />
-                    </KoenigComposer>
-                </div>
-            );
-        };
-
         return (
             <div className={['koenig-react-editor', 'koenig-lexical', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
-                        <KGEditorComponent />
-                        <KGEditorComponent isInitInstance={true} />
+                        <KGEditorComponent
+                            cardConfig={cardConfig}
+                            darkMode={this.feature.nightShift}
+                            editorArgs={this.args}
+                            editorResource={this.editorResource}
+                            isInitInstance={false}
+                            onError={this.onError}
+                        />
+                        <KGEditorComponent
+                            cardConfig={cardConfig}
+                            darkMode={this.feature.nightShift}
+                            editorArgs={this.args}
+                            editorResource={this.editorResource}
+                            isInitInstance={true}
+                            onError={this.onError}
+                        />
                     </Suspense>
                 </ErrorHandler>
             </div>

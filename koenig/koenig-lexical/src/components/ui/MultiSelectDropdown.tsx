@@ -54,9 +54,9 @@ export function MultiSelectDropdown({placeholder = '', items = [], availableItem
         setIsFocused(false);
     };
 
-    const handleFocus = () => {
+    const handleFocus = (event) => {
         setIsFocused(true);
-        handleOpen();
+        handleOpen(event);
     };
 
     const handleSelect = (item) => {

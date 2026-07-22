@@ -6,16 +6,16 @@
             @class="gh-editor gh-view relative"
             as |editor|
         >
-            <header class="gh-editor-header br2 pe-none">
-                <Editor::PublishManagement
-                    @post={{this.post}}
-                    @hasUnsavedChanges={{this.hasDirtyAttributes}}
-                    @tkCount={{this.tkCount}}
-                    @beforePublish={{perform this.beforeSaveTask}}
-                    @afterPublish={{this.afterSave}}
-                    @saveTask={{this.saveTask}}
-                    as |publishManagement|
-                >
+            <Editor::PublishManagement
+                @post={{this.post}}
+                @hasUnsavedChanges={{this.hasDirtyAttributes}}
+                @tkCount={{this.tkCount}}
+                @beforePublish={{perform this.beforeSaveTask}}
+                @afterPublish={{this.afterSave}}
+                @saveTask={{this.saveTask}}
+                as |publishManagement|
+            >
+                <header class="gh-editor-header br2 pe-none">
                     <div class="flex items-center pe-auto h-100 gap-2">
                         {{#if this.ui.isFullScreen}}
                             {{#if this.fromAnalytics}}
@@ -53,8 +53,7 @@
                             {{/unless}}
                         {{/unless}}
                     </section>
-                </Editor::PublishManagement>
-            </header>
+                </header>
 
             {{!--
                 gh-koenig-editor acts as a wrapper around the title input and
@@ -93,6 +92,9 @@
                 @clearFeatureImage={{this.clearFeatureImage}}
                 @cardOptions={{hash
                     post=this.post
+                    openFreeEmailPreview=publishManagement.openFreeEmailPreview
+                    updatePostAccess=this.updatePostAccess
+                    updatePostTiers=this.updatePostTiers
                     snippets=this.snippets
                     deleteSnippet=(if this.canManageSnippets this.confirmDeleteSnippet)
                     createSnippet=(if this.canManageSnippets this.createSnippet)
@@ -102,6 +104,7 @@
                 @registerSecondaryAPI={{this.registerSecondaryEditorAPI}}
                 @savePostTask={{this.savePostTask}}
             />
+            </Editor::PublishManagement>
 
             <div class="gh-editor-wordcount-container">
                 <div class="gh-editor-wordcount">

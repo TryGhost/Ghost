@@ -393,6 +393,11 @@ input,
     stroke: var(--darkgrey-d2);
 }
 
+.gh-publish-preview-notice {
+    background: var(--lightgrey-l1);
+    color: var(--middarkgrey);
+}
+
 .gh-publish-newsletter-trigger {
     background: var(--lightgrey);
 }

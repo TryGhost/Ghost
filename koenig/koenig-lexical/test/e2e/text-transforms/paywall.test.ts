@@ -1,5 +1,5 @@
-import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
-import {test} from '@playwright/test';
+import {expect, test} from '@playwright/test';
+import {focusEditor, initialize} from '../../utils/e2e';
 
 test.describe('Renders paywall card', async () => {
     let page;
@@ -19,19 +19,9 @@ test.describe('Renders paywall card', async () => {
     test('renders paywall card', async function () {
         await focusEditor(page);
         await page.keyboard.type('===');
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="paywall">
-                    <div>
-                        Free public preview
-                        <span>↑</span>
-                        /
-                        <span>↓</span>
-                        Only visible to members
-                    </div>
-                </div>
-            </div>
-            <p><br></p>
-        `);
+        await expect(page.locator('[data-kg-card="paywall"]')).toHaveAttribute('data-kg-card-selected', 'true');
+        await expect(page.locator('[data-kg-card="paywall"]')).toHaveAttribute('data-kg-card-editing', 'true');
+        await expect(page.getByTestId('settings-panel')).toBeVisible();
+        await expect(page.getByTestId('paywall-post-access-value')).toBeVisible();
     });
 });

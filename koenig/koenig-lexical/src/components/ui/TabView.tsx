@@ -1,8 +1,16 @@
 import PropTypes from 'prop-types';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 
 const TabView = ({tabs, defaultTab, tabContent}) => {
     const [activeTab, setActiveTab] = useState(defaultTab || tabs[0].id);
+    const fallbackTab = tabs.some(tab => tab.id === defaultTab) ? defaultTab : tabs[0].id;
+    const visibleTab = tabs.some(tab => tab.id === activeTab) ? activeTab : fallbackTab;
+
+    useEffect(() => {
+        if (activeTab !== visibleTab) {
+            setActiveTab(visibleTab);
+        }
+    }, [activeTab, visibleTab]);
 
     const handleTabChange = (tabId) => {
         setActiveTab(tabId);
@@ -17,7 +25,7 @@ const TabView = ({tabs, defaultTab, tabContent}) => {
                         className={`-mb-px appearance-none whitespace-nowrap pb-3 pt-4 text-sm font-semibold transition-all ${
                             tabs.length > 1 ? 'cursor-pointer border-b-2' : 'cursor-default'
                         } ${
-                            activeTab === tab.id
+                            visibleTab === tab.id
                                 ? 'border-black text-black dark:border-white dark:text-white'
                                 : 'border-transparent text-grey-600 hover:border-grey-500 dark:text-grey-500 dark:hover:border-grey-500'
                         }`}
@@ -29,8 +37,8 @@ const TabView = ({tabs, defaultTab, tabContent}) => {
                     </button>
                 ))}
             </div>
-            <div className="flex flex-col gap-3 p-6 pt-4" data-testid={`tab-contents-${activeTab}`}>
-                {tabContent[activeTab]}
+            <div className="flex flex-col gap-3 p-6 pt-4" data-testid={`tab-contents-${visibleTab}`}>
+                {tabContent[visibleTab]}
             </div>
         </>
     );

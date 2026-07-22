@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import PreviewModal from './modals/preview';
+import PublicPreviewWarningModal from './modals/public-preview-warning';
 import PublishFlowModal from './modals/publish-flow';
 import PublishOptionsResource from 'ghost-admin/helpers/publish-options';
 import TkReminderModal from './modals/tk-reminder';
@@ -59,6 +60,16 @@ export default class PublishManagement extends Component {
             });
 
             if (ignoreTks !== true) {
+                return;
+            }
+        }
+
+        if (isValid && this.publishOptions.publicPreviewWarning) {
+            const ignorePublicPreviewWarning = await this.modals.open(PublicPreviewWarningModal, {
+                warning: this.publishOptions.publicPreviewWarning
+            });
+
+            if (ignorePublicPreviewWarning !== true) {
                 return;
             }
         }
@@ -133,6 +144,15 @@ export default class PublishManagement extends Component {
                 skipAnimation
             });
         }
+    }
+
+    @action
+    openFreeEmailPreview(event) {
+        this.previewFormat = 'email';
+        this.previewAsSegment = 'free';
+        this.previewTierSlug = undefined;
+
+        return this.openPreview(event);
     }
 
     // tiers are loaded once per editor session so the preview modal can render

@@ -1,0 +1,27 @@
+<div class="modal-content gh-tk-reminder" data-test-modal="public-preview-warning">
+    <header class="modal-header">
+        {{#if (eq @data.warning "no-content-before")}}
+            <h1>Nothing above the public preview</h1>
+        {{else if (eq @data.warning "no-content-after")}}
+            <h1>Nothing below the public preview</h1>
+        {{else}}
+            <h1>Public preview has no effect</h1>
+        {{/if}}
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        {{#if (eq @data.warning "no-content-before")}}
+            <p>Add some content above the public preview so everyone has something to read before the paywall.</p>
+        {{else if (eq @data.warning "no-content-after")}}
+            <p>Add some content below the public preview for subscribers who have access to the full post.</p>
+        {{else}}
+            <p>This post is public, so everyone can read the full post and the public preview won’t have any effect.</p>
+        {{/if}}
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="gh-btn" {{on "click" (fn @close true)}} data-test-button="continue-with-public-preview-warning"><span>Continue to publish</span></button>
+        <button type="button" class="gh-btn gh-btn-black" {{on "click" @close}} data-test-button="back-to-editor"><span>Back to editor</span></button>
+    </div>
+</div>

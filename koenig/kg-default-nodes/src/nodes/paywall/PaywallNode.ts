@@ -3,7 +3,10 @@ import {parsePaywallNode} from './paywall-parser.js';
 import {renderPaywallNode} from './paywall-renderer.js';
 
 const paywallProperties = {
-
+    emailTitle: {default: ''},
+    emailBody: {default: ''},
+    emailButtonText: {default: ''},
+    emailButtonUrl: {default: '#/portal/signup', urlType: 'url'}
 } satisfies DecoratorNodePropertyMap;
 
 export type PaywallData = DecoratorNodeData<typeof paywallProperties>;

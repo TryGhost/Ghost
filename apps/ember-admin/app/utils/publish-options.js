@@ -4,6 +4,87 @@ import {htmlSafe} from '@ember/template';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
+function parseLexicalState(lexical) {
+    if (!lexical) {
+        return null;
+    }
+
+    try {
+        return typeof lexical === 'string' ? JSON.parse(lexical) : lexical;
+    } catch (e) {
+        return null;
+    }
+}
+
+function findLexicalNode(lexical, nodeType) {
+    const state = parseLexicalState(lexical);
+    const nodes = [state?.root];
+
+    while (nodes.length > 0) {
+        const node = nodes.pop();
+
+        if (node?.type === nodeType) {
+            return node;
+        }
+
+        if (node?.children) {
+            nodes.push(...node.children);
+        }
+    }
+
+    return null;
+}
+
+function lexicalNodeHasContent(node) {
+    if (!node || node.type === 'paywall') {
+        return false;
+    }
+
+    if (node.type === 'text') {
+        return !!node.text?.trim();
+    }
+
+    if (Array.isArray(node.children)) {
+        return node.children.some(lexicalNodeHasContent);
+    }
+
+    return !['linebreak', 'paragraph', 'root'].includes(node.type);
+}
+
+function getSimpleTierSlug(filter) {
+    const slug = filter.match(/^(?:product|tier):'?([^'()+,\s]+)'?$/)?.[1];
+
+    return slug && !slug.startsWith('-') ? slug : null;
+}
+
+function getRecipientFilters(filter) {
+    return (filter || '').split(',').map(item => item.trim()).filter(Boolean);
+}
+
+function recipientFilterHasIndeterminateSegments(filter) {
+    return getRecipientFilters(filter).some((item) => {
+        return !['status:free', 'status:-free'].includes(item) && !getSimpleTierSlug(item);
+    });
+}
+
+function recipientFilterGuaranteesPaidAccess(filter) {
+    const filters = (filter || '').split(',').map(item => item.trim()).filter(Boolean);
+
+    return filters.length > 0 && filters.every((item) => {
+        return item === 'status:-free' || !!getSimpleTierSlug(item);
+    });
+}
+
+function recipientFilterGuaranteesTierAccess(filter, tiers = []) {
+    const allowedTiers = new Set(tiers.map(tier => tier.slug));
+    const filters = (filter || '').split(',').map(item => item.trim()).filter(Boolean);
+
+    return filters.length > 0 && filters.every((item) => {
+        const tierSlug = getSimpleTierSlug(item);
+        return tierSlug && allowedTiers.has(tierSlug);
+    });
+}
+
 export default class PublishOptions {
     // passed in services
     config = null;
@@ -44,6 +125,156 @@ export default class PublishOptions {
 
     get willOnlyEmail() {
         return this.publishType === 'send';
+    }
+
+    get publicPreviewNode() {
+        return findLexicalNode(this.post.lexicalScratch || this.post.lexical, 'paywall');
+    }
+
+    get hasPublicPreview() {
+        return !!this.publicPreviewNode;
+    }
+
+    get publicPreviewWarning() {
+        const state = parseLexicalState(this.post.lexicalScratch || this.post.lexical);
+        const children = state?.root?.children;
+        const publicPreviewIndex = children?.findIndex(node => node.type === 'paywall') ?? -1;
+
+        if (publicPreviewIndex === -1) {
+            return null;
+        }
+
+        if (this.post.visibility === 'public') {
+            return 'public-access';
+        }
+
+        if (!children.slice(0, publicPreviewIndex).some(lexicalNodeHasContent)) {
+            return 'no-content-before';
+        }
+
+        if (!children.slice(publicPreviewIndex + 1).some(lexicalNodeHasContent)) {
+            return 'no-content-after';
+        }
+
+        return null;
+    }
+
+    get hasPaidAccess() {
+        return ['paid', 'tiers'].includes(this.post.visibility);
+    }
+
+    get newsletterAcceptsFreeMembers() {
+        return this.newsletter?.visibility !== 'paid';
+    }
+
+    get shouldShowEmailPreviewNotice() {
+        return this.hasPublicPreview
+            && this.hasPaidAccess
+            && this.willEmail
+            && !!this.newsletter;
+    }
+
+    get recipientsAreGuaranteedPostAccess() {
+        if (!this.willEmail || !this.recipientFilter) {
+            return true;
+        }
+
+        if (this.post.visibility === 'paid') {
+            return this.newsletter?.visibility === 'paid' || recipientFilterGuaranteesPaidAccess(this.recipientFilter);
+        }
+
+        if (this.post.visibility === 'tiers') {
+            if (this.recipientFilter === this.post.visibilitySegment) {
+                return true;
+            }
+
+            return recipientFilterGuaranteesTierAccess(this.recipientFilter, this.post.tiers);
+        }
+
+        return true;
+    }
+
+    get emailPreviewNoAccessFilter() {
+        if (this.post.visibility === 'paid') {
+            return 'status:free';
+        }
+
+        if (this.post.visibility === 'tiers') {
+            return (this.post.tiers || [])
+                .map(tier => `tier:-'${tier.slug}'`)
+                .join('+');
+        }
+
+        return null;
+    }
+
+    get emailPreviewRecipientFilter() {
+        if (!this.shouldShowEmailPreviewNotice || !this.emailPreviewNoAccessFilter) {
+            return null;
+        }
+
+        return `${this.fullRecipientFilter}+(${this.emailPreviewNoAccessFilter})`;
+    }
+
+    get emailPreviewEligibleRecipientFilter() {
+        if (!this.shouldShowEmailPreviewNotice || !this.emailPreviewNoAccessFilter) {
+            return null;
+        }
+
+        return `${this.newsletter.recipientFilter}+(${this.emailPreviewNoAccessFilter})`;
+    }
+
+    get emailPreviewNoticeStateWithoutCounts() {
+        if (!this.shouldShowEmailPreviewNotice) {
+            return null;
+        }
+
+        const filters = getRecipientFilters(this.recipientFilter);
+        const includesAllFree = filters.includes('status:free');
+        const includesAllPaid = filters.includes('status:-free');
+        const hasIndeterminateSegments = recipientFilterHasIndeterminateSegments(this.recipientFilter);
+
+        if (this.post.visibility === 'paid') {
+            if (!this.newsletterAcceptsFreeMembers) {
+                return null;
+            }
+
+            if (includesAllFree) {
+                return 'paid-positive';
+            }
+
+            if (hasIndeterminateSegments) {
+                return 'paid-unknown';
+            }
+
+            return 'paid-none';
+        }
+
+        if (this.post.visibility === 'tiers') {
+            if (!this.newsletterAcceptsFreeMembers && includesAllFree && !includesAllPaid && filters.length === 1) {
+                return null;
+            }
+
+            if (this.newsletterAcceptsFreeMembers && includesAllFree) {
+                return 'tiers-positive';
+            }
+
+            if (hasIndeterminateSegments) {
+                return 'tiers-unknown';
+            }
+
+            if (recipientFilterGuaranteesTierAccess(this.recipientFilter, this.post.tiers)) {
+                return 'tiers-none';
+            }
+
+            return 'tiers-positive';
+        }
+
+        return null;
+    }
+
+    get shouldWarnRecipientsReceiveFullEmail() {
+        return !this.hasPublicPreview && this.hasPaidAccess && !this.recipientsAreGuaranteedPostAccess;
     }
 
     // publish date ------------------------------------------------------------

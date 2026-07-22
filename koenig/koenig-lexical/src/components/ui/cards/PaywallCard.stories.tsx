@@ -6,6 +6,8 @@ const displayOptions = {
     Selected: {isSelected: true, isEditing: false}
 };
 
+const accessOptions = ['public', 'members', 'paid', 'tiers'];
+
 const story = {
     title: 'Primary cards/Public preview card',
     component: PaywallCard,
@@ -22,6 +24,10 @@ const story = {
                 },
                 defaultValue: displayOptions.Default
             }
+        },
+        access: {
+            options: accessOptions,
+            control: {type: 'radio'}
         }
     },
     parameters: {
@@ -49,6 +55,6 @@ const Template = ({display, ...args}) => (
 
 export const Default = Template.bind({});
 Default.args = {
+    access: 'members',
     display: 'Selected'
 };
-

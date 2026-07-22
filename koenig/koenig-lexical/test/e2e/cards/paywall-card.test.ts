@@ -1,5 +1,5 @@
 import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
-import {test} from '@playwright/test';
+import {expect, test} from '@playwright/test';
 
 async function insertPaywallCard(page) {
     await page.keyboard.type('/paywall');
@@ -41,8 +41,8 @@ test.describe('Paywall card', async () => {
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false" data-koenig-dnd-draggable="true" data-koenig-dnd-droppable="true">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="paywall">
-                    <div>
-                        Free public preview<span>↑</span>/<span>↓</span>Only visible to members
+                    <div data-post-access="members">
+                        Free public preview<span>↑</span>/<span>↓</span>Members only
                     </div>
                 </div>
             </div>
@@ -53,30 +53,10 @@ test.describe('Paywall card', async () => {
         await focusEditor(page);
         await insertPaywallCard(page);
 
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false" data-koenig-dnd-draggable="true" data-koenig-dnd-droppable="true">
-                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="paywall">
-                    <div>
-                        Free public preview<span>↑</span>/<span>↓</span>Only visible to members
-                    </div>
-                </div>
-            </div>
-            <p><br /></p>
-        `);
+        await expect(page.locator('[data-kg-card="paywall"]')).toHaveAttribute('data-kg-card-selected', 'true');
+        await expect(page.locator('[data-kg-card="paywall"]')).toHaveAttribute('data-kg-card-editing', 'true');
+        await expect(page.getByTestId('settings-panel')).toBeVisible();
+        await expect(page.getByTestId('paywall-post-access-value')).toBeVisible();
     });
 
-    test('focuses on the next paragraph when rendered', async function () {
-        await focusEditor(page);
-        await insertPaywallCard(page);
-
-        await page.keyboard.type('Next paragraph');
-
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false" data-koenig-dnd-draggable="true" data-koenig-dnd-droppable="true">
-                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="paywall">
-                </div>
-            </div>
-            <p dir="ltr"><span data-lexical-text="true">Next paragraph</span></p>
-        `, {ignoreCardContents: true});
-    });
 });

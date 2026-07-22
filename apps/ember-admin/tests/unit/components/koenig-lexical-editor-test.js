@@ -1,5 +1,6 @@
+import EmberObject from '@ember/object';
 import sinon from 'sinon';
-import {decoratePostSearchResult, getCardVisibilitySettings, offerUrls} from 'ghost-admin/components/koenig-lexical-editor';
+import {decoratePostSearchResult, getCardVisibilitySettings, getPostAccessConfig, offerUrls} from 'ghost-admin/components/koenig-lexical-editor';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 
@@ -149,6 +150,57 @@ describe('Unit: Component: koenig-lexical-editor', function () {
             });
 
             expect(settings).to.equal('web only');
+        });
+    });
+
+    describe('getPostAccessConfig()', function () {
+        it('keeps subscribers updated when post access changes', function () {
+            const post = EmberObject.create({visibility: 'members'});
+            const notify = sinon.spy();
+            const config = getPostAccessConfig({post});
+            const unsubscribe = config.subscribe(notify);
+
+            expect(config.getValue()).to.equal('members');
+
+            post.set('visibility', 'paid');
+
+            expect(config.getValue()).to.equal('paid');
+            expect(notify.calledOnce).to.be.true;
+
+            post.set('tiers', [{id: 'gold', name: 'Gold', slug: 'gold'}]);
+
+            expect(config.getSelectedTiers()).to.deep.equal([{id: 'gold', name: 'Gold', slug: 'gold'}]);
+            expect(notify.calledTwice).to.be.true;
+
+            unsubscribe();
+            post.set('visibility', 'public');
+
+            expect(notify.calledTwice).to.be.true;
+        });
+
+        it('updates post access and clears tiers without an external handler', function () {
+            const post = EmberObject.create({tiers: [{slug: 'gold'}], visibility: 'tiers'});
+            const config = getPostAccessConfig({post});
+
+            config.onChange('paid');
+
+            expect(post.visibility).to.equal('paid');
+            expect(post.tiers).to.deep.equal([]);
+        });
+
+        it('delegates updates when an external handler is provided', function () {
+            const post = EmberObject.create({visibility: 'members'});
+            const fetchTiers = sinon.stub().resolves([{id: 'gold', name: 'Gold', slug: 'gold'}]);
+            const updatePostAccess = sinon.spy();
+            const updatePostTiers = sinon.spy();
+            const config = getPostAccessConfig({fetchTiers, post, updatePostAccess, updatePostTiers});
+
+            config.onChange('public');
+            config.onTiersChange([{id: 'gold', name: 'Gold', slug: 'gold'}]);
+
+            expect(updatePostAccess.calledOnceWithExactly('public')).to.be.true;
+            expect(updatePostTiers.calledOnceWithExactly([{id: 'gold', name: 'Gold', slug: 'gold'}])).to.be.true;
+            expect(config.fetchTiers).to.equal(fetchTiers);
         });
     });
 });

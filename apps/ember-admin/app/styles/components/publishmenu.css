@@ -167,7 +167,7 @@
 .gh-publish-send-to-option .for-checkbox input:checked + .flex p {
     padding: 0 13px 0 37px;
     border: 2px solid var(--black);
-    background: var(--whitegrey-l2);
+    background: var(--whitegrey-l1);
     color: var(--black);
     line-height: 34px;
 }
@@ -485,6 +485,21 @@
 .gh-publish-setting-form.last fieldset {
     display: flex;
     margin-bottom: 0;
+}
+
+.gh-publish-preview-notice {
+    padding: 1.4rem 1.6rem;
+    border-radius: 5px;
+    background: var(--whitegrey-l2);
+    color: var(--middarkgrey);
+    font-size: 1.5rem;
+    line-height: 1.5;
+}
+
+.gh-publish-preview-notice button {
+    padding: 0;
+    font-size: inherit;
+    font-weight: 600;
 }
 
 .gh-publish-newsletter-trigger {

@@ -1,0 +1,15 @@
+<div class="modal-content gh-paid-post-preview-warning" data-test-modal="paid-post-preview-warning">
+    <header class="modal-header">
+        <h1>Send without a public preview?</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" (fn @close "stay")}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>Without a public preview, any recipients who don’t have access will receive the full email.</p>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="gh-btn" {{on "click" (fn @close "continue")}} data-test-button="continue-without-preview"><span>Continue without preview</span></button>
+        <button type="button" class="gh-btn gh-btn-black" {{on "click" (fn @close "editor")}} data-test-button="add-public-preview"><span>Add public preview</span></button>
+    </div>
+</div>

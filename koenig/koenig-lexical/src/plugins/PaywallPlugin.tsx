@@ -1,5 +1,6 @@
-import {$createParagraphNode, $getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_EDITOR} from 'lexical';
 import {$createPaywallNode, INSERT_PAYWALL_COMMAND} from '../nodes/PaywallNode';
+import {$getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_EDITOR} from 'lexical';
+import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {useEffect} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -21,24 +22,8 @@ export const PaywallPlugin = () => {
                     return false;
                 }
 
-                const focusNode = selection.focus.getNode();
-
-                if (focusNode !== null) {
-                    const paywallNode = $createPaywallNode();
-
-                    // insert a paragraph unless we're already on a blank paragraph
-                    const selectedNode = selection.focus.getNode();
-                    if ($isParagraphNode(selectedNode) && selectedNode.getTextContent() !== '') {
-                        selection.insertParagraph();
-                    }
-
-                    // insert the paywall before the current/inserted paragraph
-                    // so the cursor stays on the blank paragraph
-                    selection.focus
-                        .getNode()
-                        .getTopLevelElementOrThrow()
-                        .insertBefore(paywallNode);
-                }
+                const paywallNode = $createPaywallNode();
+                editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode: paywallNode, openInEditMode: true});
 
                 return true;
             },
@@ -74,17 +59,12 @@ export const PaywallPlugin = () => {
                     return;
                 }
 
-                const line = $createPaywallNode();
                 const parentNode = node.getTopLevelElement();
+                parentNode.clear();
+                parentNode.selectEnd();
 
-                if (parentNode.getNextSibling()) {
-                    parentNode.replace(line);
-                } else {
-                    parentNode.insertBefore(line);
-                    parentNode.replace($createParagraphNode());
-                }
-
-                line.selectNext();
+                const paywallNode = $createPaywallNode();
+                editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode: paywallNode, openInEditMode: true});
             });
         });
     }, [editor]);

@@ -159,11 +159,75 @@
         {{/liquid-if}}
     </div>
 
+    {{#if @publishOptions.shouldShowEmailPreviewNotice}}
+        {{#if @publishOptions.user.canManageMembers}}
+            {{#if (eq @publishOptions.post.visibility "paid")}}
+                {{#let (members-count-fetcher query=(hash filter=@publishOptions.emailPreviewRecipientFilter)) as |selectedCountFetcher|}}
+                    {{#let (members-count-fetcher query=(hash filter=@publishOptions.emailPreviewEligibleRecipientFilter)) as |eligibleCountFetcher|}}
+                        {{#if (and
+                            (not selectedCountFetcher.isLoading)
+                            (not eligibleCountFetcher.isLoading)
+                            (gt eligibleCountFetcher.count 0)
+                        )}}
+                            <div class="gh-publish-preview-notice" data-test-publish-preview-notice>
+                                <div data-test-publish-preview-notice-body>
+                                    {{#if (eq selectedCountFetcher.count 0)}}
+                                        Free subscribers won’t receive the preview by email. You can change this by <button type="button" class="green" {{on "click" this.editEmailAudience}} data-test-button="edit-email-audience">adding them to the email audience</button>.
+                                    {{else}}
+                                        {{format-number selectedCountFetcher.count}} free {{gh-pluralize selectedCountFetcher.count "subscriber" without-count=true}} will receive the preview by email.
+                                    {{/if}}
+                                </div>
+                            </div>
+                        {{/if}}
+                    {{/let}}
+                {{/let}}
+            {{else}}
+                {{#let (members-count-fetcher query=(hash filter=@publishOptions.emailPreviewRecipientFilter)) as |selectedCountFetcher|}}
+                    {{#let (members-count-fetcher query=(hash filter=@publishOptions.emailPreviewEligibleRecipientFilter)) as |eligibleCountFetcher|}}
+                        {{#if (and
+                            (not selectedCountFetcher.isLoading)
+                            (not eligibleCountFetcher.isLoading)
+                            (gt eligibleCountFetcher.count 0)
+                        )}}
+                            <div class="gh-publish-preview-notice" data-test-publish-preview-notice>
+                                <div data-test-publish-preview-notice-body>
+                                    {{#if (eq selectedCountFetcher.count 0)}}
+                                        No subscribers will receive the preview by email. You can change this by <button type="button" class="green" {{on "click" this.editEmailAudience}} data-test-button="edit-email-audience">editing the email audience</button>.
+                                    {{else}}
+                                        {{format-number selectedCountFetcher.count}} {{gh-pluralize selectedCountFetcher.count "subscriber" without-count=true}} will receive the preview by email.
+                                    {{/if}}
+                                </div>
+                            </div>
+                        {{/if}}
+                    {{/let}}
+                {{/let}}
+            {{/if}}
+        {{else if @publishOptions.emailPreviewNoticeStateWithoutCounts}}
+            <div class="gh-publish-preview-notice" data-test-publish-preview-notice>
+                <div data-test-publish-preview-notice-body>
+                    {{#if (eq @publishOptions.emailPreviewNoticeStateWithoutCounts "paid-positive")}}
+                        Free subscribers in your email audience will receive the preview by email.
+                    {{else if (eq @publishOptions.emailPreviewNoticeStateWithoutCounts "paid-none")}}
+                        Free subscribers won’t receive the preview by email. You can change this by <button type="button" class="green" {{on "click" this.editEmailAudience}} data-test-button="edit-email-audience">adding them to the email audience</button>.
+                    {{else if (eq @publishOptions.emailPreviewNoticeStateWithoutCounts "paid-unknown")}}
+                        If any free subscribers are in your email audience, they’ll receive the preview by email.
+                    {{else if (eq @publishOptions.emailPreviewNoticeStateWithoutCounts "tiers-none")}}
+                        No subscribers will receive the preview by email. You can change this by <button type="button" class="green" {{on "click" this.editEmailAudience}} data-test-button="edit-email-audience">editing the email audience</button>.
+                    {{else if (eq @publishOptions.emailPreviewNoticeStateWithoutCounts "tiers-positive")}}
+                        Specific subscribers in your email audience will receive the preview by email.
+                    {{else}}
+                        If any subscribers in your email audience don’t have access to the full post, they’ll receive the preview by email.
+                    {{/if}}
+                </div>
+            </div>
+        {{/if}}
+    {{/if}}
+
 </div>
 
 {{#unless @publishOptions.publishDisabledError}}
     <div class="gh-publish-cta">
-        <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @confirm}} data-test-button="continue">
+        <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" this.confirm}} data-test-button="continue">
             <span>Continue, final review &rarr;</span>
         </button>
     </div>

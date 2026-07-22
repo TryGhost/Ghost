@@ -130,6 +130,60 @@ function getSegmentStatus(segment) {
 }
 
 /**
+ * Reads optional per-post email paywall copy from the first public preview
+ * node. Empty values intentionally fall back to the translated defaults in
+ * the email template.
+ *
+ * @param {Post} post
+ * @returns {{title: string|null, body: string|null, buttonText: string|null, buttonUrl: string|null}}
+ */
+function getPaywallEmailContent(post) {
+    let lexical = post.get('lexical');
+
+    if (!lexical) {
+        const mobiledoc = post.get('mobiledoc');
+        lexical = mobiledoc ? mobiledocToLexical(mobiledoc) : null;
+    }
+
+    if (!lexical) {
+        return {title: null, body: null, buttonText: null, buttonUrl: null};
+    }
+
+    try {
+        const parsed = typeof lexical === 'string' ? JSON.parse(lexical) : lexical;
+        const findPaywall = (node) => {
+            if (!node || typeof node !== 'object') {
+                return null;
+            }
+            if (node.type === 'paywall') {
+                return node;
+            }
+            if (!Array.isArray(node.children)) {
+                return null;
+            }
+            for (const child of node.children) {
+                const paywall = findPaywall(child);
+                if (paywall) {
+                    return paywall;
+                }
+            }
+            return null;
+        };
+        const paywall = findPaywall(parsed.root);
+        const readOverride = value => typeof value === 'string' && value.trim() ? value.trim() : null;
+
+        return {
+            title: readOverride(paywall?.emailTitle),
+            body: readOverride(paywall?.emailBody),
+            buttonText: readOverride(paywall?.emailButtonText),
+            buttonUrl: readOverride(paywall?.emailButtonUrl)
+        };
+    } catch (error) {
+        return {title: null, body: null, buttonText: null, buttonUrl: null};
+    }
+}
+
+/**
  * Whether the members matched by a segment can read the post's gated content.
  * Delegates to the shared content-gating check so email and web gating stay in
  * sync. A null segment is an unsegmented render — the send pipeline only
@@ -589,6 +643,7 @@ class EmailRenderer {
             newsletter,
             html,
             addPaywall,
+            paywallContent: addPaywall ? getPaywallEmailContent(post) : null,
             audience
         });
         html = await this.renderTemplate(templateData);
@@ -1176,9 +1231,10 @@ class EmailRenderer {
      * @param {Newsletter} options.newsletter
      * @param {string} options.html
      * @param {boolean} options.addPaywall
+     * @param {{title: string|null, body: string|null, buttonText: string|null, buttonUrl: string|null}|null} options.paywallContent
      * @param {SegmentAudience} options.audience
      */
-    async getTemplateData({post, newsletter, html, addPaywall, audience}) {
+    async getTemplateData({post, newsletter, html, addPaywall, paywallContent, audience}) {
         const emailDesign = this.#getEmailDesign(newsletter);
 
         const {href: headerImage, width: headerImageWidth} = await this.limitImageWidth(newsletter.get('header_image'));
@@ -1387,7 +1443,9 @@ class EmailRenderer {
 
             // Paywall
             paywall: addPaywall ? {
-                signupUrl: signupUrl.href
+                signupUrl: signupUrl.href,
+                ...paywallContent,
+                buttonUrl: paywallContent?.buttonUrl || signupUrl.href
             } : null,
 
             year: new Date().getFullYear().toString()

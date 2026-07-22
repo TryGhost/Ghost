@@ -325,6 +325,35 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
+    updatePostAccess(visibility) {
+        this.post.set('visibility', visibility);
+        if (visibility !== 'tiers') {
+            this.post.set('tiers', []);
+        }
+
+        if (this.post.isNew || visibility === 'tiers') {
+            return;
+        }
+
+        this.savePostTask.perform().catch(() => {
+            this.post.rollbackAttributes();
+        });
+    }
+
+    @action
+    updatePostTiers(tiers) {
+        this.post.set('tiers', tiers);
+
+        if (this.post.isNew || tiers.length === 0) {
+            return;
+        }
+
+        this.savePostTask.perform().catch(() => {
+            this.post.rollbackAttributes();
+        });
+    }
+
+    @action
     updateSecondaryInstanceModel(lexical) {
         this.set('post.secondaryLexicalState', JSON.stringify(lexical));
     }

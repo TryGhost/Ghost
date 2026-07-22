@@ -9,6 +9,18 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
+const LEXICAL_WITH_PUBLIC_PREVIEW = JSON.stringify({
+    root: {
+        children: [
+            {children: [], type: 'paragraph', version: 1},
+            {type: 'paywall', version: 1},
+            {children: [], type: 'paragraph', version: 1}
+        ],
+        type: 'root',
+        version: 1
+    }
+});
+
 describe('Acceptance: Post email preview', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
@@ -68,6 +80,30 @@ describe('Acceptance: Post email preview', function () {
         const requestBody = JSON.parse(lastRequest.requestBody);
         expect(requestBody.newsletter).to.equal('awesome-newsletter');
         expect(requestBody.member_status).to.equal('free');
+    });
+
+    it('opens the free-member email preview from the public preview card', async function () {
+        const post = this.server.create('post', {
+            lexical: LEXICAL_WITH_PUBLIC_PREVIEW,
+            status: 'draft',
+            visibility: 'paid'
+        });
+        await visit(`/editor/post/${post.id}`);
+        await waitFor('[data-kg-card="paywall"]');
+        await click('[data-kg-card="paywall"]');
+        await click('[data-testid="edit-paywall"]');
+        await click('[data-testid="paywall-post-access-value"]');
+        await click('[data-test-value="public"]');
+        expect(find('[data-testid="settings-panel"]')).to.exist;
+        await click('[data-testid="paywall-post-access-value"]');
+        await click('[data-test-value="paid"]');
+        expect(find('[data-testid="settings-panel"]')).to.exist;
+        await click('[data-testid="tab-content"]');
+        await click('[data-testid="paywall-email-preview-link"]');
+        await waitFor('[data-test-modal="preview-email"]');
+
+        expect(find('[data-test-button="email-preview"]')).to.have.attribute('data-test-selected');
+        expect(find('[data-test-select="preview-segment"]')).to.contain.text('Free member');
     });
 
     it('should hide newsletters list when only 1 newsletter exists', async function () {
