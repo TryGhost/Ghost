@@ -6,27 +6,27 @@ import labsBubblesImage from "./assets/labs-bg.svg";
 import { BetaFeatures } from "./beta-features";
 import { PrivateFeatures } from "./private-features";
 import { SettingGroup } from "@/settings/app/shared/setting-group";
+import { useAutoExpandable } from "@/settings/app/shared/use-auto-expandable";
 
 /**
  * The Labs group, ported from the legacy advanced/labs.tsx: closed shows the
  * bubbles illustration, open shows the Beta features tab (plus Private
- * features under developer experiments). The legacy auto-expand on a single
- * search hit isn't ported (no per-component search registration in the
- * native chrome yet).
+ * features under developer experiments). Auto-expands while it's the only
+ * search hit (the legacy use-auto-expandable behavior).
  */
 
 type LabsTab = "labs-private-features" | "labs-beta-features";
 
 export function LabsGroup({ keywords }: { keywords: string[] }) {
     const [selectedTab, setSelectedTab] = useState<LabsTab>("labs-beta-features");
-    const [isOpen, setIsOpen] = useState(false);
+    const { isOpen, openManually, closeManually } = useAutoExpandable(keywords);
     const { data: configData } = useBrowseConfig();
     const enableDeveloperExperiments = Boolean(configData?.config?.enableDeveloperExperiments);
 
     return (
         <SettingGroup
             customButtons={(
-                <Button size="sm" variant={isOpen ? "secondary" : "ghost"} onClick={() => setIsOpen(!isOpen)}>
+                <Button size="sm" variant={isOpen ? "secondary" : "ghost"} onClick={isOpen ? closeManually : openManually}>
                     {isOpen ? "Close" : "Open"}
                 </Button>
             )}
