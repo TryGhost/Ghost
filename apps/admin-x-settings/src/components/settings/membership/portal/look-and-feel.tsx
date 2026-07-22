@@ -2,8 +2,8 @@ import React, {useRef, useState} from 'react';
 import clsx from 'clsx';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {Form, Heading, Icon, TextField} from '@tryghost/admin-x-design-system';
-import {Inline} from '@tryghost/shade/primitives';
+import {Form, Icon, TextField} from '@tryghost/admin-x-design-system';
+import {Inline, Text} from '@tryghost/shade/primitives';
 import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -113,7 +113,7 @@ const LookAndFeel: React.FC<{
                 </Field>
                 {portalButtonStyle?.toString()?.includes('icon') &&
                     <div className='flex flex-col gap-2'>
-                        <Heading level={6} grey>Icon</Heading>
+                        <Text as='h6' className='text-base' tone='secondary' weight='semibold'>Icon</Text>
                         <Inline gap='xs' justify='between'>
                             <ToggleGroup
                                 aria-label='Portal button icon'

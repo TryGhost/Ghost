@@ -1,8 +1,10 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {IconLabel, Link, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
+import {CheckCircle} from 'lucide-react';
+import {Field, FieldDescription, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
+import {SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {withErrorBoundary} from '../../error-boundary';
@@ -35,9 +37,10 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             key: 'status',
             value: (
-                <IconLabel icon='check-circle' iconColorClass='text-green'>
+                <Inline align='center' gap='sm'>
+                    <CheckCircle className='size-4 text-green' strokeWidth={1.5} />
                     Mailgun is set up
-                </IconLabel>
+                </Inline>
             )
         }
     ] : [
@@ -56,7 +59,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     const apiKeysHint = (
-        <>Find your Mailgun API keys <Link href="https://app.mailgun.com/settings/api_security" rel="noopener noreferrer" target="_blank">here</Link></>
+        <>Find your Mailgun API keys <a className='text-green hover:text-green-400' href="https://app.mailgun.com/settings/api_security" rel="noopener noreferrer" target="_blank">here</a></>
     );
     const inputs = (
         <SettingGroupContent>
@@ -64,36 +67,44 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <Field>
                     <FieldLabel>Mailgun region</FieldLabel>
                     <Select value={mailgunRegion ?? ''} onValueChange={value => updateSetting('mailgun_base_url', value)}>
-                        <SelectTrigger aria-label='Mailgun region'><SelectValue /></SelectTrigger>
+                        <SelectTrigger aria-label='Mailgun region' className='border-transparent bg-muted hover:bg-muted'><SelectValue /></SelectTrigger>
                         <SelectContent>
                             {MAILGUN_REGIONS.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </Field>
-                <TextField
-                    title='Mailgun domain'
-                    value={mailgunDomain ?? ''}
-                    onChange={(e) => {
-                        updateSetting('mailgun_domain', e.target.value);
-                    }}
-                />
-                <div className='col-span-2'>
-                    <TextField
-                        hint={apiKeysHint}
-                        title='Mailgun private API key'
-                        type='password'
-                        value={mailgunApiKey ?? ''}
+                <Field>
+                    <FieldLabel htmlFor='mailgun-domain'>Mailgun domain</FieldLabel>
+                    <Input
+                        className='border-transparent bg-muted'
+                        id='mailgun-domain'
+                        value={mailgunDomain ?? ''}
                         onChange={(e) => {
-                            updateSetting('mailgun_api_key', e.target.value);
+                            updateSetting('mailgun_domain', e.target.value);
                         }}
                     />
+                </Field>
+                <div className='col-span-2'>
+                    <Field>
+                        <FieldLabel htmlFor='mailgun-api-key'>Mailgun private API key</FieldLabel>
+                        <Input
+                            className='border-transparent bg-muted'
+                            id='mailgun-api-key'
+                            type='password'
+                            value={mailgunApiKey ?? ''}
+                            onChange={(e) => {
+                                updateSetting('mailgun_api_key', e.target.value);
+                            }}
+                        />
+                        <FieldDescription>{apiKeysHint}</FieldDescription>
+                    </Field>
                 </div>
             </div>
         </SettingGroupContent>
     );
 
     const groupDescription = (
-        <>The Mailgun API is used for bulk email newsletter delivery. <Link href='https://ghost.org/docs/faq/mailgun-newsletters/' target='_blank'>Why is this required?</Link></>
+        <>The Mailgun API is used for bulk email newsletter delivery. <a className='text-green hover:text-green-400' href='https://ghost.org/docs/faq/mailgun-newsletters/' rel='noopener noreferrer' target='_blank'>Why is this required?</a></>
     );
 
     return (

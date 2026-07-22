@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import {Fragment, MouseEvent, useRef} from 'react';
-import Heading from '../heading';
+import {Text} from '@tryghost/shade/primitives';
 
 type SwatchSizes = 'md' | 'lg';
 
@@ -82,7 +82,7 @@ const ColorIndicator: React.FC<ColorIndicatorProps> = ({title, value, swatches, 
 
     return (
         <div className={containerClassName}>
-            {title && <Heading useLabelTag>{title}</Heading>}
+            {title && <Text as='span' className='text-base' tone='secondary' weight='semibold'>{title}</Text>}
             <div className='flex gap-1'>
                 {showSwatches && (
                     <div className={`flex items-center gap-1`}>

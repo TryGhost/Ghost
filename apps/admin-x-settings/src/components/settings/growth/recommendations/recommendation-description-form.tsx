@@ -3,7 +3,8 @@ import RecommendationIcon from './recommendation-icon';
 import {type EditOrAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type ErrorMessages} from '@tryghost/admin-x-framework/hooks';
 import {Field, FieldDescription, FieldLabel, Input, Textarea} from '@tryghost/shade/components';
-import {Form, Heading, TextField} from '@tryghost/admin-x-design-system';
+import {Form, TextField} from '@tryghost/admin-x-design-system';
+import {Text} from '@tryghost/shade/primitives';
 import {formatNumber} from '@tryghost/shade/utils';
 
 interface Props<T extends EditOrAddRecommendation> {
@@ -67,7 +68,7 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
         marginTop
     >
         <div>
-            <Heading className='mb-2 block text-xs font-semibold tracking-wider uppercase' grey={true} level={6}>Preview</Heading>
+            <Text as='h6' className='mb-2 block tracking-wider uppercase' leading='normal' size='xs' tone='secondary' weight='semibold'>Preview</Text>
             <div className="-mx-8 flex items-center justify-center overflow-hidden border-y border-grey-100 bg-grey-50 px-7 py-4 dark:border-grey-950 dark:bg-black">
                 <div className="w-full rounded bg-white py-3 shadow">
                     <div className="">

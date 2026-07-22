@@ -1,8 +1,8 @@
-import Heading from '../heading';
 import HtmlEditor, {HtmlEditorProps} from './html-editor';
 import React from 'react';
 import clsx from 'clsx';
 import LegacyHint from '../legacy-hint';
+import {FieldLabel} from '@tryghost/shade/components';
 
 export type HtmlFieldProps = HtmlEditorProps & {
     title?: string;
@@ -43,7 +43,7 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
 
     return (
         <div className={`flex flex-col ${containerClassName}`}>
-            {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={true} useLabelTag={true}>{title}</Heading>}
+            {title && <FieldLabel className={hideTitle ? 'sr-only' : undefined}>{title}</FieldLabel>}
             <div className={textFieldClasses}>
                 <HtmlEditor {...props} value={value} />
             </div>

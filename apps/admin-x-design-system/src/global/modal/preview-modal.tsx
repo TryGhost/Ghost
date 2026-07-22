@@ -5,9 +5,38 @@ import useGlobalDirtyState from '../../hooks/use-global-dirty-state';
 import {confirmIfDirty} from '../../utils/modals';
 import {ButtonColor, ButtonProps} from '../button';
 import ButtonGroup from '../button-group';
-import Heading, {HeadingLevel} from '../heading';
 import Icon from '../icon';
 import Modal, {ModalSize} from './modal';
+import {Text, type TextElement, type TextLeading, type TextSize} from '@tryghost/shade/primitives';
+
+type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
+const headingSizes: Record<HeadingLevel, TextSize> = {
+    1: '3xl',
+    2: '2xl',
+    3: 'xl',
+    4: 'lg',
+    5: 'md',
+    6: 'md'
+};
+
+const headingClasses: Record<HeadingLevel, string> = {
+    1: 'text-4xl',
+    2: 'md:text-3xl',
+    3: 'md:text-2xl',
+    4: 'md:text-xl',
+    5: 'md:text-lg',
+    6: 'text-base'
+};
+
+const headingLeading: Record<HeadingLevel, TextLeading> = {
+    1: 'supertight',
+    2: 'heading',
+    3: 'heading',
+    4: 'heading',
+    5: 'supertight',
+    6: 'body'
+};
 
 export interface PreviewModalProps {
     testId?: string;
@@ -198,7 +227,16 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                     <div className='relative flex size-full flex-col border-l border-grey-100 dark:border-grey-900 [@media(min-width:801px)]:w-auto [@media(min-width:801px)]:basis-[400px]'>
                         {sidebarHeader ? sidebarHeader : (
                             <div className='flex max-h-[82px] items-center justify-between gap-3 px-7 py-6'>
-                                <Heading level={titleHeadingLevel}>{title}</Heading>
+                                <Text
+                                    as={`h${titleHeadingLevel}` as TextElement}
+                                    className={headingClasses[titleHeadingLevel]}
+                                    leading={headingLeading[titleHeadingLevel]}
+                                    size={headingSizes[titleHeadingLevel]}
+                                    tone={titleHeadingLevel === 6 ? 'secondary' : 'primary'}
+                                    weight={titleHeadingLevel === 6 ? 'semibold' : 'bold'}
+                                >
+                                    {title}
+                                </Text>
                                 {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
                             </div>
                         )}

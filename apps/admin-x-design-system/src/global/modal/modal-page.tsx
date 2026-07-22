@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React from 'react';
-import Heading from '../heading';
+import {Text} from '@tryghost/shade/primitives';
 
 export interface ModalPageProps {
     heading?: string;
@@ -15,7 +15,7 @@ const ModalPage: React.FC<ModalPageProps> = ({heading, children, className}) => 
     );
     return (
         <div className={className}>
-            {heading && <Heading className='mb-8'>{heading}</Heading>}
+            {heading && <Text as='h1' className='mb-8 text-4xl' leading='supertight' weight='bold'>{heading}</Text>}
             {children}
         </div>
     );

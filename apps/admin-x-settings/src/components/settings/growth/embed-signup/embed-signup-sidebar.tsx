@@ -1,8 +1,9 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Button, ButtonGroup, ColorPickerField, Form, Heading, StickyFooter} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, Form, StickyFooter} from '@tryghost/admin-x-design-system';
 import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox, Textarea} from '@tryghost/shade/components';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
 import {Plus} from 'lucide-react';
+import {Text} from '@tryghost/shade/primitives';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 export type SelectedLabelTypes = {
@@ -96,7 +97,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     return (
         <div className='flex h-[calc(100vh-16vmin)] max-h-[645px] flex-col justify-between overflow-y-scroll border-grey-200 p-6 pb-0 max-lg:border-t lg:border-l dark:border-grey-900'>
             <div>
-                <Heading className='mb-8' level={4}>Embed signup form</Heading>
+                <Text as='h4' className='mb-8 md:text-xl' leading='heading' size='lg' weight='bold'>Embed signup form</Text>
                 <Form gap='sm'>
                     <div className='flex w-full items-center justify-between'>
                         <div>Layout</div>
