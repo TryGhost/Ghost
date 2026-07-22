@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 
-import {enforceVideoCardInlinePlayback, sanitizeHtml, stripHtml} from '../../../src/utils/content-formatters';
+import {enforceVideoCardInlinePlayback, sanitizeArticleContent, sanitizeHtml, stripHtml} from '../../../src/utils/content-formatters';
 
 function sanitizeStrippedHtml(html: string, exclude: string[] = ['a']) {
     return sanitizeHtml(stripHtml(html, exclude));
@@ -160,6 +160,126 @@ describe('Content Formatters', function () {
             expect(div.querySelector('a')).toBeNull();
             expect(div.querySelector('br')).toBeNull();
             expect(div.textContent).toBe('Hello safe link Bold');
+        });
+    });
+
+    describe('sanitizeArticleContent', function () {
+        it('keeps YouTube iframe embeds intact', function () {
+            const result = sanitizeArticleContent(`
+                <figure class="kg-card kg-embed-card">
+                    <iframe src="https://www.youtube.com/embed/abc123" width="560" height="315" frameborder="0" allowfullscreen></iframe>
+                </figure>
+            `);
+
+            const iframe = renderHtml(result).querySelector('iframe') as HTMLIFrameElement;
+
+            expect(iframe).not.toBeNull();
+            expect(iframe.getAttribute('src')).toBe('https://www.youtube.com/embed/abc123');
+            expect(iframe.getAttribute('width')).toBe('560');
+            expect(iframe.getAttribute('height')).toBe('315');
+            expect(iframe.getAttribute('frameborder')).toBe('0');
+            expect(iframe.hasAttribute('allowfullscreen')).toBe(true);
+        });
+
+        it('removes unsafe iframe attributes and protocols', function () {
+            const result = sanitizeArticleContent(`
+                <iframe src="javascript:alert(1)"></iframe>
+                <iframe srcdoc="<script>window.__xss=true</script>" onload="window.__xss=true"></iframe>
+            `);
+
+            const iframes = renderHtml(result).querySelectorAll('iframe');
+
+            iframes.forEach((iframe) => {
+                expect(iframe.getAttribute('src')).toBeNull();
+                expect(iframe.hasAttribute('srcdoc')).toBe(false);
+                expect(iframe.hasAttribute('onload')).toBe(false);
+            });
+        });
+
+        it('keeps Twitter embed scripts from allowed hostnames', function () {
+            const result = sanitizeArticleContent(`
+                <blockquote class="twitter-tweet"><p>A tweet</p></blockquote>
+                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                <script async src="https://platform.x.com/widgets.js" charset="utf-8"></script>
+            `);
+
+            const div = renderHtml(result);
+            const scripts = div.querySelectorAll('script');
+
+            expect(div.querySelector('blockquote.twitter-tweet')).not.toBeNull();
+            expect(scripts).toHaveLength(2);
+            expect(scripts[0].getAttribute('src')).toBe('https://platform.twitter.com/widgets.js');
+            expect(scripts[0].hasAttribute('async')).toBe(true);
+            expect(scripts[0].getAttribute('charset')).toBe('utf-8');
+            expect(scripts[1].getAttribute('src')).toBe('https://platform.x.com/widgets.js');
+        });
+
+        it('removes scripts that are not from allowed hostnames', function () {
+            const result = sanitizeArticleContent(`
+                <p>Content</p>
+                <script src="https://evil.com/widgets.js"></script>
+                <script src="https://platform.twitter.com.evil.com/widgets.js"></script>
+                <script src="https://evil.com/platform.twitter.com"></script>
+                <script src="http://platform.twitter.com/widgets.js"></script>
+                <script src="//platform.twitter.com/widgets.js"></script>
+                <script src="/widgets.js"></script>
+                <script>window.__xss=true</script>
+            `);
+
+            const div = renderHtml(result);
+
+            expect(div.querySelectorAll('script')).toHaveLength(0);
+            expect(div.querySelector('p')?.textContent).toBe('Content');
+        });
+
+        it('strips inline code from scripts with an allowed src', function () {
+            const result = sanitizeArticleContent(`
+                <script src="https://platform.twitter.com/widgets.js">window.__xss=true</script>
+            `);
+
+            const script = renderHtml(result).querySelector('script') as HTMLScriptElement;
+
+            expect(script).not.toBeNull();
+            expect(script.textContent).toBe('');
+        });
+
+        it('removes event handler attributes and unsafe href protocols', function () {
+            const result = sanitizeArticleContent(`
+                <img src="https://example.com/image.png" onerror="window.__xss=true">
+                <p onclick="window.__xss=true">Text</p>
+                <a href="javascript:alert(1)">Link</a>
+            `);
+
+            const div = renderHtml(result);
+
+            expect(div.querySelector('img')?.hasAttribute('onerror')).toBe(false);
+            expect(div.querySelector('p')?.hasAttribute('onclick')).toBe(false);
+            expect(div.querySelector('a')?.getAttribute('href')).not.toBe('javascript:alert(1)');
+        });
+
+        it('preserves target and rel attributes added by openLinksInNewTab', function () {
+            const result = sanitizeArticleContent(`
+                <a href="https://example.com" target="_blank" rel="noopener noreferrer">Link</a>
+            `);
+
+            const link = renderHtml(result).querySelector('a') as HTMLAnchorElement;
+
+            expect(link.getAttribute('target')).toBe('_blank');
+            expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+        });
+
+        it('does not loosen the default sanitizeHtml rules', function () {
+            sanitizeArticleContent('<script src="https://platform.twitter.com/widgets.js"></script>');
+
+            const result = sanitizeHtml(`
+                <script src="https://platform.twitter.com/widgets.js"></script>
+                <iframe src="https://www.youtube.com/embed/abc123"></iframe>
+            `);
+
+            const div = renderHtml(result);
+
+            expect(div.querySelector('script')).toBeNull();
+            expect(div.querySelector('iframe')).toBeNull();
         });
     });
 });

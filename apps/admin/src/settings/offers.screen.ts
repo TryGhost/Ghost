@@ -23,8 +23,8 @@ export const offersScreen = {
     retentionModal: () => page.getByTestId(testIds.retentionModal),
 
     durationMonthsInput: () => page.getByTestId(testIds.durationMonthsInput),
-    selectOptions: () => page.getByTestId(testIds.selectOption),
-    selectOption: (label: string) => page.getByTestId(testIds.selectOption).filter({ hasText: label }),
+    selectOptions: () => page.getByRole("option"),
+    selectOption: (label: string) => page.getByRole("option").filter({ hasText: label }),
     portalPreview: () => page.getByTestId(testIds.portalPreview),
     errorToast: () => page.getByTestId(testIds.toastError),
 
@@ -33,9 +33,9 @@ export const offersScreen = {
         await offersScreen.manageOffersButton().click();
     },
 
-    /** Open the archived-offers toggle from the list modal's filter popover. */
+    /** Open the archived-offers toggle from the list modal's filter menu. */
     async showArchivedOffers(): Promise<void> {
         await offersScreen.listModal().getByRole("button", { name: names.filterOptionsButton }).click();
-        await page.getByLabelText(names.showArchivedToggle).click();
+        await page.getByRole("menuitemcheckbox", { name: names.showArchivedToggle }).click();
     },
 };

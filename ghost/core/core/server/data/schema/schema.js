@@ -1265,7 +1265,6 @@ module.exports = {
         email_lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         email_design_setting_id: {type: 'string', maxlength: 24, nullable: true, references: 'email_design_settings.id', setNullDelete: true},
         email_sent_count: {type: 'integer', nullable: true, unsigned: true},
-        email_tracked_sent_count: {type: 'integer', nullable: true, unsigned: true},
         email_opened_count: {type: 'integer', nullable: true, unsigned: true},
         '@@UNIQUE_CONSTRAINTS@@': [
             ['created_at', 'action_id']
@@ -1296,7 +1295,10 @@ module.exports = {
         finished_at: {type: 'dateTime', nullable: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending', validations: {isIn: [['pending', 'automation disabled', 'failed', 'finished', 'member changed status', 'member unsubscribed']]}},
         locked_by: {type: 'string', maxlength: 191, nullable: true},
-        locked_at: {type: 'dateTime', nullable: true}
+        locked_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['status', 'ready_at', 'created_at', 'id']
+        ]
     },
     welcome_email_automated_emails: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

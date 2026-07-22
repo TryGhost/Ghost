@@ -1,11 +1,13 @@
 import PortalFrame from '../../membership/portal/portal-frame';
+import SettingsBreadcrumbs from '../../settings-breadcrumbs';
 import toast from 'react-hot-toast';
-import {ButtonSelect, type OfferType} from './add-offer-modal';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldLabel, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea} from '@tryghost/shade/components';
+import {Form, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useAddOffer, useBrowseOffers, useEditOffer, useInvalidateOffers} from '@tryghost/admin-x-framework/api/offers';
 import {createOfferRedemptionsFilterUrl, formatOfferTimestamp, generateRetentionOfferName} from './offer-helpers';
+import {formatNumber} from '@tryghost/shade/utils';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useEffect, useMemo, useState} from 'react';
@@ -23,12 +25,12 @@ type RetentionOfferFormState = {
     freeMonths: number;
 };
 
-const typeOptions: OfferType[] = [
-    {title: 'Percentage discount', description: 'Offer a special reduced price'},
-    {title: 'Free month(s)', description: 'Give free access for a limited time'}
+const typeOptions = [
+    {title: 'Percentage discount', description: 'Offer a special reduced price', value: 'percent'},
+    {title: 'Free month(s)', description: 'Give free access for a limited time', value: 'free_months'}
 ];
 
-const durationOptions: SelectOption[] = [
+const durationOptions = [
     {value: 'once', label: 'First-payment'},
     {value: 'repeating', label: 'Multiple-months'},
     {value: 'forever', label: 'Forever'}
@@ -211,7 +213,7 @@ const RetentionOfferSidebar: React.FC<{
                                 <div className='flex flex-col gap-5'>
                                     <div className='flex flex-col gap-1.5'>
                                         <span className='text-sm leading-none font-semibold text-grey-700'>Performance</span>
-                                        <span>{redemptions} {redemptions === 1 ? 'redemption' : 'redemptions'}</span>
+                                        <span>{formatNumber(redemptions)} {redemptions === 1 ? 'redemption' : 'redemptions'}</span>
                                     </div>
                                     {redemptions > 0 && lastRedeemed ?
                                         <div className='flex flex-col gap-1.5'>
@@ -227,17 +229,17 @@ const RetentionOfferSidebar: React.FC<{
                     </div>
                 </section>
                 <section className='mt-2'>
-                    <Toggle
-                        key={`retention-toggle-${cadence}-${formState.enabled ? 'enabled' : 'disabled'}`}
-                        align='center'
-                        checked={formState.enabled}
-                        direction='rtl'
-                        hint={cadence === 'monthly' ? 'Applied to monthly plans' : 'Applied to annual plans'}
-                        label={`Enable ${cadence} retention`}
-                        onChange={(e) => {
-                            updateForm(state => ({...state, enabled: e.target.checked}));
-                        }}
-                    />
+                    <Field orientation='horizontal'>
+                        <FieldContent>
+                            <FieldLabel htmlFor={`${cadence}-retention-enabled`}>Enable {cadence} retention</FieldLabel>
+                            <FieldDescription>{cadence === 'monthly' ? 'Applied to monthly plans' : 'Applied to annual plans'}</FieldDescription>
+                        </FieldContent>
+                        <Switch
+                            checked={formState.enabled}
+                            id={`${cadence}-retention-enabled`}
+                            onCheckedChange={checked => updateForm(state => ({...state, enabled: checked}))}
+                        />
+                    </Field>
                 </section>
                 {formState.enabled && (
                     <>
@@ -253,43 +255,48 @@ const RetentionOfferSidebar: React.FC<{
                                         updateForm(state => ({...state, displayTitle: e.target.value}));
                                     }}
                                 />
-                                <TextArea
-                                    maxLength={MAX_DISPLAY_TEXT_LENGTH}
-                                    placeholder='We&#39;d hate to see you leave. How about a special offer to stay?'
-                                    title='Display description'
-                                    value={formState.displayDescription}
-                                    onChange={(e) => {
-                                        updateForm(state => ({...state, displayDescription: e.target.value}));
-                                    }}
-                                />
+                                <Field>
+                                    <FieldLabel htmlFor='retention-display-description'>Display description</FieldLabel>
+                                    <Textarea
+                                        className='border-transparent bg-muted'
+                                        id='retention-display-description'
+                                        maxLength={MAX_DISPLAY_TEXT_LENGTH}
+                                        placeholder='We&#39;d hate to see you leave. How about a special offer to stay?'
+                                        value={formState.displayDescription}
+                                        onChange={(e) => {
+                                            updateForm(state => ({...state, displayDescription: e.target.value}));
+                                        }}
+                                    />
+                                </Field>
                             </div>
                         </section>
                         <section className='mt-4'>
                             <h2 className='mb-4 text-lg'>Details</h2>
                             <div className='flex flex-col gap-6'>
                                 {cadence === 'monthly' && (
-                                    <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4 dark:border-grey-800'>
-                                        <ButtonSelect
-                                            checked={formState.type === 'percent'}
-                                            type={typeOptions[0]}
-                                            onClick={() => {
-                                                clearError('amount');
-                                                clearError('durationInMonths');
-                                                updateForm((state) => {
-                                                    return {...state, type: 'percent', percentAmount: state.percentAmount};
-                                                });
-                                            }}
-                                        />
-                                        <ButtonSelect
-                                            checked={formState.type === 'free_months'}
-                                            type={typeOptions[1]}
-                                            onClick={() => {
-                                                clearError('amount');
-                                                clearError('durationInMonths');
-                                                updateForm(state => ({...state, type: 'free_months'}));
-                                            }}
-                                        />
-                                    </div>
+                                    <RadioGroup
+                                        aria-label={`${cadence} retention offer type`}
+                                        className='rounded-md border border-border-default p-4'
+                                        value={formState.type}
+                                        onValueChange={(value) => {
+                                            clearError('amount');
+                                            clearError('durationInMonths');
+                                            updateForm(state => ({...state, type: value as RetentionOfferFormState['type']}));
+                                        }}
+                                    >
+                                        {typeOptions.map((option) => {
+                                            const id = `${cadence}-retention-type-${option.value}`;
+                                            return (
+                                                <Field key={option.value} orientation='horizontal'>
+                                                    <RadioGroupItem id={id} indicator='check' value={option.value} />
+                                                    <FieldContent>
+                                                        <FieldLabel className='cursor-pointer' htmlFor={id}>{option.title}</FieldLabel>
+                                                        <FieldDescription>{option.description}</FieldDescription>
+                                                    </FieldContent>
+                                                </Field>
+                                            );
+                                        })}
+                                    </RadioGroup>
                                 )}
                                 {formState.type === 'percent' && (
                                     <>
@@ -307,17 +314,18 @@ const RetentionOfferSidebar: React.FC<{
                                             }}
                                             onKeyDown={() => clearError('amount')}
                                         />
-                                        <Select
-                                            options={availableDurationOptions}
-                                            selectedOption={availableDurationOptions.find(option => option.value === formState.duration)}
-                                            title='Duration'
-                                            onSelect={(e) => {
-                                                if (e) {
-                                                    clearError('durationInMonths');
-                                                    updateForm(state => ({...state, duration: e.value}));
-                                                }
-                                            }}
-                                        />
+                                        <Field>
+                                            <FieldLabel>Duration</FieldLabel>
+                                            <Select value={formState.duration} onValueChange={(value) => {
+                                                clearError('durationInMonths');
+                                                updateForm(state => ({...state, duration: value}));
+                                            }}>
+                                                <SelectTrigger aria-label='Duration'><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    {availableDurationOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        </Field>
                                         {formState.duration === 'repeating' && (
                                             <div className='-mt-4'>
                                                 <TextField
@@ -655,16 +663,18 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
             preview={preview}
-            previewToolbarBreadcrumbs={[
-                {label: 'Offers', onClick: goBack},
-                {label: breadcrumbTitle}
-            ]}
+            previewToolbarBreadcrumbs={
+                <SettingsBreadcrumbs
+                    current={breadcrumbTitle}
+                    label='Offers'
+                    onBack={goBack}
+                />
+            }
             sidebar={sidebar}
             size='lg'
             testId='retention-offer-modal'
             title='Offer'
             width={1140}
-            onBreadcrumbsBack={goBack}
             onCancel={goBack}
             onOk={handleSaveClick}
         />

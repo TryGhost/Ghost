@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { page } from "vitest/browser";
 
 import {
     activeThemeResponse,
     fakeAdminEndpoint,
     fakeEditSettings,
+    fakeEndpoint,
     fakeSettingsScreens,
     fakeSitePreview,
     post,
@@ -112,6 +114,80 @@ describe("Design settings", () => {
         await expect.element(modal.getByTestId(sel.toggleUnsplashButton)).toBeVisible();
         await modal.getByRole("button", { name: "Save" }).click();
         await expect(settingsApi).toHaveEditedSettings([{ key: "accent_color", value: "#cd5786" }]);
+    });
+
+    it("confirms before discarding unsaved theme-tab changes", async () => {
+        const emailSignupText: CustomThemeSetting = { id: "email-signup-text", key: "email_signup_text", type: "text", default: null, value: null };
+        fakeDesignWorld([navigationLayout(), emailSignupText]);
+        const settingsApi = fakeEditSettings();
+        const editThemeApi = fakeAdminEndpoint("PUT", "/custom_theme_settings/", ({ body }) => body);
+        await renderAdminApp("/settings/design/edit");
+
+        const modal = await openThemeTab();
+        await modal.getByLabelText("Email signup text").fill("test");
+        await modal.getByRole("button", { name: "Close" }).click();
+
+        await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+        await settingsScreen.confirmationAction("Leave").click();
+        await expect(settingsScreen.designModal()).toHaveCount(0);
+        expect(settingsApi.requests).toHaveLength(0);
+        expect(editThemeApi.requests).toHaveLength(0);
+    });
+
+    it("picks a cover image from the Unsplash photo grid", async () => {
+        const testImage = "data:image/gif;base64,R0lGODlhAQABAAAAACw=";
+        const unsplashPhoto = {
+            id: "test-unsplash-photo",
+            slug: "test-unsplash-photo",
+            created_at: "2026-06-22T00:00:00Z",
+            updated_at: "2026-06-22T00:00:00Z",
+            promoted_at: null,
+            width: 1200,
+            height: 800,
+            color: "#f0f0f0",
+            blur_hash: "LKO2?U%2Tw=w]~RBVZRi};RPxuwH",
+            description: null,
+            alt_description: "A fake Unsplash test image",
+            urls: { raw: testImage, full: testImage, regular: testImage, small: testImage, thumb: testImage },
+            links: {
+                self: "https://api.unsplash.com/photos/test-unsplash-photo",
+                html: "https://unsplash.com/photos/test-unsplash-photo",
+                download: "https://unsplash.com/photos/test-unsplash-photo/download",
+                download_location: "https://api.unsplash.com/photos/test-unsplash-photo/download",
+            },
+            likes: 1,
+            liked_by_user: false,
+            current_user_collections: [],
+            sponsorship: null,
+            topic_submissions: {},
+            user: {
+                id: "test-user",
+                updated_at: "2026-06-22T00:00:00Z",
+                username: "testuser",
+                name: "Test User",
+                first_name: "Test",
+                last_name: "User",
+                links: { self: "https://api.unsplash.com/users/testuser", html: "https://unsplash.com/@testuser" },
+                profile_image: { small: testImage, medium: testImage, large: testImage },
+                total_photos: 1,
+            },
+        };
+        const { homepagePreview } = fakeDesignWorld();
+        fakeEndpoint("GET", "https://api.unsplash.com/photos", [unsplashPhoto]);
+        const downloadApi = fakeEndpoint("GET", unsplashPhoto.links.download_location, { url: testImage });
+        await renderAdminApp("/settings/design/edit");
+
+        const modal = settingsScreen.designModal();
+        await modal.getByTestId(sel.toggleUnsplashButton).click();
+        const galleryImage = page.getByAltText(unsplashPhoto.alt_description);
+        await expect.element(galleryImage).toBeVisible();
+
+        // The hover overlay covers the image, so target its action directly.
+        await page.getByText("Insert image").click();
+
+        await expect.element(modal.getByTestId("publication-cover").getByTestId("image-upload-container")).toBeVisible();
+        await expect(homepagePreview).toHaveRequestedPreview({ cover: testImage });
+        await expect.poll(() => downloadApi.requests.length).toBe(1);
     });
 
     it("previews and saves custom theme settings", async () => {

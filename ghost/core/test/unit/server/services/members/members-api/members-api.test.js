@@ -88,6 +88,12 @@ describe('MembersAPI', function () {
                 service: {
                     redeem: giftRedeem
                 }
+            },
+            customFieldValues: {
+                getValuesForMembers: sinon.stub().resolves(new Map()),
+                namesValues: sinon.stub().returns(false),
+                planWrite: sinon.stub().resolves([]),
+                applyWrite: sinon.stub().resolves()
             }
         });
     };

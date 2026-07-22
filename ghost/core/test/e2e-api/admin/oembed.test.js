@@ -284,12 +284,12 @@ describe('Oembed API', function () {
     });
 
     it('should fetch and store thumbnails', async function () {
-        // Mock the page to contain a readable icon URL
+        // Mock the page to contain a scrapeable thumbnail (og:image)
         const pageMock = nock('http://example.com')
             .get('/page-with-thumbnail')
             .reply(
                 200,
-                '<html><head><title>TESTING</title><link rel="thumbnail" href="http://example.com/thumbnail.svg"></head><body></body></html>',
+                '<html><head><title>TESTING</title><meta property="og:image" content="http://example.com/thumbnail.png"></head><body></body></html>',
                 {'content-type': 'text/html'}
             );
 

@@ -2,7 +2,9 @@ import React from 'react';
 import RecommendationIcon from './recommendation-icon';
 import {type EditOrAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type ErrorMessages} from '@tryghost/admin-x-framework/hooks';
-import {Form, Heading, Hint, TextArea, TextField, URLTextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldDescription, FieldLabel, Input, Textarea} from '@tryghost/shade/components';
+import {Form, Heading, TextField} from '@tryghost/admin-x-design-system';
+import {formatNumber} from '@tryghost/shade/utils';
 
 interface Props<T extends EditOrAddRecommendation> {
     showURL?: boolean,
@@ -48,7 +50,7 @@ export const validateDescriptionForm = function (formState: EditOrAddRecommendat
 
 function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showURL, formState, updateForm, errors, clearError, setErrors}: Props<T>) {
     const [descriptionLength, setDescriptionLength] = React.useState(formState?.description?.length || 0);
-    const descriptionLengthColor = descriptionLength > 200 ? 'text-red' : 'text-green';
+    const descriptionLengthColor = descriptionLength > 200 ? 'text-destructive' : 'text-foreground';
 
     // Do an intial validation on mounting
     const didValidate = React.useRef(false);
@@ -82,20 +84,15 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
                     </div>
                 </div>
             </div>
-            {formState.one_click_subscribe && <Hint>This is a Ghost site, so your readers can subscribe with just one click</Hint>}
+            {formState.one_click_subscribe && <FieldDescription className='mt-1'>This is a Ghost site, so your readers can subscribe with just one click</FieldDescription>}
         </div>
 
-        {showURL && <URLTextField
-            disabled={true}
-            title='URL'
-            value={formState.url}
-            onChange={u => updateForm((state) => {
-                return {
-                    ...state,
-                    url: u || ''
-                };
-            })}
-        />}
+        {showURL && (
+            <Field data-disabled='true'>
+                <FieldLabel htmlFor='recommendation-url'>URL</FieldLabel>
+                <Input className='border-transparent bg-muted' id='recommendation-url' value={formState.url} disabled />
+            </Field>
+        )}
 
         <TextField
             autoFocus={true}
@@ -109,19 +106,22 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
                 updateForm(state => ({...state, title: e.target.value}));
             }}
         />
-        <TextArea
-            error={Boolean(errors.description)}
-            // Note: we don't show the error text here, because errors are related to the character count
-            hint={<>Max: <strong>200</strong> characters. You&#8217;ve used <strong className={descriptionLengthColor}>{descriptionLength}</strong></>}
-            rows={4}
-            title="Short description"
-            value={formState.description ?? ''}
-            onChange={(e) => {
-                clearError?.('description');
-                setDescriptionLength(e.target.value.length);
-                updateForm(state => ({...state, description: e.target.value}));
-            }}
-        />
+        <Field data-invalid={Boolean(errors.description) || undefined}>
+            <FieldLabel htmlFor='recommendation-description'>Short description</FieldLabel>
+            <Textarea
+                aria-invalid={Boolean(errors.description) || undefined}
+                className='border-transparent bg-muted'
+                id='recommendation-description'
+                rows={4}
+                value={formState.description ?? ''}
+                onChange={(e) => {
+                    clearError?.('description');
+                    setDescriptionLength(e.target.value.length);
+                    updateForm(state => ({...state, description: e.target.value}));
+                }}
+            />
+            <FieldDescription>Max: <strong>{formatNumber(200)}</strong> characters. You&#8217;ve used <strong className={descriptionLengthColor}>{formatNumber(descriptionLength)}</strong></FieldDescription>
+        </Field>
     </Form>;
 }
 

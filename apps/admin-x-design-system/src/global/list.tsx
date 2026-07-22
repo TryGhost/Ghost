@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import React from 'react';
 import Heading from './heading';
-import Hint from './hint';
+import LegacyHint from './legacy-hint';
 import ListHeading, {ListHeadingSize} from './list-heading';
 import Separator from './separator';
 
@@ -54,7 +54,7 @@ const List: React.FC<ListProps> = ({
                 {hint &&
                 <div className='-mt-px'>
                     {hintSeparator && <Separator />}
-                    <Hint>{hint}</Hint>
+                    <LegacyHint className='mt-1'>{hint}</LegacyHint>
                 </div>
                 }
             </section>

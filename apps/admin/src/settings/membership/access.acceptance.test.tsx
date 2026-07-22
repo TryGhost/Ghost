@@ -54,6 +54,33 @@ describe("Access settings", () => {
         ]);
     });
 
+    it("switches site visibility between public and private", async () => {
+        fakeSettingsScreens();
+        const settingsApi = fakeEditSettings();
+        await renderAdminApp("/settings");
+        const section = settingsScreen.access();
+
+        await expect.element(section.getByTestId("site-visibility-select")).toHaveTextContent("Public");
+        await choose("site-visibility-select", "Private");
+        await section.getByTestId("site-access-code").fill("secret-access-code");
+        await expect(section.getByText(/A private RSS feed is available/)).toHaveCount(0);
+        await section.getByRole("button", {name: "Save"}).click();
+
+        await expect(settingsApi).toHaveEditedSettings([
+            {key: "is_private", value: true},
+            {key: "password", value: "secret-access-code"},
+        ]);
+        await expect.element(section.getByText(/A private RSS feed is available/)).toBeVisible();
+
+        await choose("site-visibility-select", "Public");
+        await expect(section.getByTestId("site-access-code")).toHaveCount(0);
+        await section.getByRole("button", {name: "Save"}).click();
+
+        await expect(settingsApi).toHaveEditedSettings([{key: "is_private", value: false}]);
+        await expect(section.getByText(/A private RSS feed is available/)).toHaveCount(0);
+        expect(settingsApi.requests).toHaveLength(2);
+    });
+
     it("regenerates a locked private-site access code server-side", async () => {
         fakeSettingsScreens();
         const settings = settingsResponse({settings: {is_private: true, password: "fake-123"}});
@@ -92,7 +119,7 @@ describe("Access settings", () => {
 
         const element = option.element();
         const rect = element.getBoundingClientRect();
-        expect(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)?.closest("[data-testid='select-option']")).toBe(element);
+        expect(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)?.closest("[role='option']")).toBe(element);
     });
 
     it("disables dependent settings when signup is disabled", async () => {

@@ -224,6 +224,30 @@ export function createDatabaseAutomationsRepository({
             return await knex.transaction(trx => retryStep(trx, step, retryAt));
         },
 
+        async recordEmailSent(options): Promise<void> {
+            await knex.transaction(async (trx) => {
+                await trx('automation_action_revisions')
+                    .where('id', options.automationActionRevisionId)
+                    .update({
+                        email_sent_count: trx.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1])
+                    });
+
+                const now = toDatabaseDate(new Date());
+                await trx('automated_email_recipients').insert({
+                    id: ObjectId().toHexString(),
+                    member_id: options.memberId,
+                    member_uuid: options.memberUuid,
+                    member_email: options.memberEmail,
+                    member_name: options.memberName,
+                    automation_action_revision_id: options.automationActionRevisionId,
+                    ...(options.mailgunMessageId ? {mailgun_message_id: options.mailgunMessageId} : {}),
+                    track_opens: options.trackOpens,
+                    created_at: now,
+                    updated_at: now
+                });
+            });
+        },
+
         async getAutomatedEmailRecipientsByMailgunIds(mailgunMessageIds) {
             if (mailgunMessageIds.length === 0) {
                 return [];
@@ -266,7 +290,11 @@ export function createDatabaseAutomationsRepository({
                     }
                 }
 
-                for (const [id, opens] of newOpensPerRevision) {
+                // Keep lock acquisition order consistent across concurrent transactions to avoid deadlocks.
+                const revisions = [...newOpensPerRevision.entries()]
+                    .sort(([left], [right]) => left.localeCompare(right));
+
+                for (const [id, opens] of revisions) {
                     await trx('automation_action_revisions')
                         .where({id})
                         .update({
@@ -542,6 +570,7 @@ async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<
         .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
         .innerJoin('automation_action_revisions as revision', 'revision.id', 'step.automation_action_revision_id')
         .innerJoin('automation_actions as action', 'action.id', 'revision.action_id')
+        .whereIn('step.id', candidateIds)
         .where('step.locked_by', lockId)
         .orderBy([
             'step.ready_at',
@@ -557,13 +586,14 @@ async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<
 
 async function findNextPendingReadyAt(trx: Knex.Transaction, staleLockCutoff: Readonly<Date>): Promise<Date | null> {
     const row = await trx('automation_run_steps')
-        .min({next_ready_at: 'ready_at'})
+        .select({next_ready_at: 'ready_at'})
         .where('status', 'pending')
         .where((builder) => {
             builder
                 .whereNull('locked_by')
                 .orWhere('locked_at', '<', toDatabaseDate(staleLockCutoff));
         })
+        .orderBy('ready_at')
         .first();
     return row?.next_ready_at ? new Date(row.next_ready_at) : null;
 }

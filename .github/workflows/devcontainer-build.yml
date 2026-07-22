@@ -66,5 +66,5 @@ jobs:
           tags: |
             ghcr.io/tryghost/ghost-devcontainer:latest
             ghcr.io/tryghost/ghost-devcontainer:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=ghcr.io/tryghost/ghost-devcontainer:buildcache
+          cache-to: type=registry,ref=ghcr.io/tryghost/ghost-devcontainer:buildcache,mode=max

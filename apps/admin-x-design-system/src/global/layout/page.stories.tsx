@@ -8,12 +8,9 @@ import ViewContainer from './view-container';
 import {testColumns, testRows} from '../table/dynamic-table.stories';
 import {exampleActions as exampleActionButtons} from './view-container.stories';
 import DynamicTable from '../table/dynamic-table';
-import Hint from '../hint';
 import Heading from '../heading';
 import {tableRowHoverBgClasses} from '../table-row';
-import Breadcrumbs from '../breadcrumbs';
 import Button from '../button';
-import {Toggle} from '../..';
 
 const meta = {
     title: 'Global / Layout / Page',
@@ -126,7 +123,7 @@ const simpleList = <ViewContainer
 >
     <DynamicTable
         columns={testColumns}
-        footer={<Hint>Just a regular table footer</Hint>}
+        footer={<span>Just a regular table footer</span>}
         pageHasSidebar={false}
         rows={testRows(100)}
     />
@@ -149,7 +146,7 @@ const stickyList = <ViewContainer
 >
     <DynamicTable
         columns={testColumns}
-        footer={<Hint>Sticky footer</Hint>}
+        footer={<span>Sticky footer</span>}
         pageHasSidebar={false}
         rows={testRows(40)}
         stickyFooter
@@ -181,7 +178,7 @@ const examplePrimaryAction = <ViewContainer
 >
     <DynamicTable
         columns={testColumns}
-        footer={<Hint>Sticky footer</Hint>}
+        footer={<span>Sticky footer</span>}
         pageHasSidebar={false}
         rows={testRows(40)}
         stickyFooter
@@ -215,7 +212,7 @@ const exampleActionsContent = <ViewContainer
 >
     <DynamicTable
         columns={testColumns}
-        footer={<Hint>Sticky footer</Hint>}
+        footer={<span>Sticky footer</span>}
         pageHasSidebar={false}
         rows={testRows(40)}
         stickyFooter
@@ -353,20 +350,7 @@ export const ExampleDetailScreen: Story = {
     name: 'Example: Detail Page',
     args: {
         showAppMenu: true,
-        breadCrumbs: <Breadcrumbs
-            items={[
-                {
-                    label: 'Members',
-                    onClick: () => {
-                        alert('Clicked back');
-                    }
-                },
-                {
-                    label: 'Emerson Vaccaro'
-                }
-            ]}
-            backIcon
-        />,
+        breadCrumbs: <span className='text-sm text-grey-500'>Breadcrumbs slot</span>,
         showGlobalActions: true,
         children: <>
             <ViewContainer
@@ -433,15 +417,15 @@ export const ExampleDetailScreen: Story = {
                         <Heading level={5}>Newsletters</Heading>
                         <div className='flex flex-col gap-3'>
                             <div className='flex items-center gap-2'>
-                                <Toggle />
+                                <input aria-label='Daily news' type='checkbox' />
                                 <span>Daily news</span>
                             </div>
                             <div className='flex items-center gap-2'>
-                                <Toggle />
+                                <input aria-label='Weekly roundup' type='checkbox' />
                                 <span>Weekly roundup</span>
                             </div>
                             <div className='flex items-center gap-2'>
-                                <Toggle checked onChange={() => {}} />
+                                <input aria-label='The Inner Circle' type='checkbox' defaultChecked />
                                 <span>The Inner Circle</span>
                             </div>
                             <div className='mt-5 rounded border border-red p-4 text-sm text-red'>

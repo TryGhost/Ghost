@@ -81,6 +81,16 @@ export type AutomatedEmailEvents = {
     automationActionRevisionId: string;
 };
 
+export type RecordEmailSentOptions = Readonly<{
+    automationActionRevisionId: string;
+    mailgunMessageId?: string;
+    memberEmail: string;
+    memberId: string;
+    memberName: string | null;
+    memberUuid: string;
+    trackOpens: boolean;
+}>;
+
 type AutomationStepBase = {
     id: string;
     locked_by: string;
@@ -167,6 +177,10 @@ export interface AutomationsRepository {
         step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
         retryAt: Readonly<Date>
     ): Promise<boolean>;
+    /**
+     * Record a sent email and increment its action revision's sent count.
+     */
+    recordEmailSent(options: RecordEmailSentOptions): Promise<void>;
     /**
      * Fetch sent emails by their Mailgun IDs.
      */

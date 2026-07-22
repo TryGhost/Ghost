@@ -227,6 +227,70 @@ describe('EventRepository', function () {
         });
     });
 
+    describe('attribution event queries', function () {
+        // The lazy URL service needs the attributed post's relations to
+        // build its URL; a bare postAttribution row is rejected as thin.
+        function makeRepository(modelName, requiredRelations = ['tags', 'authors']) {
+            const fake = sinon.fake.resolves({data: [], meta: {}});
+            const eventRepository = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                labsService: null,
+                urlService: {getRequiredRelations: () => requiredRelations},
+                [modelName]: {findPage: fake}
+            });
+            return {eventRepository, fake};
+        }
+
+        it('getSignupEvents loads the attributed post relations', async function () {
+            const {eventRepository, fake} = makeRepository('MemberCreatedEvent');
+
+            await eventRepository.getSignupEvents({}, {});
+
+            sinon.assert.calledOnceWithMatch(fake, {
+                withRelated: sinon.match.array.contains(['postAttribution', 'postAttribution.tags', 'postAttribution.authors'])
+            });
+        });
+
+        it('getDonationEvents loads the attributed post relations', async function () {
+            const {eventRepository, fake} = makeRepository('DonationPaymentEvent');
+
+            await eventRepository.getDonationEvents({}, {});
+
+            sinon.assert.calledOnceWithMatch(fake, {
+                withRelated: sinon.match.array.contains(['postAttribution', 'postAttribution.tags', 'postAttribution.authors'])
+            });
+        });
+
+        it('getSubscriptionEvents loads the attributed post relations', async function () {
+            const {eventRepository, fake} = makeRepository('MemberPaidSubscriptionEvent');
+
+            await eventRepository.getSubscriptionEvents({}, {});
+
+            sinon.assert.calledOnceWithMatch(fake, {
+                withRelated: sinon.match.array.contains([
+                    'subscriptionCreatedEvent.postAttribution',
+                    'subscriptionCreatedEvent.postAttribution.tags',
+                    'subscriptionCreatedEvent.postAttribution.authors'
+                ])
+            });
+        });
+
+        it('loads no extra relations when the URL service requires none', async function () {
+            const {eventRepository, fake} = makeRepository('MemberCreatedEvent', []);
+
+            await eventRepository.getSignupEvents({}, {});
+
+            const withRelated = fake.getCall(0).args[0].withRelated;
+            assert.ok(!withRelated.includes('postAttribution.tags'));
+            assert.ok(withRelated.includes('postAttribution'));
+        });
+    });
+
     describe('getEmailFailedEvents', function () {
         let eventRepository;
         let fake;

@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
-import {Breadcrumbs, Button, ButtonGroup, DesktopChrome, MobileChrome, PageHeader, Select, type SelectOption} from '@tryghost/admin-x-design-system';
+import SettingsBreadcrumbs from '../../settings-breadcrumbs';
+import {Button, ButtonGroup, DesktopChrome, MobileChrome, PageHeader} from '@tryghost/admin-x-design-system';
+import {Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {type OfficialTheme, type ThemeVariant} from '../../../providers/settings-app-provider';
 import {type Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
 
@@ -36,7 +38,7 @@ const ThemePreview: React.FC<{
     onInstall
 }) => {
     const [previewMode, setPreviewMode] = useState('desktop');
-    const [selectedVariant, setSelectedVariant] = useState<SelectOption | undefined>(undefined);
+    const [selectedVariant, setSelectedVariant] = useState<string | undefined>(undefined);
 
     if (!selectedTheme) {
         return null;
@@ -53,10 +55,10 @@ const ThemePreview: React.FC<{
 
     if (hasVariants(selectedTheme)) {
         if (selectedVariant === undefined) {
-            setSelectedVariant(variantOptions[0]);
+            setSelectedVariant(variantOptions[0].value);
         }
 
-        previewUrl = getAllVariants(selectedTheme).find(variant => generateVariantOptionValue(variant) === selectedVariant?.value)?.previewUrl || previewUrl;
+        previewUrl = getAllVariants(selectedTheme).find(variant => generateVariantOptionValue(variant) === selectedVariant)?.previewUrl || previewUrl;
     }
 
     let installButtonLabel = `Install ${selectedTheme.name}`;
@@ -76,32 +78,23 @@ const ThemePreview: React.FC<{
 
     const left =
         <div className='flex items-center gap-2'>
-            <Breadcrumbs
-                activeItemClassName='hidden md:!block md:!visible'
-                containerClassName='whitespace-nowrap'
-                itemClassName='hidden md:!block md:!visible'
-                items={[
-                    {label: 'Change theme', onClick: onBack},
-                    {label: selectedTheme.name}
-                ]}
-                separatorClassName='hidden md:!block md:!visible'
-                backIcon
+            <SettingsBreadcrumbs
+                current={selectedTheme.name}
+                label='Change theme'
                 onBack={onBack}
             />
             {hasVariants(selectedTheme) ?
                 <>
                     <span className='hidden md:!visible md:!block'>–</span>
-                    <Select
-                        border={false}
-                        controlClasses={{menu: 'min-w-max'}}
-                        fullWidth={false}
-                        options={variantOptions}
-                        selectedOption={selectedVariant}
-                        clearBg
-                        onSelect={(option) => {
-                            setSelectedVariant(option || undefined);
-                        }}
-                    />
+                    <Field className='w-auto'>
+                        <FieldLabel className='sr-only'>Theme variant</FieldLabel>
+                        <Select value={selectedVariant} onValueChange={setSelectedVariant}>
+                            <SelectTrigger aria-label='Theme variant' className='w-auto border-0 bg-transparent shadow-none'><SelectValue /></SelectTrigger>
+                            <SelectContent className='min-w-max'>
+                                {variantOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </Field>
                 </> : null
             }
         </div>;

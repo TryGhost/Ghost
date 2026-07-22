@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {ColorPickerField, Heading, Hint, ImageUpload, Select, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {ColorPickerField, Heading, ImageUpload, TextField} from '@tryghost/admin-x-design-system';
 import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
+import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {humanizeSettingKey} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -51,24 +52,26 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({setting, setSetting}) => {
         );
     case 'boolean':
         return (
-            <Toggle
-                checked={setting.value}
-                direction="rtl"
-                hint={setting.description}
-                label={humanizeSettingKey(setting.key)}
-                onChange={event => setSetting(event.target.checked)}
-            />
+            <Field orientation='horizontal'>
+                <FieldContent>
+                    <FieldLabel htmlFor={`theme-setting-${setting.key}`}>{humanizeSettingKey(setting.key)}</FieldLabel>
+                    {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
+                </FieldContent>
+                <Switch checked={Boolean(setting.value)} id={`theme-setting-${setting.key}`} onCheckedChange={setSetting} />
+            </Field>
         );
     case 'select':
         return (
-            <Select
-                hint={setting.description}
-                options={setting.options.map(option => ({label: option, value: option}))}
-                selectedOption={{label: setting.value, value: setting.value}}
-                testId={`setting-select-${setting.key}`}
-                title={humanizeSettingKey(setting.key)}
-                onSelect={option => setSetting(option?.value || null)}
-            />
+            <Field>
+                <FieldLabel>{humanizeSettingKey(setting.key)}</FieldLabel>
+                <Select value={setting.value} onValueChange={setSetting}>
+                    <SelectTrigger aria-label={humanizeSettingKey(setting.key)} data-testid={`setting-select-${setting.key}`}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                        {setting.options.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
+            </Field>
         );
     case 'color':
         return (
@@ -91,7 +94,7 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({setting, setSetting}) => {
                 onDelete={() => setSetting(null)}
                 onUpload={file => handleImageUpload(file)}
             >Upload image</ImageUpload>
-            {setting.description && <Hint>{setting.description}</Hint>}
+            {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
         </>;
     }
 };

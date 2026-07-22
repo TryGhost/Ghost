@@ -11,10 +11,14 @@ import {storageCodecFor, storageColumnsFor} from './storage';
 const FIELDS_TABLE = 'members_custom_fields';
 const VALUES_TABLE = 'members_custom_field_values';
 
-// Values arrive keyed by field key. The values themselves stay `unknown` here —
-// each one is validated by its own field type's schema, which isn't known until
-// the key is resolved to a definition.
-const ValuesInput = z.record(z.string(), z.unknown());
+// Matches the `members_custom_fields.key` column (schema.js), so no key a site
+// could actually have minted is ever refused by it.
+const MAX_KEY_LENGTH = 191;
+
+// Values arrive keyed by field key. Each value stays `unknown` here: it is
+// validated by its own field type's schema, which isn't known until the key is
+// resolved to a definition.
+const ValuesInput = z.record(z.string().max(MAX_KEY_LENGTH), z.unknown());
 
 // The field facts the value path needs: the id to write the FK, the key to match
 // input against, the name for error messages, and the type to pick the validator
@@ -47,9 +51,16 @@ interface PlannedWrite {
  */
 export class CustomFieldValuesService {
     private knex: Knex;
+    /**
+     * @private
+     * A getter rather than a number: the ceiling is an operator setting that can
+     * change between requests.
+     */
+    private getMaxDefinitions: () => number;
 
-    constructor({knex}: {knex: Knex}) {
+    constructor({knex, getMaxDefinitions}: {knex: Knex, getMaxDefinitions: () => number}) {
         this.knex = knex;
+        this.getMaxDefinitions = getMaxDefinitions;
     }
 
     /**
@@ -120,21 +131,62 @@ export class CustomFieldValuesService {
     }
 
     /**
+     * @private
+     * Input as the values object it claims to be, rejecting anything that isn't
+     * one. Shared by every caller so they cannot disagree on what a values object
+     * is, or on the error when it isn't one.
+     */
+    private parseValues(input: unknown): Record<string, unknown> {
+        const parsed = ValuesInput.safeParse(input);
+        if (!parsed.success) {
+            throw new errors.ValidationError({message: 'Custom field values must be an object keyed by field key.', property: 'custom_fields'});
+        }
+
+        return parsed.data;
+    }
+
+    /**
+     * Whether input names any values. An absent key names none; anything present
+     * that isn't a values object throws, with the same error resolving it would
+     * have raised.
+     *
+     * Answers the shape question alone, with no catalog lookup, so it can be asked
+     * before a write is known to be permitted.
+     */
+    namesValues(input: unknown): boolean {
+        if (input === undefined) {
+            return false;
+        }
+
+        return Object.keys(this.parseValues(input)).length > 0;
+    }
+
+    /**
      * Resolve input into the writes it implies, rejecting anything invalid, and
      * writing nothing. Returned so a caller can validate before it commits to a
      * change it would have to unwind (the member edit validates up front), then
      * apply the same plan without re-resolving or re-validating.
      */
     async planWrite(input: unknown): Promise<PlannedWrite[]> {
-        const parsed = ValuesInput.safeParse(input);
-        if (!parsed.success) {
-            throw new errors.ValidationError({message: 'Custom field values must be an object keyed by field key.', property: 'custom_fields'});
+        const values = this.parseValues(input);
+        const keys = Object.keys(values);
+
+        // A write cannot name more fields than the site may define, so the
+        // definitions ceiling bounds it. This also holds the lookup below within the
+        // database driver's bound-parameter limit, which one key per parameter would
+        // otherwise exceed.
+        const maxKeys = this.getMaxDefinitions();
+        if (keys.length > maxKeys) {
+            throw new errors.ValidationError({
+                message: `Custom field values are limited to ${maxKeys} fields per request.`,
+                property: 'custom_fields'
+            });
         }
 
-        const byKey = await this.activeFieldsByKey(Object.keys(parsed.data));
+        const byKey = await this.activeFieldsByKey(keys);
         const writes: PlannedWrite[] = [];
 
-        for (const [key, raw] of Object.entries(parsed.data)) {
+        for (const [key, raw] of Object.entries(values)) {
             const field = byKey.get(key);
             if (!field) {
                 // Unknown (or archived) key. Rejected rather than ignored: a typo

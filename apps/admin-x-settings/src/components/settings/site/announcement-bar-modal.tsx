@@ -2,7 +2,8 @@ import AnnouncementBarPreview from './announcement-bar/announcement-bar-preview'
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {CheckboxGroup, ColorIndicator, Form, HtmlField, PreviewModalContent, type Tab, showToast} from '@tryghost/admin-x-design-system';
+import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet} from '@tryghost/shade/components';
+import {ColorIndicator, Form, HtmlField, PreviewModalContent, type Tab, showToast} from '@tryghost/admin-x-design-system';
 import {debounce} from '../../../utils/debounce';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -100,10 +101,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }}
                 onTogglePicker={() => {}}
             />
-            <CheckboxGroup
-                checkboxes={visibilityCheckboxes}
-                title='Visibility'
-            />
+            <FieldSet>
+                <FieldLegend variant='label'>Visibility</FieldLegend>
+                <FieldGroup data-slot='checkbox-group'>
+                    {visibilityCheckboxes.map(checkbox => (
+                        <Field key={checkbox.value} orientation='horizontal'>
+                            <Checkbox checked={checkbox.checked} id={`announcement-${checkbox.value}`} onCheckedChange={checked => checkbox.onChange(checked === true)} />
+                            <FieldLabel htmlFor={`announcement-${checkbox.value}`}>{checkbox.label}</FieldLabel>
+                        </Field>
+                    ))}
+                </FieldGroup>
+            </FieldSet>
         </Form>
     );
 };

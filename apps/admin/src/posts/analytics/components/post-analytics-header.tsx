@@ -119,13 +119,19 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                             <Breadcrumb>
                                 <BreadcrumbList>
                                     <BreadcrumbItem>
-                                        <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/analytics/', {crossApp: true})}>Analytics</BreadcrumbLink>
+                                        <BreadcrumbLink asChild>
+                                            <button
+                                                className='cursor-pointer rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden'
+                                                type='button'
+                                                onClick={() => navigate('/analytics/', {crossApp: true})}
+                                            >
+                                                Analytics
+                                            </button>
+                                        </BreadcrumbLink>
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator />
                                     <BreadcrumbItem>
-                                        <BreadcrumbPage className='leading-[24px]'>
-                                        Post analytics
-                                        </BreadcrumbPage>
+                                        <BreadcrumbPage>Post analytics</BreadcrumbPage>
                                     </BreadcrumbItem>
                                 </BreadcrumbList>
                             </Breadcrumb>

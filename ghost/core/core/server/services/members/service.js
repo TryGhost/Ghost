@@ -5,6 +5,7 @@ const MembersSSR = require('./members-ssr');
 const db = require('../../data/db');
 const MembersConfigProvider = require('./members-config-provider');
 const makeMembersCSVImporter = require('./importer');
+const {resolveInlineThreshold} = require('./importer/config');
 const MembersStats = require('./stats/members-stats');
 const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
@@ -50,6 +51,9 @@ const initMembersCSVImporter = ({stripeAPIService}) => {
     return makeMembersCSVImporter({
         storagePath: config.getContentPath('data'),
         getTimezone: () => settingsCache.get('timezone'),
+        // A getter rather than a value because the threshold is an operator
+        // setting that can change between requests
+        getInlineThreshold: () => resolveInlineThreshold(config.get('members:importer:inlineThreshold')),
         getMembersRepository: async () => {
             const api = await module.exports.api;
             return api.members;
@@ -151,6 +155,14 @@ module.exports = {
         module.exports.verificationTrigger = verificationTrigger;
 
         const membersCSVImporter = initMembersCSVImporter({stripeAPIService: stripeService.api});
+        // Constructed here rather than required statically: the exporter needs the
+        // custom fields services, which boot builds before this one.
+        const customFields = require('../members-custom-fields');
+        module.exports.export = require('./exporter/query')({
+            definitions: customFields.definitions,
+            values: customFields.values
+        });
+
         module.exports.processImport = async (options) => {
             return await membersCSVImporter.process({...options, verificationTrigger});
         };
@@ -196,7 +208,8 @@ module.exports = {
     processImport: null,
 
     stats: membersStats,
-    export: require('./exporter/query')
+
+    export: null
 };
 
 module.exports.middleware = require('./middleware');

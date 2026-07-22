@@ -1,8 +1,8 @@
-import React from 'react';
-import {Button, ButtonGroup, ColorPickerField, Form, Heading, type LoadMultiSelectOptions, MultiSelect, type MultiSelectOption, StickyFooter, TextArea} from '@tryghost/admin-x-design-system';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {Button, ButtonGroup, ColorPickerField, Form, Heading, StickyFooter} from '@tryghost/admin-x-design-system';
+import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox, Textarea} from '@tryghost/shade/components';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
-import {type MultiValue} from 'react-select';
-import {debounce} from '../../../../utils/debounce';
+import {Plus} from 'lucide-react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 export type SelectedLabelTypes = {
@@ -14,7 +14,7 @@ type SidebarProps = {
     selectedColor?: string;
     accentColor?: string;
     handleColorToggle: (e: string) => void;
-    handleLabelClick: (selected: MultiValue<MultiSelectOption>) => void;
+    handleLabelClick: (selected: string[]) => void;
     selectedLabels?: SelectedLabelTypes[];
     embedScript: string;
     handleLayoutSelect: React.Dispatch<React.SetStateAction<string>>;
@@ -38,11 +38,60 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     isCopied,
     handleClose}) => {
     const {loadData} = useFilterableApi<Label>({path: '/labels/', filterKey: 'name', responseKey: 'labels'});
+    const [labelOptions, setLabelOptions] = useState<SelectedLabelTypes[]>(selectedLabels || []);
+    const [labelsOpen, setLabelsOpen] = useState(false);
+    const [labelsLoading, setLabelsLoading] = useState(false);
+    const requestSequence = useRef(0);
+    const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const loadDataRef = useRef(loadData);
+    const selectedLabelsRef = useRef(selectedLabels);
+    loadDataRef.current = loadData;
+    selectedLabelsRef.current = selectedLabels;
 
-    const loadOptions: LoadMultiSelectOptions = async (input, callback) => {
-        const labels = await loadData(input);
-        callback(labels.map(label => ({label: label.name, value: label.name})));
-    };
+    const loadOptions = useCallback(async (input: string, request: number) => {
+        const currentSelectedLabels = selectedLabelsRef.current || [];
+        try {
+            const labels = await loadDataRef.current(input);
+            const loadedOptions = labels.map(label => ({label: label.name, value: label.name}));
+            if (request === requestSequence.current) {
+                setLabelOptions([...currentSelectedLabels, ...loadedOptions.filter(option => !currentSelectedLabels.some(selected => selected.value === option.value))]);
+            }
+        } catch {
+            if (request === requestSequence.current) {
+                setLabelOptions(currentSelectedLabels);
+            }
+        } finally {
+            if (request === requestSequence.current) {
+                setLabelsLoading(false);
+            }
+        }
+    }, []);
+    const requestOptions = useCallback((input: string, deferred = false) => {
+        requestSequence.current += 1;
+        const request = requestSequence.current;
+        setLabelsLoading(true);
+        if (searchTimer.current) {
+            clearTimeout(searchTimer.current);
+        }
+        if (deferred) {
+            searchTimer.current = setTimeout(() => void loadOptions(input, request), 500);
+        } else {
+            void loadOptions(input, request);
+        }
+    }, [loadOptions]);
+
+    useEffect(() => {
+        setLabelOptions(current => [...(selectedLabels || []), ...current.filter(option => !selectedLabels?.some(selected => selected.value === option.value))]);
+    }, [selectedLabels]);
+
+    useEffect(() => {
+        return () => {
+            requestSequence.current += 1;
+            if (searchTimer.current) {
+                clearTimeout(searchTimer.current);
+            }
+        };
+    }, []);
 
     return (
         <div className='flex h-[calc(100vh-16vmin)] max-h-[645px] flex-col justify-between overflow-y-scroll border-grey-200 p-6 pb-0 max-lg:border-t lg:border-l dark:border-grey-900'>
@@ -104,25 +153,55 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                         />
                     }
 
-                    <MultiSelect
-                        hint='Will be applied to all members signing up via this form'
-                        loadOptions={debounce(loadOptions, 500)}
-                        placeholder='Pick one or more labels (optional)'
-                        title='Labels at signup'
-                        values={selectedLabels || []}
-                        async
-                        canCreate
-                        defaultOptions
-                        onChange={handleLabelClick}
-                    />
-                    <TextArea
-                        className='text-grey-800'
-                        fontStyle='mono'
-                        hint={`Paste this code onto any website where you'd like your signup to appear.`}
-                        title='Embed code'
-                        value={`${embedScript}`}
-                        onChange={() => {}}
-                    />
+                    <Field>
+                        <FieldLabel>Labels at signup</FieldLabel>
+                        <Combobox open={labelsOpen} onOpenChange={(open) => {
+                            setLabelsOpen(open);
+                            if (open) {
+                                requestOptions('');
+                            }
+                        }}>
+                            <ComboboxTrigger aria-label='Labels at signup'>
+                                <ComboboxValue placeholder={!selectedLabels?.length}>
+                                    {selectedLabels?.length ? selectedLabels.map(label => label.label).join(', ') : 'Pick one or more labels (optional)'}
+                                </ComboboxValue>
+                            </ComboboxTrigger>
+                            <ComboboxContent>
+                                <MultiSelectCombobox
+                                    footer={({searchInput, clearSearch}) => {
+                                        const value = searchInput.trim();
+                                        if (labelsLoading || !value || labelOptions.some(option => option.label.toLowerCase() === value.toLowerCase())) {
+                                            return null;
+                                        }
+                                        return (
+                                            <div className='border-t p-1'>
+                                                <button className='flex h-8 w-full items-center justify-start gap-2 rounded-xs px-2 text-sm hover:bg-interactive-hover' type='button' onClick={() => {
+                                                    const option = {label: value, value};
+                                                    setLabelOptions(current => [...current, option]);
+                                                    handleLabelClick([...(selectedLabels || []).map(label => label.value), value]);
+                                                    clearSearch();
+                                                }}>
+                                                    <Plus className='size-4' />
+                                                    Create “{value}”
+                                                </button>
+                                            </div>
+                                        );
+                                    }}
+                                    isLoading={labelsLoading}
+                                    options={labelOptions}
+                                    values={(selectedLabels || []).map(label => label.value)}
+                                    onChange={handleLabelClick}
+                                    onSearchChange={input => requestOptions(input, true)}
+                                />
+                            </ComboboxContent>
+                        </Combobox>
+                        <FieldDescription>Will be applied to all members signing up via this form</FieldDescription>
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor='embed-signup-code'>Embed code</FieldLabel>
+                        <Textarea className='resize-none border-transparent bg-muted font-mono' id='embed-signup-code' value={`${embedScript}`} readOnly />
+                        <FieldDescription>Paste this code onto any website where you&apos;d like your signup to appear.</FieldDescription>
+                    </Field>
                 </Form>
             </div>
             <StickyFooter height={74}>

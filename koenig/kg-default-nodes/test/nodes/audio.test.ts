@@ -228,9 +228,27 @@ describe('AudioNode', function () {
             expect(nodes.length).toBe(1);
             expect(nodes[0].src).toBe('/content/audio/2022/11/koenig-lexical.mp3');
             expect(nodes[0].thumbnailSrc).toBe('/content/images/2022/11/koenig-audio-lexical.jpg');
-            expect(nodes[0].duration).toBe(3600);
+            expect(nodes[0].duration).toBe(60);
             expect(nodes[0].title).toBe('Test Audio');
             expect(nodes[0].mimeType).toBe('');
+        }));
+
+        it('preserves fractional duration seconds', editorTest(function () {
+            const document = createDocument(html`
+                <div class="kg-card kg-audio-card">
+                    <div class="kg-audio-player-container">
+                        <audio src="/content/audio/2022/11/koenig-lexical.mp3" preload="metadata"></audio>
+                        <div class="kg-audio-title">Test Audio</div>
+                        <div class="kg-audio-player">
+                            <div class="kg-audio-time">/<span class="kg-audio-duration">152.607347</span></div>
+                        </div>
+                    </div>
+                </div>
+            `);
+            const nodes = $generateNodesFromDOM(editor, document) as AudioNode[];
+
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].duration).toBe(152.607347);
         }));
 
         it('ignores malformed duration strings', editorTest(function () {

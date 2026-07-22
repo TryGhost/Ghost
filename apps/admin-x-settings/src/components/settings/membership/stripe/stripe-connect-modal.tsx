@@ -6,7 +6,8 @@ import React, {useEffect, useState} from 'react';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import StripeVerifiedBadge from '../../../../assets/images/stripe-verified.svg';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, ConfirmationModal, Form, Heading, LimitModal, Modal, StripeButton, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, Heading, LimitModal, Modal, StripeButton, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Field, FieldError, FieldLabel, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
@@ -123,14 +124,10 @@ const Connect: React.FC = () => {
         <div>
             <div className='mb-6 flex items-center justify-between'>
                 <Heading level={3}>Connect with Stripe</Heading>
-                <Toggle
-                    checked={testMode}
-                    direction='rtl'
-                    label='Test mode'
-                    labelClasses={`translate-y-[1px] ${testMode ? 'text-[#EC6803]' : 'text-grey-800'}`}
-                    toggleBg='stripetest'
-                    onChange={e => setTestMode(e.target.checked)}
-                />
+                <Field className='w-auto' orientation='horizontal'>
+                    <FieldLabel className={testMode ? 'text-orange' : 'text-muted-foreground'} htmlFor='stripe-test-mode'>Test mode</FieldLabel>
+                    <Switch checked={testMode} className='data-[state=checked]:bg-orange!' id='stripe-test-mode' onCheckedChange={setTestMode} />
+                </Field>
             </div>
             <Heading level={6} grey>Step 1 — <span className='text-black dark:text-white'>Generate secure key</span></Heading>
             <div className='mt-2 mb-4'>
@@ -138,7 +135,11 @@ const Connect: React.FC = () => {
             </div>
             <StripeButton href={stripeConnectUrl} tag='a' target='_blank' />
             <Heading className='mt-8 mb-2' level={6} grey>Step 2 — <span className='text-black dark:text-white'>Paste secure key</span></Heading>
-            <TextArea error={Boolean(error)} hint={error || undefined} placeholder='Paste your secure key here' onChange={onTokenChange}></TextArea>
+            <Field data-invalid={Boolean(error) || undefined}>
+                <FieldLabel className='sr-only' htmlFor='stripe-secure-key'>Secure key</FieldLabel>
+                <Textarea aria-invalid={Boolean(error) || undefined} className='border-transparent bg-muted' id='stripe-secure-key' placeholder='Paste your secure key here' onChange={onTokenChange} />
+                {error && <FieldError>{error}</FieldError>}
+            </Field>
             {submitEnabled && <Button className='mt-5' color='green' label='Save Stripe settings' onClick={onSubmit} />}
         </div>
     );

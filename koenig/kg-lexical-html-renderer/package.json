@@ -42,7 +42,6 @@
     "@types/jsdom": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "jsdom": "catalog:",
     "prettier": "3.9.4",
     "@typescript/native": "catalog:",
     "typescript": "catalog:",
@@ -51,7 +50,6 @@
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",
-    "@lexical/code": "0.13.1",
     "@lexical/headless": "0.13.1",
     "@lexical/link": "0.13.1",
     "@lexical/list": "0.13.1",

@@ -138,7 +138,6 @@ jobs:
             core:
               - *shared
               - 'ghost/**'
-              - '!ghost/admin/**'
               - '!ghost/core/core/server/data/tinybird/**'
               # Unit tests + vitest config are exercised only by job_unit-tests;
               # they never affect the acceptance / legacy / ghost-cli jobs.
@@ -309,6 +308,15 @@ jobs:
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/check-app-version-bump.js
 
+      # Fail the PR if a publishable package changed (source or a catalog entry
+      # it consumes) but the branch adds no changeset covering it. Prototype of
+      # pnpm's forthcoming `pnpm change check`.
+      - name: Check for missing changesets
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/change-check.js
+
   job_migration_integrity_check:
     name: Check migration integrity
     runs-on: ubuntu-latest
@@ -423,12 +431,12 @@ jobs:
       - name: Merge Admin test coverage
         if: needs.job_setup.outputs.coverage_enabled == 'true'
         run: pnpm ember coverage-merge
-        working-directory: ghost/admin
+        working-directory: apps/ember-admin
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: needs.job_setup.outputs.coverage_enabled == 'true'
         with:
           name: admin-coverage
-          path: ghost/*/coverage/cobertura-coverage.xml
+          path: apps/*/coverage/cobertura-coverage.xml
 
       - uses: tryghost/actions/actions/slack-build@3ab34d3d69687764be21eba3768f51f4ecc40ddd # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -1467,7 +1475,8 @@ jobs:
     # `nx run-many --target=build --projects='tag:public-app'` build the publish flow
     # requires, so there's no separate build_public_apps job. Intentionally has no
     # `id-token: write` — PR-controlled code (nx build) must never execute in a job
-    # that can mint an npm OIDC token; publish_packages holds the privileged flow.
+    # that can mint an npm OIDC token; the publish flows (publish_ghost here, and
+    # publish-packages.yml) hold the privileged path.
     if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -1781,14 +1790,14 @@ jobs:
       - name: Move coverage
         if: contains(needs.job_admin-tests.result, 'success')
         run: |
-          rsync -av --remove-source-files admin/* ghost/admin
+          rsync -av --remove-source-files ember-admin/* apps/ember-admin
 
       - name: Upload Admin test coverage
         if: contains(needs.job_admin-tests.result, 'success')
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
         with:
           flags: admin-tests
-          files: ghost/admin/coverage/cobertura-coverage.xml
+          files: apps/ember-admin/coverage/cobertura-coverage.xml
           disable_search: true
 
       - name: Restore E2E coverage
@@ -2032,60 +2041,11 @@ jobs:
       - name: Publish to npm
         run: npm publish ghost-*.tgz --access public
 
-  # --------------------------------------------------------------------------- #
-  # Publish changed koenig/* packages to npm. Gated on publish_ghost so npm
-  # only ever sees package versions whose content shipped in a released Ghost.
-  # Ghost itself never installs these from npm (dev/CI use workspace links,
-  # the production archive embeds them as component tarballs) — publishing is
-  # for external consumers only. See scripts/publish-koenig-packages.cjs
-  # --------------------------------------------------------------------------- #
-  publish_koenig_packages:
-    needs: [publish_ghost]
-    name: Publish Koenig packages to npm
-    runs-on: ubuntu-latest
-    # Stable tags only (no '-' = no prerelease): the publish script computes
-    # stable next-patch versions from npm, so running on an rc tag would
-    # publish rc-tested content as a stable external release.
-    if: |
-      startsWith(github.ref, 'refs/tags/v')
-      && !contains(github.ref_name, '-')
-      && github.repository == 'TryGhost/Ghost'
-    # Serialize runs so two tags cut close together can't both compute the
-    # same next-patch number and collide on npm.
-    concurrency:
-      group: publish-koenig-packages
-      cancel-in-progress: false
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          # Full history + tags: change detection diffs against the previous
-          # release tag.
-          fetch-depth: 0
-
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-      - name: Set up Node.js
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Configure .npmrc
-        run: |
-          echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
-
-      # TODO: Check we can remove this once we update Node to v24
-      - name: Install v11 of NPM # We need this to install packages via OIDC.
-        run: npm install -g npm@11
-
-      - name: Publish changed packages
-        run: node scripts/publish-koenig-packages.cjs "$GITHUB_REF_NAME"
+  # NOTE: Publishing the other workspace packages (koenig/*, packages/*, ...) is
+  # NOT a job here. The release tag triggers publish-packages.yml directly, in
+  # parallel with this workflow — npm trusted publishing validates the
+  # entry-point workflow, so that publish must be its own entry point rather than
+  # a job reached from ci.yml. See .github/workflows/publish-packages.yml.
 
   # --------------------------------------------------------------------------- #
   # Trigger docker-library-ghost auto-update — runs after the npm package is
@@ -2180,7 +2140,7 @@ jobs:
   # --------------------------------------------------------------------------- #
   notify_release_failure:
     name: Notify release failure
-    needs: [job_setup, job_build_admin, job_pack, job_docker, job_ghost-cli, publish_ghost, publish_koenig_packages, create_github_release]
+    needs: [job_setup, job_build_admin, job_pack, job_docker, job_ghost-cli, publish_ghost, create_github_release]
     if: failure() && startsWith(github.ref, 'refs/tags/v') && github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-slim
     permissions: {}  # only posts to Slack via curl; needs no GITHUB_TOKEN scopes

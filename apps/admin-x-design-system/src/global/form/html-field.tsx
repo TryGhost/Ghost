@@ -1,8 +1,8 @@
 import Heading from '../heading';
-import Hint from '../hint';
 import HtmlEditor, {HtmlEditorProps} from './html-editor';
 import React from 'react';
 import clsx from 'clsx';
+import LegacyHint from '../legacy-hint';
 
 export type HtmlFieldProps = HtmlEditorProps & {
     title?: string;
@@ -47,7 +47,7 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
             <div className={textFieldClasses}>
                 <HtmlEditor {...props} value={value} />
             </div>
-            {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
+            {hint && <LegacyHint className={clsx('mt-1', hintClassName)} error={error}>{hint}</LegacyHint>}
         </div>
     );
 };

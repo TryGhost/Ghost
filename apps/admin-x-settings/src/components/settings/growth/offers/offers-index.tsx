@@ -1,12 +1,11 @@
 import {Button, type ButtonProps, showToast} from '@tryghost/admin-x-design-system';
 import {ButtonGroup} from '@tryghost/admin-x-design-system';
+import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {Icon} from '@tryghost/admin-x-design-system';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {Modal} from '@tryghost/admin-x-design-system';
-import {Popover} from '@tryghost/admin-x-design-system';
 import {type RetentionOffer, getRetentionOffers} from './offers-retention';
 import {type Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {Toggle} from '@tryghost/admin-x-design-system';
 import {createOfferRedemptionFilterUrl, createOfferRedemptionsFilterUrl} from './offer-helpers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {numberWithCommas} from '../../../../utils/helpers';
@@ -38,7 +37,7 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
     switch (type) {
     case 'percent':
         discountColor = 'text-green';
-        discountOffer = amount + '% off';
+        discountOffer = `${formatNumber(amount)}% off`;
         updatedPrice = originalPrice - ((originalPrice * amount) / 100);
         break;
     case 'fixed':
@@ -48,7 +47,7 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
         break;
     case 'trial':
         discountColor = 'text-pink';
-        discountOffer = amount + ' days free';
+        discountOffer = `${formatNumber(amount)} days free`;
         originalPriceWithCurrency = '';
         break;
     default:
@@ -69,7 +68,7 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
     };
 };
 
-const OffersFilterPopover: React.FC<{
+const OffersFilterMenu: React.FC<{
     showArchived: boolean;
     setShowArchived: (show: boolean) => void;
     sortOption: string;
@@ -78,65 +77,27 @@ const OffersFilterPopover: React.FC<{
     onDirectionChange: () => void;
 }> = ({showArchived, setShowArchived, sortOption, sortDirection, onSortChange, onDirectionChange}) => {
     return (
-        <Popover
-            position='end'
-            trigger={
-                <Button aria-label="Filter options" className='p-1 hover:text-black dark:hover:text-white' label={<LucideIcon.ListFilter size={16} strokeWidth={1.5} />} unstyled={true} />
-            }
-        >
-            <div className='flex min-w-[200px] flex-col p-1 normal-case'>
-                <div className='cursor-default pt-2 pl-3 text-sm font-medium tracking-wide text-grey-700 uppercase select-none'>Sort by</div>
-                <div className='flex flex-col py-1'>
-                    {[
-                        {id: 'date-added', label: 'Date added'},
-                        {id: 'name', label: 'Name'},
-                        {id: 'redemptions', label: 'Redemptions'}
-                    ].map(item => (
-                        <div
-                            key={item.id}
-                            className='group relative mx-1 flex items-center rounded-[2.5px] hover:bg-grey-100 dark:hover:bg-grey-800'
-                        >
-                            <button
-                                className='flex w-full cursor-pointer items-center px-8 py-1.5 pr-12 text-left text-black dark:text-white'
-                                type='button'
-                                onClick={() => onSortChange(item.id)}
-                            >
-                                {sortOption === item.id && <Icon className='absolute left-2' name='check' size='xs' />}
-                                {item.label}
-                            </button>
-                            {sortOption === item.id && (
-                                <button
-                                    className='absolute right-1 flex size-6 cursor-pointer items-center justify-center rounded-full hover:bg-grey-300 dark:hover:bg-grey-700'
-                                    title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
-                                    type='button'
-                                    onClick={() => onDirectionChange()}
-                                >
-                                    <Icon name={sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'} size='xs' />
-                                </button>
-                            )}
-                        </div>
-                    ))}
-                </div>
-                <div className='-mx-1 mt-1 border-t border-t-grey-200 dark:border-t-grey-800'>
-                    <div className='group relative mx-2 mt-1 flex items-center rounded-[2.5px] py-1'>
-                        <div className='flex w-full items-center px-8 py-1.5 pr-2 text-black dark:text-white'>
-                            <LucideIcon.Archive className='absolute left-2 -mt-0.5 text-black dark:text-white' size={14} strokeWidth={1.5} />
-                            <div className='grow [&>div]:w-full'>
-                                <Toggle
-                                    checked={showArchived}
-                                    direction='rtl'
-                                    label='Show archived'
-                                    labelClasses='text-black dark:text-white'
-                                    onChange={(e) => {
-                                        setShowArchived(e.target.checked);
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Popover>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button aria-label='Filter options' className='p-1 text-muted-foreground hover:text-foreground' label={<LucideIcon.ListFilter size={16} strokeWidth={1.5} />} unstyled={true} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end' className='z-[9999] min-w-[200px] normal-case'>
+                <DropdownMenuLabel className='text-xs tracking-wide text-muted-foreground uppercase'>Sort by</DropdownMenuLabel>
+                <DropdownMenuRadioGroup value={sortOption} onValueChange={onSortChange}>
+                    <DropdownMenuRadioItem value='date-added'>Date added</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value='name'>Name</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value='redemptions'>Redemptions</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+                <DropdownMenuItem onSelect={onDirectionChange}>
+                    <Icon name={sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'} size='xs' />
+                    {sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuCheckboxItem checked={showArchived} onCheckedChange={checked => setShowArchived(Boolean(checked))}>
+                    Show archived
+                </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 };
 
@@ -180,7 +141,7 @@ const RetentionOfferRow: React.FC<{
                         data-testid={`retention-redemptions-link-${offer.id}`}
                         href={redemptionFilterUrl}
                     >
-                        {offer.redemptions}
+                        {formatNumber(offer.redemptions)}
                     </a>
                 ) : (
                     <button
@@ -189,7 +150,7 @@ const RetentionOfferRow: React.FC<{
                         type="button"
                         onClick={onClick}
                     >
-                        {offer.redemptions}
+                        {formatNumber(offer.redemptions)}
                     </button>
                 )}
             </td>
@@ -328,7 +289,7 @@ export const OffersIndexModal: React.FC = () => {
                     <th className='p-0 pb-2.5 pl-5 text-left text-sm font-medium tracking-wide text-grey-700 uppercase'>
                         <span className='flex items-center justify-between'>
                             Status
-                            <OffersFilterPopover
+                            <OffersFilterMenu
                                 setShowArchived={setShowArchived}
                                 showArchived={showArchived}
                                 sortDirection={sortDirection}
@@ -364,7 +325,7 @@ export const OffersIndexModal: React.FC = () => {
                             <td className='sticky left-0 z-10 bg-white p-0 dark:bg-black'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer.id)}><span className='font-semibold'>{offer?.name}</span><br /><span className='text-grey-700'>{offerTier.name} {getOfferCadence(offer.cadence)}</span></a></td>
                             <td className='p-0 whitespace-nowrap'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='text-[1.3rem] font-medium uppercase'>{discountOffer}</span><br /><span className='text-grey-700'>{offer.type !== 'trial' ? getOfferDuration(offer.duration) : 'Trial period'}</span></a></td>
                             <td className='p-0 whitespace-nowrap'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-sm text-grey-700 before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}</a></td>
-                            <td className='p-0 whitespace-nowrap'><a className={`block cursor-pointer p-5 ${offer.redemption_count === 0 ? '' : 'hover:underline'}`} href={offer.redemption_count > 0 && offer.id ? createOfferRedemptionFilterUrl(offer.id) : undefined} onClick={offer.redemption_count === 0 && offer.id ? () => handleOfferEdit(offer.id) : undefined}>{offer.redemption_count}</a></td>
+                            <td className='p-0 whitespace-nowrap'><a className={`block cursor-pointer p-5 ${offer.redemption_count === 0 ? '' : 'hover:underline'}`} href={offer.redemption_count > 0 && offer.id ? createOfferRedemptionFilterUrl(offer.id) : undefined} onClick={offer.redemption_count === 0 && offer.id ? () => handleOfferEdit(offer.id) : undefined}>{formatNumber(offer.redemption_count)}</a></td>
                             <td className='p-0 whitespace-nowrap'>
                                 <a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}>
                                     {archived ? (

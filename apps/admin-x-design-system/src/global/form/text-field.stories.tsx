@@ -3,7 +3,6 @@ import {useArgs} from 'storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react-vite';
 
 import Button from '../button';
-import Select from './select';
 import TextField from './text-field';
 
 const meta = {
@@ -82,19 +81,7 @@ export const WithDropdown: Story = {
     args: {
         title: 'Monthly price',
         placeholder: '0',
-        rightPlaceholder: (
-            <Select
-                border={false}
-                clearBg={true}
-                containerClassName='w-14'
-                fullWidth={false}
-                options={[
-                    {label: 'USD', value: 'usd'},
-                    {label: 'EUR', value: 'eur'}
-                ]}
-                onSelect={() => {}}
-            />
-        )
+        rightPlaceholder: <span>USD</span>
     }
 };
 

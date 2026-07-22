@@ -88,7 +88,7 @@ export class CustomFieldsSection extends BasePage {
     async deleteField(name: string): Promise<void> {
         await this.openField(name);
         await this.modal.getByRole('button', {name: 'Menu'}).click();
-        await this.modal.getByRole('button', {name: 'Delete custom field'}).click();
+        await this.page.getByRole('menuitem', {name: 'Delete custom field'}).click();
         await this.modal.waitFor({state: 'detached'});
         await this.page.getByRole('button', {name: 'Delete', exact: true}).click();
     }

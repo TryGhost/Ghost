@@ -11,7 +11,7 @@ const boot = require('../../core/boot');
 const models = require('../../core/server/models');
 const urlService = require('../../core/server/services/url');
 const settingsService = require('../../core/server/services/settings/settings-service');
-const adapterManager = require('../../core/server/services/adapter-manager');
+const adapterManager = require('../../core/server/services/adapter-manager').default;
 
 // Other Test Utilities
 const configUtils = require('./config-utils');

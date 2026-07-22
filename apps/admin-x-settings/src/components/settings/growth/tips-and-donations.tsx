@@ -1,7 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
+import useCurrencyInput from '../../../hooks/use-currency-input';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Button, CurrencyField, Heading, Select, SettingGroupContent, confirmIfDirty} from '@tryghost/admin-x-design-system';
+import {Button, CopyField, CopyFieldActions, CopyFieldContent, CopyFieldCopyButton, CopyFieldLabel, CopyFieldValue, Field, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
+import {ChevronDown} from 'lucide-react';
+import {SettingGroupContent, confirmIfDirty} from '@tryghost/admin-x-design-system';
 import {currencySelectGroups, validateCurrencyAmount} from '../../../utils/currency';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {withErrorBoundary} from '../../error-boundary';
@@ -10,6 +13,7 @@ import {withErrorBoundary} from '../../error-boundary';
 const MAX_AMOUNT = 10_000;
 
 const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const [currencyOpen, setCurrencyOpen] = useState(false);
     const {
         localSettings,
         siteData,
@@ -36,13 +40,14 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     const suggestedAmountInCents = parseInt(donationsSuggestedAmount);
+    const suggestedAmountInput = useCurrencyInput(suggestedAmountInCents, cents => handleSettingChange('donations_suggested_amount', cents.toString()));
     const donateUrl = `${siteData?.url.replace(/\/$/, '')}/#/portal/support`;
+    const currencyOptions = currencySelectGroups().flatMap(group => group.options.map(option => ({...option, metadata: {groupKey: group.key, groupLabel: group.label}})));
 
     useEffect(() => {
         validate();
     }, [donationsCurrency]);  
 
-    const [copied, setCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
 
     // Watch for changes in localSettings and update editing state
@@ -53,12 +58,6 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             handleEditingChange(true);
         }
     }, [localSettings, isEditing, handleEditingChange]);
-
-    const copyDonateUrl = () => {
-        navigator.clipboard.writeText(donateUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
 
     const openPreview = () => {
         confirmIfDirty(saveState === 'unsaved', () => window.open(donateUrl, '_blank'));
@@ -95,46 +94,65 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSaveClick}
         >
             <SettingGroupContent columns={1}>
-                <div className='flex max-w-[180px] items-end gap-[.6rem]'>
-                    <CurrencyField
-                        key={donationsSuggestedAmount}
-                        error={!!errors.donationsSuggestedAmount}
-                        hint={errors.donationsSuggestedAmount}
-                        inputRef={focusRef}
-                        placeholder="5"
-                        rightPlaceholder={(
-                            <Select
-                                border={false}
-                                clearBg={true}
-                                containerClassName='w-14'
-                                fullWidth={false}
-                                options={currencySelectGroups()}
-                                selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === donationsCurrency)}
-                                title='Currency'
-                                hideTitle
-                                isSearchable
-                                onSelect={option => handleSettingChange('donations_currency', option?.value || 'USD')}
-                            />
-                        )}
-                        title='Suggested amount'
-                        valueInCents={parseInt(donationsSuggestedAmount)}
-                        onBlur={validate}
-                        onChange={cents => handleSettingChange('donations_suggested_amount', cents.toString())}
-                        onKeyDown={() => clearError('donationsSuggestedAmount')}
-                    />
-                </div>
-                <div className='w-100'>
-                    <div className='flex items-center gap-2'>
-                        <Heading level={6}>Shareable link</Heading>
-                    </div>
-                    <div className='group relative mt-0 flex w-100 items-center justify-between overflow-hidden border-b border-transparent pt-1 pb-2 hover:border-grey-300 dark:hover:border-grey-600'>
-                        <span data-testid='donate-url'>{donateUrl}</span>
-                        <div className='invisible flex gap-1 bg-white pl-1 group-hover:visible dark:bg-black'>
-                            <Button color='clear' data-testid='preview-shareable-link' label={'Preview'} size='sm' onClick={openPreview} />
-                            <Button color='light-grey' data-testid='copy-shareable-link' label={copied ? 'Copied' : 'Copy link'} size='sm' onClick={copyDonateUrl} />
-                        </div>
-                    </div>
-                </div>
+                <Field className='max-w-[180px]' data-invalid={Boolean(errors.donationsSuggestedAmount) || undefined}>
+                    <FieldLabel htmlFor='donations-suggested-amount'>Suggested amount</FieldLabel>
+                    <InputGroup className='border-transparent bg-muted' data-invalid={Boolean(errors.donationsSuggestedAmount) || undefined}>
+                        <InputGroupInput
+                            ref={focusRef}
+                            aria-invalid={Boolean(errors.donationsSuggestedAmount) || undefined}
+                            id='donations-suggested-amount'
+                            inputMode='decimal'
+                            placeholder='5'
+                            value={suggestedAmountInput.value}
+                            onBlur={() => {
+                                suggestedAmountInput.onBlur();
+                                validate();
+                            }}
+                            onChange={event => suggestedAmountInput.onChange(event.target.value)}
+                            onKeyDown={() => clearError('donationsSuggestedAmount')}
+                        />
+                        <InputGroupAddon align='inline-end'>
+                            <Popover open={currencyOpen} onOpenChange={setCurrencyOpen}>
+                                <PopoverTrigger asChild>
+                                    <InputGroupButton aria-expanded={currencyOpen} aria-label='Currency' role='combobox'>
+                                        {donationsCurrency}
+                                        <ChevronDown className='size-3.5 opacity-50' />
+                                    </InputGroupButton>
+                                </PopoverTrigger>
+                                <PopoverContent align='end' className='z-[9999] w-64 p-0'>
+                                    <MultiSelectCombobox
+                                        groupBy={option => ({
+                                            key: option.metadata?.groupKey as string,
+                                            label: option.metadata?.groupLabel as string
+                                        })}
+                                        i18n={{searchPlaceholder: 'Search currencies...'}}
+                                        isMultiSelect={false}
+                                        options={currencyOptions}
+                                        values={[donationsCurrency]}
+                                        autoCloseOnSelect
+                                        onChange={(values) => {
+                                            if (values[0]) {
+                                                handleSettingChange('donations_currency', values[0]);
+                                            }
+                                        }}
+                                        onClose={() => setCurrencyOpen(false)}
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        </InputGroupAddon>
+                    </InputGroup>
+                    {errors.donationsSuggestedAmount && <FieldError>{errors.donationsSuggestedAmount}</FieldError>}
+                </Field>
+                <CopyField value={donateUrl}>
+                    <CopyFieldLabel>Shareable link</CopyFieldLabel>
+                    <CopyFieldContent>
+                        <CopyFieldValue data-testid='donate-url' />
+                        <CopyFieldActions>
+                            <Button data-testid='preview-shareable-link' size='sm' type='button' variant='ghost' onClick={openPreview}>Preview</Button>
+                            <CopyFieldCopyButton copiedLabel='Copied' data-testid='copy-shareable-link'>Copy link</CopyFieldCopyButton>
+                        </CopyFieldActions>
+                    </CopyFieldContent>
+                </CopyField>
             </SettingGroupContent>
             <div className='items-center-mt-1 flex'>
                 All tips and donations are subject to Stripe&apos;s <a className='ml-1 font-medium text-green' href="https://ghost.org/help/tips-donations/" rel="noopener noreferrer" target="_blank"> tipping policy</a>.

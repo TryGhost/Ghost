@@ -3,8 +3,8 @@ import TopLevelGroup from '../../top-level-group';
 import clsx from 'clsx';
 import useQueryParams from '../../../hooks/use-query-params';
 import useStaffUsers from '../../../hooks/use-staff-users';
-import {Avatar, NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade/components';
-import {Button, List, ListItem, TabView, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Avatar, NoValueLabel, NoValueLabelIcon, Separator, Switch} from '@tryghost/shade/components';
+import {Button, List, ListItem, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {type User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {type UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
 import {UserRoundX} from 'lucide-react';
@@ -319,12 +319,10 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
                             <span className='text-[1.5rem] font-semibold tracking-tight'>Security settings</span>
                             <span>Require email 2FA codes to be used on all staff logins</span>
                         </div>
-                        <Toggle
+                        <Switch
+                            aria-label='Require email 2FA codes on staff logins'
                             checked={require2fa}
-                            direction='rtl'
-                            gap='gap-0'
-                            onChange={async () => {
-                                const newValue = !require2fa;
+                            onCheckedChange={async (newValue) => {
                                 try {
                                     await editSettings([{
                                         key: 'require_email_mfa',

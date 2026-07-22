@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import React, {FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
 import {useFocusContext} from '../../providers/design-system-provider';
 import Heading from '../heading';
-import Hint from '../hint';
+import LegacyHint from '../legacy-hint';
 
 export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'onChange' | 'extensions'> {
     title?: string;
@@ -106,7 +106,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 {...props}
             />
             {title && <Heading className={'order-1 text-grey-700! peer-focus:text-black!'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-            {hint && <Hint className='order-3' color={error ? 'red' : ''}>{hint}</Hint>}
+            {hint && <LegacyHint className='order-3 mt-1' error={error}>{hint}</LegacyHint>}
         </div>}
     </>;
 });
