@@ -1,0 +1,3 @@
+minimumReleaseAgeExclude:
+  - '@tryghost/pro-ship@1.1.2'
+  - '@tryghost/root-utils@2.3.1'
