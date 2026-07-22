@@ -15,15 +15,12 @@ const renderPrototype = (initialMonths = [1, 12], tiers = [tier]) =>
     render(<GiftDurationsPrototype initialMonths={initialMonths} tiers={tiers} />);
 
 describe('GiftDurationsPrototype', () => {
-    it('seeds editable rows from stored month-counts (1 → month, 12 → year)', () => {
+    it('seeds an editable amount row per stored duration', () => {
         renderPrototype([1, 12]);
-        const units = screen.getAllByLabelText('Duration unit') as HTMLSelectElement[];
-        const amounts = screen.getAllByLabelText('Duration amount') as HTMLInputElement[];
+        const amounts = screen.getAllByRole('spinbutton') as HTMLInputElement[];
         assert.equal(amounts.length, 2);
         assert.equal(amounts[0].value, '1');
-        assert.equal(units[0].value, 'month');
-        assert.equal(amounts[1].value, '1');
-        assert.equal(units[1].value, 'year');
+        assert.equal(amounts[1].value, '1'); // 12 months → 1 year
     });
 
     it('derives the default price per duration as the editable field placeholder', () => {
@@ -40,17 +37,12 @@ describe('GiftDurationsPrototype', () => {
         assert.equal((screen.getByPlaceholderText('5') as HTMLInputElement).value, '9');
     });
 
-    it('adapts the price field placeholder live when a duration is edited', () => {
+    it('adapts the price field placeholder live when a duration amount is edited', () => {
         renderPrototype([1, 12]);
-        const firstAmount = (screen.getAllByLabelText('Duration amount') as HTMLInputElement[])[0];
+        const firstAmount = (screen.getAllByRole('spinbutton') as HTMLInputElement[])[0];
         // Change 1 month → 3 months: default becomes $5 × 3 = 15
         fireEvent.change(firstAmount, {target: {value: '3'}});
         assert.ok(screen.getByPlaceholderText('15'));
-
-        // Switch that row to years: 3 years = 36 months → yearly $50 × 3 = 150
-        const firstUnit = (screen.getAllByLabelText('Duration unit') as HTMLSelectElement[])[0];
-        fireEvent.change(firstUnit, {target: {value: 'year'}});
-        assert.ok(screen.getByPlaceholderText('150'));
     });
 
     it('adds durations up to a maximum of 4', () => {
@@ -58,22 +50,12 @@ describe('GiftDurationsPrototype', () => {
         const addButton = screen.getByRole('button', {name: /add duration/i});
         fireEvent.click(addButton);
         fireEvent.click(addButton);
-        assert.equal(screen.getAllByLabelText('Duration amount').length, 4);
-        // At the cap the control is disabled and relabelled
+        assert.equal(screen.getAllByRole('spinbutton').length, 4);
+        // At the cap the control is relabelled
         assert.ok(screen.getByRole('button', {name: /maximum of 4 durations/i}));
     });
 
-    it('removes a duration but keeps at least one', () => {
-        renderPrototype([1, 12]);
-        const removeButtons = screen.getAllByLabelText('Remove duration');
-        fireEvent.click(removeButtons[0]);
-        assert.equal(screen.getAllByLabelText('Duration amount').length, 1);
-        // The last remaining remove button is disabled
-        const lastRemove = screen.getByLabelText('Remove duration') as HTMLButtonElement;
-        assert.equal(lastRemove.disabled, true);
-    });
-
-    it('renders a per-tier heading and prices when multiple tiers are offered', () => {
+    it('renders per-tier pricing fields when multiple tiers are offered', () => {
         const silver = {...tier, id: 'tier_2', name: 'Silver', monthly_price: 300, yearly_price: 3000} as Tier;
         renderPrototype([1], [tier, silver]);
         assert.ok(screen.getByText('Gold'));

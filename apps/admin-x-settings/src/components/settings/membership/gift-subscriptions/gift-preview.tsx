@@ -4,12 +4,12 @@ import {type Setting} from '@tryghost/admin-x-framework/api/settings';
 import {getGiftPreviewUrl} from '../../../../utils/get-gift-preview-url';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
-// The gift page is a full-bleed, full-screen two-column layout — it can't be
-// crammed into the narrow modal preview pane without cropping the branded card.
-// Instead we render it at a real desktop size and contain-scale the whole thing
-// down to fit the pane, so the full page shows proportionally.
+// The gift page is a full-bleed, full-screen two-column layout. Rather than
+// contain-scale a fixed design (which letterboxes with empty space whenever the
+// preview pane's aspect ratio doesn't match), we render the page into a virtual
+// desktop-width viewport whose HEIGHT tracks the pane's aspect, then scale it to
+// fill the pane edge-to-edge — like a real browser window showing the page.
 const DESIGN_WIDTH = 1280;
-const DESIGN_HEIGHT = 832;
 
 interface GiftPreviewProps {
     localSettings: Setting[];
@@ -18,7 +18,7 @@ interface GiftPreviewProps {
 const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings}) => {
     const {siteData, config} = useGlobalData();
     const containerRef = useRef<HTMLDivElement>(null);
-    const [scale, setScale] = useState(0);
+    const [frame, setFrame] = useState({scale: 0, width: 0, height: 0});
 
     const href = getGiftPreviewUrl({
         settings: localSettings,
@@ -34,8 +34,11 @@ const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings}) => {
         const update = () => {
             const {width, height} = el.getBoundingClientRect();
             if (width && height) {
-                // Contain: fit within the pane on both axes, never upscale
-                setScale(Math.min(width / DESIGN_WIDTH, height / DESIGN_HEIGHT, 1));
+                // Fill the pane width at a real desktop width; never upscale past
+                // 1:1 (which would blur). The virtual viewport height is derived
+                // so that, once scaled, it fills the pane exactly — no letterbox.
+                const scale = Math.min(width / DESIGN_WIDTH, 1);
+                setFrame({scale, width: width / scale, height: height / scale});
             }
         };
         update();
@@ -45,21 +48,14 @@ const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings}) => {
     }, []);
 
     return (
-        <div
-            ref={containerRef}
-            className='flex size-full items-start justify-center overflow-hidden'
-        >
-            {scale > 0 && (
+        <div ref={containerRef} className='size-full overflow-hidden bg-white dark:bg-black'>
+            {frame.scale > 0 && (
                 <div
                     style={{
-                        width: DESIGN_WIDTH,
-                        height: DESIGN_HEIGHT,
-                        transform: `scale(${scale})`,
-                        transformOrigin: 'top center',
-                        flexShrink: 0,
-                        borderRadius: 12,
-                        overflow: 'hidden',
-                        boxShadow: '0 1px 20px rgba(0,0,0,0.09)'
+                        width: frame.width,
+                        height: frame.height,
+                        transform: `scale(${frame.scale})`,
+                        transformOrigin: 'top left'
                     }}
                 >
                     <PortalFrame href={href || ''} portalParent='preview' />
