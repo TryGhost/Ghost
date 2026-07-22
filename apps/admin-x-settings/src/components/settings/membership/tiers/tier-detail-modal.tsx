@@ -2,8 +2,8 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './tier-detail-preview';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, type ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
-import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldLabel, MultiSelectCombobox} from '@tryghost/shade/components';
+import {Button, type ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, SortableList, TextField, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
+import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldLabel, MultiSelectCombobox, Switch} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
@@ -106,8 +106,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         canAddNewItem: item => !!item
     });
 
-    const toggleFreeTrial = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.checked) {
+    const toggleFreeTrial = (checked: boolean) => {
+        if (checked) {
             setHasFreeTrial(true);
             updateForm(state => ({...state, trial_days: tier?.trial_days ? tier?.trial_days.toString() : '7'}));
         } else {
@@ -280,7 +280,10 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             </div>
                             <div className='basis-1/2'>
                                 <div className='mb-1 flex h-6 flex-col justify-center'>
-                                    <Toggle checked={hasFreeTrial} label='Add a free trial' labelStyle='heading' onChange={toggleFreeTrial} />
+                                    <Field orientation='horizontal'>
+                                        <FieldLabel htmlFor='tier-free-trial'>Add a free trial</FieldLabel>
+                                        <Switch checked={hasFreeTrial} id='tier-free-trial' onCheckedChange={toggleFreeTrial} />
+                                    </Field>
                                 </div>
                                 <TextField
                                     disabled={!hasFreeTrial}

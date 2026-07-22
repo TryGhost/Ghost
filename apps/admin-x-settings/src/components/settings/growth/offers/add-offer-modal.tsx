@@ -2,8 +2,8 @@ import PortalFrame from '../../membership/portal/portal-frame';
 import toast from 'react-hot-toast';
 import {Button} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {Form, Icon, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -27,30 +27,13 @@ function slugify(text: string): string {
         .replace(/--+/g, '-');
 }
 
-export interface OfferType {
+interface OfferType {
     title: string;
     description: string;
+    value: string;
 }
 
 const MAX_DISPLAY_TEXT_LENGTH = 191;
-
-export const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => void}> = ({type, checked, onClick}) => {
-    const checkboxClass = checked ? 'bg-black text-white dark:bg-white dark:text-black' : 'border border-grey-300 dark:border-grey-800';
-
-    return (
-        <button className='text-left' type='button' onClick={onClick}>
-            <div className='flex gap-3'>
-                <div className={`mt-0.5 flex size-4 items-center justify-center rounded-full ${checkboxClass}`}>
-                    {checked ? <Icon className='w-[7px] stroke-[4]' name='check' size='custom' /> : null}
-                </div>
-                <div className='-mt-px flex flex-col'>
-                    <span className='font-medium'>{type.title}</span>
-                    <span className='text-gray-700'>{type.description}</span>
-                </div>
-            </div>
-        </button>
-    );
-};
 
 type formStateTypes = {
     disableBackground?: boolean;
@@ -206,14 +189,25 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                 <section className='mt-4'>
                     <h2 className='mb-4 text-lg'>Details</h2>
                     <div className='flex flex-col gap-6'>
-                        <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4 dark:border-grey-800'>
-                            <ButtonSelect checked={overrides.type !== 'trial' ? true : false} type={typeOptions[0]} onClick={() => {
-                                handleTypeChange('percent');
-                            }} />
-                            <ButtonSelect checked={overrides.type === 'trial' ? true : false} type={typeOptions[1]} onClick={() => {
-                                handleTypeChange('trial');
-                            }} />
-                        </div>
+                        <RadioGroup
+                            aria-label='Offer type'
+                            className='rounded-md border border-border-default p-4'
+                            value={overrides.type === 'trial' ? 'trial' : 'percent'}
+                            onValueChange={handleTypeChange}
+                        >
+                            {typeOptions.map((option) => {
+                                const id = `offer-type-${option.value}`;
+                                return (
+                                    <Field key={option.value} orientation='horizontal'>
+                                        <RadioGroupItem id={id} indicator='check' value={option.value} />
+                                        <FieldContent>
+                                            <FieldLabel className='cursor-pointer' htmlFor={id}>{option.title}</FieldLabel>
+                                            <FieldDescription>{option.description}</FieldDescription>
+                                        </FieldContent>
+                                    </Field>
+                                );
+                            })}
+                        </RadioGroup>
                         <Field>
                             <FieldLabel>Tier — Cadence</FieldLabel>
                             <Select value={selectedTier.value} onValueChange={(value) => {

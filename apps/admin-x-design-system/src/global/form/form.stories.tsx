@@ -1,8 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 
-import * as CheckboxGroupStories from './checkbox-group.stories';
 import * as TextFieldStories from './text-field.stories';
-import CheckboxGroup from './checkbox-group';
 import Form from './form';
 import TextField from './text-field';
 
@@ -16,7 +14,6 @@ export default meta;
 type Story = StoryObj<typeof Form>;
 
 const formElements = <>
-    <CheckboxGroup {...CheckboxGroupStories.WithTitleAndHint.args} />
     <TextField {...TextFieldStories.WithHeading.args} />
 </>;
 

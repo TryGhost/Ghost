@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {ColorPickerField, Heading, Hint, ImageUpload, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {ColorPickerField, Heading, Hint, ImageUpload, TextField} from '@tryghost/admin-x-design-system';
 import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
-import {Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {humanizeSettingKey} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -52,13 +52,13 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({setting, setSetting}) => {
         );
     case 'boolean':
         return (
-            <Toggle
-                checked={setting.value}
-                direction="rtl"
-                hint={setting.description}
-                label={humanizeSettingKey(setting.key)}
-                onChange={event => setSetting(event.target.checked)}
-            />
+            <Field orientation='horizontal'>
+                <FieldContent>
+                    <FieldLabel htmlFor={`theme-setting-${setting.key}`}>{humanizeSettingKey(setting.key)}</FieldLabel>
+                    {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
+                </FieldContent>
+                <Switch checked={Boolean(setting.value)} id={`theme-setting-${setting.key}`} onCheckedChange={setSetting} />
+            </Field>
         );
     case 'select':
         return (
