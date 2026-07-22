@@ -11,6 +11,32 @@ import useCardTilt from '../../utils/use-card-tilt';
 import {formatGiftValue} from './gift-page';
 
 export const GiftSuccessStyle = `
+.gh-portal-gift-success-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 20px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--brandcolor) 12%, var(--white));
+    color: var(--brandcolor);
+}
+
+.gh-portal-gift-success-badge svg {
+    width: 26px;
+    height: 26px;
+}
+
+.gh-portal-gift-success-share-label {
+    margin: 0 0 8px;
+    font-size: 1.3rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--grey6);
+}
+
 .gh-portal-gift-success-link {
     display: flex;
     align-items: center;
@@ -107,12 +133,17 @@ const GiftSuccessPage = () => {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const isEmailed = delivery === 'sent' || delivery === 'scheduled';
+
+    let titleText = t('Your gift is ready');
     let subtitleText = t('Send the link below to share it with whoever you\'d like.');
     if (delivery === 'scheduled' && deliveryDate) {
         const formattedDate = new Date(deliveryDate).toLocaleDateString(undefined, {day: 'numeric', month: 'short', year: 'numeric'});
-        subtitleText = t('We\'ll deliver your gift to the recipient by email on {deliveryDate}. You can also share the link below yourself.', {deliveryDate: formattedDate});
+        titleText = t('Your gift is scheduled');
+        subtitleText = t('We\'ll email it to the recipient on {deliveryDate} — a copy is in your inbox too.', {deliveryDate: formattedDate});
     } else if (delivery === 'sent') {
-        subtitleText = t('We\'ve emailed your gift to the recipient. You can also share the link below yourself.');
+        titleText = t('Your gift is on its way');
+        subtitleText = t('We\'ve emailed it to the recipient — a copy is in your inbox too.');
     }
 
     return (
@@ -124,13 +155,21 @@ const GiftSuccessPage = () => {
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                         <div className='gh-portal-gift-checkout-inner'>
                             <header className='gh-portal-gift-checkout-header'>
-                                <h1 className='gh-portal-main-title'>{t('Your gift is ready')}</h1>
+                                {isEmailed && (
+                                    <span className='gh-portal-gift-success-badge' aria-hidden='true'>
+                                        <CheckIcon />
+                                    </span>
+                                )}
+                                <h1 className='gh-portal-main-title'>{titleText}</h1>
                                 <p className='gh-portal-gift-checkout-subtitle'>
                                     {subtitleText}
                                 </p>
                             </header>
 
                             <div className='gh-portal-gift-checkout-section'>
+                                {isEmailed && (
+                                    <p className='gh-portal-gift-success-share-label'>{t('Prefer to share it yourself?')}</p>
+                                )}
                                 <div className='gh-portal-gift-success-link'>
                                     <span className='gh-portal-gift-success-link-url'>{redeemUrl}</span>
                                     <button className='gh-portal-gift-success-copy' onClick={handleCopy} type='button'>
@@ -140,9 +179,11 @@ const GiftSuccessPage = () => {
                                 </div>
                             </div>
 
-                            <p className='gh-portal-gift-success-footer'>
-                                {t('Not ready to share? We\'ve also emailed a copy to your inbox.')}
-                            </p>
+                            {!isEmailed && (
+                                <p className='gh-portal-gift-success-footer'>
+                                    {t('Not ready to share? We\'ve also emailed a copy to your inbox.')}
+                                </p>
+                            )}
                         </div>
                     </div>
 
