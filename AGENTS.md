@@ -16,12 +16,12 @@ Ghost is a pnpm + Nx monorepo with four workspace groups:
 - **ghost/core** - Main Ghost application (Node.js/Express backend)
   - Core server: `ghost/core/core/server/`
   - Frontend rendering: `ghost/core/core/frontend/`
-- **ghost/admin** - Ember.js admin client (legacy, being migrated to React)
 
 ### apps/* - React-based UI applications
 Two categories of apps:
 
 **Admin Apps** (embedded in Ghost Admin):
+- `ember-admin` - Ember.js admin client (legacy, being migrated to React)
 - `admin` - The consolidated React admin shell, organized by domain (`src/{analytics,members,posts,tags,comments,automations,...}`)
 - `admin-x-settings`, `activitypub` - Settings and ActivityPub integration (route-composed into `admin`)
 - Built with Vite + React + `@tanstack/react-query`
@@ -39,7 +39,7 @@ Two categories of apps:
 Merged from the former TryGhost/Koenig repo with full git history:
 
 - **koenig-lexical** - The Lexical-based rich text editor UI. Bundled into
-  Ghost Admin at build time (`ghost/admin` copies its UMD build into admin
+  Ghost Admin at build time (`apps/ember-admin` copies its UMD build into admin
   assets; `apps/admin` imports it directly)
 - **kg-*** - Editor support packages: server-side renderers and converters
   consumed by `ghost/core` (kg-default-nodes, kg-lexical-html-renderer,
@@ -141,7 +141,7 @@ pnpm exec vitest -c vitest.config.db.ts test/integration/path/to/test.test.js
 ```bash
 pnpm lint                      # Lint all packages
 cd ghost/core && pnpm lint     # Lint Ghost core (server, shared, frontend, tests)
-cd ghost/admin && pnpm lint    # Lint Ember admin
+cd apps/ember-admin && pnpm lint    # Lint Ember admin
 ```
 
 ### Database
@@ -208,7 +208,7 @@ pnpm dev:all                   #
 
 **Build Process:**
 1. Admin-x React apps build to `apps/*/dist` using Vite
-2. `ghost/admin/lib/asset-delivery` copies them to `ghost/core/core/built/admin/assets/*`
+2. `apps/ember-admin/lib/asset-delivery` copies them to `ghost/core/core/built/admin/assets/*`
 3. Ghost admin serves from `/ghost/assets/{app-name}/{app-name}.js`
 
 **Runtime Loading:**
@@ -268,7 +268,7 @@ Critical build order (Nx handles automatically):
 1. `shade` + `admin-x-design-system` build
 2. `admin-x-framework` builds (depends on #1)
 3. Admin apps build (depend on #2)
-4. `ghost/admin` builds (depends on #3, copies via asset-delivery)
+4. `apps/ember-admin` builds (depends on #3, copies via asset-delivery)
 5. `ghost/core` serves admin build
 
 ## CSS Architecture
@@ -331,7 +331,7 @@ export default reactAppConfig({
 Conventions:
 - **Rules are `'error'` or `'off'` — never `'warn'`.** Warnings get ignored and pollute output. Applies to every workspace covered by the factories above + the standalones; `e2e/` has its own setup (see [e2e/CLAUDE.md](e2e/CLAUDE.md)) and currently still uses warn-level Playwright rules — a separate cleanup.
 - **Params prefixed `legacy*`** (`legacyTailwindV3ConfigPath`, `legacyJsTsSplit`) are escape hatches for migrations that haven't shipped yet. Intentional and visible — PRs to remove them are scoped.
-- **Standalone configs** (`ghost/core`, `ghost/admin`, `apps/admin`, `apps/admin-toolbar`) exist because their rule sets genuinely don't fit a factory — read the file directly. They import shared atoms (`correctnessRules`, `nodeLibRules`, `localFilenamesPlugin`, `strictLinterOptions`) from `@internal/cfg-eslint`.
+- **Standalone configs** (`ghost/core`, `apps/ember-admin`, `apps/admin`, `apps/admin-toolbar`) exist because their rule sets genuinely don't fit a factory — read the file directly. They import shared atoms (`correctnessRules`, `nodeLibRules`, `localFilenamesPlugin`, `strictLinterOptions`) from `@internal/cfg-eslint`.
 - **Plugin deps**: a workspace must declare every eslint plugin its config resolves. Two cases:
   - *Factory consumers* only import a factory, which supplies its plugins as objects from the config package — so they need just the config package (`@internal/cfg-eslint` / `@internal/cfg-eslint-react`) as a `workspace:*` devDependency, not the individual plugins.
   - *Hand-rolled configs* (the standalones above, plus the inline configs in `koenig/kg-*` and `e2e/`) `import` plugins directly, so each must list those plugins in its own `devDependencies` — most commonly `eslint-plugin-ghost: catalog:`. Don't rely on the root hoisting a plugin for you; there are no eslint plugins left in the root `package.json` (only `eslint` itself and `globals`, which the root config uses).

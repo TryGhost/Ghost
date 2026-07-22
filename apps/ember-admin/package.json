@@ -185,7 +185,7 @@
         "continuous": true,
         "executor": "nx:run-commands",
         "options": {
-          "cwd": "ghost/admin",
+          "cwd": "apps/ember-admin",
           "command": "JOBS=4 SKIP_DEPENDENCY_CHECKER=true ember serve"
         },
         "dependsOn": [
