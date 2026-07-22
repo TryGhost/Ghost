@@ -236,8 +236,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         <div className='flex flex-col gap-10 md:flex-row'>
                             <div className='basis-1/2'>
                                 <div className='mb-1 flex h-6 items-center justify-between'>
-                                    <Text as='h6' className='text-base' tone='secondary' weight='semibold'>Prices</Text>
-                                    <div className='-mr-2'>
+                                    <Text as='h6' className='text-base' weight='semibold'>Prices</Text>
+                                    <div>
                                         <Field>
                                             <FieldLabel className='sr-only'>Currency</FieldLabel>
                                             <Combobox open={currencyOpen} onOpenChange={setCurrencyOpen}>

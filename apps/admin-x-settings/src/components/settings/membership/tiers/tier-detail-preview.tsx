@@ -93,7 +93,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
     return (
         <div data-testid="tier-preview">
             <div className="flex items-baseline justify-between">
-                <Text as='h6' className="pb-2 text-base" tone='secondary' weight='semibold'>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Text>
+                <Text as='h6' className="pb-2 text-base" weight='semibold'>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Text>
                 {!isFreeTier && <div className="flex gap-1">
                     <Button className={`${showingYearly === true ? 'text-grey-500' : 'text-grey-900 dark:text-white'}`} label="Monthly" link unstyled onClick={() => setShowingYearly(false)} />
                     <Button className={`ml-2 ${showingYearly === true ? 'text-grey-900 dark:text-white' : 'text-grey-500'}`} label="Yearly" link unstyled onClick={() => setShowingYearly(true)} />
