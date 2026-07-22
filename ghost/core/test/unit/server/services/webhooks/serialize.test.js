@@ -4,7 +4,8 @@ const sinon = require('sinon');
 const {Post} = require('../../../../../core/server/models/post');
 const {Member} = require('../../../../../core/server/models/member');
 
-const serialize = require('../../../../../core/server/services/webhooks/serialize');
+const createSerialize = require('../../../../../core/server/services/webhooks/serialize');
+const serialize = createSerialize();
 
 // Mocked internals
 const tiersService = require('../../../../../core/server/services/tiers');
