@@ -78,6 +78,7 @@ describe('MembersCSVImporter', function () {
         return new MembersCSVImporter({
             storagePath: csvPath,
             getTimezone: sinon.stub().returns('UTC'),
+            getInlineThreshold: sinon.stub().returns(500),
             getMembersRepository: () => {
                 return membersRepositoryStub;
             },
