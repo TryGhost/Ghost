@@ -7,14 +7,14 @@ import StripeButton from '../../../stripe-button';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import StripeVerifiedBadge from '../../../../assets/images/stripe-verified.svg';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, ConfirmationModal, Form, LimitModal, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {Field, FieldError, FieldLabel, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {Text} from '@tryghost/shade/primitives';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
-import {toast} from 'react-hot-toast';
+import {toast} from 'sonner';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -221,16 +221,12 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
 
     const onSubmit = async () => {
         try {
-            toast.remove();
+            toast.dismiss();
             await handleSave();
             onClose();
         } catch (e) {
             if (e instanceof JSONError) {
-                showToast({
-                    title: 'Failed to save settings',
-                    type: 'error',
-                    message: 'Check you copied both keys correctly'
-                });
+                toast.error('Failed to save settings', {description: 'Check you copied both keys correctly'});
                 return;
             }
 

@@ -3,7 +3,8 @@ import validator from 'validator';
 import {APIError, ValidationError} from '@tryghost/admin-x-framework/errors';
 import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSeparator, FieldSet, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
-import {Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Modal, TextField} from '@tryghost/admin-x-design-system';
+import {toast} from 'sonner';
 import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
@@ -128,11 +129,7 @@ const InviteUserModal = NiceModal.create(() => {
 
             setSaveState('saved');
 
-            showToast({
-                title: `Invitation sent`,
-                message: `${email}`,
-                type: 'success'
-            });
+            toast.success(`Invitation sent`, {description: `${email}`});
 
             modal.remove();
             updateRoute('staff?tab=invited');
@@ -157,11 +154,7 @@ const InviteUserModal = NiceModal.create(() => {
                     message = (<span>Check your Mailgun configuration.</span>);
                 }
             }
-            showToast({
-                title,
-                message,
-                type: 'error'
-            });
+            toast.error(title, {description: message});
             handleError(e, {withToast: false});
             return;
         }

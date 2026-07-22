@@ -4,7 +4,8 @@ import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './recommendation-description-form';
 import trackEvent from '../../../../utils/analytics';
 import {type EditOrAddRecommendation, useAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
-import {Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
+import {Modal} from '@tryghost/admin-x-design-system';
+import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -26,10 +27,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         onSave: async (state) => {
             await addRecommendation(state);
             modal.remove();
-            showToast({
-                title: 'Recommendation added',
-                type: 'success'
-            });
+            toast.success('Recommendation added');
             trackEvent('Recommendation Added', {
                 oneClickSubscribe: state.one_click_subscribe
             });
@@ -106,14 +104,11 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
                 return;
             }
 
-            dismissAllToasts();
+            toast.dismiss();
             try {
                 await handleSave({force: true});
             } catch {
-                showToast({
-                    type: 'error',
-                    title: 'Something went wrong when adding this recommendation, please try again.'
-                });
+                toast.error('Something went wrong when adding this recommendation, please try again.');
             }
         }}
     >

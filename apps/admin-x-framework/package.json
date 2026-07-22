@@ -114,8 +114,8 @@
         "bson-objectid": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",
-        "react-hot-toast": "catalog:",
-        "react-router": "catalog:"
+        "react-router": "catalog:",
+        "sonner": "catalog:"
     },
     "peerDependencies": {
         "react": "^18.2.0",

@@ -4,10 +4,11 @@ import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {Button, ConfirmationModal, Icon, SettingGroupHeader, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Icon, SettingGroupHeader} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {Plug} from 'lucide-react';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -226,13 +227,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                                     try {
                                         await deleteIntegration(integration.id);
                                         confirmModal?.remove();
-                                        showToast({
-                                            title: 'Integration deleted',
-                                            type: 'info',
-                                            options: {
-                                                position: 'bottom-left'
-                                            }
-                                        });
+                                        toast.info('Integration deleted', {position: 'bottom-left'});
                                     } catch (e) {
                                         handleError(e);
                                     }

@@ -43,7 +43,12 @@ describe('DirtyConfirmDialog', () => {
         render(<TestHarness dirty={true} onLeave={onLeave} />);
 
         fireEvent.click(screen.getByRole('button', {name: 'Navigate away'}));
-        fireEvent.click(screen.getByRole('button', {name: 'Leave'}));
+        const leaveButton = screen.getByRole('button', {name: 'Leave'});
+
+        assert.match(leaveButton.className, /bg-destructive/);
+        assert.doesNotMatch(leaveButton.className, /bg-primary/);
+
+        fireEvent.click(leaveButton);
 
         assert.equal(onLeave.mock.calls.length, 1);
         assert.equal(screen.queryByRole('alertdialog'), null);

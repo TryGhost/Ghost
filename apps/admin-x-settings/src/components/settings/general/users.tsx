@@ -4,12 +4,13 @@ import clsx from 'clsx';
 import useQueryParams from '../../../hooks/use-query-params';
 import useStaffUsers from '../../../hooks/use-staff-users';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Avatar, NoValueLabel, NoValueLabelIcon, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade/components';
-import {Button, showToast} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/admin-x-design-system';
 import {type User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {type UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
 import {UserRoundX} from 'lucide-react';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -140,11 +141,7 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                     try {
                         setRevokeState('progress');
                         await deleteInvite(invite.id);
-                        showToast({
-                            title: `Invitation revoked`,
-                            message: invite.email,
-                            type: 'success'
-                        });
+                        toast.success(`Invitation revoked`, {description: invite.email});
                     } catch (e) {
                         handleError(e);
                     } finally {
@@ -165,11 +162,7 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                             email: invite.email,
                             roleId: invite.role_id
                         });
-                        showToast({
-                            title: `Invitation resent`,
-                            message: invite.email,
-                            type: 'success'
-                        });
+                        toast.success(`Invitation resent`, {description: invite.email});
                     } catch (e) {
                         handleError(e);
                     } finally {

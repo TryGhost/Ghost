@@ -4,10 +4,11 @@ import React, {useEffect, useState} from 'react';
 import {AlreadyExistsError} from '@tryghost/admin-x-framework/errors';
 import {type EditOrAddRecommendation, useCheckRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Form, Modal, TextField, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
+import {Form, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {LoadingIndicator} from '@tryghost/shade/components';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {formatUrl} from '../../../../utils/format-url';
+import {toast} from 'sonner';
 
 interface AddRecommendationModalProps {
     recommendation?: EditOrAddRecommendation,
@@ -124,17 +125,14 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             return;
         }
 
-        dismissAllToasts();
+        toast.dismiss();
         try {
             if (await handleSave({force: true})) {
                 return;
             }
         } catch (e) {
             const message = e instanceof AlreadyExistsError ? e.message : 'Something went wrong while checking this URL, please try again.';
-            showToast({
-                type: 'error',
-                title: message
-            });
+            toast.error(message);
         }
 
         // If we have errors: close direct submit view

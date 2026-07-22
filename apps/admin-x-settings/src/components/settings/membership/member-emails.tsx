@@ -6,9 +6,10 @@ import WelcomeEmailModal from './member-emails/welcome-email-modal';
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Switch} from '@tryghost/shade/components';
-import {Button, ConfirmationModal, Icon, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Icon} from '@tryghost/admin-x-design-system';
 import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailRecord, getDefaultWelcomeEmailValues} from './member-emails/default-welcome-email-values';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmail, useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -236,13 +237,13 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
         try {
             if (!existing) {
                 await createAutomatedEmail(emailType, 'active');
-                showToast({type: 'success', title: `${label} welcome email enabled`});
+                toast.success(`${label} welcome email enabled`);
             } else if (existing.status === 'active') {
                 await editAutomatedEmail({...existing, status: 'inactive'});
-                showToast({type: 'success', title: `${label} welcome email disabled`});
+                toast.success(`${label} welcome email disabled`);
             } else {
                 await editAutomatedEmail({...existing, status: 'active'});
-                showToast({type: 'success', title: `${label} welcome email enabled`});
+                toast.success(`${label} welcome email enabled`);
             }
         } catch (e) {
             handleError(e);

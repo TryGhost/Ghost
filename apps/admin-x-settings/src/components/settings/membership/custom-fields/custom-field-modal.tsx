@@ -1,9 +1,10 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import {Button, ConfirmationModal, Form, Icon, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {ValidationError, getErrorMessage} from '@tryghost/admin-x-framework/errors';
 import {memberCustomFieldUserTypes, useCreateMemberCustomField, useDeleteMemberCustomField, useEditMemberCustomField, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 
@@ -100,9 +101,9 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                         // and only valid on an already-archived field.
                         await editField({key: field!.key, status: 'archived'});
                         archiveModal?.remove();
-                        showToast({type: 'success', title: 'Custom field archived'});
+                        toast.success('Custom field archived');
                     } catch (e) {
-                        showToast({type: 'error', title: 'Failed to archive the custom field'});
+                        toast.error('Failed to archive the custom field');
                         handleError(e, {withToast: false});
                     }
                 }
@@ -128,9 +129,9 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                     try {
                         await editField({key: field!.key, status: 'active'});
                         reactivateModal?.remove();
-                        showToast({type: 'success', title: 'Custom field reactivated'});
+                        toast.success('Custom field reactivated');
                     } catch (e) {
-                        showToast({type: 'error', title: 'Failed to reactivate the custom field'});
+                        toast.error('Failed to reactivate the custom field');
                         handleError(e, {withToast: false});
                     }
                 }
@@ -158,9 +159,9 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                 try {
                     await deleteField(field!.key);
                     deleteModal?.remove();
-                    showToast({type: 'success', title: 'Custom field deleted'});
+                    toast.success('Custom field deleted');
                 } catch (e) {
-                    showToast({type: 'error', title: 'Failed to delete the custom field'});
+                    toast.error('Failed to delete the custom field');
                     handleError(e, {withToast: false});
                 }
             }

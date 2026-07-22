@@ -5,11 +5,12 @@ import OfficialThemes from './theme/official-themes';
 import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/theme-installed-modal';
 import ThemePreview from './theme/theme-preview';
-import {Button, ConfirmationModal, LimitModal, Modal, PageHeader, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, LimitModal, Modal, PageHeader} from '@tryghost/admin-x-design-system';
 import {Dropzone, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type OfficialTheme} from '../../providers/settings-app-provider';
+import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -369,11 +370,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                             data = await installTheme(themeRef);
                             if (data?.themes[0]) {
                                 await activateTheme(data.themes[0].name);
-                                showToast({
-                                    title: 'Theme activated',
-                                    type: 'success',
-                                    message: <div><span className='capitalize'>{data.themes[0].name}</span> is now your active theme</div>
-                                });
+                                toast.success('Theme activated', {description: <div><span className='capitalize'>{data.themes[0].name}</span> is now your active theme</div>});
                             }
                             confirmModal?.remove();
                             updateRoute('');

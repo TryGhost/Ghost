@@ -4,8 +4,10 @@ import TopLevelGroup from '../../top-level-group';
 import trackEvent from '../../../utils/analytics';
 import useStaffUsers from '../../../hooks/use-staff-users';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent} from '@tryghost/shade/components';
-import {Button, ConfirmationModal, SettingGroupHeader, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, SettingGroupHeader} from '@tryghost/admin-x-design-system';
+import {formatNumber} from '@tryghost/shade/utils';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {toast} from 'sonner';
 import {useDeleteAllContent} from '@tryghost/admin-x-framework/api/db';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -40,10 +42,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onOk: async (modal) => {
                 try {
                     await deleteAllContent(null);
-                    showToast({
-                        title: 'All content deleted from database.',
-                        type: 'success'
-                    });
+                    toast.success('All content deleted from database.');
                     modal?.remove();
                     await client.refetchQueries();
                 } catch (e) {
@@ -75,10 +74,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     const result = response?.security_action?.[0];
                     const keys = result?.api_keys_rotated ?? 0;
                     const users = result?.users_locked ?? 0;
-                    showToast({
-                        title: `Rotated ${keys} API ${keys === 1 ? 'key' : 'keys'} and locked ${users} ${users === 1 ? 'user' : 'users'}. You will be signed out shortly.`,
-                        type: 'success'
-                    });
+                    toast.success(`Rotated ${formatNumber(keys)} API ${keys === 1 ? 'key' : 'keys'} and locked ${formatNumber(users)} ${users === 1 ? 'user' : 'users'}. You will be signed out shortly.`);
                     modal?.remove();
                     window.location.href = getGhostPaths().adminRoot;
                 } catch (e) {
@@ -100,10 +96,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     const response = await removeAllGiftLinks(null);
                     const count = response?.meta?.count ?? 0;
                     trackEvent('All Gift Links Reset');
-                    showToast({
-                        title: `Reset ${count} gift ${count === 1 ? 'link' : 'links'}.`,
-                        type: 'success'
-                    });
+                    toast.success(`Reset ${formatNumber(count)} gift ${count === 1 ? 'link' : 'links'}.`);
                     modal?.remove();
                 } catch (e) {
                     handleError(e);

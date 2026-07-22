@@ -1,15 +1,15 @@
 import PortalFrame from '../../membership/portal/portal-frame';
 import SettingsBreadcrumbs from '../../settings-breadcrumbs';
-import toast from 'react-hot-toast';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Field, FieldContent, FieldDescription, FieldLabel, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea} from '@tryghost/shade/components';
-import {Form, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Form, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useAddOffer, useBrowseOffers, useEditOffer, useInvalidateOffers} from '@tryghost/admin-x-framework/api/offers';
 import {createOfferRedemptionsFilterUrl, formatOfferTimestamp, generateRetentionOfferName} from './offer-helpers';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {toast} from 'sonner';
 import {useEffect, useMemo, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -431,12 +431,8 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             message = error.data.errors[0].context || error.data.errors[0].message || message;
         }
 
-        toast.remove();
-        showToast({
-            title: 'Failed to save offer',
-            type: 'error',
-            message
-        });
+        toast.dismiss();
+        toast.error('Failed to save offer', {description: message});
     };
 
     const {formState, setFormState, updateForm, handleSave, saveState, okProps, errors, clearError} = useForm({

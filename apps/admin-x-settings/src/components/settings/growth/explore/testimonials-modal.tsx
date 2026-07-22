@@ -4,8 +4,9 @@ import JoelWarner from '../../../../assets/images/joel-warner.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import {Avatar, Field, FieldError, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
-import {Button, Form, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {Button, Form, Modal} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -62,10 +63,7 @@ const TestimonialsModal = NiceModal.create(() => {
                 throw new Error('Something went wrong, please try again later.');
             }
 
-            showToast({
-                message: 'Thank you for your testimonial!',
-                type: 'success'
-            });
+            toast.success('Thank you for your testimonial!');
 
             updateRoute('explore');
             modal.remove();

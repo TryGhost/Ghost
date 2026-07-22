@@ -1,10 +1,10 @@
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import toast from 'react-hot-toast';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, Form, Icon, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {getSettingValues, useTestSlack} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const SlackModal = NiceModal.create(() => {
@@ -27,13 +27,10 @@ const SlackModal = NiceModal.create(() => {
     const {mutateAsync: testSlack} = useTestSlack();
 
     const handleTestClick = async () => {
-        toast.remove();
+        toast.dismiss();
         if (await handleSave()) {
             await testSlack(null);
-            showToast({
-                title: 'Check your Slack channel for the test message',
-                type: 'info'
-            });
+            toast.info('Check your Slack channel for the test message');
         }
     };
 
@@ -51,7 +48,7 @@ const SlackModal = NiceModal.create(() => {
             testId='slack-modal'
             title=''
             onOk={async () => {
-                toast.remove();
+                toast.dismiss();
                 await handleSave();
             }}
         >
