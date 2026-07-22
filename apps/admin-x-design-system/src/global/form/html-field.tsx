@@ -1,5 +1,4 @@
 import Heading from '../heading';
-import Hint from '../hint';
 import HtmlEditor, {HtmlEditorProps} from './html-editor';
 import React from 'react';
 import clsx from 'clsx';
@@ -47,7 +46,7 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
             <div className={textFieldClasses}>
                 <HtmlEditor {...props} value={value} />
             </div>
-            {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
+            {hint && <div className={clsx('mt-1 inline-block leading-snug', error ? 'text-red dark:text-red-500' : 'text-grey-700 dark:text-grey-600', hintClassName)} role={error ? 'alert' : undefined}>{hint}</div>}
         </div>
     );
 };

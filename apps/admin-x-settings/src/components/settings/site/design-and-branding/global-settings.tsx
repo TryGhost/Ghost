@@ -4,10 +4,11 @@ import clsx from 'clsx';
 import usePinturaEditor from '../../../../hooks/use-pintura-editor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
-import {ColorPickerField, Form, Hint, ImageUpload} from '@tryghost/admin-x-design-system';
-import {Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {ColorPickerField, Form, ImageUpload} from '@tryghost/admin-x-design-system';
+import {Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
+import {formatNumber} from '@tryghost/shade/utils';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useFramework} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -170,7 +171,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 <div className='flex items-start justify-between'>
                     <div>
                         <div>Publication icon</div>
-                        <Hint className='mt-0! mr-5 max-w-[160px]'>A square, social icon, at least 60x60px</Hint>
+                        <FieldDescription className='mr-5 max-w-[160px]'>A square, social icon, at least {formatNumber(60)}×{formatNumber(60)}px</FieldDescription>
                     </div>
                     <div className='flex gap-3'>
                         <ImageUpload
@@ -201,7 +202,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 <div className={`flex items-start justify-between ${values.icon && 'mt-2'}`}>
                     <div>
                         <div>Publication logo</div>
-                        <Hint className='mt-0! mr-5 max-w-[160px]'>Appears usually in the main header of your theme</Hint>
+                        <FieldDescription className='mr-5 max-w-[160px]'>Appears usually in the main header of your theme</FieldDescription>
                     </div>
                     <div>
                         <ImageUpload
@@ -232,7 +233,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 <div className='mt-2 flex items-start justify-between' data-testid="publication-cover">
                     <div>
                         <div>Publication cover</div>
-                        <Hint className='mt-0! mr-5 max-w-[160px]'>Usually as a large banner image on your index pages</Hint>
+                        <FieldDescription className='mr-5 max-w-[160px]'>Usually as a large banner image on your index pages</FieldDescription>
                     </div>
                     <ImageUpload
                         deleteButtonClassName='top-1! right-1!'

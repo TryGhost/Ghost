@@ -139,12 +139,14 @@ describe("Advanced integrations", () => {
         await renderAdminApp("/settings/integrations");
 
         const modal = await openCustomIntegration();
+        const adminApiKey = modal.getByTestId("admin-api-key");
         await expect.element(modal).toHaveTextContent(/admin-api-secret/);
-        await modal.getByText("admin-api-secret").hover();
-        await modal.getByRole("button", {name: "Regenerate"}).click();
+        await adminApiKey.getByText("admin-api-secret").hover();
+        await adminApiKey.getByRole("button", {name: "Regenerate"}).click();
         await settingsScreen.confirmationModal().getByRole("button", {name: "Regenerate Admin API Key"}).click();
         await expect.element(modal).toHaveTextContent(/Admin API Key was successfully regenerated/);
         await expect.element(modal).toHaveTextContent(/new-api-key/);
+        await expect(adminApiKey.getByRole("button", {name: "Copy"})).toHaveCount(1);
         expect(refreshApi.requests).toHaveLength(1);
     });
 
@@ -406,15 +408,17 @@ describe("Advanced integrations", () => {
 
         await openIntegration("Zapier", "zapier-integration");
         const modal = settingsScreen.section("zapier-modal");
+        const adminApiKey = modal.getByTestId("admin-api-key");
         await expect.element(modal).toHaveTextContent(/zapier-api-secret/);
-        await modal.getByText("zapier-api-secret").hover();
-        await modal.getByRole("button", {name: "Copy"}).click();
-        await expect(modal.getByRole("button", {name: "Copied"})).toHaveCount(1);
+        await adminApiKey.getByText("zapier-api-secret").hover();
+        await adminApiKey.getByRole("button", {name: "Copy"}).click();
+        await expect(adminApiKey.getByRole("button", {name: "Copied"})).toHaveCount(1);
         expect(writeText).toHaveBeenCalledWith("zapier-api-secret");
-        await modal.getByRole("button", {name: "Regenerate"}).click();
+        await adminApiKey.getByRole("button", {name: "Regenerate"}).click();
         await settingsScreen.confirmationModal().getByRole("button", {name: "Regenerate Admin API Key"}).click();
         await expect.element(modal).toHaveTextContent(/Admin API Key was successfully regenerated/);
         await expect.element(modal).toHaveTextContent(/new-api-key/);
+        await expect(adminApiKey.getByRole("button", {name: "Copy"})).toHaveCount(1);
         expect(refreshApi.requests).toHaveLength(1);
         writeText.mockRestore();
     });

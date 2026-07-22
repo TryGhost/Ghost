@@ -1,6 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import DynamicTable, {DynamicTableColumn, DynamicTableRow} from './dynamic-table';
-import Hint from '../hint';
 import Pagination from '../pagination';
 import Button from '../button';
 
@@ -132,7 +131,7 @@ export const StickyHeader: Story = {
 export const StickyFooter: Story = {
     args: {
         stickyFooter: true,
-        footer: <Hint>Here we go</Hint>,
+        footer: <span>Here we go</span>,
         columns: testColumns,
         rows: testRows(40)
     }
@@ -140,12 +139,12 @@ export const StickyFooter: Story = {
 
 export const AllSticky: Story = {
     // render: () => (
-    //     <DynamicTable columns={columns} footer={<Hint>Table footer</Hint>} rows={rows(40)} stickyFooter stickyHeader />
+    //     <DynamicTable columns={columns} footer={<span>Table footer</span>} rows={rows(40)} stickyFooter stickyHeader />
     // )
     args: {
         stickyHeader: true,
         stickyFooter: true,
-        footer: <Hint>Here we go</Hint>,
+        footer: <span>Here we go</span>,
         columns: testColumns,
         rows: testRows(40)
     }
@@ -169,7 +168,7 @@ export const HalfPageExample: Story = {
         stickyFooter: true,
         columns: testColumns,
         rows: testRows(40),
-        footer: <Hint>This is a table footer</Hint>
+        footer: <span>This is a table footer</span>
     }
 };
 
@@ -191,7 +190,7 @@ export const FullPageExample: Story = {
         rows: testRows(40),
         tableContainerClassName: 'px-10',
         footerClassName: 'mx-10',
-        footer: <Hint>This is a table footer</Hint>
+        footer: <span>This is a table footer</span>
     }
 };
 
@@ -200,7 +199,7 @@ export const PaginationExample: Story = {
         columns: testColumns,
         rows: testRows(10),
         footer: <div className='flex justify-between'>
-            <Hint>Table footer comes here</Hint>
+            <span>Table footer comes here</span>
             <Pagination limit={5} nextPage={() => {}} page={1} pages={5} prevPage={() => {}} setPage={() => {}} total={15} />
         </div>
     }

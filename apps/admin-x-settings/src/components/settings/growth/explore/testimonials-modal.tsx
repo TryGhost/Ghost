@@ -3,8 +3,8 @@ import IsaacSaul from '../../../../assets/images/isaac-saul.png';
 import JoelWarner from '../../../../assets/images/joel-warner.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import {Avatar, Field, FieldError, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {Button, Form, Modal, TextArea, showToast} from '@tryghost/admin-x-design-system';
+import {Avatar, Field, FieldError, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
+import {Button, Form, Modal, showToast} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -171,16 +171,20 @@ const TestimonialsModal = NiceModal.create(() => {
                                 </div>
                             </div>
                             <div className='mt-8'>
-                                <TextArea
-                                    error={Boolean(errors.content)}
-                                    hint={errors.content}
-                                    placeholder='What changed for the better since you switched to Ghost?'
-                                    rows={7}
-                                    value={formState.content}
-                                    autoFocus
-                                    onChange={e => updateForm(state => ({...state, content: e.target.value}))}
-                                    onKeyDown={() => clearError('content')}
-                                />
+                                <Field data-invalid={Boolean(errors.content) || undefined}>
+                                    <FieldLabel className='sr-only' htmlFor='testimonial-content'>Quote</FieldLabel>
+                                    <Textarea
+                                        aria-invalid={Boolean(errors.content) || undefined}
+                                        id='testimonial-content'
+                                        placeholder='What changed for the better since you switched to Ghost?'
+                                        rows={7}
+                                        value={formState.content}
+                                        autoFocus
+                                        onChange={e => updateForm(state => ({...state, content: e.target.value}))}
+                                        onKeyDown={() => clearError('content')}
+                                    />
+                                    {errors.content && <FieldError>{errors.content}</FieldError>}
+                                </Field>
                             </div>
                             <div className='mt-4 ml-0.5'>
                                 <div className='flex items-center gap-2'>

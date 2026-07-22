@@ -4,7 +4,6 @@ import {CSS} from '@dnd-kit/utilities';
 import clsx from 'clsx';
 import React, {ElementType, HTMLProps, ReactNode, useState} from 'react';
 import Heading from './heading';
-import Hint from './hint';
 import Icon from './icon';
 import Separator from './separator';
 
@@ -167,7 +166,7 @@ const SortableList = <Item extends {id: string}>({
             {hint &&
             <>
                 {!itemSeparator && <Separator />}
-                <Hint>{hint}</Hint>
+                <div className='mt-1 inline-block leading-snug text-grey-700 dark:text-grey-600'>{hint}</div>
             </>
             }
         </div>

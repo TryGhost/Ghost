@@ -1,8 +1,8 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
-import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
-import {Form, LimitModal, Modal, TextArea, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldLabel, Switch, Textarea} from '@tryghost/shade/components';
+import {Form, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {formatNumber} from '@tryghost/shade/utils';
@@ -121,12 +121,10 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                 onKeyDown={() => clearError('name')}
             />
-            <TextArea
-                maxLength={2000}
-                title='Description'
-                value={formState.description}
-                onChange={e => updateForm(state => ({...state, description: e.target.value}))}
-            />
+            <Field>
+                <FieldLabel htmlFor='newsletter-description'>Description</FieldLabel>
+                <Textarea id='newsletter-description' maxLength={2000} value={formState.description} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
+            </Field>
             <Field orientation='horizontal'>
                 <FieldContent>
                     <FieldLabel htmlFor='opt-in-existing-subscribers'>Opt-in existing subscribers</FieldLabel>

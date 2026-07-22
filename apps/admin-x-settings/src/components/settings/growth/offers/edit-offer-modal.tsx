@@ -2,8 +2,9 @@ import NiceModal from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/portal-frame';
 import SettingsBreadcrumbs from '../../settings-breadcrumbs';
 import toast from 'react-hot-toast';
-import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {Field, FieldLabel, Textarea} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
 import {createOfferRedemptionFilterUrl} from './offer-helpers';
@@ -164,12 +165,10 @@ const Sidebar: React.FC<{
                                     onChange={e => updateOffer({display_title: e.target.value})}
                                     onKeyDown={() => clearError('displayTitle')}
                                 />
-                                <TextArea
-                                    placeholder='Take advantage of this limited-time offer.'
-                                    title='Display description'
-                                    value={offer?.display_description ?? ''}
-                                    onChange={e => updateOffer({display_description: e.target.value})}
-                                />
+                                <Field>
+                                    <FieldLabel htmlFor='offer-display-description'>Display description</FieldLabel>
+                                    <Textarea id='offer-display-description' placeholder='Take advantage of this limited-time offer.' value={offer?.display_description ?? ''} onChange={e => updateOffer({display_description: e.target.value})} />
+                                </Field>
                             </div>
                         </section>
                     </Form>

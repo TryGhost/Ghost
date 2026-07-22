@@ -1,15 +1,15 @@
 {
   "snapshot": {
-    "generatedAt": "2026-07-21T22:36:32.582Z",
-    "sha": "3090cae8974d35ff3c25427bd7ee44ecee34ad92",
-    "branch": "codex/admin-settings-shade-toggles-checks"
+    "generatedAt": "2026-07-22T00:53:12.523Z",
+    "sha": "8de5eeb5ff011eb583bf3be82e6f478e83a4f00b",
+    "branch": "codex/admin-settings-shade-text-fields"
   },
   "summary": {
-    "adminReactFilesTotal": 690,
-    "adminReactFilesUsingShade": 308,
-    "shadeAdoptionPct": 44.6,
-    "uniqueShadeComponentsUsed": 259,
-    "adminXDsComponentsStillUsed": 66
+    "adminReactFilesTotal": 692,
+    "adminReactFilesUsingShade": 314,
+    "shadeAdoptionPct": 45.4,
+    "uniqueShadeComponentsUsed": 264,
+    "adminXDsComponentsStillUsed": 62
   },
   "apps": [
     {
@@ -1188,17 +1188,21 @@
     },
     {
       "name": "admin-x-settings",
-      "files": 239,
-      "shadeFiles": 82,
-      "adminXDsFiles": 127,
+      "files": 241,
+      "shadeFiles": 88,
+      "adminXDsFiles": 125,
       "shadeComponents": [
         {
           "name": "Field",
-          "count": 34
+          "count": 40
         },
         {
           "name": "FieldLabel",
-          "count": 34
+          "count": 40
+        },
+        {
+          "name": "FieldDescription",
+          "count": 26
         },
         {
           "name": "Switch",
@@ -1225,16 +1229,24 @@
           "count": 20
         },
         {
-          "name": "FieldDescription",
-          "count": 20
+          "name": "formatNumber",
+          "count": 17
+        },
+        {
+          "name": "FieldError",
+          "count": 16
         },
         {
           "name": "FieldContent",
           "count": 14
         },
         {
-          "name": "formatNumber",
-          "count": 13
+          "name": "Textarea",
+          "count": 12
+        },
+        {
+          "name": "Button",
+          "count": 10
         },
         {
           "name": "Inline",
@@ -1251,10 +1263,6 @@
         {
           "name": "MultiSelectCombobox",
           "count": 8
-        },
-        {
-          "name": "Button",
-          "count": 7
         },
         {
           "name": "NoValueLabelIcon",
@@ -1285,8 +1293,16 @@
           "count": 6
         },
         {
-          "name": "FieldError",
-          "count": 6
+          "name": "InputGroup",
+          "count": 5
+        },
+        {
+          "name": "InputGroupAddon",
+          "count": 5
+        },
+        {
+          "name": "InputGroupInput",
+          "count": 5
         },
         {
           "name": "DropdownMenu",
@@ -1321,6 +1337,10 @@
           "count": 4
         },
         {
+          "name": "Input",
+          "count": 4
+        },
+        {
           "name": "Popover",
           "count": 4
         },
@@ -1333,11 +1353,43 @@
           "count": 4
         },
         {
+          "name": "Stack",
+          "count": 4
+        },
+        {
+          "name": "InputGroupButton",
+          "count": 3
+        },
+        {
           "name": "FieldLegend",
           "count": 3
         },
         {
           "name": "FieldSet",
+          "count": 3
+        },
+        {
+          "name": "CopyField",
+          "count": 3
+        },
+        {
+          "name": "CopyFieldActions",
+          "count": 3
+        },
+        {
+          "name": "CopyFieldContent",
+          "count": 3
+        },
+        {
+          "name": "CopyFieldCopyButton",
+          "count": 3
+        },
+        {
+          "name": "CopyFieldLabel",
+          "count": 3
+        },
+        {
+          "name": "CopyFieldValue",
           "count": 3
         },
         {
@@ -1365,10 +1417,6 @@
           "count": 3
         },
         {
-          "name": "Stack",
-          "count": 3
-        },
-        {
           "name": "Badge",
           "count": 2
         },
@@ -1385,12 +1433,12 @@
           "count": 2
         },
         {
-          "name": "FieldTitle",
+          "name": "GhostOrb",
           "count": 2
         },
         {
-          "name": "GhostOrb",
-          "count": 2
+          "name": "Kbd",
+          "count": 1
         },
         {
           "name": "Breadcrumb",
@@ -1417,11 +1465,7 @@
           "count": 1
         },
         {
-          "name": "Input",
-          "count": 1
-        },
-        {
-          "name": "Textarea",
+          "name": "InputGroupText",
           "count": 1
         },
         {
@@ -1462,18 +1506,6 @@
         },
         {
           "name": "DropdownMenuSeparator",
-          "count": 1
-        },
-        {
-          "name": "InputGroup",
-          "count": 1
-        },
-        {
-          "name": "InputGroupAddon",
-          "count": 1
-        },
-        {
-          "name": "InputGroupInput",
           "count": 1
         },
         {
@@ -1552,14 +1584,14 @@
       "adminXDsComponents": [
         {
           "name": "Button",
-          "count": 58
-        },
-        {
-          "name": "TextField",
-          "count": 36
+          "count": 54
         },
         {
           "name": "Modal",
+          "count": 34
+        },
+        {
+          "name": "TextField",
           "count": 34
         },
         {
@@ -1568,7 +1600,7 @@
         },
         {
           "name": "Icon",
-          "count": 30
+          "count": 29
         },
         {
           "name": "Form",
@@ -1579,20 +1611,16 @@
           "count": 23
         },
         {
-          "name": "Heading",
-          "count": 20
-        },
-        {
           "name": "SettingGroupContent",
           "count": 19
         },
         {
-          "name": "TabView",
-          "count": 16
+          "name": "Heading",
+          "count": 17
         },
         {
-          "name": "TextArea",
-          "count": 11
+          "name": "TabView",
+          "count": 16
         },
         {
           "name": "LimitModal",
@@ -1605,10 +1633,6 @@
         {
           "name": "ListItem",
           "count": 9
-        },
-        {
-          "name": "Hint",
-          "count": 8
         },
         {
           "name": "PreviewModalContent",
@@ -1667,10 +1691,6 @@
           "count": 3
         },
         {
-          "name": "URLTextField",
-          "count": 3
-        },
-        {
           "name": "SortableList",
           "count": 3
         },
@@ -1704,10 +1724,6 @@
         },
         {
           "name": "ButtonProps",
-          "count": 2
-        },
-        {
-          "name": "CurrencyField",
           "count": 2
         },
         {
@@ -1824,27 +1840,27 @@
     },
     {
       "name": "Button",
-      "count": 122
+      "count": 125
     },
     {
       "name": "formatNumber",
-      "count": 61
+      "count": 65
     },
     {
       "name": "LoadingIndicator",
       "count": 46
     },
     {
-      "name": "cn",
-      "count": 42
-    },
-    {
       "name": "Field",
-      "count": 37
+      "count": 43
     },
     {
       "name": "FieldLabel",
-      "count": 37
+      "count": 43
+    },
+    {
+      "name": "cn",
+      "count": 42
     },
     {
       "name": "Switch",
@@ -1856,6 +1872,10 @@
     },
     {
       "name": "CardContent",
+      "count": 27
+    },
+    {
+      "name": "FieldDescription",
       "count": 27
     },
     {
@@ -1893,23 +1913,19 @@
     {
       "name": "Dialog",
       "count": 25
-    },
-    {
-      "name": "EmptyIndicator",
-      "count": 24
     }
   ],
   "adminXDsComponentsAggregate": [
     {
       "name": "Button",
-      "count": 58
-    },
-    {
-      "name": "TextField",
-      "count": 36
+      "count": 54
     },
     {
       "name": "Modal",
+      "count": 34
+    },
+    {
+      "name": "TextField",
       "count": 34
     },
     {
@@ -1918,7 +1934,7 @@
     },
     {
       "name": "Icon",
-      "count": 30
+      "count": 29
     },
     {
       "name": "Form",
@@ -1929,20 +1945,16 @@
       "count": 23
     },
     {
-      "name": "Heading",
-      "count": 20
-    },
-    {
       "name": "SettingGroupContent",
       "count": 19
     },
     {
-      "name": "TabView",
-      "count": 16
+      "name": "Heading",
+      "count": 17
     },
     {
-      "name": "TextArea",
-      "count": 11
+      "name": "TabView",
+      "count": 16
     },
     {
       "name": "LimitModal",
@@ -1955,10 +1967,6 @@
     {
       "name": "ListItem",
       "count": 9
-    },
-    {
-      "name": "Hint",
-      "count": 8
     },
     {
       "name": "PreviewModalContent",
@@ -2017,10 +2025,6 @@
       "count": 3
     },
     {
-      "name": "URLTextField",
-      "count": 3
-    },
-    {
       "name": "SortableList",
       "count": 3
     },
@@ -2054,10 +2058,6 @@
     },
     {
       "name": "ButtonProps",
-      "count": 2
-    },
-    {
-      "name": "CurrencyField",
       "count": 2
     },
     {

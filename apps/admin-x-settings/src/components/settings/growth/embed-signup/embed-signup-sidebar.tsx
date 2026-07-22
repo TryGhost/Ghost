@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Button, ButtonGroup, ColorPickerField, Form, Heading, StickyFooter, TextArea} from '@tryghost/admin-x-design-system';
-import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox} from '@tryghost/shade/components';
+import {Button, ButtonGroup, ColorPickerField, Form, Heading, StickyFooter} from '@tryghost/admin-x-design-system';
+import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox, Textarea} from '@tryghost/shade/components';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
 import {Plus} from 'lucide-react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
@@ -197,14 +197,11 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                         </Combobox>
                         <FieldDescription>Will be applied to all members signing up via this form</FieldDescription>
                     </Field>
-                    <TextArea
-                        className='text-grey-800'
-                        fontStyle='mono'
-                        hint={`Paste this code onto any website where you'd like your signup to appear.`}
-                        title='Embed code'
-                        value={`${embedScript}`}
-                        onChange={() => {}}
-                    />
+                    <Field>
+                        <FieldLabel htmlFor='embed-signup-code'>Embed code</FieldLabel>
+                        <Textarea className='resize-none font-mono' id='embed-signup-code' value={`${embedScript}`} readOnly />
+                        <FieldDescription>Paste this code onto any website where you&apos;d like your signup to appear.</FieldDescription>
+                    </Field>
                 </Form>
             </div>
             <StickyFooter height={74}>

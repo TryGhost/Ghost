@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {ColorPickerField, Heading, Hint, ImageUpload, TextField} from '@tryghost/admin-x-design-system';
+import {ColorPickerField, Heading, ImageUpload, TextField} from '@tryghost/admin-x-design-system';
 import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
@@ -94,7 +94,7 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({setting, setSetting}) => {
                 onDelete={() => setSetting(null)}
                 onUpload={file => handleImageUpload(file)}
             >Upload image</ImageUpload>
-            {setting.description && <Hint>{setting.description}</Hint>}
+            {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
         </>;
     }
 };

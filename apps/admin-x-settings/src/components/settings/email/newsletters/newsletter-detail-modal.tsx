@@ -4,13 +4,14 @@ import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, type Tab, TabView, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, type Tab, TabView, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch} from '@tryghost/shade/components';
+import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Stack} from '@tryghost/shade/primitives';
+import {formatNumber} from '@tryghost/shade/utils';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
@@ -262,7 +263,10 @@ const Sidebar: React.FC<{
                         onChange={e => updateNewsletter({name: e.target.value})}
                         onKeyDown={() => clearError('name')}
                     />
-                    <TextArea maxLength={2000} rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
+                    <Field>
+                        <FieldLabel htmlFor='newsletter-description'>Description</FieldLabel>
+                        <Textarea id='newsletter-description' maxLength={2000} rows={2} value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
+                    </Field>
                 </Form>
                 <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
                     <TextField maxLength={191} placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
@@ -310,7 +314,7 @@ const Sidebar: React.FC<{
                             >
                                 <Icon colorClass='text-grey-700 dark:text-grey-300' name='picture' />
                             </ImageUpload>
-                            <Hint>1200×600 recommended. Use a transparent PNG for best results on any background.</Hint>
+                            <FieldDescription>{formatNumber(1200)}×{formatNumber(600)} recommended. Use a transparent PNG for best results on any background.</FieldDescription>
                         </div>
                     </div>
                     <Stack gap='md'>

@@ -2,7 +2,6 @@ import clsx from 'clsx';
 import React from 'react';
 import {PaginationData} from '../hooks/use-pagination';
 import Heading from './heading';
-import Hint from './hint';
 import {LoadingIndicator} from './loading-indicator';
 import Pagination from './pagination';
 import Separator from './separator';
@@ -186,7 +185,7 @@ const Table: React.FC<TableProps> = ({
                         {(hintSeparator || pagination) && <Separator />}
                         <div className="mt-1 flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0">
                             <OptionalShowMore showMore={showMore} />
-                            <Hint>{hint ?? ' '}</Hint>
+                            <div className='mt-1 inline-block leading-snug text-grey-700 dark:text-grey-600'>{hint ?? ' '}</div>
                             <OptionalPagination pagination={pagination} />
                         </div>
                     </footer>}
