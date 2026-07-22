@@ -255,7 +255,7 @@ const InviteUserModal = NiceModal.create(() => {
                         {allowedRoleOptions.map((option) => {
                             const id = `invite-role-${option.value.replace(/\s+/g, '-')}`;
                             return (
-                                <Field key={option.value} orientation='horizontal'>
+                                <Field key={option.value} className='has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-0' orientation='horizontal'>
                                     <RadioGroupItem id={id} value={option.value} />
                                     <FieldContent>
                                         <FieldLabel htmlFor={id}>{option.label}</FieldLabel>
