@@ -32,14 +32,6 @@ const StatusPill: React.FC<{status: LiveStatus}> = ({status}) => (
         )
 );
 
-// Autosave reassurance — the antidote to "I saved and still lost everything".
-const SaveIndicator: React.FC<{state: SaveState}> = ({state}) => (
-    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-        {state === 'saving'
-            ? <><LucideIcon.Loader2 className="size-3.5 animate-spin" strokeWidth={2} /> Saving…</>
-            : <><LucideIcon.Check className="size-3.5 text-green" strokeWidth={2.5} /> All changes saved</>}
-    </span>
-);
 
 /**
  * Surface concept — single-surface automation detail.
@@ -106,35 +98,38 @@ const AutomationSurface: React.FC = () => {
         setLiveStatus('inactive');
     };
 
-    // Adaptive primary: quiet "Published" when live with nothing to publish;
-    // otherwise a single Publish action (labelled for the situation).
+    // Two axes kept separate: the status pill (left) is the saved automation's
+    // Live/Off state; the working indicator (right, muted text by the Publish
+    // action) is your unsaved edits. Publish only appears when there's something
+    // to publish — the Live pill already says an unedited automation is published.
     const nothingToPublish = liveStatus === 'active' && !dirty;
+    const workingText = saveState === 'saving' ? 'Saving…' : dirty ? 'Unsaved changes' : 'No changes';
 
     return (
         <div className="fixed inset-0 z-50 flex flex-col bg-background" data-testid="surface-detail">
             {/* Persistent header — the left stays put across modes; only the right controls morph. */}
             <header className="relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4">
                 <Inline align="center" gap="sm">
-                    <Button aria-label="Back to automations" size="icon" variant="ghost" onClick={goBack}>
-                        <LucideIcon.ArrowLeft strokeWidth={2} />
-                    </Button>
-                    <Inline align="center" gap="sm">
-                        <button className="text-sm text-muted-foreground hover:text-foreground" type="button" onClick={goBack}>Automations</button>
-                        <span className="text-muted-foreground">/</span>
-                        <span className="font-medium">{automation.name}</span>
-                        <StatusPill status={liveStatus} />
-                        {isEdit && <span className="ml-1"><SaveIndicator state={saveState} /></span>}
-                    </Inline>
+                    {/* Back arrow hides in edit mode — under load it reads as "exit editing",
+                        so the only ways out are the deliberate Done / Publish on the right. */}
+                    {!isEdit && (
+                        <>
+                            <Button aria-label="Back to automations" size="icon" variant="ghost" onClick={goBack}>
+                                <LucideIcon.ArrowLeft strokeWidth={2} />
+                            </Button>
+                            <span aria-hidden="true" className="h-4 w-px bg-border-default" />
+                        </>
+                    )}
+                    <span className="font-medium">{automation.name}</span>
+                    <StatusPill status={liveStatus} />
                 </Inline>
                 <Inline align="center" gap="sm">
                     {isEdit ? (
                         <>
+                            {/* Working state anchored far-left of the actions so it never shuffles. */}
+                            <span className="text-xs text-muted-foreground">{workingText}</span>
                             <Button variant="outline" onClick={() => setMode('view')}>Done</Button>
-                            {nothingToPublish ? (
-                                <span className="inline-flex items-center gap-1.5 px-2 text-sm font-medium text-muted-foreground">
-                                    <LucideIcon.Check className="size-4 text-green" strokeWidth={2.5} /> Published
-                                </span>
-                            ) : (
+                            {!nothingToPublish && (
                                 <Button onClick={() => setPublishOpen(true)}>
                                     {liveStatus === 'active' ? 'Publish changes' : 'Publish'}
                                 </Button>
