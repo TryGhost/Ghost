@@ -4,7 +4,7 @@ import React, {useState} from 'react';
 import RecommendationIcon from './recommendation-icon';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import {ActionList, ActionListItem, ActionListItemContent, LoadingIndicator, NoValueLabel, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
-import {Button, Link} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/admin-x-design-system';
 import {Inline} from '@tryghost/shade/primitives';
 import {type Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {formatNumber} from '@tryghost/shade/utils';
@@ -97,7 +97,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
             <div className='border-t border-border pt-2'>
                 {showMore?.hasMore && <button className='mb-2 font-bold text-green hover:opacity-80' type='button' onClick={showMore.loadMore}>Show all</button>}
                 <div className='text-sm text-muted-foreground'>
-                    Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link>
+                    Shared with new members after signup, or anytime using <a className='text-green hover:text-green-400' href={recommendationsURL} rel='noopener noreferrer' target='_blank'>this link</a>
                     <TooltipProvider delayDuration={0}>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -123,7 +123,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
             <Button color='grey' label='Add first recommendation' size='sm' onClick={() => {
                 openAddNewRecommendationModal();
             }}></Button>
-            <span className='mt-2 max-w-[40ch] text-center text-sm'>Need inspiration? <Link href="https://ghost.org/explore" target='_blank'>Explore thousands of sites</Link></span>
+            <span className='mt-2 max-w-[40ch] text-center text-sm'>Need inspiration? <a className='text-green hover:text-green-400' href="https://ghost.org/explore" rel='noopener noreferrer' target='_blank'>Explore thousands of sites</a></span>
         </NoValueLabel>;
     }
 };

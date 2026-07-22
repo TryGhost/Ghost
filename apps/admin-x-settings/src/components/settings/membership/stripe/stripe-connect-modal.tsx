@@ -6,10 +6,11 @@ import React, {useEffect, useState} from 'react';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import StripeVerifiedBadge from '../../../../assets/images/stripe-verified.svg';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, ConfirmationModal, Form, Heading, LimitModal, Modal, StripeButton, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, LimitModal, Modal, StripeButton, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {Field, FieldError, FieldLabel, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
+import {Text} from '@tryghost/shade/primitives';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'react-hot-toast';
@@ -26,7 +27,7 @@ const Start: React.FC<{onNext?: () => void}> = ({onNext}) => {
     return (
         <div>
             <div className='flex items-center justify-between'>
-                <Heading level={3}>Getting paid</Heading>
+                <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>Getting paid</Text>
                 <img alt='Stripe Verified Partner Badge' src={StripeVerifiedBadge} />
             </div>
             <div className='mt-6 mb-7'>
@@ -123,18 +124,18 @@ const Connect: React.FC = () => {
     return (
         <div>
             <div className='mb-6 flex items-center justify-between'>
-                <Heading level={3}>Connect with Stripe</Heading>
+                <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>Connect with Stripe</Text>
                 <Field className='w-auto' orientation='horizontal'>
                     <FieldLabel className={testMode ? 'text-orange' : 'text-muted-foreground'} htmlFor='stripe-test-mode'>Test mode</FieldLabel>
                     <Switch checked={testMode} className='data-[state=checked]:bg-orange!' id='stripe-test-mode' onCheckedChange={setTestMode} />
                 </Field>
             </div>
-            <Heading level={6} grey>Step 1 — <span className='text-black dark:text-white'>Generate secure key</span></Heading>
+            <Text as='h6' className='text-base' tone='secondary' weight='semibold'>Step 1 — <span className='text-foreground'>Generate secure key</span></Text>
             <div className='mt-2 mb-4'>
                 Click on the <strong>“Connect with Stripe”</strong> button to generate a secure key that connects your Ghost site with Stripe.
             </div>
             <StripeButton href={stripeConnectUrl} tag='a' target='_blank' />
-            <Heading className='mt-8 mb-2' level={6} grey>Step 2 — <span className='text-black dark:text-white'>Paste secure key</span></Heading>
+            <Text as='h6' className='mt-8 mb-2 text-base' tone='secondary' weight='semibold'>Step 2 — <span className='text-foreground'>Paste secure key</span></Text>
             <Field data-invalid={Boolean(error) || undefined}>
                 <FieldLabel className='sr-only' htmlFor='stripe-secure-key'>Secure key</FieldLabel>
                 <Textarea aria-invalid={Boolean(error) || undefined} className='border-transparent bg-muted' id='stripe-secure-key' placeholder='Paste your secure key here' onChange={onTokenChange} />
@@ -190,11 +191,11 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
                     <img alt='Ghost Logo' className='absolute left-10 size-16' src={GhostLogo} />
                     <img alt='Stripe Logo' className='absolute right-10 size-16 rounded-2xl shadow-[-1.5px_0_0_1.5px_#fff] dark:shadow-[-1.5px_0_0_1.5px_black]' src={StripeLogo} />
                 </div>
-                <Heading className='text-center' level={3}>You are connected with Stripe!{stripeConnectLivemode ? null : ' (Test mode)'}</Heading>
+                <Text as='h3' className='text-center md:text-2xl' leading='heading' size='xl' weight='bold'>You are connected with Stripe!{stripeConnectLivemode ? null : ' (Test mode)'}</Text>
                 <div className='mt-1'>Connected to <strong>{stripeConnectAccountName ? stripeConnectAccountName : 'Test mode'}</strong></div>
             </div>
             <div className='flex flex-col items-center'>
-                <Heading level={6}>Read next</Heading>
+                <Text as='h6' className='text-base' tone='secondary' weight='semibold'>Read next</Text>
                 <a className='mt-5 flex w-100 flex-col items-stretch justify-between overflow-hidden rounded-md border border-grey-200 transition-all hover:border-grey-400 md:flex-row dark:border-grey-900' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
                     <div className='order-2 p-4 md:order-1'>
                         <div className='text-md font-semibold'>How to setup and manage your Stripe account</div>
@@ -238,7 +239,7 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
 
     return (
         <div>
-            <Heading level={3}>Connect Stripe</Heading>
+            <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>Connect Stripe</Text>
             <Form marginBottom={false} marginTop>
                 <TextField title='Publishable key' value={publishableKey?.toString() ?? ''} onChange={e => updateSetting('stripe_publishable_key', e.target.value)} />
                 <TextField title='Secure key' value={secretKey?.toString() ?? ''} onChange={e => updateSetting('stripe_secret_key', e.target.value)} />

@@ -1,8 +1,8 @@
 import React from 'react';
-import Heading from '../heading';
 import clsx from 'clsx';
 import Button, {ButtonColor, ButtonProps} from '../button';
 import {ButtonGroupProps} from '../button-group';
+import {Text} from '@tryghost/shade/primitives';
 
 export interface View {
     id: string;
@@ -162,7 +162,10 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
             <div className={toolbarContainerClassName}>
                 <div className={toolbarLeftClassName}>
                     {headerContent}
-                    {title && <Heading className={headingClassName} level={type === 'page' ? 1 : 4}>{title}</Heading>}
+                    {title && (type === 'page' ?
+                        <Text as='h1' className={clsx('text-4xl', headingClassName)} leading='supertight' weight='bold'>{title}</Text> :
+                        <Text as='h4' className={clsx('md:text-xl', headingClassName)} leading='heading' size='lg' weight='bold'>{title}</Text>
+                    )}
                     {tabs}
                 </div>
                 <div className={actionsClassName}>

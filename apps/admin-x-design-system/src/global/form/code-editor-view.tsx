@@ -3,8 +3,8 @@ import CodeMirror, {ReactCodeMirrorProps, ReactCodeMirrorRef, BasicSetupOptions}
 import clsx from 'clsx';
 import React, {FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
 import {useFocusContext} from '../../providers/design-system-provider';
-import Heading from '../heading';
 import LegacyHint from '../legacy-hint';
+import {FieldLabel} from '@tryghost/shade/components';
 
 export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'onChange' | 'extensions'> {
     title?: string;
@@ -105,7 +105,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 onFocus={handleFocus}
                 {...props}
             />
-            {title && <Heading className={'order-1 text-grey-700! peer-focus:text-black!'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+            {title && <FieldLabel className='order-1' htmlFor={id}>{title}</FieldLabel>}
             {hint && <LegacyHint className='order-3 mt-1' error={error}>{hint}</LegacyHint>}
         </div>}
     </>;

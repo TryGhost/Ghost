@@ -3,8 +3,8 @@ import {ReactNode} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
 import Button from '../button';
-import Heading from '../heading';
 import PreviewModal, {PreviewModalProps} from './preview-modal';
+import {Text} from '@tryghost/shade/primitives';
 
 const PreviewModalContainer: React.FC<PreviewModalProps> = ({...props}) => {
     return (
@@ -73,7 +73,7 @@ export const CustomSidebarHeader: Story = {
         ...Default.args,
         sidebarHeader: (
             <div className='border-b border-grey-100 bg-black p-10 text-center text-white'>
-                <Heading level={3}>A custom header here</Heading>
+                <Text as='h3' className='text-white md:text-2xl' leading='heading' size='xl' weight='bold'>A custom header here</Text>
             </div>
         )
     }

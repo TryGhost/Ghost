@@ -4,13 +4,13 @@ import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {Stack} from '@tryghost/shade/primitives';
+import {Stack, Text} from '@tryghost/shade/primitives';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -292,7 +292,7 @@ const Sidebar: React.FC<{
                 <Form className='mt-6' gap='sm' margins='lg' title='Header'>
                     <div>
                         <div>
-                            <Heading className="mb-2" level={6}>Header image</Heading>
+                            <Text as='h6' className="mb-2 text-base" tone='secondary' weight='semibold'>Header image</Text>
                         </div>
                         <div className='flex-column flex gap-1'>
                             <ImageUpload

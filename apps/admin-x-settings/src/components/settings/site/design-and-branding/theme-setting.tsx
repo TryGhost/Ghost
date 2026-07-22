@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {ColorPickerField, Heading, ImageUpload, TextField} from '@tryghost/admin-x-design-system';
+import {ColorPickerField, ImageUpload, TextField} from '@tryghost/admin-x-design-system';
 import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
@@ -86,7 +86,7 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({setting, setSetting}) => {
         );
     case 'image':
         return <>
-            <Heading useLabelTag>{humanizeSettingKey(setting.key)}</Heading>
+            <FieldLabel>{humanizeSettingKey(setting.key)}</FieldLabel>
             <ImageUpload
                 height={setting.value ? '100px' : '32px'}
                 id={`custom-${setting.key}`}

@@ -4,10 +4,11 @@ import TierDetailPreview from './tier-detail-preview';
 import useCurrencyInput from '../../../../hooks/use-currency-input';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import useUrlInput from '../../../../hooks/use-url-input';
-import {Button, type ButtonProps, ConfirmationModal, Form, Heading, Icon, Modal, SortableList, TextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
+import {Button, type ButtonProps, ConfirmationModal, Form, Icon, Modal, SortableList, TextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
 import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, Switch} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {Text} from '@tryghost/shade/primitives';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
@@ -234,7 +235,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         <div className='flex flex-col gap-10 md:flex-row'>
                             <div className='basis-1/2'>
                                 <div className='mb-1 flex h-6 items-center justify-between'>
-                                    <Heading level={6}>Prices</Heading>
+                                    <Text as='h6' className='text-base' tone='secondary' weight='semibold'>Prices</Text>
                                     <div className='-mr-2 w-20'>
                                         <Field>
                                             <FieldLabel className='sr-only'>Currency</FieldLabel>
