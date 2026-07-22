@@ -2,8 +2,10 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {createContext, useContext, useState} from 'react';
 import {Toaster} from 'react-hot-toast';
-import {FetchKoenigLexical} from '../global/form/html-editor';
 import {GlobalDirtyStateProvider} from '../hooks/use-global-dirty-state';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type FetchKoenigLexical = () => Promise<any>;
 
 interface DesignSystemContextType {
     isAnyTextFieldFocused: boolean;

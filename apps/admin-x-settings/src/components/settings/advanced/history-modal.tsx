@@ -1,7 +1,8 @@
+import InfiniteScrollListener from '../../infinite-scroll-listener';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
 import {ActionList, ActionListItem, ActionListItemContent, Avatar, Field, FieldLabel, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, Switch, inputSurface} from '@tryghost/shade/components';
-import {Button, Icon, InfiniteScrollListener, Modal} from '@tryghost/admin-x-design-system';
+import {Button, Icon, Modal} from '@tryghost/admin-x-design-system';
 import {ChevronDown, History, X} from 'lucide-react';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';

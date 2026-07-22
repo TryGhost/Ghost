@@ -1,6 +1,6 @@
-import clsx from 'clsx';
 import React from 'react';
-import Button, {ButtonProps} from '../global/button';
+import clsx from 'clsx';
+import {Button, type ButtonProps} from '@tryghost/admin-x-design-system';
 
 export interface StripeButtonProps {
     label?: React.ReactNode;

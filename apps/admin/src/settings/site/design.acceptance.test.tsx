@@ -90,7 +90,7 @@ describe("Design settings", () => {
         const modal = settingsScreen.designModal();
         const color = modal.getByTestId(sel.accentColorPicker);
         await color.getByRole("button").click();
-        await color.getByRole("textbox").fill("#cd5786");
+        await page.getByRole("textbox", { name: "Hex color" }).fill("#cd5786");
         await expect(homepagePreview).toHaveRequestedPreview({ c: "#cd5786" });
         await modal.getByRole("button", { name: "Close" }).click();
 
@@ -108,7 +108,7 @@ describe("Design settings", () => {
         const modal = settingsScreen.designModal();
         const color = modal.getByTestId(sel.accentColorPicker);
         await color.getByRole("button").click();
-        await color.getByRole("textbox").fill("#cd5786");
+        await page.getByRole("textbox", { name: "Hex color" }).fill("#cd5786");
 
         await expect(homepagePreview).toHaveRequestedPreview({ c: "#cd5786" });
         await expect.element(modal.getByTestId(sel.toggleUnsplashButton)).toBeVisible();

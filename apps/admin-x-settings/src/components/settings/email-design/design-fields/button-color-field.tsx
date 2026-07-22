@@ -1,4 +1,4 @@
-import ColorPickerField from '../color-picker-field';
+import ColorPickerField from '../../../color-picker-field';
 import {getAutoSwatchHex} from './color-swatch-helpers';
 import {useEmailDesign} from '../email-design-context';
 

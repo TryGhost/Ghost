@@ -1,7 +1,8 @@
 import NavigationItemEditor from './navigation-item-editor';
 import React from 'react';
-import {Button, Icon, SortableList} from '@tryghost/admin-x-design-system';
+import {Button, Icon} from '@tryghost/admin-x-design-system';
 import {type NavigationEditor} from '../../../../hooks/site/use-navigation-editor';
+import {SortableList} from '@tryghost/shade/components';
 
 const NavigationEditForm: React.FC<{
     baseUrl: string;
@@ -9,6 +10,7 @@ const NavigationEditForm: React.FC<{
 }> = ({baseUrl, navigation}) => {
     return <div className="w-full pt-2">
         <SortableList
+            getDragHandleLabel={item => `Reorder ${item.label || 'navigation item'}`}
             items={navigation.items}
             itemSeparator={false}
             renderItem={item => (

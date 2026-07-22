@@ -1,6 +1,6 @@
 import React from 'react';
-import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, LoadingIndicator, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
-import {Button, DragIndicator, type SortableItemContainerProps, SortableList} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, DragIndicator, LoadingIndicator, NoValueLabel, NoValueLabelIcon, type SortableItemContainerProps, SortableList} from '@tryghost/shade/components';
+import {Button} from '@tryghost/admin-x-design-system';
 import {MailX} from 'lucide-react';
 import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {formatNumber} from '@tryghost/shade/utils';
@@ -82,6 +82,7 @@ const NewslettersList: React.FC<NewslettersListProps> = ({newsletters, isLoading
     } else if (newsletters.length && isSortable) {
         return <SortableList
             container={props => <NewsletterItemContainer {...props} />}
+            getDragHandleLabel={item => `Reorder ${item.name}`}
             items={newsletters}
             renderItem={item => <NewsletterItem newsletter={item} />}
             wrapper={ActionList}

@@ -1,11 +1,12 @@
 import ErrorBoundary from '../../../error-boundary';
 import React, {Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {type KoenigInstance, loadKoenig, useDesignSystem} from '@tryghost/admin-x-design-system';
+import {type KoenigInstance, loadKoenig} from '../../../koenig-editor-base';
 import {LoadingIndicator} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
+import {useDesignSystem} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useWelcomeEmailLinkSuggestions} from '../../../../hooks/use-welcome-email-link-suggestions';
 

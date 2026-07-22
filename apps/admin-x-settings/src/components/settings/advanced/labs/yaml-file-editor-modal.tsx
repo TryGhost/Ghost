@@ -1,7 +1,8 @@
+import CodeEditor from '../../../code-editor';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useState} from 'react';
 import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
-import {ButtonGroup, CodeEditor, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {ButtonGroup, Modal, showToast} from '@tryghost/admin-x-design-system';
 import {Text} from '@tryghost/shade/primitives';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';

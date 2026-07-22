@@ -1,5 +1,5 @@
-import React, {useCallback} from 'react';
 import KoenigEditorBase, {type KoenigInstance, type NodeType} from './koenig-editor-base';
+import React, {useCallback} from 'react';
 
 // Re-export for backwards compatibility
 export type {FetchKoenigLexical} from './koenig-editor-base';

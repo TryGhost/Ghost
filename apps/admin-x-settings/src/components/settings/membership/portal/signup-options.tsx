@@ -1,6 +1,7 @@
+import HtmlField from '../../../html-field';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
-import {Form, HtmlField} from '@tryghost/admin-x-design-system';
+import {Form} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {type Tier, getPaidActiveTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../../providers/global-data-provider';

@@ -3,9 +3,10 @@ import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './tier-detail-preview';
 import useCurrencyInput from '../../../../hooks/use-currency-input';
 import useSettingGroup from '../../../../hooks/use-setting-group';
+import useSortableIndexedList from '../../../../hooks/use-sortable-indexed-list';
 import useUrlInput from '../../../../hooks/use-url-input';
-import {Button, type ButtonProps, ConfirmationModal, Form, Icon, Modal, SortableList, TextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
-import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, Switch} from '@tryghost/shade/components';
+import {Button, type ButtonProps, ConfirmationModal, Form, Icon, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Text} from '@tryghost/shade/primitives';
@@ -353,6 +354,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                 <Form gap='none' title='Benefits' grouped>
                     <div className='-mt-3'>
                         <SortableList
+                            getDragHandleLabel={({item}) => `Reorder benefit${item ? `: ${item}` : ''}`}
                             items={benefits.items}
                             itemSeparator={false}
                             renderItem={({id, item}) => <div className='relative flex w-full items-center gap-5'>

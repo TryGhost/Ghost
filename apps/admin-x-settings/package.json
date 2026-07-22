@@ -29,8 +29,9 @@
         "@codemirror/lang-markdown": "catalog:",
         "@codemirror/lang-yaml": "catalog:",
         "@codemirror/search": "catalog:",
+        "@codemirror/state": "catalog:",
         "@codemirror/theme-one-dark": "catalog:",
-        "@dnd-kit/sortable": "7.0.2",
+        "@dnd-kit/sortable": "catalog:",
         "@ebay/nice-modal-react": "catalog:",
         "@sentry/react": "catalog:",
         "@tanstack/react-query": "catalog:",
@@ -52,8 +53,6 @@
         "validator": "catalog:"
     },
     "devDependencies": {
-        "@typescript/native": "catalog:",
-        "typescript": "catalog:",
         "@internal/cfg-eslint-react": "workspace:*",
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:",
@@ -66,10 +65,12 @@
         "@types/react-dom": "catalog:",
         "@types/semver": "catalog:",
         "@types/validator": "catalog:",
+        "@typescript/native": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "eslint": "catalog:",
         "jsdom": "catalog:",
         "tailwindcss": "catalog:",
+        "typescript": "catalog:",
         "vite": "catalog:",
         "vitest": "catalog:"
     },

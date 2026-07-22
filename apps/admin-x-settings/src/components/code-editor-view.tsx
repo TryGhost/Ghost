@@ -1,10 +1,9 @@
-import {Extension} from '@codemirror/state';
-import CodeMirror, {ReactCodeMirrorProps, ReactCodeMirrorRef, BasicSetupOptions} from '@uiw/react-codemirror';
+import CodeMirror, {type BasicSetupOptions, type ReactCodeMirrorProps, type ReactCodeMirrorRef} from '@uiw/react-codemirror';
+import React, {type FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
 import clsx from 'clsx';
-import React, {FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
-import {useFocusContext} from '../../providers/design-system-provider';
-import LegacyHint from '../legacy-hint';
-import {FieldLabel} from '@tryghost/shade/components';
+import {FieldDescription, FieldLabel} from '@tryghost/shade/components';
+import {useFocusContext} from '@tryghost/admin-x-design-system';
+import type {Extension} from '@codemirror/state';
 
 export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'onChange' | 'extensions'> {
     title?: string;
@@ -24,11 +23,11 @@ const codeMirrorClasses = [
     '[&_.cm-scroller]:border-transparent',
     '[&_.cm-activeLine]:bg-transparent',
     '[&_.cm-activeLineGutter]:bg-transparent',
-    '[&_.cm-gutters]:bg-grey-50 dark:[&_.cm-gutters]:bg-grey-950',
-    '[&_.cm-gutters]:text-grey-600 dark:[&_.cm-gutters]:text-grey-500',
-    '[&_.cm-gutters]:border-grey-500 dark:[&_.cm-gutters]:border-grey-800',
-    '[&_.cm-cursor]:border-grey-900 dark:[&_.cm-cursor]:border-grey-50',
-    'dark:[&_.cm-tooltip-autocomplete.cm-tooltip_ul_li:not([aria-selected])]:bg-grey-950'
+    '[&_.cm-gutters]:bg-muted',
+    '[&_.cm-gutters]:text-muted-foreground',
+    '[&_.cm-gutters]:border-border',
+    '[&_.cm-cursor]:border-foreground',
+    '[&_.cm-tooltip-autocomplete.cm-tooltip_ul_li:not([aria-selected])]:bg-background'
 ].join(' ');
 
 // Meant to be imported asynchronously to avoid including CodeMirror in the main bundle
@@ -82,8 +81,8 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
 
     const styles = clsx(
         'peer order-2 w-full max-w-full overflow-hidden rounded-sm border',
-        clearBg ? 'bg-transparent' : 'bg-grey-50',
-        error ? 'border-red' : 'border-grey-500 dark:border-grey-800',
+        clearBg ? 'bg-transparent' : 'bg-muted',
+        error ? 'border-destructive' : 'border-border',
         title && 'mt-2',
         height === 'full' && 'h-full',
         codeMirrorClasses,
@@ -106,7 +105,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 {...props}
             />
             {title && <FieldLabel className='order-1' htmlFor={id}>{title}</FieldLabel>}
-            {hint && <LegacyHint className='order-3 mt-1' error={error}>{hint}</LegacyHint>}
+            {hint && <FieldDescription className={clsx('order-3 mt-1', error && 'text-destructive')}>{hint}</FieldDescription>}
         </div>}
     </>;
 });

@@ -25,9 +25,6 @@
         "types"
     ],
     "devDependencies": {
-        "@codemirror/lang-html": "catalog:",
-        "@codemirror/state": "catalog:",
-        "@dnd-kit/utilities": "3.2.2",
         "@internal/cfg-eslint-react": "workspace:*",
         "@storybook/addon-docs": "catalog:",
         "@storybook/addon-links": "catalog:",
@@ -38,6 +35,7 @@
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@types/validator": "catalog:",
+        "@typescript/native": "catalog:",
         "@vitejs/plugin-react": "catalog:",
         "autoprefixer": "10.5.2",
         "chai": "catalog:",
@@ -52,7 +50,6 @@
         "sinon": "catalog:",
         "storybook": "catalog:",
         "tailwindcss": "catalog:",
-        "@typescript/native": "catalog:",
         "typescript": "catalog:",
         "validator": "catalog:",
         "vite": "catalog:",
@@ -60,8 +57,6 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@dnd-kit/core": "6.3.1",
-        "@dnd-kit/sortable": "7.0.2",
         "@ebay/nice-modal-react": "catalog:",
         "@radix-ui/react-form": "catalog:",
         "@radix-ui/react-separator": "catalog:",
@@ -69,9 +64,7 @@
         "@radix-ui/react-tooltip": "catalog:",
         "@sentry/react": "catalog:",
         "@tryghost/shade": "workspace:*",
-        "@uiw/react-codemirror": "catalog:",
         "clsx": "catalog:",
-        "react-colorful": "5.7.0",
         "react-hot-toast": "catalog:"
     },
     "peerDependencies": {

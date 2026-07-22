@@ -1,6 +1,15 @@
 import {arrayMove} from '@dnd-kit/sortable';
 import {useEffect, useState} from 'react';
-import * as _ from 'lodash-es';
+
+const stableStringify = (value: unknown) => JSON.stringify(value, (_key, nestedValue) => {
+    if (nestedValue && typeof nestedValue === 'object' && !Array.isArray(nestedValue)) {
+        return Object.keys(nestedValue).sort().reduce<Record<string, unknown>>((sorted, key) => {
+            sorted[key] = (nestedValue as Record<string, unknown>)[key];
+            return sorted;
+        }, {});
+    }
+    return nestedValue;
+});
 
 export type SortableIndexedList<Item> = {
     items: Array<{ item: Item; id: string }>;
@@ -12,9 +21,7 @@ export type SortableIndexedList<Item> = {
     setNewItem: (item: Item) => void;
 }
 
-// TODO: figure out if we need to extend `unknown`?
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-const useSortableIndexedList = <Item extends unknown>({items, setItems, blank, canAddNewItem}: {
+const useSortableIndexedList = <Item,>({items, setItems, blank, canAddNewItem}: {
     items: Item[];
     setItems: (newItems: Item[]) => void;
     blank: Item
@@ -33,7 +40,7 @@ const useSortableIndexedList = <Item extends unknown>({items, setItems, blank, c
             allItems.push(newItem);
         }
 
-        if (!_.isEqual(JSON.parse(JSON.stringify(allItems)), JSON.parse(JSON.stringify(items)))) {
+        if (stableStringify(allItems) !== stableStringify(items)) {
             setItems(allItems);
         }
     }, [editableItems, newItem, items, setItems, canAddNewItem]);

@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React from 'react';
-import {FetchKoenigLexical} from './global/form/html-editor';
+import type {FetchKoenigLexical} from './providers/design-system-provider';
 import DesignSystemProvider from './providers/design-system-provider';
 
 export interface DesignSystemAppProps extends React.HTMLProps<HTMLDivElement> {
