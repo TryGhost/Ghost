@@ -9,6 +9,11 @@ import { ConfirmationProvider } from "./shared/confirmation";
 import { SettingsDirtyProvider } from "./shared/dirty";
 import { InviteUserDialog } from "@/settings/general/invite-user-dialog";
 import { UserDetailDialog } from "@/settings/general/user-detail-dialog";
+import { AnnouncementBarDialog } from "@/settings/site/announcement-bar-dialog";
+import { ChangeThemeDialog } from "@/settings/site/change-theme-dialog";
+import { DesignDialog } from "@/settings/site/design-dialog";
+import { NavigationDialog } from "@/settings/site/navigation-dialog";
+import { ThemeCodeEditorDialog } from "@/settings/site/theme-code-editor-dialog";
 
 /**
  * Flag-on entry for `/settings/*` (see settings-gate.tsx): the native Shade
@@ -19,6 +24,9 @@ import { UserDetailDialog } from "@/settings/general/user-detail-dialog";
  *   accepts area ids and every legacy nav segment (e.g. `design`)
  * - `/settings/staff/invite` — the staff invite dialog over the shell
  * - `/settings/staff/:slug(/:tab)` — the staff user detail dialog
+ * - site-area dialogs: `design/edit`, `design/change-theme`,
+ *   `theme/install`, `theme/edit/:themeName`, `navigation/edit`,
+ *   `announcement-bar/edit`
  * - anything deeper or unknown (routes whose screens haven't been rebuilt,
  *   like `/settings/portal/edit`) redirects to `/settings`
  *
@@ -57,6 +65,13 @@ export default function ShadeSettingsApp() {
                                 <Route element={<InviteUserDialog />} path="staff/invite" />
                                 <Route element={<UserDetailDialog />} path="staff/:slug" />
                                 <Route element={<UserDetailDialog />} path="staff/:slug/:tab" />
+                                <Route element={<DesignDialog />} path="design/edit" />
+                                <Route element={<ChangeThemeDialog />} path="design/change-theme" />
+                                <Route element={<ChangeThemeDialog install />} path="theme/install" />
+                                <Route element={<ThemeCodeEditorDialog />} path="theme/edit/:themeName" />
+                                <Route element={<Navigate to="/settings/theme" replace />} path="theme/edit/*" />
+                                <Route element={<NavigationDialog />} path="navigation/edit" />
+                                <Route element={<AnnouncementBarDialog />} path="announcement-bar/edit" />
                                 <Route element={<AreaRoute />} path=":area" />
                                 <Route element={<Navigate to="/settings" replace />} path="*" />
                             </Route>

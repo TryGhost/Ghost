@@ -11,6 +11,12 @@
     "exports": {
         "./src/utils/social-urls": "./src/utils/social-urls/index.ts",
         "./src/utils/locale-validation": "./src/utils/locale-validation.ts",
+        "./src/utils/is-custom-theme-settings-visible": "./src/utils/is-custom-theme-settings-visible.ts",
+        "./src/utils/format-url": "./src/utils/format-url.ts",
+        "./src/hooks/use-url-input": "./src/hooks/use-url-input.ts",
+        "./src/data/official-themes": "./src/data/official-themes.ts",
+        "./src/components/settings/site/theme/theme-editor-utils": "./src/components/settings/site/theme/theme-editor-utils.ts",
+        "./src/components/settings/site/theme/theme-editor-styles": "./src/components/settings/site/theme/theme-editor-styles.ts",
         "./src/*": {
             "import": "./src/*.tsx",
             "require": "./src/*.tsx"

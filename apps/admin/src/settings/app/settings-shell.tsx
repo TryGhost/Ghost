@@ -9,6 +9,7 @@ import { SettingsSidebar } from "./sidebar";
 import { confirmIfDirty, useConfirmation } from "./shared/use-confirmation";
 import { useSettingsDirty } from "./shared/use-settings-dirty";
 import { GeneralArea } from "@/settings/general/general-area";
+import { SiteArea } from "@/settings/site/site-area";
 
 /**
  * The native settings chrome: full-screen takeover with the nav sidebar on
@@ -23,6 +24,7 @@ import { GeneralArea } from "@/settings/general/general-area";
 // renders the "not yet rebuilt" placeholder.
 const AREA_COMPONENTS: Partial<Record<SettingsAreaId, ComponentType>> = {
     general: GeneralArea,
+    site: SiteArea,
 };
 
 // Shade/Radix dialogs expose their open state via dialog roles — when one is

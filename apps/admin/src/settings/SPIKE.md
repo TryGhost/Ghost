@@ -117,7 +117,7 @@ For each area (one agent per area, in its own `src/settings/<area>/` files):
 | Area              | Status  | Suites opted in | Notes |
 | ----------------- | ------- | --------------- | ----- |
 | general (+staff)  | done    | title-and-description, time-zone, publication-language, seo-meta, social-accounts, staff-profile, staff-roles, staff-password, staff-security, staff-invitations, staff-actions, layout (portal test legacy-only) | See "General area notes" below |
-| site              | pending | —               |       |
+| site              | done    | design, theme, navigation, announcement-bar, search | See "Site area notes" below |
 | membership        | pending | —               |       |
 | email             | pending | —               |       |
 | growth            | pending | —               |       |
@@ -200,9 +200,8 @@ Locale data from `@tryghost/i18n/lib/locale-data.json`; timezones from
   staff-only view and the contributor profile-only flow are not ported (the
   shell renders all areas for every role); per-user canEdit rules inside the
   staff group ARE ported (staff-roles passes both modes).
-- `search.acceptance.test.tsx` stays legacy-only (asserts site-area groups).
-  Group-level keyword hiding IS ported (SettingGroup `keywords` prop); the
-  suite can opt in once site-area groups exist.
+- `search.acceptance.test.tsx` stayed legacy-only until phase 3 (it asserts
+  site-area groups); the site rebuild opted it in.
 - Pintura image editing is not wired into the native image uploads
   (config-gated; not part of the acceptance contract).
 - Analytics group is ported (it renders under General), but
@@ -216,6 +215,128 @@ Locale data from `@tryghost/i18n/lib/locale-data.json`; timezones from
 already use shade Tabs. e91932a403 (Billing navigation) — Ember-side only;
 it navigates to existing `/settings/...` routes which the shell already
 resolves; no nav.ts change needed.
+
+## Site area notes (phase 3)
+
+**Structure.** Area component `src/settings/site/site-area.tsx` (registered
+in `AREA_COMPONENTS`): design & branding, theme, navigation, announcement
+bar groups (theme group in `theme-group.tsx`, the small groups inline in
+site-area.tsx). All screens beyond the groups are **routed dialogs**
+registered in settings-app.tsx above the `:area` route, so legacy deep
+links keep working flag-on:
+
+- `design/edit` — full-screen Shade Dialog (`PreviewDialog` in
+  `preview-chrome.tsx`: preview pane + `design-toolbar` header + 400px
+  sidebar with Close/Save). Brand tab (`brand-settings.tsx`) + Theme tab
+  (`theme-settings-form.tsx`) with the buffered-iframe live preview
+  (`site-preview-frame.tsx` reuses the legacy IframeBuffering; the
+  x-ghost-preview param encodings are ported verbatim). `?ref=setup` close
+  goes to `/analytics` like the legacy external-analytics redirect.
+- `design/change-theme` + `theme/install` — `change-theme-dialog.tsx`:
+  official gallery (variant loop), installed list, upload flow, marketplace
+  install confirmation. Upload dropzone/upload-failed are local dialogs
+  with the legacy `confirmation-modal` testid; install/overwrite/delete
+  confirmations go through the shared ConfirmationProvider.
+- `theme/edit/:themeName` — `theme-code-editor-dialog.tsx`, see below.
+- `navigation/edit` — standard Shade Dialog; drag reordering is built on
+  the dnd-kit primitives directly (`navigation-items-editor.tsx`), with the
+  legacy editor-state hook ported into `use-navigation-editor.ts` (the
+  old-DS useSortableIndexedList folded in). URL semantics come from the
+  legacy `format-url`/`use-url-input`, imported not duplicated.
+- `announcement-bar/edit` — `PreviewDialog` again; **Koenig is wired
+  natively**: `announcement-content-editor.tsx` lazy-imports
+  `@tryghost/koenig-lexical` (the same direct-ESM path the automations
+  email editor uses) and renders KoenigComposer/KoenigComposableEditor +
+  HtmlOutputPlugin with MINIMAL_NODES — no old-DS HtmlField, no fallback
+  needed. Closing does NOT dirty-confirm (legacy passes `dirty={false}`).
+
+**Theme code editor: structural port, not a carve-out.** Rendering the
+legacy component directly was not viable — it needs NiceModal + legacy
+routing + old-DS react-hot-toast (no Toaster in the native shell, so its
+toasts would never render and suites would fail). Instead
+`theme-code-editor-dialog.tsx` ports the container: routing (`?from=`
+allowlist, save-as route replace), toasts, error handling and the
+confirm/input prompts (`theme-editor-dialogs.tsx` +
+`use-theme-editor-prompts.tsx`, legacy testids) are native; the pure legacy
+internals are imported from admin-x-settings source — theme-file-tree,
+theme-editor-toolbar (so the "N files modified" pill and tree spinner stay
+legacy-styled by design), theme-editor-utils, theme-validation-details. The
+IDE surface styling is untouched (hex colors intentionally, not tokens).
+
+**Shared decisions / new pieces:**
+
+- `use-theme-limits.ts` replaces the legacy async
+  use-check-theme-limit-error: the customThemes limit is a pure allowlist,
+  so the check is computed synchronously from config (limit-service's
+  AllowlistLimit just throws its configured error string). Route-level
+  guards showLimit + redirect to `/settings/theme` for limited
+  change-theme/install/editor deep links.
+- `theme-result-dialogs.tsx` — ThemeInstalledDialog/InvalidThemeDialog
+  (legacy `confirmation-modal` testid) reusing the legacy
+  theme-validation-details components.
+- `color-picker-field.tsx` — local swatches + react-colorful picker
+  keeping the legacy interaction contract (one toggle button collapsed,
+  hex textbox expanded, swatch buttons named via `title`).
+- `preview-chrome.tsx` — the local device-toggle (ToggleGroup radios) +
+  desktop/mobile chrome frames + the shared full-screen preview dialog
+  (PreviewModalContent was NOT imported).
+- Unsplash cover picking reuses `@tryghost/kg-unsplash-selector` directly
+  (`unsplash-selector.tsx` portals it with the shade namespace classes).
+- New admin deps: dnd-kit (pinned to the workspace versions),
+  react-colorful, @tryghost/custom-fonts, @uiw/react-codemirror +
+  @codemirror/* (all `catalog:`).
+- New admin-x-settings subpath exports (its `./src/*` map only resolves
+  `.tsx`): is-custom-theme-settings-visible, format-url, use-url-input,
+  official-themes data, theme-editor-utils, theme-editor-styles.
+- `assets/design-settings.png` copied (binary assets can't come through
+  the subpath exports).
+
+**Suite adjustments (mode mechanics only, no behavior changes):**
+
+- The 4 site suites: `enableShadeSettingsMode()`; design folds
+  `shadeSettingsBootLabs()` into its hand-rolled settings response; theme
+  folds it into the `themeLimits()` config response. No assertion changed.
+- `search.acceptance.test.tsx` opted in (was flagged legacy-only until the
+  site groups existed — group-level keyword hiding now covers it).
+- `chrome.acceptance.test.tsx`: site placeholder assertions replaced with
+  native-area assertions; the placeholder-content probe moved to the
+  membership area (`#/settings/members`). Membership agent: move it again.
+- `area-section.tsx` now hides filtered-out sections with the `hidden`
+  class instead of unmounting them — the search suite asserts hidden groups
+  still exist in the DOM (legacy contract); the chrome suite's
+  `toHaveCount(0)` for filtered areas became `not.toBeVisible()`.
+
+**Gotchas found (membership agent, read these):**
+
+- **Radix modal dialogs block pointer events on outside portals** (the
+  aria-hider + scroll lock). Anything interactive opened from inside a
+  dialog (Unsplash browser, pickers) must render inside the DialogContent
+  subtree, not `createPortal(document.body)`. Nested Radix dialogs are
+  fine (their portals register with the dismissable-layer stack).
+- **TDZ trap importing legacy modules**: with verbatimModuleSyntax an
+  inline `import {type X} from 'mod'` keeps a runtime `import 'mod'`. If
+  `mod` value-imports the importing module back (settings-app-provider ↔
+  data/official-themes did), any consumer that loads the data module first
+  crashes with "Cannot access X before initialization" — and one crash in
+  settings-app.tsx's import graph takes down EVERY flag-on suite. Convert
+  such legacy imports to full `import type` statements.
+- Koenig editors outside the old DS need a `koenig-react-editor relative`
+  wrapper or the absolute-positioned placeholder escapes the input.
+- Radix full-screen dialogs: override shade DialogContent with
+  `inset-0 top-0 left-0 h-dvh w-screen max-w-none translate-x-0` — the
+  default centering transform makes iframes blurry and breaks fixed
+  children.
+- `useForm`'s okProps.label is '' until a save starts — always render
+  `okProps.label || "Save"`.
+- Dialogs whose dirty state lives in `useSettingGroup` get page-level exit
+  confirmation for free; dialogs on raw `useForm` (design) must call
+  `confirmIfDirty` in their own close path.
+- The editor swallow-Escape capture listener means Radix dialogs opened
+  *from* the code editor don't close on Escape — same as legacy; buttons
+  only.
+- react-router keeps `%2F` inside a path param (decoded to `/`): guard
+  params for embedded slashes and add a splat redirect
+  (`theme/edit/*` → `/settings/theme`) for real extra segments.
 
 ## Chrome behavior ported (phase 1)
 

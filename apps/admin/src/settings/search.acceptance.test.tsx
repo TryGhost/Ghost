@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { currentRoute, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
+import { currentRoute, enableShadeSettingsMode, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
 import { settingsScreen } from "./settings.screen";
+
+enableShadeSettingsMode();
 
 describe("Settings search", () => {
     it("hides and shows groups based on the search term", async () => {

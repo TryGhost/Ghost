@@ -39,15 +39,19 @@ describe("Shade settings chrome", () => {
         }
         await expect.element(settingsScreen.navItem("Design & branding")).toBeVisible();
 
-        // The general area is rebuilt natively; the rest still render placeholders.
+        // The general and site areas are rebuilt natively; the rest still
+        // render placeholders.
         await expect.element(settingsScreen.section("settings-area-general")).toBeVisible();
         await expect.element(settingsScreen.titleAndDescription()).toBeVisible();
         await expect(settingsScreen.section("settings-area-general-placeholder")).toHaveCount(0);
-        for (const area of ["site", "membership", "email", "growth", "advanced"]) {
+        await expect.element(settingsScreen.section("settings-area-site")).toBeVisible();
+        await expect.element(settingsScreen.design()).toBeVisible();
+        await expect(settingsScreen.section("settings-area-site-placeholder")).toHaveCount(0);
+        for (const area of ["membership", "email", "growth", "advanced"]) {
             await expect.element(settingsScreen.section(`settings-area-${area}`)).toBeVisible();
             await expect.element(settingsScreen.section(`settings-area-${area}-placeholder`)).toBeVisible();
         }
-        await expect.element(settingsScreen.section("settings-area-site-placeholder")).toHaveTextContent("#/settings/design");
+        await expect.element(settingsScreen.section("settings-area-membership-placeholder")).toHaveTextContent("#/settings/members");
     });
 
     it("filters the sidebar and sections by keyword and shows the no-result state", async () => {
@@ -58,7 +62,8 @@ describe("Shade settings chrome", () => {
         await expect.element(settingsScreen.navItem("Design & branding")).toBeVisible();
         await expect(settingsScreen.navItem("Timezone")).toHaveCount(0);
         await expect.element(settingsScreen.section("settings-area-site")).toBeVisible();
-        await expect(settingsScreen.section("settings-area-advanced")).toHaveCount(0);
+        // Filtered-out sections hide but stay in the DOM (legacy contract).
+        await expect.element(settingsScreen.section("settings-area-advanced")).not.toBeVisible();
 
         await settingsScreen.search().fill("no-setting-matches-this");
         await expect.element(settingsScreen.noSearchResults()).toBeVisible();

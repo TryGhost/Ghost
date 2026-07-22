@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { fakeEditSettings, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
+import { enableShadeSettingsMode, fakeEditSettings, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
 import * as sel from "@tryghost/test-data/selectors/settings";
 import { settingsScreen } from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 function primaryNavigation() {
     return settingsScreen.navigationModal().getByRole("tabpanel").first();

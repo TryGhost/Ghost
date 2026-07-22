@@ -30,13 +30,12 @@ function AreaPlaceholder({ area }: { area: SettingsAreaSection }) {
 
 export function AreaSection({ area, Component }: AreaSectionProps) {
     const { checkVisible, noResult } = useSettingsSearch();
-
-    if (!checkVisible(area.keywords) && !noResult) {
-        return null;
-    }
+    // Hide (don't unmount) while filtered out — the legacy sections stay in
+    // the DOM with their groups, which the search suite asserts on.
+    const isVisible = checkVisible(area.keywords) || noResult;
 
     return (
-        <section className="scroll-mt-16" data-testid={`settings-area-${area.id}`} id={`settings-area-${area.id}`}>
+        <section className={isVisible ? "scroll-mt-16" : "hidden"} data-testid={`settings-area-${area.id}`} id={`settings-area-${area.id}`}>
             <h2 className="mb-4 text-xl font-semibold tracking-tight">{area.title}</h2>
             {Component ? <Component /> : <AreaPlaceholder area={area} />}
         </section>

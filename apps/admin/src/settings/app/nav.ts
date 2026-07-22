@@ -60,7 +60,7 @@ export const generalKeywords = {
     analytics: ["general", "analytics", "tracking", "privacy", "membership"],
 };
 
-const siteKeywords = {
+export const siteKeywords = {
     design: ["site", "logo", "cover", "colors", "fonts", "background", "themes", "appearance", "style", "design & branding", "design and branding"],
     theme: ["theme", "template", "upload"],
     navigation: ["site", "navigation", "menus", "primary", "secondary", "links"],

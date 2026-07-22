@@ -3,6 +3,7 @@ import { page } from "vitest/browser";
 
 import {
     activeThemeResponse,
+    enableShadeSettingsMode,
     fakeAdminEndpoint,
     fakeEditSettings,
     fakeEndpoint,
@@ -11,11 +12,14 @@ import {
     post,
     renderAdminApp,
     settingsResponse,
+    shadeSettingsBootLabs,
     siteResponse,
     type SitePreviewCapture,
 } from "@test-utils/acceptance";
 import * as sel from "@tryghost/test-data/selectors/settings";
 import { settingsScreen } from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 const previewHtml = "<html><head><style></style></head><body>preview</body></html>";
 
@@ -252,7 +256,7 @@ describe("Design settings", () => {
     it("previews custom fonts and can restore theme defaults", async () => {
         const { homepagePreview } = fakeDesignWorld();
         await renderAdminApp("/settings/design/edit", {
-            boot: { browseSettings: { response: settingsResponse({ settings: { heading_font: "Cardo", body_font: "Inter" } }) } },
+            boot: { browseSettings: { response: settingsResponse({ settings: { heading_font: "Cardo", body_font: "Inter" }, labs: shadeSettingsBootLabs() }) } },
         });
 
         const modal = settingsScreen.designModal();
