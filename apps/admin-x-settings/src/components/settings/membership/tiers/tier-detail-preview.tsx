@@ -40,12 +40,17 @@ const TierBenefits: React.FC<{benefits: string[]}> = ({benefits}) => {
             </div>
         );
     }
+    const benefitOccurrences = new Map<string, number>();
+
     return (
         <>
             {
                 benefits.map((benefit) => {
+                    const occurrence = (benefitOccurrences.get(benefit) || 0) + 1;
+                    benefitOccurrences.set(benefit, occurrence);
+
                     return (
-                        <div key={benefit} className="mt-4 w-full text-md leading-snug text-grey-900">
+                        <div key={`${benefit}:${occurrence}`} className="mt-4 w-full text-md leading-snug text-grey-900">
                             <div className="mb-2.5 flex items-start">
                                 <Icon className="mt-[3px] mr-[10px] size-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
                                 <div>{benefit}</div>

@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import useUrlInput from '../../../../hooks/use-url-input';
 import {type EditableItem, type NavigationItem, type NavigationItemErrors} from '../../../../hooks/site/use-navigation-editor';
 import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
 import {TextField} from '@tryghost/admin-x-design-system';
 import {formatUrl} from '../../../../utils/format-url';
 
@@ -79,7 +80,11 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                 />
                 {item.errors.url && <FieldError>{item.errors.url}</FieldError>}
             </Field>
-            {action}
+            {action && (
+                <Inline align='center' className='h-[calc(var(--control-height)+0.25rem)] shrink-0 translate-y-px pt-1'>
+                    {action}
+                </Inline>
+            )}
         </div>
     );
 };

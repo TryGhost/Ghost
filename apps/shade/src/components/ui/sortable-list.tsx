@@ -46,7 +46,7 @@ export const DragIndicator = ({
     <button
         aria-label={dragHandleLabel || 'Reorder'}
         className={cn(
-            'text-muted-foreground opacity-50 transition-opacity group-hover:opacity-100',
+            'inline-flex items-center justify-center text-muted-foreground opacity-50 transition-opacity group-hover:opacity-100',
             isDragging ? 'cursor-grabbing' : 'cursor-grab',
             dragHandleClass,
             className
