@@ -25,12 +25,11 @@ export function sanitizeHtml(html: string): string {
 }
 
 // Must stay in sync with allowedScriptHostnames in the backend sanitizer
-// (activitypub/src/helpers/html.ts)
+// (https://github.com/TryGhost/ActivityPub/blob/main/src/helpers/html.ts)
 const ALLOWED_SCRIPT_HOSTNAMES = ['platform.twitter.com', 'platform.x.com'];
 
 // Article content needs looser rules than sanitizeHtml (iframes for YouTube
-// embeds, scripts for Twitter embeds), so it gets its own DOMPurify instance —
-// the script hook below must not affect the default instance.
+// embeds, scripts for Twitter embeds), so it gets its own DOMPurify instance
 const articlePurify = DOMPurify(window);
 
 articlePurify.addHook('uponSanitizeElement', (node, data) => {
