@@ -96,7 +96,7 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <SettingGroupContent columns={1}>
                 <Field className='max-w-[180px]' data-invalid={Boolean(errors.donationsSuggestedAmount) || undefined}>
                     <FieldLabel htmlFor='donations-suggested-amount'>Suggested amount</FieldLabel>
-                    <InputGroup data-invalid={Boolean(errors.donationsSuggestedAmount) || undefined}>
+                    <InputGroup className='border-transparent bg-muted' data-invalid={Boolean(errors.donationsSuggestedAmount) || undefined}>
                         <InputGroupInput
                             ref={focusRef}
                             aria-invalid={Boolean(errors.donationsSuggestedAmount) || undefined}

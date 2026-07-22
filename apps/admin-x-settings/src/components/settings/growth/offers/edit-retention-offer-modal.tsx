@@ -258,6 +258,7 @@ const RetentionOfferSidebar: React.FC<{
                                 <Field>
                                     <FieldLabel htmlFor='retention-display-description'>Display description</FieldLabel>
                                     <Textarea
+                                        className='border-transparent bg-muted'
                                         id='retention-display-description'
                                         maxLength={MAX_DISPLAY_TEXT_LENGTH}
                                         placeholder='We&#39;d hate to see you leave. How about a special offer to stay?'

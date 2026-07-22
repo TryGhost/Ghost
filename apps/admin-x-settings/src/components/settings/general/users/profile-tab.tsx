@@ -62,6 +62,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUs
                 <FieldLabel htmlFor='staff-bio'>Bio</FieldLabel>
                 <Textarea
                     aria-invalid={Boolean(errors?.bio) || undefined}
+                    className='border-transparent bg-muted'
                     id='staff-bio'
                     maxLength={65535}
                     value={user.bio || ''}

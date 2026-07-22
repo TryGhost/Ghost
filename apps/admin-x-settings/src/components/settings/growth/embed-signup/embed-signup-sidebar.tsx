@@ -199,7 +199,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                     </Field>
                     <Field>
                         <FieldLabel htmlFor='embed-signup-code'>Embed code</FieldLabel>
-                        <Textarea className='resize-none font-mono' id='embed-signup-code' value={`${embedScript}`} readOnly />
+                        <Textarea className='resize-none border-transparent bg-muted font-mono' id='embed-signup-code' value={`${embedScript}`} readOnly />
                         <FieldDescription>Paste this code onto any website where you&apos;d like your signup to appear.</FieldDescription>
                     </Field>
                 </Form>

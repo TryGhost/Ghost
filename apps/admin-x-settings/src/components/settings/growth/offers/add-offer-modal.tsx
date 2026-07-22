@@ -178,6 +178,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         <Field>
                             <FieldLabel htmlFor='offer-display-description'>Display description</FieldLabel>
                             <Textarea
+                                className='border-transparent bg-muted'
                                 id='offer-display-description'
                                 maxLength={MAX_DISPLAY_TEXT_LENGTH}
                                 placeholder='Take advantage of this limited-time offer.'
@@ -229,7 +230,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             overrides.type !== 'trial' && <>
                                 <Field data-invalid={Boolean(errors.amount) || undefined}>
                                     <FieldLabel htmlFor='offer-amount'>Amount off</FieldLabel>
-                                    <InputGroup data-invalid={Boolean(errors.amount) || undefined}>
+                                    <InputGroup className='border-transparent bg-muted' data-invalid={Boolean(errors.amount) || undefined}>
                                         <InputGroupInput
                                             id='offer-amount'
                                             type='number'

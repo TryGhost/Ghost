@@ -175,6 +175,7 @@ const TestimonialsModal = NiceModal.create(() => {
                                     <FieldLabel className='sr-only' htmlFor='testimonial-content'>Quote</FieldLabel>
                                     <Textarea
                                         aria-invalid={Boolean(errors.content) || undefined}
+                                        className='border-transparent bg-muted'
                                         id='testimonial-content'
                                         placeholder='What changed for the better since you switched to Ghost?'
                                         rows={7}

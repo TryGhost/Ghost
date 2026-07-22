@@ -167,7 +167,7 @@ const Sidebar: React.FC<{
                                 />
                                 <Field>
                                     <FieldLabel htmlFor='offer-display-description'>Display description</FieldLabel>
-                                    <Textarea id='offer-display-description' placeholder='Take advantage of this limited-time offer.' value={offer?.display_description ?? ''} onChange={e => updateOffer({display_description: e.target.value})} />
+                                    <Textarea className='border-transparent bg-muted' id='offer-display-description' placeholder='Take advantage of this limited-time offer.' value={offer?.display_description ?? ''} onChange={e => updateOffer({display_description: e.target.value})} />
                                 </Field>
                             </div>
                         </section>

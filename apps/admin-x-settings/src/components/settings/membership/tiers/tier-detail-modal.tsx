@@ -385,7 +385,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             }}
                         />
                         <Button
-                            className='absolute top-1/2 right-[5px] z-10 size-5! -translate-y-1/2 p-0!'
+                            className='absolute top-1/2 right-1 z-10 size-[22px]! -translate-y-1/2 p-0!'
                             color='green'
                             icon='add'
                             iconColorClass='text-white'

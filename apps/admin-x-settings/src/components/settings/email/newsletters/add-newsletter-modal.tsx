@@ -123,7 +123,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             />
             <Field>
                 <FieldLabel htmlFor='newsletter-description'>Description</FieldLabel>
-                <Textarea id='newsletter-description' maxLength={2000} value={formState.description} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
+                <Textarea className='border-transparent bg-muted' id='newsletter-description' maxLength={2000} value={formState.description} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
             </Field>
             <Field orientation='horizontal'>
                 <FieldContent>

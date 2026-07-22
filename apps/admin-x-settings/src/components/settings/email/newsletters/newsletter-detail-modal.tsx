@@ -265,7 +265,7 @@ const Sidebar: React.FC<{
                     />
                     <Field>
                         <FieldLabel htmlFor='newsletter-description'>Description</FieldLabel>
-                        <Textarea id='newsletter-description' maxLength={2000} rows={2} value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
+                        <Textarea className='border-transparent bg-muted' id='newsletter-description' maxLength={2000} rows={2} value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
                     </Field>
                 </Form>
                 <Form className='mt-6' gap='sm' margins='lg' title='Email info'>

@@ -90,7 +90,7 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
         {showURL && (
             <Field data-disabled='true'>
                 <FieldLabel htmlFor='recommendation-url'>URL</FieldLabel>
-                <Input id='recommendation-url' value={formState.url} disabled />
+                <Input className='border-transparent bg-muted' id='recommendation-url' value={formState.url} disabled />
             </Field>
         )}
 
@@ -110,6 +110,7 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
             <FieldLabel htmlFor='recommendation-description'>Short description</FieldLabel>
             <Textarea
                 aria-invalid={Boolean(errors.description) || undefined}
+                className='border-transparent bg-muted'
                 id='recommendation-description'
                 rows={4}
                 value={formState.description ?? ''}
