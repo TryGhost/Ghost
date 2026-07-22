@@ -122,12 +122,25 @@ export const GiftPageStyles = `
     line-height: 1.15;
 }
 
+/* The delivery step is a form, not a pitch — a calmer title keeps the focus on
+   the questions below rather than repeating the marketing headline. */
+.gh-portal-gift-checkout-header .gh-portal-gift-checkout-step-title {
+    font-size: 2.2rem;
+}
+
 .gh-portal-gift-checkout-subtitle {
     margin: 0;
     font-size: 1.5rem;
     line-height: 1.45em;
     color: var(--grey3);
     text-wrap: pretty;
+}
+
+/* Emphasised nouns (duration, tier, buyer) mirror the delivery email's bolding
+   so the arrival reads as the same gift. */
+.gh-portal-gift-checkout-subtitle strong {
+    font-weight: 600;
+    color: var(--grey0);
 }
 
 .gh-portal-gift-checkout-subtitle p {
@@ -157,20 +170,9 @@ export const GiftPageStyles = `
     margin-top: 24px;
 }
 
-/* Small uppercase eyebrow — used only for the single-word plan labels
-   (Duration, Choose a tier). */
-.gh-portal-gift-checkout-label {
-    font-size: 1.2rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--grey6);
-    margin-bottom: 12px;
-}
-
-/* Sentence-case section heading for the delivery step's conversational
-   questions ("Who's this gift for?" …) — calmer and warmer than shouting the
-   full question in tiny grey caps. */
+/* Sentence-case section heading used for every step's questions ("How long is
+   the gift?", "Who's this gift for?" …) — one calm, warm voice across the flow
+   rather than shouting some labels in tiny grey caps. */
 .gh-portal-gift-checkout-question {
     font-size: 1.6rem;
     font-weight: 600;
@@ -205,6 +207,12 @@ export const GiftPageStyles = `
     background: var(--white);
     box-shadow: 0px 1px 3px rgba(var(--blackrgb), 0.08);
     color: var(--grey0);
+}
+
+/* Keyboard focus is invisible on these custom radio controls otherwise. */
+.gh-portal-gift-duration-switch .gh-portal-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--brandcolor);
 }
 
 .gh-portal-gift-checkout-tiers {
@@ -251,6 +259,11 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-checkout-tiers.single .gh-portal-gift-checkout-tier {
     cursor: default;
+}
+
+.gh-portal-gift-checkout-tier:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--brandcolor) inset;
 }
 
 .gh-portal-gift-checkout-tier-radio {
@@ -403,10 +416,21 @@ export const GiftPageStyles = `
     margin-top: 12px;
 }
 
+/* Match the sibling text inputs exactly — no fixed height, so it tracks the
+   base input height at every breakpoint. */
 .gh-portal-gift-checkout-delivery-date .gh-portal-input {
-    height: 48px;
     margin-bottom: 0;
     box-sizing: border-box;
+}
+
+/* Small field label (e.g. "Deliver on") for the odd control that isn't a
+   labelled InputField. */
+.gh-portal-gift-checkout-field-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--grey3);
 }
 
 .gh-portal-gift-checkout-delivery-error {
@@ -415,12 +439,6 @@ export const GiftPageStyles = `
     font-size: 1.3rem;
     letter-spacing: 0.35px;
     line-height: 1.6em;
-}
-
-/* Linear delivery form: the recipient's two email inputs and stacked fields
-   need consistent spacing between them. */
-.gh-portal-gift-checkout-section .gh-portal-input + .gh-portal-input {
-    margin-top: 10px;
 }
 
 .gh-portal-gift-checkout-field-hint {
@@ -558,6 +576,12 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-checkout-details-toggle:hover {
     color: rgba(255, 255, 255, 0.95);
+}
+
+.gh-portal-gift-checkout-details-toggle:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline-offset: 3px;
+    border-radius: 4px;
 }
 
 .gh-portal-gift-checkout-details-toggle svg {
@@ -1184,7 +1208,7 @@ const GiftPage = () => {
                                     </>
                                 ) : (
                                     <>
-                                        <h1 className='gh-portal-main-title'>{giftPageHeading || t('Gift a membership')}</h1>
+                                        <h1 className='gh-portal-main-title gh-portal-gift-checkout-step-title'>{t('Delivery details')}</h1>
                                         <p className='gh-portal-gift-checkout-subtitle'>
                                             {t('Add a few details and it\'s on its way')}
                                         </p>
@@ -1195,7 +1219,7 @@ const GiftPage = () => {
 
                             {step === 'plan' && offeredDurations.length > 1 && (
                                 <div className='gh-portal-gift-checkout-section'>
-                                    <div className='gh-portal-gift-checkout-label'>{t('Duration')}</div>
+                                    <div className='gh-portal-gift-checkout-question'>{t('How long is the gift?')}</div>
                                     <GiftDurationSwitch
                                         offeredDurations={offeredDurations}
                                         activeDuration={activeDuration}
@@ -1206,7 +1230,7 @@ const GiftPage = () => {
 
                             {step === 'plan' && <div className='gh-portal-gift-checkout-section'>
                                 {!isSingleTier && (
-                                    <div className='gh-portal-gift-checkout-label'>{t('Choose a tier')}</div>
+                                    <div className='gh-portal-gift-checkout-question'>{t('Choose a tier')}</div>
                                 )}
                                 <div
                                     className={'gh-portal-gift-checkout-tiers' + (isSingleTier ? ' single' : '')}
@@ -1343,8 +1367,8 @@ const GiftPage = () => {
                                     </div>
 
                                     <div className='gh-portal-gift-checkout-section'>
-                                        <div className='gh-portal-gift-checkout-question'>{t('When to send it')}</div>
-                                        <div className='gh-portal-gift-duration-switch' role='radiogroup' aria-label={t('When to send it')}>
+                                        <div className='gh-portal-gift-checkout-question'>{t('When should we send it?')}</div>
+                                        <div className='gh-portal-gift-duration-switch' role='radiogroup' aria-label={t('When should we send it?')}>
                                             <button
                                                 type='button'
                                                 role='radio'
@@ -1368,7 +1392,9 @@ const GiftPage = () => {
                                         </div>
                                         {deliveryOption === 'schedule' && (
                                             <div className='gh-portal-gift-checkout-delivery-date'>
+                                                <label className='gh-portal-gift-checkout-field-label' htmlFor='gift-delivery-date'>{t('Deliver on')}</label>
                                                 <input
+                                                    id='gift-delivery-date'
                                                     data-test-input='gift-delivery-date'
                                                     className={'gh-portal-input' + (errors.deliveryDate ? ' error' : '')}
                                                     type='date'

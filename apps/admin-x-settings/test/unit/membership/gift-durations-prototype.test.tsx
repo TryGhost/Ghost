@@ -29,13 +29,13 @@ describe('GiftDurationsPrototype', () => {
     it('shows the derived default as the price field placeholder (grey), not a set value', () => {
         renderPrototype([1, 12]);
         // $5/mo × 1 month = 5; $50/yr × 1 year = 50 — as the placeholder default
-        assert.ok(screen.getByPlaceholderText('5'));
-        assert.ok(screen.getByPlaceholderText('50'));
+        assert.ok(screen.getByPlaceholderText('5.00'));
+        assert.ok(screen.getByPlaceholderText('50.00'));
     });
 
     it('lets the user override a price, then reset it back to default', () => {
         renderPrototype([1, 12]);
-        const priceField = screen.getByPlaceholderText('5') as HTMLInputElement;
+        const priceField = screen.getByPlaceholderText('5.00') as HTMLInputElement;
         fireEvent.change(priceField, {target: {value: '9'}});
         assert.equal(priceField.value, '9');
 
@@ -43,17 +43,17 @@ describe('GiftDurationsPrototype', () => {
         assert.equal(resetButton.disabled, false);
         fireEvent.click(resetButton);
         // back to empty value with the default shown as placeholder
-        assert.equal((screen.getByPlaceholderText('5') as HTMLInputElement).value, '');
+        assert.equal((screen.getByPlaceholderText('5.00') as HTMLInputElement).value, '');
     });
 
     it('reverts a price to its default (placeholder) when cleared — never 0', () => {
         renderPrototype([1, 12]);
-        const priceField = screen.getByPlaceholderText('5') as HTMLInputElement;
+        const priceField = screen.getByPlaceholderText('5.00') as HTMLInputElement;
         fireEvent.change(priceField, {target: {value: '9'}});
         assert.equal(priceField.value, '9');
         // Clearing drops the override; the field is empty and the default (5) shows
         fireEvent.change(priceField, {target: {value: ''}});
-        const cleared = screen.getByPlaceholderText('5') as HTMLInputElement;
+        const cleared = screen.getByPlaceholderText('5.00') as HTMLInputElement;
         assert.equal(cleared.value, '');
         assert.notEqual(cleared.value, '0');
     });
@@ -68,7 +68,7 @@ describe('GiftDurationsPrototype', () => {
         renderPrototype([1, 12]);
         fireEvent.change(amountInputs()[0], {target: {value: '3'}});
         // 3 months default = $5 × 3 = 15
-        assert.ok(screen.getByPlaceholderText('15'));
+        assert.ok(screen.getByPlaceholderText('15.00'));
     });
 
     it('allows the amount field to be cleared while editing, restoring it on blur', () => {
@@ -96,7 +96,7 @@ describe('GiftDurationsPrototype', () => {
         assert.ok(screen.getByText('Gold'));
         assert.ok(screen.getByText('Silver'));
         // Gold 1 month default = 5, Silver 1 month default = 3 (placeholders)
-        assert.ok(screen.getByPlaceholderText('5'));
-        assert.ok(screen.getByPlaceholderText('3'));
+        assert.ok(screen.getByPlaceholderText('5.00'));
+        assert.ok(screen.getByPlaceholderText('3.00'));
     });
 });

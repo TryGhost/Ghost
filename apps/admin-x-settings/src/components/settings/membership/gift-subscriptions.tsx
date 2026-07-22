@@ -61,7 +61,7 @@ const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <div>
                             <Heading level={6}>Shareable link</Heading>
                             <div className='mt-2 flex items-center justify-between gap-3'>
-                                <span className='truncate text-sm text-grey-700' data-testid='gift-url'>{giftUrl}</span>
+                                <span className='bg-grey-75 dark:bg-grey-925 flex-1 truncate rounded-md border border-grey-200 px-3 py-1.5 text-sm text-grey-700 dark:border-grey-800 dark:text-grey-500' data-testid='gift-url'>{giftUrl}</span>
                                 <div className='flex shrink-0 gap-1'>
                                     <Button color='light-grey' data-testid='preview-shareable-link' label='Preview' size='sm' onClick={() => window.open(giftUrl, '_blank')} />
                                     <Button color={copied ? 'green' : 'light-grey'} data-testid='copy-shareable-link' label={copied ? 'Copied' : 'Copy link'} size='sm' onClick={handleCopy} />

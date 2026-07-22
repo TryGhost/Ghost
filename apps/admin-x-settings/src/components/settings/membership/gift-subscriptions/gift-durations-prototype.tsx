@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Button, Heading, Hint, Select, TextField} from '@tryghost/admin-x-design-system';
+import {Button, CurrencyField, Heading, Hint, Select, TextField} from '@tryghost/admin-x-design-system';
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 
 // EXPERIMENTAL / PROTOTYPE — an alternative to the fixed duration checkboxes.
@@ -88,7 +88,7 @@ const GiftDurationsPrototype: React.FC<{
     // drops every override for the tier at once.
     const [priceOverrides, setPriceOverrides] = useState<Record<string, Record<string, string>>>({});
     const defaultPrice = (tier: Tier, d: EditableDuration): string => (
-        (derivedPriceInCents(tier, toMonths(d)) / 100).toString()
+        (derivedPriceInCents(tier, toMonths(d)) / 100).toFixed(2)
     );
     const priceOverride = (tier: Tier, d: EditableDuration): string => (
         priceOverrides[tier.id]?.[d.id] ?? ''
@@ -104,12 +104,17 @@ const GiftDurationsPrototype: React.FC<{
             return {...prev, [tierId]: tierPrices};
         });
     };
+    // CurrencyField seeds its display value once from valueInCents, so clearing
+    // the overrides isn't enough to visually reset it — bump a per-tier nonce to
+    // remount that tier's price fields, re-seeding them from the (now empty) value.
+    const [resetNonce, setResetNonce] = useState<Record<string, number>>({});
     const resetTierPrices = (tierId: string) => {
         setPriceOverrides((prev) => {
             const next = {...prev};
             delete next[tierId];
             return next;
         });
+        setResetNonce(prev => ({...prev, [tierId]: (prev[tierId] || 0) + 1}));
     };
     const tierHasOverrides = (tierId: string) => Object.keys(priceOverrides[tierId] || {}).length > 0;
 
@@ -171,7 +176,7 @@ const GiftDurationsPrototype: React.FC<{
 
             <div className='mt-6'>
                 <Heading level={5}>Prototype pricing</Heading>
-                <Hint className='mb-4 block'>The default price (shown in grey) is worked out from the tier&apos;s plans: whole-year durations use the yearly price × the number of years, and any other duration uses the monthly price × the number of months. Type to set your own, or reset a tier back to the defaults.</Hint>
+                <Hint className='mb-4 block'>Type to set your own price for any tier and duration, or reset a tier back to the defaults shown in grey.</Hint>
                 {tiers.length === 0 && (
                     <Hint>Add a paid tier to set pricing.</Hint>
                 )}
@@ -190,18 +195,19 @@ const GiftDurationsPrototype: React.FC<{
                                 />
                             </div>
                             <div className='flex flex-col gap-3'>
-                                {durations.map(d => (
-                                    <TextField
-                                        key={`${tier.id}-${d.id}`}
-                                        min={0}
-                                        placeholder={defaultPrice(tier, d)}
-                                        rightPlaceholder={tier.currency || currency}
-                                        title={durationLabel(d)}
-                                        type='number'
-                                        value={priceOverride(tier, d)}
-                                        onChange={e => setPrice(tier.id, d.id, e.target.value)}
-                                    />
-                                ))}
+                                {durations.map((d) => {
+                                    const override = priceOverride(tier, d);
+                                    return (
+                                        <CurrencyField
+                                            key={`${tier.id}-${d.id}-${resetNonce[tier.id] || 0}`}
+                                            placeholder={defaultPrice(tier, d)}
+                                            rightPlaceholder={tier.currency || currency}
+                                            title={durationLabel(d)}
+                                            valueInCents={override === '' ? '' : Math.round(parseFloat(override) * 100)}
+                                            onChange={cents => setPrice(tier.id, d.id, cents ? String(cents / 100) : '')}
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
                     ))}

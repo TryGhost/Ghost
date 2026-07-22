@@ -141,7 +141,7 @@ const GiftSidebar: React.FC<{
                     onChange={html => updateSetting('gift_page_description', html || null)}
                 />
                 <div>
-                    <Heading level={5}>Image</Heading>
+                    <Heading level={6}>Image</Heading>
                     <Hint>Shown above the heading at up to 140px tall — logos and wide images work best.</Hint>
                     <div className='mt-3'>
                         <ImageUpload
@@ -216,7 +216,7 @@ const GiftSidebar: React.FC<{
                                         {offeredDurations.map(({months, label}) => (
                                             <CurrencyField
                                                 key={months}
-                                                placeholder={String(getDerivedPriceInCents(tier, months) / 100)}
+                                                placeholder={(getDerivedPriceInCents(tier, months) / 100).toFixed(2)}
                                                 rightPlaceholder={tier.currency}
                                                 title={label}
                                                 valueInCents={tier.gift_prices?.[months] ?? ''}
@@ -231,7 +231,6 @@ const GiftSidebar: React.FC<{
                 </div>
             )}
 
-            <Separator />
             <GiftDurationsPrototype initialMonths={giftDurations} tiers={offeredTiers.length ? offeredTiers : paidTiers} />
         </div>
     );

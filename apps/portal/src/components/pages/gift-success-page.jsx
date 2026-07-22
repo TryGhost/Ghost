@@ -80,6 +80,17 @@ export const GiftSuccessStyle = `
     opacity: 0.9;
 }
 
+/* Express the "green = done" cue at the moment of success only — the resting
+   button stays on brand. */
+.gh-portal-gift-success-copy.is-copied {
+    background: var(--green);
+}
+
+.gh-portal-gift-success-copy:focus-visible {
+    outline: 2px solid var(--grey0);
+    outline-offset: 2px;
+}
+
 .gh-portal-gift-success-copy svg {
     width: 14px;
     height: 14px;
@@ -168,7 +179,7 @@ const GiftSuccessPage = () => {
                                 <p className='gh-portal-gift-success-share-label'>{isEmailed ? t('Share it yourself') : t('Your gift link')}</p>
                                 <div className='gh-portal-gift-success-link'>
                                     <span className='gh-portal-gift-success-link-url'>{redeemUrl}</span>
-                                    <button className='gh-portal-gift-success-copy' onClick={handleCopy} type='button'>
+                                    <button className={'gh-portal-gift-success-copy' + (copied ? ' is-copied' : '')} onClick={handleCopy} type='button'>
                                         {copied ? <CheckIcon /> : <CopyIcon />}
                                         {copied ? t('Copied') : t('Copy')}
                                     </button>

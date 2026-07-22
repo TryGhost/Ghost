@@ -1,3 +1,4 @@
+import Interpolate from '@doist/react-interpolate';
 import {useContext, useEffect, useState} from 'react';
 import AppContext from '../../app-context';
 import ActionButton from '../common/action-button';
@@ -90,7 +91,9 @@ const GiftRedemptionPage = () => {
             required: false,
             errorMessage: errors.name || '',
             tabIndex: 1,
-            autoFocus: !email
+            // If the buyer already supplied the recipient's name, land the cursor
+            // on the email — the one field they still need to fill.
+            autoFocus: !name && !email
         },
         {
             type: 'email',
@@ -101,7 +104,7 @@ const GiftRedemptionPage = () => {
             required: true,
             errorMessage: errors.email || '',
             tabIndex: 2,
-            autoFocus: !!email
+            autoFocus: !!email || (!!name && !email)
         }
     ];
 
@@ -171,13 +174,16 @@ const GiftRedemptionPage = () => {
     // so landing on this page feels continuous rather than generic.
     const durationLabel = getGiftDurationLabel(gift);
     const tierName = gift.tier.name;
-    let headerText;
+    // Bold the buyer + "{duration} {tier}" exactly as the delivery email does,
+    // so the landing page reads as the same gift rather than a generic screen.
+    const emphasis = {strong: <strong />};
+    let headerNode;
     if (buyerName && siteTitle) {
-        headerText = t('{buyerName} has gifted you a {duration} {tierName} membership to {siteTitle}', {buyerName, duration: durationLabel, tierName, siteTitle});
+        headerNode = <Interpolate mapping={emphasis} string={t('<strong>{buyerName}</strong> has gifted you a <strong>{duration} {tierName}</strong> membership to {siteTitle}', {buyerName, duration: durationLabel, tierName, siteTitle})} />;
     } else if (siteTitle) {
-        headerText = t('You\'ve been gifted a {duration} {tierName} membership to {siteTitle}', {duration: durationLabel, tierName, siteTitle});
+        headerNode = <Interpolate mapping={emphasis} string={t('You\'ve been gifted a <strong>{duration} {tierName}</strong> membership to {siteTitle}', {duration: durationLabel, tierName, siteTitle})} />;
     } else {
-        headerText = t('You\'ve been gifted a {duration} {tierName} membership', {duration: durationLabel, tierName});
+        headerNode = <Interpolate mapping={emphasis} string={t('You\'ve been gifted a <strong>{duration} {tierName}</strong> membership', {duration: durationLabel, tierName})} />;
     }
     const expiryLabel = gift.expires_at
         ? new Date(gift.expires_at).toLocaleDateString(undefined, {day: 'numeric', month: 'short', year: 'numeric'})
@@ -195,7 +201,7 @@ const GiftRedemptionPage = () => {
                         <div className='gh-portal-gift-checkout-inner'>
                             <header className='gh-portal-gift-checkout-header'>
                                 <h1 className='gh-portal-main-title'>{t('A gift, just for you')}</h1>
-                                <p className='gh-portal-gift-checkout-subtitle'>{headerText}</p>
+                                <p className='gh-portal-gift-checkout-subtitle'>{headerNode}</p>
                             </header>
 
                             {gift.message && (
@@ -239,6 +245,7 @@ const GiftRedemptionPage = () => {
                                     duration={getGiftDurationLabel(gift)}
                                     tierName={gift.tier.name}
                                     toName={name.trim() || null}
+                                    fromName={buyerName || null}
                                     siteIcon={siteIcon}
                                     siteTitle={siteTitle}
                                 />
