@@ -1,8 +1,0 @@
-{
-  extends: [
-    'github>tryghost/renovate-config'
-  ],
-  postUpdateOptions: [
-    'pnpmDedupe'
-  ]
-}

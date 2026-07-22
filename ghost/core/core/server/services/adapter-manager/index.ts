@@ -1,4 +1,4 @@
-import GhostStorageBase from 'ghost-storage-base';
+import {StorageBase} from 'ghost-storage-base';
 import {SchedulingBase} from '@tryghost/adapter-base-scheduling';
 import {SSOBase} from '@tryghost/adapter-base-sso';
 import {CacheBase} from '@tryghost/adapter-base-cache';
@@ -31,7 +31,7 @@ const adapterManager = new AdapterManager({
     config,
     pathsToAdapters: Array.from(adapterPaths),
     baseClasses: {
-        storage: GhostStorageBase,
+        storage: StorageBase,
         scheduling: SchedulingBase,
         sso: SSOBase,
         cache: CacheBase,

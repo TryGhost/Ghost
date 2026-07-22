@@ -1,31 +1,47 @@
+import path from 'node:path';
 import moment from 'moment';
-import path from 'path';
 import type {RequestHandler} from 'express';
 
-abstract class StorageBase {
-    readonly requiredFns!: readonly ['exists', 'save', 'serve', 'delete', 'read'];
+export type StorageFile = {
+    name: string;
+    path: string;
+    type?: string;
+};
+
+export type ReadOptions = {
+    path: string;
+};
+
+/**
+ * Base class for Ghost storage adapters.
+ *
+ * Concrete adapters extend this class and implement the methods listed in
+ * `requiredFns`: `exists`, `save`, `serve`, `delete` and `read`.
+ */
+export abstract class StorageBase {
+    declare readonly requiredFns: readonly ['exists', 'save', 'serve', 'delete', 'read'];
 
     declare storagePath: string;
 
     abstract exists(fileName: string, targetDir?: string): Promise<boolean>;
-    abstract save(file: StorageBase.StorageFile, targetDir?: string): Promise<string>;
+    abstract save(file: StorageFile, targetDir?: string): Promise<string>;
     abstract serve(): RequestHandler;
     abstract delete(fileName: string, targetDir?: string): Promise<void>;
-    abstract read(options: StorageBase.ReadOptions): Promise<Buffer>;
+    abstract read(options: ReadOptions): Promise<Buffer>;
     abstract saveRaw(buffer: Buffer, targetPath: string): Promise<string>;
     abstract urlToPath(url: string): string;
 
     constructor() {
         Object.defineProperty(this, 'requiredFns', {
-            value: ['exists', 'save', 'serve', 'delete', 'read'],
+            value: Object.freeze(['exists', 'save', 'serve', 'delete', 'read']),
             writable: false
         });
     }
 
     getTargetDir(baseDir?: string | null): string {
-        const date = moment(),
-            month = date.format('MM'),
-            year = date.format('YYYY');
+        const date = moment();
+        const month = date.format('MM');
+        const year = date.format('YYYY');
 
         if (baseDir) {
             return path.join(baseDir, year, month);
@@ -35,8 +51,8 @@ abstract class StorageBase {
     }
 
     generateUnique(dir: string, name: string, ext: string | null, i: number): Promise<string> {
-        let filename: string,
-            append = '';
+        let filename: string;
+        let append = '';
 
         if (i) {
             append = '-' + i;
@@ -58,7 +74,7 @@ abstract class StorageBase {
         });
     }
 
-    getUniqueFileName(file: StorageBase.StorageFile, targetDir: string): Promise<string> {
+    getUniqueFileName(file: StorageFile, targetDir: string): Promise<string> {
         const ext = path.extname(file.name);
         let name: string;
 
@@ -79,17 +95,3 @@ abstract class StorageBase {
         return fileName.replace(/[^\w@.]/gi, '-');
     }
 }
-
-declare namespace StorageBase {
-    export type StorageFile = {
-        name: string;
-        path: string;
-        type?: string;
-    };
-
-    export type ReadOptions = {
-        path: string;
-    };
-}
-
-export = StorageBase;

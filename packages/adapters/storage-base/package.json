@@ -1,51 +1,63 @@
 {
   "name": "ghost-storage-base",
   "version": "2.1.5",
-  "packageManager": "pnpm@11.15.0",
-  "description": "Base storage adapter.",
+  "description": "Base class for Ghost storage adapters.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "packages/adapters/storage-base"
+  },
   "author": "Ghost Foundation",
-  "homepage": "http://ghost.org",
+  "license": "MIT",
   "keywords": [
     "ghost",
     "storage",
     "adapter"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/TryGhost/Ghost-Storage-Base.git"
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
   },
-  "bugs": "https://github.com/TryGhost/Ghost-Storage-Base/issues",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist",
-    "lint": "oxlint .",
-    "lint:fix": "oxlint --fix .",
-    "test": "vitest run --coverage",
-    "test:unit": "pnpm test",
-    "prepare": "npm run build",
-    "preship": "pnpm test",
-    "ship": "pro-ship"
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test": "pnpm run '/^test:/'",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
+    "lint:code": "eslint src/ --cache",
+    "lint:test": "eslint test/ --cache",
+    "lint": "pnpm run '/^lint:/'"
   },
-  "license": "MIT",
-  "main": "./dist/BaseStorage.js",
-  "types": "./dist/BaseStorage.d.ts",
   "files": [
-    "dist"
+    "build"
   ],
   "dependencies": {
-    "moment": "2.30.1"
-  },
-  "engines": {
-    "node": "^22.13.1 || ^24.0.0"
+    "moment": "catalog:"
   },
   "devDependencies": {
-    "@tryghost/pro-ship": "1.1.7",
-    "@types/express": "5.0.6",
-    "@types/node": "24.13.3",
-    "@vitest/coverage-v8": "4.1.10",
-    "oxlint": "1.74.0",
-    "typescript": "5.9.3",
-    "vite": "8.1.5",
-    "vitest": "4.1.10"
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "@typescript/native": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      }
+    }
   }
 }

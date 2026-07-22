@@ -1,23 +1,24 @@
-# Ghost Storage Base
+# ghost-storage-base
 
-`ghost-storage-base` is the base class for [Ghost](https://ghost.org) storage adapters. It provides the shared helpers that custom adapters build on, and declares the interface that Ghost expects every adapter to implement.
+Base class for [Ghost](https://ghost.org) storage adapters.
+
+Concrete adapters extend `StorageBase` and implement the methods listed in
+`requiredFns`: `exists`, `save`, `serve`, `delete` and `read`. TypeScript
+adapters must also implement the declared `saveRaw(buffer, targetPath)` and
+`urlToPath(url)` methods.
 
 Docs: https://ghost.org/docs/config/#creating-a-custom-storage-adapter
 
-## Install
+The base class supplies these helpers:
 
-Requires Node `^22.13.1 || ^24.0.0`.
-
-```sh
-pnpm add ghost-storage-base
-```
-
-## Usage
-
-The package is published as CommonJS. Extend `StorageBase` and implement the five runtime methods Ghost requires:
+- `getTargetDir(baseDir)` returns a `YYYY/MM` path, optionally inside `baseDir`.
+- `getSanitizedFileName(fileName)` replaces unsupported filename characters with `-`.
+- `getUniqueFileName(file, targetDir)` and `generateUnique(dir, name, ext, i)`
+  call `this.exists(...)` until they find a free filename (`exists` must return
+  a `Promise<boolean>`).
 
 ```js
-const StorageBase = require('ghost-storage-base');
+import {StorageBase} from 'ghost-storage-base';
 
 class MyStorage extends StorageBase {
     exists(filename, targetDir) { /* ... */ }
@@ -26,36 +27,32 @@ class MyStorage extends StorageBase {
     delete(filename, targetDir) { /* ... */ }
     read(options)               { /* ... */ }
 }
-
-module.exports = MyStorage;
 ```
 
-The base class supplies these helpers:
+## Develop
 
-- `getTargetDir(baseDir)` returns a `YYYY/MM` path, optionally inside `baseDir`.
-- `getSanitizedFileName(fileName)` replaces unsupported filename characters with `-`.
-- `getUniqueFileName(file, targetDir)` and `generateUnique(dir, name, ext, i)` call `this.exists(...)` until they find a free filename.
+This is a workspace package in the Ghost monorepo. From the repo root:
 
-`exists` must return a `Promise<boolean>` for the unique-filename helpers to work. TypeScript consumers extending the class must also implement the declared `saveRaw(buffer, targetPath)` and `urlToPath(url)` methods.
-
-## Development
-
-Use the package manager version from `package.json`:
-
-```sh
-corepack enable
-pnpm install
+```bash
+pnpm --filter ghost-storage-base build   # compile to build/ with tsc (ESM)
+pnpm --filter ghost-storage-base test    # type-check + unit tests
 ```
 
-Common commands:
+In-monorepo consumers resolve this package via the `source` export condition
+(raw `src/*.ts`, no build needed in dev/test). Production, and the tarball
+published to npm for external adapter authors, use the compiled `build/` output.
 
-- `pnpm test` runs the Vitest suite with coverage.
-- `pnpm lint` runs oxlint.
-- `pnpm build` compiles `src/` to CommonJS in `dist/`.
+This package is ESM-only and compiled with `tsc` (`module: nodenext`). Relative
+imports in `src/` must carry an explicit extension; write the real `.ts` one —
+`import {x} from './x.ts'` — and `tsc` rewrites it to `.js` on emit
+(`rewriteRelativeImportExtensions`).
 
-### Publish
-
-`pnpm ship <patch|minor|major|version>` runs the test suite, then delegates to `@tryghost/pro-ship` to create the release commit and tag, push with `--follow-tags`, and publish the package. For example, use `pnpm ship patch` or `pnpm ship 2.0.1`. It only publishes from a clean working tree. The `prepare` script builds `dist/` for npm publishes, package tarballs, and consumers installing from a git ref.
+`ghost/core` is CommonJS but consumes this package via `require()`, which works
+on Ghost's Node version (22.13+/24) through Node's `require(esm)` support. That
+support has one hard constraint: **no top-level `await`** anywhere in this
+package's module graph — it makes the graph async and `require()` of it throws
+`ERR_REQUIRE_ASYNC_MODULE`. Keep module-level initialization synchronous. (An
+ESLint rule enforces this.)
 
 # Copyright & License
 

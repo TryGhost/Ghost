@@ -2590,8 +2590,8 @@ importers:
         specifier: 'catalog:'
         version: 11.3.6
       ghost-storage-base:
-        specifier: 2.1.5
-        version: 2.1.5
+        specifier: workspace:*
+        version: link:../../packages/adapters/storage-base
       glob:
         specifier: 'catalog:'
         version: 13.0.6
@@ -3956,6 +3956,43 @@ importers:
       '@tryghost/errors':
         specifier: 3.3.4
         version: 3.3.4
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../../configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../../configs/typescript
+      '@internal/cfg-vitest':
+        specifier: workspace:*
+        version: link:../../../configs/vitest
+      '@types/express':
+        specifier: 'catalog:'
+        version: 4.17.25
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.0
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.9(@vitest/browser@4.1.9)(vitest@4.1.9)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@22.20.0)(@vitest/browser-playwright@4.1.9)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
+
+  packages/adapters/storage-base:
+    dependencies:
+      moment:
+        specifier: 2.30.1
+        version: 2.30.1
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -15009,10 +15046,6 @@ packages:
 
   getopts@2.3.0:
     resolution: {integrity: sha512-5eDf9fuSXwxBL6q5HX+dhDj+dslFGWzU5thZ9kNKUkcPtaPdatmUFKwHFrLb/uf/WpA4BHET+AX3Scl56cAjpA==}
-
-  ghost-storage-base@2.1.5:
-    resolution: {integrity: sha512-++QDPXwBxgV09OiNTa7exZjFW4kLZu+EkCqxMDSS+MWB3ntkuVHQqDfyeAzMm6Fn5Tc2/t3JZAphGFQnilIhnA==}
-    engines: {node: ^22.13.1 || ^24.0.0}
 
   git-hooks-list@1.0.3:
     resolution: {integrity: sha512-Y7wLWcrLUXwk2noSka166byGCvhMtDRpgHdzCno1UQv/n/Hegp++a2xBWJL1lJarnKD3SWaljD+0z1ztqxuKyQ==}
@@ -38504,10 +38537,6 @@ snapshots:
   getopts@2.2.5: {}
 
   getopts@2.3.0: {}
-
-  ghost-storage-base@2.1.5:
-    dependencies:
-      moment: 2.30.1
 
   git-hooks-list@1.0.3: {}
 

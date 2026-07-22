@@ -7,7 +7,7 @@ const path = require('path');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
-const StorageBase = require('ghost-storage-base');
+const {StorageBase} = require('ghost-storage-base');
 
 const messages = {
     notFound: 'File not found',
@@ -112,7 +112,7 @@ class LocalStorageBase extends StorageBase {
      * Saves the file to storage (the file system)
      * - returns a promise which ultimately returns the full url to the uploaded file
      *
-     * @param {StorageBase.Image} file
+     * @param {import('ghost-storage-base').StorageFile} file
      * @param {string} targetDir
      * @returns {Promise<String>}
      */

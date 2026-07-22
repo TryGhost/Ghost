@@ -140,6 +140,8 @@ catalog:
   lodash: 4.18.1
   lucide-react: 1.23.0
   mingo: 2.5.3
+  moment: 2.30.1
+  moment-timezone: 0.5.45
   msw: 2.14.6
   node-html-markdown: 2.0.0
   postcss: 8.5.16
@@ -196,8 +198,8 @@ overrides:
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
   jackspeak: 4.2.3
-  moment: 2.30.1
-  moment-timezone: 0.5.45
+  moment: 'catalog:'
+  moment-timezone: 'catalog:'
   nwsapi: 2.2.24
   broccoli-persistent-filter: ^2.3.1
   juice: 9.1.0

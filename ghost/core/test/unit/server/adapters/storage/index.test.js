@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const fs = require('fs-extra');
-const StorageBase = require('ghost-storage-base');
+const {StorageBase} = require('ghost-storage-base');
 const configUtils = require('../../../../utils/config-utils');
 const storage = require('../../../../../core/server/adapters/storage');
 const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
@@ -42,7 +42,7 @@ describe('storage: index_spec', function () {
 
         const jsFile = '' +
             '\'use strict\';' +
-            'var StorageBase = require(\'ghost-storage-base\');' +
+            'var {StorageBase} = require(\'ghost-storage-base\');' +
             'class AnotherAdapter extends StorageBase {' +
             'exists(){}' +
             'save(){}' +
@@ -74,7 +74,7 @@ describe('storage: index_spec', function () {
 
         const jsFile = '' +
             '\'use strict\';' +
-            'var StorageBase = require(\'ghost-storage-base\');' +
+            'var {StorageBase} = require(\'ghost-storage-base\');' +
             'class AnotherAdapter extends StorageBase {' +
             'save(){}' +
             'serve(){}' +
