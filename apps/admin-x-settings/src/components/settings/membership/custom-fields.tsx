@@ -3,8 +3,8 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useFeatureFlag from '../../../hooks/use-feature-flag';
-import {Button, Icon, List, ListItem} from '@tryghost/admin-x-design-system';
-import {NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Button, Icon} from '@tryghost/admin-x-design-system';
 import {TextCursorInput} from 'lucide-react';
 import {useBrowseMemberCustomFieldsIncludingArchived, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {withErrorBoundary} from '../../error-boundary';
@@ -37,43 +37,33 @@ const FieldList: React.FC<{
     // is a client-side reveal — same UI as the recommendations table, without
     // inventing pagination the API doesn't have.
     const visibleFields = showAll ? fields : fields.slice(0, PREVIEW_COUNT);
-    // The standard settings list rows (the integrations pattern): ListItem
-    // brings the hover background, separators, and the hover-revealed action
-    // with it, so this list behaves like every other one in Settings.
     return (
         <>
-            <List borderTop={false}>
+            <ActionList>
                 {visibleFields.map((field) => {
                     const userType = userTypeForField(field);
                     return (
-                        <ListItem
-                            key={field.key}
-                            // The Edit button stays visible (not hover-only) so it's
-                            // keyboard-focusable — the row div isn't. stopPropagation
-                            // keeps a button click from also firing the row's onClick.
-                            action={<Button color='green' label='Edit' link onClick={(e) => {
-                                e?.stopPropagation();
-                                openModal(field);
-                            }} />}
-                            avatar={
-                                <div className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-grey-100 dark:bg-grey-900'>
+                        <ActionListItem key={field.key} data-testid='custom-field-list-item'>
+                            <ActionListItemContent asChild>
+                                <button className='flex w-full items-center gap-3 py-3 text-left' type='button' onClick={() => openModal(field)}>
+                                    <span className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted'>
                                     <Icon name={userType.icon} size={18} />
-                                </div>
-                            }
-                            detail={userType.label}
-                            testId='custom-field-list-item'
-                            title={<span className='font-semibold'>{field.name}</span>}
-                            separator
-                            onClick={() => openModal(field)}
-                        />
+                                    </span>
+                                    <span className='min-w-0 grow'>
+                                        <span className='block font-semibold'>{field.name}</span>
+                                        <span className='block text-sm text-muted-foreground'>{userType.label}</span>
+                                    </span>
+                                </button>
+                            </ActionListItemContent>
+                            <ActionListItemActions>
+                                <Button color='green' label='Edit' link onClick={() => openModal(field)} />
+                            </ActionListItemActions>
+                        </ActionListItem>
                     );
                 })}
-            </List>
+            </ActionList>
             {!showAll && fields.length > PREVIEW_COUNT && (
-                // The recommendations table's "Show all" affordance. The top
-                // border stands in for the last row's separator, which ListItem
-                // suppresses on its last-of-type.
-                <div className='flex items-center gap-2 border-t border-grey-100 pt-2 font-bold text-green hover:text-green-400 dark:border-grey-900'>
+                <div className='flex items-center gap-2 border-t border-border pt-2 font-bold text-green hover:opacity-80'>
                     <button type='button' onClick={onShowAll}>Show all</button>
                 </div>
             )}

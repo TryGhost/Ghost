@@ -2,7 +2,8 @@ import APIKeys from './api-keys';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import ZapierLogo from '../../../../assets/images/zapier-logo.svg';
-import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent} from '@tryghost/shade/components';
+import {Button, ConfirmationModal, Icon, Modal} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
 import {useEffect, useState} from 'react';
@@ -109,14 +110,10 @@ const ZapierModal = NiceModal.create(() => {
                 title='Zapier'
             />
 
-            <List>
+            <ActionList>
                 {zapierTemplates.map(template => (
-                    <ListItem
-                        key={template.url}
-                        action={<Button className='font-semibold whitespace-nowrap text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled />}
-                        bgOnHover={false}
-                        className='flex items-center gap-3 py-2 pl-3'
-                        title={
+                    <ActionListItem key={template.url} hover={false}>
+                        <ActionListItemContent className='flex items-center gap-3 py-2 pl-3'>
                             <div className='flex flex-col gap-4 md:flex-row md:items-center'>
                                 <div className='flex shrink-0 flex-nowrap items-center gap-2'>
                                     <img className='size-8 object-contain dark:invert' role='presentation' src={template.ghostImage} />
@@ -125,11 +122,11 @@ const ZapierModal = NiceModal.create(() => {
                                 </div>
                                 <span>{template.title}</span>
                             </div>
-                        }
-                        hideActions
-                    />
+                        </ActionListItemContent>
+                        <ActionListItemActions visibility='hover'><Button className='font-semibold whitespace-nowrap text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled /></ActionListItemActions>
+                    </ActionListItem>
                 ))}
-            </List>
+            </ActionList>
         </Modal>
     );
 });

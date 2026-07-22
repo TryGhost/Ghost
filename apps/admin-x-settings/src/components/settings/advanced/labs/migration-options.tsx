@@ -1,7 +1,8 @@
 import LabItem from './lab-item';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {Button, ConfirmationModal, FileUpload, List, showToast} from '@tryghost/admin-x-design-system';
+import {ActionList} from '@tryghost/shade/components';
+import {Button, ConfirmationModal, FileUpload, showToast} from '@tryghost/admin-x-design-system';
 import {downloadAllContent, useDeleteAllContent, useImportContent} from '@tryghost/admin-x-framework/api/db';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
@@ -77,7 +78,7 @@ const MigrationOptions: React.FC = () => {
     };
 
     return (
-        <List titleSeparator={false}>
+        <ActionList>
             <LabItem
                 action={<Button color='grey' label='Open importer' size='sm' onClick={handleImportContent} />}
                 detail='Import posts from a JSON or zip file'
@@ -90,7 +91,7 @@ const MigrationOptions: React.FC = () => {
                 action={<Button color='red' label='Delete' size='sm' onClick={handleDeleteAllContent} />}
                 detail='Permanently delete all posts and tags from the database, a hard reset'
                 title='Delete all content' />
-        </List>
+        </ActionList>
     );
 };
 

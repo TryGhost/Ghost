@@ -3,7 +3,8 @@ import LabItem from './lab-item';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import YamlFileEditorModal from './yaml-file-editor-modal';
-import {Button, FileUpload, List, showToast} from '@tryghost/admin-x-design-system';
+import {ActionList} from '@tryghost/shade/components';
+import {Button, FileUpload, showToast} from '@tryghost/admin-x-design-system';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
@@ -48,7 +49,7 @@ const BetaFeatures: React.FC = () => {
     };
 
     return (
-        <List titleSeparator={false}>
+        <ActionList>
             {IS_AUTOMATIONS_BETA_ACTIVE ? (
                 <LabItem
                     action={<FeatureToggle
@@ -134,7 +135,7 @@ const BetaFeatures: React.FC = () => {
                 detail='Configure dynamic routing by modifying the routes.yaml file'
                 testId='routes'
                 title='Routes' />
-        </List>
+        </ActionList>
     );
 };
 

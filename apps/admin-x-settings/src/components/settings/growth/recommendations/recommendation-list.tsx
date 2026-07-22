@@ -3,17 +3,16 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import RecommendationIcon from './recommendation-icon';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, Link, type PaginationData, type ShowMoreData, Table, TableRow} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemContent, LoadingIndicator, NoValueLabel, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Button, Link} from '@tryghost/admin-x-design-system';
 import {Inline} from '@tryghost/shade/primitives';
-import {NoValueLabel, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {type Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface RecommendationListProps {
     recommendations: Recommendation[],
-    pagination?: PaginationData,
-    showMore?: ShowMoreData,
+    showMore?: {hasMore: boolean; loadMore: () => void},
     isLoading: boolean
 }
 
@@ -37,8 +36,9 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     const clicks = count === 1 ? 'click' : 'clicks';
 
     return (
-        <TableRow className='group hover:cursor-pointer' testId='recommendation-list-item' onClick={showDetails}>
-            <Inline className='w-full' gap='none'>
+        <ActionListItem className='group' data-testid='recommendation-list-item'>
+            <ActionListItemContent asChild>
+                <button className='flex w-full text-left' type='button' onClick={showDetails}>
                 <div className='grow py-3 pr-6'>
                     <Inline gap='md'>
                         <RecommendationIcon isGhostSite={isGhostSite} {...recommendation} />
@@ -53,19 +53,20 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                             <div className='mr-2'>
                                 <span>{formatNumber(count)}</span>
                             </div>
-                            <div className='text-grey-700 lowercase'>
+                            <div className='text-muted-foreground lowercase'>
                                 <span>{showSubscribers ? newMembers : clicks}</span>
                                 <span className='invisible group-hover:visible'> from you</span>
                             </div>
                         </div>
                     )}
                 </div>
-            </Inline>
-        </TableRow>
+                </button>
+            </ActionListItemContent>
+        </ActionListItem>
     );
 };
 
-const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, pagination, showMore, isLoading}) => {
+const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, showMore, isLoading}) => {
     const {
         siteData
     } = useSettingGroup();
@@ -84,10 +85,18 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
         setTimeout(() => setCopied(false), 2000);
     };
 
-    if (isLoading || recommendations.length) {
-        return <Table
-            hint={
-                <span>
+    if (isLoading) {
+        return <div className='flex justify-center p-5'><LoadingIndicator size='md' /></div>;
+    }
+
+    if (recommendations.length) {
+        return <>
+            <ActionList>
+                {recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
+            </ActionList>
+            <div className='border-t border-border pt-2'>
+                {showMore?.hasMore && <button className='mb-2 font-bold text-green hover:opacity-80' type='button' onClick={showMore.loadMore}>Show all</button>}
+                <div className='text-sm text-muted-foreground'>
                     Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link>
                     <TooltipProvider delayDuration={0}>
                         <Tooltip>
@@ -97,7 +106,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
                                     color='clear'
                                     hideLabel={true}
                                     icon={copied ? 'check-circle' : 'duplicate'}
-                                    iconColorClass={copied ? 'text-green w-[14px] h-[14px]' : 'text-grey-600 hover:opacity-80 w-[14px] h-[14px]'}
+                                    iconColorClass={copied ? 'text-green w-[14px] h-[14px]' : 'text-muted-foreground hover:opacity-80 w-[14px] h-[14px]'}
                                     label={copied ? 'Copied' : 'Copy'}
                                     unstyled={true}
                                     onClick={copyRecommendationsUrl}
@@ -106,14 +115,9 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
                             <TooltipContent>{copied ? 'Copied' : 'Copy link'}</TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
-                </span>
-            }
-            isLoading={isLoading}
-            pagination={pagination}
-            showMore={showMore}
-            hintSeparator>
-            {recommendations && recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
-        </Table>;
+                </div>
+            </div>
+        </>;
     } else {
         return <NoValueLabel>
             <Button color='grey' label='Add first recommendation' size='sm' onClick={() => {

@@ -3,7 +3,8 @@ import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import trackEvent from '../../../utils/analytics';
 import useStaffUsers from '../../../hooks/use-staff-users';
-import {Button, ConfirmationModal, ListItem, SettingGroupHeader, showToast} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent} from '@tryghost/shade/components';
+import {Button, ConfirmationModal, SettingGroupHeader, showToast} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useDeleteAllContent} from '@tryghost/admin-x-framework/api/db';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -120,31 +121,31 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             navid='dangerzone'
             testId='dangerzone'
         >
-            <div className='flex flex-col'>
-                <ListItem
-                    action={<Button aria-label='Delete all content' color='red' label='Delete' onClick={handleDeleteAllContent} />}
-                    bgOnHover={false}
-                    detail='Permanently delete all posts and tags from the database.'
-                    testId='delete-all-content'
-                    title='Delete all content'
-                />
+            <ActionList>
+                <ActionListItem data-testid='delete-all-content' hover={false}>
+                    <ActionListItemContent className='py-3 pr-6'>
+                        <div>Delete all content</div>
+                        <div className='text-sm text-muted-foreground'>Permanently delete all posts and tags from the database.</div>
+                    </ActionListItemContent>
+                    <ActionListItemActions><Button aria-label='Delete all content' color='red' label='Delete' onClick={handleDeleteAllContent} /></ActionListItemActions>
+                </ActionListItem>
                 {resetAuthEnabled && (
-                    <ListItem
-                        action={<Button aria-label='Reset all authentication' color='red' label='Reset' onClick={handleResetAuth} />}
-                        bgOnHover={false}
-                        detail='Rotate every API key, sign out every staff user, and require a password reset. Use after a suspected credential compromise.'
-                        testId='reset-all-authentication'
-                        title='Reset all authentication'
-                    />
+                    <ActionListItem data-testid='reset-all-authentication' hover={false}>
+                        <ActionListItemContent className='py-3 pr-6'>
+                            <div>Reset all authentication</div>
+                            <div className='text-sm text-muted-foreground'>Rotate every API key, sign out every staff user, and require a password reset. Use after a suspected credential compromise.</div>
+                        </ActionListItemContent>
+                        <ActionListItemActions><Button aria-label='Reset all authentication' color='red' label='Reset' onClick={handleResetAuth} /></ActionListItemActions>
+                    </ActionListItem>
                 )}
-                <ListItem
-                    action={<Button aria-label='Reset all gift links' color='red' label='Reset' onClick={handleRemoveAllGiftLinks} />}
-                    bgOnHover={false}
-                    detail='Invalidate every active gift link across your site. Anyone holding one will lose access.'
-                    testId='reset-all-gift-links'
-                    title='Reset all gift links'
-                />
-            </div>
+                <ActionListItem data-testid='reset-all-gift-links' hover={false}>
+                    <ActionListItemContent className='py-3 pr-6'>
+                        <div>Reset all gift links</div>
+                        <div className='text-sm text-muted-foreground'>Invalidate every active gift link across your site. Anyone holding one will lose access.</div>
+                    </ActionListItemContent>
+                    <ActionListItemActions><Button aria-label='Reset all gift links' color='red' label='Reset' onClick={handleRemoveAllGiftLinks} /></ActionListItemActions>
+                </ActionListItem>
+            </ActionList>
         </TopLevelGroup>
     );
 };

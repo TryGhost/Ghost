@@ -3,8 +3,8 @@ import TopLevelGroup from '../../top-level-group';
 import clsx from 'clsx';
 import useQueryParams from '../../../hooks/use-query-params';
 import useStaffUsers from '../../../hooks/use-staff-users';
-import {Avatar, NoValueLabel, NoValueLabelIcon, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade/components';
-import {Button, List, ListItem, showToast} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Avatar, NoValueLabel, NoValueLabelIcon, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade/components';
+import {Button, showToast} from '@tryghost/admin-x-design-system';
 import {type User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {type UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
 import {UserRoundX} from 'lucide-react';
@@ -74,7 +74,7 @@ const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
     }
 
     return (
-        <List titleSeparator={false}>
+        <ActionList>
             {users.map((user) => {
                 let title = user.name || '';
                 if (user.status === 'inactive') {
@@ -86,22 +86,31 @@ const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
                     currentUser.id === user.id;
 
                 return (
-                    <ListItem
-                        key={user.id}
-                        action={canEdit && <Button color='green' label='Edit' link={true} onClick={() => showDetailModal(user)}/>}
-                        avatar={<Avatar className='size-10' email={user.email} name={user.name} src={user.profile_image} />}
-                        bgOnHover={canEdit}
-                        className='min-h-[64px]'
-                        detail={user.email}
-                        hideActions={true}
-                        id={`list-item-${user.id}`}
-                        separator={false}
-                        testId='user-list-item'
-                        title={title}
-                        onClick={() => canEdit && showDetailModal(user)} />
+                    <ActionListItem key={user.id} className='min-h-16' data-testid='user-list-item' hover={canEdit}>
+                        <ActionListItemContent asChild>
+                            {canEdit ? (
+                                <button className='flex w-full items-center gap-3 py-3 text-left' id={`list-item-${user.id}`} type='button' onClick={() => showDetailModal(user)}>
+                                    <Avatar className='size-10' email={user.email} name={user.name} src={user.profile_image} />
+                                    <span className='min-w-0 grow'>
+                                        <span className='block'>{title}</span>
+                                        <span className='block truncate text-sm text-muted-foreground'>{user.email}</span>
+                                    </span>
+                                </button>
+                            ) : (
+                                <div className='flex w-full items-center gap-3 py-3' id={`list-item-${user.id}`}>
+                                    <Avatar className='size-10' email={user.email} name={user.name} src={user.profile_image} />
+                                    <span className='min-w-0 grow'>
+                                        <span className='block'>{title}</span>
+                                        <span className='block truncate text-sm text-muted-foreground'>{user.email}</span>
+                                    </span>
+                                </div>
+                            )}
+                        </ActionListItemContent>
+                        {canEdit && <ActionListItemActions visibility='hover'><Button color='green' label='Edit' link={true} onClick={() => showDetailModal(user)}/></ActionListItemActions>}
+                    </ActionListItem>
                 );
             })}
-        </List>
+        </ActionList>
     );
 };
 
@@ -183,27 +192,22 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     }
 
     return (
-        <List>
+        <ActionList>
             {users.map((user) => {
                 return (
-                    <ListItem
-                        key={user.id}
-                        action={<UserInviteActions invite={user} />}
-                        avatar={<Avatar className='size-10' email={user.email} />}
-                        className='min-h-[64px]'
-                        detail={user.role}
-                        hideActions={true}
-                        id={`list-item-${user.id}`}
-                        separator={false}
-                        testId='user-invite'
-                        title={user.email}
-                        onClick={() => {
-                            // do nothing
-                        }}
-                    />
+                    <ActionListItem key={user.id} className='min-h-16' data-testid='user-invite' hover={false}>
+                        <ActionListItemContent className='flex items-center gap-3 py-3' id={`list-item-${user.id}`}>
+                            <Avatar className='size-10' email={user.email} />
+                            <span className='min-w-0 grow'>
+                                <span className='block'>{user.email}</span>
+                                <span className='block text-sm text-muted-foreground'>{user.role}</span>
+                            </span>
+                        </ActionListItemContent>
+                        <ActionListItemActions><UserInviteActions invite={user} /></ActionListItemActions>
+                    </ActionListItem>
                 );
             })}
-        </List>
+        </ActionList>
     );
 };
 
