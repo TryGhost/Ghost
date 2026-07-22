@@ -1,8 +1,8 @@
 import LabItem from './lab-item';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {ActionList} from '@tryghost/shade/components';
-import {Button, ConfirmationModal, FileUpload, showToast} from '@tryghost/admin-x-design-system';
+import {ActionList, Dropzone} from '@tryghost/shade/components';
+import {Button, ConfirmationModal, showToast} from '@tryghost/admin-x-design-system';
 import {downloadAllContent, useDeleteAllContent, useImportContent} from '@tryghost/admin-x-framework/api/db';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
@@ -13,9 +13,10 @@ const ImportModalContent = () => {
     const [uploading, setUploading] = useState(false);
     const handleError = useHandleError();
 
-    return <FileUpload
-        id="import-file"
-        onUpload={async (file) => {
+    return <Dropzone
+        accept={{'application/json': ['.json'], 'application/zip': ['.zip']}}
+        inputId="import-file"
+        onDropAccepted={async ([file]) => {
             setUploading(true);
             try {
                 await importContent(file);
@@ -35,10 +36,10 @@ const ImportModalContent = () => {
             }
         }}
     >
-        <div className="cursor-pointer bg-grey-50 p-10 text-center dark:bg-grey-950">
+        <div className="text-center">
             {uploading ? 'Uploading ...' : 'Select a JSON or zip file'}
         </div>
-    </FileUpload>;
+    </Dropzone>;
 };
 
 const MigrationOptions: React.FC = () => {
