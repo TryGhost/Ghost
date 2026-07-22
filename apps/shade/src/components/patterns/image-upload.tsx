@@ -89,7 +89,7 @@ const ImageUploadAction = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({className, size = 'icon', variant = 'ghost', ...props}, ref) => (
         <Button
             ref={ref}
-            className={cn('bg-surface-inverse text-surface-inverse-foreground hover:bg-surface-inverse/90 hover:text-surface-inverse-foreground size-8', className)}
+            className={cn('size-8 bg-surface-inverse text-surface-inverse-foreground hover:bg-surface-inverse/90 hover:text-surface-inverse-foreground', className)}
             data-slot='image-upload-action'
             size={size}
             variant={variant}
