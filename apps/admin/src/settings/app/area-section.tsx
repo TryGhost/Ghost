@@ -1,31 +1,18 @@
 import { type ComponentType } from "react";
 
-import { LEGACY_AREA_ROUTES, type SettingsAreaSection } from "./nav";
+import { type SettingsAreaSection } from "./nav";
 import { useSettingsSearch } from "./use-settings-search";
 
 /**
- * One settings area in the main scroll pane. Until an area is rebuilt
- * natively it renders a placeholder pointing at the legacy app; rebuilt
- * areas register their component in AREA_COMPONENTS (settings-shell.tsx).
+ * One settings area in the main scroll pane. Every area is rebuilt natively
+ * and registers its component in AREA_COMPONENTS (settings-shell.tsx).
  * Sections hide while a search filter excludes them, but stay visible in
  * the nothing-matched state — the same contract as the legacy
  * SearchableSection.
  */
 export interface AreaSectionProps {
     area: SettingsAreaSection;
-    Component?: ComponentType;
-}
-
-function AreaPlaceholder({ area }: { area: SettingsAreaSection }) {
-    return (
-        <div className="rounded-lg border border-dashed border-border p-6" data-testid={`settings-area-${area.id}-placeholder`}>
-            <p className="text-sm font-medium text-foreground">This area hasn&apos;t been rebuilt in the new settings UI yet.</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-                Turn off the &quot;Shade settings UI&quot; flag in Labs to manage it in the current settings at{" "}
-                <code className="rounded bg-muted px-1 py-0.5 text-xs">{LEGACY_AREA_ROUTES[area.id]}</code>.
-            </p>
-        </div>
-    );
+    Component: ComponentType;
 }
 
 export function AreaSection({ area, Component }: AreaSectionProps) {
@@ -37,7 +24,7 @@ export function AreaSection({ area, Component }: AreaSectionProps) {
     return (
         <section className={isVisible ? "scroll-mt-16" : "hidden"} data-testid={`settings-area-${area.id}`} id={`settings-area-${area.id}`}>
             <h2 className="mb-4 text-xl font-semibold tracking-tight">{area.title}</h2>
-            {Component ? <Component /> : <AreaPlaceholder area={area} />}
+            <Component />
         </section>
     );
 }

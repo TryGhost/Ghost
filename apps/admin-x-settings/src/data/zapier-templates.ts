@@ -1,4 +1,7 @@
-import {type ZapierTemplate} from '../components/settings/advanced/integrations/zapier-modal';
+// `import type` (not an inline type specifier) so no runtime import of the
+// modal survives — verbatimModuleSyntax would otherwise keep a side-effect
+// import that drags the legacy modal graph into any data-only consumer.
+import type {ZapierTemplate} from '../components/settings/advanced/integrations/zapier-modal';
 
 // Ghost logo images
 import OrbBlack1 from '../assets/images/logos/orb-black-1.png';

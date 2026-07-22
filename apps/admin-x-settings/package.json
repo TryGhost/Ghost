@@ -20,6 +20,7 @@
         "./src/components/settings/email-design/design-fields": "./src/components/settings/email-design/design-fields/index.ts",
         "./src/hooks/use-url-input": "./src/hooks/use-url-input.ts",
         "./src/data/official-themes": "./src/data/official-themes.ts",
+        "./src/data/zapier-templates": "./src/data/zapier-templates.ts",
         "./src/components/settings/site/theme/theme-editor-utils": "./src/components/settings/site/theme/theme-editor-utils.ts",
         "./src/components/settings/site/theme/theme-editor-styles": "./src/components/settings/site/theme/theme-editor-styles.ts",
         "./src/utils/get-offers-portal-preview-url": "./src/utils/get-offers-portal-preview-url.ts",

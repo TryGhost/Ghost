@@ -101,26 +101,13 @@ export const growthKeywords = {
     offers: ["growth", "offers", "discounts", "coupons", "promotions"],
 };
 
-const advancedKeywords = {
+export const advancedKeywords = {
     integrations: ["advanced", "integrations", "zapier", "slack", "unsplash", "first promoter", "firstpromoter", "pintura", "disqus", "analytics", "ulysses", "typeform", "buffer", "plausible", "github", "webhooks"],
     migrationtools: ["import", "export", "migrate", "substack", "substack", "migration", "medium", "wordpress", "wp", "squarespace", "beehiiv"],
     codeInjection: ["advanced", "code injection", "head", "footer"],
     labs: ["advanced", "labs", "alpha", "private", "beta", "flag", "routes", "redirect", "translation", "editor", "portal"],
     history: ["advanced", "history", "log", "events", "user events", "staff", "audit", "action"],
     dangerzone: ["danger zone", "delete all content", "delete site", "reset all authentication", "reset api keys", "reset password", "compromised credentials", "lock staff users", "sign out all staff"],
-};
-
-/**
- * Legacy hash routes per area, shown in the placeholder fallback notes while
- * an area hasn't been rebuilt natively yet.
- */
-export const LEGACY_AREA_ROUTES: Record<SettingsAreaId, string> = {
-    general: "#/settings/general",
-    site: "#/settings/design",
-    membership: "#/settings/members",
-    email: "#/settings/enable-newsletters",
-    growth: "#/settings/recommendations",
-    advanced: "#/settings/integrations",
 };
 
 export function useSettingsNav(): SettingsNavData {

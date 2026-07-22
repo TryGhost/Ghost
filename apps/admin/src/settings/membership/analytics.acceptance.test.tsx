@@ -1,12 +1,14 @@
 import {describe, expect, it} from "vitest";
 
-import {configResponse, fakeAdminEndpoint, fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse} from "@test-utils/acceptance";
+import {configResponse, enableShadeSettingsMode, fakeAdminEndpoint, fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse, shadeSettingsBootLabs} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 type AnalyticsSetting = {key: string; value: boolean; is_read_only?: boolean};
 
 function analyticsSettings(overrides: AnalyticsSetting[] = []) {
-    const response = settingsResponse();
+    const response = settingsResponse({labs: shadeSettingsBootLabs()});
     const byKey = new Map(overrides.map(setting => [setting.key, setting]));
     const existingKeys = new Set(response.settings.map(setting => setting.key));
     return {
@@ -19,7 +21,7 @@ function analyticsSettings(overrides: AnalyticsSetting[] = []) {
 }
 
 function analyticsConfig({limited = false}: {limited?: boolean} = {}) {
-    const response = configResponse();
+    const response = configResponse({labs: shadeSettingsBootLabs()});
     if (limited) {
         response.config.hostSettings = {
             limits: {

@@ -3,14 +3,18 @@ import {page} from "vitest/browser";
 
 import {
     configResponse,
+    enableShadeSettingsMode,
     fakeAdminEndpoint,
     fakeEditSettings,
     fakeIntegrations,
     fakeSettingsScreens,
     renderAdminApp,
+    shadeSettingsBootLabs,
 } from "@test-utils/acceptance";
 import type {Integration} from "@tryghost/admin-x-framework/api/integrations";
 import {settingsScreen} from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 const created = "2023-01-01T00:00:00.000Z";
 
@@ -46,7 +50,7 @@ function apiKey(secret: string) {
 }
 
 function limitedConfig() {
-    const response = configResponse();
+    const response = configResponse({labs: shadeSettingsBootLabs()});
     response.config.labs = {...response.config.labs, transistor: true};
     response.config.hostSettings = {limits: {customIntegrations: {disabled: true, error: "Your plan does not support custom integrations"}}};
     return response;

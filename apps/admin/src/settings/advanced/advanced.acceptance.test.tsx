@@ -2,6 +2,7 @@ import {describe, expect, it} from "vitest";
 import {page} from "vitest/browser";
 
 import {
+    enableShadeSettingsMode,
     fakeActions,
     fakeAdminEndpoint,
     fakeEditSettings,
@@ -9,14 +10,17 @@ import {
     fakeUsers,
     renderAdminApp,
     settingsResponse,
+    shadeSettingsBootLabs,
     currentUserResponse,
     currentRoute,
     type StaffUser,
 } from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
 
+enableShadeSettingsMode();
+
 function advancedSettings(overrides: Record<string, string | boolean | null>) {
-    return settingsResponse({settings: overrides});
+    return settingsResponse({settings: overrides, labs: shadeSettingsBootLabs()});
 }
 
 describe("Advanced settings", () => {

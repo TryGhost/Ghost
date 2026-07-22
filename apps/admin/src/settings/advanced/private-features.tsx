@@ -1,0 +1,133 @@
+import { useEffect, useState } from "react";
+
+import { FeatureToggle } from "./feature-toggle";
+import { LabItem } from "./lab-item";
+import { HostLimitError, useLimiter } from "@/settings/app/shared/use-limiter";
+
+/** The Labs "Private features" tab (developer experiments), ported from the legacy labs/private-features.tsx. */
+
+type Feature = {
+    title: string;
+    description: string;
+    flag: string;
+    limitName?: string;
+};
+
+const features: Feature[] = [{
+    title: "Automations",
+    description: "Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.",
+    flag: "automations",
+}, {
+    title: "Automations analytics",
+    description: 'Show analytics for automations. Assumes the "automations" flag is also on.',
+    flag: "automationAnalytics",
+}, {
+    title: "Stripe Automatic Tax (private beta)",
+    description: "Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe",
+    flag: "stripeAutomaticTax",
+}, {
+    title: "Email customization (internal beta)",
+    description: "Newsletter customization settings that have been released to Ghost's own production sites",
+    flag: "emailCustomization",
+}, {
+    title: "Import Member Tier",
+    description: "Enables tier to be specified when importing members",
+    flag: "importMemberTier",
+}, {
+    title: "CSV Content Importer",
+    description: "Enables importing posts from CSV files in the Universal Importer",
+    flag: "csvContentImporter",
+}, {
+    title: "Admin UI Refresh",
+    description: "Enable Admin UI refresh (exploration)",
+    flag: "adminUIRefresh",
+}, {
+    title: "Explore",
+    description: "Enables keeping in touch with the new Explore API",
+    flag: "explore",
+}, {
+    title: "Tags X",
+    description: "Enables the new Tags UI",
+    flag: "tagsX",
+}, {
+    title: "Email Unique ID",
+    description: "Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching",
+    flag: "emailUniqueid",
+}, {
+    title: "Updated theme translation (beta)",
+    description: "Enable theme translation using i18next instead of the old translation package.",
+    flag: "themeTranslation",
+}, {
+    title: "Featurebase Feedback",
+    description: "Display a Feedback menu item in the admin sidebar. Requires the new admin experience.",
+    flag: "featurebaseFeedback",
+}, {
+    title: "Picture Element",
+    description: "Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks",
+    flag: "pictureImageFormats",
+}, {
+    title: "Smarter Counts",
+    description: "Use optimized COUNT queries for API pagination when safe",
+    flag: "smarterCounts",
+}, {
+    title: "Get helper deduplication",
+    description: "Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls",
+    flag: "getHelperDeduplication",
+}, {
+    title: "React member details",
+    description: "Renders the member detail screen (/members/:id) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.",
+    flag: "memberDetailsReact",
+}, {
+    title: "Member custom fields",
+    description: "Let admins create and manage custom field definitions for members",
+    flag: "membersCustomFields",
+}, {
+    title: "Preview by tier",
+    description: "Preview posts and emails as a member of a specific tier",
+    flag: "previewByTier",
+}, {
+    title: "Shade settings UI",
+    description: "Renders Ghost Admin settings from the new Shade-based app instead of the legacy settings app. Areas that have not been rebuilt yet show placeholders.",
+    flag: "shadeSettings",
+}];
+
+export function PrivateFeatures() {
+    const limiter = useLimiter();
+    const [allowedFeatures, setAllowedFeatures] = useState<Feature[]>([]);
+
+    useEffect(() => {
+        const filterFeatures = async () => {
+            const filtered: Feature[] = [];
+            // Drop features limited by the subscribed plan (these are betas, so opting out is fine).
+            for (const feature of features) {
+                if (feature.limitName && limiter.isLimited(feature.limitName)) {
+                    try {
+                        await limiter.errorIfWouldGoOverLimit(feature.limitName);
+                        filtered.push(feature);
+                    } catch (error) {
+                        if (!(error instanceof HostLimitError)) {
+                            filtered.push(feature);
+                        }
+                    }
+                } else {
+                    filtered.push(feature);
+                }
+            }
+            setAllowedFeatures(filtered);
+        };
+        void filterFeatures();
+    }, [limiter]);
+
+    return (
+        <div className="flex flex-col divide-y divide-border">
+            {allowedFeatures.map((feature) => (
+                <LabItem
+                    key={feature.flag}
+                    action={<FeatureToggle flag={feature.flag} label={feature.title} />}
+                    detail={feature.description}
+                    title={feature.title}
+                />
+            ))}
+        </div>
+    );
+}

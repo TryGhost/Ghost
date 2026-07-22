@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { currentRoute, enableShadeSettingsMode, fakeSettingsScreens, isShadeSettingsRun, renderAdminApp } from "@test-utils/acceptance";
+import { currentRoute, enableShadeSettingsMode, fakeActions, fakeSettingsScreens, isShadeSettingsRun, renderAdminApp } from "@test-utils/acceptance";
 import { settingsScreen } from "@/settings/settings.screen";
 
 // Passes in both modes: the flag is forced on via `labs` here, so default
@@ -29,7 +29,7 @@ describe("Shade settings chrome", () => {
         }
     });
 
-    it("renders the sidebar groups, native areas and placeholder area sections", async () => {
+    it("renders the sidebar groups and every native area section", async () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings", { labs: SHADE_LABS });
 
@@ -39,26 +39,20 @@ describe("Shade settings chrome", () => {
         }
         await expect.element(settingsScreen.navItem("Design & branding")).toBeVisible();
 
-        // The general, site, membership, email and growth areas are rebuilt
-        // natively; the rest still render placeholders.
+        // Every area is rebuilt natively — assert one native group per area.
         await expect.element(settingsScreen.section("settings-area-general")).toBeVisible();
         await expect.element(settingsScreen.titleAndDescription()).toBeVisible();
-        await expect(settingsScreen.section("settings-area-general-placeholder")).toHaveCount(0);
         await expect.element(settingsScreen.section("settings-area-site")).toBeVisible();
         await expect.element(settingsScreen.design()).toBeVisible();
-        await expect(settingsScreen.section("settings-area-site-placeholder")).toHaveCount(0);
         await expect.element(settingsScreen.section("settings-area-membership")).toBeVisible();
         await expect.element(settingsScreen.access()).toBeVisible();
-        await expect(settingsScreen.section("settings-area-membership-placeholder")).toHaveCount(0);
         await expect.element(settingsScreen.section("settings-area-email")).toBeVisible();
         await expect.element(settingsScreen.enableNewsletters()).toBeVisible();
-        await expect(settingsScreen.section("settings-area-email-placeholder")).toHaveCount(0);
         await expect.element(settingsScreen.section("settings-area-growth")).toBeVisible();
         await expect.element(settingsScreen.network()).toBeVisible();
-        await expect(settingsScreen.section("settings-area-growth-placeholder")).toHaveCount(0);
         await expect.element(settingsScreen.section("settings-area-advanced")).toBeVisible();
-        await expect.element(settingsScreen.section("settings-area-advanced-placeholder")).toBeVisible();
-        await expect.element(settingsScreen.section("settings-area-advanced-placeholder")).toHaveTextContent("#/settings/integrations");
+        await expect.element(settingsScreen.section("integrations")).toBeVisible();
+        await expect.element(settingsScreen.section("dangerzone")).toBeVisible();
     });
 
     it("filters the sidebar and sections by keyword and shows the no-result state", async () => {
@@ -133,9 +127,18 @@ describe("Shade settings chrome", () => {
         await expect.poll(currentRoute).toBe("/settings/design");
     });
 
-    it("redirects not-yet-rebuilt deep links to the settings index", async () => {
+    it("opens routed dialog deep links over the shell", async () => {
         fakeSettingsScreens();
+        fakeActions([]);
         await renderAdminApp("/settings/history/view/123", { labs: SHADE_LABS });
+
+        await expect.element(settingsScreen.section("history-modal")).toBeVisible();
+        await expect.poll(currentRoute).toBe("/settings/history/view/123");
+    });
+
+    it("redirects unknown deep links to the settings index", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings/not-a-real-screen/deeper", { labs: SHADE_LABS });
 
         await expect.poll(currentRoute).toBe("/settings");
         await expect.element(settingsScreen.sidebar()).toBeVisible();

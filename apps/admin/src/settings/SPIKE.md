@@ -31,8 +31,9 @@ update your area's row (and anything you learn the hard way) as you go.
   - `nav.ts` — nav groups/items/keywords + conditional visibility (Stripe,
     paid members, tips, newsletters, `automations`/`membersCustomFields`
     flags) + `resolveSettingsArea()` segment→area mapping.
-  - `area-section.tsx` — per-area section; renders the registered native
-    component or a "not yet rebuilt" placeholder listing the legacy route.
+  - `area-section.tsx` — per-area section; renders the area's registered
+    native component (the "not yet rebuilt" placeholder machinery was
+    retired in phase 7 once every area was native).
   - `search-provider.tsx` / `use-settings-search.ts` — the chrome's subset of
     the legacy search service (filter, `checkVisible`, `noResult`).
 - **Dual-mode acceptance harness** (see below) + a chrome smoke suite
@@ -121,7 +122,7 @@ For each area (one agent per area, in its own `src/settings/<area>/` files):
 | membership        | done    | access, tiers, stripe, portal, membership-settings, custom-fields, member-welcome-emails (incl. automations-on customize test), layout portal test un-skipped | See "Membership area notes" below |
 | email             | done    | email-settings, newsletters, default-recipients, mailgun | See "Email area notes" below |
 | growth            | done    | network, explore, recommendations, tips-and-donations, offers (top-level suite) | See "Growth area notes" below |
-| advanced          | pending | —               |       |
+| advanced          | done    | advanced, integrations, membership/analytics (the inherited debt) | See "Advanced area notes" below |
 
 ## General area notes (phase 2)
 
@@ -203,12 +204,11 @@ Locale data from `@tryghost/i18n/lib/locale-data.json`; timezones from
   site-area groups); the site rebuild opted it in.
 - Pintura image editing is not wired into the native image uploads
   (config-gated; not part of the acceptance contract).
-- Analytics group is ported (it renders under General), but
-  `membership/analytics.acceptance.test.tsx` is NOT opted in: its last test
-  targets migrationtools (advanced area). Advanced agent: opt it in with
-  that test skipped flag-on, or split the file.
+- Analytics group is ported (it renders under General);
+  `membership/analytics.acceptance.test.tsx` was opted in by phase 7 once
+  its migrationtools test had a native target.
 - "View user activity" menu item navigates to `/settings/history/view/:id`,
-  which flag-on redirects to the settings index until advanced is rebuilt.
+  which opens the native history dialog since phase 7.
 
 **Base-freshness checks done:** #29530 (TabView removal) — native screens
 already use shade Tabs. e91932a403 (Billing navigation) — Ember-side only;
@@ -697,6 +697,142 @@ acceptance suite covers it (screenshot evidence only).
   saveState to "unsaved" and the label back to "Save" — suites that click
   "Save" twice rely on this, don't "fix" it.
 
+## Advanced area notes (phase 7)
+
+**Structure.** Area component `src/settings/advanced/advanced-area.tsx`
+(registered in `AREA_COMPONENTS`): integrations, migration tools, code
+injection, labs, history, danger zone — the same groups in the same order
+as the legacy advanced-settings.tsx. Spam filters stays in the membership
+area composition (phase 4); the advanced suite's spam-filters tests pass
+against it unchanged. Routed dialogs registered in settings-app.tsx
+(legacy deep links keep working flag-on): `integrations/new`, the seven
+built-in configs (`integrations/zapier|slack|unsplash|firstpromoter|
+pintura|transistor|contentapi`), `integrations/:integrationId`, and
+`history/view(/:userId)`. Code injection and universal import are NOT
+routed — legacy opens both via NiceModal without a route change, so they
+stay state-driven dialogs.
+
+**Integration dialog architecture.** `integration-dialog.tsx` is the
+shared chrome for the built-in configs (full-bleed muted header with
+logo/title/detail/optional API keys, scrollable body, footer with custom
+left slot + Close/Save, every close path through `confirmIfDirty`). The
+simple settings-backed dialogs (unsplash, firstpromoter, pintura,
+transistor) share `use-save-label.ts` — the legacy Save → "Saving..." (≥1s)
+→ "Saved" (1s) → Save label dance. Slack runs on the shared
+`useSettingGroup` (validation + okProps) like legacy. The custom
+integration dialog is a plain Dialog on `useForm` with the legacy
+`savingDelay/savedDelay: 500` and `onSavedStateReset` → navigate back
+(i.e. it auto-closes ~1s after a successful save — suite-pinned timing,
+don't "fix" it). Webhooks are a nested Radix Dialog opened from local
+state inside the custom dialog; webhook event options and the Zapier
+template data are imported from legacy source (`webhook-event-options`
+resolves through the existing `./src/*` map; `data/zapier-templates` got
+a subpath export + its type import converted to a full `import type` —
+the TDZ rule from phase 3).
+
+**The one copy-field component.** `api-key-field.tsx` (APIKeyField +
+APIKeys on shade CopyField/CopyFieldActions/CopyFieldCopyButton) is the
+single API-key row used by zapier, transistor, content-api and the custom
+integration dialog — hover-reveal Copy ("Copied" flash) / Regenerate, and
+the regenerated hint line. The legacy api-keys.tsx already sat on shade
+CopyField, so the port is mechanical; the "Copied" reset-on-value-change
+contract comes from CopyField itself.
+
+**Brand icons are inlined raw SVGs.** `integration-icon.tsx` imports the
+legacy design-system icon files with Vite's `?raw` and injects them
+inline (`svg-raw.d.ts` declares the module shape) — lucide-react ships no
+brand icons, `<img>` would break the currentColor-based marks (unsplash,
+transistor, medium, angle-brackets, integration, import/export) in dark
+mode, and one bad element type unmounts the whole portal. zapier-logo
+(fixed-color wordmark in the dialog footer) stays a plain `<img>` URL
+import.
+
+**CodeMirror.** `code-editor.tsx` is the advanced-area CodeMirror field
+(html/yaml, async language import, renders nothing until the extension
+resolves — the legacy CodeEditor contract). The editing surface is
+**fixed-light** (bg-white + neutral gutters, like the email-preview
+fixed-light lane; the legacy dark: overrides are not reproducible without
+dark: variants). Used by the full-screen code injection dialog
+(header/footer tabs, Cmd/Ctrl+S, Save keeps the dialog open) and the
+redirects/routes YAML editors (`yaml-editor-dialog.tsx`: loads via fetch
+from the download endpoint, saves through the upload mutation, keeps
+validation errors inline under testid `yaml-editor-error` with the modal
+open). Full-screen dialogs use the phase-3 recipe
+(`top-0 left-0 h-dvh w-screen max-w-none translate-x-0 …`).
+
+**Labs.** Open/Close toggle with the bubbles illustration while closed;
+Beta features + Private features tabs (the latter behind
+`config.enableDeveloperExperiments`). `feature-toggle.tsx` ports the labs
+JSON save + the config-cache poke (so flag-gated UI flips immediately);
+the automations one-way confirmation runs through the shared
+ConfirmationProvider (legacy testid `feature-toggle-confirmation-modal`
+became `confirmation-modal` — no suite asserts the old id). The
+redirects/routes upload buttons are `file-upload-button.tsx` (label +
+hidden input carrying `#upload-redirects`/`#upload-routes` — the suites
+address the input by id). The legacy auto-expand-on-single-search-hit
+(useAutoExpandable) is not ported (needs per-component search
+registration, a known chrome gap).
+
+**Migration tools.** Import tab: the six external migrator buttons
+(`navigate(route, {crossApp: true})` → `{route, isExternal: true}`) +
+Universal import, which is now a shade Dropzone dialog (the legacy pasted
+grey click-panel is gone). Export tab: Content & settings
+(`downloadAllContent()` iframe download) and the Post analytics CSV
+export (disabled + sr-only "Loading..." while in flight — the legacy
+Button-loading text contract the analytics suite asserts).
+
+**History.** `history-dialog.tsx` ports the legacy history-modal onto a
+routed Dialog: the framework's `useBrowseActions` does the grouping
+(skip/count), `keepPreviousData` + the `created_at:<'…'` cursor
+getNextPageParams are verbatim, infinite scroll is a local
+IntersectionObserver sentinel (offset 250) inside the dialog's own scroll
+pane. The filter row (event/resource Switch popover under
+`history-filters`, staff combobox under `history-staff-filter` on
+useFilterableApi with the route-param hydration and the absolute-
+positioned Clear button) is a near-verbatim port — the legacy component
+was already all-shade. Staff selection navigates to
+`/settings/history/view/:userId`; clear goes back to
+`…/history/view`. Description links map InternalLink routes to
+`/settings/<route>` and external ones through `crossApp`.
+
+**Danger zone.** Three rows (reset-auth behind `labs.dangerZoneResetAuth`)
+through the shared ConfirmationProvider with the legacy labels/toasts;
+delete-all-content refetches all queries after the toast, reset-auth
+redirects to the admin root on success.
+
+**Suite adjustments (mode mechanics only, no assertion changes):**
+
+- advanced: `enableShadeSettingsMode()` + folding `shadeSettingsBootLabs()`
+  into the `advancedSettings()` boot response.
+- integrations: `enableShadeSettingsMode()` + folding it into
+  `limitedConfig()`.
+- membership/analytics (the inherited debt): opted in with the labs folded
+  into both hand-rolled responses; its migrationtools test passes against
+  the native export tab, so no skip was needed.
+- chrome: the advanced placeholder assertions became native-area
+  assertions; the placeholder machinery is retired (AreaPlaceholder +
+  `LEGACY_AREA_ROUTES` deleted, `AREA_COMPONENTS` is now a full Record);
+  the not-yet-rebuilt deep-link probe became a real
+  `/settings/history/view/123` dialog assertion plus a separate
+  unknown-route redirect probe.
+- routing: opted in after adding the `/settings/locksite` →
+  `/settings/members` redirect to the native route table (its other two
+  tests already passed against the phase-4 portal dialog).
+- **Flag-on skip list after phase 7**: `permissions.acceptance.test.tsx`
+  only (4 tests — the roles gap below). Every other `src/settings` suite
+  runs green in both lanes.
+
+**Deliberate deltas (documented, not suite-covered):**
+
+- The Pintura card's Active state is a static approximation
+  (`pintura && (config.pintura || (js && css urls))`) — the legacy
+  usePinturaEditor probes the actual script/css loads; Pintura wiring
+  into image uploads remains unported (phase-2 note).
+- The code editors are fixed-light surfaces (see CodeMirror note).
+- Labs auto-expand on single search hit not ported (see Labs note).
+- The feature-toggle confirmation uses the shared `confirmation-modal`
+  testid instead of the legacy `feature-toggle-confirmation-modal`.
+
 ## Chrome behavior ported (phase 1)
 
 - Search filters sidebar groups/items and main sections by keywords (same
@@ -719,25 +855,36 @@ acceptance suite covers it (screenshot evidence only).
   `sidebar`, search label "Search settings", "No result" text, exit-settings
   testid.
 
-## Known chrome gaps (for area agents / later phases)
+## Remaining gaps for the final sweep (all areas rebuilt; consolidated)
 
-- **Dirty-state confirmation**: Escape/exit currently leave unconditionally —
-  there is no native `useGlobalDirtyState`/`confirmIfDirty` equivalent yet.
-  Whoever lands the first editable group must add it to the shell (the legacy
-  contract is in `apps/admin-x-settings/src/main-content.tsx`) and opt
-  `layout.acceptance.test.tsx` in.
-- **Roles**: the legacy app shows editors a staff-only view and contributors
-  only their profile modal (`canAccessSettings`/`isEditorUser`). Not ported;
-  belongs to the general(+staff) area. `permissions.acceptance.test.tsx`
-  stays legacy-only until then.
-- **Scroll-position nav highlighting**: the sidebar highlights the routed
-  item only; the legacy scroll-spy (`use-scroll-section`) granularity comes
-  back as real groups land.
+Dirty-state confirmation shipped in phase 2 (shared dirty registry +
+`confirmIfDirty` on every exit path) and every legacy modal route is now a
+real native route — those phase-1 gaps are closed. Still open:
+
+- **Roles** (phase 2): the legacy app shows editors a staff-only view and
+  contributors only their profile modal
+  (`canAccessSettings`/`isEditorUser`). Not ported; the shell renders all
+  areas for every role. `permissions.acceptance.test.tsx` is the ONE
+  remaining legacy-only suite (skipped flag-on).
+- **Scroll-position nav highlighting** (phase 1): the sidebar highlights
+  the routed item only; the legacy scroll-spy (`use-scroll-section`)
+  granularity was never ported.
 - **Keyword highlighting** (`highlightKeywords`) and per-component search
-  registration were not ported — port from
-  `apps/admin-x-settings/src/utils/search.tsx` when a rebuilt screen needs
-  them.
+  registration (phase 1) — also blocks the Labs auto-expand-on-single-
+  search-hit behavior (phase 7, `useAutoExpandable`).
 - **About Ghost** sidebar link and its modal; mobile/tablet layout of the
-  chrome (desktop-first for now); `/settings/locksite` legacy redirect.
-- Deep links whose screens aren't rebuilt yet (modal routes like
-  `/settings/portal/edit`) redirect to `/settings` by design in flag-on mode.
+  chrome (desktop-first for now). (The `/settings/locksite` redirect landed
+  in phase 7 — `routing.acceptance.test.tsx` is dual-mode now.)
+- **Pintura wiring** (phases 2/7): image uploads don't open the Pintura
+  editor, and the integration card's Active state is a static
+  approximation (no script/css load probing).
+- **Fixed-light editor surfaces** (phases 5/7): email preview and the
+  advanced-area CodeMirror editors are deliberately fixed-light; revisit
+  if a dark CodeMirror/email theme is wanted.
+- **Minor deliberate deltas** already documented per area: offers
+  sort/show-archived state is dialog-local (phase 6); verification
+  prompts' newsletter-name links leave the confirmation open behind its
+  Close button (phase 5); PreviewDialog adds the device toolbar to
+  newsletters/add-offer where legacy hid it (phases 5/6); the
+  feature-toggle confirmation uses the shared `confirmation-modal` testid
+  (phase 7).

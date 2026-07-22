@@ -8,6 +8,7 @@ import { type SettingsAreaId, resolveSettingsArea, useSettingsNav } from "./nav"
 import { SettingsSidebar } from "./sidebar";
 import { confirmIfDirty, useConfirmation } from "./shared/use-confirmation";
 import { useSettingsDirty } from "./shared/use-settings-dirty";
+import { AdvancedArea } from "@/settings/advanced/advanced-area";
 import { EmailArea } from "@/settings/email/email-area";
 import { GeneralArea } from "@/settings/general/general-area";
 import { GrowthArea } from "@/settings/growth/growth-area";
@@ -23,14 +24,14 @@ import { SiteArea } from "@/settings/site/site-area";
  * unsaved changes.
  */
 
-// Rebuilt areas register their native component here; everything else
-// renders the "not yet rebuilt" placeholder.
-const AREA_COMPONENTS: Partial<Record<SettingsAreaId, ComponentType>> = {
+// Every area's native component, in the shape the nav model addresses them.
+const AREA_COMPONENTS: Record<SettingsAreaId, ComponentType> = {
     general: GeneralArea,
     site: SiteArea,
     membership: MembershipArea,
     email: EmailArea,
     growth: GrowthArea,
+    advanced: AdvancedArea,
 };
 
 // Shade/Radix dialogs expose their open state via dialog roles — when one is
