@@ -1,4 +1,4 @@
-import {useContext, useEffect, useState} from 'react';
+import {useContext, useEffect, useRef, useState} from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
@@ -549,8 +549,17 @@ export const GiftPageStyles = `
    Sticky-pinning it here fought the centering and floated it over the
    duration/tier rows. Mobile re-enables sticky below, where the stacked
    layout genuinely scrolls. */
+/* The CTA sticks to the bottom of the scrolling column (as in production), so
+   it stays reachable while a long tier list scrolls above it. The white-to-
+   transparent gradient lets content fade softly under it rather than butting
+   up against the button. When content fits, sticky is inert and the button
+   sits at its natural position. */
 .gh-portal-gift-checkout-cta-wrapper {
+    position: sticky;
+    bottom: 0;
     margin-top: 28px;
+    padding: 20px 0 24px;
+    background: linear-gradient(0deg, rgba(var(--whitergb), 1) 78%, rgba(var(--whitergb), 0) 100%);
     z-index: 1;
 }
 
@@ -949,6 +958,25 @@ const GiftPage = () => {
         setBuyerName(current => current || member?.name || '');
     }, [member?.name]);
 
+    // Anchors us to the popup's real (iframe) document for scroll control.
+    const contentRef = useRef(null);
+
+    // Moving between the plan and delivery steps swaps a full screen of content,
+    // so reset the popup scroll to the top — otherwise the buyer can land partway
+    // down the next step. Portal renders inside a react-frame-component iframe, so
+    // the global `document` here is the parent; reach the popup via the rendered
+    // node's own tree instead. Deferred a frame so it runs after the browser's
+    // scroll anchoring, which would otherwise restore the previous position.
+    useEffect(() => {
+        const raf = requestAnimationFrame(() => {
+            const popup = contentRef.current?.closest('.gh-portal-popup-container');
+            if (popup) {
+                popup.scrollTo({top: 0});
+            }
+        });
+        return () => cancelAnimationFrame(raf);
+    }, [step]);
+
     if (!site) {
         return <LoadingPage />;
     }
@@ -1196,7 +1224,7 @@ const GiftPage = () => {
 
     return (
         <>
-            <div className='gh-portal-content gift'>
+            <div className='gh-portal-content gift' ref={contentRef}>
                 <BackButton hidden={!lastPage} onClick={() => doAction('back')} />
                 <CloseButton />
                 <div className='gh-portal-gift-checkout'>

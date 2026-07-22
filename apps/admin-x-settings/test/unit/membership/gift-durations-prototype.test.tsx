@@ -26,24 +26,31 @@ describe('GiftDurationsPrototype', () => {
         assert.equal(units[1].value, 'year');
     });
 
-    it('derives the default price per duration (monthly × months; yearly for whole years)', () => {
+    it('derives the default price per duration as the editable field placeholder', () => {
         renderPrototype([1, 12]);
-        // $5/mo × 1 month = $5.00; $50/yr × 1 year = $50.00
-        assert.ok(screen.getByText('$5.00'));
-        assert.ok(screen.getByText('$50.00'));
+        // $5/mo × 1 month = 5; $50/yr × 1 year = 50 — shown as the field placeholder
+        assert.ok(screen.getByPlaceholderText('5'));
+        assert.ok(screen.getByPlaceholderText('50'));
     });
 
-    it('adapts the pricing live when a duration is edited', () => {
+    it('lets the user override a price for a duration', () => {
+        renderPrototype([1, 12]);
+        const priceField = screen.getByPlaceholderText('5') as HTMLInputElement;
+        fireEvent.change(priceField, {target: {value: '9'}});
+        assert.equal((screen.getByPlaceholderText('5') as HTMLInputElement).value, '9');
+    });
+
+    it('adapts the price field placeholder live when a duration is edited', () => {
         renderPrototype([1, 12]);
         const firstAmount = (screen.getAllByLabelText('Duration amount') as HTMLInputElement[])[0];
-        // Change 1 month → 3 months: price becomes $5 × 3 = $15.00
+        // Change 1 month → 3 months: default becomes $5 × 3 = 15
         fireEvent.change(firstAmount, {target: {value: '3'}});
-        assert.ok(screen.getByText('$15.00'));
+        assert.ok(screen.getByPlaceholderText('15'));
 
-        // Switch that row to years: 3 years = 36 months → yearly $50 × 3 = $150.00
+        // Switch that row to years: 3 years = 36 months → yearly $50 × 3 = 150
         const firstUnit = (screen.getAllByLabelText('Duration unit') as HTMLSelectElement[])[0];
         fireEvent.change(firstUnit, {target: {value: 'year'}});
-        assert.ok(screen.getByText('$150.00'));
+        assert.ok(screen.getByPlaceholderText('150'));
     });
 
     it('adds durations up to a maximum of 4', () => {
@@ -71,8 +78,8 @@ describe('GiftDurationsPrototype', () => {
         renderPrototype([1], [tier, silver]);
         assert.ok(screen.getByText('Gold'));
         assert.ok(screen.getByText('Silver'));
-        // Gold 1 month = $5.00, Silver 1 month = $3.00
-        assert.ok(screen.getByText('$5.00'));
-        assert.ok(screen.getByText('$3.00'));
+        // Gold 1 month default = 5, Silver 1 month default = 3 (field placeholders)
+        assert.ok(screen.getByPlaceholderText('5'));
+        assert.ok(screen.getByPlaceholderText('3'));
     });
 });
