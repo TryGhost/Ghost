@@ -1,12 +1,14 @@
 import '@xyflow/react/dist/style.css';
 import React, {useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
+import {useEmailTrackingSettings} from '@/automations/hooks/use-email-tracking-settings';
 import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {Handle, Position} from '@xyflow/react';
 import type {Node, NodeProps} from '@xyflow/react';
 import type {AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {formatRate} from './format-stats';
+import {OffValue} from './off-value';
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
 // these; they are not action IDs and never reach the API.
@@ -167,23 +169,26 @@ const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
     );
 };
 
-const EmailStepStatsFooter: React.FC<{stats: AutomationEmailStats}> = ({stats}) => (
-    <div className='mt-3 grid w-full grid-cols-3 gap-3 border-t border-border-default pt-3'>
-        <div className='flex flex-col text-left'>
-            <span className='text-xs text-text-secondary'>Sent</span>
-            <span className='text-base font-medium'>{formatNumber(stats.email_sent_count)}</span>
-        </div>
-        <div className='flex flex-col text-left'>
-            <span className='text-xs text-text-secondary'>Opened</span>
-            <span className='text-base font-medium'>{formatRate(stats.opened_rate)}</span>
-        </div>
-        {/* @TODO: NY-1457 */}
-        {/* <div className='flex flex-col text-left'>
-            <span className='text-xs text-text-secondary'>Clicked</span>
-            <span className='text-base font-medium'>{formatRate(stats?.clicked_rate)}</span>
-        </div> */}
+const FooterMetric: React.FC<{label: string; tracked?: boolean; children: React.ReactNode}> = ({label, tracked = true, children}) => (
+    <div className='flex flex-col text-left'>
+        <span className={cn('text-xs', tracked ? 'text-text-secondary' : 'text-muted-foreground')}>{label}</span>
+        {tracked
+            ? <span className='text-base font-medium'>{children}</span>
+            : <OffValue className='text-base' />}
     </div>
 );
+
+const EmailStepStatsFooter: React.FC<{stats: AutomationEmailStats}> = ({stats}) => {
+    const {emailTrackOpens, emailTrackClicks} = useEmailTrackingSettings();
+
+    return (
+        <div className='mt-3 grid w-full grid-cols-3 gap-3 border-t border-border-default pt-3'>
+            <FooterMetric label='Sent'>{formatNumber(stats.email_sent_count)}</FooterMetric>
+            <FooterMetric label='Opened' tracked={emailTrackOpens}>{formatRate(stats.opened_rate)}</FooterMetric>
+            <FooterMetric label='Clicked' tracked={emailTrackClicks}>{formatRate(stats.clicked_rate)}</FooterMetric>
+        </div>
+    );
+};
 
 const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
     <NodeShell data={data}>
