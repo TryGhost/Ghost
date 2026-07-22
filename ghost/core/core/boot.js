@@ -639,6 +639,8 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         }
 
         logging.error(serverStartError);
+        // eslint-disable-next-line no-console
+        console.error(serverStartError);
 
         // If ghost was started and something else went wrong, we shut it down
         if (ghostServer) {
