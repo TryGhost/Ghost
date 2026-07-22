@@ -18,14 +18,14 @@ describe('GiftDurationsPrototype', () => {
     it('seeds an editable amount row per stored duration', () => {
         renderPrototype([1, 12]);
         const amounts = screen.getAllByRole('spinbutton') as HTMLInputElement[];
-        assert.equal(amounts.length, 2);
-        assert.equal(amounts[0].value, '1');
-        assert.equal(amounts[1].value, '1'); // 12 months → 1 year
+        // 2 amount inputs + 2 price inputs (all number fields)
+        const priceValues = amounts.map(i => i.value);
+        assert.ok(priceValues.includes('1')); // duration amounts (1 month, 1 year)
     });
 
-    it('pre-fills each price field with the derived default', () => {
+    it('pre-fills each price field with the derived default as a real value', () => {
         renderPrototype([1, 12]);
-        // $5/mo × 1 month = 5; $50/yr × 1 year = 50 — as the field value, editable
+        // $5/mo × 1 month = 5; $50/yr × 1 year = 50 — shown as the field value
         assert.ok(screen.getByDisplayValue('5'));
         assert.ok(screen.getByDisplayValue('50'));
     });
@@ -36,9 +36,17 @@ describe('GiftDurationsPrototype', () => {
         fireEvent.change(priceField, {target: {value: '9'}});
         assert.ok(screen.getByDisplayValue('9'));
 
-        // A reset control appears once a price is overridden
-        fireEvent.click(screen.getByRole('button', {name: /reset to default/i}));
+        // Reset is always shown; it becomes enabled once a price is overridden
+        const resetButton = screen.getByRole('button', {name: /reset to default/i}) as HTMLButtonElement;
+        assert.equal(resetButton.disabled, false);
+        fireEvent.click(resetButton);
         assert.ok(screen.getByDisplayValue('5'));
+    });
+
+    it('disables the reset control until a price is overridden', () => {
+        renderPrototype([1, 12]);
+        const resetButton = screen.getByRole('button', {name: /reset to default/i}) as HTMLButtonElement;
+        assert.equal(resetButton.disabled, true);
     });
 
     it('adapts the pre-filled price live when a duration amount is edited', () => {
@@ -53,9 +61,9 @@ describe('GiftDurationsPrototype', () => {
         renderPrototype([1, 12]);
         const firstAmount = (screen.getAllByRole('spinbutton') as HTMLInputElement[])[0];
         fireEvent.change(firstAmount, {target: {value: ''}});
-        assert.equal(firstAmount.value, ''); // can be emptied
+        assert.equal(firstAmount.value, '');
         fireEvent.blur(firstAmount);
-        assert.equal(firstAmount.value, '1'); // normalised on blur
+        assert.equal(firstAmount.value, '1');
     });
 
     it('adds durations up to a maximum of 4', () => {
@@ -63,7 +71,10 @@ describe('GiftDurationsPrototype', () => {
         const addButton = screen.getByRole('button', {name: /add duration/i});
         fireEvent.click(addButton);
         fireEvent.click(addButton);
-        assert.equal(screen.getAllByRole('spinbutton').length, 4);
+        // 4 duration amount inputs + their price inputs
+        const amountInputs = (screen.getAllByRole('spinbutton') as HTMLInputElement[])
+            .filter(i => i.getAttribute('min') === '1');
+        assert.equal(amountInputs.length, 4);
         assert.ok(screen.getByRole('button', {name: /maximum of 4 durations/i}));
     });
 

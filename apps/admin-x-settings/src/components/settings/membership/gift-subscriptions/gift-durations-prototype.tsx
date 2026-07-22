@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Button, CurrencyField, Heading, Select, TextField} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Select, TextField} from '@tryghost/admin-x-design-system';
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 
 // EXPERIMENTAL / PROTOTYPE — an alternative to the fixed duration checkboxes.
@@ -81,15 +81,18 @@ const GiftDurationsPrototype: React.FC<{
         setDurations(list => (list.length >= MAX_DURATIONS ? list : [...list, {id: nextId(), amount: '1', unit: 'month'}]));
     };
 
-    // Per-tier, per-duration price overrides. A row shows the derived default
-    // until the publisher types a different price; "Reset to default" clears them.
-    const [priceOverrides, setPriceOverrides] = useState<Record<string, Record<string, number>>>({});
-    const [resetNonce, setResetNonce] = useState<Record<string, number>>({});
-    const priceInCents = (tier: Tier, d: EditableDuration): number => (
-        priceOverrides[tier.id]?.[d.id] ?? derivedPriceInCents(tier, toMonths(d))
+    // Per-tier, per-duration price overrides, held as the value shown in the field
+    // (in whole currency units). A row shows the derived default until the
+    // publisher types their own price; "Reset to default" drops the overrides.
+    const [priceOverrides, setPriceOverrides] = useState<Record<string, Record<string, string>>>({});
+    const defaultPrice = (tier: Tier, d: EditableDuration): string => (
+        (derivedPriceInCents(tier, toMonths(d)) / 100).toString()
     );
-    const setPrice = (tierId: string, durationId: string, cents: number) => {
-        setPriceOverrides(prev => ({...prev, [tierId]: {...(prev[tierId] || {}), [durationId]: cents}}));
+    const priceValue = (tier: Tier, d: EditableDuration): string => (
+        priceOverrides[tier.id]?.[d.id] ?? defaultPrice(tier, d)
+    );
+    const setPrice = (tierId: string, durationId: string, value: string) => {
+        setPriceOverrides(prev => ({...prev, [tierId]: {...(prev[tierId] || {}), [durationId]: value}}));
     };
     const resetTierPrices = (tierId: string) => {
         setPriceOverrides((prev) => {
@@ -97,7 +100,6 @@ const GiftDurationsPrototype: React.FC<{
             delete next[tierId];
             return next;
         });
-        setResetNonce(prev => ({...prev, [tierId]: (prev[tierId] || 0) + 1}));
     };
     const tierHasOverrides = (tierId: string) => Object.keys(priceOverrides[tierId] || {}).length > 0;
 
@@ -164,18 +166,25 @@ const GiftDurationsPrototype: React.FC<{
                         <div key={tier.id}>
                             <div className='mb-2 flex min-h-6 items-center justify-between'>
                                 {tiers.length > 1 ? <Heading level={6}>{tier.name}</Heading> : <span />}
-                                {tierHasOverrides(tier.id) && (
-                                    <Button color='green' label='Reset to default' size='sm' link onClick={() => resetTierPrices(tier.id)} />
-                                )}
+                                <Button
+                                    color='green'
+                                    disabled={!tierHasOverrides(tier.id)}
+                                    label='Reset to default'
+                                    size='sm'
+                                    link
+                                    onClick={() => resetTierPrices(tier.id)}
+                                />
                             </div>
                             <div className='flex flex-col gap-3'>
                                 {durations.map(d => (
-                                    <CurrencyField
-                                        key={`${tier.id}-${d.id}-${toMonths(d)}-${resetNonce[tier.id] || 0}`}
+                                    <TextField
+                                        key={`${tier.id}-${d.id}`}
+                                        min={0}
                                         rightPlaceholder={tier.currency || currency}
                                         title={durationLabel(d)}
-                                        valueInCents={priceInCents(tier, d)}
-                                        onChange={cents => setPrice(tier.id, d.id, cents)}
+                                        type='number'
+                                        value={priceValue(tier, d)}
+                                        onChange={e => setPrice(tier.id, d.id, e.target.value)}
                                     />
                                 ))}
                             </div>
