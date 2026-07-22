@@ -47,7 +47,7 @@ const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings}) => {
     return (
         <div
             ref={containerRef}
-            className='flex size-full items-center justify-center overflow-hidden'
+            className='flex size-full items-start justify-center overflow-hidden'
         >
             {scale > 0 && (
                 <div
@@ -55,7 +55,7 @@ const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings}) => {
                         width: DESIGN_WIDTH,
                         height: DESIGN_HEIGHT,
                         transform: `scale(${scale})`,
-                        transformOrigin: 'center center',
+                        transformOrigin: 'top center',
                         flexShrink: 0,
                         borderRadius: 12,
                         overflow: 'hidden',

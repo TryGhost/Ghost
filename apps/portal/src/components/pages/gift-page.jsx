@@ -36,16 +36,19 @@ export const GiftPageStyles = `
     right: 32px;
 }
 
+/* The CloseButton component sets the accent colour inline (style={{color}}),
+   which would render the X in the brand colour — invisible against the pink
+   panel. !important lets these white rules win over that inline style. */
 .gh-portal-popup-container.full-size.gift .gh-portal-closeicon,
 .gh-portal-popup-container.full-size.giftSuccess .gh-portal-closeicon,
 .gh-portal-popup-container.full-size.giftRedemption .gh-portal-closeicon {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.65) !important;
 }
 
 .gh-portal-popup-container.full-size.gift .gh-portal-closeicon:hover,
 .gh-portal-popup-container.full-size.giftSuccess .gh-portal-closeicon:hover,
 .gh-portal-popup-container.full-size.giftRedemption .gh-portal-closeicon:hover {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .gh-portal-content.gift,
