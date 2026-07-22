@@ -55,7 +55,7 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                 <FieldLabel className='sr-only' htmlFor={`navigation-url-${item.id}`}>URL</FieldLabel>
                 <Input
                     aria-invalid={Boolean(item.errors.url) || undefined}
-                    className={textFieldClasses}
+                    className={clsx('h-[var(--control-height)] rounded-lg border-transparent bg-muted py-2 focus-visible:border-green focus-visible:bg-surface-elevated focus-visible:ring-green/25', textFieldClasses)}
                     id={`navigation-url-${item.id}`}
                     value={urlInput.displayValue}
                     onBlur={urlInput.commitValue}
