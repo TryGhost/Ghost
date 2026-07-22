@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import {Button, Heading, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
 import {Separator} from '@tryghost/shade/components';
@@ -19,6 +19,13 @@ const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const canGift = paidMembersEnabled !== false;
 
     const giftUrl = `${siteData?.url.replace(/\/$/, '')}/#/portal/gift`;
+
+    const [copied, setCopied] = useState(false);
+    const handleCopy = () => {
+        navigator.clipboard.writeText(giftUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     const handleToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
         try {
@@ -43,7 +50,7 @@ const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     direction='rtl'
                     disabled={!canGift}
                     gap='gap-0'
-                    hint='Display the gift option inside Portal. Your shareable link keeps working even when this is off.'
+                    hint="Adds a gift option to your signup page and members' account area. Your shareable link keeps working even when this is off."
                     label='Show in Portal'
                     testId='gift-subscriptions-toggle'
                     onChange={handleToggle}
@@ -57,7 +64,7 @@ const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 <span className='truncate text-sm text-grey-700' data-testid='gift-url'>{giftUrl}</span>
                                 <div className='flex shrink-0 gap-1'>
                                     <Button color='clear' data-testid='preview-shareable-link' label='Preview' size='sm' onClick={() => window.open(giftUrl, '_blank')} />
-                                    <Button color='light-grey' data-testid='copy-shareable-link' label='Copy' size='sm' onClick={() => navigator.clipboard.writeText(giftUrl)} />
+                                    <Button color='light-grey' data-testid='copy-shareable-link' label={copied ? 'Copied' : 'Copy'} size='sm' onClick={handleCopy} />
                                 </div>
                             </div>
                         </div>
