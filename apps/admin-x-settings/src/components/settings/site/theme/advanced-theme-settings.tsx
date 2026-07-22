@@ -2,7 +2,8 @@ import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
-import {Button, ConfirmationModal, LimitModal, List, ListItem, ModalPage, showToast} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent} from '@tryghost/shade/components';
+import {Button, ConfirmationModal, LimitModal, ModalPage, showToast} from '@tryghost/admin-x-design-system';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
@@ -195,24 +196,25 @@ const ThemeList:React.FC<ThemeSettingProps> = ({
     });
 
     return (
-        <List pageTitle='Installed themes'>
-            {themes.map((theme) => {
+        <>
+            <h1 className='mb-5 text-2xl font-bold'>Installed themes</h1>
+            <ActionList className='border-t border-border'>
+                {themes.map((theme) => {
                 const label = getThemeLabel(theme);
                 const detail = getThemeVersion(theme);
 
                 return (
-                    <ListItem
-                        key={theme.name}
-                        action={<ThemeActions theme={theme} />}
-                        detail={detail}
-                        id={`theme-${theme.name}`}
-                        separator={false}
-                        testId='theme-list-item'
-                        title={label}
-                    />
+                    <ActionListItem key={theme.name} data-testid='theme-list-item'>
+                        <ActionListItemContent className='py-3 pr-6' id={`theme-${theme.name}`}>
+                            <div>{label}</div>
+                            {detail && <div className='text-sm text-muted-foreground'>{detail}</div>}
+                        </ActionListItemContent>
+                        <ActionListItemActions><ThemeActions theme={theme} /></ActionListItemActions>
+                    </ActionListItem>
                 );
-            })}
-        </List>
+                })}
+            </ActionList>
+        </>
     );
 };
 

@@ -1,5 +1,6 @@
 // UI components — basic reusable controls
 export * from './components/ui/alert-dialog';
+export * from './components/ui/action-list';
 export * from './components/ui/animated-number';
 export * from './components/ui/avatar';
 export * from './components/ui/badge';

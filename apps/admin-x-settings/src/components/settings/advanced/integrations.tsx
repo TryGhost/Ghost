@@ -3,9 +3,9 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
-import {Button, ConfirmationModal, Icon, List, ListItem, SettingGroupHeader, showToast} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Button, ConfirmationModal, Icon, SettingGroupHeader, showToast} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
-import {NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {Plug} from 'lucide-react';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -72,16 +72,21 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
             <Button color='green' label='Configure' link onClick={handleClick} />
         );
 
-    return <ListItem
-        action={buttons}
-        avatar={icon}
-        className={disabled ? 'opacity-50 saturate-0' : ''}
-        detail={detail}
-        hideActions={!disabled}
-        testId={testId}
-        title={active ? <span className='inline-flex items-center gap-1'>{title} <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-1.5 py-px text-xs font-semibold tracking-wide text-green uppercase'>Active</span></span> : title}
-        onClick={handleClick}
-    />;
+    return <ActionListItem className={disabled ? 'opacity-50 saturate-0' : ''} data-testid={testId}>
+        <ActionListItemContent asChild>
+            <button className='flex w-full items-center gap-3 py-3 text-left' type='button' onClick={handleClick}>
+                {icon}
+                <span className='min-w-0 grow'>
+                    <span className='flex items-center gap-1'>
+                        {title}
+                        {active && <span className='inline-flex items-center rounded-full bg-green/10 px-1.5 py-px text-xs font-semibold tracking-wide text-green uppercase'>Active</span>}
+                    </span>
+                    <span className='block text-sm text-muted-foreground'>{detail}</span>
+                </span>
+            </button>
+        </ActionListItemContent>
+        <ActionListItemActions visibility={disabled ? 'always' : 'hover'}>{buttons}</ActionListItemActions>
+    </ActionListItem>;
 };
 
 const BuiltInIntegrations: React.FC = () => {
@@ -170,7 +175,7 @@ const BuiltInIntegrations: React.FC = () => {
     ];
 
     return (
-        <List titleSeparator={false}>
+        <ActionList>
             {sortedItems.map(item => (
                 <IntegrationItem
                     key={item.testId}
@@ -185,7 +190,7 @@ const BuiltInIntegrations: React.FC = () => {
                     title={item.title}
                 />
             ))}
-        </List>
+        </ActionList>
     );
 };
 
@@ -196,7 +201,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
 
     if (integrations.length) {
         return (
-            <List borderTop={false}>
+            <ActionList>
                 {integrations.map(integration => (
                     <IntegrationItem
                         key={integration.id}
@@ -236,7 +241,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                         }}
                     />)
                 )}
-            </List>
+            </ActionList>
         );
     } else {
         return <NoValueLabel>

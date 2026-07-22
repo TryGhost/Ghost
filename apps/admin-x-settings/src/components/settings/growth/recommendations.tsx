@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import RecommendationList from './recommendations/recommendation-list';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Button, type ShowMoreData} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/admin-x-design-system';
 import {Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade/components';
 import {formatNumber} from '@tryghost/shade/utils';
 import {keepPreviousData} from '@tanstack/react-query';
@@ -47,7 +47,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         placeholderData: keepPreviousData
     });
 
-    const showMoreRecommendations: ShowMoreData = {
+    const showMoreRecommendations = {
         hasMore: !!hasNextPage,
         loadMore: fetchNextPage
     };
@@ -82,7 +82,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const {data: {stats} = {}, isLoading: areStatsLoading} = useReferrerHistory({});
 
-    const showMoreMentions: ShowMoreData = {
+    const showMoreMentions = {
         hasMore: !!hasIncomingRecommendationsNextPage,
         loadMore: fetchIncomingRecommendationsNextPage
     };

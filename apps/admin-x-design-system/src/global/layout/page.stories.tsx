@@ -3,11 +3,8 @@ import type {Meta, StoryObj} from '@storybook/react-vite';
 import Page, {CustomGlobalAction} from './page';
 import ViewContainer from './view-container';
 
-import {testColumns, testRows} from '../table/dynamic-table.stories';
 import {exampleActions as exampleActionButtons} from './view-container.stories';
-import DynamicTable from '../table/dynamic-table';
 import Heading from '../heading';
-import {tableRowHoverBgClasses} from '../table-row';
 import Button from '../button';
 
 const meta = {
@@ -77,138 +74,6 @@ export const CustomGlobalActions: Story = {
     }
 };
 
-const currentAdminExample = <ViewContainer
-    title='Members'
-    type='page'
->
-    <DynamicTable
-        columns={testColumns}
-        pageHasSidebar={false}
-        rows={testRows(100)}
-    />
-</ViewContainer>;
-
-export const ExampleCurrentAdminList: Story = {
-    name: 'Example: List in Current Admin',
-    args: {
-        children: currentAdminExample
-    }
-};
-
-const simpleList = <ViewContainer
-    firstOnPage={false}
-    title='Members'
-    type='page'
->
-    <DynamicTable
-        columns={testColumns}
-        footer={<span>Just a regular table footer</span>}
-        pageHasSidebar={false}
-        rows={testRows(100)}
-    />
-</ViewContainer>;
-
-export const ExampleSimpleList: Story = {
-    name: 'Example: Simple List',
-    args: {
-        pageTabs: pageTabs,
-        showAppMenu: true,
-        showGlobalActions: true,
-        children: simpleList
-    }
-};
-
-const stickyList = <ViewContainer
-    firstOnPage={false}
-    title='Members'
-    type='page'
->
-    <DynamicTable
-        columns={testColumns}
-        footer={<span>Sticky footer</span>}
-        pageHasSidebar={false}
-        rows={testRows(40)}
-        stickyFooter
-        stickyHeader
-    />
-</ViewContainer>;
-
-export const ExampleStickyList: Story = {
-    name: 'Example: Sticky Header/Footer List',
-    args: {
-        pageTabs: pageTabs,
-        showAppMenu: true,
-        showGlobalActions: true,
-        children: stickyList
-    }
-};
-
-const examplePrimaryAction = <ViewContainer
-    firstOnPage={false}
-    primaryAction={{
-        title: 'Add member',
-        color: 'black',
-        onClick: () => {
-            alert('Clicked primary action');
-        }
-    }}
-    title='Members'
-    type='page'
->
-    <DynamicTable
-        columns={testColumns}
-        footer={<span>Sticky footer</span>}
-        pageHasSidebar={false}
-        rows={testRows(40)}
-        stickyFooter
-        stickyHeader
-    />
-</ViewContainer>;
-
-export const ExamplePrimaryAction: Story = {
-    name: 'Example: Primary Action',
-    args: {
-        pageTabs: pageTabs,
-        showAppMenu: true,
-        showGlobalActions: true,
-        children: examplePrimaryAction
-    }
-};
-
-const exampleActionsContent = <ViewContainer
-    actions={exampleActionButtons}
-    firstOnPage={false}
-    primaryAction={{
-        title: 'Add member',
-        icon: 'add',
-        color: 'black',
-        onClick: () => {
-            alert('Clicked primary action');
-        }
-    }}
-    title='Members'
-    type='page'
->
-    <DynamicTable
-        columns={testColumns}
-        footer={<span>Sticky footer</span>}
-        pageHasSidebar={false}
-        rows={testRows(40)}
-        stickyFooter
-        stickyHeader
-    />
-</ViewContainer>;
-
-export const ExampleActions: Story = {
-    name: 'Example: Custom Actions',
-    args: {
-        pageTabs: pageTabs,
-        showAppMenu: true,
-        showGlobalActions: true,
-        children: exampleActionsContent
-    }
-};
-
 const mockIdeaCards = () => {
     const cards = [];
 
@@ -263,7 +128,7 @@ const mockPosts = () => {
 
     for (let i = 0; i < 11; i++) {
         posts.push(
-            <div className={`group grid grid-cols-[96px_auto_120px_120px_60px] items-center gap-7 border-b border-grey-200 py-5 ${tableRowHoverBgClasses}`}>
+            <div className='group grid grid-cols-[96px_auto_120px_120px_60px] items-center gap-7 border-b border-grey-200 py-5 hover:bg-grey-50'>
                 <div className='flex size-24 items-center justify-center rounded-sm bg-grey-100'>
 
                 </div>

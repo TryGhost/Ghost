@@ -1,7 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
-import {Avatar, Field, FieldLabel, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, Switch, inputSurface} from '@tryghost/shade/components';
-import {Button, Icon, InfiniteScrollListener, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemContent, Avatar, Field, FieldLabel, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, Switch, inputSurface} from '@tryghost/shade/components';
+import {Button, Icon, InfiniteScrollListener, Modal} from '@tryghost/admin-x-design-system';
 import {ChevronDown, History, X} from 'lucide-react';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -335,28 +335,30 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
             }}
         >
             <div className='relative mt-6'>
-                <List hint={(data?.isEnd && data.actions.length > 0) ? 'End of history log' : undefined}>
+                <ActionList>
                     {data?.actions ? (
                         data.actions.length > 0 ? (
                             <>
                                 <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
-                                {data.actions.map(action => !action.skip && <ListItem
-                                    key={action.id}
-                                    avatar={<HistoryAvatar action={action} />}
-                                    detail={[
-                                        new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
-                                        new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
-                                    ].join(' | ')}
-                                    title={
-                                        <div>
+                                {data.actions.map(action => !action.skip && <ActionListItem key={action.id}>
+                                    <ActionListItemContent className='flex items-center gap-3 py-3'>
+                                        <HistoryAvatar action={action} />
+                                        <div className='min-w-0 grow'>
+                                            <div>
                                             {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
                                             {!isBulkAction(action) && <HistoryActionDescription action={action} />}
                                             {action.count ? <> {formatNumber(action.count)} times</> : null}
                                             <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
+                                            </div>
+                                            <div className='text-sm text-muted-foreground'>
+                                                {[
+                                                    new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
+                                                    new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
+                                                ].join(' | ')}
+                                            </div>
                                         </div>
-                                    }
-                                    separator
-                                />)}
+                                    </ActionListItemContent>
+                                </ActionListItem>)}
                                 {isFetchingNextPage && (
                                     <div className="flex items-center justify-center p-5">
                                         <LoadingIndicator size='md' />
@@ -381,7 +383,8 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                     ) : (
                         <NoValueLabel>No entries found.</NoValueLabel>
                     )}
-                </List>
+                    {data?.isEnd && data.actions.length > 0 && <div className='border-t border-border pt-2 text-sm text-muted-foreground'>End of history log</div>}
+                </ActionList>
             </div>
         </Modal>
     );

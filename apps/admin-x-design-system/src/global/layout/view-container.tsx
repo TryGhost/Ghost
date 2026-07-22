@@ -3,7 +3,6 @@ import Heading from '../heading';
 import clsx from 'clsx';
 import Button, {ButtonColor, ButtonProps} from '../button';
 import {ButtonGroupProps} from '../button-group';
-import DynamicTable, {DynamicTableProps} from '../table/dynamic-table';
 
 export interface View {
     id: string;
@@ -118,25 +117,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     let toolbar = <></>;
     let mainContent:React.ReactNode = <></>;
 
-    let isSingleDynamicTable;
-    let singleDynamicTableIsSticky = false;
-
-    if (React.isValidElement(children) && children.type === DynamicTable) {
-        isSingleDynamicTable = true;
-        const dynTable = (children as React.ReactElement<DynamicTableProps>);
-        if (dynTable.props.stickyHeader || dynTable.props.stickyFooter) {
-            singleDynamicTableIsSticky = true;
-            children = isSingleDynamicTable
-                ? React.cloneElement(dynTable, {
-                    ...(dynTable.props as DynamicTableProps),
-                    singlePageTable: true
-                })
-                : children;
-        }
-        mainContent = children;
-    } else {
-        mainContent = children;
-    }
+    mainContent = children;
 
     toolbarWrapperClassName = clsx(
         'z-50',
@@ -196,10 +177,6 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
         'group/view-container flex flex-auto flex-col',
         mainContainerClassName
     );
-
-    if (singleDynamicTableIsSticky) {
-        contentFullBleed = true;
-    }
 
     contentWrapperClassName = clsx(
         'relative mx-auto w-full flex-auto',

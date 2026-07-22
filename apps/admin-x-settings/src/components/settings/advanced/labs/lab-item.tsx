@@ -1,5 +1,5 @@
 import React from 'react';
-import {ListItem} from '@tryghost/admin-x-design-system';
+import {ActionListItem, ActionListItemActions, ActionListItemContent} from '@tryghost/shade/components';
 
 const LabItem: React.FC<{
     title?: React.ReactNode;
@@ -10,13 +10,13 @@ const LabItem: React.FC<{
     title, detail, action, testId
 }) => {
     return (
-        <ListItem
-            action={action}
-            bgOnHover={false}
-            detail={detail}
-            paddingRight={false}
-            testId={testId}
-            title={title} />
+        <ActionListItem data-testid={testId} hover={false}>
+            <ActionListItemContent className='py-3 pr-6'>
+                <div>{title}</div>
+                {detail && <div className='text-sm text-muted-foreground'>{detail}</div>}
+            </ActionListItemContent>
+            {action && <ActionListItemActions>{action}</ActionListItemActions>}
+        </ActionListItem>
     );
 };
 
