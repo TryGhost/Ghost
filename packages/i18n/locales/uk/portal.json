@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Вітаємо на {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Коли скринька \"Вхідні\" не може прийняти електронний лист, це зазвичай називають відмовою. У багатьох випадках це може бути тимчасовим. Однак у деяких випадках відхилений електронний лист може бути повернуто як постійна помилка, якщо адреса електронної пошти недійсна або не існує.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Чому мою електронну пошту вимкнено?",

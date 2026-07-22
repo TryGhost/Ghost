@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Tervetuloa sivulle {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Jos sähköpostilaatikko ei pysty vastaanottamaan viestiä, sitä kutsutaan “bounssaamiseksi”. Usein se on väliaikaista. Joissakin tapauksissa “bounssannut” sähköposti voi kuitenkin palautua pysyvänä virheenä, kun sähköpostiosoite on virheellinen tai sitä ei ole olemassa.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Miksi sähköpostini on poistettu käytöstä?",

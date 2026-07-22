@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Chào mừng đến với {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Khi hộp thư đến không nhận được email, nó thường được gọi là email bị trả lại. Điều này có thể là tạm thời. Tuy nhiên, trong một số trường hợp, email bị trả lại có thể là lỗi vĩnh viễn nếu địa chỉ email không hợp lệ hoặc không tồn tại.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Tại sao email của tôi bị vô hiệu hóa?",

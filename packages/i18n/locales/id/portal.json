@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Selamat datang di {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Ketika sebuah kotak masuk gagal menerima sebuah email, hal tersebut umumnya disebut sebagai bounce. Dalam banyak kasus, ini bisa bersifat sementara. Namun, dalam beberapa kasus, email yang terbounce dapat dikembalikan sebagai kegagalan permanen ketika alamat email yang dituju tidak valid atau tidak ada.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Mengapa email saya dinonaktifkan?",

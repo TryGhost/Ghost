@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "歡迎來到{siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "當收件箱無法接收郵件時，通常稱之為退信。在許多情況下，這可能是暫時的。然而，在某些情況下，當郵件地址無效或不存在時，退回的郵件可能會被視為永久失敗。",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "為什麼我的電子郵件被停用了？",

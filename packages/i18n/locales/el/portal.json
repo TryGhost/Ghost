@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Καλώς ήρθατε στο {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Όταν τα εισερχόμενα αποτυγχάνουν να αποδεχθούν ένα email, αυτό συνήθως ονομάζεται αναπήδηση. Σε πολλές περιπτώσεις, αυτό μπορεί να είναι προσωρινό. Ωστόσο, σε ορισμένες περιπτώσεις, ένα αναπηδημένο email μπορεί να επιστραφεί ως μόνιμη αποτυχία όταν μια διεύθυνση email είναι άκυρη ή ανύπαρκτη.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Γιατί έχει απενεργοποιηθεί το email μου;",

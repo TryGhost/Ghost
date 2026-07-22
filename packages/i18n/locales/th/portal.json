@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "ยินดีต้อนรับสู่ {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "เมื่อกล่องจดหมายเข้าไม่ยอมรับอีเมล โดยทั่วไปจะเรียกว่าการตีกลับ. ในหลายกรณี, การดำเนินการนี้อาจเกิดขึ้นชั่วคราว. อย่างไรก็ตาม ในบางกรณี อีเมลที่ถูกตีกลับ สามารถส่งคืนเป็นความล้มเหลวถาวรเมื่อที่อยู่อีเมลไม่ถูกต้องหรือไม่มีอยู่จริง",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "เหตุใดอีเมลของฉันจึงถูกปิดการใช้งาน?",

@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Þegar netfang getur ekki tekið við tölvupósti er það oftast tímabundin villa en í sumum tilfellum, þegar netfangið er ógilt eða ekki til staðar, er villan varanleg.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Hvers vegna var netfangið mitt gert óvirkt?",

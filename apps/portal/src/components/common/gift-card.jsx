@@ -1,8 +1,8 @@
 import {t} from '../../utils/i18n';
 
-const GiftCard = ({cardRef, duration, tierName, name, toName, fromName, giftValue, siteIcon, siteTitle}) => {
+const GiftCard = ({cardRef, duration, tierName, toName, fromName, giftValue, siteIcon, siteTitle}) => {
     const hasMeta = duration && tierName;
-    const hasDetails = name || toName || fromName || giftValue;
+    const hasDetails = toName || fromName || giftValue;
 
     return (
         <div className='gh-portal-gift-checkout-card-frame'>
@@ -26,12 +26,6 @@ const GiftCard = ({cardRef, duration, tierName, name, toName, fromName, giftValu
                             <div className='gh-portal-gift-checkout-card-detail'>
                                 <div className='gh-portal-gift-checkout-card-detail-label'>{t('From')}</div>
                                 <div className='gh-portal-gift-checkout-card-detail-value'>{fromName}</div>
-                            </div>
-                        )}
-                        {name && (
-                            <div className='gh-portal-gift-checkout-card-detail'>
-                                <div className='gh-portal-gift-checkout-card-detail-label'>{t('Name')}</div>
-                                <div className='gh-portal-gift-checkout-card-detail-value'>{name}</div>
                             </div>
                         )}
                         {giftValue && (

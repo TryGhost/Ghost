@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Benvenuto a {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Quando una casella fallisce l'accettazione di un'email, questo viene normalmente chiamato \"rimbalzo\". In molti casi questo è temporaneo. Tuttavia, in alcuni casi un'email potrebbe tornare come un fallimento permanente se l'indirizzo è sbagliato o inesistente.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Perché la mia email è stata disattivata?",

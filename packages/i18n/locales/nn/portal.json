@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Når ein innboks ikkje klarar å akseptera ein e-post blir det kalla ein bounce. I nokre tilfelle blir ein bounce registrert som ein permanent feil når ein e-postadresse er ugyldig eller ikkje eksisterer.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Kvifor har e-posten min blitt deaktivert?",

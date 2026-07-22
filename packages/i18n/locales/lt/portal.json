@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Sveiki apsilankę {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Kai el. pašto dėžutė nepriima el. laiško, tai paprastai vadinama atmetimu. Daugeliu atvejų tai gali būti laikina. Tačiau kai kuriais atvejais atšauktas el. laiškas gali būti grąžintas kaip pasikartojantis gedimas, kai el. pašto adresas neteisingas arba neegzistuoja.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Kodėl mano el. paštas buvo deaktyvuotas?",

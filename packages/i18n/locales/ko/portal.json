@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "{siteTitle}에 오신 것을 환영해요",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "받는 편지함이 이메일을 받지 못하는 경우 이를 바운스(bounce)라고 해요. 이는 일시적인 경우가 많지만, 이메일 주소가 잘못되었거나 존재하지 않는 경우 영구적인 실패로 반환될 수도 있어요.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "왜 이메일이 비활성화되었나요?",

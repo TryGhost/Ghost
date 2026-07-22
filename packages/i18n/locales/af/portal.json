@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Welkom by {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "As 'n inboks nie 'n e-pos aanvaar nie, word dit algemeen 'n 'bounce' genoem. In baie gevalle kan dit tydelik wees. In sommige gevalle kan 'n gebotsde e-pos egter as 'n permanente fout teruggekeer word wanneer 'n e-posadres ongeldig of nie-bestaande is nie.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Waarom is my e-pos gedeaktiveer?",

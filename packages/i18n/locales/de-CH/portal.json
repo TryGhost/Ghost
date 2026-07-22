@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Willkommen bei {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Wenn ein Posteingang ein E-Mail nicht annimmt, spricht man von einem Bounce. Das ist häufig ein vorübergehendes Problem (Soft Bounce). In einigen Fällen kann ein E-Mail jedoch dauerhaft abgewiesen werden, etwa wenn eine E-Mail-Adresse ungültig oder nicht vorhanden ist (Hard Bounce).",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Warum wurde meine E-Mail deaktiviert?",

@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Vitajte na {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Keď schránka neprijme e-mail, bežne sa to nazýva odmietnutie (bounce). V mnohých prípadoch môže ísť o dočasný jav. V niektorých prípadoch sa však môže vrátiť ako trvalý neúspech, keď je e-mailová adresa neplatná alebo neexistuje.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Prečo bol môj email deaktivovaný?",

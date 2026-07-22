@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "{siteTitle} 'ਤੇ ਸੁਆਗਤ ਹੈ",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "ਜਦੋਂ ਕੋਈ ਇਨਬਾਕਸ ਈਮੇਲ ਸਵੀਕਾਰ ਕਰਨ ਵਿੱਚ ਅਸਫਲ ਰਹਿੰਦਾ ਹੈ ਤਾਂ ਇਸਨੂੰ ਆਮ ਤੌਰ 'ਤੇ ਬਾਊਂਸ ਕਿਹਾ ਜਾਂਦਾ ਹੈ। ਕਈ ਮਾਮਲਿਆਂ ਵਿੱਚ, ਇਹ ਅਸਥਾਈ ਹੋ ਸਕਦਾ ਹੈ। ਹਾਲਾਂਕਿ, ਕੁਝ ਮਾਮਲਿਆਂ ਵਿੱਚ, ਜਦੋਂ ਕੋਈ ਈਮੇਲ ਪਤਾ ਅਵੈਧ ਜਾਂ ਮੌਜੂਦ ਨਾ ਹੋਵੇ ਤਾਂ ਇੱਕ ਬਾਊਂਸ ਹੋਈ ਈਮੇਲ ਨੂੰ ਸਥਾਈ ਅਸਫਲਤਾ ਵਜੋਂ ਵਾਪਸ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "ਮੇਰੀ ਈਮੇਲ ਅਸਮਰੱਥ ਕਿਉਂ ਕੀਤੀ ਗਈ ਹੈ?",

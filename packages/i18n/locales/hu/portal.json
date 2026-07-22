@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Üdvözlünk — {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Amikor egy postaláda nem fogad egy e-mailt, az általában visszapattanás. Sok esetben ez lehet ideiglenes. Azonban visszapattanhat az e-mail akkor is, ha az e-mail-cím érvénytelen vagy nem létezik.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Miért tiltották le az e-mail-címem?",

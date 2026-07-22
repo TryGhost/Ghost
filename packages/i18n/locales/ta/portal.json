@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "{siteTitle}க்கு வரவேற்கிறோம்",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "ஒரு உள்பெட்டி மின்னஞ்சலை ஏற்க தவறும்போது அது பொதுவாக பவுன்ஸ் என்று அழைக்கப்படுகிறது. பல சந்தர்ப்பங்களில், இது தற்காலிகமாக இருக்கலாம். இருப்பினும், சில சந்தர்ப்பங்களில், மின்னஞ்சல் முகவரி தவறானதாக அல்லது இல்லாததாக இருக்கும்போது, பவுன்ஸ் செய்யப்பட்ட மின்னஞ்சல் நிரந்தர தோல்வியாக திருப்பி அனுப்பப்படலாம்.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "ஏன் எனது மின்னஞ்சல் முடக்கப்பட்டுள்ளது?",

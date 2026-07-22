@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Fàilte dhan làrach-lìn, {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Dh’fhaodadh gur e mearachd sealach a tha seo, no dh’fhaodadh gur e post-d mì-dhligheach a th’ ann.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Carson a chaidh am post-d agam a chur à comas?",

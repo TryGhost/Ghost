@@ -708,6 +708,7 @@ export const GiftPageStyles = `
     font-size: 1.5rem;
     color: var(--white);
     line-height: 1.3;
+    overflow-wrap: anywhere;
 }
 
 .gh-portal-gift-checkout-card-details {
@@ -729,6 +730,7 @@ export const GiftPageStyles = `
     font-size: 1.3rem;
     font-weight: 500;
     color: var(--white);
+    overflow-wrap: anywhere;
 }
 
 .gh-portal-gift-checkout-card-site {
@@ -1230,7 +1232,7 @@ const GiftPage = () => {
 
                             {step === 'plan' && <div className='gh-portal-gift-checkout-section'>
                                 {!isSingleTier && (
-                                    <div className='gh-portal-gift-checkout-question'>{t('Choose a tier')}</div>
+                                    <div className='gh-portal-gift-checkout-question'>{t('Which tier?')}</div>
                                 )}
                                 <div
                                     className={'gh-portal-gift-checkout-tiers' + (isSingleTier ? ' single' : '')}

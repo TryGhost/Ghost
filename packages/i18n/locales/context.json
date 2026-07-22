@@ -442,6 +442,7 @@
     "When should we send it?": "Section heading above the send-now vs schedule control on the Portal gift delivery step",
     "When:": "Device verification (forthcoming)",
     "Where:": "Device verification (forthcoming)",
+    "Which tier?": "Section heading above the tier selector on step one of the Portal gift purchase flow",
     "Who's this gift for?": "Label for the recipient section (their email) on the gift purchase delivery step",
     "Who's this gift from?": "Label for the sender-name field on the gift purchase delivery step",
     "Why has my email been disabled?": "A section title from the email suppression FAQ",

@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Benvingut/da a {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Quan una safata d'entrada no accepta un correu electrònic s'anomena, habitualment, un rebot. En molts casos, això pot ser temporal. Tanmateix, en alguns casos, un correu electrònic rebutjat es pot retornar com a error permanent quan una adreça de correu electrònic no és vàlida o no existeix.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Per què s'ha desactivat el meu correu electrònic?",

@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "{siteTitle}にようこそ",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "受信トレイにメールが届かない場合のことを一般的にバウンスと呼び、多くの場合、一時的なものです。ただし、メールアドレスが無効または存在しない場合、バウンスしたメールは永続的な失敗として返されることがあります。",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "なぜメールが無効になったのか？",

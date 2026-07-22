@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "ברוכים הבאים ל-{siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "כשספק מייל לא מקבל מייל נקרא זה הקפצה. ברוב המקרים, זה יכול להיות זמני. אך, במקרים מסוימים, מייל מוקפץ יכול להחזיר תקלה קבועה כאשר כתובת המייל אינה תקפה או לא קיימת.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "מדוע המייל שלי בוטל?",

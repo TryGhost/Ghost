@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "Welkom bij {siteTitle}",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Als een inbox een e-mail niet kan accepteren, wordt dit een bounce genoemd. In veel gevallen kan dit tijdelijk zijn. In sommige gevallen kan een bounced e-mail worden geretourneerd als een permanente fout wanneer een e-mailadres ongeldig of niet-bestaand is.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "Waarom is mijn e-mail uitgeschakeld?",

@@ -309,6 +309,7 @@
     "Welcome to {siteTitle}": "",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "යම් අවස්ථාවකදී email එකක් අදාල email ලිපිනයට ලබාගත නොහැකි නම්, එය පොදුවේ bounce ලෙස හඳුන්වනු ලබනවා. මෙය තාවකාලික තත්ත්වයක් විය හැකයි. කෙසේ නමුත්, ඇතැම් අවස්ථා වලදී අදාල email ලිපිනය වැරදි නම් හෝ එවැනි email ලිපිනයක් නොමැති නම්, bounce email එකක් permanent failure එකක් ලෙස නැවත හරවා යවනු ලැබෙනවා.",
     "When should we send it?": "",
+    "Which tier?": "",
     "Who's this gift for?": "",
     "Who's this gift from?": "",
     "Why has my email been disabled?": "මගේ emails අක්\u200dරීය කර ඇත්තේ ඇයි?",
