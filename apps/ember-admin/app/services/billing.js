@@ -10,7 +10,24 @@ const BILLING_APP_ATTEMPT_SOURCE_PRELOAD = 'preload';
 const BILLING_APP_ATTEMPT_SOURCE_USER_OPEN = 'user_open';
 const BILLING_APP_ATTEMPT_SOURCE_RETRY = 'retry';
 
+const NEWSLETTERS_DESTINATION = 'newsletters';
+const NEWSLETTERS_ROUTE_WITH_AUTOMATIONS = '/settings/emails';
+const NEWSLETTERS_ROUTE = '/settings/newsletters';
+
+// Approved destinations the Billing app may request Ghost Admin to navigate to,
+// mapped to the Admin route that owns them. Ghost Admin owns this mapping — the
+// Billing app never sends raw URLs or routes. A null-prototype, frozen object is
+// used so untrusted keys like '__proto__' or 'constructor' cannot resolve.
+const ADMIN_DESTINATION_ROUTES = Object.freeze(Object.assign(Object.create(null), {
+    theme: '/settings/design/change-theme',
+    analytics: '/settings/analytics',
+    staff: '/settings/staff',
+    stripe: '/settings/stripe-connect',
+    integrations: '/settings/integrations'
+}));
+
 export default class BillingService extends Service {
+    @service feature;
     @service ghostPaths;
     @service router;
     @service store;
@@ -65,6 +82,32 @@ export default class BillingService extends Service {
                 window.history.replaceState(window.history.state, '', billingRoute);
             }
         }
+    }
+
+    // Navigates Ghost Admin to an approved settings destination requested by the
+    // validated Billing iframe. Unknown, missing, or non-string destinations are
+    // ignored silently. Navigation goes through Ember client-side routing, which
+    // closes the billing overlay via the pro route's willTransition hook.
+    navigateToAdminDestination(destination) {
+        if (typeof destination !== 'string') {
+            return;
+        }
+
+        const route = this._resolveAdminDestinationRoute(destination);
+
+        if (!route) {
+            return;
+        }
+
+        this.router.transitionTo(route);
+    }
+
+    _resolveAdminDestinationRoute(destination) {
+        if (destination === NEWSLETTERS_DESTINATION) {
+            return this.feature.automations ? NEWSLETTERS_ROUTE_WITH_AUTOMATIONS : NEWSLETTERS_ROUTE;
+        }
+
+        return ADMIN_DESTINATION_ROUTES[destination] ?? null;
     }
 
     _isBillingIframeLoaded() {
@@ -485,12 +528,20 @@ export default class BillingService extends Service {
             return;
         }
 
+        // Keyed off the pre-mutation state so a re-entrant open (overlay already
+        // visible, e.g. checkout) is not treated as a hidden→visible transition.
+        const isOpeningTransition = value && !this.billingWindowOpen;
+
         this.sendRouteUpdate();
 
         this.billingWindowOpen = value;
 
         if (value) {
             this.ensureBillingAppReadyForVisibleUse();
+        }
+
+        if (isOpeningTransition) {
+            this.sendUpdateLimits();
         }
     }
 
@@ -514,7 +565,6 @@ export default class BillingService extends Service {
         window.location.hash = childRoute || '/pro';
 
         this.sendRouteUpdate();
-        this.sendUpdateLimits();
 
         this.router.transitionTo(childRoute || '/pro');
     }

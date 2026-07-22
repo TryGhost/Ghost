@@ -126,4 +126,112 @@ describe('Integration: Component: gh-billing-iframe', function () {
         expect(markBillingAppLoaded.called).to.be.false;
         expect(billing.billingAppLoaded).to.be.false;
     });
+
+    const approvedDestinations = {
+        theme: '/settings/design/change-theme',
+        analytics: '/settings/analytics',
+        staff: '/settings/staff',
+        stripe: '/settings/stripe-connect',
+        integrations: '/settings/integrations'
+    };
+
+    Object.entries(approvedDestinations).forEach(([destination, route]) => {
+        it(`navigates to ${route} for a validated navigateToAdmin '${destination}' message`, async function () {
+            const router = this.owner.lookup('service:router');
+            const transitionTo = sinon.stub(router, 'transitionTo');
+
+            await render(hbs`<GhBillingIframe />`);
+
+            await postBillingMessage({request: 'navigateToAdmin', destination});
+
+            expect(transitionTo.calledOnceWithExactly(route)).to.be.true;
+        });
+    });
+
+    it('navigates newsletters to the emails route when the automations flag is enabled', async function () {
+        const router = this.owner.lookup('service:router');
+        const transitionTo = sinon.stub(router, 'transitionTo');
+        const feature = this.owner.lookup('service:feature');
+        sinon.stub(feature, 'automations').get(() => true);
+
+        await render(hbs`<GhBillingIframe />`);
+
+        await postBillingMessage({request: 'navigateToAdmin', destination: 'newsletters'});
+
+        expect(transitionTo.calledOnceWithExactly('/settings/emails')).to.be.true;
+    });
+
+    it('navigates newsletters to the newsletters route when the automations flag is disabled', async function () {
+        const router = this.owner.lookup('service:router');
+        const transitionTo = sinon.stub(router, 'transitionTo');
+        const feature = this.owner.lookup('service:feature');
+        sinon.stub(feature, 'automations').get(() => false);
+
+        await render(hbs`<GhBillingIframe />`);
+
+        await postBillingMessage({request: 'navigateToAdmin', destination: 'newsletters'});
+
+        expect(transitionTo.calledOnceWithExactly('/settings/newsletters')).to.be.true;
+    });
+
+    it('ignores a navigateToAdmin message with an unknown destination', async function () {
+        const router = this.owner.lookup('service:router');
+        const transitionTo = sinon.stub(router, 'transitionTo');
+
+        await render(hbs`<GhBillingIframe />`);
+
+        await postBillingMessage({request: 'navigateToAdmin', destination: 'dashboard'});
+
+        expect(transitionTo.called).to.be.false;
+    });
+
+    it('ignores a navigateToAdmin message with a missing destination', async function () {
+        const router = this.owner.lookup('service:router');
+        const transitionTo = sinon.stub(router, 'transitionTo');
+
+        await render(hbs`<GhBillingIframe />`);
+
+        await postBillingMessage({request: 'navigateToAdmin'});
+
+        expect(transitionTo.called).to.be.false;
+    });
+
+    it('ignores a navigateToAdmin message with a non-string destination', async function () {
+        const router = this.owner.lookup('service:router');
+        const transitionTo = sinon.stub(router, 'transitionTo');
+
+        await render(hbs`<GhBillingIframe />`);
+
+        await postBillingMessage({request: 'navigateToAdmin', destination: {route: '/settings/staff'}});
+
+        expect(transitionTo.called).to.be.false;
+    });
+
+    it('ignores a navigateToAdmin message from an invalid origin', async function () {
+        const router = this.owner.lookup('service:router');
+        const transitionTo = sinon.stub(router, 'transitionTo');
+
+        await render(hbs`<GhBillingIframe />`);
+
+        await postBillingMessage(
+            {request: 'navigateToAdmin', destination: 'analytics'},
+            {origin: 'https://evil.example.test'}
+        );
+
+        expect(transitionTo.called).to.be.false;
+    });
+
+    it('ignores a navigateToAdmin message from the wrong source window', async function () {
+        const router = this.owner.lookup('service:router');
+        const transitionTo = sinon.stub(router, 'transitionTo');
+
+        await render(hbs`<GhBillingIframe />`);
+
+        await postBillingMessage(
+            {request: 'navigateToAdmin', destination: 'analytics'},
+            {source: window}
+        );
+
+        expect(transitionTo.called).to.be.false;
+    });
 });
