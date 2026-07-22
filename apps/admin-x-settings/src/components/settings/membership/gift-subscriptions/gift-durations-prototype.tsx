@@ -117,12 +117,12 @@ const GiftDurationsPrototype: React.FC<{
     const atMax = durations.length >= MAX_DURATIONS;
 
     return (
-        <div>
+        <div className='bg-grey-75 rounded-lg border border-dashed border-grey-300 p-5 dark:border-grey-800 dark:bg-grey-950'>
             <div className='mb-1 flex items-center gap-2'>
                 <Heading level={6}>Editable durations</Heading>
-                <span className='rounded-sm bg-grey-200 px-1.5 py-0.5 text-2xs font-semibold tracking-wide text-grey-700 uppercase dark:bg-grey-900 dark:text-grey-500'>Prototype</span>
+                <span className='rounded-sm bg-grey-200 px-1.5 py-0.5 text-2xs font-semibold tracking-wide text-grey-700 uppercase dark:bg-grey-900 dark:text-grey-500'>Experimental</span>
             </div>
-            <p className='mt-1 text-sm text-grey-700'>Offer up to {MAX_DURATIONS} durations of your choosing — e.g. 2 months or 2 years. Pricing below updates as you edit them. Changes here aren&apos;t saved.</p>
+            <p className='mt-1 text-sm text-grey-700'>An alternative to the fixed durations above — compose up to {MAX_DURATIONS} of your own (e.g. 2 months or 2 years). Changes here aren&apos;t saved.</p>
 
             <div className='mt-4 flex flex-col gap-2'>
                 {durations.map(d => (
@@ -166,7 +166,7 @@ const GiftDurationsPrototype: React.FC<{
             />
 
             <div className='mt-6'>
-                <Heading level={6}>Pricing</Heading>
+                <Heading level={6}>Prototype pricing</Heading>
                 <p className='mt-1 mb-4 text-sm text-grey-700'>The default price (shown in grey) is worked out from the tier&apos;s plans: whole-year durations use the yearly price × the number of years, and any other duration uses the monthly price × the number of months. Type to set your own, or reset a tier back to the defaults.</p>
                 {tiers.length === 0 && (
                     <p className='text-sm text-grey-600'>Add a paid tier to set pricing.</p>

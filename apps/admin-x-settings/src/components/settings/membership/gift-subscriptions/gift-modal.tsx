@@ -124,7 +124,7 @@ const GiftSidebar: React.FC<{
         <div className='flex flex-col gap-8 pt-4'>
             <div className='flex flex-col gap-6'>
                 <TextField
-                    hint={<>Leave blank to use the default (shown in grey). Under <strong>{headingMaxLength}</strong> characters — you&apos;ve used <strong className={headingLength > headingMaxLength ? 'text-red' : 'text-green'}>{headingLength}</strong>.</>}
+                    hint={<>Leave blank to use the default (shown in grey). Under <strong>{headingMaxLength}</strong> characters — you&apos;ve used <strong className={headingLength > headingMaxLength ? 'text-red' : 'text-grey-700'}>{headingLength}</strong>.</>}
                     maxLength={headingMaxLength}
                     placeholder={defaultHeading}
                     title="Heading"
@@ -132,7 +132,7 @@ const GiftSidebar: React.FC<{
                     onChange={e => updateSetting('gift_page_heading', e.target.value || null)}
                 />
                 <HtmlField
-                    hint={<>Sell the value of a gift membership — or leave blank to use the default (shown in grey). Under <strong>{descriptionMaxLength}</strong> characters so it fits; you&apos;ve used <strong className={descriptionLength > descriptionMaxLength ? 'text-red' : 'text-green'}>{descriptionLength}</strong>.</>}
+                    hint={<>Sell the value of a gift membership — or leave blank to use the default (shown in grey). Under <strong>{descriptionMaxLength}</strong> characters so it fits; you&apos;ve used <strong className={descriptionLength > descriptionMaxLength ? 'text-red' : 'text-grey-700'}>{descriptionLength}</strong>.</>}
                     maxLength={descriptionMaxLength}
                     nodes='MINIMAL_NODES'
                     placeholder={`Share a full membership to ${siteData?.title || 'your site'} with a friend or colleague`}

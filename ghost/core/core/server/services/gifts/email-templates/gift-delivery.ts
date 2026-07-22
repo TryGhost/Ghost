@@ -50,7 +50,7 @@ export function renderText(data: GiftDeliveryData, t: Translate): string {
     return `${t('A gift, just for you')}
 
 ${greeting}${intro}
-${benefitsBlock}${messageBlock}
+${messageBlock}${benefitsBlock}
 ${t('Redeem your gift')}:
 ${data.gift.link}
 

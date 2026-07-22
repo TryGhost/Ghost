@@ -154,15 +154,28 @@ export const GiftPageStyles = `
 }
 
 .gh-portal-gift-checkout-section {
-    margin-top: 18px;
+    margin-top: 24px;
 }
 
+/* Small uppercase eyebrow — used only for the single-word plan labels
+   (Duration, Choose a tier). */
 .gh-portal-gift-checkout-label {
     font-size: 1.2rem;
     font-weight: 500;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--grey6);
+    margin-bottom: 12px;
+}
+
+/* Sentence-case section heading for the delivery step's conversational
+   questions ("Who's this gift for?" …) — calmer and warmer than shouting the
+   full question in tiny grey caps. */
+.gh-portal-gift-checkout-question {
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--grey0);
     margin-bottom: 12px;
 }
 
@@ -309,7 +322,7 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-checkout-tier-price {
     font-size: 1.5rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--grey0);
 }
 
@@ -1225,7 +1238,10 @@ const GiftPage = () => {
     return (
         <>
             <div className='gh-portal-content gift' ref={contentRef}>
-                <BackButton hidden={!lastPage} onClick={() => doAction('back')} />
+                {/* On the delivery step the in-content "← Back" (returns to the
+                    plan step) is the right affordance, so hide the global back
+                    arrow there to avoid two back controls with different targets. */}
+                <BackButton hidden={!lastPage || step === 'delivery'} onClick={() => doAction('back')} />
                 <CloseButton />
                 <div className='gh-portal-gift-checkout'>
                     <div className='gh-portal-gift-checkout-left'>
@@ -1349,7 +1365,7 @@ const GiftPage = () => {
 
                             {step === 'delivery' && <>
                                 <div className='gh-portal-gift-checkout-section'>
-                                    <div className='gh-portal-gift-checkout-label'>{t('Who\'s this gift from?')}</div>
+                                    <div className='gh-portal-gift-checkout-question'>{t('Who\'s this gift from?')}</div>
                                     <InputField
                                         {...buyerNameField}
                                         onChange={(event) => {
@@ -1366,7 +1382,7 @@ const GiftPage = () => {
                                 </div>
 
                                 <div className='gh-portal-gift-checkout-section'>
-                                    <div className='gh-portal-gift-checkout-label'>{t('How would you like to give it?')}</div>
+                                    <div className='gh-portal-gift-checkout-question'>{t('How would you like to give it?')}</div>
                                     <div className='gh-portal-gift-duration-switch' role='radiogroup' aria-label={t('Delivery method')}>
                                         <button
                                             type='button'
@@ -1393,7 +1409,7 @@ const GiftPage = () => {
 
                                 {deliveryMethod === 'email' && <>
                                     <div className='gh-portal-gift-checkout-section'>
-                                        <div className='gh-portal-gift-checkout-label'>{t('Who\'s this gift for?')}</div>
+                                        <div className='gh-portal-gift-checkout-question'>{t('Who\'s this gift for?')}</div>
                                         <InputField
                                             {...recipientNameField}
                                             onChange={event => setRecipientName(event.target.value)}
@@ -1416,7 +1432,7 @@ const GiftPage = () => {
                                     </div>
 
                                     <div className='gh-portal-gift-checkout-section'>
-                                        <div className='gh-portal-gift-checkout-label'>{t('When to send it')}</div>
+                                        <div className='gh-portal-gift-checkout-question'>{t('When to send it')}</div>
                                         <div className='gh-portal-gift-duration-switch' role='radiogroup' aria-label={t('When to send it')}>
                                             <button
                                                 type='button'
@@ -1459,7 +1475,7 @@ const GiftPage = () => {
                                     </div>
 
                                     <div className='gh-portal-gift-checkout-section'>
-                                        <div className='gh-portal-gift-checkout-label'>{t('Add a message')} <span className='gh-portal-gift-checkout-label-optional'>{t('(optional)')}</span></div>
+                                        <div className='gh-portal-gift-checkout-question'>{t('Add a message')} <span className='gh-portal-gift-checkout-label-optional'>{t('(optional)')}</span></div>
                                         <textarea
                                             data-test-input='gift-message'
                                             className='gh-portal-input gh-portal-gift-checkout-textarea'
@@ -1469,7 +1485,9 @@ const GiftPage = () => {
                                             value={giftMessage}
                                             onChange={event => setGiftMessage(event.target.value)}
                                         />
-                                        <p className='gh-portal-gift-checkout-message-count'>{giftMessage.length}/{GIFT_MESSAGE_MAX_LENGTH}</p>
+                                        {giftMessage.length > 0 && (
+                                            <p className='gh-portal-gift-checkout-message-count'>{giftMessage.length}/{GIFT_MESSAGE_MAX_LENGTH}</p>
+                                        )}
                                     </div>
                                 </>}
 
