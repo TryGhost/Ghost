@@ -148,7 +148,7 @@ export function PortalLookAndFeel({ localSettings, updateSetting }: {
                                             />
                                             <Button
                                                 aria-label="Delete uploaded Portal icon"
-                                                className="bg-surface-inverse text-surface-inverse-foreground hover:bg-surface-inverse/90 absolute -top-2 -right-2 z-20 size-6 rounded-full p-0"
+                                                className="absolute -top-2 -right-2 z-20 size-6 rounded-full bg-surface-inverse p-0 text-surface-inverse-foreground hover:bg-surface-inverse/90"
                                                 size="icon"
                                                 type="button"
                                                 variant="ghost"
