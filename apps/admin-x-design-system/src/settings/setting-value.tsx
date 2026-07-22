@@ -1,6 +1,5 @@
 import React, {ReactNode} from 'react';
-
-import Heading from '../global/heading';
+import {Text} from '@tryghost/shade/primitives';
 
 export interface SettingValueProps {
     key: string;
@@ -18,7 +17,7 @@ const SettingValue: React.FC<SettingValueProps> = ({heading, value, hint, hideEm
 
     return (
         <div className='flex flex-col' {...props}>
-            {heading && <Heading grey={false} level={6}>{heading}</Heading>}
+            {heading && <Text as='h6' className='text-base' weight='semibold'>{heading}</Text>}
             <div className={`flex items-center ${heading && `mt-1`}`}>{value}</div>
             {hint && <p className='mt-1'>{hint}</p>}
         </div>

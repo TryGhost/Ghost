@@ -103,14 +103,15 @@ module.exports = {
             to: {path: '^@tryghost/(admin-x-framework|admin-x-design-system)'}
         },
         // ============================================================
-        // apps/ — admin-x-design-system/ is a leaf; must not depend on higher layers
+        // apps/ — admin-x-design-system/ may consume Shade while it is being retired,
+        // but must not depend on application/framework layers
         // ============================================================
         {
-            name: 'admin-x-design-system-is-leaf',
-            comment: 'admin-x-design-system/ must not depend on shade or admin-x-framework.',
+            name: 'admin-x-design-system-does-not-depend-on-framework',
+            comment: 'admin-x-design-system/ must not depend on admin-x-framework.',
             severity: 'error',
             from: {path: '^apps/admin-x-design-system/'},
-            to: {path: '^@tryghost/(shade|admin-x-framework)'}
+            to: {path: '^@tryghost/admin-x-framework'}
         },
         // ============================================================
         // apps/ — admin-x-framework/ must not depend on feature apps
@@ -152,4 +153,3 @@ module.exports = {
         exclude: {path: '(^|/)(node_modules|coverage|coverage-next|test|built|dist)/'}
     }
 };
-

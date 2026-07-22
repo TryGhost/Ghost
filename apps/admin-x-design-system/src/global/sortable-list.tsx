@@ -3,10 +3,10 @@ import {SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-ki
 import {CSS} from '@dnd-kit/utilities';
 import clsx from 'clsx';
 import React, {ElementType, HTMLProps, ReactNode, useState} from 'react';
-import Heading from './heading';
 import Icon from './icon';
 import LegacyHint from './legacy-hint';
 import Separator from './separator';
+import {Stack, Text} from '@tryghost/shade/primitives';
 
 export interface SortableItemContainerProps {
     id: string;
@@ -135,7 +135,12 @@ const SortableList = <Item extends {id: string}>({
 
     return (
         <div {...props}>
-            {title && <Heading level={6} separator={titleSeparator} grey>{title}</Heading>}
+            {title && (titleSeparator ? (
+                <Stack className='mb-2' gap='xs'>
+                    <Text as='h6' className='text-base' tone='secondary' weight='semibold'>{title}</Text>
+                    <Separator />
+                </Stack>
+            ) : <Text as='h6' className='text-base' tone='secondary' weight='semibold'>{title}</Text>)}
             <div className={`${title && titleSeparator ? '-mt-2' : ''}`}>
                 <DndContext
                     collisionDetection={closestCenter}

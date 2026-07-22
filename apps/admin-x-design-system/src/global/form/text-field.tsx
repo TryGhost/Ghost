@@ -1,9 +1,9 @@
-import Heading from '../heading';
 import React, {FocusEventHandler, useId} from 'react';
 import clsx from 'clsx';
 import {useFocusContext} from '../../providers/design-system-provider';
 import * as FormPrimitive from '@radix-ui/react-form';
 import LegacyHint from '../legacy-hint';
+import {FieldLabel} from '@tryghost/shade/components';
 
 export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     inputRef?: React.RefObject<HTMLInputElement>;
@@ -132,7 +132,7 @@ const TextField: React.FC<TextFieldProps> = ({
             <FormPrimitive.Root asChild>
                 <div className={containerClassName}>
                     {field}
-                    {title && <Heading className={hideTitle ? 'sr-only' : 'order-1'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                    {title && <FieldLabel className={hideTitle ? 'sr-only' : 'order-1'} htmlFor={id}>{title}</FieldLabel>}
                     {hint && <LegacyHint className={clsx('mt-1', hintClassName)} error={error}>{hint}</LegacyHint>}
                 </div>
             </FormPrimitive.Root>

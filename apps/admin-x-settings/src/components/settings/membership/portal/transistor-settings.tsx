@@ -1,7 +1,8 @@
 import React from 'react';
 import {Field, FieldContent, FieldDescription, FieldLabel, Separator, Switch} from '@tryghost/shade/components';
-import {Heading, TextField} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {Text} from '@tryghost/shade/primitives';
+import {TextField} from '@tryghost/admin-x-design-system';
 
 const TransistorSettings: React.FC<{
     localSettings: Setting[]
@@ -38,7 +39,7 @@ const TransistorSettings: React.FC<{
     return (
         <>
             <Separator />
-            <Heading level={5}>Transistor</Heading>
+            <Text as='h5' className='md:text-lg' leading='supertight' weight='bold'>Transistor</Text>
             <Field orientation='horizontal'>
                 <FieldContent>
                     <FieldLabel htmlFor='transistor-portal-enabled'>Enable Transistor integration</FieldLabel>

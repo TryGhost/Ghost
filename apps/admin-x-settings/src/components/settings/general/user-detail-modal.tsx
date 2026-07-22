@@ -8,12 +8,13 @@ import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useStaffUsers from '../../../hooks/use-staff-users';
 import validator from 'validator';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Icon, ImageUpload, LimitModal, Modal, showToast} from '@tryghost/admin-x-design-system';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '../../../utils/social-urls/index';
+import {Text} from '@tryghost/shade/primitives';
 import {type User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useGetUserBySlug, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -472,7 +473,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 </div>
                             </div>
                             <div>
-                                <Heading level={3} styles={clsx('break-words md:break-normal', formState.cover_image ? 'text-white' : 'text-black dark:text-white')}>{user.name}{suspendedText}</Heading>
+                                <Text as='h3' className={clsx('break-words md:text-2xl md:break-normal', formState.cover_image ? 'text-white' : 'text-foreground')} leading='heading' size='xl' weight='bold'>{user.name}{suspendedText}</Text>
                                 <span className={clsx('text-md font-medium capitalize', formState.cover_image ? 'text-white' : 'text-black dark:text-white')}>{user.roles[0].name.toLowerCase()}</span>
                             </div>
                         </div>

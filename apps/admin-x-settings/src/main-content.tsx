@@ -2,9 +2,10 @@ import ExitSettingsButton from './components/exit-settings-button';
 import Settings from './components/settings';
 import Sidebar from './components/sidebar';
 import Users from './components/settings/general/users';
-import {Heading, confirmIfDirty, topLevelBackdropClasses, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {type ReactNode, useEffect} from 'react';
+import {Text} from '@tryghost/shade/primitives';
 import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/users';
+import {confirmIfDirty, topLevelBackdropClasses, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from './components/providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -79,7 +80,7 @@ const MainContent: React.FC = () => {
                 <div className='flex-1 bg-white dark:bg-grey-950'>
                     <div className='h-full overflow-y-auto overscroll-y-contain' id="admin-x-settings-scroller">
                         <div className='mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10'>
-                            <Heading className='mb-[5vmin]'>Settings</Heading>
+                            <Text as='h1' className='mb-[5vmin] text-4xl' leading='supertight' weight='bold'>Settings</Text>
                             <Users highlight={false} keywords={EMPTY_KEYWORDS} />
                         </div>
                     </div>

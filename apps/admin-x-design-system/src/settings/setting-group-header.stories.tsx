@@ -2,8 +2,7 @@ import type {Meta, StoryObj} from '@storybook/react-vite';
 
 import ButtonGroup from '../global/button-group';
 import SettingGroupHeader from './setting-group-header';
-
-import Heading from '../global/heading';
+import {Text} from '@tryghost/shade/primitives';
 
 const meta = {
     title: 'Settings / Setting Group / Header',
@@ -46,7 +45,7 @@ export const CustomHeader: Story = {
         children:
             <>
                 <div className='flex flex-col'>
-                    <Heading level={5}>Users</Heading>
+                    <Text as='h5' className='md:text-lg' leading='supertight' weight='bold'>Users</Text>
                     <span className='mt-4 text-sm'>Cristofer Vaccaro — <strong>Owner</strong></span>
                     <span className='text-sm text-grey-500'>cristofer@example.com</span>
                 </div>

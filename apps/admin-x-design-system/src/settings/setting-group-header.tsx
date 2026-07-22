@@ -1,5 +1,5 @@
 import React from 'react';
-import Heading from '../global/heading';
+import {Text} from '@tryghost/shade/primitives';
 
 export interface SettingGroupHeaderProps {
     title?: React.ReactNode;
@@ -13,7 +13,7 @@ const SettingGroupHeader: React.FC<SettingGroupHeaderProps> = ({title, descripti
         <div className="flex items-start justify-between gap-4">
             {(title || description) &&
                 <div>
-                    <Heading className='font-semibold' level={5}>{title}{beta && <sup className='ml-0.5 text-[10px] font-semibold tracking-wide uppercase'>Beta</sup>}</Heading>
+                    <Text as='h5' className='md:text-lg' leading='supertight' weight='semibold'>{title}{beta && <sup className='ml-0.5 text-[10px] font-semibold tracking-wide uppercase'>Beta</sup>}</Text>
                     {description && <p className="mt-1 mr-5 hidden text-pretty group-[.is-not-editing]/setting-group:visible! group-[.is-not-editing]/setting-group:block! md:visible! md:block!">{description}</p>}
                 </div>
             }

@@ -1,7 +1,8 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useState} from 'react';
 import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
-import {ButtonGroup, CodeEditor, Heading, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {ButtonGroup, CodeEditor, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {Text} from '@tryghost/shade/primitives';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -152,7 +153,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
         >
             <div className='flex h-full min-h-0 flex-col'>
                 <div className='mb-4 flex items-center justify-between'>
-                    <Heading level={2}>{title}</Heading>
+                    <Text as='h2' className='md:text-3xl' leading='heading' size='2xl' weight='bold'>{title}</Text>
                     <ButtonGroup buttons={[
                         {
                             label: 'Close',

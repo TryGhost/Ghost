@@ -1,9 +1,10 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {ButtonGroup, CodeEditor, Heading, Modal} from '@tryghost/admin-x-design-system';
+import {ButtonGroup, CodeEditor, Modal} from '@tryghost/admin-x-design-system';
 import {type ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Text} from '@tryghost/shade/primitives';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useSaveButton} from '../../../../hooks/use-save-button';
 
@@ -71,7 +72,7 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
     >
         <div className='flex h-full flex-col'>
             <div className='mb-4 flex items-center justify-between'>
-                <Heading level={2}>Code injection</Heading>
+                <Text as='h2' className='md:text-3xl' leading='heading' size='2xl' weight='bold'>Code injection</Text>
                 <ButtonGroup buttons={[
                     {
                         label: 'Close',

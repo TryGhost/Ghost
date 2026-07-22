@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React from 'react';
-import Heading from '../heading';
+import {Text} from '@tryghost/shade/primitives';
 
 export interface FormProps {
     title?: string;
@@ -70,7 +70,7 @@ const Form: React.FC<FormProps> = ({
     if (grouped || title) {
         return (
             <div className={className}>
-                {title && <Heading className={titleClasses} level={5}>{title}</Heading>}
+                {title && <Text as='h5' className={clsx(titleClasses, 'md:text-lg')} leading='supertight' weight='bold'>{title}</Text>}
                 <div className={classes}>
                     {children}
                 </div>
