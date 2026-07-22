@@ -86,7 +86,8 @@ describe('GiftDurationsPrototype', () => {
         fireEvent.click(addButton);
         fireEvent.click(addButton);
         assert.equal(amountInputs().length, 4);
-        assert.ok(screen.getByRole('button', {name: /maximum of 4 durations/i}));
+        assert.equal((addButton as HTMLButtonElement).disabled, true);
+        assert.ok(screen.getByText(/maximum of 4 durations/i));
     });
 
     it('renders per-tier pricing fields when multiple tiers are offered', () => {

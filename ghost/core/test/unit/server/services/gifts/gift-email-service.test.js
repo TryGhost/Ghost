@@ -79,14 +79,14 @@ describe('GiftEmailService', function () {
         for (const field of ['html', 'text']) {
             sinon.assert.match(msg[field], sinon.match('https://example.com/gift/abc-123'));
             sinon.assert.match(msg[field], sinon.match('Gold'));
-            sinon.assert.match(msg[field], sinon.match('one-year'));
+            sinon.assert.match(msg[field], sinon.match('1 year'));
         }
     });
 
     it('formats month cadence correctly', async function () {
         await service.sendPurchaseConfirmation({...defaultData, cadence: 'month'});
 
-        sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('one-month')));
+        sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('1 month')));
     });
 
     it('formats the expiry date with the active locale', async function () {

@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Button, Heading, Select, TextField} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Hint, Select, TextField} from '@tryghost/admin-x-design-system';
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 
 // EXPERIMENTAL / PROTOTYPE — an alternative to the fixed duration checkboxes.
@@ -119,10 +119,10 @@ const GiftDurationsPrototype: React.FC<{
     return (
         <div className='bg-grey-75 rounded-lg border border-dashed border-grey-300 p-5 dark:border-grey-800 dark:bg-grey-950'>
             <div className='mb-1 flex items-center gap-2'>
-                <Heading level={6}>Editable durations</Heading>
+                <Heading level={5}>Editable durations</Heading>
                 <span className='rounded-sm bg-grey-200 px-1.5 py-0.5 text-2xs font-semibold tracking-wide text-grey-700 uppercase dark:bg-grey-900 dark:text-grey-500'>Experimental</span>
             </div>
-            <p className='mt-1 text-sm text-grey-700'>An alternative to the fixed durations above — compose up to {MAX_DURATIONS} of your own (e.g. 2 months or 2 years). Changes here aren&apos;t saved.</p>
+            <Hint>An alternative to the fixed durations above — compose up to {MAX_DURATIONS} of your own (e.g. 2 months or 2 years). Changes here aren&apos;t saved.</Hint>
 
             <div className='mt-4 flex flex-col gap-2'>
                 {durations.map(d => (
@@ -156,30 +156,32 @@ const GiftDurationsPrototype: React.FC<{
                 ))}
             </div>
 
-            <Button
-                className='mt-3'
-                color='green'
-                disabled={atMax}
-                icon='add'
-                label={atMax ? 'Maximum of 4 durations' : 'Add duration'}
-                size='sm'
-                link
-                onClick={addDuration}
-            />
+            <div className='mt-3 flex items-center gap-3'>
+                <Button
+                    color='green'
+                    disabled={atMax}
+                    icon='add'
+                    label='Add duration'
+                    size='sm'
+                    link
+                    onClick={addDuration}
+                />
+                {atMax && <Hint className='!mt-0'>Maximum of {MAX_DURATIONS} durations</Hint>}
+            </div>
 
             <div className='mt-6'>
-                <Heading level={6}>Prototype pricing</Heading>
-                <p className='mt-1 mb-4 text-sm text-grey-700'>The default price (shown in grey) is worked out from the tier&apos;s plans: whole-year durations use the yearly price × the number of years, and any other duration uses the monthly price × the number of months. Type to set your own, or reset a tier back to the defaults.</p>
+                <Heading level={5}>Prototype pricing</Heading>
+                <Hint className='mb-4 block'>The default price (shown in grey) is worked out from the tier&apos;s plans: whole-year durations use the yearly price × the number of years, and any other duration uses the monthly price × the number of months. Type to set your own, or reset a tier back to the defaults.</Hint>
                 {tiers.length === 0 && (
-                    <p className='text-sm text-grey-600'>Add a paid tier to set pricing.</p>
+                    <Hint>Add a paid tier to set pricing.</Hint>
                 )}
                 <div className='flex flex-col gap-6'>
                     {tiers.map(tier => (
                         <div key={tier.id}>
-                            <div className='mb-2 flex min-h-6 items-center justify-between'>
-                                {tiers.length > 1 ? <Heading level={6}>{tier.name}</Heading> : <span />}
+                            <div className={`mb-2 flex min-h-6 items-center ${tiers.length > 1 ? 'justify-between' : 'justify-end'}`}>
+                                {tiers.length > 1 && <Heading level={6}>{tier.name}</Heading>}
                                 <Button
-                                    color='green'
+                                    color='grey'
                                     disabled={!tierHasOverrides(tier.id)}
                                     label='Reset to default'
                                     size='sm'

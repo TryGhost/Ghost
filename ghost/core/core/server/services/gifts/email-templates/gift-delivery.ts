@@ -54,7 +54,7 @@ ${messageBlock}${benefitsBlock}
 ${t('Redeem your gift')}:
 ${data.gift.link}
 
-${t('The link expires on {expiresAt} and can only be redeemed once.', {
+${t('This gift can only be redeemed once and expires on {expiresAt}.', {
         expiresAt: data.gift.expiresAt,
         interpolation: {escapeValue: false}
     })}

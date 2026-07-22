@@ -3,7 +3,7 @@ import GiftPreview from './gift-preview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo} from 'react';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Checkbox, CurrencyField, Heading, HtmlField, ImageUpload, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
+import {Checkbox, CurrencyField, Heading, Hint, HtmlField, ImageUpload, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Separator} from '@tryghost/shade/components';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
@@ -124,7 +124,7 @@ const GiftSidebar: React.FC<{
         <div className='flex flex-col gap-8 pt-4'>
             <div className='flex flex-col gap-6'>
                 <TextField
-                    hint={<>Leave blank to use the default (shown in grey). Under <strong>{headingMaxLength}</strong> characters — you&apos;ve used <strong className={headingLength > headingMaxLength ? 'text-red' : 'text-grey-700'}>{headingLength}</strong>.</>}
+                    hint={<>Leave blank to use the default. Under <strong>{headingMaxLength}</strong> characters — you&apos;ve used <strong className={headingLength > headingMaxLength ? 'text-red' : 'text-grey-700'}>{headingLength}</strong>.</>}
                     maxLength={headingMaxLength}
                     placeholder={defaultHeading}
                     title="Heading"
@@ -132,7 +132,7 @@ const GiftSidebar: React.FC<{
                     onChange={e => updateSetting('gift_page_heading', e.target.value || null)}
                 />
                 <HtmlField
-                    hint={<>Sell the value of a gift membership — or leave blank to use the default (shown in grey). Under <strong>{descriptionMaxLength}</strong> characters so it fits; you&apos;ve used <strong className={descriptionLength > descriptionMaxLength ? 'text-red' : 'text-grey-700'}>{descriptionLength}</strong>.</>}
+                    hint={<>Sell the value of a gift membership, or leave blank to use the default. Under <strong>{descriptionMaxLength}</strong> characters — you&apos;ve used <strong className={descriptionLength > descriptionMaxLength ? 'text-red' : 'text-grey-700'}>{descriptionLength}</strong>.</>}
                     maxLength={descriptionMaxLength}
                     nodes='MINIMAL_NODES'
                     placeholder={`Share a full membership to ${siteData?.title || 'your site'} with a friend or colleague`}
@@ -141,25 +141,27 @@ const GiftSidebar: React.FC<{
                     onChange={html => updateSetting('gift_page_description', html || null)}
                 />
                 <div>
-                    <Heading className='mb-2' level={6}>Image</Heading>
-                    <ImageUpload
-                        deleteButtonClassName='!top-1 !right-1'
-                        height={giftPageImage ? '120px' : '52px'}
-                        id='gift-page-image'
-                        imageURL={giftPageImage || ''}
-                        onDelete={() => updateSetting('gift_page_image', null)}
-                        onUpload={handleImageUpload}
-                    >
-                        Upload gift page image
-                    </ImageUpload>
-                    <p className='mt-1 text-sm text-grey-700'>Shown above the heading at up to 140px tall — logos and wide images work best.</p>
+                    <Heading level={5}>Image</Heading>
+                    <Hint>Shown above the heading at up to 140px tall — logos and wide images work best.</Hint>
+                    <div className='mt-3'>
+                        <ImageUpload
+                            deleteButtonClassName='!top-1 !right-1'
+                            height={giftPageImage ? '120px' : '52px'}
+                            id='gift-page-image'
+                            imageURL={giftPageImage || ''}
+                            onDelete={() => updateSetting('gift_page_image', null)}
+                            onUpload={handleImageUpload}
+                        >
+                            Upload gift page image
+                        </ImageUpload>
+                    </div>
                 </div>
             </div>
 
             {paidTiers.length > 1 && (
                 <div>
-                    <Heading level={6}>Tiers</Heading>
-                    <p className='mt-1 text-sm text-grey-700'>Choose which tiers readers can gift.</p>
+                    <Heading level={5}>Tiers</Heading>
+                    <Hint>Choose which tiers readers can gift.</Hint>
                     <div className='mt-3 flex flex-col gap-2'>
                         {paidTiers.map(tier => (
                             <Checkbox
@@ -175,8 +177,8 @@ const GiftSidebar: React.FC<{
             )}
 
             <div>
-                <Heading level={6}>Durations</Heading>
-                <p className='mt-1 text-sm text-grey-700'>Choose which subscription lengths readers can gift.</p>
+                <Heading level={5}>Durations</Heading>
+                <Hint>Choose which subscription lengths readers can gift.</Hint>
                 <div className='mt-3 flex flex-col gap-2'>
                     {DURATION_OPTIONS.map(({months, label, anchor}) => {
                         const anchorAvailable = portalPlans.includes(anchor);
@@ -194,15 +196,15 @@ const GiftSidebar: React.FC<{
                     })}
                 </div>
                 {offeredDurations.length === 0 && (
-                    <p className='mt-2 text-sm text-grey-700'>No durations are available, so the gift page is currently unavailable to readers.</p>
+                    <Hint>No durations are available, so the gift page is currently unavailable to readers.</Hint>
                 )}
             </div>
 
             {showPricing && (
                 <div>
-                    <Heading level={6}>Pricing</Heading>
-                    <p className='mt-1 text-sm text-grey-700'>Set your own one-time gift price for any tier and duration. Leave a field blank to use the default shown in grey: whole-year durations use the tier&apos;s yearly price, and every other duration uses its monthly price × the number of months.</p>
-                    <div className='mt-4 flex flex-col gap-6'>
+                    <Heading level={5}>Pricing</Heading>
+                    <Hint>Set your own one-time gift price for any tier and duration. Leave a field blank to use the default shown in grey: whole-year durations use the tier&apos;s yearly price, and every other duration uses its monthly price × the number of months.</Hint>
+                    <div className='mt-3 flex flex-col gap-6'>
                         {offeredTiers.map((tier, i) => (
                             <React.Fragment key={tier.id}>
                                 {i > 0 && <Separator />}

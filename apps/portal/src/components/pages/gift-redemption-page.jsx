@@ -225,7 +225,7 @@ const GiftRedemptionPage = () => {
 
                             {expiryLabel && (
                                 <p className='gh-portal-gift-checkout-cta-note'>
-                                    {t('This gift can only be redeemed once, and expires on {expiryDate}.', {expiryDate: expiryLabel})}
+                                    {t('This gift can only be redeemed once and expires on {expiryDate}.', {expiryDate: expiryLabel})}
                                 </p>
                             )}
                         </div>
@@ -238,7 +238,7 @@ const GiftRedemptionPage = () => {
                                     cardRef={cardRef}
                                     duration={getGiftDurationLabel(gift)}
                                     tierName={gift.tier.name}
-                                    name={name.trim() || null}
+                                    toName={name.trim() || null}
                                     siteIcon={siteIcon}
                                     siteTitle={siteTitle}
                                 />

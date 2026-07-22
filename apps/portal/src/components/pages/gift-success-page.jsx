@@ -136,7 +136,7 @@ const GiftSuccessPage = () => {
     const isEmailed = delivery === 'sent' || delivery === 'scheduled';
 
     let titleText = t('Your gift is ready');
-    let subtitleText = t('It\'s paid for and ready to give. Share the link below whenever the moment feels right.');
+    let subtitleText = t('It\'s ready to give — share the link below whenever the moment feels right.');
     if (delivery === 'scheduled' && deliveryDate) {
         const formattedDate = new Date(deliveryDate).toLocaleDateString(undefined, {day: 'numeric', month: 'short', year: 'numeric'});
         titleText = t('Your gift is scheduled');
@@ -165,7 +165,7 @@ const GiftSuccessPage = () => {
                             </header>
 
                             <div className='gh-portal-gift-checkout-section'>
-                                <p className='gh-portal-gift-success-share-label'>{isEmailed ? t('Prefer to share it yourself?') : t('Your gift link')}</p>
+                                <p className='gh-portal-gift-success-share-label'>{isEmailed ? t('Share it yourself') : t('Your gift link')}</p>
                                 <div className='gh-portal-gift-success-link'>
                                     <span className='gh-portal-gift-success-link-url'>{redeemUrl}</span>
                                     <button className='gh-portal-gift-success-copy' onClick={handleCopy} type='button'>
@@ -173,6 +173,7 @@ const GiftSuccessPage = () => {
                                         {copied ? t('Copied') : t('Copy')}
                                     </button>
                                 </div>
+                                <span aria-live='polite' style={{position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0}}>{copied ? t('Gift link copied to clipboard') : ''}</span>
                             </div>
 
                             {!isEmailed && (

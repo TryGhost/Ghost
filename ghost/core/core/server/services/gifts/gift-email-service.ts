@@ -1,6 +1,7 @@
 import {GiftEmailRenderer, Translate} from './gift-email-renderer';
 
 const DEFAULT_DATE_LOCALE = 'en-gb';
+const DEFAULT_ACCENT_COLOR = '#15212A';
 
 interface Mailer {
     send(message: {
@@ -94,14 +95,24 @@ export class GiftEmailService {
         }
     }
 
+    // Never let the CTA/accents render on an empty background: an unset
+    // accent_color would produce `background-color:` with white text — an
+    // invisible button. Fall back to Ghost's default dark.
+    private get accentColor(): string {
+        return this.settingsCache.get('accent_color') || DEFAULT_ACCENT_COLOR;
+    }
+
+    // Must produce the same words as Portal's getGiftDurationLabel so the
+    // delivery email and the redemption page describe the gift identically
+    // ("1 year", "3 years", "1 month", "3 months").
     private getCadenceLabel(cadence: 'month' | 'year', duration: number): string {
         if (duration === 1) {
-            return cadence === 'year' ? this.t('one-year') : this.t('one-month');
+            return cadence === 'year' ? this.t('1 year') : this.t('1 month');
         }
         if (cadence === 'year') {
-            return this.t('{count} year', {count: duration});
+            return this.t('{count} years', {count: duration});
         }
-        return this.t('{count} month', {count: duration});
+        return this.t('{count} months', {count: duration});
     }
 
     private formatDate(date: Date): string {
@@ -127,7 +138,7 @@ export class GiftEmailService {
             siteUrl,
             siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
             siteDomain,
-            accentColor: this.settingsCache.get('accent_color'),
+            accentColor: this.accentColor,
             toEmail: buyerEmail,
             gift: {
                 tierName,
@@ -177,7 +188,7 @@ export class GiftEmailService {
             siteUrl,
             siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
             siteDomain,
-            accentColor: this.settingsCache.get('accent_color'),
+            accentColor: this.accentColor,
             toEmail: recipientEmail,
             buyerName,
             recipientName,
@@ -218,7 +229,7 @@ export class GiftEmailService {
             siteUrl,
             siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
             siteDomain,
-            accentColor: this.settingsCache.get('accent_color'),
+            accentColor: this.accentColor,
             toEmail: buyerEmail,
             gift: {
                 tierName,
@@ -252,7 +263,7 @@ export class GiftEmailService {
             siteUrl,
             siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
             siteDomain,
-            accentColor: this.settingsCache.get('accent_color'),
+            accentColor: this.accentColor,
             memberEmail,
             firstName,
             gift: {

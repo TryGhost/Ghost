@@ -181,7 +181,7 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-duration-switch {
     display: flex;
-    background: #F3F3F3;
+    background: var(--grey12);
     width: 100%;
     border-radius: 999px;
     padding: 4px;
@@ -205,24 +205,6 @@ export const GiftPageStyles = `
     background: var(--white);
     box-shadow: 0px 1px 3px rgba(var(--blackrgb), 0.08);
     color: var(--grey0);
-}
-
-.gh-portal-gift-checkout-email .gh-portal-input-labelcontainer {
-    margin-bottom: 12px;
-}
-
-.gh-portal-gift-checkout-email .gh-portal-input-label {
-    font-size: 1.2rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--grey6);
-    margin-bottom: 0;
-}
-
-.gh-portal-gift-checkout-email .gh-portal-input {
-    height: 48px;
-    margin-bottom: 0;
 }
 
 .gh-portal-gift-checkout-tiers {
@@ -388,81 +370,6 @@ export const GiftPageStyles = `
     stroke: rgba(255, 255, 255, 0.85);
 }
 
-.gh-portal-gift-checkout-methods {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.gh-portal-gift-checkout-method {
-    border: 1px solid var(--grey12);
-    border-radius: 8px;
-    transition: border-color 0.15s ease;
-}
-
-.gh-portal-gift-checkout-method:hover {
-    border-color: var(--grey10);
-}
-
-.gh-portal-gift-checkout-method.selected {
-    border-color: var(--brandcolor);
-}
-
-.gh-portal-gift-checkout-method-choice {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    width: 100%;
-    padding: 14px 16px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    text-align: start;
-}
-
-.gh-portal-gift-checkout-method.selected .gh-portal-gift-checkout-tier-radio {
-    border-color: var(--brandcolor);
-    background: var(--brandcolor);
-}
-
-.gh-portal-gift-checkout-method.selected .gh-portal-gift-checkout-tier-radio::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--white);
-    transform: translate(-50%, -50%);
-}
-
-.gh-portal-gift-checkout-method-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.gh-portal-gift-checkout-method-name {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--grey1);
-}
-
-.gh-portal-gift-checkout-method-description {
-    font-size: 1.35rem;
-    line-height: 1.4em;
-    color: var(--grey6);
-}
-
-.gh-portal-gift-checkout-method-body {
-    padding: 0 16px 16px;
-}
-
-.gh-portal-gift-checkout-method-body .gh-portal-input-label {
-    font-size: 1.3rem;
-}
-
 .gh-portal-gift-checkout-back {
     display: inline-flex;
     align-items: center;
@@ -483,18 +390,11 @@ export const GiftPageStyles = `
     color: var(--grey1);
 }
 
-.gh-portal-gift-checkout-note {
-    margin: -8px 0 16px;
-    font-size: 1.3rem;
-    line-height: 1.45em;
-    color: var(--grey6);
-}
-
 .gh-portal-gift-checkout-textarea {
     height: auto;
     min-height: 96px;
     padding: 10px 12px;
-    resize: vertical;
+    resize: none;
     font-family: inherit;
     line-height: 1.5em;
 }
@@ -504,7 +404,9 @@ export const GiftPageStyles = `
 }
 
 .gh-portal-gift-checkout-delivery-date .gh-portal-input {
+    height: 48px;
     margin-bottom: 0;
+    box-sizing: border-box;
 }
 
 .gh-portal-gift-checkout-delivery-error {
@@ -1153,6 +1055,10 @@ const GiftPage = () => {
         setDeliveryOption(option);
         if (option === 'now') {
             setDeliveryDate('');
+        } else if (option === 'schedule' && !deliveryDate) {
+            // Start on the earliest valid day so the native date field never
+            // opens as an empty platform placeholder.
+            setDeliveryDate(minDeliveryDate);
         }
     };
 
@@ -1280,7 +1186,7 @@ const GiftPage = () => {
                                     <>
                                         <h1 className='gh-portal-main-title'>{giftPageHeading || t('Gift a membership')}</h1>
                                         <p className='gh-portal-gift-checkout-subtitle'>
-                                            {t('Choose how your gift is delivered')}
+                                            {t('Add a few details and it\'s on its way')}
                                         </p>
                                     </>
                                 )}
@@ -1457,7 +1363,7 @@ const GiftPage = () => {
                                                 className={'gh-portal-btn' + (deliveryOption === 'schedule' ? ' active' : '')}
                                                 onClick={() => handleDeliveryOptionChange('schedule')}
                                             >
-                                                {t('Schedule')}
+                                                {t('Schedule it')}
                                             </button>
                                         </div>
                                         {deliveryOption === 'schedule' && (
@@ -1519,6 +1425,11 @@ const GiftPage = () => {
                                         classes='gh-portal-gift-checkout-cta'
                                         style={{width: '100%'}}
                                     />
+                                )}
+                                {step === 'delivery' && (
+                                    <p className='gh-portal-gift-checkout-cta-note'>
+                                        {t('You\'ll review everything and pay securely on the next step.')}
+                                    </p>
                                 )}
                             </div>
                         </div>
