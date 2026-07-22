@@ -24,6 +24,51 @@ export function sanitizeHtml(html: string): string {
     return DOMPurify.sanitize(html);
 }
 
+// Must stay in sync with allowedScriptHostnames in the backend sanitizer
+// (https://github.com/TryGhost/ActivityPub/blob/main/src/helpers/html.ts)
+const ALLOWED_SCRIPT_HOSTNAMES = ['platform.twitter.com', 'platform.x.com'];
+
+// Article content needs looser rules than sanitizeHtml (iframes for YouTube
+// embeds, scripts for Twitter embeds), so it gets its own DOMPurify instance
+const articlePurify = DOMPurify(window);
+
+articlePurify.addHook('uponSanitizeElement', (node, data) => {
+    if (data.tagName !== 'script') {
+        return;
+    }
+
+    const element = node as Element;
+    const src = element.getAttribute('src') || '';
+
+    let hasAllowedSrc = false;
+    try {
+        // Relative URLs must not pass, so no base URL here
+        const url = new URL(src);
+        hasAllowedSrc = url.protocol === 'https:' && ALLOWED_SCRIPT_HOSTNAMES.includes(url.hostname);
+    } catch {
+        hasAllowedSrc = false;
+    }
+
+    if (!hasAllowedSrc) {
+        element.parentNode?.removeChild(element);
+        return;
+    }
+
+    // Allowed scripts may only load code via src, never run inline code
+    element.textContent = '';
+});
+
+export function sanitizeArticleContent(content: string): string {
+    return articlePurify.sanitize(content, {
+        ADD_TAGS: ['iframe', 'script'],
+        ADD_ATTR: ['target', 'frameborder', 'allowfullscreen', 'async', 'charset'],
+        // Without this the HTML parser hoists leading <script>/<style> tags
+        // into <head>, which DOMPurify then discards — content starting with
+        // an embed script would lose it
+        FORCE_BODY: true
+    });
+}
+
 export function stripHtml(html: string, exclude: string[] = []): string {
     // If no exclusions, use the original logic
     if (exclude.length === 0) {
