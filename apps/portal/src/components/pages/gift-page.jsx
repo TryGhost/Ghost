@@ -534,22 +534,11 @@ export const GiftPageStyles = `
     font-weight: 400;
 }
 
-.gh-portal-gift-checkout-method-switch {
-    margin-top: 20px;
-    padding: 0;
-    border: none;
-    background: none;
-    font-size: 1.4rem;
-    font-weight: 500;
-    color: var(--grey5);
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    text-align: start;
-}
-
-.gh-portal-gift-checkout-method-switch:hover {
-    color: var(--grey3);
+.gh-portal-gift-checkout-link-note {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.5;
+    color: var(--grey4);
 }
 
 .gh-portal-gift-checkout .gh-portal-btn-primary {
@@ -1198,7 +1187,9 @@ const GiftPage = () => {
             ...(isEmailDelivery ? {recipientEmail: trimmedRecipientEmail} : {}),
             ...(isEmailDelivery && trimmedRecipientName ? {recipientName: trimmedRecipientName} : {}),
             ...(trimmedBuyerName ? {buyerName: trimmedBuyerName} : {}),
-            ...(trimmedGiftMessage ? {giftMessage: trimmedGiftMessage} : {}),
+            // The message only shows on the recipient's email, so it's an
+            // email-delivery concept — don't attach it in share-a-link mode.
+            ...(isEmailDelivery && trimmedGiftMessage ? {giftMessage: trimmedGiftMessage} : {}),
             ...(isScheduled && deliveryDate ? {deliveryDate} : {})
         });
     };
@@ -1346,6 +1337,32 @@ const GiftPage = () => {
                                     )}
                                 </div>
 
+                                <div className='gh-portal-gift-checkout-section'>
+                                    <div className='gh-portal-gift-checkout-label'>{t('How would you like to give it?')}</div>
+                                    <div className='gh-portal-gift-duration-switch' role='radiogroup' aria-label={t('Delivery method')}>
+                                        <button
+                                            type='button'
+                                            role='radio'
+                                            aria-checked={deliveryMethod === 'email'}
+                                            data-test-button='delivery-method-email'
+                                            className={'gh-portal-btn' + (deliveryMethod === 'email' ? ' active' : '')}
+                                            onClick={() => handleDeliveryMethodChange('email')}
+                                        >
+                                            {t('Email it to them')}
+                                        </button>
+                                        <button
+                                            type='button'
+                                            role='radio'
+                                            aria-checked={deliveryMethod === 'link'}
+                                            data-test-button='delivery-method-link'
+                                            className={'gh-portal-btn' + (deliveryMethod === 'link' ? ' active' : '')}
+                                            onClick={() => handleDeliveryMethodChange('link')}
+                                        >
+                                            {t('Share a link yourself')}
+                                        </button>
+                                    </div>
+                                </div>
+
                                 {deliveryMethod === 'email' && <>
                                     <div className='gh-portal-gift-checkout-section'>
                                         <div className='gh-portal-gift-checkout-label'>{t('Who\'s this gift for?')}</div>
@@ -1412,32 +1429,27 @@ const GiftPage = () => {
                                             </div>
                                         )}
                                     </div>
+
+                                    <div className='gh-portal-gift-checkout-section'>
+                                        <div className='gh-portal-gift-checkout-label'>{t('Add a message')} <span className='gh-portal-gift-checkout-label-optional'>{t('(optional)')}</span></div>
+                                        <textarea
+                                            data-test-input='gift-message'
+                                            className='gh-portal-input gh-portal-gift-checkout-textarea'
+                                            aria-label={t('Personal message')}
+                                            placeholder={t('Add a short note to go with your gift')}
+                                            maxLength={GIFT_MESSAGE_MAX_LENGTH}
+                                            value={giftMessage}
+                                            onChange={event => setGiftMessage(event.target.value)}
+                                        />
+                                        <p className='gh-portal-gift-checkout-message-count'>{giftMessage.length}/{GIFT_MESSAGE_MAX_LENGTH}</p>
+                                    </div>
                                 </>}
 
-                                <div className='gh-portal-gift-checkout-section'>
-                                    <div className='gh-portal-gift-checkout-label'>{t('Add a message')} <span className='gh-portal-gift-checkout-label-optional'>{t('(optional)')}</span></div>
-                                    <textarea
-                                        data-test-input='gift-message'
-                                        className='gh-portal-input gh-portal-gift-checkout-textarea'
-                                        aria-label={t('Personal message')}
-                                        placeholder={deliveryMethod === 'email' ? t('Add a short note to go with your gift') : t('Add a short note to include with the gift link')}
-                                        maxLength={GIFT_MESSAGE_MAX_LENGTH}
-                                        value={giftMessage}
-                                        onChange={event => setGiftMessage(event.target.value)}
-                                    />
-                                    <p className='gh-portal-gift-checkout-message-count'>{giftMessage.length}/{GIFT_MESSAGE_MAX_LENGTH}</p>
-                                </div>
-
-                                <button
-                                    type='button'
-                                    className='gh-portal-gift-checkout-method-switch'
-                                    data-test-button={deliveryMethod === 'email' ? 'delivery-method-link' : 'delivery-method-email'}
-                                    onClick={() => handleDeliveryMethodChange(deliveryMethod === 'email' ? 'link' : 'email')}
-                                >
-                                    {deliveryMethod === 'email'
-                                        ? t('Prefer to share the gift yourself? Get a link instead')
-                                        : t('Or send it straight to their inbox')}
-                                </button>
+                                {deliveryMethod === 'link' && (
+                                    <div className='gh-portal-gift-checkout-section'>
+                                        <p className='gh-portal-gift-checkout-link-note'>{t('After checkout you\'ll get a private gift link. Share it however you like — by text, in a card, or in person — and they can redeem it whenever they\'re ready.')}</p>
+                                    </div>
+                                )}
                             </>}
 
                             <div className='gh-portal-gift-checkout-cta-wrapper'>
