@@ -152,7 +152,7 @@ export function ColorPickerField({ testId, title, hint, direction, value, swatch
                         <div className="relative flex h-10 w-full items-center">
                             <span className="absolute top-[9px] left-2 z-10 mr-2 ml-1 text-muted-foreground">#</span>
                             <HexColorInput
-                                aria-label="Color value"
+                                aria-label="Hex color"
                                 className="z-[1] w-full rounded-md border border-transparent bg-muted p-2 pl-6 transition-all focus:border-green focus:bg-background focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-hidden"
                                 color={localValue || undefined}
                                 onChange={handleChange}

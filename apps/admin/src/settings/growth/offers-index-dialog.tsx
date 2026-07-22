@@ -145,6 +145,48 @@ function RetentionOfferRow({ offer, onClick }: {
     );
 }
 
+type OfferListItem =
+    | { kind: "retention"; offer: RetentionOffer }
+    | { kind: "signup"; offer: Offer };
+
+const getOfferListItemName = (item: OfferListItem): string => item.offer.name;
+const getOfferListItemRedemptions = (item: OfferListItem): number => (item.kind === "retention" ? item.offer.redemptions : item.offer.redemption_count);
+const getOfferListItemCreatedAt = (item: OfferListItem): string | null => (item.kind === "retention" ? item.offer.createdAt : item.offer.created_at || null);
+
+const sortOfferListItems = (items: OfferListItem[], sortOption: string, sortDirection: string): OfferListItem[] => {
+    const multiplier = sortDirection === "desc" ? -1 : 1;
+
+    return [...items].sort((item1, item2) => {
+        let result: number;
+
+        switch (sortOption) {
+            case "name":
+                result = getOfferListItemName(item1).localeCompare(getOfferListItemName(item2));
+                break;
+            case "redemptions":
+                result = getOfferListItemRedemptions(item1) - getOfferListItemRedemptions(item2);
+                break;
+            default: {
+                const date1 = getOfferListItemCreatedAt(item1);
+                const date2 = getOfferListItemCreatedAt(item2);
+
+                if (!date1 && !date2) {
+                    result = 0;
+                } else if (!date1) {
+                    return 1;
+                } else if (!date2) {
+                    return -1;
+                } else {
+                    result = new Date(date1).getTime() - new Date(date2).getTime();
+                }
+                break;
+            }
+        }
+
+        return (result || getOfferListItemName(item1).localeCompare(getOfferListItemName(item2))) * multiplier;
+    });
+};
+
 export function OffersIndexDialog() {
     const navigate = useNavigate();
     const { data: { offers: allOffers = [] } = {} } = useBrowseOffers();
@@ -167,19 +209,6 @@ export function OffersIndexDialog() {
         navigate(`/settings/offers/edit/retention/${id}`);
     };
 
-    const sortedOffers = signupOffers
-        .sort((offer1, offer2) => {
-            const multiplier = sortDirection === "desc" ? -1 : 1;
-            switch (sortOption) {
-                case "name":
-                    return multiplier * offer1.name.localeCompare(offer2.name);
-                case "redemptions":
-                    return multiplier * (offer1.redemption_count - offer2.redemption_count);
-                default:
-                    return multiplier * ((offer1.created_at ? new Date(offer1.created_at).getTime() : 0) - (offer2.created_at ? new Date(offer2.created_at).getTime() : 0));
-            }
-        });
-
     const paidActiveTiers = getPaidActiveTiers(allTiers || []);
 
     const isOfferArchived = (offer: Offer) => {
@@ -187,7 +216,7 @@ export function OffersIndexDialog() {
         return offer.status === "archived" || (offerTier && offerTier.active === false);
     };
 
-    const filteredSignupOffers = sortedOffers.filter((offer) => {
+    const filteredSignupOffers = signupOffers.filter((offer) => {
         const offerTier = allTiers?.find((tier) => tier.id === offer?.tier?.id);
         const isActive = offer.status === "active" && offerTier && offerTier.active === true;
         const isArchived = isOfferArchived(offer);
@@ -200,6 +229,11 @@ export function OffersIndexDialog() {
         }
         return false;
     });
+
+    const sortedOfferListItems = sortOfferListItems([
+        ...retentionOffers.map((offer) => ({ kind: "retention" as const, offer })),
+        ...filteredSignupOffers.map((offer) => ({ kind: "signup" as const, offer })),
+    ], sortOption, sortDirection);
 
     const handleNewOffer = () => {
         if (paidActiveTiers.length === 0) {
@@ -259,15 +293,19 @@ export function OffersIndexDialog() {
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody>
-                                {retentionOffers.map((offer) => (
-                                    <RetentionOfferRow
-                                        key={offer.id}
-                                        offer={offer}
-                                        onClick={() => handleRetentionOfferEdit(offer.id)}
-                                    />
-                                ))}
-                                {filteredSignupOffers.map((offer) => {
+                            <TableBody data-testid="offers-table-body">
+                                {sortedOfferListItems.map((item) => {
+                                    if (item.kind === "retention") {
+                                        return (
+                                            <RetentionOfferRow
+                                                key={`retention-${item.offer.id}`}
+                                                offer={item.offer}
+                                                onClick={() => handleRetentionOfferEdit(item.offer.id)}
+                                            />
+                                        );
+                                    }
+
+                                    const offer = item.offer;
                                     const offerTier = allTiers?.find((tier) => tier.id === offer?.tier?.id);
 
                                     if (!offerTier) {
@@ -279,7 +317,7 @@ export function OffersIndexDialog() {
                                     const { discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency } = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || "USD", offerTier);
 
                                     return (
-                                        <TableRow key={offer.id} className={archived ? "opacity-60" : undefined} data-testid="offer-item">
+                                        <TableRow key={`signup-${offer.id}`} className={archived ? "opacity-60" : undefined} data-testid="offer-item">
                                             <td className="sticky left-0 z-10 bg-background p-0">
                                                 <button className={cn(CELL_BUTTON_CLASSES, "pl-0")} type="button" onClick={() => handleOfferEdit(offer.id)}>
                                                     <span className="font-semibold">{offer?.name}</span><br />
