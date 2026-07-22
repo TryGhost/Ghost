@@ -37,9 +37,15 @@ const SHORTFORM_HELP = 'e.g. data: tag.recipes';
 
 /**
  * Shorthand data definitions look like `tag.recipes` — resource, dot, slug.
+ *
+ * `%s` stands in for the slug: on channel routes and collections, fetch-data
+ * substitutes it with the request's `slug` param at query time, which is how a
+ * wildcard route such as `/author/:slug/` serves a different author per request.
+ * There is no static slug that could replace it, so rejecting it would break
+ * those routes.
  */
 function validateDataShortForm(value: string, path: PathSegment[]): void {
-    if (!/^[a-zA-Z0-9_]+\.[a-zA-Z0-9_-]+$/.test(value)) {
+    if (!/^[a-zA-Z0-9_]+\.(?:%s|[a-zA-Z0-9_-]+)$/.test(value)) {
         throw validationError(
             formatLocation(path),
             `"${value}" is not a valid data shorthand. Please use resource.slug, e.g. tag.recipes.`,
@@ -270,8 +276,15 @@ const RouteSettingsSchema = z.object({
 /**
  * Every path in routes.yaml — route paths, collection paths, permalinks and
  * taxonomy permalinks — follows the same rules, so they share one message set.
+ *
+ * `allowParamNotation` is set for route and collection keys, which are mounted on
+ * Express verbatim: nothing rewrites `{param}` to `:param` for them the way it
+ * does for permalinks and taxonomies. So `/author/:slug/` is a working wildcard
+ * route on live sites and `/author/{slug}/` would be a dead literal path —
+ * rejecting :param there would break the former, and the suggested rewrite would
+ * silently produce the latter.
  */
-function validatePath(value: string, path: PathSegment[], example: string): void {
+function validatePath(value: string, path: PathSegment[], example: string, {allowParamNotation = false}: {allowParamNotation?: boolean} = {}): void {
     const at = formatLocation(path);
 
     if (!value.startsWith('/')) {
@@ -280,7 +293,7 @@ function validatePath(value: string, path: PathSegment[], example: string): void
     if (!value.endsWith('/')) {
         throw validationError(at, `"${value}" is missing a trailing slash. Please use e.g. ${example}.`);
     }
-    if (/\/:\w+/.test(value)) {
+    if (!allowParamNotation && /\/:\w+/.test(value)) {
         // Suggest the same path in the notation Ghost expects, rather than a
         // generic example the author then has to translate.
         throw validationError(at, `"${value}" uses the :param notation. Please use "${value.replace(/\/:(\w+)/g, '/{$1}')}".`);
@@ -301,7 +314,7 @@ export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSetti
     if (rawRoutes) {
         for (const [path, value] of Object.entries(rawRoutes)) {
             const routeLocation: PathSegment[] = ['routes', path];
-            validatePath(path, routeLocation, '/about/');
+            validatePath(path, routeLocation, '/about/', {allowParamNotation: true});
 
             if (value === null || value === undefined) {
                 throw validationError(formatLocation(routeLocation), 'Please define a template, e.g. /about/: about.');
@@ -330,7 +343,7 @@ export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSetti
     if (rawCollections) {
         for (const [path, value] of Object.entries(rawCollections)) {
             const collectionLocation: PathSegment[] = ['collections', path];
-            validatePath(path, collectionLocation, '/blog/');
+            validatePath(path, collectionLocation, '/blog/', {allowParamNotation: true});
 
             const collectionResult = collectionValueSchema(collectionLocation).safeParse(value);
             if (!collectionResult.success) {
