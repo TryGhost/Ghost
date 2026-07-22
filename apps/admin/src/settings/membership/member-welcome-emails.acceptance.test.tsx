@@ -9,7 +9,6 @@ import {
     fakeNewsletters,
     fakeSettingsScreens,
     fakeTiers,
-    isShadeSettingsRun,
     newsletter,
     renderAdminApp,
     settingsResponse,
@@ -668,10 +667,7 @@ describe("Member welcome emails", () => {
             });
         });
 
-        // The automations-on flow opens this modal from the email area
-        // (/settings/emails), which isn't rebuilt natively yet. Email agent:
-        // un-skip once the emails section lands.
-        it.skipIf(isShadeSettingsRun)("saves shared sender settings without creating rows when automations owns them", async () => {
+        it("saves shared sender settings without creating rows when automations owns them", async () => {
             fakeSettingsScreens();
             fakeDefaultNewsletter();
             fakeAutomatedEmails([]);

@@ -39,8 +39,8 @@ describe("Shade settings chrome", () => {
         }
         await expect.element(settingsScreen.navItem("Design & branding")).toBeVisible();
 
-        // The general, site and membership areas are rebuilt natively; the
-        // rest still render placeholders.
+        // The general, site, membership and email areas are rebuilt natively;
+        // the rest still render placeholders.
         await expect.element(settingsScreen.section("settings-area-general")).toBeVisible();
         await expect.element(settingsScreen.titleAndDescription()).toBeVisible();
         await expect(settingsScreen.section("settings-area-general-placeholder")).toHaveCount(0);
@@ -50,11 +50,14 @@ describe("Shade settings chrome", () => {
         await expect.element(settingsScreen.section("settings-area-membership")).toBeVisible();
         await expect.element(settingsScreen.access()).toBeVisible();
         await expect(settingsScreen.section("settings-area-membership-placeholder")).toHaveCount(0);
-        for (const area of ["email", "growth", "advanced"]) {
+        await expect.element(settingsScreen.section("settings-area-email")).toBeVisible();
+        await expect.element(settingsScreen.enableNewsletters()).toBeVisible();
+        await expect(settingsScreen.section("settings-area-email-placeholder")).toHaveCount(0);
+        for (const area of ["growth", "advanced"]) {
             await expect.element(settingsScreen.section(`settings-area-${area}`)).toBeVisible();
             await expect.element(settingsScreen.section(`settings-area-${area}-placeholder`)).toBeVisible();
         }
-        await expect.element(settingsScreen.section("settings-area-email-placeholder")).toHaveTextContent("#/settings/enable-newsletters");
+        await expect.element(settingsScreen.section("settings-area-growth-placeholder")).toHaveTextContent("#/settings/recommendations");
     });
 
     it("filters the sidebar and sections by keyword and shows the no-result state", async () => {
@@ -131,7 +134,7 @@ describe("Shade settings chrome", () => {
 
     it("redirects not-yet-rebuilt deep links to the settings index", async () => {
         fakeSettingsScreens();
-        await renderAdminApp("/settings/newsletters/new", { labs: SHADE_LABS });
+        await renderAdminApp("/settings/recommendations/add", { labs: SHADE_LABS });
 
         await expect.poll(currentRoute).toBe("/settings");
         await expect.element(settingsScreen.sidebar()).toBeVisible();

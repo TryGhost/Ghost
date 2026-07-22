@@ -674,6 +674,9 @@ importers:
       '@tryghost/admin-x-settings':
         specifier: workspace:*
         version: link:../admin-x-settings
+      '@tryghost/color-utils':
+        specifier: 'catalog:'
+        version: 0.2.19
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
         version: 1.0.11

@@ -12,6 +12,8 @@ import { UserDetailDialog } from "@/settings/general/user-detail-dialog";
 import { PortalDialog } from "@/settings/membership/portal-dialog";
 import { StripeConnectDialog } from "@/settings/membership/stripe-connect-dialog";
 import { TierDetailDialog } from "@/settings/membership/tier-detail-dialog";
+import { AddNewsletterDialog } from "@/settings/email/add-newsletter-dialog";
+import { NewsletterDetailDialog } from "@/settings/email/newsletter-detail-dialog";
 import { AnnouncementBarDialog } from "@/settings/site/announcement-bar-dialog";
 import { ChangeThemeDialog } from "@/settings/site/change-theme-dialog";
 import { DesignDialog } from "@/settings/site/design-dialog";
@@ -32,6 +34,7 @@ import { ThemeCodeEditorDialog } from "@/settings/site/theme-code-editor-dialog"
  *   `announcement-bar/edit`
  * - membership-area dialogs: `portal/edit`, `tiers/add`, `tiers/:tierId`,
  *   `stripe-connect`
+ * - email-area dialogs: `newsletters/new`, `newsletters/:newsletterId`
  * - anything deeper or unknown (routes whose screens haven't been rebuilt)
  *   redirects to `/settings`
  *
@@ -81,6 +84,8 @@ export default function ShadeSettingsApp() {
                                 <Route element={<TierDetailDialog />} path="tiers/add" />
                                 <Route element={<TierDetailDialog />} path="tiers/:tierId" />
                                 <Route element={<StripeConnectDialog />} path="stripe-connect" />
+                                <Route element={<AddNewsletterDialog />} path="newsletters/new" />
+                                <Route element={<NewsletterDetailDialog />} path="newsletters/:newsletterId" />
                                 <Route element={<AreaRoute />} path=":area" />
                                 <Route element={<Navigate to="/settings" replace />} path="*" />
                             </Route>

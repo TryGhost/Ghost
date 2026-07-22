@@ -1,7 +1,9 @@
 import {describe, expect, it} from "vitest";
 
-import {fakeAdminEndpoint, fakeSettingsScreens, newsletter, renderAdminApp, settingsResponse} from "@test-utils/acceptance";
+import {enableShadeSettingsMode, fakeAdminEndpoint, fakeSettingsScreens, newsletter, renderAdminApp, settingsResponse, shadeSettingsBootLabs} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 describe("Email settings", () => {
     it("renders newsletter sections in their expected order", async () => {
@@ -23,7 +25,7 @@ describe("Email settings", () => {
 
     it("keeps welcome emails visible when newsletter sending is disabled", async () => {
         fakeSettingsScreens();
-        const settings = settingsResponse({settings: {
+        const settings = settingsResponse({labs: shadeSettingsBootLabs(), settings: {
             editor_default_email_recipients: "disabled",
             editor_default_email_recipients_filter: null,
         }});
@@ -73,7 +75,7 @@ describe("Email settings", () => {
 
     it("keeps automation emails reachable when newsletters are disabled", async () => {
         fakeSettingsScreens();
-        const settings = settingsResponse({settings: {
+        const settings = settingsResponse({labs: shadeSettingsBootLabs(), settings: {
             editor_default_email_recipients: "disabled",
             editor_default_email_recipients_filter: null,
         }});

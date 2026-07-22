@@ -118,8 +118,8 @@ For each area (one agent per area, in its own `src/settings/<area>/` files):
 | ----------------- | ------- | --------------- | ----- |
 | general (+staff)  | done    | title-and-description, time-zone, publication-language, seo-meta, social-accounts, staff-profile, staff-roles, staff-password, staff-security, staff-invitations, staff-actions, layout | See "General area notes" below |
 | site              | done    | design, theme, navigation, announcement-bar, search | See "Site area notes" below |
-| membership        | done    | access, tiers, stripe, portal, membership-settings, custom-fields, member-welcome-emails (automations test flag-off only), layout portal test un-skipped | See "Membership area notes" below |
-| email             | pending | —               |       |
+| membership        | done    | access, tiers, stripe, portal, membership-settings, custom-fields, member-welcome-emails (incl. automations-on customize test), layout portal test un-skipped | See "Membership area notes" below |
+| email             | done    | email-settings, newsletters, default-recipients, mailgun | See "Email area notes" below |
 | growth            | pending | —               |       |
 | advanced          | pending | —               |       |
 
@@ -461,6 +461,112 @@ natively, keeping the `welcome-email-dirty-confirm-modal` testid.
 - `checkStripeEnabled` needs config — gate group/dialog components on BOTH
   `useBrowseSettings` and `useBrowseConfig` data before first render or
   Stripe-dependent UI flashes the disconnected state.
+
+## Email area notes (phase 5)
+
+**Structure.** Area component `src/settings/email/email-area.tsx` (registered
+in `AREA_COMPONENTS`): both legacy compositions behind one component —
+automations off renders enable-newsletters, default recipients, the
+Newsletters group and Mailgun (`email-settings.tsx` order); automations on
+renders enable-newsletters, default recipients, the tabbed
+Newsletters & automation emails group and Mailgun (`emails.tsx` order), with
+the same newsletters-enabled/mailgunIsConfigured conditions. Routed dialogs
+registered in settings-app.tsx: `newsletters/new` (add dialog),
+`newsletters/:newsletterId` (detail dialog).
+
+**Newsletter detail** (`newsletter-detail-dialog.tsx`) runs on the shared
+`PreviewDialog` chrome: General/Content/Design sidebar tabs beside the live
+email preview, `okLabel={okProps.label || "Save"}`, close through
+`confirmIfDirty(saveState === "unsaved")`. Implementation notes:
+
+- **Preview ported, not imported**: the legacy newsletter-preview(-content)
+  components read `useGlobalData`, so they can't be imported like the
+  email-design fields were; `newsletter-preview.tsx` +
+  `newsletter-preview-content.tsx` are native ports on the framework hooks
+  (color resolution rules verbatim, assets copied into
+  `src/settings/email/assets/`). The preview document is a fixed-light email
+  surface, so it uses literal grays/inline colors by design (theme-editor
+  rationale). New apps/admin dep: `@tryghost/color-utils` (catalog).
+- **Sender/reply-to flows**: the three managed-email states are ported
+  (self-host editable field; sending-domain field with `@domain` validation;
+  managed-without-domain shows no field — the preview header carries the
+  managed address). Reply-to keeps the legacy local-state trick so the
+  `newsletter`/`support` → concrete-address mapping doesn't rewrite while
+  typing. Save surfaces `meta.sent_email_verification` as the info toast.
+- **Archive/reactivate** run through the shared ConfirmationProvider;
+  reactivate checks `errorIfWouldGoOverLimit("newsletters")` first (limit
+  modal). The form resets from the query cache when the newsletter record
+  changes (`setFormState` effect) so the status flip updates the sidebar.
+- The email footer field reuses the site area's `AnnouncementContentEditor`
+  (Koenig MINIMAL_NODES → HTML lane); the design toggles are shade
+  ToggleGroups; color fields are the site area's `ColorPickerField`.
+- Legacy hides the preview toolbar for newsletters
+  (`previewToolbar={false}`); the shared PreviewDialog header brings the
+  desktop/mobile device toggle — a deliberate shade-only addition.
+
+**Newsletters list/tabs.** `use-newsletters.ts` (browse + active/archived
+split + the optimistic drag-reorder cache update) is shared by the
+automations-off group and the automations-on tab; `newsletters-list.tsx`
+rebuilds the rows on dnd-kit (old-DS SortableList/Table gone).
+`use-newsletter-verification.tsx` is the shared `?verifyEmail=` token flow
+(newsletters routes); the automations-on group adds the automated-email
+variant, which listens on `/settings/memberemails` and bounces to
+`/settings/emails` — the legacy route contract. Both guard with a
+submitted-token ref so re-renders can't double-redeem. The transactional tab
+reuses membership's `WelcomeEmailCustomizeDialog` as predicted (zero changes
+needed; it already gates row-creation on the automations flag).
+
+**Add newsletter** (`add-newsletter-dialog.tsx`): plain routed shade Dialog;
+the newsletters host limit check runs in an effect keyed on the limiter (it
+re-materializes when the lazy limit-service/config load settles, so the
+check re-runs until authoritative — legacy timing), then limit modal +
+bounce to the return route. Create navigates into the new newsletter's
+detail route; the framework mutation inserts it into the browse cache so
+the list shows it immediately.
+
+**Shared infra touched:**
+
+- `preview-chrome.tsx` (site): PreviewDialog's DialogContent now
+  `preventDefault()`s `onInteractOutside` for `[data-sonner-toaster]`
+  targets — the tier-detail toast-dismissal gotcha, applied to every
+  PreviewDialog consumer (design, announcement bar, portal, newsletter).
+- `nav.ts`: `emailKeywords`/`emailsKeywords` exported for the area groups.
+  No keyword/granularity changes.
+
+**Suite adjustments (mode mechanics only, no assertion changes):**
+
+- email-settings, newsletters, default-recipients, mailgun:
+  `enableShadeSettingsMode()` + folding `shadeSettingsBootLabs()` into the
+  hand-rolled settings/config responses.
+- access: dropped the `if (!isShadeSettingsRun)` guard around the
+  enable-newsletters assertion (per the phase-4 handoff).
+- member-welcome-emails: un-skipped "saves shared sender settings without
+  creating rows when automations owns them" (opens the customize modal from
+  the native emails section).
+- chrome: email placeholder assertions replaced with native-area assertions;
+  the placeholder-content probe moved to the growth area
+  (`#/settings/recommendations`) — **growth agent: move it again**; the
+  not-yet-rebuilt deep-link probe moved from `/settings/newsletters/new`
+  (now real) to `/settings/recommendations/add`.
+
+**Gotchas found (growth agent, read these):**
+
+- The legacy verification effects read `window.location.hash`; the native
+  ports must use `useLocation()` (pathname + search) — the native app is
+  path-routed inside the settings shell, and the hash trick would break the
+  dual-mode suites.
+- A prompt passed to `confirm()` can't easily close the dialog from inside
+  (the legacy NiceModal `modal.remove()` trick): the verification prompts'
+  newsletter-name links navigate but leave the confirmation open behind its
+  Close button — a known minor delta, not covered by suites.
+- `useLimiter` has no readiness flag: it returns a no-op limiter until the
+  lazy service + config land, then re-materializes (new identity). Run
+  mount-time limit checks in an effect with the limiter in the deps so the
+  check re-runs when it becomes authoritative; don't one-shot it.
+- The legacy email preview grey classes (`text-grey-700` etc.) don't exist
+  in the admin Tailwind theme — a port that keeps them silently renders
+  unstyled. Use literal default-palette grays for fixed-light email
+  surfaces, semantic tokens everywhere else.
 
 ## Chrome behavior ported (phase 1)
 

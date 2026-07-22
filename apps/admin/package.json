@@ -33,6 +33,7 @@
         "@tryghost/activitypub": "workspace:*",
         "@tryghost/admin-x-framework": "workspace:*",
         "@tryghost/admin-x-settings": "workspace:*",
+        "@tryghost/color-utils": "catalog:",
         "@tryghost/i18n": "workspace:*",
         "@tryghost/kg-unsplash-selector": "workspace:*",
         "@tryghost/limit-service": "catalog:",

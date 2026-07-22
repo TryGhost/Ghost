@@ -95,6 +95,12 @@ export function PreviewDialog({
                 aria-describedby={undefined}
                 className="inset-0 top-0 left-0 block h-dvh w-screen max-w-none translate-x-0 gap-0 rounded-none p-0 sm:rounded-none"
                 data-testid={testId}
+                onInteractOutside={(event) => {
+                    // Dismissing a toast is not a request to close the dialog.
+                    if (event.target instanceof Element && event.target.closest("[data-sonner-toaster]")) {
+                        event.preventDefault();
+                    }
+                }}
             >
                 <DialogTitle className="sr-only">{title}</DialogTitle>
                 <div className="flex h-full">

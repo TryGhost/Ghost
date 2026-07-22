@@ -78,7 +78,7 @@ export const membershipKeywords = {
 };
 
 // email/email-settings.tsx (automations flag off)
-const emailKeywords = {
+export const emailKeywords = {
     enableNewsletters: ["emails", "newsletters", "newsletter sending", "enable", "disable", "turn on", "turn off"],
     newsletters: ["newsletters", "emails", "design", "customization"],
     defaultRecipients: ["newsletters", "default recipients", "emails"],
@@ -86,7 +86,7 @@ const emailKeywords = {
 };
 
 // email/emails.tsx (automations flag on)
-const emailsKeywords = {
+export const emailsKeywords = {
     enableNewsletters: ["emails", "newsletters", "newsletter sending", "enable", "disable", "turn on", "turn off"],
     emails: ["emails", "newsletters", "automation emails", "transactional", "design", "customization", "automations", "welcome"],
     defaultRecipients: ["newsletters", "default recipients", "emails"],
