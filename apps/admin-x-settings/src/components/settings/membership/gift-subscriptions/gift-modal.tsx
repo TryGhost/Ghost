@@ -152,7 +152,7 @@ const GiftSidebar: React.FC<{
                     >
                         Upload gift page image
                     </ImageUpload>
-                    <p className='mt-1 text-xs text-grey-700'>Shown above the heading at up to 140px tall — logos and wide images work best.</p>
+                    <p className='mt-1 text-sm text-grey-700'>Shown above the heading at up to 140px tall — logos and wide images work best.</p>
                 </div>
             </div>
 
@@ -176,6 +176,7 @@ const GiftSidebar: React.FC<{
 
             <div>
                 <Heading level={6}>Durations</Heading>
+                <p className='mt-1 text-sm text-grey-700'>Choose which subscription lengths readers can gift.</p>
                 <div className='mt-3 flex flex-col gap-2'>
                     {DURATION_OPTIONS.map(({months, label, anchor}) => {
                         const anchorAvailable = portalPlans.includes(anchor);

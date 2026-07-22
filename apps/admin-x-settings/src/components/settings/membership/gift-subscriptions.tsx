@@ -64,7 +64,7 @@ const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 <span className='truncate text-sm text-grey-700' data-testid='gift-url'>{giftUrl}</span>
                                 <div className='flex shrink-0 gap-1'>
                                     <Button color='clear' data-testid='preview-shareable-link' label='Preview' size='sm' onClick={() => window.open(giftUrl, '_blank')} />
-                                    <Button color={copied ? 'green' : 'light-grey'} data-testid='copy-shareable-link' icon={copied ? 'check-circle' : undefined} iconColorClass='w-[14px] h-[14px]' label={copied ? 'Copied' : 'Copy'} size='sm' onClick={handleCopy} />
+                                    <Button color={copied ? 'green' : 'light-grey'} data-testid='copy-shareable-link' icon={copied ? 'check-circle' : undefined} iconColorClass='w-[14px] h-[14px]' label={copied ? 'Copied' : 'Copy link'} size='sm' onClick={handleCopy} />
                                 </div>
                             </div>
                         </div>

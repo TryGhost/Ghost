@@ -163,18 +163,25 @@ const GiftRedemptionPage = () => {
     const isRedeeming = action === 'redeemGift:running';
     const buttonLabel = isRedeeming
         ? t('Redeeming...')
-        : t('Redeem your membership');
+        : t('Redeem your gift');
     const siteIcon = site?.icon;
     const siteTitle = site?.title || '';
     const buyerName = gift.buyer_name || '';
+    // Mirror the exact "{duration} {tier} membership" the delivery email promised,
+    // so landing on this page feels continuous rather than generic.
+    const durationLabel = getGiftDurationLabel(gift);
+    const tierName = gift.tier.name;
     let headerText;
     if (buyerName && siteTitle) {
-        headerText = t('{buyerName} has gifted you a membership to {siteTitle}', {buyerName, siteTitle});
+        headerText = t('{buyerName} has gifted you a {duration} {tierName} membership to {siteTitle}', {buyerName, duration: durationLabel, tierName, siteTitle});
     } else if (siteTitle) {
-        headerText = t('You\'ve been gifted a membership to {siteTitle}', {siteTitle});
+        headerText = t('You\'ve been gifted a {duration} {tierName} membership to {siteTitle}', {duration: durationLabel, tierName, siteTitle});
     } else {
-        headerText = t('You\'ve been gifted a membership');
+        headerText = t('You\'ve been gifted a {duration} {tierName} membership', {duration: durationLabel, tierName});
     }
+    const expiryLabel = gift.expires_at
+        ? new Date(gift.expires_at).toLocaleDateString(undefined, {day: 'numeric', month: 'short', year: 'numeric'})
+        : '';
     const benefits = gift.tier.benefits || [];
     const tierDescription = gift.tier.description || '';
 
@@ -215,6 +222,12 @@ const GiftRedemptionPage = () => {
                                 disabled={isRedeeming}
                                 isRunning={isRedeeming}
                             />
+
+                            {expiryLabel && (
+                                <p className='gh-portal-gift-checkout-cta-note'>
+                                    {t('This gift can only be redeemed once, and expires on {expiryDate}.', {expiryDate: expiryLabel})}
+                                </p>
+                            )}
                         </div>
                     </div>
 

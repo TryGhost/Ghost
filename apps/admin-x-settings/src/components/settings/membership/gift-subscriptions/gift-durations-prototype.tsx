@@ -147,7 +147,9 @@ const GiftDurationsPrototype: React.FC<{
                             color='grey'
                             disabled={durations.length <= 1}
                             icon='trash'
+                            label='Remove duration'
                             size='sm'
+                            hideLabel
                             onClick={() => removeDuration(d.id)}
                         />
                     </div>

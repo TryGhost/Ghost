@@ -547,11 +547,11 @@ export const GiftPageStyles = `
     font-weight: 400;
 }
 
-.gh-portal-gift-checkout-link-note {
-    margin: 0;
-    font-size: 1.5rem;
+.gh-portal-gift-checkout-method-hint {
+    margin: 8px 0 0;
+    font-size: 1.3rem;
     line-height: 1.5;
-    color: var(--grey4);
+    color: var(--grey6);
 }
 
 .gh-portal-gift-checkout .gh-portal-btn-primary {
@@ -1405,6 +1405,11 @@ const GiftPage = () => {
                                             {t('Share a link yourself')}
                                         </button>
                                     </div>
+                                    <p className='gh-portal-gift-checkout-method-hint'>
+                                        {deliveryMethod === 'email'
+                                            ? t('We\'ll email the gift straight to them, with your note.')
+                                            : t('You\'ll get a private link to share however you like.')}
+                                    </p>
                                 </div>
 
                                 {deliveryMethod === 'email' && <>
@@ -1490,12 +1495,6 @@ const GiftPage = () => {
                                         )}
                                     </div>
                                 </>}
-
-                                {deliveryMethod === 'link' && (
-                                    <div className='gh-portal-gift-checkout-section'>
-                                        <p className='gh-portal-gift-checkout-link-note'>{t('After checkout you\'ll get a private gift link. Share it however you like — by text, in a card, or in person — and they can redeem it whenever they\'re ready.')}</p>
-                                    </div>
-                                )}
                             </>}
 
                             <div className='gh-portal-gift-checkout-cta-wrapper'>
@@ -1532,6 +1531,8 @@ const GiftPage = () => {
                                     cardRef={cardRef}
                                     duration={getGiftDurationLabel(getGiftCadenceParts(activeDuration))}
                                     tierName={activeProduct.name}
+                                    fromName={step === 'delivery' ? buyerName.trim() : ''}
+                                    toName={step === 'delivery' && deliveryMethod === 'email' ? recipientName.trim() : ''}
                                     giftValue={getTierPriceLabel(activeProduct, activeDuration)}
                                     siteIcon={siteIcon}
                                     siteTitle={siteTitle}
