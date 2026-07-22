@@ -3,6 +3,7 @@ const errors = require('@tryghost/errors');
 const localUtils = require('../../../shared/url-utils');
 const {matchPermalink, toLookupParams} = require('./permalink-matcher');
 const {buildFilter, filterMatches, routerTypeOf} = require('./router-filter');
+const urlConfig = require('./config');
 
 import type {Resource, UrlOptions, LazyUrlServiceBackend} from './url-service-facade';
 import type {CompiledFilter} from './router-filter';
@@ -57,6 +58,28 @@ function buildBaseFilters(): Map<string, BaseFilter> {
     return baseFilters;
 }
 
+// Columns eager drops from its in-memory URL cache (the `exclude` lists in
+// services/url/config.js). Eager evaluates a router's collection filter against
+// that reduced cached record, so an excluded column reads as absent — NQL then
+// treats it as null. Lazy loads full records and would see the real value, so
+// to preserve eager's behaviour it strips these columns before evaluating
+// router filters (and neither requires nor force-loads them). Keyed by
+// resourceType ('posts'/'pages'/'tags'). Read from eager's config directly so
+// the two can't drift; when eager is retired this derives from whatever
+// replaces it. The base filter is unaffected — it runs against the full record.
+function buildExcludedFilterFields(): Map<string, Set<string>> {
+    const excluded = new Map<string, Set<string>>();
+    for (const entry of urlConfig) {
+        const exclude = entry?.modelOptions?.exclude;
+        if (Array.isArray(exclude)) {
+            excluded.set(entry.type, new Set(exclude));
+        }
+    }
+    return excluded;
+}
+
+const EMPTY_FIELD_SET: ReadonlySet<string> = new Set();
+
 // Relation roots are loaded via getRequiredRelations (as withRelated), not as
 // scalar columns; `page`/`type` are the router-type discriminator, always set
 // on the resource. Everything else a router filter references is a scalar
@@ -109,6 +132,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     private routerConfigs: RouterConfig[];
     private requiredRelations: string[] | null;
     private baseFilters: Map<string, BaseFilter>;
+    private excludedFilterFields: Map<string, Set<string>>;
 
     constructor({urlUtils = localUtils, findResource}: LazyUrlServiceDeps) {
         if (typeof findResource !== 'function') {
@@ -121,6 +145,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         this.routerConfigs = [];
         this.requiredRelations = null;
         this.baseFilters = buildBaseFilters();
+        this.excludedFilterFields = buildExcludedFilterFields();
     }
 
     onRouterAddedType(identifier: string, filter: string | null, resourceType: string, permalink: string): void {
@@ -179,6 +204,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     // by getRequiredRelations; eager needs none of this (it looks URLs up by id).
     getRequiredFields(routerType: string): string[] {
         const fields = new Set<string>();
+        const excluded = this._excludedFilterFieldsFor(routerType);
         const base = this.baseFilters.get(routerType);
         if (base) {
             base.fields.forEach(field => fields.add(field));
@@ -207,7 +233,14 @@ export class LazyUrlService implements LazyUrlServiceBackend {
                     fields.add(computed);
                 }
             }
-            filterScalarFields(config.filter).forEach(field => fields.add(field));
+            // Skip columns eager drops from its cache: it never force-loads them
+            // and evaluates their filters against an absent value, so lazy must
+            // not require them either (see buildExcludedFilterFields).
+            filterScalarFields(config.filter).forEach((field) => {
+                if (!excluded.has(field)) {
+                    fields.add(field);
+                }
+            });
         }
         return [...fields];
     }
@@ -223,6 +256,10 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         }
 
         const record = this._recordForFilter(resource);
+        // The router (collection) filter is evaluated against eager's reduced
+        // column set; the base filter keeps the full record (it reads status /
+        // type / visibility, which eager applies at query time, not in cache).
+        const filterRecord = this._recordForRouterFilter(record, routerType);
 
         // Eager only builds URLs for resources that pass the per-type base
         // filter (e.g. visibility:public tags, status:published posts), so a
@@ -241,7 +278,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
                 continue;
             }
             this._assertNotThin(config, resource, routerType);
-            if (filterMatches(config.compiledFilter, record)) {
+            if (filterMatches(config.compiledFilter, filterRecord)) {
                 const path = this.urlUtils.replacePermalink(config.permalink, resource);
                 return this._formatPath(path, options);
             }
@@ -263,10 +300,11 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         if (!this._baseFilterMatches(routerType, record)) {
             return false;
         }
+        const filterRecord = this._recordForRouterFilter(record, routerType);
         // Ownership is exclusive: only the first matching router of the type
         // owns the resource, matching eager's reservation.
         const owner = this.routerConfigs.find(
-            c => c.resourceType === routerType && filterMatches(c.compiledFilter, record)
+            c => c.resourceType === routerType && filterMatches(c.compiledFilter, filterRecord)
         );
         return !!owner && owner.identifier === routerIdentifier;
     }
@@ -299,7 +337,10 @@ export class LazyUrlService implements LazyUrlServiceBackend {
             // The base filter is enforced upstream by findResource's query
             // scoping (visibility:public / status:published), so only the
             // router filter needs re-checking here.
-            const record = this._recordForFilter(resource as Resource);
+            const record = this._recordForRouterFilter(
+                this._recordForFilter(resource as Resource),
+                config.resourceType
+            );
             if (!filterMatches(config.compiledFilter, record)) {
                 continue;
             }
@@ -374,6 +415,29 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return dbType ? {...record, type: dbType} : record;
     }
 
+    private _excludedFilterFieldsFor(routerType: string): ReadonlySet<string> {
+        return this.excludedFilterFields.get(routerType) ?? EMPTY_FIELD_SET;
+    }
+
+    // Strips the columns eager drops from its cache so a router/collection
+    // filter is evaluated against the same reduced shape eager uses — an
+    // excluded column reads as absent (→ null in NQL) rather than its real
+    // value. Only affects filters that reference an excluded column; every
+    // other filter sees an identical record.
+    private _recordForRouterFilter(record: Record<string, unknown>, routerType: string): Record<string, unknown> {
+        const excluded = this._excludedFilterFieldsFor(routerType);
+        if (excluded.size === 0) {
+            return record;
+        }
+        const stripped: Record<string, unknown> = {};
+        for (const key of Object.keys(record)) {
+            if (!excluded.has(key)) {
+                stripped[key] = record[key];
+            }
+        }
+        return stripped;
+    }
+
     private _formatPath(path: string, options: UrlOptions): string {
         if (options.absolute) {
             return this.urlUtils.createUrl(path, options.absolute);
@@ -418,8 +482,11 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         if (/\bprimary_author\b/.test(config.filter) && r.primary_author === undefined) {
             missing.push('primary_author');
         }
+        // Columns eager drops from its cache are never required — its filters
+        // match them as absent, so a resource lacking one is not thin here.
+        const excluded = this._excludedFilterFieldsFor(routerType);
         for (const field of filterScalarFields(config.filter)) {
-            if (r[field] === undefined) {
+            if (!excluded.has(field) && r[field] === undefined) {
                 missing.push(field);
             }
         }
