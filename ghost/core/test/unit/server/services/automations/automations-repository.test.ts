@@ -131,7 +131,9 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('mailgun_message_id');
         table.datetime('delivered_at');
         table.datetime('opened_at');
+        table.datetime('clicked_at');
         table.boolean('track_opens').notNullable().defaultTo(false);
+        table.boolean('track_clicks').notNullable().defaultTo(false);
         table.datetime('created_at');
         table.datetime('updated_at');
     });
@@ -1879,7 +1881,9 @@ describe('automations repository', function () {
                 mailgun_message_id: 'mailgun-message-id',
                 delivered_at: null,
                 opened_at: null,
+                clicked_at: null,
                 track_opens: 1,
+                track_clicks: 0,
                 created_at: recipient.created_at,
                 updated_at: recipient.updated_at
             });
@@ -1911,6 +1915,7 @@ describe('automations repository', function () {
             assert.equal(recipient.mailgun_message_id, null);
             assert.equal(recipient.member_name, null);
             assert.equal(recipient.track_opens, 0);
+            assert.equal(recipient.track_clicks, 0);
         });
     });
 
