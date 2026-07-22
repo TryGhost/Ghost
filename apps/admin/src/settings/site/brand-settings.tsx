@@ -20,6 +20,7 @@ import { ColorPickerField } from "./color-picker-field";
 import { UnsplashSelector } from "./unsplash-selector";
 import { ImageUpload } from "@/settings/app/shared/image-upload";
 import { useSettingsHandleError } from "@/settings/app/shared/toast";
+import { usePinturaEditor } from "@/settings/app/shared/use-pintura-editor";
 
 /**
  * The Brand tab of the design dialog, ported from the legacy
@@ -108,6 +109,8 @@ export function BrandSettings({ values, updateSetting }: {
 
     const [headingFont, setHeadingFont] = useState(CUSTOM_FONTS.heading.find((f) => f.name === values.headingFont) || { name: DEFAULT_FONT, creator: themeNameVersion });
     const [bodyFont, setBodyFont] = useState(CUSTOM_FONTS.body.find((f) => f.name === values.bodyFont) || { name: DEFAULT_FONT, creator: themeNameVersion });
+
+    const editor = usePinturaEditor();
 
     const uploadHandler = (key: string) => async (file: File) => {
         try {
@@ -200,11 +203,23 @@ export function BrandSettings({ values, updateSetting }: {
                         <ImageUpload
                             containerClassName="h-[95px] w-[160px]"
                             deleteButtonClassName="top-1 right-1 size-6"
+                            editButtonAriaLabel="Edit publication cover"
+                            editButtonClassName="top-1 right-8 size-6"
                             fileUploadClassName="h-[95px] w-[160px] cursor-pointer text-sm"
                             id="cover"
                             imageClassName="size-full object-cover"
                             imageURL={values.coverImage || ""}
                             onDelete={() => updateSetting("cover_image", null)}
+                            onEdit={editor.isEnabled ? () => editor.openEditor({
+                                image: values.coverImage || "",
+                                handleSave: async (file: File) => {
+                                    try {
+                                        updateSetting("cover_image", getImageUrl(await uploadImage({ file })));
+                                    } catch (e) {
+                                        handleError(e);
+                                    }
+                                },
+                            }) : undefined}
                             onUpload={uploadHandler("cover_image")}
                         >
                             Upload cover

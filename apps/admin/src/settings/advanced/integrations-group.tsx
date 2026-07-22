@@ -11,6 +11,7 @@ import { IntegrationIcon, type IntegrationIconName } from "./integration-icon";
 import { SettingGroup } from "@/settings/app/shared/setting-group";
 import { showToast, useSettingsHandleError } from "@/settings/app/shared/toast";
 import { useConfirmation } from "@/settings/app/shared/use-confirmation";
+import { usePinturaEditor } from "@/settings/app/shared/use-pintura-editor";
 
 /**
  * The Integrations group, ported from the legacy advanced/integrations.tsx:
@@ -116,18 +117,15 @@ function BuiltInIntegrations() {
 
     const builtInApiIntegrationsDisabled = Boolean(config?.hostSettings?.limits?.customIntegrations?.disabled);
 
-    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername, transistorEnabled, pinturaEnabled] = getSettingValues<boolean>(settings, [
+    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername, transistorEnabled] = getSettingValues<boolean>(settings, [
         "unsplash",
         "firstpromoter",
         "slack_url",
         "slack_username",
         "transistor",
-        "pintura",
     ]);
-    const [pinturaJsUrl, pinturaCssUrl] = getSettingValues<string>(settings, ["pintura_js_url", "pintura_css_url"]);
-    // Static approximation of the legacy usePinturaEditor().isEnabled (which
-    // probes the actual script/css loads — Pintura wiring isn't ported).
-    const pinturaActive = Boolean(pinturaEnabled) && Boolean(config?.pintura || (pinturaJsUrl && pinturaCssUrl));
+    // Live like legacy: Active only once the Pintura script/css actually load.
+    const pinturaActive = usePinturaEditor().isEnabled;
 
     const items: BuiltInIntegrationItem[] = [
         {

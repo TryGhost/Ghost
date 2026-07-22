@@ -40,6 +40,7 @@ import { ImageUpload } from "@/settings/app/shared/image-upload";
 import { confirmIfDirty, useConfirmation } from "@/settings/app/shared/use-confirmation";
 import { showToast, useSettingsHandleError } from "@/settings/app/shared/toast";
 import { HostLimitError, useLimiter } from "@/settings/app/shared/use-limiter";
+import { usePinturaEditor } from "@/settings/app/shared/use-pintura-editor";
 import { useStaffUsers } from "@/settings/app/shared/use-staff-users";
 
 const validators: Record<string, (u: Partial<User>) => string> = {
@@ -265,6 +266,8 @@ function UserDetailContent({ user }: { user: User }) {
         });
     };
 
+    const editor = usePinturaEditor();
+
     const handleImageUpload = async (image: "cover_image" | "profile_image", file: File) => {
         try {
             const imageUrl = getImageUrl(await uploadImage({ file }));
@@ -331,6 +334,12 @@ function UserDetailContent({ user }: { user: User }) {
                                             imageURL={formState.profile_image ?? undefined}
                                             inputTestId="profile-image-upload"
                                             onDelete={() => handleImageDelete("profile_image")}
+                                            onEdit={editor.isEnabled && formState.profile_image ? () => editor.openEditor({
+                                                image: formState.profile_image || "",
+                                                handleSave: (file: File) => void handleImageUpload("profile_image", file),
+                                            }) : undefined}
+                                            editButtonAriaLabel="Edit profile image"
+                                            editButtonClassName="-top-2 right-8 size-8 rounded-full"
                                             onUpload={(file) => void handleImageUpload("profile_image", file)}
                                         >
                                             <LucideIcon.UserRoundPlus className="size-6" />
@@ -348,6 +357,13 @@ function UserDetailContent({ user }: { user: User }) {
                                             imageURL={formState.cover_image || undefined}
                                             inputTestId="cover-image-upload"
                                             onDelete={() => handleImageDelete("cover_image")}
+                                            onEdit={editor.isEnabled && formState.cover_image ? () => editor.openEditor({
+                                                image: formState.cover_image || "",
+                                                handleSave: (file: File) => void handleImageUpload("cover_image", file),
+                                            }) : undefined}
+                                            editButtonAriaLabel="Edit cover image"
+                                            editButtonClassName={cn(coverButtonClasses, "visible! static size-auto md:visible!")}
+                                            editButtonContent="Edit cover image"
                                             onUpload={(file) => void handleImageUpload("cover_image", file)}
                                         >
                                             Upload cover image

@@ -21,6 +21,11 @@ export interface ImageUploadProps {
     fileUploadClassName?: string;
     deleteButtonClassName?: string;
     deleteButtonContent?: ReactNode;
+    editButtonAriaLabel?: string;
+    editButtonClassName?: string;
+    editButtonContent?: ReactNode;
+    /** Renders an edit button beside delete (the Pintura affordance). */
+    onEdit?: () => void;
     onUpload: (file: File) => void | Promise<void>;
     onDelete: () => void;
 }
@@ -36,6 +41,10 @@ export function ImageUpload({
     fileUploadClassName,
     deleteButtonClassName,
     deleteButtonContent,
+    editButtonAriaLabel,
+    editButtonClassName,
+    editButtonContent,
+    onEdit,
     onUpload,
     onDelete,
 }: ImageUploadProps) {
@@ -64,6 +73,20 @@ export function ImageUpload({
         return (
             <div className={cn("group relative flex justify-center", containerClassName)} data-testid="image-upload-container">
                 <img alt="" className={cn("w-full", imageClassName)} data-testid={imageTestId} id={id} src={imageURL} />
+                {onEdit && (
+                    <button
+                        aria-label={editButtonAriaLabel}
+                        className={cn(
+                            "absolute top-4 right-14 flex size-8 cursor-pointer items-center justify-center rounded bg-black/75 text-white group-hover:visible! hover:bg-black md:invisible",
+                            editButtonClassName,
+                        )}
+                        data-testid="image-edit-button"
+                        type="button"
+                        onClick={onEdit}
+                    >
+                        {editButtonContent ?? <LucideIcon.Pencil className="size-4" />}
+                    </button>
+                )}
                 <button
                     className={cn(
                         "absolute top-4 right-4 flex size-8 cursor-pointer items-center justify-center rounded bg-black/75 text-white group-hover:visible! hover:bg-black md:invisible",

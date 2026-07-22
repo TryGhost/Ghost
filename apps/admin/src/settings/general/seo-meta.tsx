@@ -10,6 +10,7 @@ import { ImageUpload } from "@/settings/app/shared/image-upload";
 import { SettingGroup, SettingGroupContent } from "@/settings/app/shared/setting-group";
 import { TextField } from "@/settings/app/shared/text-field";
 import { useSettingsHandleError } from "@/settings/app/shared/toast";
+import { usePinturaEditor } from "@/settings/app/shared/use-pintura-editor";
 import { useSettingGroup } from "@/settings/app/shared/use-setting-group";
 
 interface SearchEnginePreviewProps {
@@ -77,6 +78,15 @@ export function SeoMeta({ keywords }: { keywords: string[] }) {
 
     const handleError = useSettingsHandleError();
     const { mutateAsync: uploadImage } = useUploadImage();
+    const editor = usePinturaEditor();
+
+    const createImageEditHandler = (settingKey: string, image: string) => () => editor.openEditor({
+        image,
+        handleSave: async (file: File) => {
+            const imageUrl = getImageUrl(await uploadImage({ file }));
+            updateSetting(settingKey, imageUrl);
+        },
+    });
     const hasLlmsTxt = useFeatureFlag("llmsTxt");
 
     const [
@@ -203,6 +213,8 @@ export function SeoMeta({ keywords }: { keywords: string[] }) {
                         imageClassName="size-full object-cover"
                         imageURL={facebookImage}
                         onDelete={createImageDeleteHandler("og_image")}
+                        onEdit={editor.isEnabled ? createImageEditHandler("og_image", facebookImage) : undefined}
+                        editButtonAriaLabel="Edit Facebook image"
                         onUpload={createImageUploadHandler("og_image")}
                     >
                         Upload Facebook image
@@ -248,6 +260,8 @@ export function SeoMeta({ keywords }: { keywords: string[] }) {
                         imageClassName="size-full object-cover"
                         imageURL={twitterImage}
                         onDelete={createImageDeleteHandler("twitter_image")}
+                        onEdit={editor.isEnabled ? createImageEditHandler("twitter_image", twitterImage) : undefined}
+                        editButtonAriaLabel="Edit X image"
                         onUpload={createImageUploadHandler("twitter_image")}
                     >
                         Upload X image
