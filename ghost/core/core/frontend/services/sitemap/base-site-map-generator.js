@@ -27,6 +27,11 @@ class BaseSiteMapGenerator {
             return false;
         }
 
+        // Sitemap data comes from raw knex queries which bypass model-layer
+        // attribute transforms, so canonical_url may still be transform-ready
+        // (__GHOST_URL__/...) and must be made absolute before comparing
+        const canonicalUrl = urlUtils.transformReadyToAbsolute(datum.canonical_url);
+
         const normalizeUrl = (value) => {
             const normalizedUrl = new URL(value);
             normalizedUrl.pathname = normalizedUrl.pathname.replace(/\/+$/, '');
@@ -34,9 +39,9 @@ class BaseSiteMapGenerator {
         };
 
         try {
-            return normalizeUrl(datum.canonical_url) !== normalizeUrl(url);
+            return normalizeUrl(canonicalUrl) !== normalizeUrl(url);
         } catch {
-            return datum.canonical_url !== url;
+            return canonicalUrl !== url;
         }
     }
 
