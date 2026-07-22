@@ -358,7 +358,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             items={benefits.items}
                             itemSeparator={false}
                             renderItem={({id, item}) => <div className='relative flex w-full items-center gap-5'>
-                                <div className='absolute top-[7px] left-[-32px] flex size-6 items-center justify-center bg-white group-hover:hidden dark:bg-black'><Icon name='check' size='sm' /></div>
+                                <div className='absolute top-1/2 left-[-32px] flex size-6 -translate-y-1/2 items-center justify-center bg-background group-hover:hidden'><Icon name='check' size='sm' /></div>
                                 <TextField
                                     // className='grow border-b border-grey-500 py-2 focus:border-grey-800 group-hover:border-grey-600'
                                     maxLength={191}
@@ -371,7 +371,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         />
                     </div>
                     <div className="relative mt-1 flex items-center gap-3">
-                        <Icon className='dark:text-white' name='check' size='sm' />
+                        <Icon name='check' size='sm' />
                         <TextField
                             className='grow'
                             containerClassName='w-100'
