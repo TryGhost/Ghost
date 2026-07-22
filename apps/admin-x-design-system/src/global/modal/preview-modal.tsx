@@ -1,13 +1,13 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import clsx from 'clsx';
 import React, {useEffect} from 'react';
-import useGlobalDirtyState from '../../hooks/use-global-dirty-state';
-import {confirmIfDirty} from '../../utils/modals';
 import {ButtonColor, ButtonProps} from '../button';
 import ButtonGroup from '../button-group';
 import Icon from '../icon';
 import Modal, {ModalSize} from './modal';
+import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {Text, type TextElement, type TextLeading, type TextSize} from '@tryghost/shade/primitives';
+import {useGlobalDirtyState} from '@tryghost/shade/utils';
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -109,6 +109,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
+    const {confirm, dialogProps} = useDirtyConfirmation();
 
     useEffect(() => {
         setGlobalDirtyState(dirty);
@@ -187,7 +188,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             key: 'cancel-modal',
             label: cancelLabel,
             onClick: (onCancel ? onCancel : () => {
-                confirmIfDirty(dirty, () => {
+                confirm(dirty, () => {
                     modal.remove();
                     afterClose?.();
                 });
@@ -246,6 +247,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                     </div>
                 }
             </div>
+            <DirtyConfirmDialog {...dialogProps} />
         </Modal>
     );
 };

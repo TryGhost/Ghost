@@ -4,7 +4,8 @@ import clsx from 'clsx';
 import {Badge, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, Kbd} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Search, X} from 'lucide-react';
-import {SettingNavItem, type SettingNavItemProps, SettingNavSection, useFocusContext} from '@tryghost/admin-x-design-system';
+import {SettingNavItem, type SettingNavItemProps, SettingNavSection} from '@tryghost/admin-x-design-system';
+import {useFocusContext} from '@tryghost/shade/app';
 
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 

@@ -1,12 +1,12 @@
 import {useModal} from '@ebay/nice-modal-react';
 import clsx from 'clsx';
 import React, {useEffect, useState, forwardRef} from 'react';
-import useGlobalDirtyState from '../../hooks/use-global-dirty-state';
-import {confirmIfDirty} from '../../utils/modals';
 import Button, {ButtonColor, ButtonProps} from '../button';
 import ButtonGroup from '../button-group';
 import {StickyFooter} from '@tryghost/shade/components';
+import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';
+import {useGlobalDirtyState} from '@tryghost/shade/utils';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed';
 
@@ -88,6 +88,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
 }, ref) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
+    const {confirm, dialogProps} = useDirtyConfirmation();
     const [animationFinished, setAnimationFinished] = useState(false);
 
     useEffect(() => {
@@ -113,7 +114,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
                     if (onCancel) {
                         onCancel();
                     } else {
-                        confirmIfDirty(dirty, () => {
+                        confirm(dirty, () => {
                             modal.remove();
                             afterClose?.();
                         });
@@ -131,7 +132,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
         return () => {
             document.removeEventListener('keydown', handleEscapeKey);
         };
-    }, [modal, dirty, afterClose, onCancel]);
+    }, [modal, dirty, afterClose, onCancel, confirm]);
 
     // The animation classes apply a transform to the modal, which breaks anything inside using position:fixed
     // We should remove the class as soon as the animation is finished
@@ -165,7 +166,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
     let contentClasses;
 
     const removeModal = () => {
-        confirmIfDirty(dirty, () => {
+        confirm(dirty, () => {
             modal.remove();
             afterClose?.();
         });
@@ -432,34 +433,37 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
     );
 
     return (
-        <div className={backdropClasses} id='modal-backdrop' onMouseDown={handleBackdropClick}>
-            <div className={clsx(
-                'pointer-events-none fixed inset-0 z-0',
-                (backDrop && !formSheet) && topLevelBackdropClasses,
-                formSheet && 'bg-[rgba(98,109,121,0.08)]'
-            )}></div>
-            <section ref={ref} className={clsx(
-                modalClasses,
-                allowBackgroundInteraction && 'pointer-events-auto'
-            )} data-testid={testId} style={modalStyles}>
-                {header === false ? '' : (!topRightContent || topRightContent === 'close' ?
-                    (<header className={headerClasses}>
-                        {title && <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>{title}</Text>}
-                        <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute top-6 right-6`}>
-                            <Button aria-label='Close modal' className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' iconColorClass='text-black dark:text-white' size='sm' testId='close-modal' unstyled onClick={removeModal} />
-                        </div>
-                    </header>)
-                    :
-                    (<header className={headerClasses}>
-                        {title && <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>{title}</Text>}
-                        {topRightContent}
-                    </header>))}
-                <div className={contentClasses}>
-                    {children}
-                </div>
-                {footerContent}
-            </section>
-        </div>
+        <>
+            <div className={backdropClasses} id='modal-backdrop' onMouseDown={handleBackdropClick}>
+                <div className={clsx(
+                    'pointer-events-none fixed inset-0 z-0',
+                    (backDrop && !formSheet) && topLevelBackdropClasses,
+                    formSheet && 'bg-[rgba(98,109,121,0.08)]'
+                )}></div>
+                <section ref={ref} className={clsx(
+                    modalClasses,
+                    allowBackgroundInteraction && 'pointer-events-auto'
+                )} data-testid={testId} style={modalStyles}>
+                    {header === false ? '' : (!topRightContent || topRightContent === 'close' ?
+                        (<header className={headerClasses}>
+                            {title && <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>{title}</Text>}
+                            <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute top-6 right-6`}>
+                                <Button aria-label='Close modal' className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' iconColorClass='text-black dark:text-white' size='sm' testId='close-modal' unstyled onClick={removeModal} />
+                            </div>
+                        </header>)
+                        :
+                        (<header className={headerClasses}>
+                            {title && <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>{title}</Text>}
+                            {topRightContent}
+                        </header>))}
+                    <div className={contentClasses}>
+                        {children}
+                    </div>
+                    {footerContent}
+                </section>
+            </div>
+            <DirtyConfirmDialog {...dialogProps} />
+        </>
     );
 });
 

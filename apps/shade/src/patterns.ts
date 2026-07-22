@@ -6,6 +6,7 @@ export * from './components/patterns/gh-chart';
 export * from './components/patterns/kpi-card';
 export * from './components/patterns/kpi-tabs';
 export * from './components/patterns/filters';
+export * from './components/patterns/dirty-confirm-dialog';
 export * from './components/patterns/image-upload';
 export {default as ColorPicker} from './components/patterns/color-picker';
 export {ColorPickerTrigger, ColorSwatch, ColorSwatchRow} from './components/patterns/color-picker';
