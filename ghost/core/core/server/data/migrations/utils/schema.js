@@ -191,12 +191,14 @@ function createSetNullableMigration(table, column, options = {}) {
 /**
  * @param {string} table
  * @param {string[]|string} columns One or multiple columns (in case the index should be for multiple columns)
+ * @param {object} [options]
+ * @param {number} [options.length] MySQL only: create a prefix index of this many characters
  * @returns {Migration}
  */
-function createAddIndexMigration(table, columns) {
+function createAddIndexMigration(table, columns, options = {}) {
     return createTransactionalMigration(
         async function up(knex) {
-            await commands.addIndex(table, columns, knex);
+            await commands.addIndex(table, columns, knex, options);
         },
         async function down(knex) {
             await commands.dropIndex(table, columns, knex);
