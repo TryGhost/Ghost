@@ -3,6 +3,8 @@ import { Badge, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, 
 import { LucideIcon, cn } from "@tryghost/shade/utils";
 import { useNavigate } from "@tryghost/admin-x-framework";
 
+import ghostOrbImage from "./assets/orb-pink.png";
+
 import { type SettingsNavGroup, type SettingsNavItem } from "./nav";
 import { useScrollSpy } from "./use-scroll-spy";
 import { useSettingsSearch } from "./use-settings-search";
@@ -191,6 +193,17 @@ export function SettingsSidebar({ groups, onFilterScrollReset }: SidebarProps) {
                         </div>
                     );
                 })}
+
+                {!filter && (
+                    <button
+                        className="mt-1 mb-10 flex h-9 w-full cursor-pointer items-center rounded-md px-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        type="button"
+                        onClick={() => navigate("/settings/about")}
+                    >
+                        <img alt="Ghost Logo" className="mr-[7px] size-[18px]" src={ghostOrbImage} />
+                        About Ghost
+                    </button>
+                )}
             </nav>
         </div>
     );

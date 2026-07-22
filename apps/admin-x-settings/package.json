@@ -29,6 +29,8 @@
         "./src/utils/generate-embed-code": "./src/utils/generate-embed-code.ts",
         "./src/components/settings/growth/offers/offer-helpers": "./src/components/settings/growth/offers/offer-helpers.ts",
         "./src/components/settings/growth/offers/offers-retention": "./src/components/settings/growth/offers/offers-retention.tsx",
+        "./src/utils/link-to-github-releases": "./src/utils/link-to-github-releases.ts",
+        "./src/utils/show-database-warning": "./src/utils/show-database-warning.ts",
         "./src/*": {
             "import": "./src/*.tsx",
             "require": "./src/*.tsx"

@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router";
 import { createPortal } from "react-dom";
 import { Navigate, useParams } from "@tryghost/admin-x-framework";
 
+import { AboutDialog } from "./about-dialog";
 import { resolveSettingsArea } from "./nav";
 import { SettingsSearchProvider } from "./search-provider";
 import { SettingsShell } from "./settings-shell";
@@ -131,6 +132,7 @@ export default function ShadeSettingsApp() {
                                 <Route element={<CustomIntegrationDialog />} path="integrations/:integrationId" />
                                 <Route element={<HistoryDialog />} path="history/view" />
                                 <Route element={<HistoryDialog />} path="history/view/:userId" />
+                                <Route element={<AboutDialog />} path="about" />
                                 {/* The retired lock-site screen redirects to Access, like the legacy app. */}
                                 <Route element={<Navigate to="/settings/members" replace />} path="locksite" />
                                 <Route element={<AreaRoute />} path=":area" />
