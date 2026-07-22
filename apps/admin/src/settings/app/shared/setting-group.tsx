@@ -4,6 +4,7 @@ import { cn } from "@tryghost/shade/utils";
 import { useLocation } from "@tryghost/admin-x-framework";
 import type { SaveState } from "@tryghost/admin-x-framework/hooks";
 
+import { useScrollSpySection } from "@/settings/app/use-scroll-spy";
 import { useSettingsSearch } from "@/settings/app/use-settings-search";
 
 /**
@@ -56,6 +57,7 @@ export function SettingGroup({
     const { checkVisible, noResult } = useSettingsSearch();
     const isVisible = !keywords || checkVisible(keywords) || noResult;
     const [highlight, setHighlight] = useState(false);
+    const sectionRef = useScrollSpySection(navid);
 
     // Flash a highlight when the sidebar routes directly to this group.
     useEffect(() => {
@@ -120,6 +122,7 @@ export function SettingGroup({
 
     return (
         <div
+            ref={sectionRef}
             className={cn(
                 "relative scroll-mt-16 flex-col gap-6 rounded-xl border border-border p-5 transition-all md:p-7",
                 isVisible ? "flex" : "hidden",

@@ -7,6 +7,7 @@ import { canAccessSettings, isEditorUser } from "@tryghost/admin-x-framework/api
 
 import { AreaSection } from "./area-section";
 import { type SettingsAreaId, resolveSettingsArea, useSettingsNav } from "./nav";
+import { ScrollSpyProvider } from "./scroll-spy";
 import { SettingsSidebar } from "./sidebar";
 import { confirmIfDirty, useConfirmation } from "./shared/use-confirmation";
 import { useSettingsDirty } from "./shared/use-settings-dirty";
@@ -90,8 +91,9 @@ export function SettingsShell() {
         };
     }, []);
 
-    // Scroll the routed area's section into view — on nav clicks and on
-    // deep links once the nav data has settled the layout.
+    // Scroll the routed group's section into view (falling back to its
+    // area) — on nav clicks and on deep links once the nav data has settled
+    // the layout.
     useEffect(() => {
         if (!currentSegment) {
             return;
@@ -100,7 +102,10 @@ export function SettingsShell() {
         if (!areaId) {
             return;
         }
-        document.getElementById(`settings-area-${areaId}`)?.scrollIntoView();
+        const scroller = scrollerRef.current;
+        const target = scroller?.querySelector(`#${CSS.escape(currentSegment)}`)
+            ?? scroller?.querySelector(`#settings-area-${areaId}`);
+        target?.scrollIntoView();
     }, [currentSegment, isLoading]);
 
     // Wait for the current user before rendering any chrome — the legacy
@@ -136,27 +141,28 @@ export function SettingsShell() {
     }
 
     return (
-        <div className="flex size-full bg-background text-foreground">
-            <aside className="flex h-full w-[300px] shrink-0 flex-col overflow-y-auto overscroll-y-contain bg-sidebar px-6">
-                <SettingsSidebar
-                    currentSegment={currentSegment}
-                    groups={groups}
-                    onFilterScrollReset={() => scrollerRef.current?.scrollTo({ top: 0, left: 0 })}
-                />
-            </aside>
-            <div ref={scrollerRef} className="h-full flex-1 overflow-y-auto overscroll-y-contain">
-                <div className="mx-auto flex max-w-[760px] flex-col gap-12 px-14 pt-16 pb-[60vh]">
-                    {areas.map((area) => (
-                        <AreaSection key={area.id} area={area} Component={AREA_COMPONENTS[area.id]} />
-                    ))}
+        <ScrollSpyProvider navigatedSection={currentSegment}>
+            <div className="flex size-full bg-background text-foreground">
+                <aside className="flex h-full w-[300px] shrink-0 flex-col overflow-y-auto overscroll-y-contain bg-sidebar px-6">
+                    <SettingsSidebar
+                        groups={groups}
+                        onFilterScrollReset={() => scrollerRef.current?.scrollTo({ top: 0, left: 0 })}
+                    />
+                </aside>
+                <div ref={scrollerRef} className="h-full flex-1 overflow-y-auto overscroll-y-contain">
+                    <div className="mx-auto flex max-w-[760px] flex-col gap-12 px-14 pt-16 pb-[60vh]">
+                        {areas.map((area) => (
+                            <AreaSection key={area.id} area={area} Component={AREA_COMPONENTS[area.id]} />
+                        ))}
+                    </div>
                 </div>
+                <div className="fixed top-6 right-6 z-50">
+                    <Button aria-label="Close settings" data-testid="exit-settings" size="icon" title="Close (ESC)" variant="ghost" onClick={requestExit}>
+                        <LucideIcon.X className="size-5" />
+                    </Button>
+                </div>
+                <Outlet />
             </div>
-            <div className="fixed top-6 right-6 z-50">
-                <Button aria-label="Close settings" data-testid="exit-settings" size="icon" title="Close (ESC)" variant="ghost" onClick={requestExit}>
-                    <LucideIcon.X className="size-5" />
-                </Button>
-            </div>
-            <Outlet />
-        </div>
+        </ScrollSpyProvider>
     );
 }

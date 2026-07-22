@@ -4,6 +4,7 @@ import { LucideIcon, cn } from "@tryghost/shade/utils";
 import { useNavigate } from "@tryghost/admin-x-framework";
 
 import { type SettingsNavGroup, type SettingsNavItem } from "./nav";
+import { useScrollSpy } from "./use-scroll-spy";
 import { useSettingsSearch } from "./use-settings-search";
 
 /**
@@ -12,13 +13,12 @@ import { useSettingsSearch } from "./use-settings-search";
  * sidebar.tsx): search filters groups by keywords, `/` focuses the search
  * unless a text field has focus, Escape in a non-empty search blurs it
  * without bubbling to the shell's exit handler, clicking an item clears the
- * search and navigates to the item's legacy route segment.
+ * search and navigates to the item's legacy route segment. Highlighting is
+ * scroll-spy driven (the group currently in view), like the legacy sidebar.
  */
 
 interface SidebarProps {
     groups: SettingsNavGroup[];
-    /** The `/settings/:area` segment currently routed to, for highlighting. */
-    currentSegment: string | null;
     /** Scrolls the main pane back to the top when the filter changes. */
     onFilterScrollReset: () => void;
 }
@@ -30,12 +30,22 @@ const PrivateBadge = () => (
     </Badge>
 );
 
-function NavItemButton({ item, isCurrent, onNavigate }: {
+function NavItemButton({ item, onNavigate }: {
     item: SettingsNavItem;
-    isCurrent: boolean;
     onNavigate: (item: SettingsNavItem) => void;
 }) {
     const { checkVisible } = useSettingsSearch();
+    const { currentSection } = useScrollSpy();
+    const buttonRef = useRef<HTMLButtonElement | null>(null);
+    const isCurrent = item.navids.includes(currentSection ?? "");
+
+    // Keep the highlighted item visible in the sidebar's own scroll pane,
+    // like the legacy scrollSidebarNav (no-op when already in view).
+    useEffect(() => {
+        if (isCurrent) {
+            buttonRef.current?.scrollIntoView({ block: "nearest" });
+        }
+    }, [isCurrent]);
 
     if (!checkVisible(item.keywords)) {
         return null;
@@ -43,6 +53,7 @@ function NavItemButton({ item, isCurrent, onNavigate }: {
 
     return (
         <button
+            ref={buttonRef}
             aria-current={isCurrent ? "true" : undefined}
             className={cn(
                 "flex h-9 w-full items-center justify-between gap-2 rounded-md px-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted",
@@ -57,7 +68,7 @@ function NavItemButton({ item, isCurrent, onNavigate }: {
     );
 }
 
-export function SettingsSidebar({ groups, currentSegment, onFilterScrollReset }: SidebarProps) {
+export function SettingsSidebar({ groups, onFilterScrollReset }: SidebarProps) {
     const { filter, setFilter, checkVisible, noResult, setNoResult } = useSettingsSearch();
     const navigate = useNavigate();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -172,7 +183,6 @@ export function SettingsSidebar({ groups, currentSegment, onFilterScrollReset }:
                                 {group.items.map((item) => (
                                     <NavItemButton
                                         key={item.navids[0]}
-                                        isCurrent={currentSegment !== null && item.navids.includes(currentSegment)}
                                         item={item}
                                         onNavigate={handleNavigate}
                                     />
