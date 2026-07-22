@@ -60,6 +60,15 @@ describe('Dropzone Component', () => {
         assert.equal(input.getAttribute('data-testid'), 'redirects-input');
     });
 
+    it('uses the secondary button recipe for compact filled upload actions', () => {
+        render(<Dropzone variant='buttonSecondary'>Upload file</Dropzone>);
+
+        const dropTarget = screen.getByRole('button', {name: 'Upload file'});
+
+        assert.match(dropTarget.className, /bg-secondary/);
+        assert.match(dropTarget.className, /h-7/);
+    });
+
     it('calls onDropAccepted for accepted files', async () => {
         const onDropAccepted = vi.fn();
         render(

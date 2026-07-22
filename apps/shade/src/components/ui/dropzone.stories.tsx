@@ -50,6 +50,20 @@ export const Button: Story = {
     }
 };
 
+export const SecondaryButton: Story = {
+    args: {
+        children: 'Upload file',
+        variant: 'buttonSecondary'
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'A compact filled file picker that pairs with secondary actions.'
+            }
+        }
+    }
+};
+
 export const DragActive: Story = {
     parameters: {
         docs: {

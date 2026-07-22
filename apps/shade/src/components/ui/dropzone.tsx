@@ -1,20 +1,19 @@
 import * as React from 'react';
 import {Accept, DropEvent, FileRejection, useDropzone} from 'react-dropzone';
 import {cva, type VariantProps} from 'class-variance-authority';
+import {buttonVariants} from '@/components/ui/button';
 import {inputSurface} from '@/components/ui/input-surface';
 import {cn} from '@/lib/utils';
 
 const dropzoneVariants = cva(
-    cn(
-        inputSurface('self'),
-        'flex cursor-pointer flex-col items-center justify-center outline-hidden'
-    ),
+    'flex cursor-pointer flex-col items-center justify-center outline-hidden',
     {
         variants: {
             variant: {
-                default: 'border-2 border-dashed bg-transparent p-10 hover:border-border-strong',
-                filled: 'border-transparent bg-muted p-3 hover:bg-interactive-hover',
-                button: 'h-(--control-height) flex-row bg-transparent px-2.5 py-2 text-sm font-medium hover:bg-button-hover'
+                default: cn(inputSurface('self'), 'border-2 border-dashed bg-transparent p-10 hover:border-border-strong'),
+                filled: cn(inputSurface('self'), 'border-transparent bg-muted p-3 hover:bg-interactive-hover'),
+                button: cn(buttonVariants({variant: 'outline'}), 'flex-row'),
+                buttonSecondary: cn(buttonVariants({size: 'sm', variant: 'secondary'}), 'flex-row')
             }
         },
         defaultVariants: {
