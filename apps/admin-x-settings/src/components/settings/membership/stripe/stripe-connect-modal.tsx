@@ -196,7 +196,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
                 <div className='mt-1'>Connected to <strong>{stripeConnectAccountName ? stripeConnectAccountName : 'Test mode'}</strong></div>
             </div>
             <div className='flex flex-col items-center'>
-                <Text as='h6' className='text-base' tone='secondary' weight='semibold'>Read next</Text>
+                <Text as='h6' className='text-base' weight='semibold'>Read next</Text>
                 <a className='mt-5 flex w-100 flex-col items-stretch justify-between overflow-hidden rounded-md border border-grey-200 transition-all hover:border-grey-400 md:flex-row dark:border-grey-900' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
                     <div className='order-2 p-4 md:order-1'>
                         <div className='text-md font-semibold'>How to setup and manage your Stripe account</div>

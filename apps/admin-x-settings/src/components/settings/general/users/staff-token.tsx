@@ -43,7 +43,7 @@ const StaffToken: React.FC = () => {
     };
     return (
         <div>
-            <Text as='h6' className='mb-2 text-base' tone='secondary' weight='semibold'>Staff access token</Text>
+            <Text as='h6' className='mb-2 text-base' weight='semibold'>Staff access token</Text>
             <APIKeys hasLabel={false} keys={[
                 {
                     id: 'staff-access-token',

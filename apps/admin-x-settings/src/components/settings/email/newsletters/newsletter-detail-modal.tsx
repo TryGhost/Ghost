@@ -296,7 +296,7 @@ const Sidebar: React.FC<{
                 <Form className='mt-6' gap='sm' margins='lg' title='Header'>
                     <div>
                         <div>
-                            <Text as='h6' className="mb-2 text-base" tone='secondary' weight='semibold'>Header image</Text>
+                            <Text as='h6' className="mb-2 text-base" weight='semibold'>Header image</Text>
                         </div>
                         <div className='flex-column flex gap-1'>
                             <ImageUpload className='h-16.5'>
