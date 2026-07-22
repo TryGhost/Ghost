@@ -87,7 +87,7 @@ const features: Feature[] = [{
     flag: "previewByTier",
 }, {
     title: "Shade settings UI",
-    description: "Renders Ghost Admin settings from the new Shade-based app instead of the legacy settings app. Areas that have not been rebuilt yet show placeholders.",
+    description: "Renders Ghost Admin settings from the new Shade-based app instead of the legacy settings app.",
     flag: "shadeSettings",
 }];
 

@@ -855,36 +855,96 @@ redirects to the admin root on success.
   `sidebar`, search label "Search settings", "No result" text, exit-settings
   testid.
 
-## Remaining gaps for the final sweep (all areas rebuilt; consolidated)
+## Final phase (phase 8): rebase, gap closures, evidence
 
-Dirty-state confirmation shipped in phase 2 (shared dirty registry +
-`confirmIfDirty` on every exit path) and every legacy modal route is now a
-real native route — those phase-1 gaps are closed. Still open:
+**Rebase onto fresh main.** Clean rebase (no conflicts); main's legacy
+design-system retirement commits (#29534/#29535/#29538/#29541/#29542)
+landed during the spike window. Legacy drift ported into the native
+areas:
 
-- **Roles** (phase 2): the legacy app shows editors a staff-only view and
-  contributors only their profile modal
-  (`canAccessSettings`/`isEditorUser`). Not ported; the shell renders all
-  areas for every role. `permissions.acceptance.test.tsx` is the ONE
-  remaining legacy-only suite (skipped flag-on).
-- **Scroll-position nav highlighting** (phase 1): the sidebar highlights
-  the routed item only; the legacy scroll-spy (`use-scroll-section`)
-  granularity was never ported.
-- **Keyword highlighting** (`highlightKeywords`) and per-component search
-  registration (phase 1) — also blocks the Labs auto-expand-on-single-
-  search-hit behavior (phase 7, `useAutoExpandable`).
-- **About Ghost** sidebar link and its modal; mobile/tablet layout of the
-  chrome (desktop-first for now). (The `/settings/locksite` redirect landed
-  in phase 7 — `routing.acceptance.test.tsx` is dual-mode now.)
-- **Pintura wiring** (phases 2/7): image uploads don't open the Pintura
-  editor, and the integration card's Active state is a static
-  approximation (no script/css load probing).
+- #29534 rewrote the legacy offers table on shade primitives and FIXED
+  sorting to apply across signup and retention rows together (retention
+  dates derived from the latest underlying retention offer), with new
+  acceptance coverage. Ported the unified sort (name tiebreak, null dates
+  last) + the `offers-table-body` testid into
+  `growth/offers-index-dialog.tsx`; the retention `createdAt` derivation
+  flows in for free through the `offers-retention` subpath import.
+- #29538/#29542 moved the legacy color picker onto the shade pattern
+  whose hex input is named "Hex color" (the design suite now targets it
+  by accessible name); the native `color-picker-field.tsx` hex input was
+  renamed to match.
+
+**Every previously-open chrome gap closed this phase:**
+
+- **Roles**: the shell now mirrors the legacy main-content gating —
+  editors get a staff-only view (h1 + Users group, no sidebar),
+  contributors/authors get no shell content (only their routed profile
+  dialog); the shell waits for the current user before rendering chrome
+  (the legacy GlobalDataProvider guarantee).
+  `permissions.acceptance.test.tsx` is dual-mode; the flag-on lane runs
+  every `src/settings` suite with ZERO skips.
+- **Scroll-spy nav highlighting**: `app/scroll-spy.tsx` +
+  `app/use-scroll-spy.ts` port the legacy use-scroll-section
+  (IntersectionObserver over group elements registered by navid;
+  navigated-section preference; topmost-intersecting fallback). The
+  sidebar highlight is scroll-driven like legacy, keeps itself visible in
+  the sidebar scroll pane, and nav/deep links now scroll to the routed
+  GROUP (falling back to the area).
+- **Search registration + Labs auto-expand**: the search provider ports
+  the legacy per-component registration (`registerComponent` /
+  `getVisibleComponents`); SettingGroup registers every keyworded group;
+  `shared/use-auto-expandable.ts` gives Labs the
+  open-when-only-search-hit behavior. `highlightKeywords` turned out to
+  be DEAD CODE in the legacy app (defined in utils/search.tsx, consumed
+  by no component) — deliberately not ported.
+- **About Ghost**: sidebar entry (hidden while searching) +
+  `/settings/about` routed dialog (`app/about-dialog.tsx`): version links
+  (GitHub releases/commits), self-hoster system info, database warning,
+  doc links, license line. `linkToGitHubReleases`/`showDatabaseWarning`
+  imported from legacy source (new subpath exports). The legacy
+  upgrade-status banner is NOT ported — the React admin never passes
+  `upgradeStatus`, so it never rendered in either lane.
+- **Mobile/tablet layout**: below the `tablet` breakpoint the sidebar
+  collapses to a fixed search bar (nav list hidden) over the stacked
+  sections, the exit button stays fixed top-right — the legacy
+  main-content/sidebar responsive contract. Screenshot-verified at
+  375×812 in both lanes.
+- **Pintura**: `shared/use-pintura-editor.ts` ports the legacy hook on
+  the framework hooks (config/settings script+css loading, load-probed
+  `isEnabled`, openDefaultEditor with the legacy options and
+  close-guarding). The integrations card Active state is live now, and
+  the shared ImageUpload gained the edit affordance — wired where legacy
+  wires it: Meta data Facebook/X images, publication cover (design
+  dialog), staff profile/cover images. The config-gated js/css upload
+  fields in the Pintura dialog were already ported in phase 7.
+
+**Definitive evidence bundle** in `swap-evidence/final/`: 31 screens per
+lane (every area + every routed dialog + the mobile pair), one sweep per
+lane through an evidence spec run against the acceptance harness
+(identical fixtures both lanes). `swap-evidence/final/PARITY.md` holds
+the per-screen verdicts + the consolidated known-deltas list; the
+generator spec is archived next to it (screenshots and generator stay
+uncommitted).
+
+**Definitive counts (this phase, sequential runs):** `src/settings`
+flag-off 309/309, flag-on 309/309 with zero skips; full apps/admin
+acceptance flag-off 382/382, flag-on 309 passed + 73 harness-skipped
+(non-settings suites, by design of the SHADE_SETTINGS mechanism);
+apps/admin lint clean, unit 1066/1066, build green; admin-x-settings
+lint + 213 unit green; shade lint + 230 unit + build green; ghost/core
+labs unit 19/19.
+
+## Remaining follow-ups (all gaps closed; deliberate deltas only)
+
 - **Fixed-light editor surfaces** (phases 5/7): email preview and the
   advanced-area CodeMirror editors are deliberately fixed-light; revisit
   if a dark CodeMirror/email theme is wanted.
-- **Minor deliberate deltas** already documented per area: offers
-  sort/show-archived state is dialog-local (phase 6); verification
-  prompts' newsletter-name links leave the confirmation open behind its
-  Close button (phase 5); PreviewDialog adds the device toolbar to
-  newsletters/add-offer where legacy hid it (phases 5/6); the
-  feature-toggle confirmation uses the shared `confirmation-modal` testid
-  (phase 7).
+- **Minor deliberate deltas** documented per area and consolidated in
+  `swap-evidence/final/PARITY.md`: offers sort/show-archived state is
+  dialog-local (phase 6); verification prompts' newsletter-name links
+  leave the confirmation open behind its Close button (phase 5);
+  PreviewDialog adds the device toolbar to newsletters/add-offer where
+  legacy hid it (phases 5/6); the feature-toggle confirmation uses the
+  shared `confirmation-modal` testid (phase 7); the About dialog logo
+  keeps the legacy `dark:invert` (fixed-black wordmark image — the one
+  `dark:` usage, no token equivalent exists).
