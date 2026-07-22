@@ -1,7 +1,7 @@
 import GiftDurationsPrototype from './gift-durations-prototype';
 import GiftPreview from './gift-preview';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useEffect, useMemo} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Checkbox, CurrencyField, Heading, HtmlField, ImageUpload, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -80,7 +80,13 @@ const GiftSidebar: React.FC<{
     // The heading renders large on the gift page — keep it to a punchy single
     // thought so it doesn't wrap into a wall of text.
     const headingMaxLength = 60;
-    const headingLength = (giftPageHeading || '').toString().length;
+    // Pre-fill the field with the default so the publisher can edit it directly,
+    // rather than starting from an empty box. A local draft keeps it clearable
+    // while editing; only a real change is persisted, so an untouched setting
+    // stays null and the gift page keeps its translatable fallback.
+    const defaultHeading = 'Gift a membership';
+    const [headingDraft, setHeadingDraft] = useState<string>(giftPageHeading ?? defaultHeading);
+    const headingLength = headingDraft.length;
 
     const handleImageUpload = async (file: File) => {
         try {
@@ -120,10 +126,13 @@ const GiftSidebar: React.FC<{
                 <TextField
                     hint={<>Keep it short and punchy — under <strong>{headingMaxLength}</strong> characters. You&apos;ve used <strong className={headingLength > headingMaxLength ? 'text-red' : 'text-green'}>{headingLength}</strong></>}
                     maxLength={headingMaxLength}
-                    placeholder="Gift a membership"
+                    placeholder={defaultHeading}
                     title="Heading"
-                    value={giftPageHeading || ''}
-                    onChange={e => updateSetting('gift_page_heading', e.target.value || null)}
+                    value={headingDraft}
+                    onChange={(e) => {
+                        setHeadingDraft(e.target.value);
+                        updateSetting('gift_page_heading', e.target.value || null);
+                    }}
                 />
                 <HtmlField
                     hint={<>Sell the value of a gift membership to potential buyers. Shown in full on the gift page — keep it under <strong>{descriptionMaxLength}</strong> characters so it fits. You&apos;ve used <strong className={descriptionLength > descriptionMaxLength ? 'text-red' : 'text-green'}>{descriptionLength}</strong></>}

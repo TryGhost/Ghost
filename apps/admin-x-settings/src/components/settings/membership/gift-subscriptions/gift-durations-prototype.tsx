@@ -3,31 +3,39 @@ import {Button, CurrencyField, Heading, Select, TextField} from '@tryghost/admin
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 
 // EXPERIMENTAL / PROTOTYPE — an alternative to the fixed duration checkboxes.
-// Instead of choosing from a preset list (1/3/6 months, 1 year), the publisher
-// composes up to MAX_DURATIONS of their own (e.g. "2 months", "2 years") and the
-// pricing re-derives live. State is local and NOT persisted — UX evaluation only.
+// The publisher composes up to MAX_DURATIONS of their own (e.g. "2 months",
+// "2 years"); each duration's price field is pre-filled with the derived default
+// and can be edited, with a per-tier reset. State is local and NOT persisted.
 const MAX_DURATIONS = 4;
 
 interface EditableDuration {
     id: string;
-    value: number;
+    amount: string; // kept as a string so the field can be cleared while typing
     unit: 'month' | 'year';
 }
 
-const toMonths = (d: EditableDuration): number => (d.unit === 'year' ? d.value * 12 : d.value);
+// Empty / invalid input resolves to 1 only when we need a real number.
+const parseAmount = (amount: string): number => Math.max(1, parseInt(amount, 10) || 1);
 
-const durationLabel = (d: EditableDuration): string => {
-    const noun = d.unit === 'year'
-        ? (d.value === 1 ? 'year' : 'years')
-        : (d.value === 1 ? 'month' : 'months');
-    return `${d.value} ${noun}`;
+const toMonths = (d: EditableDuration): number => {
+    const n = parseAmount(d.amount);
+    return d.unit === 'year' ? n * 12 : n;
 };
 
-const unitLabel = (unit: 'month' | 'year', value: number): string => {
+const durationLabel = (d: EditableDuration): string => {
+    const n = parseAmount(d.amount);
+    const noun = d.unit === 'year'
+        ? (n === 1 ? 'year' : 'years')
+        : (n === 1 ? 'month' : 'months');
+    return `${n} ${noun}`;
+};
+
+const unitLabel = (unit: 'month' | 'year', amount: string): string => {
+    const n = parseAmount(amount);
     if (unit === 'year') {
-        return value === 1 ? 'Year' : 'Years';
+        return n === 1 ? 'Year' : 'Years';
     }
-    return value === 1 ? 'Month' : 'Months';
+    return n === 1 ? 'Month' : 'Months';
 };
 
 // Mirrors getDerivedPriceInCents in gift-modal: whole-year durations anchor to
@@ -41,8 +49,8 @@ const derivedPriceInCents = (tier: Tier, months: number): number => (
 // Convert stored month-counts into editable rows (12 → 1 year, etc.)
 const fromMonths = (months: number[]): EditableDuration[] => months.map((m, i) => (
     m % 12 === 0
-        ? {id: `seed-${i}`, value: m / 12, unit: 'year'}
-        : {id: `seed-${i}`, value: m, unit: 'month'}
+        ? {id: `seed-${i}`, amount: String(m / 12), unit: 'year'}
+        : {id: `seed-${i}`, amount: String(m), unit: 'month'}
 ));
 
 let idCounter = 0;
@@ -64,20 +72,34 @@ const GiftDurationsPrototype: React.FC<{
     const updateDuration = (id: string, patch: Partial<EditableDuration>) => {
         setDurations(list => list.map(d => (d.id === id ? {...d, ...patch} : d)));
     };
+    // On blur, normalise a blank/invalid amount back to a real number.
+    const normaliseAmount = (id: string) => {
+        setDurations(list => list.map(d => (d.id === id ? {...d, amount: String(parseAmount(d.amount))} : d)));
+    };
     const removeDuration = (id: string) => setDurations(list => list.filter(d => d.id !== id));
     const addDuration = () => {
-        setDurations(list => (list.length >= MAX_DURATIONS ? list : [...list, {id: nextId(), value: 1, unit: 'month'}]));
+        setDurations(list => (list.length >= MAX_DURATIONS ? list : [...list, {id: nextId(), amount: '1', unit: 'month'}]));
     };
 
-    // Per-tier, per-month-count price overrides (like the real gift_prices map).
-    // Blank means "use the derived default".
-    const [priceOverrides, setPriceOverrides] = useState<Record<string, Record<number, number>>>({});
-    const setPrice = (tierId: string, months: number, cents: number) => {
-        setPriceOverrides(prev => ({
-            ...prev,
-            [tierId]: {...(prev[tierId] || {}), [months]: cents}
-        }));
+    // Per-tier, per-duration price overrides. A row shows the derived default
+    // until the publisher types a different price; "Reset to default" clears them.
+    const [priceOverrides, setPriceOverrides] = useState<Record<string, Record<string, number>>>({});
+    const [resetNonce, setResetNonce] = useState<Record<string, number>>({});
+    const priceInCents = (tier: Tier, d: EditableDuration): number => (
+        priceOverrides[tier.id]?.[d.id] ?? derivedPriceInCents(tier, toMonths(d))
+    );
+    const setPrice = (tierId: string, durationId: string, cents: number) => {
+        setPriceOverrides(prev => ({...prev, [tierId]: {...(prev[tierId] || {}), [durationId]: cents}}));
     };
+    const resetTierPrices = (tierId: string) => {
+        setPriceOverrides((prev) => {
+            const next = {...prev};
+            delete next[tierId];
+            return next;
+        });
+        setResetNonce(prev => ({...prev, [tierId]: (prev[tierId] || 0) + 1}));
+    };
+    const tierHasOverrides = (tierId: string) => Object.keys(priceOverrides[tierId] || {}).length > 0;
 
     const currency = tiers[0]?.currency || 'USD';
     const atMax = durations.length >= MAX_DURATIONS;
@@ -97,14 +119,15 @@ const GiftDurationsPrototype: React.FC<{
                             <TextField
                                 min={1}
                                 type='number'
-                                value={String(d.value)}
-                                onChange={e => updateDuration(d.id, {value: Math.max(1, parseInt(e.target.value, 10) || 1)})}
+                                value={d.amount}
+                                onBlur={() => normaliseAmount(d.id)}
+                                onChange={e => updateDuration(d.id, {amount: e.target.value})}
                             />
                         </div>
                         <div className='w-32'>
                             <Select
                                 options={UNIT_OPTIONS}
-                                selectedOption={{value: d.unit, label: unitLabel(d.unit, d.value)}}
+                                selectedOption={{value: d.unit, label: unitLabel(d.unit, d.amount)}}
                                 onSelect={option => option && updateDuration(d.id, {unit: option.value as 'month' | 'year'})}
                             />
                         </div>
@@ -132,28 +155,29 @@ const GiftDurationsPrototype: React.FC<{
 
             <div className='mt-6'>
                 <Heading level={6}>Pricing</Heading>
-                <p className='mt-1 mb-4 text-sm text-grey-700'>Set a one-time price per duration, or leave blank to charge the default shown in grey. The fields track the durations above as you edit them.</p>
+                <p className='mt-1 mb-4 text-sm text-grey-700'>Each duration is pre-filled with its default price. Edit any field to set your own, or reset a tier back to the defaults.</p>
                 {tiers.length === 0 && (
                     <p className='text-sm text-grey-600'>Add a paid tier to set pricing.</p>
                 )}
                 <div className='flex flex-col gap-6'>
                     {tiers.map(tier => (
                         <div key={tier.id}>
-                            {tiers.length > 1 && <Heading className='mb-3' level={6}>{tier.name}</Heading>}
+                            <div className='mb-2 flex min-h-6 items-center justify-between'>
+                                {tiers.length > 1 ? <Heading level={6}>{tier.name}</Heading> : <span />}
+                                {tierHasOverrides(tier.id) && (
+                                    <Button color='green' label='Reset to default' size='sm' link onClick={() => resetTierPrices(tier.id)} />
+                                )}
+                            </div>
                             <div className='flex flex-col gap-3'>
-                                {durations.map((d) => {
-                                    const months = toMonths(d);
-                                    return (
-                                        <CurrencyField
-                                            key={d.id}
-                                            placeholder={String(derivedPriceInCents(tier, months) / 100)}
-                                            rightPlaceholder={tier.currency || currency}
-                                            title={durationLabel(d)}
-                                            valueInCents={priceOverrides[tier.id]?.[months] ?? ''}
-                                            onChange={cents => setPrice(tier.id, months, cents)}
-                                        />
-                                    );
-                                })}
+                                {durations.map(d => (
+                                    <CurrencyField
+                                        key={`${tier.id}-${d.id}-${toMonths(d)}-${resetNonce[tier.id] || 0}`}
+                                        rightPlaceholder={tier.currency || currency}
+                                        title={durationLabel(d)}
+                                        valueInCents={priceInCents(tier, d)}
+                                        onChange={cents => setPrice(tier.id, d.id, cents)}
+                                    />
+                                ))}
                             </div>
                         </div>
                     ))}
