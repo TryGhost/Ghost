@@ -83,6 +83,10 @@ const features: Feature[] = [{
     title: 'Preview by tier',
     description: 'Preview posts and emails as a member of a specific tier',
     flag: 'previewByTier'
+}, {
+    title: 'Shade settings UI',
+    description: 'Renders Ghost Admin settings from the new Shade-based app instead of the legacy settings app. Areas that have not been rebuilt yet show placeholders.',
+    flag: 'shadeSettings'
 }];
 
 const AlphaFeatures: React.FC = () => {

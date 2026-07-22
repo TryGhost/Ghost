@@ -37,6 +37,7 @@ Object {
       "membersCustomFields": true,
       "pictureImageFormats": true,
       "previewByTier": true,
+      "shadeSettings": true,
       "smarterCounts": true,
       "stripeAutomaticTax": true,
       "superEditors": true,

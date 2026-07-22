@@ -16,7 +16,12 @@ export default defineConfig({
     // Serves the MSW service worker script; scoped to the test config so it
     // never ends up in the production build's public assets.
     publicDir: "./test-utils/acceptance/public",
-    define: sharedDefine,
+    define: {
+        ...sharedDefine,
+        // Dual-mode settings runs: SHADE_SETTINGS=1 targets the Shade
+        // settings UI (see test-utils/acceptance/settings-mode.ts).
+        "import.meta.env.SHADE_SETTINGS": JSON.stringify(process.env.SHADE_SETTINGS ?? ""),
+    },
     optimizeDeps: {
         // Scan every app module so deps behind lazy routes are pre-bundled up
         // front — mid-run discovery reloads the test page and flakes the

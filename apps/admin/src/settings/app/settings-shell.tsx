@@ -1,0 +1,95 @@
+import { type ComponentType, useEffect, useRef } from "react";
+import { Button } from "@tryghost/shade/components";
+import { LucideIcon } from "@tryghost/shade/utils";
+import { Outlet, useLocation, useNavigate } from "@tryghost/admin-x-framework";
+
+import { AreaSection } from "./area-section";
+import { type SettingsAreaId, resolveSettingsArea, useSettingsNav } from "./nav";
+import { SettingsSidebar } from "./sidebar";
+
+/**
+ * The native settings chrome: full-screen takeover with the nav sidebar on
+ * the left and one scroll pane of area sections on the right, mirroring the
+ * legacy layout (apps/admin-x-settings/src/main-content.tsx). Escape exits
+ * settings when no modal is open; navigating to `/settings/:area` scrolls
+ * the owning area section into view.
+ */
+
+// Rebuilt areas register their native component here; everything else
+// renders the "not yet rebuilt" placeholder.
+const AREA_COMPONENTS: Partial<Record<SettingsAreaId, ComponentType>> = {};
+
+// Shade/Radix dialogs expose their open state via dialog roles — when one is
+// open, Escape belongs to the modal, not the exit-settings handler.
+const OPEN_MODAL_SELECTOR = ':is([role="dialog"], [role="alertdialog"])[data-state="open"]';
+
+/** The `/settings/:area` segment of the current location, or null on the index. */
+function useCurrentSegment(): string | null {
+    const { pathname } = useLocation();
+    const match = /^\/settings\/([^/]+)/.exec(pathname);
+    return match ? match[1] : null;
+}
+
+export function SettingsShell() {
+    const navigate = useNavigate();
+    const currentSegment = useCurrentSegment();
+    const { groups, areas, isLoading } = useSettingsNav();
+    const scrollerRef = useRef<HTMLDivElement | null>(null);
+
+    // Escape exits settings when no modal is open. The sidebar's search field
+    // stops propagation while it has a filter to clear, so this only fires
+    // when Escape isn't already spoken for.
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== "Escape") {
+                return;
+            }
+            if (document.querySelector(OPEN_MODAL_SELECTOR)) {
+                return;
+            }
+            navigate("/");
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [navigate]);
+
+    // Scroll the routed area's section into view — on nav clicks and on
+    // deep links once the nav data has settled the layout.
+    useEffect(() => {
+        if (!currentSegment) {
+            return;
+        }
+        const areaId = resolveSettingsArea(currentSegment);
+        if (!areaId) {
+            return;
+        }
+        document.getElementById(`settings-area-${areaId}`)?.scrollIntoView();
+    }, [currentSegment, isLoading]);
+
+    return (
+        <div className="flex size-full bg-background text-foreground">
+            <aside className="flex h-full w-[300px] shrink-0 flex-col overflow-y-auto overscroll-y-contain bg-sidebar px-6">
+                <SettingsSidebar
+                    currentSegment={currentSegment}
+                    groups={groups}
+                    onFilterScrollReset={() => scrollerRef.current?.scrollTo({ top: 0, left: 0 })}
+                />
+            </aside>
+            <div ref={scrollerRef} className="h-full flex-1 overflow-y-auto overscroll-y-contain">
+                <div className="mx-auto flex max-w-[760px] flex-col gap-12 px-14 pt-16 pb-[60vh]">
+                    {areas.map((area) => (
+                        <AreaSection key={area.id} area={area} Component={AREA_COMPONENTS[area.id]} />
+                    ))}
+                </div>
+            </div>
+            <div className="fixed top-6 right-6 z-50">
+                <Button aria-label="Close settings" data-testid="exit-settings" size="icon" title="Close (ESC)" variant="ghost" onClick={() => navigate("/")}>
+                    <LucideIcon.X className="size-5" />
+                </Button>
+            </div>
+            <Outlet />
+        </div>
+    );
+}

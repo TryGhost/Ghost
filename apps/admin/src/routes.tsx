@@ -14,6 +14,7 @@ import type { RouteHandle } from "./ember-bridge";
 import { EmberListWithGiftLinks } from "./gift-link-modal-host";
 import { MemberDetailGate } from "./member-detail-gate";
 import { MembersRoute } from "./members-route";
+import { SettingsGate } from "./settings/settings-gate";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 
 import { NotFound } from "./not-found";
@@ -173,8 +174,11 @@ export const routes: RouteObject[] = [
                 children: activityPubRoutes,
             },
             {
+                // SettingsGate serves the legacy admin-x-settings app or the
+                // native Shade shell depending on the `shadeSettings` Labs
+                // flag; both implementations are lazy-loaded inside the gate.
                 path: `settings/*`,
-                lazy: lazyComponent(() => import("./settings/settings")),
+                Component: SettingsGate,
                 handle: { allowInForceUpgrade: true } satisfies RouteHandle,
             },
             {path: "/posts", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
