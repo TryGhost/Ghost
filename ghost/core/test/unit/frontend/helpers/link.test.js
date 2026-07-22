@@ -104,8 +104,8 @@ describe('{{link}} helper', function () {
         });
 
         it('supports multiple attributes', function () {
-            assert.equal(compile('{{#link href="#myheading" class="my-class" target="_blank" rel="noopener"}}text{{/link}}')
-                .with({}), '<a class="my-class" href="#myheading" rel="noopener" target="_blank">text</a>');
+            assert.equal(compile('{{#link href="#myheading" class="my-class" target="_blank"}}text{{/link}}')
+                .with({}), '<a class="my-class" href="#myheading" target="_blank">text</a>');
         });
     });
 

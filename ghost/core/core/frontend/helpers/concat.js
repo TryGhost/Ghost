@@ -1,12 +1,4 @@
-const {SafeString, escapeExpression} = require('../services/handlebars');
-
-function escape(value) {
-    if (value instanceof SafeString) {
-        return value.toHTML();
-    }
-
-    return escapeExpression(value);
-}
+const {SafeString} = require('../services/handlebars');
 
 module.exports = function concat(...args) {
     const options = args.pop();
@@ -15,5 +7,5 @@ module.exports = function concat(...args) {
     // Flatten arrays - if an argument is an array, spread its elements
     const flattenedArgs = args.flat();
 
-    return new SafeString(flattenedArgs.map(escape).join(escape(separator)));
+    return new SafeString(flattenedArgs.join(separator));
 };

@@ -35,7 +35,7 @@ module.exports = function split(...args) {
     const result = string.split(separator)
         .filter(item => item !== '')
         .map(item => isSafe ? new SafeString(item) : item);
-    
+
     if (result.length === 0) {
         return renderResult([], options, data);
     }
