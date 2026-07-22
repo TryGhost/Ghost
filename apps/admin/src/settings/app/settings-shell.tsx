@@ -2,6 +2,8 @@ import { type ComponentType, useEffect, useRef } from "react";
 import { Button } from "@tryghost/shade/components";
 import { LucideIcon } from "@tryghost/shade/utils";
 import { Outlet, useLocation, useNavigate } from "@tryghost/admin-x-framework";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
+import { canAccessSettings, isEditorUser } from "@tryghost/admin-x-framework/api/users";
 
 import { AreaSection } from "./area-section";
 import { type SettingsAreaId, resolveSettingsArea, useSettingsNav } from "./nav";
@@ -14,6 +16,7 @@ import { GeneralArea } from "@/settings/general/general-area";
 import { GrowthArea } from "@/settings/growth/growth-area";
 import { MembershipArea } from "@/settings/membership/membership-area";
 import { SiteArea } from "@/settings/site/site-area";
+import { Users } from "@/settings/general/users";
 
 /**
  * The native settings chrome: full-screen takeover with the nav sidebar on
@@ -22,6 +25,10 @@ import { SiteArea } from "@/settings/site/site-area";
  * settings when no modal is open; navigating to `/settings/:area` scrolls
  * the owning area section into view. Exits confirm first when a group has
  * unsaved changes.
+ *
+ * Role gating mirrors the legacy main-content: editors get a staff-only
+ * view without the sidebar; contributors/authors get no settings content at
+ * all — only their routed profile dialog renders.
  */
 
 // Every area's native component, in the shape the nav model addresses them.
@@ -45,6 +52,8 @@ function useCurrentSegment(): string | null {
     return match ? match[1] : null;
 }
 
+const EMPTY_KEYWORDS: string[] = [];
+
 export function SettingsShell() {
     const navigate = useNavigate();
     const currentSegment = useCurrentSegment();
@@ -52,6 +61,7 @@ export function SettingsShell() {
     const scrollerRef = useRef<HTMLDivElement | null>(null);
     const { isDirty } = useSettingsDirty();
     const { confirm } = useConfirmation();
+    const { data: currentUser } = useCurrentUser();
 
     // Exit settings, confirming first when a group has unsaved changes (the
     // legacy useGlobalDirtyState/confirmIfDirty contract from main-content).
@@ -92,6 +102,38 @@ export function SettingsShell() {
         }
         document.getElementById(`settings-area-${areaId}`)?.scrollIntoView();
     }, [currentSegment, isLoading]);
+
+    // Wait for the current user before rendering any chrome — the legacy
+    // GlobalDataProvider blocked rendering the same way, so role-gated
+    // views never flash the full shell.
+    if (!currentUser) {
+        return null;
+    }
+
+    // Contributors/Authors only see their own profile dialog (routed).
+    if (!canAccessSettings(currentUser)) {
+        return <Outlet />;
+    }
+
+    // Editors get a staff-only settings view without the sidebar.
+    if (isEditorUser(currentUser)) {
+        return (
+            <div className="flex size-full bg-background text-foreground">
+                <div className="h-full flex-1 overflow-y-auto overscroll-y-contain">
+                    <div className="mx-auto flex max-w-[760px] flex-col gap-12 px-14 pt-16 pb-[20vh]">
+                        <h1 className="text-4xl font-bold tracking-tight">Settings</h1>
+                        <Users keywords={EMPTY_KEYWORDS} />
+                    </div>
+                </div>
+                <div className="fixed top-6 right-6 z-50">
+                    <Button aria-label="Close settings" data-testid="exit-settings" size="icon" title="Close (ESC)" variant="ghost" onClick={requestExit}>
+                        <LucideIcon.X className="size-5" />
+                    </Button>
+                </div>
+                <Outlet />
+            </div>
+        );
+    }
 
     return (
         <div className="flex size-full bg-background text-foreground">

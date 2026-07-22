@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { currentUserResponse, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp, type CurrentUserResponse } from "@test-utils/acceptance";
+import { currentUserResponse, enableShadeSettingsMode, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp, type CurrentUserResponse } from "@test-utils/acceptance";
 import { settingsScreen } from "./settings.screen";
+
+enableShadeSettingsMode();
 
 function currentUserWithRole(name: string): CurrentUserResponse {
     const response = currentUserResponse();
