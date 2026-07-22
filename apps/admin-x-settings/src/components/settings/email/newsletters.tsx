@@ -4,10 +4,12 @@ import React, {type ReactNode, useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Button, ConfirmationModal, TabView} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal} from '@tryghost/admin-x-design-system';
 import {type InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
 import {type Newsletter, type NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {arrayMove} from '@dnd-kit/sortable';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {withErrorBoundary} from '../../error-boundary';
@@ -135,19 +137,6 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
     };
 
-    const tabs = [
-        {
-            id: 'active-newsletters',
-            title: 'Active',
-            contents: (<NewslettersList isLoading={isLoading} newsletters={sortedActiveNewsletters} isSortable onSort={onSort} />)
-        },
-        {
-            id: 'archived-newsletters',
-            title: 'Archived',
-            contents: (<NewslettersList isLoading={isLoading} newsletters={archivedNewsletters} />)
-        }
-    ];
-
     return (
         <TopLevelGroup
             customButtons={buttons}
@@ -157,9 +146,16 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='newsletters'
             title='Newsletters'
         >
-            <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+            <Tabs value={selectedTab} variant='underline' onValueChange={setSelectedTab}>
+                <TabsList>
+                    <TabsTrigger value='active-newsletters'>Active</TabsTrigger>
+                    <TabsTrigger value='archived-newsletters'>Archived</TabsTrigger>
+                </TabsList>
+                <TabsContent value='active-newsletters'><NewslettersList isLoading={isLoading} newsletters={sortedActiveNewsletters} isSortable onSort={onSort} /></TabsContent>
+                <TabsContent value='archived-newsletters'><NewslettersList isLoading={isLoading} newsletters={archivedNewsletters} /></TabsContent>
+            </Tabs>
             {isEnd === false && <Button
-                label={`Load more (showing ${newsletters?.length || 0}/${meta?.pagination.total || 0} newsletters)`}
+                label={`Load more (showing ${formatNumber(newsletters?.length || 0)}/${formatNumber(meta?.pagination.total || 0)} newsletters)`}
                 link
                 onClick={() => fetchNextPage()}
             />}

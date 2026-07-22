@@ -102,7 +102,7 @@ describe("Portal settings", () => {
         await expect.element(modal.getByText("Enter a valid email address")).toBeVisible();
 
         await supportEmail.fill("hello@world.com");
-        supportEmail.element().blur();
+        await modal.getByRole("tab", {name: "Signup options"}).click();
         await modal.getByRole("button", {name: "Save"}).click();
 
         await expect.element(modal.getByRole("button", {name: "Saved"})).toBeVisible();

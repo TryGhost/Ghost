@@ -1,8 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
-import {useArgs} from 'storybook/preview-api';
 
 import Page, {CustomGlobalAction} from './page';
-import {Tab} from '../tab-view';
 import ViewContainer from './view-container';
 
 import {testColumns, testRows} from '../table/dynamic-table.stories';
@@ -18,16 +16,6 @@ const meta = {
     tags: ['autodocs'],
     parameters: {
         layout: 'fullscreen'
-    },
-    render: function Component(args) {
-        const [, updateArgs] = useArgs();
-
-        return <Page {...args}
-            onTabChange={(tab) => {
-                updateArgs({selectedTab: tab});
-                args.onTabChange?.(tab);
-            }}
-        />;
     }
 } satisfies Meta<typeof Page>;
 
@@ -45,16 +33,7 @@ const customGlobalActions: CustomGlobalAction[] = [
     }
 ];
 
-const pageTabs: Tab[] = [
-    {
-        id: 'active',
-        title: 'Active'
-    },
-    {
-        id: 'archive',
-        title: 'Archive'
-    }
-];
+const pageTabs = <div className='text-sm text-grey-500'>Page tabs slot</div>;
 
 export const Default: Story = {
     args: {

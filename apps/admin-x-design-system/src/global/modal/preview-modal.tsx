@@ -1,15 +1,12 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import clsx from 'clsx';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import useGlobalDirtyState from '../../hooks/use-global-dirty-state';
 import {confirmIfDirty} from '../../utils/modals';
 import {ButtonColor, ButtonProps} from '../button';
 import ButtonGroup from '../button-group';
 import Heading, {HeadingLevel} from '../heading';
 import Icon from '../icon';
-import TabView, {Tab} from '../tab-view';
-import DesktopChrome from '../chrome/desktop-chrome';
-import MobileChrome from '../chrome/mobile-chrome';
 import Modal, {ModalSize} from './modal';
 
 export interface PreviewModalProps {
@@ -29,14 +26,12 @@ export interface PreviewModalProps {
     previewToolbar?: boolean;
     leftToolbar?: boolean;
     rightToolbar?: boolean;
-    deviceSelector?: boolean;
+    deviceSelector?: React.ReactNode;
     siteLink?: string;
     previewToolbarURLs?: React.ReactNode;
     previewToolbarBreadcrumbs?: React.ReactNode;
     previewBgColor?: 'grey' | 'white' | 'greygradient';
-    selectedURL?: string;
-    previewToolbarTabs?: Tab[];
-    defaultTab?: string;
+    previewToolbarTabs?: React.ReactNode;
     sidebarButtons?: React.ReactNode;
     sidebarHeader?: React.ReactNode;
     sidebarPadding?: boolean;
@@ -47,9 +42,6 @@ export interface PreviewModalProps {
     onCancel?: () => void;
     onOk?: () => void;
     afterClose?: () => void;
-    onSelectURL?: (url: string) => void;
-    onSelectDesktopView?: () => void;
-    onSelectMobileView?: () => void;
 }
 
 export const PreviewModalContent: React.FC<PreviewModalProps> = ({
@@ -68,11 +60,10 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     previewToolbar = true,
     leftToolbar = true,
     rightToolbar = true,
-    deviceSelector = true,
+    deviceSelector,
     siteLink,
     previewToolbarURLs,
     previewBgColor = 'grey',
-    selectedURL,
     previewToolbarTabs,
     previewToolbarBreadcrumbs,
     buttonsDisabled,
@@ -85,10 +76,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
     onCancel,
     onOk,
-    afterClose,
-    onSelectURL,
-    onSelectDesktopView,
-    onSelectMobileView
+    afterClose
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -114,70 +102,15 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         }
     });
 
-    const [view, setView] = useState('desktop');
-
-    if (view === 'mobile' && deviceSelector) {
-        preview = (
-            <MobileChrome data-testid="preview-mobile">
-                {preview}
-            </MobileChrome>
-        );
-    } else if (view === 'desktop' && deviceSelector) {
-        preview = (
-            <DesktopChrome data-testid="preview-desktop">
-                {preview}
-            </DesktopChrome>
-        );
-    }
-
     if (previewToolbar) {
         let toolbarLeft: React.ReactNode = (<></>);
         if (previewToolbarURLs) {
             toolbarLeft = previewToolbarURLs;
         } else if (previewToolbarTabs) {
-            toolbarLeft = <TabView
-                border={false}
-                selectedTab={selectedURL}
-                tabs={previewToolbarTabs}
-                width='wide'
-                onTabChange={onSelectURL!}
-            />;
+            toolbarLeft = previewToolbarTabs;
         } else if (previewToolbarBreadcrumbs) {
             toolbarLeft = previewToolbarBreadcrumbs;
         }
-
-        const selectedIconColorClass = 'text-black dark:text-green';
-        const unSelectedIconColorClass = 'text-grey-500 dark:text-grey-600';
-        const rightButtons:ButtonProps[] = [
-            {
-                icon: 'laptop',
-                label: 'Desktop',
-                hideLabel: true,
-                link: true,
-                size: 'sm',
-                iconColorClass: (view === 'desktop' ? selectedIconColorClass : unSelectedIconColorClass),
-                onClick: onSelectDesktopView || (() => {
-                    setView('desktop');
-                })
-            },
-            {
-                icon: 'mobile',
-                label: 'Mobile',
-                hideLabel: true,
-                link: true,
-                size: 'sm',
-                iconColorClass: (view === 'mobile' ? selectedIconColorClass : unSelectedIconColorClass),
-                onClick: onSelectMobileView || (() => {
-                    setView('mobile');
-                })
-            }
-        ];
-
-        const toolbarRight = deviceSelector && (
-            <ButtonGroup
-                buttons={rightButtons}
-            />
-        );
 
         let previewBgClass = '';
         if (previewBgColor === 'grey') {
@@ -207,7 +140,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                         {toolbarLeft}
                     </div>}
                     {rightToolbar && <div className='absolute right-8 flex h-full items-center'>
-                        {toolbarRight}
+                        {deviceSelector}
                         {viewSiteButton}
                     </div>}
                 </header>}

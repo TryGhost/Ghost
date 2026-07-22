@@ -23,13 +23,20 @@ describe("Navigation settings", () => {
         const settingsApi = fakeEditSettings();
         await renderAdminApp("/settings/navigation/edit");
 
+        const modal = settingsScreen.navigationModal();
+        const primaryTab = modal.getByRole("tab", { name: "Primary" });
+        const secondaryTab = modal.getByRole("tab", { name: "Secondary" });
+        await primaryTab.click();
+        await userEvent.keyboard("{ArrowRight}");
+        await expect.element(secondaryTab).toHaveAttribute("aria-selected", "true");
+        await primaryTab.click();
+
         await existingItem().getByLabelText("Label").fill("existing item label");
         await existingItem().getByLabelText("URL").fill("/existing");
         await newItem().getByLabelText("Label").fill("new item label");
         await newItem().getByLabelText("URL").fill("/new");
 
-        const modal = settingsScreen.navigationModal();
-        await modal.getByRole("tab", { name: "Secondary" }).click();
+        await secondaryTab.click();
         const secondary = modal.getByRole("tabpanel").last();
         const secondaryItem = secondary.getByTestId(sel.navigationItemEditor).first();
         await secondaryItem.getByLabelText("Label").fill("existing item 2");

@@ -8,8 +8,8 @@ import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useStaffUsers from '../../../hooks/use-staff-users';
 import validator from 'validator';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Modal, TabView, showToast} from '@tryghost/admin-x-design-system';
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -479,27 +479,16 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     </div>
                 </div>
                 <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-[536px]'} mt-6 flex flex-col`}>
-                    <TabView
-                        selectedTab={selectedTab}
-                        tabs={[
-                            {
-                                id: 'profile',
-                                title: 'Profile',
-                                contents: <ProfileTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
-                            },
-                            {
-                                id: 'social-links',
-                                title: 'Social Links',
-                                contents: <SocialLinksTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
-                            },
-                            {
-                                id: 'email-notifications',
-                                title: 'Email Notifications',
-                                contents: <EmailNotificationsTab setUserData={setUserData} user={formState} />
-                            }
-                        ]}
-                        onTabChange={handleTabChange}
-                    />
+                    <Tabs value={selectedTab} variant='underline' onValueChange={handleTabChange}>
+                        <TabsList>
+                            <TabsTrigger title='Profile' value='profile'>Profile</TabsTrigger>
+                            <TabsTrigger title='Social Links' value='social-links'>Social Links</TabsTrigger>
+                            <TabsTrigger title='Email Notifications' value='email-notifications'>Email Notifications</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value='profile'><ProfileTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} /></TabsContent>
+                        <TabsContent value='social-links'><SocialLinksTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} /></TabsContent>
+                        <TabsContent value='email-notifications'><EmailNotificationsTab setUserData={setUserData} user={formState} /></TabsContent>
+                    </Tabs>
                 </div>
             </div>
         </Modal>

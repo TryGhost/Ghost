@@ -194,7 +194,7 @@ describe("Custom fields", () => {
         await expect(rows).toHaveCount(7);
         await expect(settingsScreen.customFields().getByRole("button", {name: "Show all"})).toHaveCount(0);
 
-        // The reveal survives tab switches — TabView unmounts hidden tabs, so
+        // The reveal survives tab switches — Tabs unmount hidden panels, so
         // this pins the state living above them.
         await settingsScreen.customFields().getByRole("tab", {name: "Archived"}).click();
         await settingsScreen.customFields().getByRole("tab", {name: "Active"}).click();

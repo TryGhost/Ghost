@@ -26,7 +26,7 @@ describe("Staff profiles", () => {
         await modal.getByRole("button", {name: "Save"}).click();
         await expect.element(modal.getByText("Name is required")).toBeVisible();
 
-        await modal.getByLabelText("Email").fill("not-an-email");
+        await modal.getByLabelText("Email", {exact: true}).fill("not-an-email");
         await modal.getByRole("button", {name: "Save"}).click();
         await expect.element(modal.getByText("Enter a valid email address")).toBeVisible();
 
@@ -83,7 +83,7 @@ describe("Staff profiles", () => {
 
         const modal = settingsScreen.userDetailModal();
         await modal.getByLabelText("Full name").fill(saved.name);
-        await modal.getByLabelText("Email").fill(saved.email);
+        await modal.getByLabelText("Email", {exact: true}).fill(saved.email);
         await modal.getByLabelText("Location").fill(saved.location);
         await modal.getByLabelText("Bio").fill(saved.bio);
         await modal.getByRole("button", {name: "Save"}).click();
@@ -131,7 +131,7 @@ describe("Staff profiles", () => {
 
         await expect.poll(currentRoute).toBe(`/settings/staff/${owner.slug}`);
         const modal = settingsScreen.userDetailModal();
-        await expect.element(modal.getByLabelText("Email")).toHaveValue(owner.email);
+        await expect.element(modal.getByLabelText("Email", {exact: true})).toHaveValue(owner.email);
         await expect.element(modal.getByLabelText("Slug")).toHaveValue(owner.slug);
     });
 
@@ -241,7 +241,7 @@ describe("Staff profiles", () => {
         const {boot} = fakeStaffWorld({currentUser: owner, users: [owner, administrator]});
         await renderAdminApp(`/settings/staff/${administrator.slug}`, {boot});
 
-        await expect.element(settingsScreen.userDetailModal().getByLabelText("Email")).toBeVisible();
+        await expect.element(settingsScreen.userDetailModal().getByLabelText("Email", {exact: true})).toBeVisible();
         await expect(settingsScreen.userDetailModal().getByTestId("api-keys")).toHaveCount(0);
     });
 

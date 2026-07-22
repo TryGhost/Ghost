@@ -1,15 +1,15 @@
 {
   "snapshot": {
-    "generatedAt": "2026-07-22T00:53:12.523Z",
-    "sha": "8de5eeb5ff011eb583bf3be82e6f478e83a4f00b",
-    "branch": "codex/admin-settings-shade-text-fields"
+    "generatedAt": "2026-07-22T14:12:23.896Z",
+    "sha": "6c43413cdcf991d0e0cb924e1271b4ef5aa4658f",
+    "branch": "codex/admin-settings-shade-tabs"
   },
   "summary": {
     "adminReactFilesTotal": 692,
-    "adminReactFilesUsingShade": 314,
-    "shadeAdoptionPct": 45.4,
+    "adminReactFilesUsingShade": 324,
+    "shadeAdoptionPct": 46.8,
     "uniqueShadeComponentsUsed": 264,
-    "adminXDsComponentsStillUsed": 62
+    "adminXDsComponentsStillUsed": 60
   },
   "apps": [
     {
@@ -1189,7 +1189,7 @@
     {
       "name": "admin-x-settings",
       "files": 241,
-      "shadeFiles": 88,
+      "shadeFiles": 98,
       "adminXDsFiles": 125,
       "shadeComponents": [
         {
@@ -1207,6 +1207,18 @@
         {
           "name": "Switch",
           "count": 25
+        },
+        {
+          "name": "Tabs",
+          "count": 20
+        },
+        {
+          "name": "TabsList",
+          "count": 20
+        },
+        {
+          "name": "TabsTrigger",
+          "count": 20
         },
         {
           "name": "Select",
@@ -1230,6 +1242,10 @@
         },
         {
           "name": "formatNumber",
+          "count": 19
+        },
+        {
+          "name": "TabsContent",
           "count": 17
         },
         {
@@ -1263,6 +1279,14 @@
         {
           "name": "MultiSelectCombobox",
           "count": 8
+        },
+        {
+          "name": "ToggleGroup",
+          "count": 7
+        },
+        {
+          "name": "ToggleGroupItem",
+          "count": 7
         },
         {
           "name": "NoValueLabelIcon",
@@ -1318,14 +1342,6 @@
         },
         {
           "name": "DropdownMenuTrigger",
-          "count": 5
-        },
-        {
-          "name": "ToggleGroup",
-          "count": 5
-        },
-        {
-          "name": "ToggleGroupItem",
           "count": 5
         },
         {
@@ -1393,18 +1409,6 @@
           "count": 3
         },
         {
-          "name": "Tabs",
-          "count": 3
-        },
-        {
-          "name": "TabsList",
-          "count": 3
-        },
-        {
-          "name": "TabsTrigger",
-          "count": 3
-        },
-        {
           "name": "RadioGroup",
           "count": 3
         },
@@ -1429,7 +1433,7 @@
           "count": 2
         },
         {
-          "name": "TabsContent",
+          "name": "TabsTriggerCount",
           "count": 2
         },
         {
@@ -1619,10 +1623,6 @@
           "count": 17
         },
         {
-          "name": "TabView",
-          "count": 16
-        },
-        {
           "name": "LimitModal",
           "count": 10
         },
@@ -1637,10 +1637,6 @@
         {
           "name": "PreviewModalContent",
           "count": 7
-        },
-        {
-          "name": "Tab",
-          "count": 6
         },
         {
           "name": "ButtonGroup",
@@ -1680,6 +1676,14 @@
         },
         {
           "name": "useGlobalDirtyState",
+          "count": 3
+        },
+        {
+          "name": "DesktopChrome",
+          "count": 3
+        },
+        {
+          "name": "MobileChrome",
           "count": 3
         },
         {
@@ -1779,14 +1783,6 @@
           "count": 1
         },
         {
-          "name": "DesktopChrome",
-          "count": 1
-        },
-        {
-          "name": "MobileChrome",
-          "count": 1
-        },
-        {
           "name": "KoenigInstance",
           "count": 1
         },
@@ -1844,7 +1840,7 @@
     },
     {
       "name": "formatNumber",
-      "count": 65
+      "count": 67
     },
     {
       "name": "LoadingIndicator",
@@ -1863,6 +1859,14 @@
       "count": 42
     },
     {
+      "name": "Tabs",
+      "count": 31
+    },
+    {
+      "name": "TabsList",
+      "count": 31
+    },
+    {
       "name": "Switch",
       "count": 28
     },
@@ -1872,6 +1876,10 @@
     },
     {
       "name": "CardContent",
+      "count": 27
+    },
+    {
+      "name": "TabsTrigger",
       "count": 27
     },
     {
@@ -1901,18 +1909,6 @@
     {
       "name": "SelectItem",
       "count": 26
-    },
-    {
-      "name": "SelectTrigger",
-      "count": 26
-    },
-    {
-      "name": "SelectValue",
-      "count": 26
-    },
-    {
-      "name": "Dialog",
-      "count": 25
     }
   ],
   "adminXDsComponentsAggregate": [
@@ -1953,10 +1949,6 @@
       "count": 17
     },
     {
-      "name": "TabView",
-      "count": 16
-    },
-    {
       "name": "LimitModal",
       "count": 10
     },
@@ -1971,10 +1963,6 @@
     {
       "name": "PreviewModalContent",
       "count": 7
-    },
-    {
-      "name": "Tab",
-      "count": 6
     },
     {
       "name": "ButtonGroup",
@@ -2014,6 +2002,14 @@
     },
     {
       "name": "useGlobalDirtyState",
+      "count": 3
+    },
+    {
+      "name": "DesktopChrome",
+      "count": 3
+    },
+    {
+      "name": "MobileChrome",
       "count": 3
     },
     {
@@ -2110,14 +2106,6 @@
     },
     {
       "name": "ColorIndicator",
-      "count": 1
-    },
-    {
-      "name": "DesktopChrome",
-      "count": 1
-    },
-    {
-      "name": "MobileChrome",
       "count": 1
     },
     {

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as RadioGroupPrimitive from '@radix-ui/react-radio-group';
-import {Check, Circle} from 'lucide-react';
+import {Check} from 'lucide-react';
 import {cva, type VariantProps} from 'class-variance-authority';
 
 import {inputSurface} from '@/components/ui/input-surface';
@@ -22,7 +22,7 @@ RadioGroup.displayName = RadioGroupPrimitive.Root.displayName;
 const radioGroupItemVariants = cva(
     [
         inputSurface('self'),
-        'peer grid size-4 shrink-0 place-content-center rounded-full p-0 text-primary shadow-xs enabled:hover:bg-interactive-hover'
+        'peer grid size-4 shrink-0 place-content-center rounded-full p-0 text-primary enabled:hover:bg-interactive-hover'
     ],
     {
         variants: {
@@ -53,7 +53,7 @@ const RadioGroupItem = React.forwardRef<
             className="grid place-content-center"
             data-slot="radio-group-indicator"
         >
-            {indicator === 'check' ? <Check className="size-2.5 stroke-4" /> : <Circle className="size-2 fill-current" />}
+            {indicator === 'check' ? <Check className="size-2.5 stroke-4" /> : <span className="size-2 rounded-full bg-current" data-slot="radio-group-dot" />}
         </RadioGroupPrimitive.Indicator>
     </RadioGroupPrimitive.Item>
 ));
