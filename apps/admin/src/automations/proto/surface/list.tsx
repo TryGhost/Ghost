@@ -1,13 +1,40 @@
 import React, {useState} from 'react';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
-import {AUTOMATION_DESCRIPTIONS, mockAutomations} from '@/automations/proto/shared/mock';
-import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Table, TableBody, TableCell, TableRow} from '@tryghost/shade/components';
+import {AUTOMATION_DESCRIPTIONS, getScenario, mockAutomations} from '@/automations/proto/shared/mock';
+import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Box, Container, Inline, Stack} from '@tryghost/shade/primitives';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {PageHeader} from '@tryghost/shade/patterns';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {cn, formatNumber, LucideIcon} from '@tryghost/shade/utils';
 import {Link, useNavigate} from '@tryghost/admin-x-framework';
 import {useVersionLink} from '@/automations/proto/shared/use-version-link';
+
+// Deterministic "now" — matches the anchor used across the surface concept so
+// relative dates stay consistent with the detail view.
+const NOW_MS = new Date('2026-07-21T09:12:00Z').getTime();
+
+// Shared grid template so the header and every row line up. Mobile collapses to
+// name + status; the run/count columns appear from `lg` up.
+const gridCols = 'grid grid-cols-[1fr_auto] lg:grid-cols-[minmax(0,1fr)_170px_130px_130px_110px]';
+
+const relRunDate = (iso: string | null): string => {
+    if (!iso) {
+        return 'Never';
+    }
+    const mins = Math.round((NOW_MS - new Date(iso).getTime()) / 60_000);
+    if (mins < 1) {
+        return 'Just now';
+    }
+    if (mins < 60) {
+        return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+    }
+    const hours = Math.round(mins / 60);
+    if (hours < 24) {
+        return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+    }
+    const days = Math.round(hours / 24);
+    return `${days} day${days === 1 ? '' : 's'} ago`;
+};
 
 type AutomationTemplate = {
     id: string;
@@ -39,13 +66,20 @@ const StatusBadge: React.FC<{status: AutomationDetail['status']}> = ({status}) =
         )
 );
 
+const MetricCell: React.FC<{value: number}> = ({value}) => (
+    <TableCell className={cn('hidden lg:block lg:p-4', value === 0 && 'text-muted-foreground')}>
+        {formatNumber(value)}
+    </TableCell>
+);
+
 const AutomationRow: React.FC<{automation: AutomationDetail}> = ({automation}) => {
     const toVersioned = useVersionLink();
     const description = AUTOMATION_DESCRIPTIONS[automation.slug];
+    const {metrics} = getScenario(automation.id) ?? {metrics: undefined};
 
     return (
         <TableRow
-            className="relative grid w-full cursor-pointer grid-cols-[1fr_auto] items-center gap-x-4 p-2 hover:bg-table-row-hover lg:p-0"
+            className={cn('relative w-full cursor-pointer items-center gap-x-4 p-2 hover:bg-table-row-hover lg:p-0', gridCols)}
             data-testid="automation-list-row"
         >
             <TableCell className="static min-w-0 lg:p-4">
@@ -57,7 +91,12 @@ const AutomationRow: React.FC<{automation: AutomationDetail}> = ({automation}) =
                 </Link>
                 {description && <span className="block text-muted-foreground">{description}</span>}
             </TableCell>
-            <TableCell className="text-right lg:w-32 lg:p-4">
+            <TableCell className={cn('hidden lg:block lg:p-4', !metrics?.last_enrolled_at && 'text-muted-foreground')}>
+                {relRunDate(metrics?.last_enrolled_at ?? null)}
+            </TableCell>
+            <MetricCell value={metrics?.in_progress ?? 0} />
+            <MetricCell value={metrics?.completed ?? 0} />
+            <TableCell className="lg:p-4">
                 <StatusBadge status={automation.status} />
             </TableCell>
         </TableRow>
@@ -88,7 +127,6 @@ const AutomationsList: React.FC = () => {
                             <PageHeader.Actions>
                                 <PageHeader.ActionGroup>
                                     <Button onClick={() => setTemplateDialogOpen(true)}>
-                                        <LucideIcon.Plus />
                                         New automation
                                     </Button>
                                 </PageHeader.ActionGroup>
@@ -96,7 +134,16 @@ const AutomationsList: React.FC = () => {
                         </PageHeader>
                     </ListPage.Header>
                     <ListPage.Body>
-                        <Table className="flex flex-col border-t" data-testid="automations-list">
+                        <Table className="flex flex-col" data-testid="automations-list">
+                            <TableHeader className="hidden lg:flex lg:flex-col">
+                                <TableRow className={cn('w-full items-center gap-x-4 border-b hover:bg-transparent', gridCols)}>
+                                    <TableHead className="lg:px-4">Name</TableHead>
+                                    <TableHead className="lg:px-4">Last run date</TableHead>
+                                    <TableHead className="lg:px-4">In progress</TableHead>
+                                    <TableHead className="lg:px-4">Completed</TableHead>
+                                    <TableHead className="lg:px-4">Status</TableHead>
+                                </TableRow>
+                            </TableHeader>
                             <TableBody className="flex flex-col">
                                 {mockAutomations.map(automation => (
                                     <AutomationRow key={automation.id} automation={automation} />

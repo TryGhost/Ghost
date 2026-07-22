@@ -91,7 +91,7 @@ export const cancellationSurvey: AutomationDetail = {
     id: 'auto_cancellation',
     name: 'Cancellation survey',
     slug: 'cancellation-survey',
-    status: 'active',
+    status: 'inactive',
     created_at: '2026-07-20T13:00:00Z',
     updated_at: '2026-07-20T13:00:00Z',
     actions: [

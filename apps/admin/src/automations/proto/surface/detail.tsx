@@ -108,19 +108,16 @@ const AutomationSurface: React.FC = () => {
     return (
         <div className="fixed inset-0 z-50 flex flex-col bg-background" data-testid="surface-detail">
             {/* Persistent header — the left stays put across modes; only the right controls morph. */}
-            <header className="relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4">
+            <header className="relative z-10 flex shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4 py-4">
                 <Inline align="center" gap="sm">
                     {/* Back arrow hides in edit mode — under load it reads as "exit editing",
                         so the only ways out are the deliberate Done / Publish on the right. */}
                     {!isEdit && (
-                        <>
-                            <Button aria-label="Back to automations" size="icon" variant="ghost" onClick={goBack}>
-                                <LucideIcon.ArrowLeft strokeWidth={2} />
-                            </Button>
-                            <span aria-hidden="true" className="h-4 w-px bg-border-default" />
-                        </>
+                        <Button aria-label="Back to automations" size="icon" variant="ghost" onClick={goBack}>
+                            <LucideIcon.ArrowLeft strokeWidth={2} />
+                        </Button>
                     )}
-                    <span className="font-medium">{automation.name}</span>
+                    <span className="text-lg font-semibold">{automation.name}</span>
                     <StatusPill status={liveStatus} />
                 </Inline>
                 <Inline align="center" gap="sm">

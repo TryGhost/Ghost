@@ -72,15 +72,15 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
                     <div className="mt-3 grid grid-cols-3 gap-2 border-t border-border-default pt-2 text-xs">
                         <div className="flex flex-col">
                             <span className="text-muted-foreground">Sent</span>
-                            <span className="font-medium tabular-nums">{formatNumber(d.stats.sent)}</span>
+                            <span className="font-medium">{formatNumber(d.stats.sent)}</span>
                         </div>
                         <div className="flex flex-col">
                             <span className="text-muted-foreground">Opened</span>
-                            <span className="font-medium tabular-nums">{d.stats.opened}%</span>
+                            <span className="font-medium">{d.stats.opened}%</span>
                         </div>
                         <div className="flex flex-col">
                             <span className="text-muted-foreground">Clicked</span>
-                            <span className="font-medium tabular-nums">{d.stats.clicked}%</span>
+                            <span className="font-medium">{d.stats.clicked}%</span>
                         </div>
                     </div>
                 )

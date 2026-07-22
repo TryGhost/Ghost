@@ -28,7 +28,7 @@ const welcomeMetrics: AutomationRunMetrics = {
     completed: 1225,
     exited_early: 89,
     last_enrolled_at: '2026-07-21T07:12:00Z',
-    enrollments_by_day: daysSeries('2026-07-21', [22, 28, 19, 34, 26, 15, 21, 44, 31, 27, 18, 30, 41, 33, 24, 12, 29, 38, 47, 30, 21, 16, 34, 42, 28, 20, 45, 32, 37, 26])
+    enrollments_by_day: daysSeries('2026-07-21', [18, 20, 21, 23, 22, 25, 27, 26, 29, 31, 30, 32, 33, 34, 33, 35, 36, 35, 34, 33, 31, 32, 30, 29, 30, 28, 27, 28, 26, 27])
 };
 
 const welcomeRuns: AutomationRun[] = [
@@ -103,7 +103,7 @@ const winbackMetrics: AutomationRunMetrics = {
     completed: 210,
     exited_early: 390,
     last_enrolled_at: '2026-07-20T22:41:00Z',
-    enrollments_by_day: daysSeries('2026-07-21', [30, 26, 22, 18, 24, 19, 14, 21, 17, 12, 20, 16, 11, 18, 14, 9, 15, 12, 8, 13, 10, 7, 14, 11, 6, 12, 9, 5, 10, 8])
+    enrollments_by_day: daysSeries('2026-07-21', [30, 29, 27, 26, 24, 23, 21, 20, 19, 17, 16, 16, 15, 14, 13, 13, 12, 11, 11, 10, 10, 9, 9, 8, 8, 8, 7, 7, 8, 7])
 };
 
 const winbackRuns: AutomationRun[] = [
@@ -151,7 +151,7 @@ const upgradeMetrics: AutomationRunMetrics = {
     completed: 320,
     exited_early: 31,
     last_enrolled_at: '2026-07-21T05:55:00Z',
-    enrollments_by_day: daysSeries('2026-07-21', [8, 11, 9, 13, 10, 7, 12, 15, 11, 9, 14, 12, 8, 13, 16, 10, 12, 9, 15, 11, 8, 13, 10, 14, 12, 9, 16, 11, 13, 10])
+    enrollments_by_day: daysSeries('2026-07-21', [9, 10, 10, 11, 11, 12, 11, 12, 13, 12, 13, 13, 12, 13, 14, 13, 13, 12, 13, 13, 12, 13, 14, 13, 13, 12, 13, 14, 13, 13])
 };
 
 const upgradeRuns: AutomationRun[] = [
