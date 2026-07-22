@@ -1,9 +1,9 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Banner, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldLabel, MultiSelectCombobox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Button as ShadeButton} from '@tryghost/shade/components';
-import {Hint, SettingGroupContent, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Banner, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, MultiSelectCombobox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Button as ShadeButton} from '@tryghost/shade/components';
 import {RefreshCw} from 'lucide-react';
+import {SettingGroupContent, showToast} from '@tryghost/admin-x-design-system';
 import {getSettingValues, isSettingReadOnly, useRegenerateAccessCode} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -200,7 +200,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             updateSetting('is_private', value === 'private');
                             handleEditingChange(true);
                         }}>
-                            <SelectTrigger aria-label='Who should be able to browse your site?' data-testid='site-visibility-select'><SelectValue>{getAccessOptionLabel(SITE_VISIBILITY_OPTIONS, effectiveIsPrivate ? 'private' : 'public')}</SelectValue></SelectTrigger>
+                            <SelectTrigger aria-label='Who should be able to browse your site?' className='border-transparent bg-muted hover:bg-muted' data-testid='site-visibility-select'><SelectValue>{getAccessOptionLabel(SITE_VISIBILITY_OPTIONS, effectiveIsPrivate ? 'private' : 'public')}</SelectValue></SelectTrigger>
                             <SelectContent>{renderAccessOptions(SITE_VISIBILITY_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
@@ -210,41 +210,40 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className="flex flex-col content-center items-center gap-4 md:flex-row md:items-start">
                     <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px] md:pt-3">What access code should visitors use?</div>
                     <div className="w-full md:flex-1">
-                        <TextField
-                            containerClassName={isPrivateLocked ? 'relative z-10' : undefined}
-                            data-testid='site-access-code'
-                            disabled={isPrivateLocked}
-                            error={!!errors.password}
-                            hint={errors.password}
-                            placeholder="Enter access code"
-                            rightPlaceholder={(
-                                <span className='flex h-full items-center'>
-                                    <button
+                        <Field className={isPrivateLocked ? 'relative z-10' : undefined} data-disabled={isPrivateLocked || undefined} data-invalid={Boolean(errors.password) || undefined}>
+                            <FieldLabel className='sr-only' htmlFor='site-access-code'>Access code</FieldLabel>
+                            <InputGroup className='border-transparent bg-muted' data-disabled={isPrivateLocked || undefined} data-invalid={Boolean(errors.password) || undefined}>
+                                <InputGroupInput
+                                    aria-invalid={Boolean(errors.password) || undefined}
+                                    data-testid='site-access-code'
+                                    disabled={isPrivateLocked}
+                                    id='site-access-code'
+                                    placeholder='Enter access code'
+                                    value={password || ''}
+                                    onChange={(e) => {
+                                        updateSetting('password', e.target.value);
+                                        handleEditingChange(true);
+                                    }}
+                                    onKeyDown={() => clearError('password')}
+                                />
+                                <InputGroupAddon align='inline-end'>
+                                    <InputGroupButton
                                         aria-label='Regenerate access code'
-                                        className='mr-[5px] flex size-5 cursor-pointer items-center justify-center p-0 text-grey-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-grey-400'
                                         data-testid='regenerate-access-code'
                                         disabled={isRegenerating}
-                                        title='Regenerate access code'
-                                        type='button'
+                                        size='icon-xs'
                                         onClick={handleRegenerateAccessCode}
                                     >
-                                        <RefreshCw aria-hidden={true} className='size-3.5' strokeWidth={1.5} />
-                                    </button>
-                                </span>
-                            )}
-                            title='Access code'
-                            value={password || ''}
-                            hideTitle
-                            onChange={(e) => {
-                                updateSetting('password', e.target.value);
-                                handleEditingChange(true);
-                            }}
-                            onKeyDown={() => clearError('password')}
-                        />
+                                        <RefreshCw aria-hidden={true} />
+                                    </InputGroupButton>
+                                </InputGroupAddon>
+                            </InputGroup>
+                            {errors.password && <FieldError>{errors.password}</FieldError>}
+                        </Field>
                         {privateRssUrl && !isPrivateLocked && (
-                            <Hint className='mt-2'>
-                                <>A private RSS feed is available <a className='text-green' href={privateRssUrl} rel="noopener noreferrer" target='_blank'>here</a></>
-                            </Hint>
+                            <FieldDescription className='mt-2'>
+                                A private RSS feed is available <a className='text-primary' href={privateRssUrl} rel="noopener noreferrer" target='_blank'>here</a>
+                            </FieldDescription>
                         )}
                     </div>
                 </div>
@@ -259,7 +258,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             updateSetting('members_signup_access', value);
                             handleEditingChange(true);
                         }}>
-                            <SelectTrigger aria-label='Who should be able to subscribe to your site?' data-testid='subscription-access-select'><SelectValue>{getAccessOptionLabel(MEMBERS_SIGNUP_ACCESS_OPTIONS, membersSignupAccess)}</SelectValue></SelectTrigger>
+                            <SelectTrigger aria-label='Who should be able to subscribe to your site?' className='border-transparent bg-muted hover:bg-muted' data-testid='subscription-access-select'><SelectValue>{getAccessOptionLabel(MEMBERS_SIGNUP_ACCESS_OPTIONS, membersSignupAccess)}</SelectValue></SelectTrigger>
                             <SelectContent>{renderAccessOptions(MEMBERS_SIGNUP_ACCESS_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
@@ -275,7 +274,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             updateSetting('default_content_visibility', value);
                             handleEditingChange(true);
                         }}>
-                            <SelectTrigger aria-label='Who should have access to new posts?' data-testid='default-post-access-select'><SelectValue>{getAccessOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility)}</SelectValue></SelectTrigger>
+                            <SelectTrigger aria-label='Who should have access to new posts?' className='border-transparent bg-muted hover:bg-muted' data-testid='default-post-access-select'><SelectValue>{getAccessOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility)}</SelectValue></SelectTrigger>
                             <SelectContent>{renderAccessOptions(DEFAULT_CONTENT_VISIBILITY_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
@@ -288,7 +287,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <Field>
                             <FieldLabel className='sr-only'>Select specific tiers</FieldLabel>
                             <Combobox open={tiersOpen} onOpenChange={setTiersOpen}>
-                                <ComboboxTrigger aria-label='Select specific tiers' data-testid='tiers-select'>
+                                <ComboboxTrigger aria-label='Select specific tiers' className='border-transparent bg-muted hover:bg-muted' data-testid='tiers-select'>
                                     <ComboboxValue placeholder={!selectedTierLabels}>{selectedTierLabels || 'Select...'}</ComboboxValue>
                                 </ComboboxTrigger>
                                 <ComboboxContent>
@@ -317,7 +316,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             updateSetting('comments_enabled', value);
                             handleEditingChange(true);
                         }}>
-                            <SelectTrigger aria-label='Who can comment on posts?' data-testid='commenting-select'><SelectValue>{getAccessOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled)}</SelectValue></SelectTrigger>
+                            <SelectTrigger aria-label='Who can comment on posts?' className='border-transparent bg-muted hover:bg-muted' data-testid='commenting-select'><SelectValue>{getAccessOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled)}</SelectValue></SelectTrigger>
                             <SelectContent>{renderAccessOptions(COMMENTS_ENABLED_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>

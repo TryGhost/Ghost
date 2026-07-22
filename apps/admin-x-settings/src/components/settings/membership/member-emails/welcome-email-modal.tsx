@@ -4,7 +4,8 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 
 import MemberEmailEditor from './member-email-editor';
 import WelcomeEmailPreviewFrame from './welcome-email-preview-frame';
-import {Hint, Button as LegacyButton, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {FieldError} from '@tryghost/shade/components';
+import {Button as LegacyButton, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {confirmIfDirty} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
@@ -291,7 +292,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                                 updateForm(state => ({...state, subject: nextSubject}));
                                             }}
                                         />
-                                        {errors.subject && <Hint className='mt-2' color='red'>{errors.subject}</Hint>}
+                                        {errors.subject && <FieldError className='mt-2'>{errors.subject}</FieldError>}
                                     </div>
                                 </div>
                             </div>
@@ -328,7 +329,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                             <WelcomeEmailPreviewFrame previewState={previewFrameState} />
                         )}
                     </EmailPreviewBody>
-                    {mode === 'edit' && errors.lexical && <Hint className='mt-2 max-w-[740px]' color='red'>{errors.lexical}</Hint>}
+                    {mode === 'edit' && errors.lexical && <FieldError className='mt-2 max-w-[740px]'>{errors.lexical}</FieldError>}
                 </div>
             </EmailPreviewModalContent>
         </Modal>

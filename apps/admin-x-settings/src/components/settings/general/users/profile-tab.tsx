@@ -1,8 +1,10 @@
 import ChangePasswordForm from './change-password-form';
 import RoleSelector from './role-selector';
 import StaffToken from './staff-token';
-import {SettingGroup, SettingGroupContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldDescription, FieldError, FieldLabel, Textarea} from '@tryghost/shade/components';
+import {SettingGroup, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
 import {type UserDetailProps} from '../user-detail-modal';
+import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -56,16 +58,21 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUs
                     setUserData({...user, location: e.target.value});
                 }}
                 onKeyDown={() => clearError('location')} />
-            <TextArea
-                error={!!errors?.bio}
-                hint={errors?.bio || <>Recommended: 250 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
-                maxLength={65535}
-                title="Bio"
-                value={user.bio || ''}
-                onChange={(e) => {
-                    setUserData({...user, bio: e.target.value});
-                }}
-                onKeyDown={() => clearError('bio')} />
+            <Field data-invalid={Boolean(errors?.bio) || undefined}>
+                <FieldLabel htmlFor='staff-bio'>Bio</FieldLabel>
+                <Textarea
+                    aria-invalid={Boolean(errors?.bio) || undefined}
+                    className='border-transparent bg-muted'
+                    id='staff-bio'
+                    maxLength={65535}
+                    value={user.bio || ''}
+                    onChange={(e) => {
+                        setUserData({...user, bio: e.target.value});
+                    }}
+                    onKeyDown={() => clearError('bio')}
+                />
+                {errors?.bio ? <FieldError>{errors.bio}</FieldError> : <FieldDescription>Recommended: {formatNumber(250)} characters. You&lsquo;ve used <span className='font-bold'>{formatNumber(user.bio?.length || 0)}</span></FieldDescription>}
+            </Field>
             {user.id === currentUser.id && <StaffToken />}
         </SettingGroupContent>
     );

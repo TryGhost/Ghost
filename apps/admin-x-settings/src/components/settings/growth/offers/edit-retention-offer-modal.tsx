@@ -2,8 +2,8 @@ import PortalFrame from '../../membership/portal/portal-frame';
 import SettingsBreadcrumbs from '../../settings-breadcrumbs';
 import toast from 'react-hot-toast';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldContent, FieldDescription, FieldLabel, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
-import {Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldLabel, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea} from '@tryghost/shade/components';
+import {Form, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useAddOffer, useBrowseOffers, useEditOffer, useInvalidateOffers} from '@tryghost/admin-x-framework/api/offers';
 import {createOfferRedemptionsFilterUrl, formatOfferTimestamp, generateRetentionOfferName} from './offer-helpers';
@@ -255,15 +255,19 @@ const RetentionOfferSidebar: React.FC<{
                                         updateForm(state => ({...state, displayTitle: e.target.value}));
                                     }}
                                 />
-                                <TextArea
-                                    maxLength={MAX_DISPLAY_TEXT_LENGTH}
-                                    placeholder='We&#39;d hate to see you leave. How about a special offer to stay?'
-                                    title='Display description'
-                                    value={formState.displayDescription}
-                                    onChange={(e) => {
-                                        updateForm(state => ({...state, displayDescription: e.target.value}));
-                                    }}
-                                />
+                                <Field>
+                                    <FieldLabel htmlFor='retention-display-description'>Display description</FieldLabel>
+                                    <Textarea
+                                        className='border-transparent bg-muted'
+                                        id='retention-display-description'
+                                        maxLength={MAX_DISPLAY_TEXT_LENGTH}
+                                        placeholder='We&#39;d hate to see you leave. How about a special offer to stay?'
+                                        value={formState.displayDescription}
+                                        onChange={(e) => {
+                                            updateForm(state => ({...state, displayDescription: e.target.value}));
+                                        }}
+                                    />
+                                </Field>
                             </div>
                         </section>
                         <section className='mt-4'>

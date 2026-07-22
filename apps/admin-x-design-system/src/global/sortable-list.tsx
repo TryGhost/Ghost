@@ -4,8 +4,8 @@ import {CSS} from '@dnd-kit/utilities';
 import clsx from 'clsx';
 import React, {ElementType, HTMLProps, ReactNode, useState} from 'react';
 import Heading from './heading';
-import Hint from './hint';
 import Icon from './icon';
+import LegacyHint from './legacy-hint';
 import Separator from './separator';
 
 export interface SortableItemContainerProps {
@@ -167,7 +167,7 @@ const SortableList = <Item extends {id: string}>({
             {hint &&
             <>
                 {!itemSeparator && <Separator />}
-                <Hint>{hint}</Hint>
+                <LegacyHint className='mt-1'>{hint}</LegacyHint>
             </>
             }
         </div>

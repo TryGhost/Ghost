@@ -8,7 +8,6 @@ import ViewContainer from './view-container';
 import {testColumns, testRows} from '../table/dynamic-table.stories';
 import {exampleActions as exampleActionButtons} from './view-container.stories';
 import DynamicTable from '../table/dynamic-table';
-import Hint from '../hint';
 import Heading from '../heading';
 import {tableRowHoverBgClasses} from '../table-row';
 import Button from '../button';
@@ -124,7 +123,7 @@ const simpleList = <ViewContainer
 >
     <DynamicTable
         columns={testColumns}
-        footer={<Hint>Just a regular table footer</Hint>}
+        footer={<span>Just a regular table footer</span>}
         pageHasSidebar={false}
         rows={testRows(100)}
     />
@@ -147,7 +146,7 @@ const stickyList = <ViewContainer
 >
     <DynamicTable
         columns={testColumns}
-        footer={<Hint>Sticky footer</Hint>}
+        footer={<span>Sticky footer</span>}
         pageHasSidebar={false}
         rows={testRows(40)}
         stickyFooter
@@ -179,7 +178,7 @@ const examplePrimaryAction = <ViewContainer
 >
     <DynamicTable
         columns={testColumns}
-        footer={<Hint>Sticky footer</Hint>}
+        footer={<span>Sticky footer</span>}
         pageHasSidebar={false}
         rows={testRows(40)}
         stickyFooter
@@ -213,7 +212,7 @@ const exampleActionsContent = <ViewContainer
 >
     <DynamicTable
         columns={testColumns}
-        footer={<Hint>Sticky footer</Hint>}
+        footer={<span>Sticky footer</span>}
         pageHasSidebar={false}
         rows={testRows(40)}
         stickyFooter
