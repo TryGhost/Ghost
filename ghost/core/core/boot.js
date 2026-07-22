@@ -575,6 +575,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
     }
 
     try {
+        // TEMP: force a fatal boot error to validate the Elasticsearch log flush
+        // path in Pro. Remove before merging. Only fires where PRO_ENV is set.
+        if (process.env.PRO_ENV) {
+            // eslint-disable-next-line ghost/ghost-custom/no-native-error
+            throw new Error('TEMP forced boot error to validate logging flush');
+        }
+
         // Step 1 - require more fundamental components
 
         // Sentry must be initialized early, but requires config
