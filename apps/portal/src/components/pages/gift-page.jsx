@@ -63,20 +63,17 @@ export const GiftPageStyles = `
     width: 100%;
 }
 
+/* The left column vertically centres its content (like production): short
+   content sits in the middle, and as content grows it expands into the space
+   above/below. The column grows with its content (min-height, no fixed height),
+   so tall content simply scrolls rather than clipping. */
 .gh-portal-gift-checkout-left {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--white);
-    padding: 40px 48px;
-}
-
-/* Selection/delivery steps: top-align the content so the copy sits high and
-   makes full use of the vertical space, rather than floating dead-centre. */
-.gh-portal-content.gift .gh-portal-gift-checkout-left {
-    align-items: flex-start;
-    padding-top: 32px;
+    padding: 48px;
 }
 
 .gh-portal-gift-checkout-bg {
@@ -90,6 +87,11 @@ export const GiftPageStyles = `
     max-width: 496px;
     display: flex;
     flex-direction: column;
+    /* Vertically centre within the column via auto margins rather than
+       align-items: centering a flex child clips (and can't scroll to) any
+       overflow, whereas auto margins collapse to 0 when content is taller than
+       the viewport, so tall content simply scrolls with the top reachable. */
+    margin-block: auto;
 }
 
 .gh-portal-gift-checkout-header {
@@ -99,7 +101,7 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-header .gh-portal-main-title {
     text-align: start;
     margin: 0 0 8px;
-    font-size: 2.8rem;
+    font-size: 3.2rem;
     line-height: 1.15;
 }
 
