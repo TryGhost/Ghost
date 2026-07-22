@@ -39,19 +39,22 @@ describe("Shade settings chrome", () => {
         }
         await expect.element(settingsScreen.navItem("Design & branding")).toBeVisible();
 
-        // The general and site areas are rebuilt natively; the rest still
-        // render placeholders.
+        // The general, site and membership areas are rebuilt natively; the
+        // rest still render placeholders.
         await expect.element(settingsScreen.section("settings-area-general")).toBeVisible();
         await expect.element(settingsScreen.titleAndDescription()).toBeVisible();
         await expect(settingsScreen.section("settings-area-general-placeholder")).toHaveCount(0);
         await expect.element(settingsScreen.section("settings-area-site")).toBeVisible();
         await expect.element(settingsScreen.design()).toBeVisible();
         await expect(settingsScreen.section("settings-area-site-placeholder")).toHaveCount(0);
-        for (const area of ["membership", "email", "growth", "advanced"]) {
+        await expect.element(settingsScreen.section("settings-area-membership")).toBeVisible();
+        await expect.element(settingsScreen.access()).toBeVisible();
+        await expect(settingsScreen.section("settings-area-membership-placeholder")).toHaveCount(0);
+        for (const area of ["email", "growth", "advanced"]) {
             await expect.element(settingsScreen.section(`settings-area-${area}`)).toBeVisible();
             await expect.element(settingsScreen.section(`settings-area-${area}-placeholder`)).toBeVisible();
         }
-        await expect.element(settingsScreen.section("settings-area-membership-placeholder")).toHaveTextContent("#/settings/members");
+        await expect.element(settingsScreen.section("settings-area-email-placeholder")).toHaveTextContent("#/settings/enable-newsletters");
     });
 
     it("filters the sidebar and sections by keyword and shows the no-result state", async () => {
@@ -128,7 +131,7 @@ describe("Shade settings chrome", () => {
 
     it("redirects not-yet-rebuilt deep links to the settings index", async () => {
         fakeSettingsScreens();
-        await renderAdminApp("/settings/portal/edit", { labs: SHADE_LABS });
+        await renderAdminApp("/settings/newsletters/new", { labs: SHADE_LABS });
 
         await expect.poll(currentRoute).toBe("/settings");
         await expect.element(settingsScreen.sidebar()).toBeVisible();

@@ -70,7 +70,8 @@ export function ConfirmationProvider({ children }: { children: ReactNode }) {
     const okLabel = isLimit
         ? "Upgrade"
         : (running && active?.options.okRunningLabel) || active?.options.okLabel;
-    const cancelLabel = (!isLimit && active?.options.cancelLabel) || "Cancel";
+    // An empty label hides its button (single-button notices / blocked actions).
+    const cancelLabel = isLimit || active?.options.cancelLabel === undefined ? "Cancel" : active.options.cancelLabel;
     const destructive = !isLimit && Boolean(active?.options.destructive);
 
     return (
@@ -85,14 +86,16 @@ export function ConfirmationProvider({ children }: { children: ReactNode }) {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <Button disabled={running} variant="outline" onClick={close}>{cancelLabel}</Button>
-                        <Button
-                            disabled={running}
-                            variant={destructive ? "destructive" : "default"}
-                            onClick={() => void handleOk()}
-                        >
-                            {okLabel}
-                        </Button>
+                        {cancelLabel !== "" && <Button disabled={running} variant="outline" onClick={close}>{cancelLabel}</Button>}
+                        {okLabel !== "" && (
+                            <Button
+                                disabled={running}
+                                variant={destructive ? "destructive" : "default"}
+                                onClick={() => void handleOk()}
+                            >
+                                {okLabel}
+                            </Button>
+                        )}
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

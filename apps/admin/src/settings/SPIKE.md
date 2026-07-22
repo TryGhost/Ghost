@@ -116,9 +116,9 @@ For each area (one agent per area, in its own `src/settings/<area>/` files):
 
 | Area              | Status  | Suites opted in | Notes |
 | ----------------- | ------- | --------------- | ----- |
-| general (+staff)  | done    | title-and-description, time-zone, publication-language, seo-meta, social-accounts, staff-profile, staff-roles, staff-password, staff-security, staff-invitations, staff-actions, layout (portal test legacy-only) | See "General area notes" below |
+| general (+staff)  | done    | title-and-description, time-zone, publication-language, seo-meta, social-accounts, staff-profile, staff-roles, staff-password, staff-security, staff-invitations, staff-actions, layout | See "General area notes" below |
 | site              | done    | design, theme, navigation, announcement-bar, search | See "Site area notes" below |
-| membership        | pending | —               |       |
+| membership        | done    | access, tiers, stripe, portal, membership-settings, custom-fields, member-welcome-emails (automations test flag-off only), layout portal test un-skipped | See "Membership area notes" below |
 | email             | pending | —               |       |
 | growth            | pending | —               |       |
 | advanced          | pending | —               |       |
@@ -186,10 +186,9 @@ Locale data from `@tryghost/i18n/lib/locale-data.json`; timezones from
 - The 11 general/staff suites: `enableShadeSettingsMode()` + folding
   `shadeSettingsBootLabs()` into hand-rolled settings/config boot responses.
   No assertion changed.
-- `layout.acceptance.test.tsx`: opted in; its portal-modal test is
-  `it.skipIf(isShadeSettingsRun)` — the portal modal belongs to the
-  membership area (not rebuilt), so `/settings/portal/edit` still redirects
-  flag-on. Membership agent: un-skip when the portal modal lands.
+- `layout.acceptance.test.tsx`: opted in; its portal-modal test was
+  `it.skipIf(isShadeSettingsRun)` until the membership area landed — phase 4
+  un-skipped it.
 - `chrome.acceptance.test.tsx`: general placeholder assertions replaced with
   native-area assertions; every test now calls `fakeSettingsScreens()`
   because the native general area fires the users/invites/roles requests.
@@ -300,7 +299,8 @@ IDE surface styling is untouched (hex colors intentionally, not tokens).
   site groups existed — group-level keyword hiding now covers it).
 - `chrome.acceptance.test.tsx`: site placeholder assertions replaced with
   native-area assertions; the placeholder-content probe moved to the
-  membership area (`#/settings/members`). Membership agent: move it again.
+  membership area (`#/settings/members`) — phase 4 moved it on to the email
+  area.
 - `area-section.tsx` now hides filtered-out sections with the `hidden`
   class instead of unmounting them — the search suite asserts hidden groups
   still exist in the DOM (legacy contract); the chrome suite's
@@ -337,6 +337,130 @@ IDE surface styling is untouched (hex colors intentionally, not tokens).
 - react-router keeps `%2F` inside a path param (decoded to `/`): guard
   params for embedded slashes and add a splat redirect
   (`theme/edit/*` → `/settings/theme`) for real extra segments.
+
+## Membership area notes (phase 4)
+
+**Structure.** Area component `src/settings/membership/membership-area.tsx`
+(registered in `AREA_COMPONENTS`): access, spam filters, tiers, portal, gift
+subscriptions, welcome emails (automations off), tips & donations (Stripe +
+donations on), custom fields (`membersCustomFields` flag) — the same groups
+in the same order the legacy membership-settings.tsx composes, including the
+cross-area ones (spam filters from advanced/, tips from growth/). Routed
+dialogs registered in settings-app.tsx (legacy deep links keep working
+flag-on): `portal/edit`, `tiers/add`, `tiers/:tierId`, `stripe-connect`.
+
+**Boundary notes for the email and growth agents:**
+
+- The membership sidebar group also contains the Email/Newsletters nav item,
+  but everything it points at is the **email area** — not touched here.
+- **Welcome emails (memberemails) is membership's**: nav.ts puts it in the
+  Membership group, so the full member-emails port (rows, welcome email
+  editor modal, customize dialog) landed in this phase. ONE test stayed
+  flag-off-only: "saves shared sender settings without creating rows when
+  automations owns them" opens the customize modal from the automations-on
+  email area (`/settings/emails`) — `it.skipIf(isShadeSettingsRun)` with a
+  comment; **email agent: un-skip it** when the emails section lands. The
+  native customize dialog (`welcome-email-customize-dialog.tsx`) is written
+  to be reusable from the email area (no membership-specific coupling).
+- The access suite's "disables dependent settings" test asserts on the
+  enable-newsletters group; that one assertion is guarded with
+  `if (!isShadeSettingsRun)` — **email agent: drop the guard**.
+- **Tips & donations**: the group component is ported here
+  (`tips-and-donations-group.tsx`, renders in the membership area), but its
+  acceptance suite lives in `src/settings/growth/` — **growth agent: opt it
+  in**; the section itself should already pass.
+- `membership/analytics.acceptance.test.tsx` remains NOT opted in (its last
+  test targets migrationtools) — still the advanced agent's, as noted under
+  the general area.
+
+**Portal preview mechanism ported as-is.** `getPortalPreviewUrl` (the portal
+script iframe params) is imported from legacy source
+(`utils/get-portal-preview-url`, new subpath export), fed from the dialog's
+form state so the iframe re-renders on every setting/tier change;
+`portal-frame.tsx` ports the `portal-preview-ready` postMessage reveal. The
+portal dialog runs on the shared `PreviewDialog` chrome with synced sidebar
+and preview tabs; the Links tab renders the copyable-URLs page in the
+preview pane. The signup-notice Koenig field reuses the site area's
+`AnnouncementContentEditor` (same MINIMAL_NODES HtmlOutputPlugin lane).
+
+**Tiers.** Cards grid on semantic tokens (TrialDaysLabel pill and the cards
+rebuilt; old-DS Icon/clsx leftovers gone), active/archived shade Tabs, and
+the tier detail dialog with dnd-kit benefits reordering via a local port of
+the old-DS `useSortableIndexedList` (the pending new-benefit row folds into
+form state, so Save includes an un-added benefit — the legacy contract).
+Currency helpers (`utils/currency`) and `use-currency-input` are imported
+from legacy source via new subpath exports, not duplicated.
+
+**Stripe connect** (`stripe-connect-dialog.tsx`) covers all four legacy
+states: Start (branded StripeButton, local `stripe-buttons.tsx`), Connect
+(test-mode switch on the `/members/stripe_connect?mode=` link, token paste,
+tier-save poll on STRIPE_NOT_CONFIGURED), Connected (disconnect flow with
+the paid-members check), and Stripe Direct keys. Limit checks: route-level
+`errorIfWouldGoOverLimit('limitStripeConnect')` shows the shared limit
+modal and bounces to `/settings/tiers`; already-connected sites bypass the
+limit (same as the tiers-group entry button).
+
+**Welcome emails.** The section reuses the native automations email-modal
+machinery (`@/automations/components/email-modal/*`: EmailEditor with the
+direct-ESM Koenig import, validation) plus welcome-specific ports
+(`use-welcome-email-preview.ts` with the stale-response guard,
+`welcome-email-preview-frame.tsx`, `welcome-email-test-dropdown.tsx`) and
+`@/automations` hooks/utils for sender details + default records. The modal
+is the automations pattern: **non-modal Dialog + inert body siblings** (a
+Radix modal would fight Koenig's body portals), Escape guarded for
+`[data-kg-link-input]`/`[data-kg-portal]` focus. The customize dialog
+imports the legacy email-design fields/preview from admin-x-settings source
+and rebuilds only the NiceModal chrome (EmailDesignModal/DirtyConfirmModal)
+natively, keeping the `welcome-email-dirty-confirm-modal` testid.
+
+**Shared infra touched:**
+
+- `confirmation.tsx`: `okLabel`/`cancelLabel` of `""` now hide their button
+  — the legacy ConfirmationModal single-button contract (portal
+  verify-address notices, blocked-disconnect prompt).
+- `shade-provider.tsx` (apps/shade): the sonner ToasterPortal wrapper gets
+  `pointerEvents: 'auto'` so toasts stay dismissable while a Radix modal
+  dialog is open (Radix sets `pointer-events: none` on the body; the tiers
+  suite dismisses the archive toast over the open tier dialog).
+- New admin-x-settings subpath exports: `utils/currency`,
+  `utils/get-portal-preview-url`, `hooks/use-currency-input`,
+  `email-design/types`, `email-design/design-fields`.
+
+**Suite adjustments (mode mechanics unless noted):**
+
+- access, tiers, stripe, portal, membership-settings, custom-fields,
+  member-welcome-emails: `enableShadeSettingsMode()` + folding
+  `shadeSettingsBootLabs()` into every hand-rolled settings/config boot
+  response. No assertion changed.
+- access: the enable-newsletters assertion guard (see boundary notes).
+- member-welcome-emails: the automations-on test skip (see boundary notes).
+- `layout.acceptance.test.tsx`: portal-modal test un-skipped — passes
+  flag-on against the native portal dialog.
+- `chrome.acceptance.test.tsx`: membership placeholder assertions replaced
+  with native-area assertions; the placeholder-content probe moved to the
+  email area (`#/settings/enable-newsletters`) — **email agent: move it
+  again**; the not-yet-rebuilt deep-link probe moved from
+  `/settings/portal/edit` (now real) to `/settings/newsletters/new`.
+
+**Gotchas found (email agent, read these):**
+
+- **Toasts under Radix modal dialogs**: sonner toasts render below-left and
+  Radix modals disable body pointer events. The shade ToasterPortal now
+  opts back in (`pointerEvents: 'auto'`), but a dialog must also
+  `event.preventDefault()` in `onInteractOutside` when
+  `event.target.closest("[data-sonner-toaster]")` — otherwise dismissing a
+  toast closes the dialog (see tier-detail-dialog.tsx).
+- **Full-screen Koenig editors**: copy the automations email-modal pattern
+  wholesale (non-modal Dialog + inert siblings + Escape guards +
+  onInteractOutside preventDefault). The shared ConfirmationProvider's
+  AlertDialog still works from inside it — its portal mounts as a fresh
+  body child after the inert pass.
+- The welcome-email machinery in `@/automations` is directly reusable;
+  don't re-port it. The only differences for a new consumer are the API
+  mutations (preview/test/save endpoints) and testids.
+- `checkStripeEnabled` needs config — gate group/dialog components on BOTH
+  `useBrowseSettings` and `useBrowseConfig` data before first render or
+  Stripe-dependent UI flashes the disconnected state.
 
 ## Chrome behavior ported (phase 1)
 

@@ -9,6 +9,9 @@ import { ConfirmationProvider } from "./shared/confirmation";
 import { SettingsDirtyProvider } from "./shared/dirty";
 import { InviteUserDialog } from "@/settings/general/invite-user-dialog";
 import { UserDetailDialog } from "@/settings/general/user-detail-dialog";
+import { PortalDialog } from "@/settings/membership/portal-dialog";
+import { StripeConnectDialog } from "@/settings/membership/stripe-connect-dialog";
+import { TierDetailDialog } from "@/settings/membership/tier-detail-dialog";
 import { AnnouncementBarDialog } from "@/settings/site/announcement-bar-dialog";
 import { ChangeThemeDialog } from "@/settings/site/change-theme-dialog";
 import { DesignDialog } from "@/settings/site/design-dialog";
@@ -27,8 +30,10 @@ import { ThemeCodeEditorDialog } from "@/settings/site/theme-code-editor-dialog"
  * - site-area dialogs: `design/edit`, `design/change-theme`,
  *   `theme/install`, `theme/edit/:themeName`, `navigation/edit`,
  *   `announcement-bar/edit`
- * - anything deeper or unknown (routes whose screens haven't been rebuilt,
- *   like `/settings/portal/edit`) redirects to `/settings`
+ * - membership-area dialogs: `portal/edit`, `tiers/add`, `tiers/:tierId`,
+ *   `stripe-connect`
+ * - anything deeper or unknown (routes whose screens haven't been rebuilt)
+ *   redirects to `/settings`
  *
  * Rendered through a portal with the same wrapper as the legacy settings
  * app (src/settings/settings.tsx) so the full-screen takeover stacks
@@ -72,6 +77,10 @@ export default function ShadeSettingsApp() {
                                 <Route element={<Navigate to="/settings/theme" replace />} path="theme/edit/*" />
                                 <Route element={<NavigationDialog />} path="navigation/edit" />
                                 <Route element={<AnnouncementBarDialog />} path="announcement-bar/edit" />
+                                <Route element={<PortalDialog />} path="portal/edit" />
+                                <Route element={<TierDetailDialog />} path="tiers/add" />
+                                <Route element={<TierDetailDialog />} path="tiers/:tierId" />
+                                <Route element={<StripeConnectDialog />} path="stripe-connect" />
                                 <Route element={<AreaRoute />} path=":area" />
                                 <Route element={<Navigate to="/settings" replace />} path="*" />
                             </Route>

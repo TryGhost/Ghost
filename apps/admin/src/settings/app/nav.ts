@@ -67,7 +67,7 @@ export const siteKeywords = {
     announcementBar: ["site", "announcement bar", "important", "banner"],
 };
 
-const membershipKeywords = {
+export const membershipKeywords = {
     access: ["membership", "default", "access", "subscription", "post", "membership", "comments", "commenting", "signup", "sign up", "spam", "filters", "prevention", "prevent", "block", "domains", "email", "password protection", "lock site", "private site", "private site mode", "make this site private"],
     tiers: ["membership", "tiers", "payment", "paid", "stripe"],
     portal: ["membership", "portal", "signup", "sign up", "signin", "sign in", "login", "account", "membership", "support", "email", "address", "support email address", "support address"],

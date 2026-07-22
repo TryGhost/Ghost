@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { currentRoute, enableShadeSettingsMode, fakeSettingsScreens, fakeTiers, isShadeSettingsRun, renderAdminApp, settingsResponse, shadeSettingsBootLabs, tier } from "@test-utils/acceptance";
+import { currentRoute, enableShadeSettingsMode, fakeSettingsScreens, fakeTiers, renderAdminApp, settingsResponse, shadeSettingsBootLabs, tier } from "@test-utils/acceptance";
 import { settingsScreen } from "./settings.screen";
 
 enableShadeSettingsMode();
@@ -50,9 +50,7 @@ describe("Settings layout", () => {
         await expect.poll(currentRoute).toBe("/settings");
     });
 
-    // The portal modal belongs to the membership area, which isn't rebuilt
-    // yet — flag-on runs redirect /settings/portal/edit to the index.
-    it.skipIf(isShadeSettingsRun)("closes a modal dropdown with Escape without closing the modal", async () => {
+    it("closes a modal dropdown with Escape without closing the modal", async () => {
         fakeSettingsScreens();
         fakeTiers([tier({name: "Supporter"})]);
         await renderAdminApp("/settings/portal/edit", {

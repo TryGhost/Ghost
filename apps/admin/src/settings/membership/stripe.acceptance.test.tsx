@@ -2,15 +2,19 @@ import {describe, expect, it} from "vitest";
 
 import {
     configResponse,
+    enableShadeSettingsMode,
     fakeAdminEndpoint,
     fakeEditSettings,
     fakeSettingsScreens,
     fakeTiers,
     renderAdminApp,
     settingsResponse,
+    shadeSettingsBootLabs,
     tier,
 } from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 const freeTier = tier({id: "645453f4d254799990dd0e21", name: "Free", slug: "free", type: "free"});
 
@@ -57,7 +61,7 @@ describe("Stripe settings", () => {
     });
 
     it("saves Stripe Direct keys", async () => {
-        const config = configResponse();
+        const config = configResponse({labs: shadeSettingsBootLabs()});
         config.config.stripeDirect = true;
         fakeSettingsScreens();
         const settingsApi = fakeEditSettings();

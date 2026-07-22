@@ -9,9 +9,11 @@ import { type ReactNode, createContext, useContext } from "react";
 export interface ConfirmOptions {
     title: ReactNode;
     prompt: ReactNode;
+    /** An empty string hides the OK button (the legacy ConfirmationModal contract). */
     okLabel: string;
     /** Label shown while an async `onOk` is in flight (e.g. "Suspending..."). */
     okRunningLabel?: string;
+    /** An empty string hides the cancel button (single-button notices). */
     cancelLabel?: string;
     destructive?: boolean;
     /** The dialog closes when this resolves; it stays open if it throws. */

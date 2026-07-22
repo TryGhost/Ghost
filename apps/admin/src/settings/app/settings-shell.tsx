@@ -9,6 +9,7 @@ import { SettingsSidebar } from "./sidebar";
 import { confirmIfDirty, useConfirmation } from "./shared/use-confirmation";
 import { useSettingsDirty } from "./shared/use-settings-dirty";
 import { GeneralArea } from "@/settings/general/general-area";
+import { MembershipArea } from "@/settings/membership/membership-area";
 import { SiteArea } from "@/settings/site/site-area";
 
 /**
@@ -25,6 +26,7 @@ import { SiteArea } from "@/settings/site/site-area";
 const AREA_COMPONENTS: Partial<Record<SettingsAreaId, ComponentType>> = {
     general: GeneralArea,
     site: SiteArea,
+    membership: MembershipArea,
 };
 
 // Shade/Radix dialogs expose their open state via dialog roles — when one is
