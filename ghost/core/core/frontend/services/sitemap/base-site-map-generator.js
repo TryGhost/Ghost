@@ -22,8 +22,27 @@ class BaseSiteMapGenerator {
         this.maxPerPage = 50000;
     }
 
-    hasCanonicalUrl(datum) {
-        return Boolean(datum?.canonical_url);
+    hasCanonicalUrl(datum, url) {
+        if (!datum?.canonical_url) {
+            return false;
+        }
+
+        // Sitemap data comes from raw knex queries which bypass model-layer
+        // attribute transforms, so canonical_url may still be transform-ready
+        // (__GHOST_URL__/...) and must be made absolute before comparing
+        const canonicalUrl = urlUtils.transformReadyToAbsolute(datum.canonical_url);
+
+        const normalizeUrl = (value) => {
+            const normalizedUrl = new URL(value);
+            normalizedUrl.pathname = normalizedUrl.pathname.replace(/\/+$/, '');
+            return normalizedUrl.href;
+        };
+
+        try {
+            return normalizeUrl(canonicalUrl) !== normalizeUrl(url);
+        } catch {
+            return canonicalUrl !== url;
+        }
     }
 
     generateXmlFromNodes(page) {
@@ -83,7 +102,7 @@ class BaseSiteMapGenerator {
         const lastModified = this.getLastModifiedForDatum(datum);
         const node = this.createUrlNodeFromDatum(url, datum, lastModified);
 
-        if (node && !this.hasCanonicalUrl(datum)) {
+        if (node && !this.hasCanonicalUrl(datum, url)) {
             this.updateLastModified(datum, lastModified);
             this.updateLookups(datum, node, lastModified);
             // force regeneration of xml
