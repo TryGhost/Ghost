@@ -48,7 +48,11 @@ const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings}) => {
     }, []);
 
     return (
-        <div ref={containerRef} className='size-full overflow-hidden bg-white dark:bg-black'>
+        // self-stretch (not h-full) so the box gets a definite height from the
+        // preview area's `items-center` flex wrapper; otherwise height:100%
+        // doesn't resolve and the derived frame height feeds back on itself,
+        // pushing the (vertically centred) page content out of view.
+        <div ref={containerRef} className='w-full self-stretch overflow-hidden bg-white dark:bg-black'>
             {frame.scale > 0 && (
                 <div
                     style={{
