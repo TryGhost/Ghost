@@ -4,8 +4,8 @@ import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 
 // EXPERIMENTAL / PROTOTYPE — an alternative to the fixed duration checkboxes.
 // The publisher composes up to MAX_DURATIONS of their own (e.g. "2 months",
-// "2 years"); each duration's price field is pre-filled with the derived default
-// and can be edited, with a per-tier reset. State is local and NOT persisted.
+// "2 years"); each duration's price field shows the derived default as a grey
+// placeholder and can be overridden, with a per-tier reset. NOT persisted.
 const MAX_DURATIONS = 4;
 
 interface EditableDuration {
@@ -167,7 +167,7 @@ const GiftDurationsPrototype: React.FC<{
 
             <div className='mt-6'>
                 <Heading level={6}>Pricing</Heading>
-                <p className='mt-1 mb-4 text-sm text-grey-700'>Each duration is pre-filled with its default price. Edit any field to set your own, or reset a tier back to the defaults.</p>
+                <p className='mt-1 mb-4 text-sm text-grey-700'>The default price (shown in grey) is worked out from the tier&apos;s plans: whole-year durations use the yearly price, and every other duration uses the monthly price × the number of months. Type to set your own, or reset a tier back to the defaults.</p>
                 {tiers.length === 0 && (
                     <p className='text-sm text-grey-600'>Add a paid tier to set pricing.</p>
                 )}
