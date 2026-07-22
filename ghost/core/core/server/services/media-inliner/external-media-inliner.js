@@ -37,7 +37,7 @@ class ExternalMediaInliner {
      * @param {Object} deps.PostMetaModel - PostMeta model
      * @param {Object} deps.TagModel - Tag model
      * @param {Object} deps.UserModel - User model
-     * @param {(extension) => import('ghost-storage-base')} deps.getMediaStorage - getMediaStorage
+     * @param {(extension) => import('ghost-storage-base').StorageBase} deps.getMediaStorage - getMediaStorage
      */
     constructor(deps) {
         this.#PostModel = deps.PostModel;
