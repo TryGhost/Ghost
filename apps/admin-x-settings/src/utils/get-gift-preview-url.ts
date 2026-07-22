@@ -1,19 +1,22 @@
 import {type Config} from '@tryghost/admin-x-framework/api/config';
 import {type Setting, checkStripeEnabled, getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {type SiteData} from '@tryghost/admin-x-framework/api/site';
+import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 
 export type giftPreviewUrlTypes = {
     settings: Setting[];
+    tiers?: Tier[];
     config: Config;
     siteData: SiteData | null;
 };
 
 // Builds a Portal preview URL that renders the gift page (`page=gift`) with the
 // draft gift settings applied on top of the real site data — so heading,
-// description, image and offered durations update live as they're edited. Real
-// tiers/prices carry through from the members site API (see app.jsx fetchData),
-// so only the gift-specific customization needs to be passed here.
-export const getGiftPreviewUrl = ({settings, config, siteData}: giftPreviewUrlTypes): string | null => {
+// description, image and offered durations update live as they're edited. Tiers
+// carry through from the members site API (see app.jsx fetchData), but unsaved
+// per-duration gift-price overrides are passed as `giftPrices` so the preview
+// reflects price edits live too.
+export const getGiftPreviewUrl = ({settings, tiers, config, siteData}: giftPreviewUrlTypes): string | null => {
     if (!siteData?.url) {
         return null;
     }
@@ -40,6 +43,20 @@ export const getGiftPreviewUrl = ({settings, config, siteData}: giftPreviewUrlTy
     params.append('giftPageImage', encodeURIComponent(getSettingValue(settings, 'gift_page_image') || ''));
     params.append('giftDurations', encodeURIComponent(getSettingValue(settings, 'gift_durations') || '[1,12]'));
     params.append('giftTiers', encodeURIComponent(getSettingValue(settings, 'gift_tiers') || '[]'));
+
+    // Pass unsaved per-duration price overrides ({ tierId: { months: cents } })
+    // for any tier that has them, so edits show in the preview before saving.
+    if (tiers?.length) {
+        const giftPrices = tiers.reduce<Record<string, Record<string, number | null>>>((acc, tier) => {
+            if (tier.gift_prices && Object.keys(tier.gift_prices).length > 0) {
+                acc[tier.id] = tier.gift_prices;
+            }
+            return acc;
+        }, {});
+        if (Object.keys(giftPrices).length > 0) {
+            params.append('giftPrices', encodeURIComponent(JSON.stringify(giftPrices)));
+        }
+    }
 
     params.append('disableBackground', 'false');
     params.append('admin_toolbar', '0');

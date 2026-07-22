@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "{amount} avslag den første {period}.",
     "{amount} off forever.": "{amount} avslag for alltid.",
     "{discount}% discount": "% rabatt",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} vil ikkje lenger motta {newsletterName} nyheitsbrev.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} vil ikkje lenger motta e-post når nokon svarar på kommentarar.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} vil ikkje lenger motta dette nyheitsbrevet.",

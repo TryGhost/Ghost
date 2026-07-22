@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "首{period}享 {amount} 折扣優惠",
     "{amount} off forever.": "永久享 {amount} 折扣優惠",
     "{discount}% discount": "{discount}% 折扣",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} 將不再收到{newsletterName}的電子報。",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} 將不會再收到評論回覆提醒郵件。",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} 將不會再收到該電子報。",

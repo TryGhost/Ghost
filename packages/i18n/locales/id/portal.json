@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "Diskon {amount} untuk {period} pertama.",
     "{amount} off forever.": "Diskon {amount} selamanya.",
     "{discount}% discount": "Diskon {discount}%",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} tidak akan menerima buletin {newsletterName} lagi.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} tidak akan menerima email lagi ketika seseorang membalas komentar Anda.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} tidak akan menerima buletin ini lagi.",

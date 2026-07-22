@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "{amount} έκπτωση για την πρώτη {period}.",
     "{amount} off forever.": "{amount} έκπτωση για πάντα.",
     "{discount}% discount": "{discount}% έκπτωση",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "Το {memberEmail} δεν θα λαμβάνει πλέον το ενημερωτικό δελτίο {newsletterName}.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "Το {memberEmail} δεν θα λαμβάνει πλέον email όταν κάποιος απαντά στα σχόλιά σας.",
     "{memberEmail} will no longer receive this newsletter.": "Το {memberEmail} δεν θα λαμβάνει πλέον αυτό το ενημερωτικό δελτίο.",

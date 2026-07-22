@@ -43,7 +43,7 @@ describe('GiftRedemptionPage', () => {
         expect(queryByLabelText(/your name/i)).not.toBeInTheDocument();
         expect(queryByLabelText(/your email/i)).not.toBeInTheDocument();
 
-        fireEvent.click(getByRole('button', {name: 'Redeem your membership'}));
+        fireEvent.click(getByRole('button', {name: 'Redeem your gift'}));
 
         expect(mockDoActionFn).toHaveBeenCalledWith('redeemGift', {
             giftToken: 'gift-token-123'
@@ -53,7 +53,7 @@ describe('GiftRedemptionPage', () => {
     test('shows validation errors for anonymous visitors and only submits once valid', async () => {
         const {getByLabelText, getByRole, mockDoActionFn, getByText} = renderGiftRedemptionPage();
         const emailInput = getByLabelText(/your email/i);
-        const submitButton = getByRole('button', {name: 'Redeem your membership'});
+        const submitButton = getByRole('button', {name: 'Redeem your gift'});
 
         fireEvent.click(submitButton);
         expect(getByText('Enter your email address')).toBeInTheDocument();

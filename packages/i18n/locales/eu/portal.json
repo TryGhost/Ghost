@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "{amount}(e)ko deskontua lehenengo {period}(e)rako.",
     "{amount} off forever.": "{amount}(e)ko deskontua betiko",
     "{discount}% discount": "%{discount} merkeago",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail}(e)k ez du {newsletterName} buletin gehiagorik jasoko.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail}(e)k ez du ePosta gehiagorik jasoko norbaitek iruzkinei erantzuten dienean.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail}(e)k ez du buletin hau jasoko.",

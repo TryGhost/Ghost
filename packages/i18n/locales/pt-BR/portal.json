@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "{amount} de desconto nos primeiros {period}.",
     "{amount} off forever.": "{amount} de desconto para sempre.",
     "{discount}% discount": "{discount}% de desconto",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} não receberá mais a newsletter {newsletterName}.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} não receberá mais e-mails quando alguém responder seus comentários.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} não receberá mais esta newsletter.",

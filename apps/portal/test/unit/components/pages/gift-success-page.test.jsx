@@ -23,12 +23,12 @@ describe('GiftSuccessPage', () => {
 
         // The redeem link is the hero, with a plain "share it" subtitle
         expect(getByText('https://example.com/gift/gift-token-123')).toBeInTheDocument();
-        expect(getByText(/Send the link below to share it/i)).toBeInTheDocument();
+        expect(getByText(/share the link below whenever the moment feels right/i)).toBeInTheDocument();
         // No emailed-mode confirmation or demoted share label
         expect(queryByText(/emailed it to the recipient/i)).not.toBeInTheDocument();
-        expect(queryByText('Prefer to share it yourself?')).not.toBeInTheDocument();
+        expect(queryByText('Share it yourself')).not.toBeInTheDocument();
         // Footer nudging the buyer that a copy is in their inbox
-        expect(getByText(/We've also emailed a copy to your inbox/i)).toBeInTheDocument();
+        expect(getByText(/emailed a copy to your inbox/i)).toBeInTheDocument();
     });
 
     test('emailed mode: confirms delivery and demotes the link to a secondary action', () => {
@@ -37,7 +37,7 @@ describe('GiftSuccessPage', () => {
         expect(getByText('Your gift is on its way')).toBeInTheDocument();
         expect(getByText(/We've emailed it to the recipient/i)).toBeInTheDocument();
         // Link is still available but demoted under a secondary label
-        expect(getByText('Prefer to share it yourself?')).toBeInTheDocument();
+        expect(getByText('Share it yourself')).toBeInTheDocument();
         expect(getByText('https://example.com/gift/gift-token-123')).toBeInTheDocument();
         // The link-mode footer is not shown (subtitle already covers the inbox copy)
         expect(queryByText(/Not ready to share/i)).not.toBeInTheDocument();
@@ -53,7 +53,7 @@ describe('GiftSuccessPage', () => {
         // Date format is locale/timezone dependent, so just assert the
         // scheduled-delivery sentence renders with the year interpolated in
         expect(getByText(/We'll email it to the recipient on .*2030.* a copy is in your inbox too\./)).toBeInTheDocument();
-        expect(getByText('Prefer to share it yourself?')).toBeInTheDocument();
+        expect(getByText('Share it yourself')).toBeInTheDocument();
     });
 
     test('copies the redeem link to the clipboard', async () => {

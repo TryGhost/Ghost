@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "İlk {period} için {amount} indirim.",
     "{amount} off forever.": "Sonsuza kadar {amount} indirim.",
     "{discount}% discount": "%{discount} indirim",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} artık {newsletterName} bültenini almayacak.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail}, yorumlarınıza yanıt verildiğinde artık e-posta almayacak.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} artık bu bülteni almayacak.",

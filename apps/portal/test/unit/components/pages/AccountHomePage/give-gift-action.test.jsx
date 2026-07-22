@@ -35,14 +35,14 @@ describe('GiveGiftAction', () => {
     test('renders for paid members when paid members are enabled', () => {
         const {queryByText} = setup({site: paidSite(), member: paidMember()});
 
-        expect(queryByText('Give a gift subscription')).toBeInTheDocument();
+        expect(queryByText('Gift a membership')).toBeInTheDocument();
         expect(queryByText('Gift')).toBeInTheDocument();
     });
 
     test('opens the gift page with account home as the previous page', () => {
         const {queryByText, mockDoActionFn} = setup({site: paidSite(), member: paidMember()});
 
-        fireEvent.click(queryByText('Give a gift subscription'));
+        fireEvent.click(queryByText('Gift a membership'));
 
         expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {
             page: 'gift',
@@ -55,7 +55,7 @@ describe('GiveGiftAction', () => {
 
         const {queryByText} = setup({site: paidSite(), member});
 
-        expect(queryByText('Give a gift subscription')).toBeInTheDocument();
+        expect(queryByText('Gift a membership')).toBeInTheDocument();
     });
 
     test('does not render for free members', () => {
@@ -63,7 +63,7 @@ describe('GiveGiftAction', () => {
 
         const {queryByText} = setup({site: paidSite(), member});
 
-        expect(queryByText('Give a gift subscription')).not.toBeInTheDocument();
+        expect(queryByText('Gift a membership')).not.toBeInTheDocument();
     });
 
     test('does not render for gift members', () => {
@@ -71,13 +71,13 @@ describe('GiveGiftAction', () => {
 
         const {queryByText} = setup({site: paidSite(), member});
 
-        expect(queryByText('Give a gift subscription')).not.toBeInTheDocument();
+        expect(queryByText('Gift a membership')).not.toBeInTheDocument();
     });
 
     test('does not render when paid members are disabled', () => {
         const {queryByText} = setup({site: paidSite({paidMembersEnabled: false}), member: paidMember()});
 
-        expect(queryByText('Give a gift subscription')).not.toBeInTheDocument();
+        expect(queryByText('Gift a membership')).not.toBeInTheDocument();
     });
 
     test('does not render when gift subscriptions are disabled', () => {
@@ -85,7 +85,7 @@ describe('GiveGiftAction', () => {
 
         const {queryByText} = setup({site, member: paidMember()});
 
-        expect(queryByText('Give a gift subscription')).not.toBeInTheDocument();
+        expect(queryByText('Gift a membership')).not.toBeInTheDocument();
     });
 
     test('does not render when no paid tiers are available', () => {
@@ -93,6 +93,6 @@ describe('GiveGiftAction', () => {
 
         const {queryByText} = setup({site, member: paidMember()});
 
-        expect(queryByText('Give a gift subscription')).not.toBeInTheDocument();
+        expect(queryByText('Gift a membership')).not.toBeInTheDocument();
     });
 });

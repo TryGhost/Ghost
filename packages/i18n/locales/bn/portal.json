@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "প্রথম {period} এর জন্য {amount} ছাড়।",
     "{amount} off forever.": "চিরতরে {amount} ছাড়।",
     "{discount}% discount": "{discount}% ছাড়",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} আর {newsletterName} নিউজলেটার পাবেন না।",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} আপনার মন্তব্যের উত্তর দিলে আর ইমেল পাবেন না।",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} আর এই নিউজলেটার পাবেন না।",

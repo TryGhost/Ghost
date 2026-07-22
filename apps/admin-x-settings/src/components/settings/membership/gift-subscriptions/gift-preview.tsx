@@ -1,6 +1,7 @@
 import PortalFrame from '../portal/portal-frame';
 import React, {useEffect, useRef, useState} from 'react';
 import {type Setting} from '@tryghost/admin-x-framework/api/settings';
+import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 import {getGiftPreviewUrl} from '../../../../utils/get-gift-preview-url';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
@@ -17,15 +18,17 @@ const DESIGN_WIDTH = 1280;
 
 interface GiftPreviewProps {
     localSettings: Setting[];
+    localTiers?: Tier[];
 }
 
-const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings}) => {
+const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings, localTiers}) => {
     const {siteData, config} = useGlobalData();
     const containerRef = useRef<HTMLDivElement>(null);
     const [frame, setFrame] = useState({scale: 0, width: 0, height: 0});
 
     const href = getGiftPreviewUrl({
         settings: localSettings,
+        tiers: localTiers,
         config,
         siteData
     });

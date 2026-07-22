@@ -538,6 +538,7 @@
     "{count} years_other": "Gift duration label for a whole number of years (plural) in the gift delivery email, e.g. '3 years'",
     "{date}": "This will appear at the top of the newsletter, as the publication date. No changes needed, usually.",
     "{discount}% discount": "Label for a discounted tier in portal",
+    "{duration} membership": "Readout on the Portal gift purchase page stating the gift length when only one duration is offered (e.g. '1 year membership')",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "Shown when a member unsubscribes from comment replies",
     "{memberEmail} will no longer receive this newsletter.": "Shown when a member unsubscribes from a newsletter",
     "{memberEmail} will no longer receive updates & announcements.": "Confirmation shown on Portal's unsubscribe page after a member unsubscribes from updates & announcements, where {memberEmail} is their email address",

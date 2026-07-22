@@ -330,22 +330,35 @@ export default class App extends React.Component {
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
         const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
         let page = '';
+        const site = {
+            ...apiSiteData,
+            ...linkSiteData,
+            ...previewSiteData,
+            ...notificationSiteData,
+            ...devSiteData,
+            plans: {
+                ...(devSiteData || {}).plans,
+                ...(apiSiteData || {}).plans,
+                ...(previewSiteData || {}).plans
+            }
+        };
+        // Apply unsaved per-duration gift-price overrides from the settings
+        // preview onto the real products, so the gift page preview reflects price
+        // edits before they're saved. (Keyed by tier id → { months: cents }.)
+        if (site.gift_prices_override && Array.isArray(site.products)) {
+            const overrides = site.gift_prices_override;
+            site.products = site.products.map(product => (
+                overrides[product.id]
+                    ? {...product, gift_prices: overrides[product.id]}
+                    : product
+            ));
+            delete site.gift_prices_override;
+        }
         return {
             member,
             offers,
             page,
-            site: {
-                ...apiSiteData,
-                ...linkSiteData,
-                ...previewSiteData,
-                ...notificationSiteData,
-                ...devSiteData,
-                plans: {
-                    ...(devSiteData || {}).plans,
-                    ...(apiSiteData || {}).plans,
-                    ...(previewSiteData || {}).plans
-                }
-            },
+            site,
             ...restDevData,
             ...restLinkData,
             ...restNotificationData,
@@ -513,6 +526,14 @@ export default class App extends React.Component {
                     data.site.gift_tiers = JSON.parse(value);
                 } catch (e) {
                     // ignore malformed preview tiers
+                }
+            } else if (key === 'giftPrices' && value) {
+                // Unsaved per-duration price overrides ({ tierId: { months: cents } }),
+                // applied onto the real products after the site merge (see fetchData).
+                try {
+                    data.site.gift_prices_override = JSON.parse(value);
+                } catch (e) {
+                    // ignore malformed preview prices
                 }
             }
         }

@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "පළමු {period} සඳහා {amount} ක වට්ටමක්",
     "{amount} off forever.": "හැමදාටම {amount} ක වට්ටමක්",
     "{discount}% discount": "{discount}% ක වට්ටමක්",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} වෙත තවදුරටත් {newsletterName} newsletter නොලැබෙනු ඇත.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "ඔබගේ comments සඳහා කිසිවෙකු reply කළ විට {memberEmail} වෙත තවදුරටත් email මඟින් දැනුම්දීමක් නොකෙරෙනු ඇත.",
     "{memberEmail} will no longer receive this newsletter.": "මෙම newsletter එක {memberEmail} වෙත තවදුරටත් නොලැබෙනු ඇත.",

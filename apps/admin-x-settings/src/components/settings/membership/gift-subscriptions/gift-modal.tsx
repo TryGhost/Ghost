@@ -102,6 +102,11 @@ const GiftSidebar: React.FC<{
     };
 
     const toggleDuration = (months: number, checked: boolean) => {
+        // Must always offer at least one duration; ignore an unchecking that would
+        // leave the gift page with none available to readers.
+        if (!checked && offeredDurations.length <= 1) {
+            return;
+        }
         const next = checked
             ? [...giftDurations, months]
             : giftDurations.filter(m => m !== months);
@@ -163,15 +168,21 @@ const GiftSidebar: React.FC<{
                     <Heading level={5}>Tiers</Heading>
                     <Hint>Choose which tiers readers can gift.</Hint>
                     <div className='mt-3 flex flex-col gap-2'>
-                        {paidTiers.map(tier => (
-                            <Checkbox
-                                key={tier.id}
-                                checked={isTierOffered(tier.id)}
-                                label={tier.name}
-                                value={tier.id}
-                                onChange={checked => toggleTier(tier.id, checked)}
-                            />
-                        ))}
+                        {paidTiers.map((tier) => {
+                            // The last offered tier can't be unchecked — at least one is required.
+                            const isLastOffered = isTierOffered(tier.id) && offeredTiers.length === 1;
+                            return (
+                                <Checkbox
+                                    key={tier.id}
+                                    checked={isTierOffered(tier.id)}
+                                    disabled={isLastOffered}
+                                    hint={isLastOffered ? 'At least one tier must be giftable' : undefined}
+                                    label={tier.name}
+                                    value={tier.id}
+                                    onChange={checked => toggleTier(tier.id, checked)}
+                                />
+                            );
+                        })}
                     </div>
                 </div>
             )}
@@ -182,12 +193,21 @@ const GiftSidebar: React.FC<{
                 <div className='mt-3 flex flex-col gap-2'>
                     {DURATION_OPTIONS.map(({months, label, anchor}) => {
                         const anchorAvailable = portalPlans.includes(anchor);
+                        const isChecked = giftDurations.includes(months) && anchorAvailable;
+                        // The last offered duration can't be unchecked — at least one is required.
+                        const isLastOffered = isChecked && offeredDurations.length === 1;
+                        let hint;
+                        if (!anchorAvailable) {
+                            hint = `Requires the ${anchor} plan to be enabled in Portal settings`;
+                        } else if (isLastOffered) {
+                            hint = 'At least one duration must be giftable';
+                        }
                         return (
                             <Checkbox
                                 key={String(months)}
-                                checked={giftDurations.includes(months) && anchorAvailable}
-                                disabled={!anchorAvailable}
-                                hint={!anchorAvailable ? `Requires the ${anchor} plan to be enabled in Portal settings` : undefined}
+                                checked={isChecked}
+                                disabled={!anchorAvailable || isLastOffered}
+                                hint={hint}
                                 label={label}
                                 value={String(months)}
                                 onChange={checked => toggleDuration(months, checked)}
@@ -298,7 +318,7 @@ const GiftModal: React.FC = () => {
         </div>
     );
 
-    const preview = <GiftPreview localSettings={formState.settings} />;
+    const preview = <GiftPreview localSettings={formState.settings} localTiers={formState.tiers} />;
 
     return (
         <PreviewModalContent

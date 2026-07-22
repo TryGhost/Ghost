@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "Скидка — {amount} на первый период: {period}",
     "{amount} off forever.": "Скидка — {amount} навсегда",
     "{discount}% discount": "Скидка — {discount}%",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} больше не будет получать рассылку {newsletterName}.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} больше не будет получать электронные письма, когда кто-то отвечает на ваши комментарии.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} больше не будет получать эту рассылку.",

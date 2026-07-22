@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "最初の{period}{amount}オフ",
     "{amount} off forever.": "永久に{amount}オフ",
     "{discount}% discount": "{discount}% 割引",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail}は{newsletterName}のニュースレターを受信しなくなります。",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "誰かがあなたのコメントに返信しても、{memberEmail} はメールを受信しません。",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} はこのニュースレターを受信しなくなります。",

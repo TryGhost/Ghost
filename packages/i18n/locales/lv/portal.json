@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "{amount} atlaide pirmajam {period}.",
     "{amount} off forever.": "{amount} atlaide uz visiem laikiem.",
     "{discount}% discount": "{discount}% atlaide",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "{memberEmail} vairs nesaņems {newsletterName} biļetenu.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "{memberEmail} vairs nesaņems e-pasta ziņojumus, kad kāds atbildēs uz jūsu komentāriem.",
     "{memberEmail} will no longer receive this newsletter.": "{memberEmail} vairs nesaņems šo biļetenu.",

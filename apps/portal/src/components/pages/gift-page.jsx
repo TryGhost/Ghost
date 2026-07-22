@@ -191,6 +191,15 @@ export const GiftPageStyles = `
     margin: 0;
 }
 
+/* When only one length is offered there's nothing to switch — state it plainly
+   as a fixed fact rather than a control. */
+.gh-portal-gift-checkout-single-duration {
+    font-size: 1.6rem;
+    line-height: 1.3;
+    font-weight: 600;
+    color: var(--grey0);
+}
+
 .gh-portal-gift-duration-switch .gh-portal-btn {
     flex: 1;
     min-width: 0;
@@ -906,13 +915,26 @@ const GiftPage = () => {
     // so reset the popup scroll to the top — otherwise the buyer can land partway
     // down the next step. Portal renders inside a react-frame-component iframe, so
     // the global `document` here is the parent; reach the popup via the rendered
-    // node's own tree instead. Deferred a frame so it runs after the browser's
-    // scroll anchoring, which would otherwise restore the previous position.
+    // node's own document instead. Depending on the embed the actual scroller is
+    // the wrapper (live portal) or the container, so reset both — and any other
+    // scrollable ancestor — since only the one that overflows will move. Deferred
+    // a frame so it runs after the browser's scroll anchoring.
     useEffect(() => {
         const raf = requestAnimationFrame(() => {
-            const popup = contentRef.current?.closest('.gh-portal-popup-container');
-            if (popup) {
-                popup.scrollTo({top: 0});
+            const node = contentRef.current;
+            const doc = node?.ownerDocument;
+            if (!doc) {
+                return;
+            }
+            const view = doc.defaultView;
+            doc.querySelectorAll('.gh-portal-popup-wrapper, .gh-portal-popup-container')
+                .forEach(el => el.scrollTo({top: 0}));
+            // Fallback: walk ancestors and reset whichever one actually scrolls.
+            for (let el = node.parentElement; el; el = el.parentElement) {
+                const overflowY = view?.getComputedStyle(el).overflowY;
+                if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
+                    el.scrollTop = 0;
+                }
             }
         });
         return () => cancelAnimationFrame(raf);
@@ -966,6 +988,7 @@ const GiftPage = () => {
 
     const activeProduct = products.find(p => p.id === selectedProductId) || products[0];
     const isSingleTier = products.length === 1;
+    const activeDurationLabel = getGiftDurationLabel(getGiftCadenceParts(activeDuration));
     const isPurchasing = action === 'checkoutGift:running';
     const hasErrors = Object.values(errors).some(errorMessage => !!errorMessage);
     const isDisabled = isCookiesDisabled() || isPurchasing || hasErrors;
@@ -1219,14 +1242,20 @@ const GiftPage = () => {
                             </header>
 
 
-                            {step === 'plan' && offeredDurations.length > 1 && (
+                            {step === 'plan' && (
                                 <div className='gh-portal-gift-checkout-section'>
                                     <div className='gh-portal-gift-checkout-question'>{t('How long is the gift?')}</div>
-                                    <GiftDurationSwitch
-                                        offeredDurations={offeredDurations}
-                                        activeDuration={activeDuration}
-                                        setSelectedDuration={setSelectedDuration}
-                                    />
+                                    {offeredDurations.length > 1 ? (
+                                        <GiftDurationSwitch
+                                            offeredDurations={offeredDurations}
+                                            activeDuration={activeDuration}
+                                            setSelectedDuration={setSelectedDuration}
+                                        />
+                                    ) : (
+                                        <div className='gh-portal-gift-checkout-single-duration' data-test-single-duration>
+                                            {t('{duration} membership', {duration: activeDurationLabel})}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

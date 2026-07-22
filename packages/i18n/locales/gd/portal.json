@@ -7,6 +7,7 @@
     "{amount} off for first {period}.": "{amount} dheth fad a’ chiad {period}",
     "{amount} off forever.": "{amount} dheth gu bràth",
     "{discount}% discount": "lasachadh {discount}%",
+    "{duration} membership": "",
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "Chan fhaigh {memberEmail} a’ chuairt-litir, {newsletterName} tuilleadh.",
     "{memberEmail} will no longer receive emails when someone replies to your comments.": "Chan fhaigh {memberEmail} post-d nuair a bhios freagairtean ùra ann.",
     "{memberEmail} will no longer receive this newsletter.": "Chan fhaigh {memberEmail} a’ chuairt-litir seo tuilleadh.",
