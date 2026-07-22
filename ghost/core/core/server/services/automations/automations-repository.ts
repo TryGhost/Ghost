@@ -88,6 +88,7 @@ export type RecordEmailSentOptions = Readonly<{
     memberId: string;
     memberName: string | null;
     memberUuid: string;
+    trackClicks: boolean;
     trackOpens: boolean;
 }>;
 
