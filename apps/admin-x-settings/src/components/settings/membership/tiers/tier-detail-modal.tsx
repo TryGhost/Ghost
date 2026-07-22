@@ -239,7 +239,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                         <Field>
                                             <FieldLabel className='sr-only'>Currency</FieldLabel>
                                             <Combobox open={currencyOpen} onOpenChange={setCurrencyOpen}>
-                                                <ComboboxTrigger aria-label='Currency'><ComboboxValue>{formState.currency}</ComboboxValue></ComboboxTrigger>
+                                                <ComboboxTrigger aria-label='Currency' className='border-0 bg-transparent px-0 shadow-none hover:bg-transparent focus-visible:ring-0'><ComboboxValue>{formState.currency}</ComboboxValue></ComboboxTrigger>
                                                 <ComboboxContent align='end' className='w-64'>
                                                     <MultiSelectCombobox
                                                         groupBy={option => ({
@@ -266,7 +266,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 <div className='flex flex-col gap-2'>
                                     <Field data-invalid={Boolean(errors.monthly_price) || undefined}>
                                         <FieldLabel className='sr-only' htmlFor='tier-monthly-price'>Monthly price</FieldLabel>
-                                        <InputGroup data-invalid={Boolean(errors.monthly_price) || undefined}>
+                                        <InputGroup className='border-transparent bg-muted' data-invalid={Boolean(errors.monthly_price) || undefined}>
                                             <InputGroupInput
                                                 aria-invalid={Boolean(errors.monthly_price) || undefined}
                                                 id='tier-monthly-price'
@@ -288,7 +288,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     </Field>
                                     <Field data-invalid={Boolean(errors.yearly_price) || undefined}>
                                         <FieldLabel className='sr-only' htmlFor='tier-yearly-price'>Yearly price</FieldLabel>
-                                        <InputGroup data-invalid={Boolean(errors.yearly_price) || undefined}>
+                                        <InputGroup className='border-transparent bg-muted' data-invalid={Boolean(errors.yearly_price) || undefined}>
                                             <InputGroupInput
                                                 aria-invalid={Boolean(errors.yearly_price) || undefined}
                                                 id='tier-yearly-price'
@@ -335,6 +335,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     <Field>
                         <FieldLabel htmlFor='tier-welcome-page'>Welcome page</FieldLabel>
                         <Input
+                            className='border-transparent bg-muted'
                             id='tier-welcome-page'
                             maxLength={2000}
                             placeholder={siteData?.url}
@@ -361,7 +362,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     value={item}
                                     onChange={e => benefits.updateItem(id, e.target.value)}
                                 />
-                                <Button className='absolute top-1/2 right-1 z-10 -translate-y-1/2 opacity-0 group-hover:opacity-100' color='grey' icon='trash' size='sm' onClick={() => benefits.removeItem(id)} />
+                                <Button className='absolute top-1/2 right-1 z-10 size-5! -translate-y-1/2 p-0! opacity-0 group-hover:opacity-100' color='grey' icon='trash' size='sm' onClick={() => benefits.removeItem(id)} />
                             </div>}
                             onMove={benefits.moveItem}
                         />
@@ -384,7 +385,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             }}
                         />
                         <Button
-                            className='absolute top-1/2 right-[5px] z-10 -translate-y-1/2'
+                            className='absolute top-1/2 right-[5px] z-10 size-5! -translate-y-1/2 p-0!'
                             color='green'
                             icon='add'
                             iconColorClass='text-white'

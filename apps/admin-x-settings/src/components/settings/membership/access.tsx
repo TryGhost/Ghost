@@ -200,7 +200,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             updateSetting('is_private', value === 'private');
                             handleEditingChange(true);
                         }}>
-                            <SelectTrigger aria-label='Who should be able to browse your site?' data-testid='site-visibility-select'><SelectValue>{getAccessOptionLabel(SITE_VISIBILITY_OPTIONS, effectiveIsPrivate ? 'private' : 'public')}</SelectValue></SelectTrigger>
+                            <SelectTrigger aria-label='Who should be able to browse your site?' className='border-transparent bg-muted hover:bg-muted' data-testid='site-visibility-select'><SelectValue>{getAccessOptionLabel(SITE_VISIBILITY_OPTIONS, effectiveIsPrivate ? 'private' : 'public')}</SelectValue></SelectTrigger>
                             <SelectContent>{renderAccessOptions(SITE_VISIBILITY_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
@@ -212,7 +212,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className="w-full md:flex-1">
                         <Field className={isPrivateLocked ? 'relative z-10' : undefined} data-disabled={isPrivateLocked || undefined} data-invalid={Boolean(errors.password) || undefined}>
                             <FieldLabel className='sr-only' htmlFor='site-access-code'>Access code</FieldLabel>
-                            <InputGroup data-disabled={isPrivateLocked || undefined} data-invalid={Boolean(errors.password) || undefined}>
+                            <InputGroup className='border-transparent bg-muted' data-disabled={isPrivateLocked || undefined} data-invalid={Boolean(errors.password) || undefined}>
                                 <InputGroupInput
                                     aria-invalid={Boolean(errors.password) || undefined}
                                     data-testid='site-access-code'
@@ -258,7 +258,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             updateSetting('members_signup_access', value);
                             handleEditingChange(true);
                         }}>
-                            <SelectTrigger aria-label='Who should be able to subscribe to your site?' data-testid='subscription-access-select'><SelectValue>{getAccessOptionLabel(MEMBERS_SIGNUP_ACCESS_OPTIONS, membersSignupAccess)}</SelectValue></SelectTrigger>
+                            <SelectTrigger aria-label='Who should be able to subscribe to your site?' className='border-transparent bg-muted hover:bg-muted' data-testid='subscription-access-select'><SelectValue>{getAccessOptionLabel(MEMBERS_SIGNUP_ACCESS_OPTIONS, membersSignupAccess)}</SelectValue></SelectTrigger>
                             <SelectContent>{renderAccessOptions(MEMBERS_SIGNUP_ACCESS_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
@@ -274,7 +274,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             updateSetting('default_content_visibility', value);
                             handleEditingChange(true);
                         }}>
-                            <SelectTrigger aria-label='Who should have access to new posts?' data-testid='default-post-access-select'><SelectValue>{getAccessOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility)}</SelectValue></SelectTrigger>
+                            <SelectTrigger aria-label='Who should have access to new posts?' className='border-transparent bg-muted hover:bg-muted' data-testid='default-post-access-select'><SelectValue>{getAccessOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility)}</SelectValue></SelectTrigger>
                             <SelectContent>{renderAccessOptions(DEFAULT_CONTENT_VISIBILITY_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
@@ -287,7 +287,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <Field>
                             <FieldLabel className='sr-only'>Select specific tiers</FieldLabel>
                             <Combobox open={tiersOpen} onOpenChange={setTiersOpen}>
-                                <ComboboxTrigger aria-label='Select specific tiers' data-testid='tiers-select'>
+                                <ComboboxTrigger aria-label='Select specific tiers' className='border-transparent bg-muted hover:bg-muted' data-testid='tiers-select'>
                                     <ComboboxValue placeholder={!selectedTierLabels}>{selectedTierLabels || 'Select...'}</ComboboxValue>
                                 </ComboboxTrigger>
                                 <ComboboxContent>
@@ -316,7 +316,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             updateSetting('comments_enabled', value);
                             handleEditingChange(true);
                         }}>
-                            <SelectTrigger aria-label='Who can comment on posts?' data-testid='commenting-select'><SelectValue>{getAccessOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled)}</SelectValue></SelectTrigger>
+                            <SelectTrigger aria-label='Who can comment on posts?' className='border-transparent bg-muted hover:bg-muted' data-testid='commenting-select'><SelectValue>{getAccessOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled)}</SelectValue></SelectTrigger>
                             <SelectContent>{renderAccessOptions(COMMENTS_ENABLED_OPTIONS)}</SelectContent>
                         </Select>
                     </Field>
