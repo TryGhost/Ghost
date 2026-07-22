@@ -69,13 +69,10 @@ export type {SettingSectionHeaderProps} from './settings/setting-section-header'
 export {default as SettingValue} from './settings/setting-value';
 export type {SettingValueProps} from './settings/setting-value';
 
-export {default as useGlobalDirtyState} from './hooks/use-global-dirty-state';
-
 export {debounce} from './utils/debounce';
-export {confirmIfDirty} from './utils/modals';
 export {formatUrl} from './utils/format-url';
 
 export {default as DesignSystemApp} from './design-system-app';
 export type {DesignSystemAppProps} from './design-system-app';
-export {useFocusContext, useDesignSystem} from './providers/design-system-provider';
+export {useDesignSystem} from './providers/design-system-provider';
 export type {FetchKoenigLexical} from './providers/design-system-provider';

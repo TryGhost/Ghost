@@ -1,6 +1,6 @@
 import React, {FocusEventHandler, useId} from 'react';
 import clsx from 'clsx';
-import {useFocusContext} from '../../providers/design-system-provider';
+import {useFocusContext} from '@tryghost/shade/app';
 import * as FormPrimitive from '@radix-ui/react-form';
 import LegacyHint from '../legacy-hint';
 import {FieldLabel} from '@tryghost/shade/components';

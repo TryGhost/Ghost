@@ -4,9 +4,9 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 
 import MemberEmailEditor from './member-email-editor';
 import WelcomeEmailPreviewFrame from './welcome-email-preview-frame';
+import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {FieldError} from '@tryghost/shade/components';
 import {Button as LegacyButton, Modal, TextField} from '@tryghost/admin-x-design-system';
-import {confirmIfDirty} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
 import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
@@ -120,6 +120,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     });
     const emailTypeLabel = emailType === 'paid' ? 'Paid' : 'Free';
     const modalTitle = `${emailTypeLabel} members welcome email`;
+    const {confirm, dialogProps} = useDirtyConfirmation();
 
     const {formState, saveState, updateForm, setFormState, setErrors, handleSave, okProps, errors, validate} = useForm({
         initialState: {
@@ -143,10 +144,10 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const isDirty = saveState === 'unsaved';
 
     const handleClose = useCallback(() => {
-        confirmIfDirty(isDirty, () => {
+        confirm(isDirty, () => {
             modal.remove();
         });
-    }, [modal, isDirty]);
+    }, [confirm, modal, isDirty]);
 
     const handleSaveRef = useRef(handleSave);
     useEffect(() => {
@@ -332,6 +333,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     {mode === 'edit' && errors.lexical && <FieldError className='mt-2 max-w-[740px]'>{errors.lexical}</FieldError>}
                 </div>
             </EmailPreviewModalContent>
+            <DirtyConfirmDialog {...dialogProps} />
         </Modal>
     );
 });

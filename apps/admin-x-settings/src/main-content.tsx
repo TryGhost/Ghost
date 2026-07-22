@@ -2,12 +2,14 @@ import ExitSettingsButton from './components/exit-settings-button';
 import Settings from './components/settings';
 import Sidebar from './components/sidebar';
 import Users from './components/settings/general/users';
+import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {type ReactNode, useEffect} from 'react';
 import {Text} from '@tryghost/shade/primitives';
 import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/users';
-import {confirmIfDirty, topLevelBackdropClasses, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {toast} from 'react-hot-toast';
+import {topLevelBackdropClasses} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from './components/providers/global-data-provider';
+import {useGlobalDirtyState} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const EMPTY_KEYWORDS: string[] = [];
@@ -28,6 +30,7 @@ const MainContent: React.FC = () => {
     const {currentUser} = useGlobalData();
     const {loadingModal} = useRouting();
     const {isDirty} = useGlobalDirtyState();
+    const {confirm, dialogProps} = useDirtyConfirmation();
 
     const navigateAway = (escLocation: string) => {
         window.location.hash = escLocation;
@@ -50,7 +53,7 @@ const MainContent: React.FC = () => {
                     return;
                 }
 
-                confirmIfDirty(isDirty, () => {
+                confirm(isDirty, () => {
                     navigateAway('/');
                 });
             }
@@ -61,7 +64,7 @@ const MainContent: React.FC = () => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isDirty]);
+    }, [confirm, isDirty]);
 
     useEffect(() => {
         // resets any toasts that may have been left open on initial load
@@ -85,6 +88,7 @@ const MainContent: React.FC = () => {
                         </div>
                     </div>
                 </div>
+                <DirtyConfirmDialog {...dialogProps} />
             </Page>
         );
     }
@@ -102,6 +106,7 @@ const MainContent: React.FC = () => {
                     <Settings />
                 </div>
             </div>
+            <DirtyConfirmDialog {...dialogProps} />
         </Page>
     );
 };

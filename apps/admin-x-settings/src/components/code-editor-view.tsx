@@ -2,7 +2,7 @@ import CodeMirror, {type BasicSetupOptions, type ReactCodeMirrorProps, type Reac
 import React, {type FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
 import clsx from 'clsx';
 import {FieldDescription, FieldLabel} from '@tryghost/shade/components';
-import {useFocusContext} from '@tryghost/admin-x-design-system';
+import {useFocusContext} from '@tryghost/shade/app';
 import type {Extension} from '@codemirror/state';
 
 export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'onChange' | 'extensions'> {

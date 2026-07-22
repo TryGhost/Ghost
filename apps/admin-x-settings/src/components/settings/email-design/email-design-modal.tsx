@@ -1,7 +1,6 @@
-import DirtyConfirmModal from './dirty-confirm-modal';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import {Button, Dialog, DialogContent, DialogTitle} from '@tryghost/shade/components';
+import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {type OkProps} from '@tryghost/admin-x-framework/hooks';
 import {cn} from '@tryghost/shade/utils';
 
@@ -34,6 +33,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
 }) => {
     const onSaveRef = useRef(onSave);
     const prevOpenRef = useRef(open);
+    const {confirm, dialogProps} = useDirtyConfirmation();
 
     useEffect(() => {
         onSaveRef.current = onSave;
@@ -58,16 +58,8 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    const handleClose = async () => {
-        if (!dirty) {
-            onClose();
-            return;
-        }
-
-        const shouldLeave = await NiceModal.show(DirtyConfirmModal) as boolean;
-        if (shouldLeave) {
-            onClose();
-        }
+    const handleClose = () => {
+        confirm(dirty, onClose);
     };
 
     return (
@@ -117,6 +109,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
                     </div>
                 </div>
             </DialogContent>
+            <DirtyConfirmDialog testId='welcome-email-dirty-confirm-modal' {...dialogProps} />
         </Dialog>
     );
 };
