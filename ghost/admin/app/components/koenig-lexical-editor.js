@@ -256,10 +256,14 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const fetchAutocompleteLinks = async () => {
+            const postType = this.args.cardConfig?.post?.displayName === 'page' ? 'page' : 'post';
+
             const defaults = [
                 {label: 'Homepage', value: window.location.origin + '/'},
                 {label: 'Free signup', value: '#/portal/signup/free'}
             ];
+
+            const shareLink = [{label: `Share ${postType}`, value: '#/share'}];
 
             const memberLinks = () => {
                 let links = [];
@@ -313,7 +317,7 @@ export default class KoenigLexicalEditor extends Component {
 
             const offersLinks = await offerUrls.call(this);
 
-            return [...defaults, ...memberLinks(), ...donationLink(), ...recommendationLink(), ...giftLink(), ...offersLinks];
+            return [...defaults, ...memberLinks(), ...donationLink(), ...giftLink(), ...shareLink, ...recommendationLink(), ...offersLinks];
         };
 
         const fetchLabels = async () => {

@@ -9,6 +9,7 @@ import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {VideoCard} from '../components/ui/cards/VideoCard';
 import {getImageDimensions} from '../utils/getImageDimensions';
+import {isCardWidth} from '@tryghost/kg-default-nodes';
 import {openFileSelection} from '../utils/openFileSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -158,7 +159,11 @@ export function VideoNodeComponent({
         });
     };
 
-    const onCardWidthChange = (width) => {
+    const onCardWidthChange = (width: unknown) => {
+        if (!isCardWidth(width)) {
+            return;
+        }
+
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.cardWidth = width;

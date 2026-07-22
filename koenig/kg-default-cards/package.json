@@ -47,6 +47,7 @@
     "eslint-plugin-ghost": "catalog:",
     "jsdom": "catalog:",
     "simple-dom": "1.4.0",
+    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"

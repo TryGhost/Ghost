@@ -1,6 +1,7 @@
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {Form, Icon, Modal, Toggle} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
+import {Form, Icon, Modal} from '@tryghost/admin-x-design-system';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -62,15 +63,13 @@ const UnsplashModal = NiceModal.create(() => {
             />
             <div className='mt-7'>
                 <Form marginBottom={false} grouped>
-                    <Toggle
-                        checked={enabled}
-                        direction='rtl'
-                        hint={<>Enable <a className='text-green' href="https://unsplash.com" rel="noopener noreferrer" target="_blank">Unsplash</a> image integration for your posts</>}
-                        label='Enable Unsplash'
-                        onChange={(e) => {
-                            setEnabled(e.target.checked);
-                        }}
-                    />
+                    <Field orientation='horizontal'>
+                        <FieldContent>
+                            <FieldLabel htmlFor='unsplash-enabled'>Enable Unsplash</FieldLabel>
+                            <FieldDescription>Enable <a className='text-green' href="https://unsplash.com" rel="noopener noreferrer" target="_blank">Unsplash</a> image integration for your posts</FieldDescription>
+                        </FieldContent>
+                        <Switch checked={enabled} id='unsplash-enabled' onCheckedChange={setEnabled} />
+                    </Field>
                 </Form>
             </div>
         </Modal>

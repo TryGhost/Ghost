@@ -34,6 +34,10 @@ const messages = {
         missingFile: 'Please select a members CSV file.',
         invalidFile: 'Please select a valid CSV file.'
     },
+    posts: {
+        missingFile: 'Please select a posts CSV file.',
+        invalidFile: 'Please select a valid CSV file.'
+    },
     images: {
         missingFile: 'Please select an image.',
         invalidFile: 'Please select a valid image.'

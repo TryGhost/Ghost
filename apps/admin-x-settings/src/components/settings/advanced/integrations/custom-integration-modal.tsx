@@ -131,18 +131,21 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                     <TextField maxLength={2000} title='Description' value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
                     <APIKeys keys={[
                         {
+                            id: 'content-api-key',
                             label: 'Content API key',
                             text: contentApiKey?.secret,
                             hint: contentKeyRegenerated ? <div className='text-green'>Content API Key was successfully regenerated</div> : undefined,
                             onRegenerate: () => contentApiKey && handleRegenerate(contentApiKey, setContentKeyRegenerated)
                         },
                         {
+                            id: 'admin-api-key',
                             label: 'Admin API key',
                             text: adminApiKey?.secret,
                             hint: adminKeyRegenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
                             onRegenerate: () => adminApiKey && handleRegenerate(adminApiKey, setAdminKeyRegenerated)
                         },
                         {
+                            id: 'api-url',
                             label: 'API URL',
                             text: window.location.origin + getGhostPaths().subdir
                         }

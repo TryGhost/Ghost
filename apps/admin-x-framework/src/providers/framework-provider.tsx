@@ -83,7 +83,7 @@ export function FrameworkProvider({children, queryClient: queryClientOverride, q
                     refetchOnWindowFocus: queryClientOptions.refetchOnWindowFocus ?? false,
                     staleTime: queryClientOptions.staleTime ?? 5 * (60 * 1000), // 5 mins
                     refetchOnMount: queryClientOptions.refetchOnMount ?? false,
-                    cacheTime: 10 * (60 * 1000), // 10 mins
+                    gcTime: 10 * (60 * 1000), // 10 mins
                     // We have custom retry logic for specific errors in fetchApi()
                     retry: false,
                     networkMode: 'always'

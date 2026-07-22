@@ -8,6 +8,7 @@ import {
     fakeEndpoint,
     fakeTags,
     renderAdminApp,
+    currentUserResponse,
     settingsResponse,
     type RenderAdminAppOptions,
 } from "@test-utils/acceptance";
@@ -168,15 +169,17 @@ describe("Network notification badge", () => {
         // The ActivityPub app owns its request graph; this spec asserts only the shell badge.
         allowUnhandledRequests();
         fakeUnreadNotifications(5);
+        fakeAdminEndpoint("GET", "/users/?limit=100&include=roles", currentUserResponse());
         await renderAdminApp("/", socialWebEnabled());
 
         await expect.element(sidebarScreen.networkBadge()).toBeVisible();
 
         await sidebarScreen.navLink("Network").click();
-        await expect.poll(currentRoute).toMatch(/^\/(network|activitypub)/);
+        await expect.poll(currentRoute).toBe("/activitypub/welcome/1");
         await expect.element(sidebarScreen.networkBadge()).not.toBeInTheDocument();
 
         await sidebarScreen.navLink("Posts").click();
+        await expect.poll(currentRoute).toBe("/posts");
         await expect.element(sidebarScreen.networkBadge()).toBeVisible();
     });
 });

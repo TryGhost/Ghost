@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Hint, LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {Hint} from '@tryghost/admin-x-design-system';
+import {LoadingIndicator} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
 import type {WelcomeEmailPreviewFrameState} from './use-welcome-email-preview';
 
@@ -120,7 +121,9 @@ const WelcomeEmailPreviewFrame: React.FC<WelcomeEmailPreviewFrameProps> = ({prev
                     data-testid='welcome-email-preview-loading'
                     style={previewHeight ? {height: `${previewHeight}px`} : undefined}
                 >
-                    <LoadingIndicator />
+                    <div className='flex h-64 items-center justify-center'>
+                        <LoadingIndicator size='lg' />
+                    </div>
                 </div>
             )}
             {previewState.status === 'success' && (

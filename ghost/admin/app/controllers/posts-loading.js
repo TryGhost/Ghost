@@ -26,16 +26,16 @@ export default class PostsLoadingController extends Controller {
         return this.postsController.availableVisibilities;
     }
 
-    get availableTags() {
-        return this.postsController.availableTags;
+    get staticTagOptions() {
+        return this.postsController.staticTagOptions;
     }
 
     get selectedTag() {
         return this.postsController.selectedTag;
     }
 
-    get availableAuthors() {
-        return this.postsController.availableAuthors;
+    get staticAuthorOptions() {
+        return this.postsController.staticAuthorOptions;
     }
 
     get selectedAuthor() {

@@ -1,4 +1,6 @@
 import { HttpResponse } from "msw";
+import type { Action } from "@tryghost/admin-x-framework/api/actions";
+import type { Integration } from "@tryghost/admin-x-framework/api/integrations";
 import {
     activeThemeResponse,
     browseResponse,
@@ -8,8 +10,12 @@ import {
     type Comment,
     type Label,
     type Member,
+    type Newsletter,
     type Offer,
     type SettingsResponse,
+    type StaffInvite,
+    type StaffRole,
+    type StaffUser,
     type Tag,
     type Tier,
 } from "@tryghost/test-data";
@@ -201,13 +207,19 @@ const membersResource = defineResource<Member>({
 
 // Members-page chrome: the filter bar mounts with the page and probes these lookups.
 const labelsResource = defineResource<Label>({ resource: "labels", semantics: { kind: "passthrough" } });
-const newslettersResource = defineResource({ resource: "newsletters", semantics: { kind: "passthrough" } });
+const newslettersResource = defineResource<Newsletter>({ resource: "newsletters", semantics: { kind: "passthrough" } });
 
 /** Tiers list fake (passthrough): serves the declared tiers and captures every browse request. */
 export const fakeTiers = defineResource<Tier>({ resource: "tiers", semantics: { kind: "passthrough" } });
 
 /** Offers list fake (passthrough): serves the declared offers and captures every browse request. */
 export const fakeOffers = defineResource<Offer>({ resource: "offers", semantics: { kind: "passthrough" } });
+
+/** Labels list fake (passthrough): serves declared labels and captures browse filters/search. */
+export const fakeLabels = labelsResource;
+
+/** Newsletters list fake (passthrough): serves declared newsletters and captures pagination. */
+export const fakeNewsletters = newslettersResource;
 
 export interface FakeMembersOptions {
     /**
@@ -240,13 +252,19 @@ export function fakeMembers(members: RespondWith<Member>, { labels = [], tiers =
 // Settings-screen chrome: admin-x-settings renders EVERY settings group on
 // one page (routes only scroll/expand), so all of these fire on any
 // /settings/* mount regardless of which screen a spec is about.
-const usersResource = defineResource({ resource: "users", semantics: { kind: "passthrough" } });
-const invitesResource = defineResource({ resource: "invites", semantics: { kind: "passthrough" } });
-const rolesResource = defineResource({ resource: "roles", semantics: { kind: "passthrough" } });
+export const fakeUsers = defineResource<StaffUser>({ resource: "users", semantics: { kind: "passthrough" } });
+export const fakeInvites = defineResource<StaffInvite>({ resource: "invites", semantics: { kind: "passthrough" } });
+export const fakeRoles = defineResource<StaffRole>({ resource: "roles", semantics: { kind: "passthrough" } });
 const themesResource = defineResource({ resource: "themes", semantics: { kind: "passthrough" } });
+/** Themes list fake (passthrough): installed/active state is declared by the spec. */
+export const fakeThemes = themesResource;
 const automatedEmailsResource = defineResource({ resource: "automated_emails", semantics: { kind: "passthrough" } });
 const recommendationsResource = defineResource({ resource: "recommendations", semantics: { kind: "passthrough" } });
-const integrationsResource = defineResource({ resource: "integrations", semantics: { kind: "passthrough" } });
+const integrationsResource = defineResource<Integration>({ resource: "integrations", semantics: { kind: "passthrough" } });
+/** Integrations list fake (passthrough): serves configured built-in/custom integrations and captures browse requests. */
+export const fakeIntegrations = integrationsResource;
+/** History actions fake (passthrough): specs declare filtered responses and assert the outgoing NQL. */
+export const fakeActions = defineResource<Omit<Action, "context"> & { context: string }>({ resource: "actions", semantics: { kind: "passthrough" } });
 
 /**
  * Declares the world the settings area's page chrome reads at mount — every
@@ -261,9 +279,9 @@ const integrationsResource = defineResource({ resource: "integrations", semantic
  * registered after this one wins (e.g. `fakeOffers([...])`).
  */
 export function fakeSettingsScreens(): void {
-    usersResource(currentUserResponse().users);
-    invitesResource([]);
-    rolesResource([]);
+    fakeUsers(currentUserResponse().users as unknown as StaffUser[]);
+    fakeInvites([]);
+    fakeRoles([]);
     themesResource(activeThemeResponse().themes);
     fakeTiers([]);
     fakeOffers([]);

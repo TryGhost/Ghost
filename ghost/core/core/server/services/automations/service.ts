@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import type {SchedulerAdapter} from '@tryghost/adapter-base-scheduling';
 import type {InternalKeys} from '../internal-keys';
 // @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import type DomainEvents from '@tryghost/domain-events';
@@ -7,6 +8,8 @@ import {poll} from './poll';
 import * as automationsApi from './automations-api';
 import {setImmediate as flushEventLoop} from 'node:timers/promises';
 import {SoonestTimer} from '../../lib/soonest-timer';
+// @ts-expect-error This module currently lacks type definitions.
+import emailAnalyticsJobs from '../email-analytics/jobs';
 
 const urlUtils = require('../../../shared/url-utils');
 const logging = require('@tryghost/logging');
@@ -15,23 +18,16 @@ const StartAutomationsPollEvent = require('./events/start-automations-poll-event
 const {welcomeEmailAutomationPoll} = require('./welcome-email-automation-poll');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
 
-type SchedulerAdapter = {
-    schedule(job: {
-        extra: {
-            httpMethod: string;
-        };
-        time: number;
-        url: string;
-    }): void;
-    register(rescheduler: {rescheduleAll: () => unknown}): void;
-};
-
 type AutomationsServiceOptions = {
     apiUrl: string;
     domainEvents: Pick<DomainEvents, 'dispatch' | 'subscribe'>;
     internalKeys: InternalKeys;
-    schedulerAdapter: SchedulerAdapter;
+    schedulerAdapter: Pick<SchedulerAdapter, 'schedule' | 'register'>;
 };
+
+const scheduleAutomationEmailAnalyticsJob = () => (
+    emailAnalyticsJobs.scheduleRecurringAutomationsJob(true)
+);
 
 export class AutomationsService {
     #enqueuePollAt: undefined | ((date: Readonly<Date>) => Promise<void>);
@@ -86,6 +82,7 @@ export class AutomationsService {
         domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => poll({
             automationsApi,
             memberWelcomeEmailService,
+            scheduleAutomationEmailAnalyticsJob,
             enqueueAnotherPollAt: enqueuePollAt
         })));
 

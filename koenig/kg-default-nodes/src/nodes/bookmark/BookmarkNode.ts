@@ -1,4 +1,4 @@
-import {generateDecoratorNode, type DecoratorNodeProperty} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {parseBookmarkNode} from './bookmark-parser.js';
 import {renderBookmarkNode} from './bookmark-renderer.js';
 
@@ -17,27 +17,16 @@ export interface BookmarkData {
     caption?: string;
 }
 
-export interface BookmarkNode {
-    title: string;
-    description: string;
-    url: string;
-    caption: string;
-    author: string;
-    publisher: string;
-    icon: string;
-    thumbnail: string;
-}
-
-const bookmarkProperties = [
-    {name: 'title', default: '', wordCount: true},
-    {name: 'description', default: '', wordCount: true},
-    {name: 'url', default: '', urlType: 'url', wordCount: true},
-    {name: 'caption', default: '', wordCount: true},
-    {name: 'author', default: ''},
-    {name: 'publisher', default: ''},
-    {name: 'icon', urlPath: 'metadata.icon', default: '', urlType: 'url'},
-    {name: 'thumbnail', urlPath: 'metadata.thumbnail', default: '', urlType: 'url'}
-] as const satisfies readonly DecoratorNodeProperty[];
+const bookmarkProperties = {
+    title: {default: '', wordCount: true},
+    description: {default: '', wordCount: true},
+    url: {default: '', urlType: 'url', wordCount: true},
+    caption: {default: '', wordCount: true},
+    author: {default: ''},
+    publisher: {default: ''},
+    icon: {urlPath: 'metadata.icon', default: '', urlType: 'url'},
+    thumbnail: {urlPath: 'metadata.thumbnail', default: '', urlType: 'url'}
+} satisfies DecoratorNodePropertyMap;
 
 export class BookmarkNode extends generateDecoratorNode({
     nodeType: 'bookmark',
@@ -65,16 +54,16 @@ export class BookmarkNode extends generateDecoratorNode({
     getDataset(): Record<string, unknown> {
         const self = this.getLatest();
         return {
-            url: self.__url as string,
+            url: self.url,
             metadata: {
-                icon: self.__icon as string,
-                title: self.__title as string,
-                description: self.__description as string,
-                author: self.__author as string,
-                publisher: self.__publisher as string,
-                thumbnail: self.__thumbnail as string
+                icon: self.icon,
+                title: self.title,
+                description: self.description,
+                author: self.author,
+                publisher: self.publisher,
+                thumbnail: self.thumbnail
             },
-            caption: self.__caption as string
+            caption: self.caption
         };
     }
 

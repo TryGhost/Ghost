@@ -4,7 +4,7 @@
 import {useBulkEditLinks as useEditLinksApi} from '@tryghost/admin-x-framework/api/links';
 
 export const useEditLinks = () => {
-    const {mutateAsync: editLinks, isLoading: isEditLinksLoading} = useEditLinksApi();
+    const {mutateAsync: editLinks, isPending: isEditLinksLoading} = useEditLinksApi();
 
     return {
         editLinks,

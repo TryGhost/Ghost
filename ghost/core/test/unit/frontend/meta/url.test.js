@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const urlUtils = require('../../../../core/shared/url-utils');
 const urlService = require('../../../../core/server/services/url');
 const getUrl = require('../../../../core/frontend/meta/url');
@@ -8,14 +9,61 @@ const testUtils = require('../../../utils');
 describe('getUrl', function () {
     let urlServiceGetUrlForResourceStub;
     let urlUtilsUrlForStub;
+    let urlUtilsAbsoluteToRelativeStub;
 
     beforeEach(function () {
         urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
         urlUtilsUrlForStub = sinon.stub(urlUtils, 'urlFor');
+        urlUtilsAbsoluteToRelativeStub = sinon.stub(urlUtils, 'absoluteToRelative');
     });
 
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('posts carrying a serializer-attached url', function () {
+        it('reads the url property instead of asking the URL service', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost();
+            delete post.status;
+            post.url = 'http://my-site.com/my-post/';
+
+            urlUtilsAbsoluteToRelativeStub.withArgs('http://my-site.com/my-post/').returns('/my-post/');
+
+            assert.equal(getUrl(post), '/my-post/');
+            sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
+        });
+
+        it('returns the url property as-is for absolute requests', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost();
+            delete post.status;
+            post.url = 'http://my-site.com/my-post/';
+
+            assert.equal(getUrl(post, true), 'http://my-site.com/my-post/');
+            sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
+        });
+
+        it('returns the preview URL for the /404/ sentinel without asking the URL service', function () {
+            // The serializer computed /404/ from the full model — re-asking the
+            // service with the (stripped) render-time object can't do better.
+            const post = testUtils.DataGenerator.forKnex.createPost();
+            delete post.status;
+            post.url = 'http://my-site.com/404/';
+
+            urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, undefined).returns('preview url');
+
+            assert.equal(getUrl(post), 'preview url');
+            sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
+        });
+
+        it('returns the /404/ url itself for an explicitly published post', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost({status: 'published'});
+            post.url = 'http://my-site.com/404/';
+
+            urlUtilsAbsoluteToRelativeStub.withArgs('http://my-site.com/404/').returns('/404/');
+
+            assert.equal(getUrl(post), '/404/');
+            sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
+        });
     });
 
     it('should return url for a post', function () {
@@ -25,6 +73,38 @@ describe('getUrl', function () {
             .returns('post url');
 
         assert.equal(getUrl(post), 'post url');
+    });
+
+    describe('canary log for posts without a serializer-attached url', function () {
+        let loggingWarnStub;
+
+        beforeEach(function () {
+            loggingWarnStub = sinon.stub(logging, 'warn');
+        });
+
+        it('warns when a post falls back to the URL service', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost();
+            urlServiceGetUrlForResourceStub.returns('/my-post/');
+
+            getUrl(post);
+
+            sinon.assert.calledOnce(loggingWarnStub);
+            const report = loggingWarnStub.firstCall.args[0];
+            assert.equal(report.code, 'URL_HELPER_MISSING_URL');
+            assert.equal(report.errorDetails.id, post.id);
+            assert.ok(report.errorDetails.resourceKeys.includes('slug'));
+            assert.match(report.stack, /url\.test\.js/);
+        });
+
+        it('does not warn when the post carries a url', function () {
+            const post = testUtils.DataGenerator.forKnex.createPost();
+            post.url = 'http://my-site.com/my-post/';
+            urlUtilsAbsoluteToRelativeStub.returns('/my-post/');
+
+            getUrl(post);
+
+            sinon.assert.notCalled(loggingWarnStub);
+        });
     });
 
     describe('Content-API-serialized posts (status stripped by the serializer)', function () {

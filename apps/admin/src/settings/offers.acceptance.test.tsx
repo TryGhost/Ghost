@@ -211,11 +211,13 @@ describe("Offers", () => {
         const updateModal = offersScreen.updateModal();
         await expect.element(updateModal).toBeVisible();
 
-        await updateModal.getByPlaceholder("black-friday").fill("");
+        const codeInput = updateModal.getByPlaceholder("black-friday");
+        await expect.element(codeInput).toHaveValue(firstOffer.code);
+        await codeInput.fill("");
         await updateModal.getByRole("button", { name: "Save" }).click();
         await expect.element(updateModal).toHaveTextContent(/Please enter a code/);
 
-        await updateModal.getByPlaceholder("black-friday").fill("black-friday-offer");
+        await codeInput.fill("black-friday-offer");
         await updateModal.getByRole("button", { name: "Save" }).click();
 
         await expect.poll(() => editApi.lastRequest?.body).toMatchObject({
@@ -409,7 +411,7 @@ describe("Offers", () => {
             await offersScreen.durationMonthsInput().fill("1000");
             await expect.element(retentionModal.getByText("Enter a whole number of months between 1 and 99.")).toBeVisible();
 
-            await retentionModal.getByRole("button", { name: /Free month\(s\)/ }).click();
+            await retentionModal.getByRole("radio", { name: /Free month\(s\)/ }).click();
             await retentionModal.getByLabelText("Free months").fill("0");
             await saveButton.click();
             await expect.element(retentionModal.getByText("Enter a whole number of months between 1 and 99.")).toBeVisible();
@@ -472,7 +474,7 @@ describe("Offers", () => {
             const retentionModal = offersScreen.retentionModal();
             await retentionModal.getByLabelText("Display title").fill("Before you go");
             await retentionModal.getByLabelText("Display description").fill("Please stay <script>alert(1)</script>");
-            await retentionModal.getByRole("button", { name: /Free month\(s\)/ }).click();
+            await retentionModal.getByRole("radio", { name: /Free month\(s\)/ }).click();
             await retentionModal.getByLabelText("Free months").fill("2");
 
             // The preview src double-encodes display fields (params are
@@ -503,7 +505,7 @@ describe("Offers", () => {
             expect(params.get("type")).toBe("percent");
             expect(params.get("amount")).toBe("100");
 
-            await retentionModal.getByRole("button", { name: /Percentage discount/ }).click();
+            await retentionModal.getByRole("radio", { name: /Percentage discount/ }).click();
             await retentionModal.getByLabelText("Amount off").fill("35");
             await expect.poll(() => previewParams().get("amount")).toBe("35");
             expect(previewParams().get("type")).toBe("percent");
@@ -519,7 +521,7 @@ describe("Offers", () => {
             const retentionModal = offersScreen.retentionModal();
             await retentionModal.getByLabelText("Display title").fill("Before you go");
             await retentionModal.getByLabelText("Display description").fill("Stay for a little longer");
-            await retentionModal.getByRole("button", { name: /Percentage discount/ }).click();
+            await retentionModal.getByRole("radio", { name: /Percentage discount/ }).click();
             await retentionModal.getByLabelText("Amount off").fill("35");
             await retentionModal.getByRole("button", { name: "Save" }).click();
 

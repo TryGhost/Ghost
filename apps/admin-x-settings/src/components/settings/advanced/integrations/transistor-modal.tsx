@@ -2,7 +2,8 @@ import APIKeys from './api-keys';
 import BookmarkThumb from '../../../../assets/images/integrations/ghost-transistor.png';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {ConfirmationModal, Form, Icon, Modal, Toggle} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, Icon, Modal} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
@@ -106,24 +107,23 @@ const TransistorModal = NiceModal.create(() => {
             />
             <div className='mt-7'>
                 <Form marginBottom={false} title='Transistor configuration' grouped>
-                    <Toggle
-                        checked={enabled}
-                        direction='rtl'
-                        hint={<>Connect your Ghost site with <a className='text-green' href="https://transistor.fm" rel="noopener noreferrer" target="_blank">Transistor.fm</a> to offer members private podcasts.</>}
-                        label='Enable Transistor'
-                        onChange={(e) => {
-                            setEnabled(e.target.checked);
-                        }}
-                    />
+                    <Field orientation='horizontal'>
+                        <FieldContent>
+                            <FieldLabel htmlFor='transistor-enabled'>Enable Transistor</FieldLabel>
+                            <FieldDescription>Connect your Ghost site with <a className='text-green' href="https://transistor.fm" rel="noopener noreferrer" target="_blank">Transistor.fm</a> to offer members private podcasts.</FieldDescription>
+                        </FieldContent>
+                        <Switch checked={enabled} id='transistor-enabled' onCheckedChange={setEnabled} />
+                    </Field>
                     {enabled && (
                         <APIKeys keys={[
                             {
+                                id: 'admin-api-key',
                                 label: 'Admin API key',
                                 text: adminApiKey?.secret,
                                 hint: regenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
                                 onRegenerate: handleRegenerate
                             },
-                            {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
+                            {id: 'api-url', label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                         ]} />
                     )}
                 </Form>

@@ -1,8 +1,9 @@
 import NiceModal from '@ebay/nice-modal-react';
 import validator from 'validator';
 import {APIError, ValidationError} from '@tryghost/admin-x-framework/errors';
+import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSeparator, FieldSet, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
-import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
@@ -241,20 +242,32 @@ const InviteUserModal = NiceModal.create(() => {
                     }}
                     onKeyDown={() => setErrors(e => ({...e, email: undefined}))}
                 />
-                <div>
-                    <Radio
-                        error={!!errors.role}
-                        hint={errors.role}
-                        id='role'
-                        options={allowedRoleOptions}
-                        selectedOption={role}
-                        separator={true}
-                        title="Role"
-                        onSelect={(value) => {
-                            setRole(value as RoleType);
-                        }}
-                    />
-                </div>
+                <FieldSet>
+                    <FieldLegend id='invite-role-legend' variant='label'>Role</FieldLegend>
+                    <RadioGroup
+                        aria-describedby={errors.role ? 'invite-role-error' : undefined}
+                        aria-invalid={!!errors.role || undefined}
+                        aria-labelledby='invite-role-legend'
+                        name='role'
+                        value={role}
+                        onValueChange={value => setRole(value as RoleType)}
+                    >
+                        {allowedRoleOptions.map((option) => {
+                            const id = `invite-role-${option.value.replace(/\s+/g, '-')}`;
+                            return (
+                                <Field key={option.value} orientation='horizontal'>
+                                    <RadioGroupItem id={id} value={option.value} />
+                                    <FieldContent>
+                                        <FieldLabel htmlFor={id}>{option.label}</FieldLabel>
+                                        <FieldDescription>{option.hint}</FieldDescription>
+                                    </FieldContent>
+                                </Field>
+                            );
+                        })}
+                    </RadioGroup>
+                    <FieldError id='invite-role-error'>{errors.role}</FieldError>
+                    <FieldSeparator />
+                </FieldSet>
             </div>
         </Modal>
     );

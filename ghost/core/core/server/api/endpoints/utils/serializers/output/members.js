@@ -1,7 +1,7 @@
 //@ts-check
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
-const {unparse} = require('@tryghost/members-csv');
+const {unparse} = require('../../../../../services/members/csv');
 const mappers = require('./mappers');
 const {Transform} = require('stream');
 const papaparse = require('papaparse');
@@ -24,22 +24,6 @@ module.exports = {
     mrrStats: createSerializer('mrrStats', passthrough),
     activityFeed: createSerializer('activityFeed', activityFeed)
 };
-
-// Columns to export in CSV
-const CSV_HEADERS = [
-    'id',
-    'email',
-    'name',
-    'note',
-    'subscribed_to_emails',
-    'complimentary_plan',
-    'stripe_customer_id',
-    'created_at',
-    'deleted_at',
-    'labels',
-    'tiers',
-    'gift_id'
-];
 
 /**
  * Formats a single member for CSV export
@@ -84,7 +68,10 @@ function formatMemberForCSV(member) {
         deleted_at: member.deleted_at || null,
         labels: labels,
         tiers: tiers,
-        gift_id: giftId
+        gift_id: giftId,
+        // The exporter flattens custom field values into their CSV columns, since
+        // which columns exist is a per-site question only the database can answer.
+        ...member.custom_field_cells
     };
 }
 
@@ -194,6 +181,12 @@ function serializeMember(member, options) {
 
     if (json.products) {
         serialized.tiers = json.products;
+    }
+
+    // Present on a read whenever the flag is on; absent otherwise, and absent on
+    // browse. An empty object is a member with no values set.
+    if (json.custom_fields) {
+        serialized.custom_fields = json.custom_fields;
     }
 
     serialized.current_subscription = json.current_subscription || null;
@@ -423,38 +416,41 @@ function serializeNewsletters(newsletters) {
  * @returns {Transform} Transform stream that converts objects to CSV
  */
 function createCSVTransform() {
-    let isFirstChunk = true;
-    
+    // Locked in from the first row rather than declared up front: custom fields
+    // add a column per site, so the column set isn't known until a row arrives.
+    // Every row carries the same keys, so the first is representative.
+    let fields = null;
+
     return new Transform({
         objectMode: true,
         transform(member, encoding, callback) {
             try {
                 // Format the member data for CSV
                 const formattedMember = formatMemberForCSV(member);
-                
+
                 // For first chunk, include the headers
-                if (isFirstChunk) {
+                if (fields === null) {
+                    fields = Object.keys(formattedMember);
                     const csv = papaparse.unparse({
-                        fields: CSV_HEADERS,
+                        fields,
                         data: [formattedMember]
                     }, {
                         header: true,
                         escapeFormulae: true,
                         newline: '\r\n' // Explicitly set Windows-style line endings for compatibility
                     });
-                    isFirstChunk = false;
                     callback(null, csv);
                 } else {
                     // For subsequent chunks, don't include headers, just the data
                     const csv = papaparse.unparse({
-                        fields: CSV_HEADERS,
+                        fields,
                         data: [formattedMember]
                     }, {
                         header: false,
                         escapeFormulae: true,
                         newline: '\r\n' // Explicitly set Windows-style line endings for compatibility
                     });
-                    
+
                     // Make sure each row starts with a newline to ensure separation between rows
                     // Ensure consistent line endings by using explicit CR+LF sequence
                     callback(null, '\r\n' + csv.replace(/^\r?\n+/, ''));

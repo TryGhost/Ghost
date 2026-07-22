@@ -281,6 +281,61 @@ describe('Acceptance: Posts / Pages', function () {
                     expect(findAll('[data-test-post-id]').length, 'editor count').to.equal(1);
                 });
 
+                it('loads authors lazily and searches via the API', async function () {
+                    this.server.createList('user', 120);
+                    const zed = this.server.create('user', {name: 'Zed Zeta', slug: 'zed-zeta'});
+
+                    const userRequests = () => this.server.pretender.handledRequests
+                        .filter(r => r.method === 'GET' && r.url.includes('/users/') && !r.url.includes('/users/me'));
+
+                    await visit('/posts');
+
+                    // authors are no longer loaded up-front
+                    expect(userRequests().length, 'user requests before opening author filter').to.equal(0);
+
+                    await clickTrigger('[data-test-author-select]');
+
+                    // opening the dropdown loads the first page of authors
+                    expect(userRequests().length, 'user requests after opening author filter').to.equal(1);
+                    expect(userRequests()[0].queryParams.limit, 'author request limit').to.equal('100');
+
+                    // vertical-collection only renders visible options so we can't
+                    // assert on the full "All authors" + 100 page-1 authors count
+                    let options = findAll('.ember-power-select-option');
+                    expect(options.length, 'options count').to.be.greaterThan(10);
+                    expect(options[0].textContent.trim()).to.equal('All authors');
+
+                    // searching queries the API rather than filtering the loaded page
+                    await selectSearch('[data-test-author-select]', 'zed');
+
+                    options = findAll('.ember-power-select-option');
+                    expect(options.length, 'search result count').to.equal(1);
+                    expect(options[0].textContent.trim()).to.equal('Zed Zeta');
+
+                    await selectChoose('[data-test-author-select]', 'Zed Zeta');
+
+                    const postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    const lastPostsRequest = postsRequests[postsRequests.length - 1];
+                    expect(lastPostsRequest.queryParams.allFilter, '"author" request filter param')
+                        .to.have.string(`authors:${zed.slug}`);
+                });
+
+                it('resolves the author filter from a query param without loading all users', async function () {
+                    this.server.createList('user', 120);
+                    const author = this.server.create('user', {name: 'Filtered Author', slug: 'filtered-author'});
+                    this.server.create('post', {authors: [author], status: 'published', title: 'Filtered Author Post'});
+
+                    await visit('/posts?author=filtered-author');
+
+                    const userBrowseRequests = this.server.pretender.handledRequests
+                        .filter(r => r.method === 'GET' && /\/users\/\?/.test(r.url));
+                    expect(userBrowseRequests.length, 'user browse requests').to.equal(0);
+
+                    expect(find('[data-test-author-select]').textContent, 'author filter trigger')
+                        .to.have.string('Filtered Author');
+                    expect(findAll('[data-test-post-id]').length, 'filtered posts count').to.equal(1);
+                });
+
                 it('can filter by visibility', async function () {
                     await visit('/posts');
 
@@ -314,7 +369,7 @@ describe('Acceptance: Posts / Pages', function () {
                     expect(options.length, 'options count').to.equal(4); // 3 tags + "All tags", we populate the tags when opening the dropdown
                     expect(options[0].textContent.trim()).to.equal('All tags');
 
-                    // search lazy-loads tags from the API, and sorts them alphabetically
+                    // search results are sorted alphabetically
                     await selectSearch('[data-test-tag-select]', 's');
 
                     options = findAll('.ember-power-select-option');

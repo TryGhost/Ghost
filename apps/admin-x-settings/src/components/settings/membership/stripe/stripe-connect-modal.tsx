@@ -6,7 +6,8 @@ import React, {useEffect, useState} from 'react';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import StripeVerifiedBadge from '../../../../assets/images/stripe-verified.svg';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, ConfirmationModal, Form, Heading, LimitModal, Modal, StripeButton, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, Heading, LimitModal, Modal, StripeButton, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Field, FieldLabel, Switch} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
@@ -123,14 +124,10 @@ const Connect: React.FC = () => {
         <div>
             <div className='mb-6 flex items-center justify-between'>
                 <Heading level={3}>Connect with Stripe</Heading>
-                <Toggle
-                    checked={testMode}
-                    direction='rtl'
-                    label='Test mode'
-                    labelClasses={`translate-y-[1px] ${testMode ? 'text-[#EC6803]' : 'text-grey-800'}`}
-                    toggleBg='stripetest'
-                    onChange={e => setTestMode(e.target.checked)}
-                />
+                <Field className='w-auto' orientation='horizontal'>
+                    <FieldLabel className={testMode ? 'text-orange' : 'text-muted-foreground'} htmlFor='stripe-test-mode'>Test mode</FieldLabel>
+                    <Switch checked={testMode} className='data-[state=checked]:bg-orange!' id='stripe-test-mode' onCheckedChange={setTestMode} />
+                </Field>
             </div>
             <Heading level={6} grey>Step 1 — <span className='text-black dark:text-white'>Generate secure key</span></Heading>
             <div className='mt-2 mb-4'>
@@ -239,8 +236,8 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
         <div>
             <Heading level={3}>Connect Stripe</Heading>
             <Form marginBottom={false} marginTop>
-                <TextField title='Publishable key' value={publishableKey?.toString()} onChange={e => updateSetting('stripe_publishable_key', e.target.value)} />
-                <TextField title='Secure key' value={secretKey?.toString()} onChange={e => updateSetting('stripe_secret_key', e.target.value)} />
+                <TextField title='Publishable key' value={publishableKey?.toString() ?? ''} onChange={e => updateSetting('stripe_publishable_key', e.target.value)} />
+                <TextField title='Secure key' value={secretKey?.toString() ?? ''} onChange={e => updateSetting('stripe_secret_key', e.target.value)} />
                 <Button className='mt-5' color='green' disabled={saveState === 'saving'} label='Save Stripe settings' onClick={onSubmit} />
             </Form>
         </div>

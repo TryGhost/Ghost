@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.52.2-rc.0",
+  "version": "6.54.0-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -25,7 +25,7 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "engines": {
-    "node": "^22.18.0"
+    "node": "^22.23.1"
   },
   "devDependencies": {
     "@babel/core": "7.29.7",
@@ -199,7 +199,6 @@
           {
             "projects": [
               "@tryghost/admin-x-framework",
-              "@tryghost/admin-x-settings",
               "@tryghost/activitypub"
             ],
             "target": "build"
@@ -227,7 +226,6 @@
           {
             "projects": [
               "@tryghost/admin-x-framework",
-              "@tryghost/admin-x-settings",
               "@tryghost/activitypub"
             ],
             "target": "build"

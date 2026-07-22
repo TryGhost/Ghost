@@ -1,10 +1,12 @@
 import React from 'react';
 import clsx from 'clsx';
-import {Icon, NoValueLabel} from '@tryghost/admin-x-design-system';
+import {BadgeDollarSign} from 'lucide-react';
+import {Icon} from '@tryghost/admin-x-design-system';
+import {NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 import {TrialDaysLabel} from './tier-detail-preview';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {numberWithCommas} from '../../../../utils/helpers';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface TiersListProps {
@@ -33,7 +35,7 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
                 <div className='text-[1.65rem] leading-tight font-bold tracking-tight text-black dark:text-white'>{tier.name}</div>
                 <div className='mt-2 flex items-baseline'>
                     <span className="ml-1 translate-y-[-3px] text-md font-bold uppercase">{currencySymbol}</span>
-                    <span className='text-xl font-bold tracking-tighter'>{numberWithCommas(currencyToDecimal(tier.monthly_price || 0))}</span>
+                    <span className='text-xl font-bold tracking-tighter'>{formatNumber(currencyToDecimal(tier.monthly_price || 0), {maximumFractionDigits: 2})}</span>
                     {(tier.monthly_price && tier.monthly_price > 0) && <span className='text-grey-700'>/month</span>}
                 </div>
                 {tier.trial_days ?
@@ -61,7 +63,8 @@ const TiersList: React.FC<TiersListProps> = ({
 
     if (!tiers.length) {
         return (
-            <NoValueLabel icon='money-bags'>
+            <NoValueLabel>
+                <NoValueLabelIcon><BadgeDollarSign /></NoValueLabelIcon>
                 No {tab === 'active-tiers' ? 'active' : 'archived'} tiers found.
             </NoValueLabel>
         );

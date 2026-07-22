@@ -3,6 +3,9 @@ const {knex} = require('../../../data/db');
 const moment = require('moment');
 const logging = require('@tryghost/logging');
 const {Transform} = require('stream');
+const labs = require('../../../../shared/labs');
+const customFields = require('../../members-custom-fields');
+const {csvCellsForFields} = require('@tryghost/custom-field-types/csv');
 
 /**
  * Process a batch of members with all their related data
@@ -14,9 +17,11 @@ const {Transform} = require('stream');
  * @param {Map} giftIdMap - Map of member_id to gift id (for gift members only)
  * @param {Object} allProducts - Map of product IDs to product names
  * @param {Object} allLabels - Map of label IDs to label names
+ * @param {Array} activeCustomFields - Active custom field definitions
+ * @param {Map} customFieldValuesMap - Map of member_id to their custom field values
  * @returns {Array} Processed member records
  */
-function processMembersData(members, tiersMap, labelsMap, stripeCustomerMap, subscribedSet, giftIdMap, allProducts, allLabels) {
+function processMembersData(members, tiersMap, labelsMap, stripeCustomerMap, subscribedSet, giftIdMap, allProducts, allLabels, activeCustomFields, customFieldValuesMap) {
     for (const row of members) {
         const tierIds = tiersMap.get(row.id) ? tiersMap.get(row.id).split(',') : [];
         const tierDetails = tierIds.map((id) => {
@@ -40,6 +45,12 @@ function processMembersData(members, tiersMap, labelsMap, stripeCustomerMap, sub
         row.gift_id = giftIdMap.get(row.id) || null;
         row.stripe_customer_id = stripeCustomerMap.get(row.id) || null;
         row.created_at = moment(row.created_at).toISOString();
+
+        // Flattened here rather than in the serializer because the column set is
+        // only knowable from the database. Every member carries a cell for every
+        // active field's column, so a member with no values still contributes the
+        // full set — the CSV header is taken from whichever row streams first.
+        row.custom_field_cells = csvCellsForFields(activeCustomFields, customFieldValuesMap.get(row.id) || {});
     }
     return members;
 }
@@ -83,6 +94,19 @@ async function createExportStream(options) {
 
     logging.info('[MembersExporter] Fetched products and labels in ' + (Date.now() - startFetchingProducts) + 'ms');
 
+    // Definitions are a small, stable table, so they're read once rather than per
+    // batch. Reading once also fixes the column set for the whole file: archiving a
+    // field mid-export can't leave the header ragged. It can still leave that
+    // field's cells empty from the batch after the archive onwards, because the
+    // per-batch value read applies its own active filter.
+    const customFieldsEnabled = labs.isSet('membersCustomFields');
+    if (customFieldsEnabled && !customFields.definitions) {
+        logging.warn('[MembersExporter] Custom fields service is not initialised, exporting without custom field columns');
+    }
+    const activeCustomFields = customFieldsEnabled && customFields.definitions
+        ? await customFields.definitions.browse()
+        : [];
+
     // Create a transform stream that will process the members as they come in
     const processMembersTransform = new Transform({
         objectMode: true,
@@ -92,7 +116,7 @@ async function createExportStream(options) {
                 const memberIds = batch.map(member => member.id);
                 
                 // Fetch related data for this batch
-                const [tiers, labels, stripeCustomers, subscriptions, gifts] = await Promise.all([
+                const [tiers, labels, stripeCustomers, subscriptions, gifts, customFieldValuesMap] = await Promise.all([
                     knex('members_products')
                         .select('member_id', knex.raw('GROUP_CONCAT(product_id) as tiers'))
                         .whereIn('member_id', memberIds)
@@ -115,7 +139,11 @@ async function createExportStream(options) {
                     knex('gifts')
                         .select('id', 'redeemer_member_id')
                         .where('status', 'redeemed')
-                        .whereIn('redeemer_member_id', memberIds)
+                        .whereIn('redeemer_member_id', memberIds),
+
+                    activeCustomFields.length > 0
+                        ? customFields.values.getValuesForMembers(memberIds)
+                        : new Map()
                 ]);
 
                 // Create maps for quick lookups
@@ -133,8 +161,10 @@ async function createExportStream(options) {
                     stripeCustomerMap, 
                     subscribedSet, 
                     giftIdMap,
-                    allProducts, 
-                    allLabels
+                    allProducts,
+                    allLabels,
+                    activeCustomFields,
+                    customFieldValuesMap
                 );
 
                 // Push each member individually to avoid large arrays in memory

@@ -1,9 +1,7 @@
-<GhTokenInput
-    @options={{this.availableAuthors}}
-    @selected={{this.selectedAuthors}}
-    @onChange={{action "updateAuthors"}}
-    @allowCreation={{false}}
+<GhAuthorsTokenInput
+    @selected={{@selectedAuthors}}
+    @onChange={{this.updateAuthors}}
     @renderInPlace={{true}}
-    @triggerId={{this.triggerId}}
+    @triggerId={{@triggerId}}
     @triggerClass={{@triggerClass}}
 />

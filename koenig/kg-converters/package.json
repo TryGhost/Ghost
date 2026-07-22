@@ -39,11 +39,10 @@
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint-plugin-ghost": "catalog:",
+    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
   },
-  "dependencies": {
-    "lodash": "catalog:"
-  }
+  "dependencies": {}
 }

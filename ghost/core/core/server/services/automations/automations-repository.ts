@@ -24,6 +24,13 @@ export interface WaitAction {
     };
 }
 
+export interface AutomationEmailStats {
+    email_sent_count: number;
+    email_opened_count: number;
+    opened_rate: number | null;
+    clicked_rate: number | null;
+}
+
 export interface SendEmailAction {
     id: string;
     type: 'send_email';
@@ -32,6 +39,7 @@ export interface SendEmailAction {
         email_lexical: string;
         email_design_setting_id: string;
     };
+    stats?: AutomationEmailStats;
 }
 
 export type AutomationAction = WaitAction | SendEmailAction;
@@ -60,6 +68,28 @@ export interface EditAutomationData {
     actions: AutomationAction[];
     edges: AutomationEdge[];
 }
+
+export type AutomatedEmailRecipientWithMailgunId = {
+    id: string;
+    mailgun_message_id: string;
+    automation_action_revision_id: string;
+};
+
+export type AutomatedEmailEvents = {
+    deliveredAt?: Date;
+    openedAt?: Date;
+    automationActionRevisionId: string;
+};
+
+export type RecordEmailSentOptions = Readonly<{
+    automationActionRevisionId: string;
+    mailgunMessageId?: string;
+    memberEmail: string;
+    memberId: string;
+    memberName: string | null;
+    memberUuid: string;
+    trackOpens: boolean;
+}>;
 
 type AutomationStepBase = {
     id: string;
@@ -147,4 +177,20 @@ export interface AutomationsRepository {
         step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
         retryAt: Readonly<Date>
     ): Promise<boolean>;
+    /**
+     * Record a sent email and increment its action revision's sent count.
+     */
+    recordEmailSent(options: RecordEmailSentOptions): Promise<void>;
+    /**
+     * Fetch sent emails by their Mailgun IDs.
+     */
+    getAutomatedEmailRecipientsByMailgunIds(
+        mailgunMessageIds: ReadonlyArray<string>
+    ): Promise<AutomatedEmailRecipientWithMailgunId[]>;
+    /**
+     * Track delivery and open events.
+     */
+    trackEmailDeliveredAndOpened(
+        eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>
+    ): Promise<void>;
 }

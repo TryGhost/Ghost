@@ -1,4 +1,5 @@
 import {$getNodeByKey} from 'lexical';
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {VISIBILITY_SETTINGS, getVisibilityOptions, parseVisibilityToToggles, serializeOptionsToVisibility} from '../utils/visibility';
 
 export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
@@ -11,11 +12,11 @@ export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
     let currentVisibility;
 
     editor.getEditorState().read(() => {
-        const htmlNode = $getNodeByKey(nodeKey);
-        if (!htmlNode) {
+        const node = $getNodeByKey(nodeKey);
+        if (!$isKoenigCard(node)) {
             return;
         }
-        currentVisibility = htmlNode.visibility;
+        currentVisibility = node.visibility;
     });
 
     const visibilityData = parseVisibilityToToggles(currentVisibility);
@@ -28,7 +29,7 @@ export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
         toggleVisibility: (type, key, value) => {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                if (!node) {
+                if (!$isKoenigCard(node)) {
                     return;
                 }
                 const newVisibilityOptions = structuredClone(getVisibilityOptions(node.visibility, {isStripeEnabled, showWeb, showEmail}));

@@ -5,6 +5,7 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class MembersRoute extends MembersManagementRoute {
+    @service feature;
     @service modals;
     @service router;
     @service('unsaved-changes') unsavedChanges;
@@ -33,6 +34,15 @@ export default class MembersRoute extends MembersManagementRoute {
         // shell keeps rendering the page.
         const memberId = transition.to?.params?.member_id;
         if (memberId === 'import') {
+            transition.abort();
+            return;
+        }
+
+        // React owns this URL when the flag is on. Aborting keeps the Ember
+        // subtree unrendered, so the `data-testid` and `data-test-link`
+        // attributes exist in only one tree and the queryRecord below doesn't
+        // fire for a screen nobody sees.
+        if (this.feature.memberDetailsReact) {
             transition.abort();
         }
     }

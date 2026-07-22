@@ -1,7 +1,9 @@
 const sinon = require('sinon');
 
-const EventProcessingResult = require('../../../../../core/server/services/email-analytics/event-processing-result');
+const {EventProcessingResult} = require('../../../../../core/server/services/email-analytics/event-processing-result');
 const EmailAnalyticsProviderMailgun = require('../../../../../core/server/services/email-analytics/email-analytics-provider-mailgun');
+
+const DEFAULT_TAGS = ['bulk-email'];
 
 const SAMPLE_EVENTS = [
     new EventProcessingResult({
@@ -58,7 +60,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 }
             });
 
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, tags: DEFAULT_TAGS});
 
             const batchHandler = sinon.spy();
             const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
@@ -77,7 +79,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 }
             });
 
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, tags: DEFAULT_TAGS});
 
             const batchHandler = sinon.spy();
             const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
@@ -98,7 +100,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 }
             });
 
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, tags: DEFAULT_TAGS});
 
             const batchHandler = sinon.spy();
             const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
@@ -119,7 +121,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 }
             });
 
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, tags: DEFAULT_TAGS});
 
             const batchHandler = sinon.spy();
             const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
@@ -130,7 +132,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
             sinon.assert.calledWithExactly(mailgunFetchEventsStub, {...MAILGUN_OPTIONS, end: END_EXAMPLE_UNIX}, batchHandler, {maxEvents: 1000});
         });
 
-        it('uses custom tags when supplied', async function () {
+        it('uses supplied tags', async function () {
             const configStub = sinon.stub(config, 'get');
             configStub.withArgs('bulkEmail').returns({
                 mailgun: {
@@ -139,9 +141,8 @@ describe('EmailAnalyticsProviderMailgun', function () {
                     baseUrl: 'https://api.mailgun.net/v3'
                 }
             });
-            configStub.withArgs('bulkEmail:mailgun:tag').returns('custom-tag');
 
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, tags: ['bulk-email', 'custom-tag']});
 
             const batchHandler = sinon.spy();
             const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
@@ -163,7 +164,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                     baseUrl: 'https://api.mailgun.net/v3'
                 }
             });
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, tags: DEFAULT_TAGS});
 
             const batchHandler = sinon.spy();
             const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);

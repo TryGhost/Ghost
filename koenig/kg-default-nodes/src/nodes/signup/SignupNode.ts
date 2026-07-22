@@ -1,58 +1,25 @@
 import {signupParser} from './signup-parser.js';
 import {renderSignupCardToDOM} from './signup-renderer.js';
-import {generateDecoratorNode, type DecoratorNodeProperty} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 
-export interface SignupData {
-    alignment?: string;
-    backgroundColor?: string;
-    backgroundImageSrc?: string;
-    backgroundSize?: string;
-    textColor?: string;
-    buttonColor?: string;
-    buttonTextColor?: string;
-    buttonText?: string;
-    disclaimer?: string;
-    header?: string;
-    labels?: string[];
-    layout?: string;
-    subheader?: string;
-    successMessage?: string;
-    swapped?: boolean;
-}
+const signupProperties = {
+    alignment: {default: 'left'},
+    backgroundColor: {default: '#F0F0F0'},
+    backgroundImageSrc: {default: ''},
+    backgroundSize: {default: 'cover'},
+    textColor: {default: ''},
+    buttonColor: {default: 'accent'},
+    buttonTextColor: {default: '#FFFFFF'},
+    buttonText: {default: 'Subscribe'},
+    disclaimer: {default: '', wordCount: true},
+    header: {default: '', wordCount: true},
+    layout: {default: 'wide'},
+    subheader: {default: '', wordCount: true},
+    successMessage: {default: 'Email sent! Check your inbox to complete your signup.'},
+    swapped: {default: false}
+} satisfies DecoratorNodePropertyMap;
 
-export interface SignupNode {
-    alignment: string;
-    backgroundColor: string;
-    backgroundImageSrc: string;
-    backgroundSize: string;
-    textColor: string;
-    buttonColor: string;
-    buttonTextColor: string;
-    buttonText: string;
-    disclaimer: string;
-    header: string;
-    layout: string;
-    subheader: string;
-    successMessage: string;
-    swapped: boolean;
-}
-
-const signupProperties = [
-    {name: 'alignment', default: 'left'},
-    {name: 'backgroundColor', default: '#F0F0F0'},
-    {name: 'backgroundImageSrc', default: ''},
-    {name: 'backgroundSize', default: 'cover'},
-    {name: 'textColor', default: ''},
-    {name: 'buttonColor', default: 'accent'},
-    {name: 'buttonTextColor', default: '#FFFFFF'},
-    {name: 'buttonText', default: 'Subscribe'},
-    {name: 'disclaimer', default: '', wordCount: true},
-    {name: 'header', default: '', wordCount: true},
-    {name: 'layout', default: 'wide'},
-    {name: 'subheader', default: '', wordCount: true},
-    {name: 'successMessage', default: 'Email sent! Check your inbox to complete your signup.'},
-    {name: 'swapped', default: false}
-] as const satisfies readonly DecoratorNodeProperty[];
+export type SignupData = DecoratorNodeData<typeof signupProperties> & {labels?: string[]};
 
 export class SignupNode extends generateDecoratorNode({
     nodeType: 'signup',

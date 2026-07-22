@@ -1,5 +1,6 @@
 import React from 'react';
-import {Heading, Separator, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldLabel, Separator, Switch} from '@tryghost/shade/components';
+import {Heading, TextField} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const TransistorSettings: React.FC<{
@@ -38,13 +39,13 @@ const TransistorSettings: React.FC<{
         <>
             <Separator />
             <Heading level={5}>Transistor</Heading>
-            <Toggle
-                checked={enabled}
-                direction='rtl'
-                hint='Show a section on the account page for members to access private podcasts'
-                label='Enable Transistor integration'
-                onChange={e => updateSetting('transistor_portal_enabled', e.target.checked)}
-            />
+            <Field orientation='horizontal'>
+                <FieldContent>
+                    <FieldLabel htmlFor='transistor-portal-enabled'>Enable Transistor integration</FieldLabel>
+                    <FieldDescription>Show a section on the account page for members to access private podcasts</FieldDescription>
+                </FieldContent>
+                <Switch checked={enabled} id='transistor-portal-enabled' onCheckedChange={checked => updateSetting('transistor_portal_enabled', checked)} />
+            </Field>
             {enabled && (
                 <>
                     <TextField

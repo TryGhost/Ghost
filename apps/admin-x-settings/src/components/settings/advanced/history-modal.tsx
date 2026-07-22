@@ -1,10 +1,14 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
-import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, type LoadSelectOptions, LoadingIndicator, Modal, NoValueLabel, Popover, Select, type SelectOption, Toggle, ToggleGroup, debounce} from '@tryghost/admin-x-design-system';
+import {Avatar, Field, FieldLabel, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, Switch, inputSurface} from '@tryghost/shade/components';
+import {Button, Icon, InfiniteScrollListener, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
+import {ChevronDown, History, X} from 'lucide-react';
+import {Inline, Stack} from '@tryghost/shade/primitives';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type User} from '@tryghost/admin-x-framework/api/users';
-import {generateAvatarColor, getInitials} from '../../../utils/helpers';
-import {useCallback, useState} from 'react';
+import {formatNumber} from '@tryghost/shade/utils';
+import {keepPreviousData} from '@tanstack/react-query';
+import {useCallback, useEffect, useId, useRef, useState} from 'react';
 import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 const HistoryIcon: React.FC<{action: Action}> = ({action}) => {
@@ -26,13 +30,11 @@ const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
     return (
         <div className='relative shrink-0'>
             <Avatar
-                bgColor={generateAvatarColor(action.actor?.name || action.actor?.slug || '')}
-                image={action.actor?.image ?? undefined}
-                label={getInitials(action.actor?.name || action.actor?.slug)}
-                labelColor='white'
-                size='md'
+                className='size-10'
+                name={action.actor?.name || action.actor?.slug}
+                src={action.actor?.image}
             />
-            <div className='absolute -right-1 -bottom-1 z-30 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
+            <div className='absolute -right-1 -bottom-1 z-30 flex items-center justify-center rounded-full border border-border-default bg-background p-1 shadow-sm'>
                 <HistoryIcon action={action} />
             </div>
         </div>
@@ -45,12 +47,18 @@ const HistoryFilterToggle: React.FC<{
     excludedItems: string[];
     toggleItem: (item: string, included: boolean) => void;
 }> = ({label, item, excludedItems, toggleItem}) => {
-    return <Toggle
-        checked={!excludedItems.includes(item)}
-        direction='rtl'
-        label={label}
-        onChange={e => toggleItem(item, e.target.checked)}
-    />;
+    const id = useId();
+
+    return (
+        <Field orientation='horizontal'>
+            <FieldLabel htmlFor={id}>{label}</FieldLabel>
+            <Switch
+                checked={!excludedItems.includes(item)}
+                id={id}
+                onCheckedChange={checked => toggleItem(item, checked)}
+            />
+        </Field>
+    );
 };
 
 const HistoryFilter: React.FC<{
@@ -59,59 +67,156 @@ const HistoryFilter: React.FC<{
     excludedResources: string[];
     toggleEventType: (event: string, included: boolean) => void;
     toggleResourceType: (resource: string, included: boolean) => void;
-}> = ({excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
+}> = ({userId, excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
     const {updateRoute} = useRouting();
     const usersApi = useFilterableApi<User, 'users', 'name'>({path: '/users/', filterKey: 'name', responseKey: 'users'});
 
-    const loadOptions: LoadSelectOptions = async (input, callback) => {
-        const users = await usersApi.loadData(input);
-        callback(users.map(user => ({label: user.name, value: user.id})));
-    };
+    const [staffOptions, setStaffOptions] = useState<Array<{label: string; value: string}>>([]);
+    const [searchedStaff, setSearchStaff] = useState<{label: string; value: string} | null>();
+    const [staffOpen, setStaffOpen] = useState(false);
+    const [staffLoading, setStaffLoading] = useState(false);
+    const requestSequence = useRef(0);
+    const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const usersApiRef = useRef(usersApi);
+    usersApiRef.current = usersApi;
+    const loadOptions = useCallback(async (input: string, request: number) => {
+        try {
+            const users = await usersApiRef.current.loadData(input);
+            if (request === requestSequence.current) {
+                setStaffOptions(users.map(user => ({label: user.name, value: user.id})));
+            }
+        } catch {
+            if (request === requestSequence.current) {
+                setStaffOptions([]);
+            }
+        } finally {
+            if (request === requestSequence.current) {
+                setStaffLoading(false);
+            }
+        }
+    }, []);
+    const requestOptions = useCallback((input: string, deferred = false) => {
+        requestSequence.current += 1;
+        const request = requestSequence.current;
+        setStaffLoading(true);
+        if (searchTimer.current) {
+            clearTimeout(searchTimer.current);
+        }
+        if (deferred) {
+            searchTimer.current = setTimeout(() => void loadOptions(input, request), 500);
+        } else {
+            void loadOptions(input, request);
+        }
+    }, [loadOptions]);
 
-    const [searchedStaff, setSearchStaff] = useState<SelectOption | null>();
+    useEffect(() => {
+        requestOptions('');
+        return () => {
+            requestSequence.current += 1;
+            if (searchTimer.current) {
+                clearTimeout(searchTimer.current);
+            }
+        };
+    }, [requestOptions]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        if (!userId) {
+            setSearchStaff(null);
+            return;
+        }
+
+        void usersApiRef.current.loadInitialValues([userId], 'id').then(([user]) => {
+            if (!cancelled && user) {
+                const selected = {label: user.name, value: user.id};
+                setSearchStaff(selected);
+                setStaffOptions(options => options.some(option => option.value === selected.value) ? options : [selected, ...options]);
+            }
+        }).catch(() => {
+            if (!cancelled) {
+                setSearchStaff(null);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [userId]);
 
     const resetStaff = () => {
         setSearchStaff(null);
     };
 
     return (
-        <div className='flex items-center gap-4'>
-            <Popover position='end' trigger={<Button color='outline' label='Filter' />}>
-                <div className='flex w-[220px] flex-col gap-8 p-5'>
-                    <ToggleGroup>
-                        <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
-                        <HistoryFilterToggle excludedItems={excludedEvents} item='edited' label='Edited' toggleItem={toggleEventType} />
-                        <HistoryFilterToggle excludedItems={excludedEvents} item='deleted' label='Deleted' toggleItem={toggleEventType} />
-                    </ToggleGroup>
-                    <ToggleGroup>
-                        <HistoryFilterToggle excludedItems={excludedResources} item='post' label='Posts' toggleItem={toggleResourceType} />
-                        <HistoryFilterToggle excludedItems={excludedResources} item='page' label='Pages' toggleItem={toggleResourceType} />
-                        <HistoryFilterToggle excludedItems={excludedResources} item='tag' label='Tags' toggleItem={toggleResourceType} />
-                        <HistoryFilterToggle excludedItems={excludedResources} item='offer,product' label='Tiers & offers' toggleItem={toggleResourceType} />
-                        <HistoryFilterToggle excludedItems={excludedResources} item='api_key,integration,setting,user,webhook' label='Settings & staff' toggleItem={toggleResourceType} />
-                    </ToggleGroup>
-                </div>
+        <Inline align='center' gap='md'>
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button color='outline' label='Filter' />
+                </PopoverTrigger>
+                <PopoverContent align='end' className='z-[9999] w-[220px]' data-testid='history-filters'>
+                    <Stack gap='2xl'>
+                        <Stack gap='md'>
+                            <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
+                            <HistoryFilterToggle excludedItems={excludedEvents} item='edited' label='Edited' toggleItem={toggleEventType} />
+                            <HistoryFilterToggle excludedItems={excludedEvents} item='deleted' label='Deleted' toggleItem={toggleEventType} />
+                        </Stack>
+                        <Stack gap='md'>
+                            <HistoryFilterToggle excludedItems={excludedResources} item='post' label='Posts' toggleItem={toggleResourceType} />
+                            <HistoryFilterToggle excludedItems={excludedResources} item='page' label='Pages' toggleItem={toggleResourceType} />
+                            <HistoryFilterToggle excludedItems={excludedResources} item='tag' label='Tags' toggleItem={toggleResourceType} />
+                            <HistoryFilterToggle excludedItems={excludedResources} item='offer,product' label='Tiers & offers' toggleItem={toggleResourceType} />
+                            <HistoryFilterToggle excludedItems={excludedResources} item='api_key,integration,setting,user,webhook' label='Settings & staff' toggleItem={toggleResourceType} />
+                        </Stack>
+                    </Stack>
+                </PopoverContent>
             </Popover>
             <div className='w-[200px]'>
-                <Select
-                    loadOptions={debounce(loadOptions, 500)}
-                    placeholder='Search staff'
-                    value={searchedStaff}
-                    async
-                    defaultOptions
-                    isClearable
-                    onSelect={(option) => {
-                        if (option) {
-                            setSearchStaff(option);
-                            updateRoute(`history/view/${option.value}`);
-                        } else {
+                <Inline className={`${inputSurface('within')} relative h-(--control-height) overflow-hidden`} gap='none'>
+                    <Popover open={staffOpen} onOpenChange={(open) => {
+                        setStaffOpen(open);
+                        if (open) {
+                            requestOptions('');
+                        }
+                    }}>
+                        <PopoverTrigger asChild>
+                            <button aria-label='Staff' className='flex min-w-0 flex-1 items-center justify-between px-3 text-control' data-testid='history-staff-filter' role='combobox' type='button'>
+                                <span className={searchedStaff ? 'truncate pr-8' : 'truncate pr-8 text-muted-foreground'}>{searchedStaff?.label ?? 'Search staff'}</span>
+                                <ChevronDown className='ml-2 size-4 shrink-0 opacity-50' />
+                            </button>
+                        </PopoverTrigger>
+                        <PopoverContent align='start' className='z-[9999] w-72 p-0'>
+                            <MultiSelectCombobox
+                                i18n={{searchPlaceholder: 'Search staff'}}
+                                isLoading={staffLoading}
+                                isMultiSelect={false}
+                                options={searchedStaff && !staffOptions.some(option => option.value === searchedStaff.value) ? [searchedStaff, ...staffOptions] : staffOptions}
+                                shouldFilter={false}
+                                values={searchedStaff ? [searchedStaff.value] : []}
+                                autoCloseOnSelect
+                                onChange={(values) => {
+                                    const option = staffOptions.find(item => item.value === values[0]);
+                                    if (option) {
+                                        setSearchStaff(option);
+                                        updateRoute(`history/view/${option.value}`);
+                                    }
+                                }}
+                                onClose={() => setStaffOpen(false)}
+                                onSearchChange={input => requestOptions(input, true)}
+                            />
+                        </PopoverContent>
+                    </Popover>
+                    {searchedStaff && (
+                        <button aria-label='Clear selection' className='absolute top-1/2 right-10 z-10 flex size-8 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground' type='button' onClick={() => {
                             resetStaff();
                             updateRoute('history/view');
-                        }
-                    }}
-                />
+                        }}>
+                            <X className='size-4' />
+                        </button>
+                    )}
+                </Inline>
             </div>
-        </div>
+        </Inline>
     );
 };
 
@@ -123,8 +228,8 @@ const HistoryActionDescription: React.FC<{action: Action}> = ({action}) => {
         const apiKeysRotated = typeof action.context.api_keys_rotated === 'number' ? action.context.api_keys_rotated : null;
         const usersLocked = typeof action.context.users_locked === 'number' ? action.context.users_locked : null;
         const details = [
-            apiKeysRotated !== null ? `${apiKeysRotated} API ${apiKeysRotated === 1 ? 'key' : 'keys'} rotated` : null,
-            usersLocked !== null ? `${usersLocked} ${usersLocked === 1 ? 'user' : 'users'} locked` : null
+            apiKeysRotated !== null ? `${formatNumber(apiKeysRotated)} API ${apiKeysRotated === 1 ? 'key' : 'keys'} rotated` : null,
+            usersLocked !== null ? `${formatNumber(usersLocked)} ${usersLocked === 1 ? 'user' : 'users'} locked` : null
         ].filter(Boolean);
 
         return <>{details.length ? details.join(', ') : 'Authentication reset'}</>;
@@ -189,7 +294,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
             ...otherParams,
             filter: [otherParams.filter, lastPage.actions.length && `created_at:<'${formatDateForFilter(new Date(lastPage.actions[lastPage.actions.length - 1].created_at))}'`].join('+')
         }),
-        keepPreviousData: true
+        placeholderData: keepPreviousData
     });
 
     const fetchNext = useCallback(() => {
@@ -246,7 +351,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                                         <div>
                                             {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
                                             {!isBulkAction(action) && <HistoryActionDescription action={action} />}
-                                            {action.count ? <> {action.count} times</> : null}
+                                            {action.count ? <> {formatNumber(action.count)} times</> : null}
                                             <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
                                         </div>
                                     }
@@ -259,7 +364,8 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                                 )}
                             </>
                         ) : (
-                            <NoValueLabel icon='time-back'>
+                            <NoValueLabel>
+                                <NoValueLabelIcon><History /></NoValueLabelIcon>
                                 {hasActiveFilters ?
                                     'No entries match your current filters.' :
                                     'No history entries found.'
@@ -268,7 +374,9 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                         )
                     ) : data === undefined ? (
                         <div className="flex items-center justify-center px-5 pt-12 pb-10">
-                            <LoadingIndicator />
+                            <div className="flex h-64 items-center justify-center">
+                                <LoadingIndicator size='lg' />
+                            </div>
                         </div>
                     ) : (
                         <NoValueLabel>No entries found.</NoValueLabel>

@@ -24,12 +24,19 @@ export function parseAudioNode(AudioNode: new (data: Record<string, unknown>) =>
                         }
 
                         if (durationText) {
-                            const [rawMinutes, rawSeconds = '0'] = durationText.split(':');
-                            const minutes = Number(rawMinutes.trim());
-                            const seconds = Number(rawSeconds.trim());
+                            if (durationText.includes(':')) {
+                                const [rawMinutes, rawSeconds = '0'] = durationText.split(':');
+                                const minutes = Number(rawMinutes.trim());
+                                const seconds = Number(rawSeconds.trim());
 
-                            if (Number.isInteger(minutes) && Number.isInteger(seconds)) {
-                                payload.duration = minutes * 60 + seconds;
+                                if (Number.isInteger(minutes) && Number.isInteger(seconds)) {
+                                    payload.duration = minutes * 60 + seconds;
+                                }
+                            } else {
+                                const duration = Number(durationText);
+                                if (Number.isFinite(duration)) {
+                                    payload.duration = duration;
+                                }
                             }
                         }
 

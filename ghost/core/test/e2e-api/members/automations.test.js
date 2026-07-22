@@ -5,7 +5,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
-const adapterManager = require('../../../core/server/services/adapter-manager');
+const adapterManager = require('../../../core/server/services/adapter-manager').default;
 const mailService = require('../../../core/server/services/mail');
 const membersService = require('../../../core/server/services/members');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
@@ -79,16 +79,33 @@ async function upsertEmailDesignSetting({id, senderReplyTo}) {
         });
 }
 
+function serializeEditableAction(action) {
+    if (action.type !== 'send_email') {
+        return action;
+    }
+
+    return {
+        id: action.id,
+        type: action.type,
+        data: {
+            email_subject: action.data.email_subject,
+            email_lexical: action.data.email_lexical,
+            email_design_setting_id: action.data.email_design_setting_id
+        }
+    };
+}
+
 async function updateAutomationEmailDesignSetting(automation, emailDesignSettingId) {
     const actions = automation.actions.map((action) => {
         if (action.type !== 'send_email') {
             return action;
         }
 
+        const editableAction = serializeEditableAction(action);
         return {
-            ...action,
+            ...editableAction,
             data: {
-                ...action.data,
+                ...editableAction.data,
                 email_design_setting_id: emailDesignSettingId
             }
         };
@@ -114,7 +131,7 @@ async function updateAutomation(automation, overrides = {}) {
         .body({
             automations: [{
                 status: automation.status,
-                actions: automation.actions,
+                actions: automation.actions.map(serializeEditableAction),
                 edges: automation.edges,
                 ...overrides
             }]

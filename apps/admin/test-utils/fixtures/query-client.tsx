@@ -11,24 +11,18 @@ export type TestWrapperComponent = ({ children }: { children: ReactNode }) => JS
  * Configures QueryClient for optimal test performance:
  * - No retries (tests should pass on first attempt)
  * - No caching (tests should be isolated)
- * - Silenced logging (cleaner test output)
  */
 function createTestQueryClient(): QueryClient {
     return new QueryClient({
         defaultOptions: {
             queries: {
                 retry: false,
-                cacheTime: 0,
+                gcTime: 0,
                 staleTime: 0,
             },
             mutations: {
                 retry: false,
             },
-        },
-        logger: {
-            log: () => {},
-            warn: () => {},
-            error: () => {},
         },
     });
 }

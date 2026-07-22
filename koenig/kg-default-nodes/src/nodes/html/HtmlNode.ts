@@ -1,14 +1,12 @@
-import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodeProperty, type DecoratorNodeValueMap} from '../../generate-decorator-node.js';
+import {generateDecoratorNode, type DecoratorNodeData, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {renderHtmlNode} from './html-renderer.js';
 import {parseHtmlNode} from './html-parser.js';
 
-const htmlProperties = [
-    {name: 'html', default: '', urlType: 'html', wordCount: true}
-] as const satisfies readonly DecoratorNodeProperty[];
+const htmlProperties = {
+    html: {default: '', urlType: 'html', wordCount: true}
+} satisfies DecoratorNodePropertyMap;
 
 export type HtmlData = DecoratorNodeData<typeof htmlProperties, true>;
-
-export interface HtmlNode extends DecoratorNodeValueMap<typeof htmlProperties, true> {}
 
 export class HtmlNode extends generateDecoratorNode({
     nodeType: 'html',

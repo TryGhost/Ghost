@@ -7,9 +7,11 @@ import {type Knex} from 'knex';
 import moment from 'moment';
 import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import type {
+    AutomatedEmailEvents,
     Automation,
     AutomationAction,
     AutomationEdge,
+    AutomationEmailStats,
     AutomationSummary,
     AutomationStepTerminalStatus,
     AutomationStepToRun,
@@ -60,6 +62,12 @@ interface ActionRow {
     email_lexical: string | null;
     email_design_setting_id: string | null;
 }
+
+type ActionStatsRow = {
+    action_id: string;
+    email_sent_count: number | null;
+    email_opened_count: number | null;
+};
 
 type ActionRevisionRow = {
     action_id: string;
@@ -214,8 +222,117 @@ export function createDatabaseAutomationsRepository({
 
         async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
             return await knex.transaction(trx => retryStep(trx, step, retryAt));
+        },
+
+        async recordEmailSent(options): Promise<void> {
+            await knex.transaction(async (trx) => {
+                await trx('automation_action_revisions')
+                    .where('id', options.automationActionRevisionId)
+                    .update({
+                        email_sent_count: trx.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1])
+                    });
+
+                const now = toDatabaseDate(new Date());
+                await trx('automated_email_recipients').insert({
+                    id: ObjectId().toHexString(),
+                    member_id: options.memberId,
+                    member_uuid: options.memberUuid,
+                    member_email: options.memberEmail,
+                    member_name: options.memberName,
+                    automation_action_revision_id: options.automationActionRevisionId,
+                    ...(options.mailgunMessageId ? {mailgun_message_id: options.mailgunMessageId} : {}),
+                    track_opens: options.trackOpens,
+                    created_at: now,
+                    updated_at: now
+                });
+            });
+        },
+
+        async getAutomatedEmailRecipientsByMailgunIds(mailgunMessageIds) {
+            if (mailgunMessageIds.length === 0) {
+                return [];
+            }
+            return await knex('automated_email_recipients')
+                .select('id', 'mailgun_message_id', 'automation_action_revision_id')
+                .whereNotNull('automation_action_revision_id')
+                .whereIn('mailgun_message_id', mailgunMessageIds);
+        },
+
+        async trackEmailDeliveredAndOpened(eventsByAutomatedEmailRecipientId) {
+            if (eventsByAutomatedEmailRecipientId.size === 0) {
+                return;
+            }
+
+            await knex.transaction(async (trx) => {
+                const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
+                const newOpensPerRevision = new Map<string, number>();
+
+                for (const [id, {deliveredAt, openedAt, automationActionRevisionId}] of eventsByAutomatedEmailRecipientId) {
+                    const updates: Record<string, Knex.Raw> = {};
+                    if (deliveredAt) {
+                        updates.delivered_at = trx.raw('CASE WHEN delivered_at IS NULL OR delivered_at > ? THEN ? ELSE delivered_at END', [deliveredAt, deliveredAt]);
+                    }
+                    if (openedAt) {
+                        updates.opened_at = trx.raw('CASE WHEN opened_at IS NULL OR opened_at > ? THEN ? ELSE opened_at END', [openedAt, openedAt]);
+                    }
+                    if (Object.keys(updates).length === 0) {
+                        continue;
+                    }
+                    await trx('automated_email_recipients')
+                        .where({id})
+                        .update(updates);
+
+                    if (openedAt && notYetOpened.has(id)) {
+                        newOpensPerRevision.set(
+                            automationActionRevisionId,
+                            (newOpensPerRevision.get(automationActionRevisionId) ?? 0) + 1
+                        );
+                    }
+                }
+
+                // Keep lock acquisition order consistent across concurrent transactions to avoid deadlocks.
+                const revisions = [...newOpensPerRevision.entries()]
+                    .sort(([left], [right]) => left.localeCompare(right));
+
+                for (const [id, opens] of revisions) {
+                    await trx('automation_action_revisions')
+                        .where({id})
+                        .update({
+                            email_opened_count: trx.raw('COALESCE(email_opened_count, 0) + ?', [opens])
+                        });
+                }
+            });
         }
     };
+}
+
+/**
+ * Which of these recipients have yet to open, and so should count towards their
+ * revision's open count. Locks them for the transaction, so a worker racing on
+ * the same open reads them as opened and doesn't count them a second time.
+ */
+async function lockNotYetOpened(
+    trx: Knex.Transaction,
+    eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>
+): Promise<Set<string>> {
+    const ids: string[] = [];
+    for (const [id, {openedAt}] of eventsByAutomatedEmailRecipientId) {
+        if (openedAt) {
+            ids.push(id);
+        }
+    }
+
+    if (ids.length === 0) {
+        return new Set();
+    }
+
+    const rows = await trx('automated_email_recipients')
+        .select('id')
+        .whereIn('id', ids)
+        .whereNull('opened_at')
+        .forUpdate();
+
+    return new Set(rows.map(row => row.id));
 }
 
 async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
@@ -453,6 +570,7 @@ async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<
         .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
         .innerJoin('automation_action_revisions as revision', 'revision.id', 'step.automation_action_revision_id')
         .innerJoin('automation_actions as action', 'action.id', 'revision.action_id')
+        .whereIn('step.id', candidateIds)
         .where('step.locked_by', lockId)
         .orderBy([
             'step.ready_at',
@@ -468,13 +586,14 @@ async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<
 
 async function findNextPendingReadyAt(trx: Knex.Transaction, staleLockCutoff: Readonly<Date>): Promise<Date | null> {
     const row = await trx('automation_run_steps')
-        .min({next_ready_at: 'ready_at'})
+        .select({next_ready_at: 'ready_at'})
         .where('status', 'pending')
         .where((builder) => {
             builder
                 .whereNull('locked_by')
                 .orWhere('locked_at', '<', toDatabaseDate(staleLockCutoff));
         })
+        .orderBy('ready_at')
         .first();
     return row?.next_ready_at ? new Date(row.next_ready_at) : null;
 }
@@ -1085,10 +1204,11 @@ function requireAutomation(automation: AutomationRow | null, id: string): Automa
 
 async function buildAutomation(trx: Knex.Transaction, automation: AutomationRow): Promise<Automation> {
     const actionRows = await loadActionRows(trx, automation.id);
+    const actionStats = await loadActionStats(trx, actionRows.map(row => row.id));
     const edgeRows = await loadEdgeRows(trx, automation.id);
     return {
         ...buildAutomationSummary(automation),
-        actions: actionRows.map(row => buildActionPayload(row)),
+        actions: actionRows.map(row => buildActionPayload(row, actionStats.get(row.id) ?? null)),
         edges: edgeRows.map(row => buildEdgePayload(row))
     };
 }
@@ -1132,6 +1252,26 @@ async function loadActionRows(trx: Knex.Transaction, automationId: string): Prom
         ]);
 }
 
+async function loadActionStats(
+    trx: Knex.Transaction,
+    actionIds: ReadonlyArray<string>
+): Promise<Map<string, AutomationEmailStats>> {
+    if (actionIds.length === 0) {
+        return new Map();
+    }
+
+    const rows: ActionStatsRow[] = await trx('automation_action_revisions')
+        .select('action_id')
+        .sum({
+            email_sent_count: 'email_sent_count',
+            email_opened_count: 'email_opened_count'
+        })
+        .whereIn('action_id', actionIds)
+        .groupBy('action_id');
+
+    return new Map(rows.map(row => [row.action_id, buildEmailStats(row)]));
+}
+
 async function loadEdgeRows(trx: Knex.Transaction, automationId: string): Promise<EdgeRow[]> {
     return await trx('automation_action_edges as e')
         .select('e.source_action_id', 'e.target_action_id')
@@ -1153,7 +1293,7 @@ async function loadEdgeRows(trx: Knex.Transaction, automationId: string): Promis
         ]);
 }
 
-function buildActionPayload(row: ActionRow): AutomationAction {
+function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null): AutomationAction {
     switch (row.type) {
     case 'wait':
         return {
@@ -1171,9 +1311,31 @@ function buildActionPayload(row: ActionRow): AutomationAction {
                 email_subject: requireValue(row, 'email_subject'),
                 email_lexical: requireValue(row, 'email_lexical'),
                 email_design_setting_id: requireValue(row, 'email_design_setting_id')
-            }
+            },
+            stats: stats ?? EMPTY_EMAIL_STATS
         };
     }
+}
+
+const EMPTY_EMAIL_STATS: AutomationEmailStats = {
+    email_sent_count: 0,
+    email_opened_count: 0,
+    opened_rate: null,
+    clicked_rate: null
+};
+
+function buildEmailStats(row: ActionStatsRow): AutomationEmailStats {
+    const emailSentCount = row.email_sent_count ?? 0;
+    const emailOpenedCount = row.email_opened_count ?? 0;
+    return {
+        email_sent_count: emailSentCount,
+        email_opened_count: emailOpenedCount,
+        opened_rate: emailSentCount
+            ? Math.round(emailOpenedCount / emailSentCount * 100)
+            : null,
+        // TODO(NY-1387) Populate clicked_rate once click tracking is implemented.
+        clicked_rate: null
+    };
 }
 
 function requireValue<

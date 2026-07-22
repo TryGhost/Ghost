@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const BaseCacheAdapter = require('@tryghost/adapter-base-cache');
+const {CacheBase} = require('@tryghost/adapter-base-cache');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
@@ -9,7 +9,7 @@ const redisStoreFactory = require('./redis-store-factory');
 
 const PREFIX_HASH_KEY = 'prefix_hash';
 
-class AdapterCacheRedis extends BaseCacheAdapter {
+class AdapterCacheRedis extends CacheBase {
     /**
      *
      * @param {Object} config
