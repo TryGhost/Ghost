@@ -9,7 +9,7 @@ import useStaffUsers from '../../../hooks/use-staff-users';
 import validator from 'validator';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Dropzone, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {ConfirmationModal, Icon, LimitModal, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Icon, LimitModal, Modal} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
@@ -19,6 +19,7 @@ import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError}
 import {Text} from '@tryghost/shade/primitives';
 import {type User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useGetUserBySlug, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {toast} from 'sonner';
 import {useGlobalData} from '../../providers/global-data-provider';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
@@ -202,10 +203,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     await updateUser(updatedUserData);
                     setFormState(() => updatedUserData);
                     modal?.remove();
-                    showToast({
-                        title: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
-                        type: 'success'
-                    });
+                    toast.success(_user.status === 'inactive' ? 'User un-suspended' : 'User suspended');
                 } catch (e) {
                     handleError(e);
                 }
@@ -230,10 +228,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     modal?.remove();
                     mainModal?.remove();
                     navigateOnClose();
-                    showToast({
-                        title: 'User deleted',
-                        type: 'success'
-                    });
+                    // Let the destination route mount its toaster before publishing the success state.
+                    setTimeout(() => toast.success('User deleted'), 100);
                 } catch (e) {
                     handleError(e);
                 }
@@ -251,10 +247,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 try {
                     await makeOwner(user.id);
                     modal?.remove();
-                    showToast({
-                        title: 'Ownership transferred',
-                        type: 'success'
-                    });
+                    toast.success('Ownership transferred');
                 } catch (e) {
                     handleError(e);
                 }
@@ -507,10 +500,7 @@ const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
         }
         notFoundHandledRef.current = notFoundSlug;
 
-        showToast({
-            type: 'error',
-            message: 'User not found'
-        });
+        toast.error('User not found');
 
         if (canAccessSettings(currentUser)) {
             // Replace the history entry so the back button doesn't return

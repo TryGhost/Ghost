@@ -5,7 +5,7 @@ import useCurrencyInput from '../../../../hooks/use-currency-input';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import useSortableIndexedList from '../../../../hooks/use-sortable-indexed-list';
 import useUrlInput from '../../../../hooks/use-url-input';
-import {Button, type ButtonProps, ConfirmationModal, Form, Icon, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, type ButtonProps, ConfirmationModal, Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -13,6 +13,7 @@ import {Text} from '@tryghost/shade/primitives';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
     trial_days: string;
@@ -161,10 +162,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                 onOk: (confirmModal) => {
                     updateTier({...tier, active: !tier.active});
                     confirmModal?.remove();
-                    showToast({
-                        type: 'success',
-                        title: `Tier ${tier.active ? 'archived' : 'reactivated'}`
-                    });
+                    toast.success(`Tier ${tier.active ? 'archived' : 'reactivated'}`);
                 }
             });
         }

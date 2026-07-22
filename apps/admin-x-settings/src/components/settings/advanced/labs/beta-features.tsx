@@ -4,11 +4,12 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import YamlFileEditorModal from './yaml-file-editor-modal';
 import {ActionList, Dropzone, Button as ShadeButton} from '@tryghost/shade/components';
-import {Button, showToast} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/admin-x-design-system';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -87,10 +88,7 @@ const BetaFeatures: React.FC = () => {
                                 try {
                                     setRedirectsUploading(true);
                                     await uploadRedirects(file);
-                                    showToast({
-                                        title: 'Redirects uploaded',
-                                        type: 'success'
-                                    });
+                                    toast.success('Redirects uploaded');
                                 } catch (e) {
                                     handleError(e);
                                 } finally {
@@ -117,10 +115,7 @@ const BetaFeatures: React.FC = () => {
                                 try {
                                     setRoutesUploading(true);
                                     await uploadRoutes(file);
-                                    showToast({
-                                        type: 'success',
-                                        title: 'Routes uploaded'
-                                    });
+                                    toast.success('Routes uploaded');
                                 } catch (e) {
                                     handleError(e);
                                 } finally {

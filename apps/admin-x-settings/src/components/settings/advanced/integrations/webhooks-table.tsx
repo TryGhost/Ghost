@@ -1,10 +1,11 @@
 import NiceModal from '@ebay/nice-modal-react';
 import WebhookModal from './webhook-modal';
-import {Button, ConfirmationModal, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal} from '@tryghost/admin-x-design-system';
 import {type Integration} from '@tryghost/admin-x-framework/api/integrations';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getWebhookEventLabel} from './webhook-event-options';
+import {toast} from 'sonner';
 import {useDeleteWebhook} from '@tryghost/admin-x-framework/api/webhooks';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -22,10 +23,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                 try {
                     await deleteWebhook(id);
                     confirmModal?.remove();
-                    showToast({
-                        message: 'Webhook deleted',
-                        type: 'info'
-                    });
+                    toast.info('Webhook deleted');
                 } catch (e) {
                     handleError(e);
                 }

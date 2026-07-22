@@ -1,15 +1,15 @@
 import PortalFrame from '../../membership/portal/portal-frame';
-import toast from 'react-hot-toast';
 import {Button} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
-import {Form, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Form, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getTiersCadences} from '../../../../utils/get-tiers-cadences';
+import {toast} from 'sonner';
 import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useMemo, useState} from 'react';
@@ -685,12 +685,8 @@ const AddOfferModal = () => {
             validate();
             const isErrorsEmpty = Object.values(errors).every(error => !error);
             if (!isErrorsEmpty) {
-                toast.remove();
-                showToast({
-                    title: 'Can\'t save offer',
-                    type: 'info',
-                    message: 'Make sure you filled all required fields'
-                });
+                toast.dismiss();
+                toast.info('Can\'t save offer', {description: 'Make sure you filled all required fields'});
                 return;
             }
 
@@ -705,13 +701,9 @@ const AddOfferModal = () => {
                     message = e.data.errors[0].context || e.data.errors[0].message;
                 }
 
-                toast.remove();
+                toast.dismiss();
                 if (message) {
-                    showToast({
-                        title: 'Can\'t save offer',
-                        type: 'error',
-                        message: message || 'Please try again later'
-                    });
+                    toast.error('Can\'t save offer', {description: message || 'Please try again later'});
                 }
             }
         }}

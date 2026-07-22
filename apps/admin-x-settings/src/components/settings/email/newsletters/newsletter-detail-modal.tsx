@@ -6,7 +6,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, ButtonGroup, ConfirmationModal, Form, Icon, LimitModal, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ConfirmationModal, Form, Icon, LimitModal, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
@@ -21,6 +21,7 @@ import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletter-emails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
+import {toast} from 'sonner';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
 const ReplyToEmailField: React.FC<{
@@ -143,10 +144,7 @@ const Sidebar: React.FC<{
                     try {
                         await editNewsletter({...newsletter, status: 'archived'});
                         modal?.remove();
-                        showToast({
-                            type: 'success',
-                            message: 'Newsletter archived'
-                        });
+                        toast.success('Newsletter archived');
                     } catch (e) {
                         handleError(e);
                     }
@@ -176,10 +174,7 @@ const Sidebar: React.FC<{
                 onOk: async (modal) => {
                     await editNewsletter({...newsletter, status: 'active'});
                     modal?.remove();
-                    showToast({
-                        type: 'success',
-                        message: 'Newsletter reactivated'
-                    });
+                    toast.success('Newsletter reactivated');
                 }
             });
         }
@@ -795,11 +790,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
             }
 
             if (toastMessage) {
-                showToast({
-                    icon: 'email',
-                    message: toastMessage,
-                    type: 'info'
-                });
+                toast.info(toastMessage);
             }
         },
         onSaveError: handleError,

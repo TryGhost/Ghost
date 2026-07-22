@@ -339,9 +339,6 @@ catalogs:
     react-dom:
       specifier: 18.3.1
       version: 18.3.1
-    react-hot-toast:
-      specifier: 2.6.0
-      version: 2.6.0
     react-router:
       specifier: 7.18.1
       version: 7.18.1
@@ -865,9 +862,6 @@ importers:
       clsx:
         specifier: 'catalog:'
         version: 2.1.1
-      react-hot-toast:
-        specifier: 'catalog:'
-        version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
@@ -989,12 +983,12 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
-      react-hot-toast:
-        specifier: 'catalog:'
-        version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-router:
         specifier: 'catalog:'
         version: 7.18.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      sonner:
+        specifier: 'catalog:'
+        version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
@@ -1134,9 +1128,6 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
-      react-hot-toast:
-        specifier: 'catalog:'
-        version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       semver:
         specifier: 'catalog:'
         version: 7.8.5
@@ -15187,11 +15178,6 @@ packages:
   globrex@0.1.2:
     resolution: {integrity: sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==}
 
-  goober@2.1.19:
-    resolution: {integrity: sha512-U7veizMqxyKlM58+Z5j2ngJBH/r9siDmxpvNxSw0PylF6WQvrASJEZrxh1hidRBJc2jqoBVSyOban5u8m+6Rxg==}
-    peerDependencies:
-      csstype: ^3.0.10
-
   google-caja-bower@https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd:
     resolution: {gitHosted: true, integrity: sha512-mmCXdxGKGKDznjgkNzVqzTslaldslk5KMb/A7l8rxWnqyxzwsdPhuBJ6oT1Kh/Y3k4jN54ISee/2AgjFyCBxYw==, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
     version: 6011.0.0
@@ -19908,13 +19894,6 @@ packages:
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
-
-  react-hot-toast@2.6.0:
-    resolution: {integrity: sha512-bH+2EBMZ4sdyou/DPrfgIouFpcRLCJ+HoCA32UoAYHn6T3Ur5yfcDCeSr5mwldl6pFOsiocmrXMuoCJ1vV8bWg==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      react: '>=16'
-      react-dom: '>=16'
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -37542,10 +37521,6 @@ snapshots:
 
   globrex@0.1.2: {}
 
-  goober@2.1.19(csstype@3.2.3):
-    dependencies:
-      csstype: 3.2.3
-
   google-caja-bower@https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd: {}
 
   gopd@1.2.0: {}
@@ -43466,13 +43441,6 @@ snapshots:
   react-hook-form@7.80.0(react@18.3.1):
     dependencies:
       react: 18.3.1
-
-  react-hot-toast@2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
-    dependencies:
-      csstype: 3.2.3
-      goober: 2.1.19(csstype@3.2.3)
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
 
   react-is@16.13.1: {}
 

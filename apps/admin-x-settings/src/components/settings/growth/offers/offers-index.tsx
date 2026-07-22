@@ -1,5 +1,5 @@
 import {Badge, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
-import {Button, type ButtonProps, showToast} from '@tryghost/admin-x-design-system';
+import {Button, type ButtonProps} from '@tryghost/admin-x-design-system';
 import {ButtonGroup} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Inline, Stack} from '@tryghost/shade/primitives';
@@ -10,6 +10,7 @@ import {type RetentionOffer, getRetentionOffers} from './offers-retention';
 import {type Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {createOfferRedemptionFilterUrl, createOfferRedemptionsFilterUrl} from './offer-helpers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
+import {toast} from 'sonner';
 import {useModal} from '@ebay/nice-modal-react';
 import {useOffersShowArchived, useSortingState} from '../../../providers/settings-app-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -343,10 +344,7 @@ export const OffersIndexModal: React.FC = () => {
             color: 'green' as const,
             onClick: () => {
                 if (paidActiveTiers.length === 0) {
-                    showToast({
-                        type: 'info',
-                        title: 'You must have an active tier to create an offer.'
-                    });
+                    toast.info('You must have an active tier to create an offer.');
                 } else {
                     updateRoute('offers/new');
                 }

@@ -1,9 +1,10 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './recommendation-description-form';
-import {ConfirmationModal, Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Modal} from '@tryghost/admin-x-design-system';
 import {type Recommendation, useDeleteRecommendation, useEditRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 interface EditRecommendationModalProps {
@@ -52,11 +53,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
                         await deleteRecommendation(recommendation);
                         deleteModal?.remove();
                     } catch (e) {
-                        showToast({
-                            title: 'Failed to delete the recommendation',
-                            message: 'Please try again later.',
-                            type: 'error'
-                        });
+                        toast.error('Failed to delete the recommendation', {description: 'Please try again later.'});
                         handleError(e, {withToast: false});
                     }
                 }
@@ -81,15 +78,11 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         title={'Edit recommendation'}
         stickyFooter
         onOk={async () => {
-            dismissAllToasts();
+            toast.dismiss();
             try {
                 await handleSave({force: true});
             } catch {
-                showToast({
-                    title: 'Something went wrong',
-                    type: 'error',
-                    message: 'Please try again later.'
-                });
+                toast.error('Something went wrong', {description: 'Please try again later.'});
             }
         }}
     >

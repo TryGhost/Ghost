@@ -101,7 +101,7 @@ export function DirtyConfirmDialog({
                     <AlertDialogCancel asChild>
                         <Button variant='outline'>Stay</Button>
                     </AlertDialogCancel>
-                    <AlertDialogAction asChild>
+                    <AlertDialogAction className='bg-destructive text-destructive-foreground hover:bg-destructive/90' asChild>
                         <Button variant='destructive' onClick={onConfirm}>Leave</Button>
                     </AlertDialogAction>
                 </AlertDialogFooter>

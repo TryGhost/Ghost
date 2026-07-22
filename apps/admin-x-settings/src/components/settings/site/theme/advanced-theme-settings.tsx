@@ -3,11 +3,12 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent} from '@tryghost/shade/components';
-import {Button, ConfirmationModal, LimitModal, ModalPage, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, LimitModal, ModalPage} from '@tryghost/admin-x-design-system';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '../../../../hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -62,11 +63,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         try {
             await activateTheme(theme.name);
             refreshActiveThemeData();
-            showToast({
-                title: 'Theme activated',
-                type: 'success',
-                message: <div><span className='capitalize'>{theme.name}</span> is now your active theme</div>
-            });
+            toast.success('Theme activated', {description: <div><span className='capitalize'>{theme.name}</span> is now your active theme</div>});
         } catch (e) {
             let fatalErrors: FatalErrors | null = null;
             if (e instanceof JSONError && e.response?.status === 422 && e.data?.errors) {

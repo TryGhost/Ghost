@@ -6,7 +6,7 @@ import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns
 import {type ReactNode, useEffect} from 'react';
 import {Text} from '@tryghost/shade/primitives';
 import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/users';
-import {toast} from 'react-hot-toast';
+import {toast} from 'sonner';
 import {topLevelBackdropClasses} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from './components/providers/global-data-provider';
 import {useGlobalDirtyState} from '@tryghost/shade/utils';
@@ -46,6 +46,11 @@ const MainContent: React.FC = () => {
     };
 
     useEffect(() => {
+        // Reset any toasts that may have been left open before entering Settings.
+        toast.dismiss();
+    }, []);
+
+    useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 // Don't navigate away if a modal is open - let the modal handle ESC
@@ -65,11 +70,6 @@ const MainContent: React.FC = () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [confirm, isDirty]);
-
-    useEffect(() => {
-        // resets any toasts that may have been left open on initial load
-        toast.remove();
-    }, []);
 
     // Contributors/Authors only see their profile modal (rendered via routing)
     // Don't render the main settings content for them

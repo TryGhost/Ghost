@@ -2,8 +2,9 @@ import LabItem from './lab-item';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {ActionList, Dropzone} from '@tryghost/shade/components';
-import {Button, ConfirmationModal, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal} from '@tryghost/admin-x-design-system';
 import {downloadAllContent, useDeleteAllContent, useImportContent} from '@tryghost/admin-x-framework/api/db';
+import {toast} from 'sonner';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
 
@@ -65,10 +66,7 @@ const MigrationOptions: React.FC = () => {
             onOk: async (modal) => {
                 try {
                     await deleteAllContent(null);
-                    showToast({
-                        type: 'success',
-                        title: 'All content deleted from database.'
-                    });
+                    toast.success('All content deleted from database.');
                     modal?.remove();
                     await client.refetchQueries();
                 } catch (e) {

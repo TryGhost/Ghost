@@ -5,11 +5,12 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, Tabs, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {DesktopChrome, Form, MobileChrome, PreviewModalContent, showToast} from '@tryghost/admin-x-design-system';
+import {DesktopChrome, Form, MobileChrome, PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {Laptop, Smartphone} from 'lucide-react';
 import {debounce} from '../../../utils/debounce';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -237,10 +238,7 @@ const AnnouncementBarModal: React.FC = () => {
         titleHeadingLevel={5}
         onOk={async () => {
             if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                showToast({
-                    type: 'error',
-                    message: 'An error occurred while saving your changes. Please try again.'
-                });
+                toast.error('An error occurred while saving your changes. Please try again.');
             }
         }}
     />;

@@ -1,7 +1,6 @@
 // FocusContext.tsx
 import NiceModal from '@ebay/nice-modal-react';
 import React, {createContext, useContext} from 'react';
-import {Toaster} from 'react-hot-toast';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FetchKoenigLexical = () => Promise<any>;
@@ -27,7 +26,6 @@ interface DesignSystemProviderProps {
 const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({fetchKoenigLexical, darkMode, children}) => {
     return (
         <DesignSystemContext.Provider value={{fetchKoenigLexical, darkMode}}>
-            <Toaster />
             <NiceModal.Provider>
                 {children}
             </NiceModal.Provider>

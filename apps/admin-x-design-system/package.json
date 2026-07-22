@@ -64,8 +64,7 @@
         "@radix-ui/react-tooltip": "catalog:",
         "@sentry/react": "catalog:",
         "@tryghost/shade": "workspace:*",
-        "clsx": "catalog:",
-        "react-hot-toast": "catalog:"
+        "clsx": "catalog:"
     },
     "peerDependencies": {
         "react": "^18.2.0",

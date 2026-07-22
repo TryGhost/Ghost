@@ -27,7 +27,7 @@ export const offersScreen = {
     selectOptions: () => page.getByRole("option"),
     selectOption: (label: string) => page.getByRole("option").filter({ hasText: label }),
     portalPreview: () => page.getByTestId(testIds.portalPreview),
-    errorToast: () => page.getByTestId(testIds.toastError),
+    errorToast: () => page.getByRole("region", { name: /Notifications/ }).getByRole("listitem"),
 
     /** Open the offers list modal from the Growth section's button. */
     async openListModal(): Promise<void> {

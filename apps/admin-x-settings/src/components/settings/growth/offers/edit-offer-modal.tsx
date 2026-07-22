@@ -1,8 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/portal-frame';
 import SettingsBreadcrumbs from '../../settings-breadcrumbs';
-import toast from 'react-hot-toast';
-import {Button, ConfirmationModal, Form, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Field, FieldLabel, Textarea} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
@@ -11,6 +10,7 @@ import {createOfferRedemptionFilterUrl} from './offer-helpers';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
+import {toast} from 'sonner';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -68,10 +68,7 @@ const Sidebar: React.FC<{
                             try {
                                 await editOffer({...offer, status: 'archived'});
                                 modal?.remove();
-                                showToast({
-                                    type: 'success',
-                                    title: 'Offer archived'
-                                });
+                                toast.success('Offer archived');
                                 updateRoute('offers/edit');
                             } catch (e) {
                                 handleError(e);
@@ -89,10 +86,7 @@ const Sidebar: React.FC<{
                             try {
                                 await editOffer({...offer, status: 'active'});
                                 modal?.remove();
-                                showToast({
-                                    type: 'success',
-                                    title: 'Offer reactivated'
-                                });
+                                toast.success('Offer reactivated');
                                 updateRoute('offers/edit');
                             } catch (e) {
                                 handleError(e);
@@ -297,13 +291,9 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
                     message = e.data.errors[0].context || e.data.errors[0].message;
                 }
 
-                toast.remove();
+                toast.dismiss();
                 if (message) {
-                    showToast({
-                        title: 'Can\'t save offer',
-                        type: 'error',
-                        message: 'Please try again later'
-                    });
+                    toast.error('Can\'t save offer', {description: 'Please try again later'});
                 }
             }
         }} /> : null;

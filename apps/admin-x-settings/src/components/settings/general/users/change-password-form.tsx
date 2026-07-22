@@ -1,6 +1,7 @@
-import {Button, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, TextField} from '@tryghost/admin-x-design-system';
 import {type User, useUpdatePassword} from '@tryghost/admin-x-framework/api/users';
 import {ValidationError} from '@tryghost/admin-x-framework/errors';
+import {toast} from 'sonner';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -236,10 +237,7 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
                             setSaveState('saved');
                         } catch (e) {
                             setSaveState('');
-                            showToast({
-                                type: 'error',
-                                title: e instanceof ValidationError ? e.message : `Couldn't update password. Please try again.`
-                            });
+                            toast.error(e instanceof ValidationError ? e.message : `Couldn't update password. Please try again.`);
                             handleError(e, {withToast: false});
                         }
                     }}

@@ -3,8 +3,9 @@ import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Banner, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, MultiSelectCombobox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Button as ShadeButton} from '@tryghost/shade/components';
 import {RefreshCw} from 'lucide-react';
-import {SettingGroupContent, showToast} from '@tryghost/admin-x-design-system';
+import {SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {getSettingValues, isSettingReadOnly, useRegenerateAccessCode} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useLimiter} from '../../../hooks/use-limiter';
@@ -167,10 +168,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 clearError('password');
             }
         } catch {
-            showToast({
-                type: 'error',
-                title: 'Could not regenerate access code'
-            });
+            toast.error('Could not regenerate access code');
         } finally {
             setIsRegenerating(false);
         }

@@ -1,6 +1,8 @@
 import { page } from "vitest/browser";
 import * as sel from "@tryghost/test-data/selectors/settings";
 
+const toast = () => page.getByRole("region", { name: /Notifications/ }).getByRole("listitem");
+
 /** Settings locators and gestures shared by the acceptance batches; no assertions. */
 export const settingsScreen = {
     section: (testId: string) => page.getByTestId(testId),
@@ -20,8 +22,8 @@ export const settingsScreen = {
     seoTabView: () => page.getByTestId(sel.seoTabView),
     selectOption: (name: string) => page.getByRole("option").filter({ hasText: name }),
     selectOptionExact: (name: string) => page.getByRole("option", { name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:\\s|$)`) }),
-    errorToast: () => page.getByTestId(sel.toastError),
-    successToast: () => page.getByTestId(sel.toastSuccess),
+    errorToast: toast,
+    successToast: toast,
     inviteUserModal: () => page.getByTestId(sel.inviteUserModal),
     limitModal: () => page.getByTestId(sel.limitModal),
     enableNewsletters: () => page.getByTestId(sel.enableNewsletters),
@@ -33,7 +35,7 @@ export const settingsScreen = {
     mailgun: () => page.getByTestId(sel.mailgun),
     addNewsletterModal: () => page.getByTestId(sel.addNewsletterModal),
     newsletterModal: () => page.getByTestId(sel.newsletterModal),
-    infoToast: () => page.getByTestId(sel.toastInfo),
+    infoToast: toast,
     access: () => page.getByTestId(sel.access),
     customFields: () => page.getByTestId(sel.customFields),
     customFieldModal: () => page.getByTestId(sel.customFieldModal),

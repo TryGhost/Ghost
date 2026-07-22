@@ -2,9 +2,10 @@ import CodeEditor from '../../../code-editor';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useState} from 'react';
 import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
-import {ButtonGroup, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {ButtonGroup, Modal} from '@tryghost/admin-x-design-system';
 import {Text} from '@tryghost/shade/primitives';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {toast} from 'sonner';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 export interface YamlFileEditorModalProps {
@@ -111,10 +112,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
             const file = new File([content], uploadFilename, {type: 'text/yaml'});
             await onUpload(file);
 
-            showToast({
-                type: 'success',
-                title: successMessage
-            });
+            toast.success(successMessage);
 
             closeModal();
         } catch (error) {

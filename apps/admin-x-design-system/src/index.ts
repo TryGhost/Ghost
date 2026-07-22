@@ -40,8 +40,6 @@ export {LoadingIndicator} from './global/loading-indicator';
 export type {LoadingIndicatorProps} from './global/loading-indicator';
 export {default as Separator} from './global/separator';
 export type {SeparatorProps} from './global/separator';
-export {default as Toast, dismissAllToasts, showToast} from './global/toast';
-export type {ToastProps} from './global/toast';
 export {default as Tooltip} from './global/tooltip';
 export type {TooltipProps} from './global/tooltip';
 export {default as PageHeader} from './global/layout/page-header';
