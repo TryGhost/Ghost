@@ -63,6 +63,7 @@
         "eslint-plugin-react-hooks": "catalog:",
         "eslint-plugin-react-refresh": "catalog:",
         "eslint-plugin-tailwindcss": "catalog:",
+        "ghost-admin": "workspace:*",
         "globals": "catalog:",
         "jest-extended": "7.0.0",
         "jsdom": "catalog:",
