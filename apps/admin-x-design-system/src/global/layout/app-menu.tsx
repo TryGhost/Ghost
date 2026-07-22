@@ -1,12 +1,12 @@
 import React from 'react';
-import Icon from '../icon';
 import {Button} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 const PageMenu: React.FC = () => {
     return (
         <Button aria-label='Open app menu' size='icon' type='button' variant='ghost' onClick={() => {
             alert('Clicked on hamburger');
-        }}><Icon name='hamburger' size='sm' /></Button>
+        }}><LucideIcon.Menu /></Button>
     );
 };
 

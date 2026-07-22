@@ -4,8 +4,7 @@ import React, {useEffect, useState, forwardRef} from 'react';
 import {Button, type ButtonProps, LoadingIndicator, StickyFooter} from '@tryghost/shade/components';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {Inline, Text} from '@tryghost/shade/primitives';
-import {useGlobalDirtyState} from '@tryghost/shade/utils';
-import Icon from '../icon';
+import {LucideIcon, useGlobalDirtyState} from '@tryghost/shade/utils';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed';
 
@@ -428,7 +427,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
                             {title && <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>{title}</Text>}
                             <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute top-6 right-6`}>
                                 <Button aria-label='Close modal' className='-m-2 opacity-50 hover:opacity-100' data-testid='close-modal' size='icon' type='button' variant='ghost' onClick={removeModal}>
-                                    <Icon name='close' size='sm' />
+                                    <LucideIcon.X />
                                 </Button>
                             </div>
                         </header>)
