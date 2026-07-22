@@ -148,8 +148,8 @@ const GiftSuccessPage = () => {
 
     return (
         <>
-            <CloseButton />
             <div className='gh-portal-content giftSuccess'>
+                <CloseButton />
                 <div className='gh-portal-gift-checkout'>
                     <div className='gh-portal-gift-checkout-left'>
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />

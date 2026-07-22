@@ -29,11 +29,25 @@ export const GiftPageStyles = `
     padding: 0;
 }
 
-.gh-portal-popup-container.full-size.gift .gh-portal-closeicon-container,
-.gh-portal-popup-container.full-size.giftSuccess .gh-portal-closeicon-container,
-.gh-portal-popup-container.full-size.giftRedemption .gh-portal-closeicon-container {
+/* Position the close (and back) buttons ABSOLUTELY relative to the gift page
+   content (.gh-portal-content.* is position: relative), not fixed. In the admin
+   preview the popup is inside a scaled/transformed wrapper, which becomes the
+   containing block for position: fixed and pins the X flush into the corner with
+   no inset. Anchoring to the page content keeps the 32px inset everywhere. */
+.gh-portal-content.gift .gh-portal-closeicon-container,
+.gh-portal-content.giftSuccess .gh-portal-closeicon-container,
+.gh-portal-content.giftRedemption .gh-portal-closeicon-container {
+    position: absolute;
     top: 32px;
     right: 32px;
+}
+
+.gh-portal-content.gift .gh-portal-btn-back,
+.gh-portal-content.giftSuccess .gh-portal-btn-back,
+.gh-portal-content.giftRedemption .gh-portal-btn-back {
+    position: absolute;
+    top: 32px;
+    left: 32px;
 }
 
 /* The CloseButton component sets the accent colour inline (style={{color}}),
@@ -970,9 +984,9 @@ const GiftPage = () => {
     if (products.length === 0 || !activeDuration) {
         return (
             <>
-                <BackButton hidden={!lastPage} onClick={() => doAction('back')} />
-                <CloseButton />
                 <div className='gh-portal-content gift'>
+                    <BackButton hidden={!lastPage} onClick={() => doAction('back')} />
+                    <CloseButton />
                     <div className='gh-portal-gift-checkout'>
                         <div className='gh-portal-gift-checkout-left'>
                             <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
@@ -1191,9 +1205,9 @@ const GiftPage = () => {
 
     return (
         <>
-            <BackButton hidden={!lastPage} onClick={() => doAction('back')} />
-            <CloseButton />
             <div className='gh-portal-content gift'>
+                <BackButton hidden={!lastPage} onClick={() => doAction('back')} />
+                <CloseButton />
                 <div className='gh-portal-gift-checkout'>
                     <div className='gh-portal-gift-checkout-left'>
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
