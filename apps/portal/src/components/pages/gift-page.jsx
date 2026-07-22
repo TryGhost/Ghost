@@ -58,7 +58,7 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-checkout {
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    grid-template-columns: 1fr 1fr;
     min-height: 100vh;
     width: 100%;
 }
@@ -76,7 +76,7 @@ export const GiftPageStyles = `
    makes full use of the vertical space, rather than floating dead-centre. */
 .gh-portal-content.gift .gh-portal-gift-checkout-left {
     align-items: flex-start;
-    padding-top: 56px;
+    padding-top: 32px;
 }
 
 .gh-portal-gift-checkout-bg {
@@ -590,7 +590,7 @@ export const GiftPageStyles = `
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 360px;
+    max-width: 280px;
     margin-block: auto;
     flex-shrink: 0;
 }
@@ -1109,18 +1109,8 @@ const GiftPage = () => {
 
     const handleContinueToDelivery = (e) => {
         e.preventDefault();
-
-        if (!isLoggedIn) {
-            const formErrors = ValidateInputForm({fields: [{...emailField, value: email.trim()}]});
-            const formHasErrors = Object.values(formErrors).some(errorMessage => !!errorMessage);
-
-            setErrors(formErrors);
-
-            if (formHasErrors) {
-                return;
-            }
-        }
-
+        // The buyer's email is now collected on the delivery step, so the plan
+        // step just needs a tier/duration (always selected) before continuing.
         setStep('delivery');
     };
 
@@ -1128,12 +1118,6 @@ const GiftPage = () => {
         e.preventDefault();
         setErrors({});
         setStep('plan');
-    };
-
-    const handleEmailKeyDown = (event) => {
-        if (event.keyCode === 13 && !isPurchasing) {
-            handleContinueToDelivery(event);
-        }
     };
 
     const handlePurchase = (e) => {
@@ -1162,14 +1146,6 @@ const GiftPage = () => {
         }
 
         const formErrors = ValidateInputForm({fields: fieldsToValidate});
-
-        // The buyer email lives on the first step — bounce back if it went
-        // bad (e.g. cleared via browser autofill undo) so the error is visible
-        if (formErrors.email) {
-            setErrors(formErrors);
-            setStep('plan');
-            return;
-        }
 
         if (isEmailDelivery && !trimmedRecipientEmail) {
             formErrors.recipientEmail = t('Enter the recipient\'s email address');
@@ -1256,15 +1232,6 @@ const GiftPage = () => {
                                 )}
                             </header>
 
-                            {step === 'plan' && !isLoggedIn && (
-                                <div className='gh-portal-gift-checkout-section gh-portal-gift-checkout-email'>
-                                    <InputField
-                                        {...emailField}
-                                        onChange={handleEmailChange}
-                                        onKeyDown={handleEmailKeyDown}
-                                    />
-                                </div>
-                            )}
 
                             {step === 'plan' && offeredDurations.length > 1 && (
                                 <div className='gh-portal-gift-checkout-section'>
@@ -1352,6 +1319,12 @@ const GiftPage = () => {
                                             setBuyerName(event.target.value);
                                         }}
                                     />
+                                    {!isLoggedIn && (
+                                        <InputField
+                                            {...emailField}
+                                            onChange={handleEmailChange}
+                                        />
+                                    )}
                                 </div>
 
                                 {deliveryMethod === 'email' && <>
