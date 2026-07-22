@@ -3,7 +3,9 @@ import React, {useState} from 'react';
 import RecommendationList from './recommendations/recommendation-list';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Button, type ShowMoreData, TabView} from '@tryghost/admin-x-design-system';
+import {Button, type ShowMoreData} from '@tryghost/admin-x-design-system';
+import {Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade/components';
+import {formatNumber} from '@tryghost/shade/utils';
 import {keepPreviousData} from '@tanstack/react-query';
 import {useBrowseIncomingRecommendations, useBrowseRecommendations} from '@tryghost/admin-x-framework/api/recommendations';
 import {useReferrerHistory} from '@tryghost/admin-x-framework/api/referrers';
@@ -88,21 +90,6 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     // Select "Your recommendations" by default
     const [selectedTab, setSelectedTab] = useState('your-recommendations');
 
-    const tabs = [
-        {
-            id: 'your-recommendations',
-            title: `Your recommendations`,
-            counter: recommendationsMeta?.pagination?.total,
-            contents: <RecommendationList isLoading={areRecommendationsLoading} recommendations={recommendations ?? []} showMore={showMoreRecommendations}/>
-        },
-        {
-            id: 'recommending-you',
-            title: `Recommending you`,
-            counter: incomingRecommendationsMeta?.pagination?.total,
-            contents: <IncomingRecommendationList incomingRecommendations={incomingRecommendations ?? []} isLoading={areIncomingRecommendationsLoading || areStatsLoading} showMore={showMoreMentions} stats={stats ?? []}/>
-        }
-    ];
-
     const groupDescription = (
         <>Recommend any publication that your audience will find valuable, and find out when others are recommending you.</>
     );
@@ -136,7 +123,20 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     openAddNewRecommendationModal();
                 }} />
             </div>
-            <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+            <Tabs value={selectedTab} variant='underline' onValueChange={setSelectedTab}>
+                <TabsList>
+                    <TabsTrigger value='your-recommendations'>
+                        Your recommendations
+                        {typeof recommendationsMeta?.pagination?.total === 'number' && <TabsTriggerCount>{formatNumber(recommendationsMeta.pagination.total)}</TabsTriggerCount>}
+                    </TabsTrigger>
+                    <TabsTrigger value='recommending-you'>
+                        Recommending you
+                        {typeof incomingRecommendationsMeta?.pagination?.total === 'number' && <TabsTriggerCount>{formatNumber(incomingRecommendationsMeta.pagination.total)}</TabsTriggerCount>}
+                    </TabsTrigger>
+                </TabsList>
+                <TabsContent value='your-recommendations'><RecommendationList isLoading={areRecommendationsLoading} recommendations={recommendations ?? []} showMore={showMoreRecommendations}/></TabsContent>
+                <TabsContent value='recommending-you'><IncomingRecommendationList incomingRecommendations={incomingRecommendations ?? []} isLoading={areIncomingRecommendationsLoading || areStatsLoading} showMore={showMoreMentions} stats={stats ?? []}/></TabsContent>
+            </Tabs>
         </TopLevelGroup>
     );
 };

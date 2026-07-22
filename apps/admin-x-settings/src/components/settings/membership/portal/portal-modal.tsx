@@ -5,9 +5,10 @@ import PortalPreview from './portal-preview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './signup-options';
 import useQueryParams from '../../../../hooks/use-query-params';
-import {ConfirmationModal, PreviewModalContent, type Tab, TabView} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -24,34 +25,27 @@ const Sidebar: React.FC<{
     selectedTab: string
     onTabChange: (id: string) => void
 }> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError, selectedTab, onTabChange}) => {
-    const tabs: Tab[] = [
-        {
-            id: 'signupOptions',
-            title: 'Signup options',
-            contents: <SignupOptions
-                errors={errors}
-                localSettings={localSettings}
-                localTiers={localTiers}
-                setError={setError}
-                updateSetting={updateSetting}
-                updateTier={updateTier}
-            />
-        },
-        {
-            id: 'lookAndFeel',
-            title: 'Look & feel',
-            contents: <LookAndFeel localSettings={localSettings} updateSetting={updateSetting} />
-        },
-        {
-            id: 'accountPage',
-            title: 'Account page',
-            contents: <AccountPage errors={errors} localSettings={localSettings} setError={setError} updateSetting={updateSetting} />
-        }
-    ];
-
     return (
         <div className='pt-4'>
-            <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={onTabChange} />
+            <Tabs value={selectedTab} variant='underline' onValueChange={onTabChange}>
+                <TabsList>
+                    <TabsTrigger value='signupOptions'>Signup options</TabsTrigger>
+                    <TabsTrigger value='lookAndFeel'>Look & feel</TabsTrigger>
+                    <TabsTrigger value='accountPage'>Account page</TabsTrigger>
+                </TabsList>
+                <TabsContent value='signupOptions'>
+                    <SignupOptions
+                        errors={errors}
+                        localSettings={localSettings}
+                        localTiers={localTiers}
+                        setError={setError}
+                        updateSetting={updateSetting}
+                        updateTier={updateTier}
+                    />
+                </TabsContent>
+                <TabsContent value='lookAndFeel'><LookAndFeel localSettings={localSettings} updateSetting={updateSetting} /></TabsContent>
+                <TabsContent value='accountPage'><AccountPage errors={errors} localSettings={localSettings} setError={setError} updateSetting={updateSetting} /></TabsContent>
+            </Tabs>
         </div>
     );
 };
@@ -220,11 +214,15 @@ const PortalModal: React.FC = () => {
         selectedTab={selectedPreviewTab}
     />;
 
-    const previewTabs: Tab[] = [
-        {id: 'signup', title: 'Signup'},
-        {id: 'account', title: 'Account page'},
-        {id: 'links', title: 'Links'}
-    ];
+    const previewTabs = (
+        <Tabs value={selectedPreviewTab} variant='button-sm' onValueChange={onSelectURL}>
+            <TabsList>
+                <TabsTrigger value='signup'>Signup</TabsTrigger>
+                <TabsTrigger value='account'>Account page</TabsTrigger>
+                <TabsTrigger value='links'>Links</TabsTrigger>
+            </TabsList>
+        </Tabs>
+    );
 
     return <PreviewModalContent
         afterClose={() => {
@@ -232,14 +230,12 @@ const PortalModal: React.FC = () => {
         }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
-        deviceSelector={false}
         dirty={saveState === 'unsaved'}
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
         preview={preview}
         previewBgColor={selectedPreviewTab === 'links' ? 'white' : 'greygradient'}
         previewToolbarTabs={previewTabs}
-        selectedURL={selectedPreviewTab}
         sidebar={sidebar}
         testId='portal-modal'
         title='Portal'
@@ -248,7 +244,6 @@ const PortalModal: React.FC = () => {
                 await handleSave({force: true});
             }
         }}
-        onSelectURL={onSelectURL}
     />;
 };
 

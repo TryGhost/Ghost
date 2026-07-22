@@ -3,8 +3,8 @@ import TopLevelGroup from '../../top-level-group';
 import clsx from 'clsx';
 import useQueryParams from '../../../hooks/use-query-params';
 import useStaffUsers from '../../../hooks/use-staff-users';
-import {Avatar, NoValueLabel, NoValueLabelIcon, Separator, Switch} from '@tryghost/shade/components';
-import {Button, List, ListItem, TabView, showToast} from '@tryghost/admin-x-design-system';
+import {Avatar, NoValueLabel, NoValueLabelIcon, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade/components';
+import {Button, List, ListItem, showToast} from '@tryghost/admin-x-design-system';
 import {type User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {type UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
 import {UserRoundX} from 'lucide-react';
@@ -251,39 +251,6 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         setSelectedTab(newTab);
     };
 
-    const tabs = [
-        {
-            id: 'administrators',
-            title: 'Administrators',
-            contents: (<UsersList groupname='administrators' users={adminUsers} />),
-            counter: adminUsers.length ? adminUsers.length : undefined
-        },
-        {
-            id: 'editors',
-            title: 'Editors',
-            contents: (<UsersList groupname='editors' users={editorUsers} />),
-            counter: editorUsers.length ? editorUsers.length : undefined
-        },
-        {
-            id: 'authors',
-            title: 'Authors',
-            contents: (<UsersList groupname='authors' users={authorUsers} />),
-            counter: authorUsers.length ? authorUsers.length : undefined
-        },
-        {
-            id: 'contributors',
-            title: 'Contributors',
-            contents: (<UsersList groupname='contributors' users={contributorUsers} />),
-            counter: contributorUsers.length ? contributorUsers.length : undefined
-        },
-        {
-            id: 'invited',
-            title: 'Invited',
-            contents: (<InvitesUserList users={invites} />),
-            counter: totalInvites ? totalInvites : undefined
-        }
-    ];
-
     const require2fa = getSettingValue<boolean>(settings, 'require_email_mfa') || false;
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
@@ -298,7 +265,22 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
             title='Staff'
         >
             <Owner user={ownerUser} />
-            {(users.length > 1 || invites.length > 0) && <TabView selectedTab={selectedTab} tabs={tabs} testId='user-tabview' onTabChange={updateSelectedTab} />}
+            {(users.length > 1 || invites.length > 0) && (
+                <Tabs data-testid='user-tabview' value={selectedTab} variant='underline' onValueChange={updateSelectedTab}>
+                    <TabsList>
+                        <TabsTrigger value='administrators'>Administrators{adminUsers.length > 0 && <TabsTriggerCount>{formatNumber(adminUsers.length)}</TabsTriggerCount>}</TabsTrigger>
+                        <TabsTrigger value='editors'>Editors{editorUsers.length > 0 && <TabsTriggerCount>{formatNumber(editorUsers.length)}</TabsTriggerCount>}</TabsTrigger>
+                        <TabsTrigger value='authors'>Authors{authorUsers.length > 0 && <TabsTriggerCount>{formatNumber(authorUsers.length)}</TabsTriggerCount>}</TabsTrigger>
+                        <TabsTrigger value='contributors'>Contributors{contributorUsers.length > 0 && <TabsTriggerCount>{formatNumber(contributorUsers.length)}</TabsTriggerCount>}</TabsTrigger>
+                        <TabsTrigger value='invited'>Invited{totalInvites > 0 && <TabsTriggerCount>{formatNumber(totalInvites)}</TabsTriggerCount>}</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value='administrators'><UsersList groupname='administrators' users={adminUsers} /></TabsContent>
+                    <TabsContent value='editors'><UsersList groupname='editors' users={editorUsers} /></TabsContent>
+                    <TabsContent value='authors'><UsersList groupname='authors' users={authorUsers} /></TabsContent>
+                    <TabsContent value='contributors'><UsersList groupname='contributors' users={contributorUsers} /></TabsContent>
+                    <TabsContent value='invited'><InvitesUserList users={invites} /></TabsContent>
+                </Tabs>
+            )}
 
             {hasNextPage && selectedTab !== 'invited' && <Button
                 label={`Load more (showing ${formatNumber(users.length)}/${formatNumber(totalUsers)} users)`}

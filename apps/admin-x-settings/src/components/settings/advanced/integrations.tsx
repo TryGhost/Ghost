@@ -3,9 +3,9 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
-import {Button, ConfirmationModal, Icon, List, ListItem, SettingGroupHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Icon, List, ListItem, SettingGroupHeader, showToast} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
-import {NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
+import {NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {Plug} from 'lucide-react';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -251,19 +251,6 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
     const {updateRoute} = useRouting();
 
-    const tabs = [
-        {
-            id: 'built-in',
-            title: 'Built-in',
-            contents: <BuiltInIntegrations />
-        },
-        {
-            id: 'custom',
-            title: 'Custom',
-            contents: <CustomIntegrations integrations={integrations.filter(integration => integration.type === 'custom')} />
-        }
-    ] as const;
-
     const buttons = (
         <Button
             className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black'
@@ -300,7 +287,14 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             navid='integrations'
             testId='integrations'
         >
-            <TabView<'built-in' | 'custom'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+            <Tabs value={selectedTab} variant='underline' onValueChange={value => setSelectedTab(value as typeof selectedTab)}>
+                <TabsList>
+                    <TabsTrigger value='built-in'>Built-in</TabsTrigger>
+                    <TabsTrigger value='custom'>Custom</TabsTrigger>
+                </TabsList>
+                <TabsContent value='built-in'><BuiltInIntegrations /></TabsContent>
+                <TabsContent value='custom'><CustomIntegrations integrations={integrations.filter(integration => integration.type === 'custom')} /></TabsContent>
+            </Tabs>
         </TopLevelGroup>
     );
 };

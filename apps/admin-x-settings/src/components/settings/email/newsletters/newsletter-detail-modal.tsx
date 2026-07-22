@@ -4,9 +4,9 @@ import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, type Tab, TabView, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Textarea} from '@tryghost/shade/components';
+import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -246,7 +246,7 @@ const Sidebar: React.FC<{
         });
     };
 
-    const tabs: Tab[] = [
+    const tabs = [
         {
             id: 'generalSettings',
             title: 'General',
@@ -754,7 +754,12 @@ const Sidebar: React.FC<{
     return (
         <div className='flex flex-col'>
             <div className='px-7 pt-0 pb-7'>
-                <TabView selectedTab={selectedTab} stickyHeader={true} tabs={tabs} onTabChange={handleTabChange} />
+                <Tabs value={selectedTab} variant='underline' onValueChange={handleTabChange}>
+                    <TabsList className='sticky top-0 z-50 bg-background'>
+                        {tabs.map(tab => <TabsTrigger key={tab.id} value={tab.id}>{tab.title}</TabsTrigger>)}
+                    </TabsList>
+                    {tabs.map(tab => <TabsContent key={tab.id} value={tab.id}>{tab.contents}</TabsContent>)}
+                </Tabs>
             </div>
         </div>
     );
@@ -826,7 +831,6 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         afterClose={() => updateRoute(returnRoute)}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
-        deviceSelector={false}
         dirty={saveState === 'unsaved'}
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}

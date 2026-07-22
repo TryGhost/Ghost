@@ -3,8 +3,8 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useFeatureFlag from '../../../hooks/use-feature-flag';
-import {Button, Icon, List, ListItem, TabView} from '@tryghost/admin-x-design-system';
-import {NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
+import {Button, Icon, List, ListItem} from '@tryghost/admin-x-design-system';
+import {NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {TextCursorInput} from 'lucide-react';
 import {useBrowseMemberCustomFieldsIncludingArchived, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {withErrorBoundary} from '../../error-boundary';
@@ -16,7 +16,7 @@ const PREVIEW_COUNT = 5;
 
 const FieldList: React.FC<{
     fields: MemberCustomField[];
-    // Lifted to the parent: TabView unmounts hidden tabs, so local state
+    // Lifted to the parent: Tabs unmount hidden panels, so local state
     // would forget an expanded list on every tab switch.
     showAll: boolean;
     onShowAll: () => void;
@@ -120,19 +120,6 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
 
     const openModal = (field?: MemberCustomField) => NiceModal.show(CustomFieldModal, {field});
 
-    const tabs = [
-        {
-            id: 'active-fields',
-            title: 'Active',
-            contents: <FieldList fields={activeFields} openModal={openModal} showAll={showAllActive} onShowAll={() => setShowAllActive(true)} />
-        },
-        {
-            id: 'archived-fields',
-            title: 'Archived',
-            contents: <FieldList fields={archivedFields} openModal={openModal} showAll={showAllArchived} onShowAll={() => setShowAllArchived(true)} />
-        }
-    ];
-
     return (
         <TopLevelGroup
             customButtons={<Button color='clear' label='Add custom field' size='sm' onClick={() => openModal()} />}
@@ -147,7 +134,14 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
                 no tabs, just the group description; newsletters never faces
                 that state (a site always has one), custom fields start there. */}
             {fields.length > 0 && (
-                <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+                <Tabs value={selectedTab} variant='underline' onValueChange={setSelectedTab}>
+                    <TabsList>
+                        <TabsTrigger value='active-fields'>Active</TabsTrigger>
+                        <TabsTrigger value='archived-fields'>Archived</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value='active-fields'><FieldList fields={activeFields} openModal={openModal} showAll={showAllActive} onShowAll={() => setShowAllActive(true)} /></TabsContent>
+                    <TabsContent value='archived-fields'><FieldList fields={archivedFields} openModal={openModal} showAll={showAllArchived} onShowAll={() => setShowAllArchived(true)} /></TabsContent>
+                </Tabs>
             )}
         </TopLevelGroup>
     );

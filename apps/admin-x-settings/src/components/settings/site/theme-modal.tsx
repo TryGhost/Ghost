@@ -5,10 +5,11 @@ import OfficialThemes from './theme/official-themes';
 import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/theme-installed-modal';
 import ThemePreview from './theme/theme-preview';
-import {Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, showToast} from '@tryghost/admin-x-design-system';
 import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type OfficialTheme} from '../../providers/settings-app-provider';
+import {Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -213,16 +214,12 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
     const left =
     <div className='hidden md:!visible md:!block'>
-        <TabView
-            border={false}
-            selectedTab={currentTab}
-            tabs={[
-                {id: 'official', title: 'Official themes'},
-                {id: 'installed', title: 'Installed'}
-            ]}
-            onTabChange={(id: string) => {
-                setCurrentTab(id);
-            }} />
+        <Tabs value={currentTab} variant='button-sm' onValueChange={setCurrentTab}>
+            <TabsList>
+                <TabsTrigger value='official'>Official themes</TabsTrigger>
+                <TabsTrigger value='installed'>Installed</TabsTrigger>
+            </TabsList>
+        </Tabs>
     </div>;
 
     const handleUpload = () => {
@@ -261,16 +258,12 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     return (<>
         <PageHeader containerClassName='bg-white dark:bg-black' left={left} right={right} />
         <div className='px-[8vmin] md:hidden'>
-            <TabView
-                border={false}
-                selectedTab={currentTab}
-                tabs={[
-                    {id: 'official', title: 'Official themes'},
-                    {id: 'installed', title: 'Installed'}
-                ]}
-                onTabChange={(id: string) => {
-                    setCurrentTab(id);
-                }} />
+            <Tabs value={currentTab} variant='button-sm' onValueChange={setCurrentTab}>
+                <TabsList>
+                    <TabsTrigger value='official'>Official themes</TabsTrigger>
+                    <TabsTrigger value='installed'>Installed</TabsTrigger>
+                </TabsList>
+            </Tabs>
         </div>
     </>);
 };

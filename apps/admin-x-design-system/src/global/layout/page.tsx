@@ -1,15 +1,9 @@
 import React from 'react';
-import {TabList} from '../tab-view';
 import clsx from 'clsx';
 import AppMenu from './app-menu';
 import GlobalActions from './global-actions';
 import Button from '../button';
 import PageHeader from './page-header';
-
-export interface PageTab {
-    id: string;
-    title: string;
-}
 
 export interface CustomGlobalAction {
     iconName: string;
@@ -46,17 +40,7 @@ interface PageProps {
     /**
      * TK. Part of the Page Toolbar
      */
-    pageTabs?: PageTab[],
-
-    /**
-     * TK. Part of the Page Toolbar
-     */
-    selectedTab?: string;
-
-    /**
-     * TK. Part of the Page Toolbar
-     */
-    onTabChange?: (id: string) => void;
+    pageTabs?: React.ReactNode,
 
     children?: React.ReactNode;
 }
@@ -83,35 +67,15 @@ const Page: React.FC<PageProps> = ({
     customGlobalActions,
     breadCrumbs,
     pageTabs,
-    selectedTab,
-    onTabChange,
     children
 }) => {
-    const handleTabChange = (e: React.MouseEvent<HTMLButtonElement>) => {
-        const newTab = e.currentTarget.id as string;
-        onTabChange!(newTab);
-    };
-
-    if (pageTabs?.length && !selectedTab) {
-        selectedTab = pageTabs[0].id;
-    }
-
     const left: React.ReactNode = (
-        (showAppMenu || breadCrumbs || pageTabs?.length) && <div className='flex items-center gap-10'>
+        (showAppMenu || breadCrumbs || pageTabs) && <div className='flex items-center gap-10'>
             {showAppMenu && (
                 <AppMenu />
             )}
             {breadCrumbs}
-            {pageTabs?.length && (
-                <TabList
-                    border={false}
-                    buttonBorder={false}
-                    handleTabChange={handleTabChange}
-                    selectedTab={selectedTab}
-                    tabs={pageTabs!}
-                    width='normal'
-                />
-            )}
+            {pageTabs}
         </div>);
 
     mainClassName = clsx(

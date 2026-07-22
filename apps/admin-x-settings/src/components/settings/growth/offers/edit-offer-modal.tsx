@@ -267,7 +267,6 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         }}
         backDropClick={false}
         cancelLabel='Cancel'
-        deviceSelector={false}
         dirty={saveState === 'unsaved'}
         height='full'
         okColor={okProps.color}

@@ -3,8 +3,9 @@ import React, {useState} from 'react';
 import TiersList from './tiers/tiers-list';
 import TopLevelGroup from '../../top-level-group';
 import clsx from 'clsx';
-import {Button, LimitModal, StripeButton, TabView} from '@tryghost/admin-x-design-system';
+import {Button, LimitModal, StripeButton} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -56,22 +57,18 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         return [...t].sort((a, b) => (a.monthly_price ?? 0) - (b.monthly_price ?? 0));
     };
 
-    const tabs = [
-        {
-            id: 'active-tiers',
-            title: 'Active',
-            contents: (<TiersList tab='active-tiers' tiers={sortTiers(activeTiers)} />)
-        },
-        {
-            id: 'archived-tiers',
-            title: 'Archived',
-            contents: (<TiersList tab='archive-tiers' tiers={sortTiers(archivedTiers)} />)
-        }
-    ];
-
     let content;
     if (checkStripeEnabled(settings, config)) {
-        content = <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />;
+        content = (
+            <Tabs value={selectedTab} variant='underline' onValueChange={setSelectedTab}>
+                <TabsList>
+                    <TabsTrigger value='active-tiers'>Active</TabsTrigger>
+                    <TabsTrigger value='archived-tiers'>Archived</TabsTrigger>
+                </TabsList>
+                <TabsContent value='active-tiers'><TiersList tab='active-tiers' tiers={sortTiers(activeTiers)} /></TabsContent>
+                <TabsContent value='archived-tiers'><TiersList tab='archive-tiers' tiers={sortTiers(archivedTiers)} /></TabsContent>
+            </Tabs>
+        );
     } else {
         content = <TiersList tab='free-tier' tiers={activeTiers.filter(tier => tier.type === 'free')} />;
     }

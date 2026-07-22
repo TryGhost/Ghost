@@ -76,9 +76,9 @@ describe("Design settings", () => {
         await modal.getByTestId(sel.designToolbar).getByRole("tab", { name: "Post" }).click();
         await expect(postPreview!).toHaveRequestedPreview({ custom: "{}" });
 
-        await modal.getByRole("button", { name: "Mobile" }).click();
+        await modal.getByRole("radio", { name: "Mobile" }).click();
         await expect.element(modal.getByTestId(sel.previewMobile)).toBeVisible();
-        await modal.getByRole("button", { name: "Desktop" }).click();
+        await modal.getByRole("radio", { name: "Desktop" }).click();
         await expect(modal.getByTestId(sel.previewMobile)).toHaveCount(0);
     });
 

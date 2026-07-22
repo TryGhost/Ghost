@@ -4,7 +4,6 @@ import {ReactNode} from 'react';
 import NiceModal from '@ebay/nice-modal-react';
 import Button from '../button';
 import Heading from '../heading';
-import {Tab} from '../tab-view';
 import PreviewModal, {PreviewModalProps} from './preview-modal';
 
 const PreviewModalContainer: React.FC<PreviewModalProps> = ({...props}) => {
@@ -35,14 +34,6 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof PreviewModal>;
 
-const previewURLs: Tab[] = [
-    {id: 'homepage', title: 'Homepage'},
-    {id: 'post', title: 'Post'},
-    {id: 'page', title: 'Page'},
-    {id: 'tag-archive', title: 'Tag archive'},
-    {id: 'author-archive', title: 'Author archive'}
-];
-
 export const Default: Story = {
     args: {
         title: 'Preview modal',
@@ -56,10 +47,8 @@ export const Default: Story = {
                 Scrollable sidebar area
             </div>
         ),
-        previewToolbarTabs: previewURLs,
-        onSelectURL: (id: string) => {
-            alert(id);
-        }
+        previewToolbarTabs: <span className='text-sm text-grey-500'>Preview tabs slot</span>,
+        deviceSelector: <span className='text-sm text-grey-500'>Device selector slot</span>
     }
 };
 

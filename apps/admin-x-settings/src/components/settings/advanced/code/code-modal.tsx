@@ -1,8 +1,9 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {ButtonGroup, CodeEditor, Heading, Modal, TabView} from '@tryghost/admin-x-design-system';
+import {ButtonGroup, CodeEditor, Heading, Modal} from '@tryghost/admin-x-design-system';
 import {type ReactCodeMirrorRef} from '@uiw/react-codemirror';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useSaveButton} from '../../../../hooks/use-save-button';
 
@@ -43,23 +44,6 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
         value: footerContent || '',
         onChange: (value: string) => updateSetting('codeinjection_foot', value)
     };
-
-    const tabs = [
-        {
-            id: 'header',
-            title: 'Site header',
-            contents: (<CodeEditor height='full' {...headerProps} ref={headerEditorRef} className='mt-2' data-testid='header-code' autoFocus />),
-            tabWrapperClassName: 'flex-auto',
-            containerClassName: 'h-full'
-        },
-        {
-            id: 'footer',
-            title: 'Site footer',
-            contents: (<CodeEditor height='full' {...footerProps} ref={footerEditorRef} className='mt-2' data-testid='footer-code' />),
-            tabWrapperClassName: 'flex-auto',
-            containerClassName: 'h-full'
-        }
-    ] as const;
 
     const {savingTitle, isSaving, onSaveClick} = useSaveButton(handleSave, true);
 
@@ -105,12 +89,18 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
                     }
                 ]} />
             </div>
-            <TabView<'header' | 'footer'>
-                containerClassName='flex-auto flex flex-col mb-16'
-                selectedTab={selectedTab}
-                tabs={tabs}
-                onTabChange={setSelectedTab}
-            />
+            <Tabs className='mb-16 flex flex-auto flex-col' value={selectedTab} variant='underline' onValueChange={value => setSelectedTab(value as typeof selectedTab)}>
+                <TabsList>
+                    <TabsTrigger value='header'>Site header</TabsTrigger>
+                    <TabsTrigger value='footer'>Site footer</TabsTrigger>
+                </TabsList>
+                <TabsContent className='h-full flex-auto' value='header'>
+                    <CodeEditor ref={headerEditorRef} className='mt-2' data-testid='header-code' height='full' autoFocus {...headerProps} />
+                </TabsContent>
+                <TabsContent className='h-full flex-auto' value='footer'>
+                    <CodeEditor ref={footerEditorRef} className='mt-2' data-testid='footer-code' height='full' {...footerProps} />
+                </TabsContent>
+            </Tabs>
         </div>
     </Modal>;
 };

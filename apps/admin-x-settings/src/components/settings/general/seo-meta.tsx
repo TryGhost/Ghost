@@ -4,8 +4,8 @@ import useFeatureFlag from '../../../hooks/use-feature-flag';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {FacebookLogo, GoogleLogo, Icon, ImageUpload, SettingGroupContent, TabView, TextField, XLogo} from '@tryghost/admin-x-design-system';
-import {Field, FieldLabel, Switch} from '@tryghost/shade/components';
+import {FacebookLogo, GoogleLogo, Icon, ImageUpload, SettingGroupContent, TextField, XLogo} from '@tryghost/admin-x-design-system';
+import {Field, FieldLabel, Switch, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -315,24 +315,6 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
         </div>
     );
 
-    const tabs = [
-        {
-            id: 'metadata',
-            title: 'Search',
-            contents: metadataTabContent
-        },
-        {
-            id: 'twitter',
-            title: 'X card',
-            contents: twitterTabContent
-        },
-        {
-            id: 'facebook',
-            title: 'Facebook card',
-            contents: facebookTabContent
-        }
-    ];
-
     return (
         <TopLevelGroup
             description='Extra content for search engines and social accounts'
@@ -347,12 +329,16 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
-            <TabView
-                selectedTab={selectedTab}
-                tabs={tabs}
-                testId='seo-tabview'
-                onTabChange={setSelectedTab}
-            />
+            <Tabs data-testid='seo-tabview' value={selectedTab} variant='underline' onValueChange={setSelectedTab}>
+                <TabsList>
+                    <TabsTrigger value='metadata'>Search</TabsTrigger>
+                    <TabsTrigger value='twitter'>X card</TabsTrigger>
+                    <TabsTrigger value='facebook'>Facebook card</TabsTrigger>
+                </TabsList>
+                <TabsContent value='metadata'>{metadataTabContent}</TabsContent>
+                <TabsContent value='twitter'>{twitterTabContent}</TabsContent>
+                <TabsContent value='facebook'>{facebookTabContent}</TabsContent>
+            </Tabs>
         </TopLevelGroup>
     );
 };

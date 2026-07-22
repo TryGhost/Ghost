@@ -2,8 +2,9 @@ import AnnouncementBarPreview from './announcement-bar/announcement-bar-preview'
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet} from '@tryghost/shade/components';
-import {ColorIndicator, Form, HtmlField, PreviewModalContent, type Tab, showToast} from '@tryghost/admin-x-design-system';
+import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, Tabs, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
+import {ColorIndicator, DesktopChrome, Form, HtmlField, MobileChrome, PreviewModalContent, showToast} from '@tryghost/admin-x-design-system';
+import {Laptop, Smartphone} from 'lucide-react';
 import {debounce} from '../../../utils/debounce';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -127,6 +128,7 @@ const AnnouncementBarModal: React.FC = () => {
     const visibilitySettings = JSON.parse(announcementVisibility?.toString() || '[]') as string[];
     const {updateRoute} = useRouting();
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
+    const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
 
     const toggleColorSwatch = (e: string | null) => {
         updateSetting('announcement_background', e);
@@ -171,16 +173,8 @@ const AnnouncementBarModal: React.FC = () => {
         }
     });
 
-    let previewTabs: Tab[] = [];
-    if (latestPost) {
-        previewTabs = [
-            {id: 'homepage', title: 'Homepage'},
-            {id: 'post', title: 'Post'}
-        ];
-    }
-
     const onSelectURL = (id: string) => {
-        if (previewTabs.length) {
+        if (latestPost) {
             setSelectedPreviewTab(id);
         }
     };
@@ -195,12 +189,35 @@ const AnnouncementBarModal: React.FC = () => {
         break;
     }
 
-    const preview = <AnnouncementBarPreview
+    const rawPreview = <AnnouncementBarPreview
         announcementBackgroundColor={announcementBackgroundColor}
         announcementContent={announcementContent}
         url={selectedTabURL}
         visibility={visibilitySettings}
     />;
+    const preview = previewDevice === 'desktop' ? (
+        <DesktopChrome data-testid='preview-desktop'>{rawPreview}</DesktopChrome>
+    ) : (
+        <MobileChrome data-testid='preview-mobile'>{rawPreview}</MobileChrome>
+    );
+    const previewTabs = latestPost ? (
+        <Tabs value={selectedPreviewTab} variant='button-sm' onValueChange={onSelectURL}>
+            <TabsList>
+                <TabsTrigger value='homepage'>Homepage</TabsTrigger>
+                <TabsTrigger value='post'>Post</TabsTrigger>
+            </TabsList>
+        </Tabs>
+    ) : undefined;
+    const deviceSelector = (
+        <ToggleGroup type='single' value={previewDevice} onValueChange={(value) => {
+            if (value === 'desktop' || value === 'mobile') {
+                setPreviewDevice(value);
+            }
+        }}>
+            <ToggleGroupItem aria-label='Desktop' value='desktop'><Laptop /></ToggleGroupItem>
+            <ToggleGroupItem aria-label='Mobile' value='mobile'><Smartphone /></ToggleGroupItem>
+        </ToggleGroup>
+    );
 
     return <PreviewModalContent
         afterClose={() => {
@@ -208,14 +225,13 @@ const AnnouncementBarModal: React.FC = () => {
         }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
-        deviceSelector={true}
+        deviceSelector={deviceSelector}
         dirty={false}
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
         preview={preview}
         previewBgColor='greygradient'
         previewToolbarTabs={previewTabs}
-        selectedURL={selectedPreviewTab}
         sidebar={sidebar}
         testId='announcement-bar-modal'
         title='Announcement'
@@ -228,7 +244,6 @@ const AnnouncementBarModal: React.FC = () => {
                 });
             }
         }}
-        onSelectURL={onSelectURL}
     />;
 };
 

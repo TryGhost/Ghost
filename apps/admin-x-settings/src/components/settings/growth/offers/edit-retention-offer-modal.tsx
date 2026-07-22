@@ -657,7 +657,6 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             afterClose={() => updateRoute('offers')}
             backDropClick={false}
             cancelLabel='Cancel'
-            deviceSelector={false}
             dirty={saveState === 'unsaved'}
             height='full'
             okColor={okProps.color}

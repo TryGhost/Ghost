@@ -1,7 +1,6 @@
-import {useArgs} from 'storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react-vite';
 
-import ViewContainer, {PrimaryActionProps, ViewTab} from './view-container';
+import ViewContainer, {PrimaryActionProps} from './view-container';
 import Button from '../button';
 import ButtonGroup from '../button-group';
 
@@ -10,16 +9,6 @@ const meta = {
     component: ViewContainer,
     parameters: {
         layout: 'fullscreen'
-    },
-    render: function Component(args) {
-        const [, updateArgs] = useArgs();
-
-        return <ViewContainer {...args}
-            onTabChange={(tab) => {
-                updateArgs({selectedTab: tab});
-                args.onTabChange?.(tab);
-            }}
-        />;
     },
     argTypes: {
         children: {
@@ -73,18 +62,7 @@ const primaryAction: PrimaryActionProps = {
     }
 };
 
-const tabs: ViewTab[] = [
-    {
-        id: 'steph',
-        title: 'Steph Curry',
-        contents: 'The tabs component lets you add various datasets. It uses the <code>`TabList`</code> component to stay consistent with the simple TabView.'
-    },
-    {
-        id: 'klay',
-        title: 'Klay Thompson',
-        contents: 'Splash brother #11.'
-    }
-];
+const tabs = <div className='text-sm text-grey-500'>View tabs slot</div>;
 
 export const Default: Story = {
     args: {
