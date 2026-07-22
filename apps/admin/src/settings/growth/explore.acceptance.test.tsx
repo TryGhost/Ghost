@@ -3,21 +3,25 @@ import { page } from "vitest/browser";
 
 import {
     configResponse,
+    enableShadeSettingsMode,
     fakeEditSettings,
     fakeEndpoint,
     fakeSettingsScreens,
     renderAdminApp,
     settingsResponse,
+    shadeSettingsBootLabs,
     siteResponse,
 } from "@test-utils/acceptance";
 import { settingsScreen } from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 describe("Ghost Explore settings", () => {
     it("can join Ghost Explore", async () => {
         fakeSettingsScreens();
         const settingsApi = fakeEditSettings();
         await renderAdminApp("/settings", {
-            boot: { browseSettings: { response: settingsResponse({ settings: { explore_ping: false, explore_ping_growth: false } }) } },
+            boot: { browseSettings: { response: settingsResponse({ settings: { explore_ping: false, explore_ping_growth: false }, labs: shadeSettingsBootLabs() }) } },
         });
 
         await expect.element(settingsScreen.explore()).toBeVisible();
@@ -31,7 +35,7 @@ describe("Ghost Explore settings", () => {
         fakeSettingsScreens();
         const settingsApi = fakeEditSettings();
         await renderAdminApp("/settings", {
-            boot: { browseSettings: { response: settingsResponse({ settings: { explore_ping: true, explore_ping_growth: false } }) } },
+            boot: { browseSettings: { response: settingsResponse({ settings: { explore_ping: true, explore_ping_growth: false }, labs: shadeSettingsBootLabs() }) } },
         });
 
         await expect.element(settingsScreen.exploreToggle()).toBeChecked();
@@ -45,7 +49,7 @@ describe("Ghost Explore settings", () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings", {
             boot: {
-                browseSettings: { response: settingsResponse({ settings: { explore_ping: true, explore_ping_growth: true } }) },
+                browseSettings: { response: settingsResponse({ settings: { explore_ping: true, explore_ping_growth: true }, labs: shadeSettingsBootLabs() }) },
                 browseMembersCount: {
                     response: {
                         members: [],
@@ -65,7 +69,7 @@ describe("Ghost Explore settings", () => {
 
     it("can send a testimonial", async () => {
         const testimonialUrl = "https://mocked.com/api/testimonials";
-        const config = configResponse();
+        const config = configResponse({ labs: shadeSettingsBootLabs() });
         config.config.exploreTestimonialsUrl = testimonialUrl;
         const site = siteResponse();
         site.site.site_uuid = "9a604cf9-4c27-4a05-9991-be9974a764c5";
@@ -75,7 +79,7 @@ describe("Ghost Explore settings", () => {
         await renderAdminApp("/settings", {
             boot: {
                 browseConfig: { response: config },
-                browseSettings: { response: settingsResponse({ settings: { explore_ping: true, explore_ping_growth: true } }) },
+                browseSettings: { response: settingsResponse({ settings: { explore_ping: true, explore_ping_growth: true }, labs: shadeSettingsBootLabs() }) },
                 browseSite: { response: site },
             },
         });

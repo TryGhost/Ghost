@@ -93,7 +93,7 @@ export const emailsKeywords = {
     mailgun: ["mailgun", "emails", "newsletters"],
 };
 
-const growthKeywords = {
+export const growthKeywords = {
     network: ["growth", "network", "activitypub", "blog", "fediverse", "sharing"],
     explore: ["ghost explore", "explore", "growth", "share", "list", "listing"],
     recommendations: ["growth", "recommendations", "recommend", "blogroll"],

@@ -120,7 +120,7 @@ For each area (one agent per area, in its own `src/settings/<area>/` files):
 | site              | done    | design, theme, navigation, announcement-bar, search | See "Site area notes" below |
 | membership        | done    | access, tiers, stripe, portal, membership-settings, custom-fields, member-welcome-emails (incl. automations-on customize test), layout portal test un-skipped | See "Membership area notes" below |
 | email             | done    | email-settings, newsletters, default-recipients, mailgun | See "Email area notes" below |
-| growth            | pending | —               |       |
+| growth            | done    | network, explore, recommendations, tips-and-donations, offers (top-level suite) | See "Growth area notes" below |
 | advanced          | pending | —               |       |
 
 ## General area notes (phase 2)
@@ -567,6 +567,135 @@ the list shows it immediately.
   in the admin Tailwind theme — a port that keeps them silently renders
   unstyled. Use literal default-palette grays for fixed-light email
   surfaces, semantic tokens everywhere else.
+
+## Growth area notes (phase 6)
+
+**Structure.** Area component `src/settings/growth/growth-area.tsx`
+(registered in `AREA_COMPONENTS`): network, explore, recommendations,
+embed signup, offers (Stripe-gated) — the same groups in the same order as
+the legacy growth-settings.tsx. Tips & donations stays in the membership
+area composition (phase 4); its acceptance suite in `growth/` is opted in
+here and passed without changes. Routed dialogs registered in
+settings-app.tsx (legacy deep links keep working flag-on):
+`recommendations/add`, `explore/testimonial`, `embed-signup-form/show`,
+`offers/new`, `offers/edit`, `offers/edit/retention(/:cadence)`,
+`offers/edit/:offerId`, `offers/success/:offerId`. Route order matters:
+`offers/edit/retention` is declared explicitly so it doesn't fall into
+`offers/edit/:offerId` as `offerId="retention"` (the legacy container-modal
+route contract, which renders the index for that path).
+
+**Offers index rebuilt on shade Table** (`offers-index-dialog.tsx`, the
+minefield screen): the legacy hand-rolled `<table>` is now shade
+Table/TableHeader/TableRow, status pills are shade Badges
+(`success`/`secondary`), and the hand-rolled sort menu is a shade
+DropdownMenu with radio items (same options: date-added/name/redemptions +
+direction + "Show archived" checkbox, trigger keeps the `Filter options`
+accessible name). Kept from legacy by parity: the column set/widths
+(colgroup), the sticky name column (`sticky left-0` + `bg-background` on
+name cells, `overflow-x-auto` + `min-w-[900px]` wrapper), full-cell click
+targets (real `<button>`s per cell; redemption counts > 0 render `<a>`s to
+the members filter URL), retention rows always present, and the
+tier-active/archived filter semantics. Sorting/show-archived state is
+**dialog-local** (legacy kept it in a settings-app-provider; it now resets
+when the index closes — deliberate minor delta, no suite covers
+persistence). Display math (`getOfferDiscount` etc.) is a local port in
+`offer-display-utils.ts` on the legacy currency/`numberWithCommas` utils.
+
+**Offer editors on PreviewDialog.** add-offer, edit-offer and retention run
+on the shared PreviewDialog with the membership `PortalFrame` +
+`getOfferPortalPreviewUrl` (imported from legacy source, new subpath
+export). PreviewDialog gained a `cancelLabel` prop (offers say "Cancel",
+like the legacy modals; every other consumer keeps "Close"). The legacy
+`previewToolbarBreadcrumbs` slot maps to `previewToolbarTabs` with a shade
+Breadcrumb trail (`offers-breadcrumbs.tsx`); add-offer had
+`previewToolbar={false}` in legacy but gets the standard toolbar + device
+toggle here (the deliberate shade-only addition, same as newsletters). The
+retention terms/display/status save matrix, name/code hash generation and
+last-non-zero preview amounts are ported verbatim from
+edit-retention-offer-modal.tsx. offer-success is a full-screen dialog with
+the shade Breadcrumb trail; the X/Facebook/LinkedIn share buttons use
+inline SVGs — **lucide-react no longer ships brand icons** (Twitter/
+Facebook/Linkedin are gone from the package; `LucideIcon.Twitter` renders
+`undefined` and takes down the whole settings portal).
+
+**Recommendations metadata flow.** The legacy NiceModal pair
+(add-recommendation-modal → add-recommendation-modal-confirm) is one routed
+dialog with two internal steps (`add-recommendation-dialog.tsx`): URL step
+(format-url on blur, Enter submits) → `POST /recommendations/check/` →
+existing-id throws AlreadyExistsError (error toast) / metadata folds into
+the draft → confirm step (shared `recommendation-description-form.tsx` +
+`recommendation-validation.ts`), Back returns to the URL step preserving
+edits. Both steps keep the `add-recommendation-modal` testid. The `?url=`
+recommend-back flow auto-submits behind a loading view like legacy. The
+edit dialog is **not routed** (legacy opened it via NiceModal without a
+route change to avoid refetching): the list row click passes the loaded
+record into a local Dialog. Lists are shade Table rows (the old-DS
+Table/TableRow + hand column grid is gone), incoming rows keep the
+Recommend back / Recommending affordances, and the 5-then-100
+`getNextPageParams` pagination is ported verbatim.
+
+**Other groups.** Network/Explore are immediate-save Switch groups
+(`customButtons`); network reuses the shared `useLimiter`
+(`isDisabled("limitSocialWeb")` is a render-time boolean that re-evaluates
+when the lazy limiter materializes — no effect needed, unlike the
+mount-time checks). The explore preview card and the recommendation
+preview card are fixed-light surfaces (literal white/gray by design); the
+purple testimonial banner keeps its fixed brand colors. The testimonial
+dialog POSTs to `config.exploreTestimonialsUrl` with plain fetch and reads
+the current user from `useCurrentUser`. Embed signup
+(`embed-signup-dialog.tsx`) reuses the site area's `ColorPickerField` and
+the legacy `IframeBuffering` + `generateCode` (new subpath export); no
+acceptance suite covers it (screenshot evidence only).
+
+**Shared infra touched:**
+
+- `preview-chrome.tsx` (site): PreviewDialog `cancelLabel` prop (default
+  "Close").
+- `text-field.tsx` (shared): `autoFocus` + `rightAddon` props (the legacy
+  `rightPlaceholder` — renders an InputGroup with an inline-end addon).
+- New admin-x-settings subpath exports: `utils/get-offers-portal-preview-url`,
+  `utils/get-tiers-cadences`, `utils/generate-embed-code`, `utils/helpers`,
+  `components/settings/growth/offers/offer-helpers`,
+  `components/settings/growth/offers/offers-retention` (the latter two are
+  pure logic despite living under components/).
+- `nav.ts`: `growthKeywords` exported for the area groups. No keyword
+  changes.
+- Assets copied into `src/settings/growth/assets/` (network, ghost-explore,
+  explore-default-logo, ghost-favicon + the three testimonial portraits).
+
+**Suite adjustments (mode mechanics only, no assertion changes):**
+
+- network, explore, tips-and-donations, offers (`src/settings/
+  offers.acceptance.test.tsx`): `enableShadeSettingsMode()` + folding
+  `shadeSettingsBootLabs()` into the hand-rolled settings/config responses.
+- recommendations: `enableShadeSettingsMode()` only (no hand-rolled boot
+  responses).
+- chrome: growth placeholder assertions replaced with native-area
+  assertions; the placeholder-content probe moved to the advanced area
+  (`#/settings/integrations`) — the last one; the not-yet-rebuilt deep-link
+  probe moved from `/settings/recommendations/add` (now real) to
+  `/settings/history/view/123` (**advanced agent: replace it** when history
+  routes land — it's also the "View user activity" redirect noted under the
+  general area).
+
+**Gotchas found (advanced agent, read these):**
+
+- **lucide-react has no brand icons** (Twitter/Facebook/Linkedin removed
+  upstream): `LucideIcon.<Brand>` type-checks as `any` member access but is
+  `undefined` at runtime, and one undefined element type crashes the whole
+  settings portal (React unmounts the portal subtree; suites then see the
+  bare admin shell). Use inline SVGs for brand marks.
+- **Tall shade Dialogs need `max-h-[85vh] overflow-y-auto`** (the
+  invite-user pattern): DialogContent is fixed-position, so overflow below
+  the fold is unreachable — Playwright reports "element is outside of the
+  viewport" and the click times out after retries.
+- The acceptance viewport is 1280x800 (vitest.acceptance.config.ts) — the
+  414px note in the memory files is about unit browser tests, don't design
+  dialogs against the wrong number.
+- `useForm.validate()` runs against the current formState snapshot; okLabel
+  flips to "Retry" after a failed save but any `updateForm` resets
+  saveState to "unsaved" and the label back to "Save" — suites that click
+  "Save" twice rely on this, don't "fix" it.
 
 ## Chrome behavior ported (phase 1)
 

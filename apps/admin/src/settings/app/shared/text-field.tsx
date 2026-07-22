@@ -1,5 +1,5 @@
 import { type ReactNode, type Ref, useId } from "react";
-import { Field, FieldDescription, FieldError, FieldLabel, Input } from "@tryghost/shade/components";
+import { Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput } from "@tryghost/shade/components";
 
 /**
  * A labelled text input with hint/error messaging — the Shade equivalent of
@@ -19,6 +19,9 @@ export interface TextFieldProps {
     inputRef?: Ref<HTMLInputElement>;
     testId?: string;
     autoComplete?: string;
+    autoFocus?: boolean;
+    /** Renders the input inside an InputGroup with this inline-end addon (the legacy `rightPlaceholder`). */
+    rightAddon?: ReactNode;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
     onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
@@ -37,6 +40,8 @@ export function TextField({
     inputRef,
     testId,
     autoComplete,
+    autoFocus,
+    rightAddon,
     onChange,
     onKeyDown,
     onBlur,
@@ -44,25 +49,34 @@ export function TextField({
 }: TextFieldProps) {
     const id = useId();
 
+    const inputProps = {
+        "aria-invalid": error || undefined,
+        autoComplete,
+        autoFocus,
+        "data-testid": testId,
+        disabled,
+        id,
+        maxLength,
+        placeholder,
+        type,
+        value: value ?? "",
+        onBlur,
+        onChange,
+        onFocus,
+        onKeyDown,
+    };
+
     return (
         <Field data-invalid={error || undefined}>
             {title && <FieldLabel htmlFor={id}>{title}</FieldLabel>}
-            <Input
-                ref={inputRef}
-                aria-invalid={error || undefined}
-                autoComplete={autoComplete}
-                data-testid={testId}
-                disabled={disabled}
-                id={id}
-                maxLength={maxLength}
-                placeholder={placeholder}
-                type={type}
-                value={value ?? ""}
-                onBlur={onBlur}
-                onChange={onChange}
-                onFocus={onFocus}
-                onKeyDown={onKeyDown}
-            />
+            {rightAddon ? (
+                <InputGroup className="border-transparent bg-muted" data-invalid={error || undefined}>
+                    <InputGroupInput ref={inputRef} {...inputProps} />
+                    <InputGroupAddon align="inline-end">{rightAddon}</InputGroupAddon>
+                </InputGroup>
+            ) : (
+                <Input ref={inputRef} {...inputProps} />
+            )}
             {error && hint ? <FieldError>{hint}</FieldError> : hint ? <FieldDescription>{hint}</FieldDescription> : null}
         </Field>
     );

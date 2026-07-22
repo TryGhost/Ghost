@@ -22,6 +22,12 @@
         "./src/data/official-themes": "./src/data/official-themes.ts",
         "./src/components/settings/site/theme/theme-editor-utils": "./src/components/settings/site/theme/theme-editor-utils.ts",
         "./src/components/settings/site/theme/theme-editor-styles": "./src/components/settings/site/theme/theme-editor-styles.ts",
+        "./src/utils/get-offers-portal-preview-url": "./src/utils/get-offers-portal-preview-url.ts",
+        "./src/utils/helpers": "./src/utils/helpers.ts",
+        "./src/utils/get-tiers-cadences": "./src/utils/get-tiers-cadences.ts",
+        "./src/utils/generate-embed-code": "./src/utils/generate-embed-code.ts",
+        "./src/components/settings/growth/offers/offer-helpers": "./src/components/settings/growth/offers/offer-helpers.ts",
+        "./src/components/settings/growth/offers/offers-retention": "./src/components/settings/growth/offers/offers-retention.tsx",
         "./src/*": {
             "import": "./src/*.tsx",
             "require": "./src/*.tsx"

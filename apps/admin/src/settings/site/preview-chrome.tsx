@@ -55,6 +55,8 @@ export interface PreviewDialogProps {
     /** Disables both header buttons (e.g. while saving). */
     buttonsDisabled?: boolean;
     okLabel?: string;
+    /** Label of the close button (the offers dialogs say "Cancel", like legacy). */
+    cancelLabel?: string;
     onOk: () => void;
     /** Requested by Close button, Escape and backdrop click — run any dirty confirm here. */
     onClose: () => void;
@@ -74,6 +76,7 @@ export function PreviewDialog({
     title,
     buttonsDisabled,
     okLabel,
+    cancelLabel,
     onOk,
     onClose,
     previewToolbarTabs,
@@ -124,7 +127,7 @@ export function PreviewDialog({
                         <div className="flex max-h-[82px] items-center justify-between gap-3 px-7 py-6">
                             <h2 className="min-w-0 truncate text-lg font-semibold tracking-tight">{title}</h2>
                             <div className="flex shrink-0 items-center gap-2">
-                                <Button disabled={buttonsDisabled} variant="outline" onClick={onClose}>Close</Button>
+                                <Button disabled={buttonsDisabled} variant="outline" onClick={onClose}>{cancelLabel || "Close"}</Button>
                                 <Button disabled={buttonsDisabled} variant="default" onClick={onOk}>{okLabel || "Save"}</Button>
                             </div>
                         </div>

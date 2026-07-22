@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse, type RenderAdminAppOptions } from "@test-utils/acceptance";
+import { enableShadeSettingsMode, fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse, shadeSettingsBootLabs, type RenderAdminAppOptions } from "@test-utils/acceptance";
 import { settingsScreen } from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 function withStripe(): RenderAdminAppOptions {
     return {
@@ -16,6 +18,7 @@ function withStripe(): RenderAdminAppOptions {
                         stripe_connect_display_name: "Dummy",
                         stripe_connect_account_id: "acct_123",
                     },
+                    labs: shadeSettingsBootLabs(),
                 }),
             },
         },

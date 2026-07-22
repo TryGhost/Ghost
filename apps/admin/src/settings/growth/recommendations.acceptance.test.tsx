@@ -1,7 +1,9 @@
 import {describe, expect, it} from "vitest";
 
-import {browseResponse, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp} from "@test-utils/acceptance";
+import {browseResponse, enableShadeSettingsMode, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 const firstRecommendation = {
     id: "652d788df9278a47d6963d1f",

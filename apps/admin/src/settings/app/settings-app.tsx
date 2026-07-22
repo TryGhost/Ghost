@@ -14,6 +14,14 @@ import { StripeConnectDialog } from "@/settings/membership/stripe-connect-dialog
 import { TierDetailDialog } from "@/settings/membership/tier-detail-dialog";
 import { AddNewsletterDialog } from "@/settings/email/add-newsletter-dialog";
 import { NewsletterDetailDialog } from "@/settings/email/newsletter-detail-dialog";
+import { AddOfferDialog } from "@/settings/growth/add-offer-dialog";
+import { AddRecommendationDialog } from "@/settings/growth/add-recommendation-dialog";
+import { EditOfferDialog } from "@/settings/growth/edit-offer-dialog";
+import { EditRetentionOfferDialog } from "@/settings/growth/edit-retention-offer-dialog";
+import { EmbedSignupDialog } from "@/settings/growth/embed-signup-dialog";
+import { OfferSuccessDialog } from "@/settings/growth/offer-success-dialog";
+import { OffersIndexDialog } from "@/settings/growth/offers-index-dialog";
+import { TestimonialsDialog } from "@/settings/growth/testimonials-dialog";
 import { AnnouncementBarDialog } from "@/settings/site/announcement-bar-dialog";
 import { ChangeThemeDialog } from "@/settings/site/change-theme-dialog";
 import { DesignDialog } from "@/settings/site/design-dialog";
@@ -35,6 +43,10 @@ import { ThemeCodeEditorDialog } from "@/settings/site/theme-code-editor-dialog"
  * - membership-area dialogs: `portal/edit`, `tiers/add`, `tiers/:tierId`,
  *   `stripe-connect`
  * - email-area dialogs: `newsletters/new`, `newsletters/:newsletterId`
+ * - growth-area dialogs: `recommendations/add`, `explore/testimonial`,
+ *   `embed-signup-form/show`, `offers/new`, `offers/edit`,
+ *   `offers/edit/:offerId`, `offers/edit/retention(/:cadence)`,
+ *   `offers/success/:offerId`
  * - anything deeper or unknown (routes whose screens haven't been rebuilt)
  *   redirects to `/settings`
  *
@@ -86,6 +98,15 @@ export default function ShadeSettingsApp() {
                                 <Route element={<StripeConnectDialog />} path="stripe-connect" />
                                 <Route element={<AddNewsletterDialog />} path="newsletters/new" />
                                 <Route element={<NewsletterDetailDialog />} path="newsletters/:newsletterId" />
+                                <Route element={<AddRecommendationDialog />} path="recommendations/add" />
+                                <Route element={<TestimonialsDialog />} path="explore/testimonial" />
+                                <Route element={<EmbedSignupDialog />} path="embed-signup-form/show" />
+                                <Route element={<AddOfferDialog />} path="offers/new" />
+                                <Route element={<OffersIndexDialog />} path="offers/edit" />
+                                <Route element={<OffersIndexDialog />} path="offers/edit/retention" />
+                                <Route element={<EditRetentionOfferDialog />} path="offers/edit/retention/:cadence" />
+                                <Route element={<EditOfferDialog />} path="offers/edit/:offerId" />
+                                <Route element={<OfferSuccessDialog />} path="offers/success/:offerId" />
                                 <Route element={<AreaRoute />} path=":area" />
                                 <Route element={<Navigate to="/settings" replace />} path="*" />
                             </Route>
