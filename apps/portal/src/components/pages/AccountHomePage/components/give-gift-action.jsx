@@ -43,7 +43,8 @@ function GiveGiftAction() {
             }}
         >
             <div className="gh-portal-list-detail">
-                <h3>{t('Give a gift subscription')}</h3>
+                <h3>{t('Gift a membership')}</h3>
+                <p>{t('Buy a membership for someone else')}</p>
             </div>
             <span
                 className="gh-portal-list-action"

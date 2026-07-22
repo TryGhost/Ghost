@@ -76,6 +76,11 @@ const GiftSidebar: React.FC<{
         return div.innerText.trim().length;
     }, [giftPageDescription]);
 
+    // The heading renders large on the gift page — keep it to a punchy single
+    // thought so it doesn't wrap into a wall of text.
+    const headingMaxLength = 60;
+    const headingLength = (giftPageHeading || '').toString().length;
+
     const handleImageUpload = async (file: File) => {
         try {
             const imageUrl = getImageUrl(await uploadImage({file}));
@@ -112,7 +117,8 @@ const GiftSidebar: React.FC<{
         <div className='flex flex-col gap-8 pt-4'>
             <div className='flex flex-col gap-6'>
                 <TextField
-                    maxLength={100}
+                    hint={<>Keep it short and punchy — under <strong>{headingMaxLength}</strong> characters. You&apos;ve used <strong className={headingLength > headingMaxLength ? 'text-red' : 'text-green'}>{headingLength}</strong></>}
+                    maxLength={headingMaxLength}
                     placeholder="Gift a membership"
                     title="Heading"
                     value={giftPageHeading || ''}
@@ -187,7 +193,7 @@ const GiftSidebar: React.FC<{
             {showPricing && (
                 <div>
                     <Heading level={6}>Pricing</Heading>
-                    <p className='mt-1 text-sm text-grey-700'>Set a one-time gift price per duration, or leave a field blank to charge the default shown in grey (the monthly price × the duration, and the yearly price for a year).</p>
+                    <p className='mt-1 text-sm text-grey-700'>Set your own one-time gift price for any tier and duration. Leave a field blank to use the default shown in grey: whole-year durations use the tier&apos;s yearly price, and every other duration uses its monthly price × the number of months.</p>
                     <div className='mt-4 flex flex-col gap-6'>
                         {offeredTiers.map((tier, i) => (
                             <React.Fragment key={tier.id}>
