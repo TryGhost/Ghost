@@ -237,11 +237,11 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             <div className='basis-1/2'>
                                 <div className='mb-1 flex h-6 items-center justify-between'>
                                     <Text as='h6' className='text-base' tone='secondary' weight='semibold'>Prices</Text>
-                                    <div className='-mr-2 w-20'>
+                                    <div className='-mr-2'>
                                         <Field>
                                             <FieldLabel className='sr-only'>Currency</FieldLabel>
                                             <Combobox open={currencyOpen} onOpenChange={setCurrencyOpen}>
-                                                <ComboboxTrigger aria-label='Currency' className='border-0 bg-transparent px-0 shadow-none hover:bg-transparent focus-visible:ring-0'><ComboboxValue>{formState.currency}</ComboboxValue></ComboboxTrigger>
+                                                <ComboboxTrigger aria-label='Currency' className='w-auto justify-start border-0 bg-transparent px-0 shadow-none hover:bg-transparent focus-visible:ring-0'><ComboboxValue className='flex-none'>{formState.currency}</ComboboxValue></ComboboxTrigger>
                                                 <ComboboxContent align='end' className='w-64'>
                                                     <MultiSelectCombobox
                                                         groupBy={option => ({
