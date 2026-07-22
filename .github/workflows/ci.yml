@@ -138,7 +138,6 @@ jobs:
             core:
               - *shared
               - 'ghost/**'
-              - '!ghost/admin/**'
               - '!ghost/core/core/server/data/tinybird/**'
               # Unit tests + vitest config are exercised only by job_unit-tests;
               # they never affect the acceptance / legacy / ghost-cli jobs.
@@ -432,12 +431,12 @@ jobs:
       - name: Merge Admin test coverage
         if: needs.job_setup.outputs.coverage_enabled == 'true'
         run: pnpm ember coverage-merge
-        working-directory: ghost/admin
+        working-directory: apps/ember-admin
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: needs.job_setup.outputs.coverage_enabled == 'true'
         with:
           name: admin-coverage
-          path: ghost/*/coverage/cobertura-coverage.xml
+          path: apps/*/coverage/cobertura-coverage.xml
 
       - uses: tryghost/actions/actions/slack-build@3ab34d3d69687764be21eba3768f51f4ecc40ddd # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -1791,14 +1790,14 @@ jobs:
       - name: Move coverage
         if: contains(needs.job_admin-tests.result, 'success')
         run: |
-          rsync -av --remove-source-files admin/* ghost/admin
+          rsync -av --remove-source-files ember-admin/* apps/ember-admin
 
       - name: Upload Admin test coverage
         if: contains(needs.job_admin-tests.result, 'success')
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
         with:
           flags: admin-tests
-          files: ghost/admin/coverage/cobertura-coverage.xml
+          files: apps/ember-admin/coverage/cobertura-coverage.xml
           disable_search: true
 
       - name: Restore E2E coverage

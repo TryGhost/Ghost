@@ -172,7 +172,7 @@
     ],
     "ignorePaths": [
         "test",
-        // Freeze the Ember admin app wholesale. `ghost/admin` is being replaced by
+        // Freeze the Ember admin app wholesale. `apps/ember-admin` is being replaced by
         // the React apps in `apps/*`, and its dependency tree is a frozen-as-a-unit
         // Ember/broccoli stack we deliberately do not upgrade (see
         // docs/ember-dependency-burden.md). Ignoring the whole directory drops
@@ -189,7 +189,7 @@
         // the app is slated for removal, remediate any rare real incident with a
         // `pnpm overrides` pin. Today's admin-exclusive advisories are all
         // build-time or verified-not-shipped (see docs/ember-dependency-burden.md).
-        "ghost/admin/**"
+        "apps/ember-admin/**"
     ],
     "packageRules": [
         // Auto-generate a changeset when an npm/package.json update (or a pnpm

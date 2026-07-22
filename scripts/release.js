@@ -11,7 +11,7 @@ import {resolveBaseTag} from './lib/resolve-base-tag.js';
 import {readJsonSync, writeJsonSync} from './lib/utils.js';
 
 const GHOST_CORE_PKG = join(ROOT_DIR, 'ghost/core/package.json');
-const GHOST_ADMIN_PKG = join(ROOT_DIR, 'ghost/admin/package.json');
+const GHOST_ADMIN_PKG = join(ROOT_DIR, 'apps/ember-admin/package.json');
 const CASPER_DIR = join(ROOT_DIR, 'ghost/core/content/themes/casper');
 const SOURCE_DIR = join(ROOT_DIR, 'ghost/core/content/themes/source');
 
