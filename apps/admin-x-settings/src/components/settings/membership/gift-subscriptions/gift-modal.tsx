@@ -1,7 +1,7 @@
 import GiftDurationsPrototype from './gift-durations-prototype';
 import GiftPreview from './gift-preview';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Checkbox, CurrencyField, Heading, HtmlField, ImageUpload, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -80,13 +80,13 @@ const GiftSidebar: React.FC<{
     // The heading renders large on the gift page — keep it to a punchy single
     // thought so it doesn't wrap into a wall of text.
     const headingMaxLength = 60;
-    // Pre-fill the field with the default so the publisher can edit it directly,
-    // rather than starting from an empty box. A local draft keeps it clearable
-    // while editing; only a real change is persisted, so an untouched setting
-    // stays null and the gift page keeps its translatable fallback.
+    // The default heading is surfaced as the placeholder (Ghost's convention for
+    // signalling a default — see SEO meta, newsletter sender, portal fields): an
+    // empty field shows the default in grey, a typed value renders in black, so
+    // "default vs customised" is legible at a glance. An empty setting stays null
+    // so the gift page keeps its translatable fallback.
     const defaultHeading = 'Gift a membership';
-    const [headingDraft, setHeadingDraft] = useState<string>(giftPageHeading ?? defaultHeading);
-    const headingLength = headingDraft.length;
+    const headingLength = (giftPageHeading || '').toString().length;
 
     const handleImageUpload = async (file: File) => {
         try {
@@ -124,18 +124,15 @@ const GiftSidebar: React.FC<{
         <div className='flex flex-col gap-8 pt-4'>
             <div className='flex flex-col gap-6'>
                 <TextField
-                    hint={<>Keep it short and punchy — under <strong>{headingMaxLength}</strong> characters. You&apos;ve used <strong className={headingLength > headingMaxLength ? 'text-red' : 'text-green'}>{headingLength}</strong></>}
+                    hint={<>Leave blank to use the default (shown in grey). Under <strong>{headingMaxLength}</strong> characters — you&apos;ve used <strong className={headingLength > headingMaxLength ? 'text-red' : 'text-green'}>{headingLength}</strong>.</>}
                     maxLength={headingMaxLength}
                     placeholder={defaultHeading}
                     title="Heading"
-                    value={headingDraft}
-                    onChange={(e) => {
-                        setHeadingDraft(e.target.value);
-                        updateSetting('gift_page_heading', e.target.value || null);
-                    }}
+                    value={giftPageHeading || ''}
+                    onChange={e => updateSetting('gift_page_heading', e.target.value || null)}
                 />
                 <HtmlField
-                    hint={<>Sell the value of a gift membership to potential buyers. Shown in full on the gift page — keep it under <strong>{descriptionMaxLength}</strong> characters so it fits. You&apos;ve used <strong className={descriptionLength > descriptionMaxLength ? 'text-red' : 'text-green'}>{descriptionLength}</strong></>}
+                    hint={<>Sell the value of a gift membership — or leave blank to use the default (shown in grey). Under <strong>{descriptionMaxLength}</strong> characters so it fits; you&apos;ve used <strong className={descriptionLength > descriptionMaxLength ? 'text-red' : 'text-green'}>{descriptionLength}</strong>.</>}
                     maxLength={descriptionMaxLength}
                     nodes='MINIMAL_NODES'
                     placeholder={`Share a full membership to ${siteData?.title || 'your site'} with a friend or colleague`}
