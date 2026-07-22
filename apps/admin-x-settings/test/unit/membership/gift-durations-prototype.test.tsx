@@ -14,33 +14,48 @@ const tier = {
 const renderPrototype = (initialMonths = [1, 12], tiers = [tier]) =>
     render(<GiftDurationsPrototype initialMonths={initialMonths} tiers={tiers} />);
 
+// Amount inputs use min=1, price inputs use min=0 — used to tell them apart.
+const amountInputs = () => (screen.getAllByRole('spinbutton') as HTMLInputElement[]).filter(i => i.getAttribute('min') === '1');
+
 describe('GiftDurationsPrototype', () => {
     it('seeds an editable amount row per stored duration', () => {
         renderPrototype([1, 12]);
-        const amounts = screen.getAllByRole('spinbutton') as HTMLInputElement[];
-        // 2 amount inputs + 2 price inputs (all number fields)
-        const priceValues = amounts.map(i => i.value);
-        assert.ok(priceValues.includes('1')); // duration amounts (1 month, 1 year)
+        const amounts = amountInputs();
+        assert.equal(amounts.length, 2);
+        assert.equal(amounts[0].value, '1');
+        assert.equal(amounts[1].value, '1'); // 12 months → 1 year
     });
 
-    it('pre-fills each price field with the derived default as a real value', () => {
+    it('shows the derived default as the price field placeholder (grey), not a set value', () => {
         renderPrototype([1, 12]);
-        // $5/mo × 1 month = 5; $50/yr × 1 year = 50 — shown as the field value
-        assert.ok(screen.getByDisplayValue('5'));
-        assert.ok(screen.getByDisplayValue('50'));
+        // $5/mo × 1 month = 5; $50/yr × 1 year = 50 — as the placeholder default
+        assert.ok(screen.getByPlaceholderText('5'));
+        assert.ok(screen.getByPlaceholderText('50'));
     });
 
     it('lets the user override a price, then reset it back to default', () => {
         renderPrototype([1, 12]);
-        const priceField = screen.getByDisplayValue('5') as HTMLInputElement;
+        const priceField = screen.getByPlaceholderText('5') as HTMLInputElement;
         fireEvent.change(priceField, {target: {value: '9'}});
-        assert.ok(screen.getByDisplayValue('9'));
+        assert.equal(priceField.value, '9');
 
-        // Reset is always shown; it becomes enabled once a price is overridden
         const resetButton = screen.getByRole('button', {name: /reset to default/i}) as HTMLButtonElement;
         assert.equal(resetButton.disabled, false);
         fireEvent.click(resetButton);
-        assert.ok(screen.getByDisplayValue('5'));
+        // back to empty value with the default shown as placeholder
+        assert.equal((screen.getByPlaceholderText('5') as HTMLInputElement).value, '');
+    });
+
+    it('reverts a price to its default (placeholder) when cleared — never 0', () => {
+        renderPrototype([1, 12]);
+        const priceField = screen.getByPlaceholderText('5') as HTMLInputElement;
+        fireEvent.change(priceField, {target: {value: '9'}});
+        assert.equal(priceField.value, '9');
+        // Clearing drops the override; the field is empty and the default (5) shows
+        fireEvent.change(priceField, {target: {value: ''}});
+        const cleared = screen.getByPlaceholderText('5') as HTMLInputElement;
+        assert.equal(cleared.value, '');
+        assert.notEqual(cleared.value, '0');
     });
 
     it('disables the reset control until a price is overridden', () => {
@@ -49,17 +64,16 @@ describe('GiftDurationsPrototype', () => {
         assert.equal(resetButton.disabled, true);
     });
 
-    it('adapts the pre-filled price live when a duration amount is edited', () => {
+    it('adapts the default price placeholder live when a duration amount is edited', () => {
         renderPrototype([1, 12]);
-        const firstAmount = (screen.getAllByRole('spinbutton') as HTMLInputElement[])[0];
-        // Change 1 month → 3 months: default becomes $5 × 3 = 15
-        fireEvent.change(firstAmount, {target: {value: '3'}});
-        assert.ok(screen.getByDisplayValue('15'));
+        fireEvent.change(amountInputs()[0], {target: {value: '3'}});
+        // 3 months default = $5 × 3 = 15
+        assert.ok(screen.getByPlaceholderText('15'));
     });
 
     it('allows the amount field to be cleared while editing, restoring it on blur', () => {
         renderPrototype([1, 12]);
-        const firstAmount = (screen.getAllByRole('spinbutton') as HTMLInputElement[])[0];
+        const firstAmount = amountInputs()[0];
         fireEvent.change(firstAmount, {target: {value: ''}});
         assert.equal(firstAmount.value, '');
         fireEvent.blur(firstAmount);
@@ -71,10 +85,7 @@ describe('GiftDurationsPrototype', () => {
         const addButton = screen.getByRole('button', {name: /add duration/i});
         fireEvent.click(addButton);
         fireEvent.click(addButton);
-        // 4 duration amount inputs + their price inputs
-        const amountInputs = (screen.getAllByRole('spinbutton') as HTMLInputElement[])
-            .filter(i => i.getAttribute('min') === '1');
-        assert.equal(amountInputs.length, 4);
+        assert.equal(amountInputs().length, 4);
         assert.ok(screen.getByRole('button', {name: /maximum of 4 durations/i}));
     });
 
@@ -83,8 +94,8 @@ describe('GiftDurationsPrototype', () => {
         renderPrototype([1], [tier, silver]);
         assert.ok(screen.getByText('Gold'));
         assert.ok(screen.getByText('Silver'));
-        // Gold 1 month default = 5, Silver 1 month default = 3 (pre-filled values)
-        assert.ok(screen.getByDisplayValue('5'));
-        assert.ok(screen.getByDisplayValue('3'));
+        // Gold 1 month default = 5, Silver 1 month default = 3 (placeholders)
+        assert.ok(screen.getByPlaceholderText('5'));
+        assert.ok(screen.getByPlaceholderText('3'));
     });
 });

@@ -81,18 +81,28 @@ const GiftDurationsPrototype: React.FC<{
         setDurations(list => (list.length >= MAX_DURATIONS ? list : [...list, {id: nextId(), amount: '1', unit: 'month'}]));
     };
 
-    // Per-tier, per-duration price overrides, held as the value shown in the field
-    // (in whole currency units). A row shows the derived default until the
-    // publisher types their own price; "Reset to default" drops the overrides.
+    // Per-tier, per-duration price overrides (in whole currency units). Following
+    // Ghost's default convention, an empty field shows the derived default as a
+    // grey placeholder; typing sets an override; clearing it drops the override so
+    // the field falls back to the default again (never to 0). "Reset to default"
+    // drops every override for the tier at once.
     const [priceOverrides, setPriceOverrides] = useState<Record<string, Record<string, string>>>({});
     const defaultPrice = (tier: Tier, d: EditableDuration): string => (
         (derivedPriceInCents(tier, toMonths(d)) / 100).toString()
     );
-    const priceValue = (tier: Tier, d: EditableDuration): string => (
-        priceOverrides[tier.id]?.[d.id] ?? defaultPrice(tier, d)
+    const priceOverride = (tier: Tier, d: EditableDuration): string => (
+        priceOverrides[tier.id]?.[d.id] ?? ''
     );
     const setPrice = (tierId: string, durationId: string, value: string) => {
-        setPriceOverrides(prev => ({...prev, [tierId]: {...(prev[tierId] || {}), [durationId]: value}}));
+        setPriceOverrides((prev) => {
+            const tierPrices = {...(prev[tierId] || {})};
+            if (value === '') {
+                delete tierPrices[durationId];
+            } else {
+                tierPrices[durationId] = value;
+            }
+            return {...prev, [tierId]: tierPrices};
+        });
     };
     const resetTierPrices = (tierId: string) => {
         setPriceOverrides((prev) => {
@@ -180,10 +190,11 @@ const GiftDurationsPrototype: React.FC<{
                                     <TextField
                                         key={`${tier.id}-${d.id}`}
                                         min={0}
+                                        placeholder={defaultPrice(tier, d)}
                                         rightPlaceholder={tier.currency || currency}
                                         title={durationLabel(d)}
                                         type='number'
-                                        value={priceValue(tier, d)}
+                                        value={priceOverride(tier, d)}
                                         onChange={e => setPrice(tier.id, d.id, e.target.value)}
                                     />
                                 ))}
