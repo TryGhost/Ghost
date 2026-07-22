@@ -94,6 +94,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "",
     "Welcome back! Here's your code to sign in to {siteTitle}": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "फिर से स्वागत है! अपने {siteTitle} खाते में सुरक्षित रूप से साइन इन करने के लिए इस लिंक का उपयोग करें:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "कब:",
     "Where:": "कहाँ:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "आपको यह संदेश इसलिए मिला है क्योंकि आप {site} के <strong>%%{status}%% सदस्य</strong> हैं।",

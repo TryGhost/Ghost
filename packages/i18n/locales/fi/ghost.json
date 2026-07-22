@@ -94,6 +94,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "Tervetuloa takaisin sivulle {siteTitle}! Vahvistuskoodisi on {otc}.",
     "Welcome back! Here's your code to sign in to {siteTitle}": "Tervetuloa takaisin! Tällä koodilla voit kirjautua sisään sivulle {siteTitle}",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Tervetuloa takaisin! Käytä tätä linkkiä kirjautuaksesi {siteTitle} tilillesi:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "Milloin:",
     "Where:": "Missä:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Saat tämän viestin, koska sinulla on <strong>%%{status}%%tilaus</strong> sivulle {site}.",

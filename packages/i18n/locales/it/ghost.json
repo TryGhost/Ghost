@@ -96,6 +96,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "Bentornato su {siteTitle}! Il tuo codice di verifica è {otc}.",
     "Welcome back! Here's your code to sign in to {siteTitle}": "Bentornato! Questo è il tuo codice per accedere a {siteTitle}",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Bentornato! Usa questo link per accedere in sicurezza al tuo account su {siteTitle}:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "Quando:",
     "Where:": "Dove:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Ricevi questa mail perché hai un <strong>abbonamento %%{status}%%</strong> a {site}.",

@@ -80,6 +80,7 @@ describe('GiftService', function () {
         stripePaymentIntentId: 'pi_456',
         buyerName: null,
         recipientEmail: null,
+        recipientName: null,
         message: null,
         deliverAt: null
     };
@@ -406,6 +407,7 @@ describe('GiftService', function () {
             assert.equal(deliveryData.message, 'Happy birthday!');
             assert.equal(deliveryData.token, 'abc-123');
             assert.equal(deliveryData.tierName, 'Bronze');
+            assert.deepEqual(deliveryData.benefits, ['Benefit 1', 'Benefit 2']);
 
             sinon.assert.calledOnce(giftRepository.update);
 
@@ -1281,6 +1283,7 @@ describe('GiftService', function () {
             assert.equal(emailArgs.buyerName, 'Sarah');
             assert.equal(emailArgs.message, 'Happy birthday!');
             assert.equal(emailArgs.tierName, 'Bronze');
+            assert.deepEqual(emailArgs.benefits, ['Benefit 1', 'Benefit 2']);
             assert.equal(emailArgs.token, 'gift-token');
 
             sinon.assert.calledOnce(giftRepository.update);

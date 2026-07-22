@@ -338,9 +338,11 @@ describe('GiftEmailService', function () {
         const deliveryData = {
             recipientEmail: 'taylor@example.com',
             buyerName: 'Sarah',
+            recipientName: 'Taylor',
             message: 'Happy birthday!',
             token: 'abc-123',
             tierName: 'Gold',
+            benefits: ['Weekly newsletter', 'Full archive access'],
             cadence: 'year',
             duration: 1,
             expiresAt: new Date('2027-04-07')
@@ -375,6 +377,28 @@ describe('GiftEmailService', function () {
                 sinon.assert.match(msg[field], sinon.match('Gold'));
                 sinon.assert.match(msg[field], sinon.match('Happy birthday!'));
                 sinon.assert.match(msg[field], sinon.match('Sarah'));
+            }
+        });
+
+        it('lists the tier benefits in both HTML and text', async function () {
+            await service.sendGiftDelivery(deliveryData);
+
+            const msg = mailer.send.getCall(0).args[0];
+
+            for (const field of ['html', 'text']) {
+                sinon.assert.match(msg[field], sinon.match('What\'s included'));
+                sinon.assert.match(msg[field], sinon.match('Weekly newsletter'));
+                sinon.assert.match(msg[field], sinon.match('Full archive access'));
+            }
+        });
+
+        it('omits the benefits block when the tier has no benefits', async function () {
+            await service.sendGiftDelivery({...deliveryData, benefits: []});
+
+            const msg = mailer.send.getCall(0).args[0];
+
+            for (const field of ['html', 'text']) {
+                sinon.assert.match(msg[field], sinon.match(value => !value.includes('What\'s included'), 'no benefits block'));
             }
         });
 

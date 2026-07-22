@@ -98,6 +98,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "С возвращением на {siteTitle}! Ваш проверочный код — {otc}.",
     "Welcome back! Here's your code to sign in to {siteTitle}": "С возвращением! Вот ваш код для входа на {siteTitle}",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "С возвращением! Используйте эту ссылку для безопасного входа в свою учётную запись на {siteTitle}:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "Когда:",
     "Where:": "Где:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Вы получаете это, потому что являетесь <strong>%%{status}%% подписчиком сайта</strong> {site}.",

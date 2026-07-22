@@ -50,6 +50,7 @@ interface GiftDeliverySendData {
     message: string | null;
     token: string;
     tierName: string;
+    benefits: string[];
     cadence: 'month' | 'year';
     duration: number;
     expiresAt: Date;
@@ -163,7 +164,7 @@ export class GiftEmailService {
         });
     }
 
-    async sendGiftDelivery({recipientEmail, buyerName, recipientName, message, token, tierName, cadence, duration, expiresAt}: GiftDeliverySendData): Promise<void> {
+    async sendGiftDelivery({recipientEmail, buyerName, recipientName, message, token, tierName, benefits, cadence, duration, expiresAt}: GiftDeliverySendData): Promise<void> {
         const siteDomain = this.siteDomain;
         const siteUrl = this.urlUtils.getSiteUrl();
         const siteTitle = this.settingsCache.get('title') ?? siteDomain;
@@ -183,6 +184,7 @@ export class GiftEmailService {
             message,
             gift: {
                 tierName,
+                benefits,
                 cadenceLabel,
                 link: giftLink,
                 expiresAt: this.formatDate(expiresAt)

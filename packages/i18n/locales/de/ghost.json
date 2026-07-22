@@ -94,6 +94,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "Willkommen zurück auf {siteTitle}! Dein Bestätigungscode lautet {otc}.",
     "Welcome back! Here's your code to sign in to {siteTitle}": "Hier ist dein Code, mit dem du dich auf {siteTitle} einloggen kannst",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Willkommen zurück! Benutze diesen Link, um dich sicher bei deinem {siteTitle}-Konto einzuloggen:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "Wann:",
     "Where:": "Wo:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Du erhältst diese Nachricht weil du <strong>%%{status}%% Mitglied</strong> von {site} bist.",

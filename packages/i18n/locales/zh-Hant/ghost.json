@@ -92,6 +92,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "歡迎回到{siteTitle}！您的驗證碼為{otc}。",
     "Welcome back! Here's your code to sign in to {siteTitle}": "歡迎回來！以下是您登入{siteTitle}的驗證碼",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "歡迎回來！請使用此連結安全地登入您的{siteTitle}帳號：",
+    "What's included": "",
+    "What's included:": "",
     "When:": "時間：",
     "Where:": "地點：",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "您會收到這封電子報，因為您是 {site} 的<strong>%%{status}%% 訂閱者</strong>。",

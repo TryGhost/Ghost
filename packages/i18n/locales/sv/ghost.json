@@ -94,6 +94,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "Välkommen tillbaka till {siteTitle}! Din verifieringskod är {otc}.",
     "Welcome back! Here's your code to sign in to {siteTitle}": "Välkommen tillbaka! Här är din kod för inloggning på {siteTitle}",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Välkommen tillbaka! Använd denna länk för att säkert logga in på ditt {siteTitle}-konto:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "När:",
     "Where:": "Var:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Du får det här eftersom du är en <strong>%%{status}%% medlem</strong> på {site}.",

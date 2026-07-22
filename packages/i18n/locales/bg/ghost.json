@@ -94,6 +94,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "Добре дошли отново в {siteTitle}! Вашият код за проверка е {otc}.",
     "Welcome back! Here's your code to sign in to {siteTitle}": "Добре дошли отново! Ето вашия код за влизане в {siteTitle}",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Добре дошли отново! Използвайте бутона долу за сигурно влизане в своя профил в {siteTitle}:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "Кога:",
     "Where:": "Къде:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Получавате това, защото имате <strong>%%{status}%% абонамент</strong> за {site}.",

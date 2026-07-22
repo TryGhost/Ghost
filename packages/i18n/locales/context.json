@@ -426,6 +426,8 @@
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Magic link email",
     "Welcome back, {name}!": "Popup when a member logs in",
     "Welcome to {siteTitle}": "Shown in recommendations section of Portal",
+    "What's included": "Heading above the list of tier benefits in the gift delivery email sent to the recipient (HTML version)",
+    "What's included:": "Heading above the list of tier benefits in the gift delivery email sent to the recipient (plain-text version)",
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "A paragraph from the email suppression FAQ",
     "When to send it": "Label for the delivery date section on the gift purchase delivery step",
     "When:": "Device verification (forthcoming)",

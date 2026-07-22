@@ -7,6 +7,7 @@ export function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[
         buyerMemberId: 'buyer_member_1',
         buyerName: null,
         recipientEmail: null,
+        recipientName: null,
         message: null,
         redeemerMemberId: null,
         tierId: 'tier_1',

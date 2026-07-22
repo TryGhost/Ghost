@@ -92,6 +92,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "Selamat datang kembali di {siteTitle}! Berikut kode verifikasi Anda: {otc}.",
     "Welcome back! Here's your code to sign in to {siteTitle}": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Selamat datang kembali! Gunakan tautan ini untuk masuk dengan aman ke akun {siteTitle} Anda:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "Kapan:",
     "Where:": "Di mana:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Anda menerima ini karena Anda merupakan <strong>pelanggan %%{status}%%</strong> dari {site}.",

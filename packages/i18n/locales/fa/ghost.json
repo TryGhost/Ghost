@@ -94,6 +94,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "بازگشت شما را به {siteTitle} خوش\u200cآمد می\u200cگوییم! کد تأیید شما {otc} است.",
     "Welcome back! Here's your code to sign in to {siteTitle}": "بازگشتتان خوش\u200cآمد! این کد شما برای ورود به {siteTitle} است",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "بازگشتتان خوش\u200cآمد! از این پیوند برای ورود امن به حساب کاربری {siteTitle} خود استفاده کنید:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "زمان:",
     "Where:": "مکان:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "این ایمیل را دریافت کرده\u200cاید چون <strong>مشترک %%{status}%%</strong> {site} هستید.",

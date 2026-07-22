@@ -94,6 +94,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "Καλώς ήρθατε ξανά στο {siteTitle}! Ο κωδικός επαλήθευσης είναι {otc}.",
     "Welcome back! Here's your code to sign in to {siteTitle}": "Καλώς ήρθατε ξανά! Αυτός είναι ο κωδικός σας για να συνδεθείτε στο {siteTitle}",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Καλώς ήρθατε ξανά! Χρησιμοποιήστε αυτόν τον σύνδεσμο για να συνδεθείτε με ασφάλεια στον λογαριασμό σας στο {siteTitle}:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "Πότε:",
     "Where:": "Πού:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Λαμβάνετε αυτό το email επειδή είστε <strong>%%{status}%% μέλος</strong> του {site}.",

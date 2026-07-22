@@ -96,6 +96,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "Dobro došli nazad na {siteTitle}! Vaš kod za verifikaciju je {otc}.",
     "Welcome back! Here's your code to sign in to {siteTitle}": "Dobro došli nazad! Ovo je Vaš kod za prijavu na {siteTitle}",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Dobro došli nazad! Koristite ovaj link kako biste se sigurno prijavili na Vaš nalog na {siteTitle}:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "Kada:",
     "Where:": "Gde:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Primate ovo jer ste <strong>%%{status}%% pretplatnik</strong> na {site}.",

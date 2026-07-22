@@ -48,6 +48,7 @@ interface MemberRepository {
 
 type Tier = {
     name: string;
+    benefits: string[];
     currency: string | null;
     monthlyPrice: number | null;
     yearlyPrice: number | null;
@@ -85,9 +86,11 @@ interface GiftEmailService {
     sendGiftDelivery(data: {
         recipientEmail: string;
         buyerName: string | null;
+        recipientName: string | null;
         message: string | null;
         token: string;
         tierName: string;
+        benefits: string[];
         cadence: 'month' | 'year';
         duration: number;
         expiresAt: Date;
@@ -283,9 +286,11 @@ export class GiftService {
                     await this.deps.giftEmailService.sendGiftDelivery({
                         recipientEmail: gift.recipientEmail,
                         buyerName: gift.buyerName,
+                        recipientName: gift.recipientName,
                         message: gift.message,
                         token: gift.token,
                         tierName: tier.name,
+                        benefits: tier.benefits,
                         cadence: gift.cadence,
                         duration: gift.duration,
                         expiresAt: gift.expiresAt
@@ -797,6 +802,7 @@ export class GiftService {
             message: result.message,
             token,
             tierName: tier.name,
+            benefits: tier.benefits,
             cadence: gift.cadence,
             duration: gift.duration,
             expiresAt: result.expiresAt

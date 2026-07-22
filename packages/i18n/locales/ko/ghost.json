@@ -92,6 +92,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "{siteTitle}에 다시 오신 것을 환영해요! 인증 코드는 {otc}예요.",
     "Welcome back! Here's your code to sign in to {siteTitle}": "다시 오신 것을 환영해요! {siteTitle}에 로그인할 수 있는 코드예요",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "다시 오신 것을 환영해요! 안전한 로그인을 위해 다음 링크를 사용하여 {siteTitle} 계정에 로그인해 주세요:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "일시:",
     "Where:": "장소:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "{site}의 <strong>%%{status}%% 구독자</strong>이기 때문에 이 메일을 받고 계세요.",

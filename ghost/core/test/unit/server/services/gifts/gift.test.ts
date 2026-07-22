@@ -10,6 +10,7 @@ describe('Gift', function () {
         buyerMemberId: 'member_1',
         buyerName: null,
         recipientEmail: null,
+        recipientName: null,
         message: null,
         tierId: 'tier_1',
         cadence: 'year',

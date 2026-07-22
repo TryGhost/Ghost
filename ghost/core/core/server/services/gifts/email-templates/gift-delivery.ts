@@ -12,6 +12,7 @@ export interface GiftDeliveryData {
     message: string | null;
     gift: {
         tierName: string;
+        benefits: string[];
         cadenceLabel: string;
         link: string;
         expiresAt: string;
@@ -34,6 +35,10 @@ export function renderText(data: GiftDeliveryData, t: Translate): string {
             interpolation: {escapeValue: false}
         });
 
+    const benefitsBlock = data.gift.benefits.length
+        ? `\n${t('What\'s included:')}\n${data.gift.benefits.map(benefit => `- ${benefit}`).join('\n')}\n`
+        : '';
+
     const messageBlock = data.message
         ? `\n"${data.message}"${data.buyerName ? `\n— ${data.buyerName}` : ''}\n`
         : '';
@@ -45,7 +50,7 @@ export function renderText(data: GiftDeliveryData, t: Translate): string {
     return `${t('A gift, just for you')}
 
 ${greeting}${intro}
-${messageBlock}
+${benefitsBlock}${messageBlock}
 ${t('Redeem your gift')}:
 ${data.gift.link}
 

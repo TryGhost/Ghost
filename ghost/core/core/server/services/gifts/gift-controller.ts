@@ -39,6 +39,7 @@ type GiftDTO = {
     // Personalisation shown on the redemption page. The buyer's email is
     // deliberately not exposed — only the name they chose to attach
     buyer_name: string | null;
+    recipient_name: string | null;
     message: string | null;
     tier: SerializedTier;
 };

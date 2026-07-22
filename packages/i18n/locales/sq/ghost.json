@@ -94,6 +94,8 @@
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "Mirë se u kthyet në {siteTitle}! Kodi juaj i verifikimit është {otc}.",
     "Welcome back! Here's your code to sign in to {siteTitle}": "Mirë se u kthyet! Këtu është kodi juaj për t'u identifikuar në {siteTitle}",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Mirë se u kthyet! Përdorni këtë link për t'u identifikuar në mënyrë të sigurt në llogarinë tuaj në {siteTitle}:",
+    "What's included": "",
+    "What's included:": "",
     "When:": "Kur:",
     "Where:": "Ku:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Ju po e merrni këtë sepse jeni një <strong>pajtimtar %%{status}%%</strong> në {site}.",
