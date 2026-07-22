@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
+import {action} from '@ember/object';
 import {capitalize} from '@ember/string';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
@@ -78,5 +79,11 @@ export default class PostSuccessModal extends Component {
             currentPost.publishedAtUTC = originalPublishedAtUTC;
             throw e;
         }
+    }
+
+    @action
+    goToEditor() {
+        this.args.close();
+        this.router.transitionTo('lexical-editor.edit', this.post.displayName, this.post.id);
     }
 }
