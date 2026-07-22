@@ -9,6 +9,8 @@
     },
     "author": "Ghost Foundation",
     "exports": {
+        "./src/utils/social-urls": "./src/utils/social-urls/index.ts",
+        "./src/utils/locale-validation": "./src/utils/locale-validation.ts",
         "./src/*": {
             "import": "./src/*.tsx",
             "require": "./src/*.tsx"

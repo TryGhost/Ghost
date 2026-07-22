@@ -116,12 +116,106 @@ For each area (one agent per area, in its own `src/settings/<area>/` files):
 
 | Area              | Status  | Suites opted in | Notes |
 | ----------------- | ------- | --------------- | ----- |
-| general (+staff)  | pending | —               |       |
+| general (+staff)  | done    | title-and-description, time-zone, publication-language, seo-meta, social-accounts, staff-profile, staff-roles, staff-password, staff-security, staff-invitations, staff-actions, layout (portal test legacy-only) | See "General area notes" below |
 | site              | pending | —               |       |
 | membership        | pending | —               |       |
 | email             | pending | —               |       |
 | growth            | pending | —               |       |
 | advanced          | pending | —               |       |
+
+## General area notes (phase 2)
+
+**Structure.** Area component `src/settings/general/general-area.tsx`
+(registered in `AREA_COMPONENTS`), one file per group next to its acceptance
+suite. Staff detail/invite live in `src/settings/general/` too
+(`user-detail-dialog.tsx` + `user-detail-tabs.tsx`, `invite-user-dialog.tsx`).
+The area gates on `useBrowseSettings` data (renders null while loading) so
+every group's `useForm` initial state starts from real settings — the
+guarantee the legacy GlobalDataProvider gave; later areas should do the same.
+
+**Shared ported pieces in `src/settings/app/shared/`** (reuse these — don't
+re-port):
+
+- `use-setting-group.ts` — the legacy view→Edit→save/cancel hook on framework
+  settings hooks; reports dirty state into the shell's exit confirmation.
+- `setting-group.tsx` — group chrome (Edit/Cancel/Save contract incl.
+  disabled-unless-unsaved Save, "Saved" flash, Cmd/Ctrl+S, keyword-based
+  hide-on-search via `keywords` prop, `/settings/<navid>` highlight) +
+  `SettingGroupContent`/`SettingValue` view-mode layout.
+- `text-field.tsx` — legacy TextField API on Shade Field/Input (error swaps
+  the hint line), keeps group ports mechanical.
+- `image-upload.tsx` — legacy ImageUpload *test contract*: label-wrapped
+  hidden input while empty; `image-upload-container` + img with `id` +
+  `image-delete-button` once set. Give the container an explicit height
+  (e.g. `h-[300px]`) when the image URL may not load — a collapsed container
+  clips the delete button (found via seo-meta suite).
+- `toast.tsx` — `showToast` on sonner (ShadeApp's Toaster) emitting the
+  legacy `toast-success|error|info` testids + `useSettingsHandleError`
+  mirroring the framework handler (418/session-expiry silence). The
+  framework's own react-hot-toast has NO `<Toaster/>` in the native shell —
+  always disable `defaultErrorHandler` on queries and route errors here.
+- `confirmation.tsx` + `use-confirmation.ts` — ConfirmationProvider (mounted
+  in settings-app.tsx) with `confirm()`/`showLimit()` (testids
+  `confirmation-modal`/`limit-modal`) and the `confirmIfDirty` helper.
+- `dirty.tsx` + `use-settings-dirty.ts` — page-level dirty registry;
+  `use-setting-group` reports into it; the shell's Escape/exit-button paths
+  run `confirmIfDirty` (Leave/Stay), so `layout.acceptance.test.tsx` is
+  opted in.
+- `use-staff-users.ts`, `use-limiter.ts` — legacy hooks off GlobalDataProvider
+  (`useCurrentUser`/`useBrowseConfig` instead). `@tryghost/limit-service` has
+  no types; use-limiter declares the constructor surface locally.
+
+**Staff detail routing.** Rebuilt as routed Shade Dialogs (deep links keep
+working flag-on): `staff/invite`, `staff/:slug`, `staff/:slug/:tab`
+(`social-links` / `email-notifications`; anything else renders profile) —
+registered in settings-app.tsx above the `:area` route. Close navigates to
+`/settings/staff` (contributors: cross-app to `/`), slug-sanitizing saves
+`navigate(..., {replace: true})` to the new slug. The users group reads
+`?tab=` from the location for its role tabs (`/settings/staff?tab=invited`).
+
+**Pure logic imported from the legacy app, not duplicated:**
+`@tryghost/admin-x-settings/src/utils/social-urls` and
+`.../locale-validation` (explicit subpath exports added to
+admin-x-settings' package.json — its `./src/*` map only resolves `.tsx`).
+Locale data from `@tryghost/i18n/lib/locale-data.json`; timezones from
+`@tryghost/timezone-data` (both added as apps/admin deps, plus
+`@tryghost/limit-service`).
+
+**Suite adjustments (all mode-mechanics, no behavior changes):**
+
+- The 11 general/staff suites: `enableShadeSettingsMode()` + folding
+  `shadeSettingsBootLabs()` into hand-rolled settings/config boot responses.
+  No assertion changed.
+- `layout.acceptance.test.tsx`: opted in; its portal-modal test is
+  `it.skipIf(isShadeSettingsRun)` — the portal modal belongs to the
+  membership area (not rebuilt), so `/settings/portal/edit` still redirects
+  flag-on. Membership agent: un-skip when the portal modal lands.
+- `chrome.acceptance.test.tsx`: general placeholder assertions replaced with
+  native-area assertions; every test now calls `fakeSettingsScreens()`
+  because the native general area fires the users/invites/roles requests.
+
+**Known gaps left deliberately (legacy-only until later):**
+
+- `permissions.acceptance.test.tsx` stays legacy-only: the editor
+  staff-only view and the contributor profile-only flow are not ported (the
+  shell renders all areas for every role); per-user canEdit rules inside the
+  staff group ARE ported (staff-roles passes both modes).
+- `search.acceptance.test.tsx` stays legacy-only (asserts site-area groups).
+  Group-level keyword hiding IS ported (SettingGroup `keywords` prop); the
+  suite can opt in once site-area groups exist.
+- Pintura image editing is not wired into the native image uploads
+  (config-gated; not part of the acceptance contract).
+- Analytics group is ported (it renders under General), but
+  `membership/analytics.acceptance.test.tsx` is NOT opted in: its last test
+  targets migrationtools (advanced area). Advanced agent: opt it in with
+  that test skipped flag-on, or split the file.
+- "View user activity" menu item navigates to `/settings/history/view/:id`,
+  which flag-on redirects to the settings index until advanced is rebuilt.
+
+**Base-freshness checks done:** #29530 (TabView removal) — native screens
+already use shade Tabs. e91932a403 (Billing navigation) — Ember-side only;
+it navigates to existing `/settings/...` routes which the shell already
+resolves; no nav.ts change needed.
 
 ## Chrome behavior ported (phase 1)
 

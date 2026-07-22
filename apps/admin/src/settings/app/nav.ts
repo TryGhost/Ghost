@@ -50,7 +50,7 @@ export interface SettingsNavData {
 
 // Keywords below are copied from the legacy `searchKeywords` exports in
 // apps/admin-x-settings/src/components/settings/*/*-settings.tsx.
-const generalKeywords = {
+export const generalKeywords = {
     titleAndDescription: ["general", "title and description", "site title", "site description", "title & description"],
     timeZone: ["general", "time", "date", "site timezone", "time zone"],
     publicationLanguage: ["general", "publication language", "locale"],

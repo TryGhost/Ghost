@@ -16,20 +16,21 @@ describe("Shade settings chrome", () => {
         // Exercises the dual-mode boot-table injection: no `labs` override, so
         // SHADE_SETTINGS=1 runs mount the Shade shell purely through the
         // opted-in boot defaults — the path rebuilt area suites rely on.
-        // Default runs mount the legacy app (which needs its screen fakes).
+        // Default runs mount the legacy app; both need the screen fakes.
         fakeSettingsScreens();
         await renderAdminApp("/settings");
 
         await expect.element(settingsScreen.sidebar()).toBeVisible();
+        await expect.element(settingsScreen.titleAndDescription()).toBeVisible();
         if (isShadeSettingsRun) {
-            await expect.element(settingsScreen.section("settings-area-general-placeholder")).toBeVisible();
+            await expect.element(settingsScreen.section("settings-area-general")).toBeVisible();
         } else {
-            await expect.element(settingsScreen.titleAndDescription()).toBeVisible();
-            await expect(settingsScreen.section("settings-area-general-placeholder")).toHaveCount(0);
+            await expect(settingsScreen.section("settings-area-general")).toHaveCount(0);
         }
     });
 
-    it("renders the sidebar groups and placeholder area sections", async () => {
+    it("renders the sidebar groups, native areas and placeholder area sections", async () => {
+        fakeSettingsScreens();
         await renderAdminApp("/settings", { labs: SHADE_LABS });
 
         await expect.element(settingsScreen.sidebar()).toBeVisible();
@@ -38,7 +39,11 @@ describe("Shade settings chrome", () => {
         }
         await expect.element(settingsScreen.navItem("Design & branding")).toBeVisible();
 
-        for (const area of ["general", "site", "membership", "email", "growth", "advanced"]) {
+        // The general area is rebuilt natively; the rest still render placeholders.
+        await expect.element(settingsScreen.section("settings-area-general")).toBeVisible();
+        await expect.element(settingsScreen.titleAndDescription()).toBeVisible();
+        await expect(settingsScreen.section("settings-area-general-placeholder")).toHaveCount(0);
+        for (const area of ["site", "membership", "email", "growth", "advanced"]) {
             await expect.element(settingsScreen.section(`settings-area-${area}`)).toBeVisible();
             await expect.element(settingsScreen.section(`settings-area-${area}-placeholder`)).toBeVisible();
         }
@@ -46,6 +51,7 @@ describe("Shade settings chrome", () => {
     });
 
     it("filters the sidebar and sections by keyword and shows the no-result state", async () => {
+        fakeSettingsScreens();
         await renderAdminApp("/settings", { labs: SHADE_LABS });
 
         await settingsScreen.search().fill("design");
@@ -62,6 +68,7 @@ describe("Shade settings chrome", () => {
     });
 
     it("navigates to an area from the sidebar and clears the search", async () => {
+        fakeSettingsScreens();
         await renderAdminApp("/settings", { labs: SHADE_LABS });
 
         await settingsScreen.search().fill("design");
@@ -73,6 +80,7 @@ describe("Shade settings chrome", () => {
     });
 
     it("focuses the search with slash and blurs it with Escape, keeping the value", async () => {
+        fakeSettingsScreens();
         await renderAdminApp("/settings", { labs: SHADE_LABS });
 
         const search = settingsScreen.search();
@@ -88,6 +96,7 @@ describe("Shade settings chrome", () => {
     });
 
     it("exits settings with Escape when no modal is open", async () => {
+        fakeSettingsScreens();
         await renderAdminApp("/settings", { labs: SHADE_LABS });
 
         await expect.element(settingsScreen.sidebar()).toBeVisible();
@@ -97,6 +106,7 @@ describe("Shade settings chrome", () => {
     });
 
     it("leaves settings from the exit button", async () => {
+        fakeSettingsScreens();
         await renderAdminApp("/settings", { labs: SHADE_LABS });
 
         await settingsScreen.exitButton().click();
@@ -105,12 +115,14 @@ describe("Shade settings chrome", () => {
     });
 
     it("keeps known legacy deep links and redirects unknown ones to the index", async () => {
+        fakeSettingsScreens();
         await renderAdminApp("/settings/design", { labs: SHADE_LABS });
         await expect.element(settingsScreen.section("settings-area-site")).toBeVisible();
         await expect.poll(currentRoute).toBe("/settings/design");
     });
 
     it("redirects not-yet-rebuilt deep links to the settings index", async () => {
+        fakeSettingsScreens();
         await renderAdminApp("/settings/portal/edit", { labs: SHADE_LABS });
 
         await expect.poll(currentRoute).toBe("/settings");

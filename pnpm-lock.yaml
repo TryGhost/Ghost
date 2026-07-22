@@ -641,18 +641,27 @@ importers:
       '@tryghost/admin-x-settings':
         specifier: workspace:*
         version: link:../admin-x-settings
+      '@tryghost/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@tryghost/kg-unsplash-selector':
         specifier: workspace:*
         version: link:../../koenig/kg-unsplash-selector
       '@tryghost/koenig-lexical':
         specifier: workspace:*
         version: link:../../koenig/koenig-lexical
+      '@tryghost/limit-service':
+        specifier: 'catalog:'
+        version: 1.5.6
       '@tryghost/nql-lang':
         specifier: 'catalog:'
         version: 0.6.6
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
+      '@tryghost/timezone-data':
+        specifier: 'catalog:'
+        version: 1.0.0
       '@xyflow/react':
         specifier: 12.11.1
         version: 12.11.1(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

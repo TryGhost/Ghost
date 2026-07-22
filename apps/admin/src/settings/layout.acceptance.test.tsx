@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { currentRoute, fakeSettingsScreens, fakeTiers, renderAdminApp, settingsResponse, tier } from "@test-utils/acceptance";
+import { currentRoute, enableShadeSettingsMode, fakeSettingsScreens, fakeTiers, isShadeSettingsRun, renderAdminApp, settingsResponse, shadeSettingsBootLabs, tier } from "@test-utils/acceptance";
 import { settingsScreen } from "./settings.screen";
+
+enableShadeSettingsMode();
 
 describe("Settings layout", () => {
     it("leaves immediately when the page is clean", async () => {
@@ -48,11 +50,13 @@ describe("Settings layout", () => {
         await expect.poll(currentRoute).toBe("/settings");
     });
 
-    it("closes a modal dropdown with Escape without closing the modal", async () => {
+    // The portal modal belongs to the membership area, which isn't rebuilt
+    // yet — flag-on runs redirect /settings/portal/edit to the index.
+    it.skipIf(isShadeSettingsRun)("closes a modal dropdown with Escape without closing the modal", async () => {
         fakeSettingsScreens();
         fakeTiers([tier({name: "Supporter"})]);
         await renderAdminApp("/settings/portal/edit", {
-            boot: {browseSettings: {response: settingsResponse({settings: {
+            boot: {browseSettings: {response: settingsResponse({labs: shadeSettingsBootLabs(), settings: {
                 stripe_connect_publishable_key: "pk_test_123",
                 stripe_connect_secret_key: "sk_test_123",
             }})}},

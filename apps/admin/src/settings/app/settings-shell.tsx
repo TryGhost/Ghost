@@ -6,18 +6,24 @@ import { Outlet, useLocation, useNavigate } from "@tryghost/admin-x-framework";
 import { AreaSection } from "./area-section";
 import { type SettingsAreaId, resolveSettingsArea, useSettingsNav } from "./nav";
 import { SettingsSidebar } from "./sidebar";
+import { confirmIfDirty, useConfirmation } from "./shared/use-confirmation";
+import { useSettingsDirty } from "./shared/use-settings-dirty";
+import { GeneralArea } from "@/settings/general/general-area";
 
 /**
  * The native settings chrome: full-screen takeover with the nav sidebar on
  * the left and one scroll pane of area sections on the right, mirroring the
  * legacy layout (apps/admin-x-settings/src/main-content.tsx). Escape exits
  * settings when no modal is open; navigating to `/settings/:area` scrolls
- * the owning area section into view.
+ * the owning area section into view. Exits confirm first when a group has
+ * unsaved changes.
  */
 
 // Rebuilt areas register their native component here; everything else
 // renders the "not yet rebuilt" placeholder.
-const AREA_COMPONENTS: Partial<Record<SettingsAreaId, ComponentType>> = {};
+const AREA_COMPONENTS: Partial<Record<SettingsAreaId, ComponentType>> = {
+    general: GeneralArea,
+};
 
 // Shade/Radix dialogs expose their open state via dialog roles — when one is
 // open, Escape belongs to the modal, not the exit-settings handler.
@@ -35,6 +41,16 @@ export function SettingsShell() {
     const currentSegment = useCurrentSegment();
     const { groups, areas, isLoading } = useSettingsNav();
     const scrollerRef = useRef<HTMLDivElement | null>(null);
+    const { isDirty } = useSettingsDirty();
+    const { confirm } = useConfirmation();
+
+    // Exit settings, confirming first when a group has unsaved changes (the
+    // legacy useGlobalDirtyState/confirmIfDirty contract from main-content).
+    const requestExit = () => {
+        confirmIfDirty(confirm, isDirty, () => navigate("/"));
+    };
+    const requestExitRef = useRef(requestExit);
+    requestExitRef.current = requestExit;
 
     // Escape exits settings when no modal is open. The sidebar's search field
     // stops propagation while it has a filter to clear, so this only fires
@@ -47,13 +63,13 @@ export function SettingsShell() {
             if (document.querySelector(OPEN_MODAL_SELECTOR)) {
                 return;
             }
-            navigate("/");
+            requestExitRef.current();
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [navigate]);
+    }, []);
 
     // Scroll the routed area's section into view — on nav clicks and on
     // deep links once the nav data has settled the layout.
@@ -85,7 +101,7 @@ export function SettingsShell() {
                 </div>
             </div>
             <div className="fixed top-6 right-6 z-50">
-                <Button aria-label="Close settings" data-testid="exit-settings" size="icon" title="Close (ESC)" variant="ghost" onClick={() => navigate("/")}>
+                <Button aria-label="Close settings" data-testid="exit-settings" size="icon" title="Close (ESC)" variant="ghost" onClick={requestExit}>
                     <LucideIcon.X className="size-5" />
                 </Button>
             </div>

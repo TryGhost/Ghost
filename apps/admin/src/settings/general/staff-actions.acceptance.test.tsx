@@ -1,8 +1,10 @@
 import {describe, expect, it} from "vitest";
 
-import {configResponse, fakeAdminEndpoint, renderAdminApp} from "@test-utils/acceptance";
+import {configResponse, enableShadeSettingsMode, fakeAdminEndpoint, renderAdminApp, shadeSettingsBootLabs} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
 import {fakeStaffWorld, role, user} from "./staff.test-helpers";
+
+enableShadeSettingsMode();
 
 async function chooseAction(name: string) {
     await settingsScreen.userDetailModal().getByRole("button", {name: "Actions"}).click();
@@ -91,7 +93,7 @@ describe("Staff actions", () => {
         const owner = user("Owner");
         const author = user("Author", {status: "inactive"});
         const {boot} = fakeStaffWorld({currentUser: owner, users: [owner, author]});
-        const config = configResponse();
+        const config = configResponse({labs: shadeSettingsBootLabs()});
         config.config.hostSettings = {
             limits: {staff: {max: 1, error: "Your plan does not support more staff"}},
         };
