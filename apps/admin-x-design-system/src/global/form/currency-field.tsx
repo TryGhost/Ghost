@@ -33,7 +33,10 @@ const CurrencyField: React.FC<CurrencyFieldProps> = ({
         {...props}
         value={localValue}
         onBlur={(e) => {
-            setLocalValue((forceCurrencyValue(e.target.value) / 100).toString());
+            // Keep an empty field empty (so its placeholder/default shows) rather
+            // than normalising a blank value to "0".
+            const stripped = stripNonNumeric(e.target.value);
+            setLocalValue(stripped === '' ? '' : (forceCurrencyValue(e.target.value) / 100).toString());
             props.onBlur?.(e);
         }}
         onChange={(e) => {
