@@ -36,6 +36,7 @@ export const settingsScreen = {
     addNewsletterModal: () => page.getByTestId(sel.addNewsletterModal),
     newsletterModal: () => page.getByTestId(sel.newsletterModal),
     infoToast: toast,
+    notification: (text: string) => page.getByRole("region", { name: /Notifications/ }).getByText(text, { exact: true }),
     access: () => page.getByTestId(sel.access),
     customFields: () => page.getByTestId(sel.customFields),
     customFieldModal: () => page.getByTestId(sel.customFieldModal),
