@@ -1,9 +1,9 @@
 import NiceModal from '@ebay/nice-modal-react';
 import WebhookModal from './webhook-modal';
 import {Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
-import {ConfirmationModal, Icon} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal} from '@tryghost/admin-x-design-system';
 import {type Integration} from '@tryghost/admin-x-framework/api/integrations';
-import {formatNumber} from '@tryghost/shade/utils';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {getWebhookEventLabel} from './webhook-event-options';
 import {toast} from 'sonner';
 import {useDeleteWebhook} from '@tryghost/admin-x-framework/api/webhooks';
@@ -90,7 +90,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                     NiceModal.show(WebhookModal, {
                         integrationId: integration.id
                     });
-                }}><Icon name='add' size='xs' />Add webhook</Button>
+                }}><LucideIcon.Plus />Add webhook</Button>
         </div>
     </div>);
 };

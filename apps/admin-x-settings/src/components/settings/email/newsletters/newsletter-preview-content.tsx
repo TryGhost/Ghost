@@ -4,7 +4,7 @@ import LatestPosts2 from '../../../../assets/images/latest-posts-2.jpg';
 import LatestPosts3 from '../../../../assets/images/latest-posts-3.jpg';
 import clsx from 'clsx';
 import {GhostOrb} from '@tryghost/shade/components';
-import {Icon} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {isManagedEmail} from '@tryghost/admin-x-framework/api/config';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
@@ -276,13 +276,13 @@ const NewsletterPreviewContent: React.FC<{
                                             <>
                                                 <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
                                                     <span className="inline-flex size-[54px] items-center justify-center rounded-full border" style={{borderColor: dividerColor, color: textColor}}>
-                                                        <Icon colorClass='' name="thumbs-up" size="md" />
+                                                        <LucideIcon.ThumbsUp className='size-5' />
                                                     </span>
                                                     <span className="font-sans text-[1.3rem] leading-[1.4] font-medium" style={{color: textColor}}>More like this</span>
                                                 </div>
                                                 <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
                                                     <span className="inline-flex size-[54px] items-center justify-center rounded-full border" style={{borderColor: dividerColor, color: textColor}}>
-                                                        <Icon colorClass='' name="thumbs-down" size="md" />
+                                                        <LucideIcon.ThumbsDown className='size-5' />
                                                     </span>
                                                     <span className="font-sans text-[1.3rem] leading-[1.4] font-medium" style={{color: textColor}}>Less like this</span>
                                                 </div>
@@ -291,7 +291,7 @@ const NewsletterPreviewContent: React.FC<{
                                         {showCommentCta && (
                                             <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
                                                 <span className="inline-flex size-[54px] items-center justify-center rounded-full border" style={{borderColor: dividerColor, color: textColor}}>
-                                                    <Icon colorClass='' name="comment" size="md" />
+                                                    <LucideIcon.MessageCircle className='size-5' />
                                                 </span>
                                                 <span className="font-sans text-[1.3rem] leading-[1.4] font-medium" style={{color: textColor}}>Comment</span>
                                             </div>
@@ -299,7 +299,7 @@ const NewsletterPreviewContent: React.FC<{
                                         {showShareButton && (
                                             <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
                                                 <span className="inline-flex size-[54px] items-center justify-center rounded-full border" style={{borderColor: dividerColor, color: textColor}}>
-                                                    <Icon colorClass='' name="share" size="md" />
+                                                    <LucideIcon.Share2 className='size-5' />
                                                 </span>
                                                 <span className="font-sans text-[1.3rem] leading-[1.4] font-medium" style={{color: textColor}}>Share</span>
                                             </div>

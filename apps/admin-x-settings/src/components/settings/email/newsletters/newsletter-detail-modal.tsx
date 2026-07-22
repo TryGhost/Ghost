@@ -7,15 +7,15 @@ import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
 import {Button, Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipTrigger} from '@tryghost/shade/components';
-import {ConfirmationModal, Form, Icon, LimitModal, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, LimitModal, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Stack, Text} from '@tryghost/shade/primitives';
 import {Trash2} from 'lucide-react';
-import {formatNumber} from '@tryghost/shade/utils';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
@@ -27,7 +27,7 @@ import {useGlobalData} from '../../../providers/global-data-provider';
 interface IconToggleOption {
     value: string;
     label: string;
-    icon: string;
+    icon: React.ReactNode;
     disabled?: boolean;
 }
 
@@ -42,7 +42,7 @@ const IconToggleGroup: React.FC<{
             <Tooltip key={option.value}>
                 <TooltipTrigger asChild>
                     <ToggleGroupItem aria-label={option.label} disabled={option.disabled} value={option.value}>
-                        <Icon name={option.icon} size='sm' />
+                        {option.icon}
                     </ToggleGroupItem>
                 </TooltipTrigger>
                 <TooltipContent>{option.label}</TooltipContent>
@@ -340,7 +340,7 @@ const Sidebar: React.FC<{
                                             handleError(e);
                                         }
                                     }}>
-                                        <Icon colorClass='text-grey-700 dark:text-grey-300' name='picture' />
+                                        <LucideIcon.Image className='size-5 text-grey-700 dark:text-grey-300' />
                                     </ImageUploadDropzone>
                                 )}
                             </ImageUpload>
@@ -415,7 +415,7 @@ const Sidebar: React.FC<{
                 <Separator />
                 <div className='my-5 flex w-full items-start'>
                     <span>
-                        <Icon className='mt-[-1px] mr-2' colorClass='text-red' name='heart'/>
+                        <LucideIcon.Heart className='mt-[-1px] mr-2 size-5 text-red'/>
                     </span>
                     <Form marginBottom={false}>
                         <Field orientation='horizontal'>
@@ -531,8 +531,8 @@ const Sidebar: React.FC<{
                         <IconToggleGroup
                             label='Title alignment'
                             options={[
-                                {value: 'left', label: 'Left', icon: 'align-left', disabled: !newsletter.show_post_title_section},
-                                {value: 'center', label: 'Center', icon: 'align-center', disabled: !newsletter.show_post_title_section}
+                                {value: 'left', label: 'Left', icon: <LucideIcon.AlignLeft className='size-3.5!' />, disabled: !newsletter.show_post_title_section},
+                                {value: 'center', label: 'Center', icon: <LucideIcon.AlignCenter className='size-3.5!' />, disabled: !newsletter.show_post_title_section}
                             ]}
                             value={newsletter.title_alignment}
                             onValueChange={titleAlignment => updateNewsletter({title_alignment: titleAlignment})}
@@ -588,8 +588,8 @@ const Sidebar: React.FC<{
                         <IconToggleGroup
                             label='Button style'
                             options={[
-                                {value: 'fill', label: 'Fill', icon: 'squircle-fill'},
-                                {value: 'outline', label: 'Outline', icon: 'squircle'}
+                                {value: 'fill', label: 'Fill', icon: <LucideIcon.Squircle className='size-3.5!' fill='currentColor' />},
+                                {value: 'outline', label: 'Outline', icon: <LucideIcon.Squircle className='size-3.5!' />}
                             ]}
                             value={newsletter.button_style || 'fill'}
                             onValueChange={buttonStyle => updateNewsletter({button_style: buttonStyle})}
@@ -600,9 +600,9 @@ const Sidebar: React.FC<{
                         <IconToggleGroup
                             label='Button corners'
                             options={[
-                                {value: 'square', label: 'Squared', icon: 'square'},
-                                {value: 'rounded', label: 'Rounded', icon: 'squircle'},
-                                {value: 'pill', label: 'Pill', icon: 'circle'}
+                                {value: 'square', label: 'Squared', icon: <LucideIcon.Square className='size-3.5!' />},
+                                {value: 'rounded', label: 'Rounded', icon: <LucideIcon.Squircle className='size-3.5!' />},
+                                {value: 'pill', label: 'Pill', icon: <LucideIcon.Circle className='size-3.5!' />}
                             ]}
                             value={newsletter.button_corners || 'rounded'}
                             onValueChange={buttonCorners => updateNewsletter({button_corners: buttonCorners})}
@@ -634,9 +634,9 @@ const Sidebar: React.FC<{
                         <IconToggleGroup
                             label='Link style'
                             options={[
-                                {value: 'underline', label: 'Underline', icon: 'text-underline'},
-                                {value: 'regular', label: 'Regular', icon: 'text-regular'},
-                                {value: 'bold', label: 'Bold', icon: 'text-bold'}
+                                {value: 'underline', label: 'Underline', icon: <LucideIcon.Underline className='size-3.5!' />},
+                                {value: 'regular', label: 'Regular', icon: <LucideIcon.Type className='size-3.5!' />},
+                                {value: 'bold', label: 'Bold', icon: <LucideIcon.Bold className='size-3.5!' />}
                             ]}
                             value={newsletter.link_style || 'underline'}
                             onValueChange={linkStyle => updateNewsletter({link_style: linkStyle})}
@@ -647,8 +647,8 @@ const Sidebar: React.FC<{
                         <IconToggleGroup
                             label='Image corners'
                             options={[
-                                {value: 'square', label: 'Squared', icon: 'square'},
-                                {value: 'rounded', label: 'Rounded', icon: 'squircle'}
+                                {value: 'square', label: 'Squared', icon: <LucideIcon.Square className='size-3.5!' />},
+                                {value: 'rounded', label: 'Rounded', icon: <LucideIcon.Squircle className='size-3.5!' />}
                             ]}
                             value={newsletter.image_corners || 'square'}
                             onValueChange={imageCorners => updateNewsletter({image_corners: imageCorners})}

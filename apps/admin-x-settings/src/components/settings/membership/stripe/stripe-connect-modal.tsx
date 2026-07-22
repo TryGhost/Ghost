@@ -8,9 +8,10 @@ import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import StripeVerifiedBadge from '../../../../assets/images/stripe-verified.svg';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import {Button, Field, FieldError, FieldLabel, Switch, Textarea} from '@tryghost/shade/components';
-import {ConfirmationModal, Form, Icon, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {Text} from '@tryghost/shade/primitives';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
@@ -185,11 +186,11 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
         <section>
             <div className='flex items-center justify-between'>
                 <Button className='text-destructive hover:text-destructive' disabled={isFetchingMembers} type='button' variant='ghost' onClick={openDisconnectStripeModal}>
-                    <Icon name='link-broken' size='sm' />
+                    <LucideIcon.Unlink />
                     Disconnect
                 </Button>
                 <Button aria-label='Close' size='icon' type='button' variant='ghost' onClick={onClose}>
-                    <Icon name='close' size='sm' />
+                    <LucideIcon.X />
                 </Button>
             </div>
             <div className='my-20 flex flex-col items-center'>

@@ -1,7 +1,8 @@
+import BrandIcon, {type BrandIconName} from '../../../icons/brand-icon';
 import React, {useState} from 'react';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {Form, Icon, TextField} from '@tryghost/admin-x-design-system';
+import {Form, TextField} from '@tryghost/admin-x-design-system';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {Inline, Text} from '@tryghost/shade/primitives';
 import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -9,7 +10,7 @@ import {Trash2, Upload} from 'lucide-react';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
-const defaultButtonIcons = [
+const defaultButtonIcons: Array<{icon: BrandIconName; label: string; value: string}> = [
     {
         icon: 'portal-icon-1',
         label: 'Portal icon 1',
@@ -108,7 +109,7 @@ const LookAndFeel: React.FC<{
                             >
                                 {defaultButtonIcons.map(iconConfig => (
                                     <ToggleGroupItem key={iconConfig.value} aria-label={iconConfig.label} className='size-[46px] p-3' value={iconConfig.value}>
-                                        <Icon className='size-5 opacity-70 transition-all hover:opacity-100' name={iconConfig.icon} />
+                                        <BrandIcon className='size-5 opacity-70 transition-all hover:opacity-100' name={iconConfig.icon} />
                                     </ToggleGroupItem>
                                 ))}
                             </ToggleGroup>

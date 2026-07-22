@@ -6,7 +6,7 @@ import MemberEmailEditor from './member-email-editor';
 import WelcomeEmailPreviewFrame from './welcome-email-preview-frame';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {FieldError} from '@tryghost/shade/components';
-import {Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Modal, TextField} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
 import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
@@ -20,7 +20,7 @@ import TestEmailDropdown from './test-email-dropdown';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 
 import {Button, Popover, PopoverTrigger, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {cn} from '@tryghost/shade/utils';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 
 interface EmailPreviewModalContentProps {
     title: string;
@@ -261,7 +261,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                     </div>
                                     <Popover open={showTestDropdown} onOpenChange={setShowTestDropdown}>
                                         <PopoverTrigger asChild>
-                                            <Button type='button' variant='outline'><Icon name='send' size='sm' />Test</Button>
+                                            <Button type='button' variant='outline'><LucideIcon.Send />Test</Button>
                                         </PopoverTrigger>
                                         {showTestDropdown && (
                                             <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} />

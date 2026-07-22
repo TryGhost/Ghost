@@ -1,8 +1,7 @@
 import React from 'react';
 import {Button} from '@tryghost/shade/components';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
-import {Icon} from '@tryghost/admin-x-design-system';
-import {useGlobalDirtyState} from '@tryghost/shade/utils';
+import {LucideIcon, useGlobalDirtyState} from '@tryghost/shade/utils';
 
 const ExitSettingsButton: React.FC = () => {
     const {isDirty} = useGlobalDirtyState();
@@ -15,7 +14,7 @@ const ExitSettingsButton: React.FC = () => {
     return (
         <>
             <Button aria-label='Close settings' className='text-muted-foreground hover:text-foreground' data-testid='exit-settings' id='done-button' size='icon' title='Close (ESC)' type='button' variant='ghost' onClick={() => confirm(isDirty, navigateAway)}>
-                <Icon name='close' size='sm' />
+                <LucideIcon.X />
             </Button>
             <DirtyConfirmDialog {...dialogProps} />
         </>

@@ -1,9 +1,9 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {CheckCircle} from 'lucide-react';
 import {Field, FieldDescription, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -38,7 +38,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
             key: 'status',
             value: (
                 <Inline align='center' gap='sm'>
-                    <CheckCircle className='size-4 text-green' strokeWidth={1.5} />
+                    <LucideIcon.Check className='size-4 text-state-success' />
                     Mailgun is set up
                 </Inline>
             )

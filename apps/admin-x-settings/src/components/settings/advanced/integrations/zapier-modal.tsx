@@ -1,9 +1,11 @@
 import APIKeys from './api-keys';
+import BrandIcon from '../../../icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import ZapierLogo from '../../../../assets/images/zapier-logo.svg';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button} from '@tryghost/shade/components';
-import {ConfirmationModal, Icon, Modal} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Modal} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
 import {useEffect, useState} from 'react';
@@ -106,7 +108,7 @@ const ZapierModal = NiceModal.create(() => {
                     },
                     {id: 'api-url', label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                 ]} /></div>}
-                icon={<Icon name='zapier' size={56} />}
+                icon={<BrandIcon name='zapier' size={56} />}
                 title='Zapier'
             />
 
@@ -117,7 +119,7 @@ const ZapierModal = NiceModal.create(() => {
                             <div className='flex flex-col gap-4 md:flex-row md:items-center'>
                                 <div className='flex shrink-0 flex-nowrap items-center gap-2'>
                                     <img className='size-8 object-contain dark:invert' role='presentation' src={template.ghostImage} />
-                                    <Icon name="arrow-right" size="xs" />
+                                    <LucideIcon.ArrowRight className='size-3' />
                                     <img className='size-8 object-contain' role='presentation' src={template.appImage} />
                                 </div>
                                 <span>{template.title}</span>

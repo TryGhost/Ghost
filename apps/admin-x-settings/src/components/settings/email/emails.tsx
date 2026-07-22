@@ -10,7 +10,8 @@ import WelcomeEmailCustomizeModal from '../membership/member-emails/welcome-emai
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {ConfirmationModal, Icon} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -39,7 +40,7 @@ const TransactionalTabContent: React.FC = () => {
                     onClick={openCustomizeModal}
                 >
                     <span className='flex size-10 shrink-0 items-center justify-center rounded-full bg-muted'>
-                        <Icon colorClass='text-muted-foreground' name='mailplus' size='md' />
+                        <LucideIcon.MailPlus className='size-5 text-muted-foreground' />
                     </span>
                     <span className='min-w-0 grow'>
                         <span className='block leading-tight font-medium'>Email design</span>

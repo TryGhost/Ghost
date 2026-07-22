@@ -1,7 +1,8 @@
+import BrandIcon from '../../../icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
-import {Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Form, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -76,7 +77,7 @@ const FirstPromoterModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='Launch your own member referral program'
-                icon={<Icon className='-mt-2' name='firstpromoter' size={56} />}
+                icon={<BrandIcon className='-mt-2' name='firstpromoter' size={56} />}
                 title='FirstPromoter'
             />
             <div className='mt-7'>

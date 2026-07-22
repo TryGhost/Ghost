@@ -1,11 +1,13 @@
+import BrandIcon from '../../icons/brand-icon';
 import IntegrationsSettingsImg from '../../../assets/images/integrations-settings.png';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {ConfirmationModal, Icon, SettingGroupHeader} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, SettingGroupHeader} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {Plug} from 'lucide-react';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
@@ -69,7 +71,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
         <Button className='text-destructive hover:text-destructive' size='sm' type='button' variant='ghost' onClick={handleDelete}>Delete</Button>
         :
         (disabled ?
-            <Button size='sm' type='button' variant='ghost' onClick={handleClick}><Icon name='lock-locked' size='xs' />Upgrade</Button> :
+            <Button size='sm' type='button' variant='ghost' onClick={handleClick}><LucideIcon.Lock />Upgrade</Button> :
             <Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' size='sm' type='button' variant='link' onClick={handleClick}>Configure</Button>
         );
 
@@ -115,7 +117,7 @@ const BuiltInIntegrations: React.FC = () => {
         {
             detail: 'Automation for your apps',
             disabled: builtInApiIntegrationsDisabled,
-            icon: <Icon name='zapier' size={32} />,
+            icon: <BrandIcon name='zapier' size={32} />,
             modal: 'integrations/zapier',
             testId: 'zapier-integration',
             title: 'Zapier'
@@ -123,7 +125,7 @@ const BuiltInIntegrations: React.FC = () => {
         {
             active: !!(slackUrl && slackUsername),
             detail: 'A messaging app for teams',
-            icon: <Icon name='slack' size={32} />,
+            icon: <BrandIcon name='slack' size={32} />,
             modal: 'integrations/slack',
             testId: 'slack-integration',
             title: 'Slack'
@@ -131,7 +133,7 @@ const BuiltInIntegrations: React.FC = () => {
         {
             active: !!unsplashEnabled,
             detail: 'Beautiful, free photos',
-            icon: <Icon name='unsplash' size={32} />,
+            icon: <BrandIcon name='unsplash' size={32} />,
             modal: 'integrations/unsplash',
             testId: 'unsplash-integration',
             title: 'Unsplash'
@@ -139,7 +141,7 @@ const BuiltInIntegrations: React.FC = () => {
         {
             active: !!firstPromoterEnabled,
             detail: 'Launch your member referral program',
-            icon: <Icon name='firstpromoter' size={32} />,
+            icon: <BrandIcon name='firstpromoter' size={32} />,
             modal: 'integrations/firstpromoter',
             testId: 'firstpromoter-integration',
             title: 'FirstPromoter'
@@ -147,7 +149,7 @@ const BuiltInIntegrations: React.FC = () => {
         {
             active: pinturaEditor.isEnabled,
             detail: 'Advanced image editing',
-            icon: <Icon name='pintura' size={32} />,
+            icon: <BrandIcon name='pintura' size={32} />,
             modal: 'integrations/pintura',
             testId: 'pintura-integration',
             title: 'Pintura'
@@ -156,14 +158,14 @@ const BuiltInIntegrations: React.FC = () => {
             active: !!transistorEnabled,
             detail: 'Give your members access to private podcasts',
             disabled: builtInApiIntegrationsDisabled,
-            icon: <Icon name='transistor' size={32} />,
+            icon: <BrandIcon name='transistor' size={32} />,
             modal: 'integrations/transistor',
             testId: 'transistor-integration',
             title: 'Transistor.fm'
         },
         {
             detail: 'Access your content programmatically',
-            icon: <Icon name='angle-brackets' size={32} />,
+            icon: <LucideIcon.Code className='size-8' />,
             modal: 'integrations/contentapi',
             testId: 'content-api-integration',
             title: 'Content API'
@@ -213,7 +215,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                         icon={
                             integration.icon_image ?
                                 <img className='size-8 shrink-0 object-cover' role='presentation' src={integration.icon_image} /> :
-                                <Icon className='w-8 shrink-0' name='integration' />
+                                <LucideIcon.Blocks className='size-8 shrink-0' />
                         }
                         title={integration.name}
                         custom

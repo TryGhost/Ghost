@@ -1,7 +1,9 @@
+import CustomFieldIcon from './custom-field-icon';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {ConfirmationModal, Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {ValidationError, getErrorMessage} from '@tryghost/admin-x-framework/errors';
 import {memberCustomFieldUserTypes, useCreateMemberCustomField, useDeleteMemberCustomField, useEditMemberCustomField, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {toast} from 'sonner';
@@ -15,7 +17,7 @@ const userTypeById = (id: string) => memberCustomFieldUserTypes.find(userType =>
 // Fixed-width so option labels align in a column regardless of icon shape.
 const TypeTile: React.FC<{userTypeId: string}> = ({userTypeId}) => (
     <span className='flex w-5 shrink-0 items-center justify-center'>
-        <Icon name={userTypeById(userTypeId).icon} size='sm' />
+        <CustomFieldIcon className='size-4' type={userTypeById(userTypeId).id} />
     </span>
 );
 
@@ -164,12 +166,12 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button aria-label='Menu' size='icon' type='button' variant='ghost'>
-                    <Icon name='ellipsis' size='sm' />
+                    <LucideIcon.Ellipsis />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end' className='z-[9999]'>
                 <DropdownMenuItem className='text-destructive focus:text-destructive' onSelect={confirmDeleteField}>
-                    <Icon name='trash' size='sm' />
+                    <LucideIcon.Trash2 className='size-4' />
                     Delete custom field
                 </DropdownMenuItem>
             </DropdownMenuContent>

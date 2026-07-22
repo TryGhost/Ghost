@@ -58,7 +58,6 @@ describe("Custom fields", () => {
         await expect(row).toHaveCount(1);
         await expect.element(row).toHaveTextContent("Company");
         await expect.element(row).toHaveTextContent("Short text");
-        await expect.element(row).toHaveTextContent("Aa");
     });
 
     it("validates and creates a short-text field without sending a key", async () => {

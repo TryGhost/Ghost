@@ -2,8 +2,9 @@ import React from 'react';
 import SettingImg from '../../../assets/images/network.png';
 import TopLevelGroup from '../../top-level-group';
 import validator from 'validator';
-import {Icon, SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {Switch} from '@tryghost/shade/components';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -79,7 +80,7 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         value:
                         isDisabled &&
                             <div className='flex w-full gap-1.5 rounded-md border border-grey-200 bg-grey-50 p-3 dark:border-grey-900 dark:bg-grey-900'>
-                                <Icon name='info' size={16} />
+                                <LucideIcon.Info className='size-4' />
                                 <div className='-mt-0.5'>
                                     {isDisabledByPrivateMode
                                         ? <>Network is automatically disabled while your site is in <span className='cursor-pointer text-green' onClick={() => updateRoute('members')}>private mode</span></>

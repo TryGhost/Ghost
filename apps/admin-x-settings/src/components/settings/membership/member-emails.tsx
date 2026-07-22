@@ -7,7 +7,8 @@ import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Switch} from '@tryghost/shade/components';
 import {Button} from '@tryghost/shade/components';
-import {ConfirmationModal, Icon} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailRecord, getDefaultWelcomeEmailValues} from './member-emails/default-welcome-email-values';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
@@ -20,7 +21,7 @@ import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-ema
 const EmailPreviewRow: React.FC<{
     automatedEmail: AutomatedEmail,
     emailType: 'free' | 'paid',
-    icon: 'user-add' | 'bills',
+    icon: React.ReactNode,
     title: string,
     enabled: boolean,
     isBusy: boolean,
@@ -48,7 +49,7 @@ const EmailPreviewRow: React.FC<{
                     onClick={onEdit}
                 >
                     <span className='flex size-10 shrink-0 items-center justify-center rounded-full bg-muted'>
-                        <Icon colorClass='text-muted-foreground' name={icon} size='md' />
+                        <span className='text-muted-foreground [&>svg]:size-5'>{icon}</span>
                     </span>
                     <span className='min-w-0 grow'>
                         <span className='block leading-tight font-medium' data-testid={`${emailType}-welcome-email-title`}>{title}</span>
@@ -110,7 +111,7 @@ const MemberEmailsTable: React.FC<{
                 automatedEmail={freeEmailForDisplay}
                 emailType='free'
                 enabled={freeWelcomeEmailEnabled}
-                icon='user-add'
+                icon={<LucideIcon.UserPlus />}
                 isBusy={isBusy}
                 isInitialLoading={isLoading}
                 title='Free members welcome email'
@@ -122,7 +123,7 @@ const MemberEmailsTable: React.FC<{
                     automatedEmail={paidEmailForDisplay}
                     emailType='paid'
                     enabled={paidWelcomeEmailEnabled}
-                    icon='bills'
+                    icon={<LucideIcon.Banknote />}
                     isBusy={isBusy}
                     isInitialLoading={isLoading}
                     title='Paid members welcome email'
