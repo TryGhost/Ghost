@@ -83,10 +83,12 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
             }));
         });
 
-        it('throws on route path with :slug notation', function () {
-            throwsValidation(() => parse({
+        it('accepts route path with :slug notation', function () {
+            const settings = parse({
                 routes: {'/foo/:slug/': 'post'}
-            }));
+            });
+
+            assert.equal(settings.routes[0].path, '/foo/:slug/');
         });
     });
 
@@ -115,10 +117,18 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
             }), 'Please define a permalink route');
         });
 
-        it('throws on collection path with :slug notation', function () {
-            throwsValidation(() => parse({
+        it('accepts collection path with :slug notation', function () {
+            const settings = parse({
                 collections: {'/blog/:slug/': {permalink: '/{slug}/'}}
-            }));
+            });
+
+            assert.equal(settings.collections[0].path, '/blog/:slug/');
+        });
+
+        it('throws on permalink using :slug notation even when the path does', function () {
+            throwsValidation(() => parse({
+                collections: {'/blog/:slug/': {permalink: '/:slug/'}}
+            }), 'uses the :param notation');
         });
 
         it('throws on permalink without leading slash', function () {
@@ -194,6 +204,22 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
         it('accepts valid shortform data', function () {
             assert.doesNotThrow(() => parse({
                 routes: {'/food/': {template: 'food', data: 'tag.food'}}
+            }));
+        });
+
+        it('accepts %s as the shortform slug', function () {
+            const settings = parse({
+                routes: {'/food/': {template: 'food', data: 'tag.%s'}}
+            });
+
+            assert.equal(settings.routes[0].data, 'tag.%s');
+        });
+
+        it('throws on shortform data with %s embedded in the slug', function () {
+            // %s is only meaningful as the whole slug — fetch-data swaps it for the
+            // request's slug param, and nothing in the fleet uses a partial form.
+            throwsValidation(() => parse({
+                routes: {'/food/': {template: 'food', data: 'tag.recipes-%s'}}
             }));
         });
 
@@ -482,7 +508,6 @@ describe('UNIT: services/route-settings/validation (via parseRouteSettings)', fu
             const cases: [string, unknown, string][] = [
                 ['route missing a leading slash', {routes: {'about/': 'about'}}, 'The following definition "routes[\'about/\']" is invalid: "about/" is missing a leading slash. Please use e.g. /about/.'],
                 ['route missing a trailing slash', {routes: {'/about': 'about'}}, 'The following definition "routes[\'/about\']" is invalid: "/about" is missing a trailing slash. Please use e.g. /about/.'],
-                ['route using :param', {routes: {'/foo/:slug/': 'post'}}, 'The following definition "routes[\'/foo/:slug/\']" is invalid: "/foo/:slug/" uses the :param notation. Please use "/foo/{slug}/".'],
                 ['collection missing a leading slash', {collections: {'blog/': {permalink: '/{slug}/'}}}, 'The following definition "collections[\'blog/\']" is invalid: "blog/" is missing a leading slash. Please use e.g. /blog/.'],
                 ['collection missing a trailing slash', {collections: {'/blog': {permalink: '/{slug}/'}}}, 'The following definition "collections[\'/blog\']" is invalid: "/blog" is missing a trailing slash. Please use e.g. /blog/.'],
                 ['permalink missing a leading slash', {collections: {'/blog/': {permalink: '{slug}/'}}}, 'The following definition "collections[\'/blog/\'].permalink" is invalid: "{slug}/" is missing a leading slash. Please use e.g. /{slug}/.'],
