@@ -1,8 +1,10 @@
 const sinon = require('sinon');
+const assert = require('node:assert/strict');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/config-utils');
 const api = require('../../../../../../core/frontend/services/proxy').api;
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
+const {routerManager} = require('../../../../../../core/frontend/services/routing');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const urlService = require('../../../../../../core/server/services/url');
 const urlUtils = require('../../../../../../core/shared/url-utils');
@@ -78,5 +80,24 @@ describe('Unit - services/routing/controllers/previews', function () {
         await controllers.previews(req, res, next);
         sinon.assert.called(renderStub);
         sinon.assert.notCalled(next);
+    });
+
+    it('redirects a published preview using the real resource type, not "previews"', async function () {
+        // The URL service routes by resource type; `previews` is not a routable
+        // type, so it must resolve to the post's own type ('post'/'page').
+        post.status = 'published';
+        post.type = 'post';
+
+        let capturedType;
+        sinon.stub(routerManager, 'getUrlForResource').callsFake((resource) => {
+            capturedType = resource.type;
+            return 'http://127.0.0.1:2369/the-slug/';
+        });
+
+        const next = sinon.stub();
+        await controllers.previews(req, res, next);
+
+        sinon.assert.calledOnce(urlUtils.redirect301);
+        assert.equal(capturedType, 'post', 'expected the post type, not "previews"');
     });
 });
