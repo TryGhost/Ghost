@@ -3,8 +3,7 @@ import LabItem from './lab-item';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import YamlFileEditorModal from './yaml-file-editor-modal';
-import {ActionList, Dropzone, Button as ShadeButton} from '@tryghost/shade/components';
-import {Button} from '@tryghost/admin-x-design-system';
+import {ActionList, Button, Dropzone} from '@tryghost/shade/components';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
@@ -98,9 +97,9 @@ const BetaFeatures: React.FC = () => {
                         >
                             {redirectsUploading ? 'Uploading ...' : 'Upload redirects file'}
                         </Dropzone>
-                        <ShadeButton size='sm' variant='secondary' onClick={openRedirectsEditor}>Edit</ShadeButton>
+                        <Button size='sm' type='button' variant='secondary' onClick={openRedirectsEditor}>Edit</Button>
                     </Inline>
-                    <Button color='green' label='Download current redirects' link onClick={() => downloadRedirects()} />
+                    <Button className='h-auto p-0 text-green hover:text-green' size='sm' type='button' variant='link' onClick={() => downloadRedirects()}>Download current redirects</Button>
                 </Stack>}
                 detail={<>Configure redirects for old or moved content, <br /> more info in the <a className='text-green' href="https://ghost.org/tutorials/implementing-redirects/" rel="noopener noreferrer" target="_blank">docs</a></>}
                 testId='redirects'
@@ -125,9 +124,9 @@ const BetaFeatures: React.FC = () => {
                         >
                             {routesUploading ? 'Uploading ...' : 'Upload routes file'}
                         </Dropzone>
-                        <ShadeButton size='sm' variant='secondary' onClick={openRoutesEditor}>Edit</ShadeButton>
+                        <Button size='sm' type='button' variant='secondary' onClick={openRoutesEditor}>Edit</Button>
                     </Inline>
-                    <Button color='green' label='Download current routes' link onClick={() => downloadRoutes()} />
+                    <Button className='h-auto p-0 text-green hover:text-green' size='sm' type='button' variant='link' onClick={() => downloadRoutes()}>Download current routes</Button>
                 </Stack>}
                 detail='Configure dynamic routing by modifying the routes.yaml file'
                 testId='routes'

@@ -1,7 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 
-import Button from '../button';
-import ButtonGroup from '../button-group';
 import DesktopChromeHeader from './desktop-chrome-header';
 
 const meta = {
@@ -43,13 +41,8 @@ export const WithTitle: Story = {
 
 export const CustomToolbar: Story = {
     args: {
-        toolbarLeft: <Button icon='arrow-left' link={true} size='sm' />,
+        toolbarLeft: <span>Back slot</span>,
         toolbarCenter: <span>Homepage</span>,
-        toolbarRight: <ButtonGroup
-            buttons={[
-                {icon: 'laptop', link: true, size: 'sm'},
-                {icon: 'mobile', link: true, size: 'sm', iconColorClass: 'text-grey-500'}
-            ]}
-        />
+        toolbarRight: <span>Toolbar actions slot</span>
     }
 };

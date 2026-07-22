@@ -5,8 +5,8 @@ import OfficialThemes from './theme/official-themes';
 import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/theme-installed-modal';
 import ThemePreview from './theme/theme-preview';
-import {Button, ConfirmationModal, LimitModal, Modal, PageHeader} from '@tryghost/admin-x-design-system';
-import {Dropzone, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Button, Dropzone, LoadingIndicator, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {ConfirmationModal, LimitModal, Modal, PageHeader} from '@tryghost/admin-x-design-system';
 import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type OfficialTheme} from '../../providers/settings-app-provider';
@@ -113,7 +113,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 okLabel: 'Overwrite',
                 cancelLabel: 'Cancel',
                 okRunningLabel: 'Overwriting...',
-                okColor: 'red',
+                okVariant: 'destructive',
                 onOk: async (confirmModal) => {
                     setUploading(true);
 
@@ -247,11 +247,11 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const right =
         <div className='flex items-center gap-14'>
             <div className='flex items-center gap-3'>
-                <Button label='Close' onClick={() => {
+                <Button className='font-semibold' type='button' variant='ghost' onClick={() => {
                     modal.remove();
                     onClose();
-                }} />
-                <Button color='black' label='Upload theme' loading={isUploading} onClick={handleUpload} />
+                }}>Close</Button>
+                <Button disabled={isUploading} type='button' onClick={handleUpload}>{isUploading && <LoadingIndicator size='sm' />}Upload theme</Button>
             </div>
         </div>;
 
@@ -357,7 +357,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     okLabel: 'Install',
                     cancelLabel: 'Cancel',
                     okRunningLabel: 'Installing...',
-                    okColor: 'black',
+                    okVariant: 'default',
                     onOk: async (confirmModal) => {
                         let data: ThemesInstallResponseType | undefined;
                         setInstalledFromMarketplace(true);
@@ -420,7 +420,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                         okLabel: 'Overwrite',
                         okRunningLabel: 'Installing...',
                         cancelLabel: 'Cancel',
-                        okColor: 'red',
+                        okVariant: 'destructive',
                         onOk: async (confirmModal) => {
                             confirmModal?.remove();
                             await performInstallation();

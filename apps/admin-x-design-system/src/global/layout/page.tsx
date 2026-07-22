@@ -2,11 +2,13 @@ import React from 'react';
 import clsx from 'clsx';
 import AppMenu from './app-menu';
 import GlobalActions from './global-actions';
-import Button from '../button';
+import Icon from '../icon';
 import PageHeader from './page-header';
+import {Button} from '@tryghost/shade/components';
 
 export interface CustomGlobalAction {
     iconName: string;
+    ariaLabel: string;
     onClick?: () => void;
 }
 
@@ -88,7 +90,7 @@ const Page: React.FC<PageProps> = ({
         <div className='sticky flex items-center gap-7'>
             {(customGlobalActions?.map((action, idx) => {
                 return (
-                    <Button key={action.iconName ?? idx} icon={action.iconName} iconColorClass='text-black dark:text-white' size='sm' link onClick={action.onClick} />
+                    <Button key={action.iconName ?? idx} aria-label={action.ariaLabel} size='icon' type='button' variant='ghost' onClick={action.onClick}><Icon name={action.iconName} size='sm' /></Button>
                 );
             }))}
             {showGlobalActions && <GlobalActions />}

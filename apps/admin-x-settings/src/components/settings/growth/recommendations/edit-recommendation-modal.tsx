@@ -1,6 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './recommendation-description-form';
+import {Button} from '@tryghost/shade/components';
 import {ConfirmationModal, Modal} from '@tryghost/admin-x-design-system';
 import {type Recommendation, useDeleteRecommendation, useEditRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -35,12 +36,8 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         }
     });
 
-    const leftButtonProps = {
-        label: 'Delete',
-        link: true,
-        color: 'red' as const,
-        size: 'sm' as const,
-        onClick: () => {
+    const leftButton = (
+        <Button className='text-destructive hover:text-destructive' size='sm' type='button' variant='ghost' onClick={() => {
             modal.remove();
             NiceModal.show(ConfirmationModal, {
                 title: 'Delete recommendation',
@@ -48,6 +45,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
                     <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>
                 </>,
                 okLabel: 'Delete',
+                okVariant: 'destructive',
                 onOk: async (deleteModal) => {
                     try {
                         await deleteRecommendation(recommendation);
@@ -58,8 +56,8 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
                     }
                 }
             });
-        }
-    };
+        }}>Delete</Button>
+    );
 
     return <Modal
         afterClose={() => {
@@ -70,9 +68,9 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         backDropClick={false}
         buttonsDisabled={okProps.disabled}
         cancelLabel={'Close'}
-        leftButtonProps={leftButtonProps}
-        okColor={okProps.color}
+        leftButton={leftButton}
         okLabel={okProps.label || 'Save'}
+        okVariant={okProps.variant}
         size='sm'
         testId='edit-recommendation-modal'
         title={'Edit recommendation'}

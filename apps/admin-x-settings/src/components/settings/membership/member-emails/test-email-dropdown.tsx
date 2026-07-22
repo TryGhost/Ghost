@@ -1,7 +1,8 @@
 import validator from 'validator';
-import {Button, TextField} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {FieldError, PopoverContent} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
+import {TextField} from '@tryghost/admin-x-design-system';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useEffect, useRef, useState} from 'react';
 import {useSendTestWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
@@ -97,11 +98,12 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
             </div>
             <Button
                 className='w-full'
-                color={sendState === 'sent' ? 'green' : 'black'}
                 disabled={sendState === 'sending'}
-                label={sendState === 'sent' ? 'Sent' : sendState === 'sending' ? 'Sending...' : 'Send'}
+                type='button'
                 onClick={handleSendTestEmail}
-            />
+            >
+                {sendState === 'sent' ? 'Sent' : sendState === 'sending' ? 'Sending...' : 'Send'}
+            </Button>
             {testEmailError && <FieldError className='mt-2'>{testEmailError}</FieldError>}
         </PopoverContent>
     );

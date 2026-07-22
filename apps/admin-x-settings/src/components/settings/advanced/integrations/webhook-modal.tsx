@@ -53,8 +53,8 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
     });
 
     return <Modal
-        okColor='black'
         okLabel={webhook ? 'Update' : 'Add'}
+        okVariant='default'
         size='sm'
         testId='webhook-modal'
         title='Add webhook'

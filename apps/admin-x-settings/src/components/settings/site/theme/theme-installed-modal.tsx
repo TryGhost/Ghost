@@ -48,9 +48,9 @@ const ThemeInstalledModal: React.FC<{
 
     return <ConfirmationModalContent
         cancelLabel='Close'
-        okColor='black'
         okLabel={okLabel}
         okRunningLabel='Activating...'
+        okVariant='default'
         prompt={<>
             <div className='space-y-5'>
                 {installedTheme.active ? (

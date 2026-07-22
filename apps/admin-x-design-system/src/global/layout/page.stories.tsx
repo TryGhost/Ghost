@@ -4,7 +4,6 @@ import Page, {CustomGlobalAction} from './page';
 import ViewContainer from './view-container';
 
 import {exampleActions as exampleActionButtons} from './view-container.stories';
-import Button from '../button';
 import {Text} from '@tryghost/shade/primitives';
 
 const meta = {
@@ -24,6 +23,7 @@ const dummyContent = <div className='w-full bg-grey-100 p-5 text-center'>Placeho
 const customGlobalActions: CustomGlobalAction[] = [
     {
         iconName: 'heart',
+        ariaLabel: 'Favorite',
         onClick: () => {
             alert('Clicked on custom action');
         }
@@ -100,10 +100,7 @@ const exampleCardViewContent = (
     <ViewContainer
         actions={exampleActionButtons}
         firstOnPage={false}
-        primaryAction={{
-            title: 'New idea',
-            icon: 'add'
-        }}
+        primaryAction={<span>New idea action slot</span>}
         title='Ideas'
         type='page'
     >
@@ -155,7 +152,7 @@ const mockPosts = () => {
                     opened
                 </div>
                 <div className='flex justify-end pr-7'>
-                    <Button className='group-hover:bg-grey-200' icon='ellipsis' />
+                    <span>Post action slot</span>
                 </div>
             </div>
         );
@@ -167,10 +164,7 @@ const examplePostsContent = (
     <ViewContainer
         actions={exampleActionButtons}
         firstOnPage={false}
-        primaryAction={{
-            title: 'New post',
-            icon: 'add'
-        }}
+        primaryAction={<span>New post action slot</span>}
         title='Posts'
         type='page'
     >
@@ -205,12 +199,7 @@ export const ExampleDetailScreen: Story = {
                         <div className=''>Colombus, OH</div>
                     </div>
                 }
-                primaryAction={
-                    {
-                        icon: 'ellipsis',
-                        color: 'outline'
-                    }
-                }
+                primaryAction={<span>Member action slot</span>}
                 type='page'
             >
                 <div className='grid grid-cols-3 border-b border-grey-200 pb-5 tablet:grid-cols-4'>
@@ -235,7 +224,7 @@ export const ExampleDetailScreen: Story = {
                     <div className='-ml-5 flex h-full flex-col gap-6 border-r border-grey-200 px-5'>
                         <div className='flex justify-between'>
                             <Text as='h5' className='md:text-lg' leading='supertight' weight='bold'>Member data</Text>
-                            <Button color='green' label='Edit' link />
+                            <span>Edit action slot</span>
                         </div>
                         <div>
                             <Text as='h6' className='text-base' tone='secondary' weight='semibold'>Name</Text>
@@ -293,7 +282,7 @@ export const ExampleDetailScreen: Story = {
                     <div className='-mr-5 flex h-full flex-col gap-6 px-5 pt-10 tablet:pt-0'>
                         <div className='flex justify-between'>
                             <Text as='h5' className='md:text-lg' leading='supertight' weight='bold'>Activity</Text>
-                            <Button color='green' label='View all' link />
+                            <span>View all action slot</span>
                         </div>
                         <div className='flex flex-col text-sm'>
                             <span className='font-semibold'>Logged in</span>

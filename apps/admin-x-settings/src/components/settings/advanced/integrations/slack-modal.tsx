@@ -2,7 +2,8 @@ import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
+import {Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {getSettingValues, useTestSlack} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -43,8 +44,8 @@ const SlackModal = NiceModal.create(() => {
             }}
             cancelLabel='Close'
             dirty={isDirty}
-            okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
+            okVariant={okProps.variant}
             testId='slack-modal'
             title=''
             onOk={async () => {
@@ -79,7 +80,7 @@ const SlackModal = NiceModal.create(() => {
                             value={slackUsername}
                             onChange={e => updateSetting('slack_username', e.target.value)}
                         />
-                        <Button color='outline' label='Send test notification' onClick={handleTestClick} />
+                        <Button type='button' variant='outline' onClick={handleTestClick}>Send test notification</Button>
                     </div>
                 </Form>
             </div>

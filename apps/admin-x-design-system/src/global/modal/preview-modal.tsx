@@ -1,12 +1,11 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import clsx from 'clsx';
 import React, {useEffect} from 'react';
-import {ButtonColor, ButtonProps} from '../button';
-import ButtonGroup from '../button-group';
 import Icon from '../icon';
 import Modal, {ModalSize} from './modal';
+import {Button, type ButtonProps} from '@tryghost/shade/components';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
-import {Text, type TextElement, type TextLeading, type TextSize} from '@tryghost/shade/primitives';
+import {Inline, Text, type TextElement, type TextLeading, type TextSize} from '@tryghost/shade/primitives';
 import {useGlobalDirtyState} from '@tryghost/shade/utils';
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
@@ -50,7 +49,7 @@ export interface PreviewModalProps {
     dirty?: boolean
     cancelLabel?: string;
     okLabel?: string;
-    okColor?: ButtonColor;
+    okVariant?: ButtonProps['variant'];
     buttonsDisabled?: boolean
     previewToolbar?: boolean;
     leftToolbar?: boolean;
@@ -85,7 +84,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     dirty = false,
     cancelLabel = 'Cancel',
     okLabel = 'OK',
-    okColor = 'black',
+    okVariant = 'default',
     previewToolbar = true,
     leftToolbar = true,
     rightToolbar = true,
@@ -181,29 +180,12 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         );
     }
 
-    const buttons: ButtonProps[] = [];
-
-    if (!sidebarButtons) {
-        buttons.push({
-            key: 'cancel-modal',
-            label: cancelLabel,
-            onClick: (onCancel ? onCancel : () => {
-                confirm(dirty, () => {
-                    modal.remove();
-                    afterClose?.();
-                });
-            }),
-            disabled: buttonsDisabled
+    const handleCancel = onCancel || (() => {
+        confirm(dirty, () => {
+            modal.remove();
+            afterClose?.();
         });
-
-        buttons.push({
-            key: 'ok-modal',
-            label: okLabel,
-            color: okColor,
-            onClick: onOk,
-            disabled: buttonsDisabled
-        });
-    }
+    });
 
     return (
         <Modal
@@ -238,7 +220,12 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                                 >
                                     {title}
                                 </Text>
-                                {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
+                                {sidebarButtons || (
+                                    <Inline gap='md'>
+                                        <Button className='font-semibold' disabled={buttonsDisabled} type='button' variant='ghost' onClick={handleCancel}>{cancelLabel}</Button>
+                                        <Button disabled={buttonsDisabled} type='button' variant={okVariant} onClick={onOk}>{okLabel}</Button>
+                                    </Inline>
+                                )}
                             </div>
                         )}
                         <div className={`${!sidebarHeader ? 'absolute inset-x-0 top-[80px] bottom-0 grow' : ''} ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto ${sidebarContentClasses && sidebarContentClasses}`}>

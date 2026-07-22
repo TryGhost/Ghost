@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import clsx from 'clsx';
-import {Button, Icon} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
+import {Icon} from '@tryghost/admin-x-design-system';
 import {Text} from '@tryghost/shade/primitives';
 import {type TierFormState} from './tier-detail-modal';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
@@ -95,8 +96,8 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
             <div className="flex items-baseline justify-between">
                 <Text as='h6' className="pb-2 text-base" weight='semibold'>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Text>
                 {!isFreeTier && <div className="flex gap-1">
-                    <Button className={`${showingYearly === true ? 'text-grey-500' : 'text-grey-900 dark:text-white'}`} label="Monthly" link unstyled onClick={() => setShowingYearly(false)} />
-                    <Button className={`ml-2 ${showingYearly === true ? 'text-grey-900 dark:text-white' : 'text-grey-500'}`} label="Yearly" link unstyled onClick={() => setShowingYearly(true)} />
+                    <Button className={showingYearly ? 'h-auto p-0 text-muted-foreground' : 'h-auto p-0 text-foreground'} type='button' variant='link' onClick={() => setShowingYearly(false)}>Monthly</Button>
+                    <Button className={showingYearly ? 'ml-2 h-auto p-0 text-foreground' : 'ml-2 h-auto p-0 text-muted-foreground'} type='button' variant='link' onClick={() => setShowingYearly(true)}>Yearly</Button>
                 </div>}
             </div>
             <div className='rounded-sm border border-grey-200 bg-white dark:border-transparent'>

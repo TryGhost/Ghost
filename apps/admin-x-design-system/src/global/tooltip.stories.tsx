@@ -1,6 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 
-import Button from './button';
 import Tooltip from './tooltip';
 
 const meta = {
@@ -20,14 +19,14 @@ type Story = StoryObj<typeof Tooltip>;
 export const Default: Story = {
     args: {
         content: 'Hello tooltip',
-        children: <Button color='outline' label="Hover me" />
+        children: <button type='button'>Hover me</button>
     }
 };
 
 export const MediumSize: Story = {
     args: {
         content: 'Hello tooltip',
-        children: <Button color='outline' label="Hover me" />,
+        children: <button type='button'>Hover me</button>,
         size: 'md'
     }
 };
@@ -35,7 +34,7 @@ export const MediumSize: Story = {
 export const Left: Story = {
     args: {
         content: 'Hello tooltip on the left',
-        children: <Button color='outline' label="Hover me" />,
+        children: <button type='button'>Hover me</button>,
         origin: 'start'
     }
 };
@@ -43,7 +42,7 @@ export const Left: Story = {
 export const Center: Story = {
     args: {
         content: 'Hello center tooltip',
-        children: <Button color='outline' label="Hover me" />,
+        children: <button type='button'>Hover me</button>,
         origin: 'center'
     }
 };
@@ -51,7 +50,7 @@ export const Center: Story = {
 export const Right: Story = {
     args: {
         content: 'Hello right tooltip',
-        children: <Button color='outline' label="Hover me" />,
+        children: <button type='button'>Hover me</button>,
         origin: 'end'
     }
 };
@@ -59,7 +58,7 @@ export const Right: Story = {
 export const Long: Story = {
     args: {
         content: `You're the best evil son an evil dad could ever ask for.`,
-        children: <Button color='outline' label="Hover me" />,
+        children: <button type='button'>Hover me</button>,
         size: 'md',
         origin: 'start'
     }

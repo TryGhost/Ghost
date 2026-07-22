@@ -227,8 +227,8 @@ const AnnouncementBarModal: React.FC = () => {
         cancelLabel='Close'
         deviceSelector={deviceSelector}
         dirty={false}
-        okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
+        okVariant={okProps.variant}
         preview={preview}
         previewBgColor='greygradient'
         previewToolbarTabs={previewTabs}

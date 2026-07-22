@@ -25,6 +25,7 @@ describe('Button Component', () => {
         const button = screen.getByRole('button', {name: /small/i});
         
         assert.ok(button.className.includes('h-7'), 'Should have small size class');
+        assert.ok(button.className.includes('text-sm!'), 'Should override the base control typography');
     });
 
     it('handles click events', () => {
@@ -66,4 +67,4 @@ describe('Button Component', () => {
         assert.equal(link.tagName.toLowerCase(), 'a', 'Should be an A element');
         assert.equal(link.getAttribute('href'), 'https://example.com', 'Should have correct href');
     });
-}); 
+});

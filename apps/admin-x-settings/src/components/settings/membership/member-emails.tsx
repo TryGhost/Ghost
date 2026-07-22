@@ -6,7 +6,8 @@ import WelcomeEmailModal from './member-emails/welcome-email-modal';
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Switch} from '@tryghost/shade/components';
-import {Button, ConfirmationModal, Icon} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
+import {ConfirmationModal, Icon} from '@tryghost/admin-x-design-system';
 import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailRecord, getDefaultWelcomeEmailValues} from './member-emails/default-welcome-email-values';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
@@ -69,9 +70,7 @@ const EmailPreviewRow: React.FC<{
                         onCheckedChange={onToggle}
                     />
                 )}
-                <button className='font-semibold text-green hover:opacity-80' type='button' onClick={onEdit}>
-                    Edit
-                </button>
+                <Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' type='button' variant='link' onClick={onEdit}>Edit</Button>
                 </div>
             </ActionListItemActions>
         </ActionListItem>
@@ -282,11 +281,13 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
             customButtons={(
                 <Button
                     className='mt-[-5px]'
-                    color='clear'
-                    label='Customize'
                     size='sm'
+                    type='button'
+                    variant='ghost'
                     onClick={() => NiceModal.show(WelcomeEmailCustomizeModal)}
-                />
+                >
+                    Customize
+                </Button>
             )}
             description="Create and manage automated emails for your members"
             keywords={keywords}

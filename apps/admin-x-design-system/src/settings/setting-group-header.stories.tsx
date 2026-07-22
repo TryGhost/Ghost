@@ -1,6 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 
-import ButtonGroup from '../global/button-group';
 import SettingGroupHeader from './setting-group-header';
 import {Text} from '@tryghost/shade/primitives';
 
@@ -17,10 +16,7 @@ export const Default: Story = {
     args: {
         title: 'Section group title',
         description: 'Section group description',
-        children: <ButtonGroup
-            buttons={[{label: 'Edit', color: 'green'}]}
-            link={true}
-        />
+        children: <span>Edit action slot</span>
     }
 };
 
@@ -28,15 +24,7 @@ export const Editing: Story = {
     args: {
         title: 'Section group title',
         description: 'Section group description',
-        children: <ButtonGroup
-            buttons={
-                [
-                    {label: 'Cancel'},
-                    {label: 'Save', color: 'green'}
-                ]
-            }
-            link={true}
-        />
+        children: <span>Cancel and save action slots</span>
     }
 };
 
@@ -49,10 +37,7 @@ export const CustomHeader: Story = {
                     <span className='mt-4 text-sm'>Cristofer Vaccaro — <strong>Owner</strong></span>
                     <span className='text-sm text-grey-500'>cristofer@example.com</span>
                 </div>
-                <ButtonGroup
-                    buttons={[{label: 'Invite users', color: 'green'}]}
-                    link={true}
-                />
+                <span>Invite users action slot</span>
             </>
     }
 };

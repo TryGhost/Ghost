@@ -655,8 +655,8 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             cancelLabel='Cancel'
             dirty={saveState === 'unsaved'}
             height='full'
-            okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
+            okVariant={okProps.variant}
             preview={preview}
             previewToolbarBreadcrumbs={
                 <SettingsBreadcrumbs

@@ -3,8 +3,8 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
-import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {Button, ConfirmationModal, Icon, SettingGroupHeader} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {ConfirmationModal, Icon, SettingGroupHeader} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {Plug} from 'lucide-react';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -66,11 +66,11 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
     };
 
     const buttons = custom ?
-        <Button color='red' label='Delete' link onClick={handleDelete} />
+        <Button className='text-destructive hover:text-destructive' size='sm' type='button' variant='ghost' onClick={handleDelete}>Delete</Button>
         :
         (disabled ?
-            <Button icon='lock-locked' label='Upgrade' link onClick={handleClick} /> :
-            <Button color='green' label='Configure' link onClick={handleClick} />
+            <Button size='sm' type='button' variant='ghost' onClick={handleClick}><Icon name='lock-locked' size='xs' />Upgrade</Button> :
+            <Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' size='sm' type='button' variant='link' onClick={handleClick}>Configure</Button>
         );
 
     return <ActionListItem className={disabled ? 'opacity-50 saturate-0' : ''} data-testid={testId}>
@@ -221,7 +221,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                             NiceModal.show(ConfirmationModal, {
                                 title: 'Are you sure?',
                                 prompt: 'Deleting this integration will remove all webhooks and api keys associated with it.',
-                                okColor: 'red',
+                                okVariant: 'destructive',
                                 okLabel: 'Delete Integration',
                                 onOk: async (confirmModal) => {
                                     try {
@@ -253,15 +253,15 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const buttons = (
         <Button
-            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black'
-            color='clear'
-            label='Add custom integration'
-            link
+            className='mt-[-5px]'
+            size='sm'
+            type='button'
+            variant='ghost'
             onClick={() => {
                 updateRoute('integrations/new');
                 setSelectedTab('custom');
             }}
-        />
+        >Add custom integration</Button>
     );
 
     return (
@@ -275,10 +275,10 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className=' z-10 mt-6 flex items-start justify-between'>
                         <SettingGroupHeader description='Make Ghost work with apps and tools.' title='Integrations' />
                         {
-                            <Button className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' color='clear' label='Add custom integration' link onClick={() => {
+                            <Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={() => {
                                 updateRoute('integrations/new');
                                 setSelectedTab('custom');
-                            }} />
+                            }}>Add custom integration</Button>
                         }
                     </div>
                 </div>

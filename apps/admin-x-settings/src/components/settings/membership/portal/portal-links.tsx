@@ -1,6 +1,7 @@
 import React, {useEffect, useId, useState} from 'react';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {Button, ModalPage, TextField} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
+import {ModalPage, TextField} from '@tryghost/admin-x-design-system';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -20,14 +21,18 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
                 <label className='inline-block whitespace-nowrap lg:w-[180px] lg:min-w-[180px]' htmlFor={id}>{name}:</label>
                 <TextField className='grow border-b-border bg-transparent py-1 text-muted-foreground lg:p-1' id={id} value={value} disabled unstyled />
             </ActionListItemContent>
-            <ActionListItemActions><Button color='black' label='Copy' link onClick={(e) => {
-                navigator.clipboard.writeText(value);
-                const button = e?.target as HTMLButtonElement;
-                button.innerText = 'Copied';
-                setTimeout(() => {
-                    button.innerText = 'Copy';
-                }, 1000);
-            }}/></ActionListItemActions>
+            <ActionListItemActions><Button size='sm' type='button' variant='ghost' onClick={async (e) => {
+                const button = e.currentTarget;
+                try {
+                    await navigator.clipboard.writeText(value);
+                    button.innerText = 'Copied';
+                    setTimeout(() => {
+                        button.innerText = 'Copy';
+                    }, 1000);
+                } catch {
+                    // Leave the label unchanged when clipboard access is denied.
+                }
+            }}>Copy</Button></ActionListItemActions>
         </ActionListItem>
     );
 };
@@ -66,7 +71,7 @@ const PortalLinks: React.FC = () => {
             <section>
                 <div className='flex items-center justify-between border-b border-border pb-2'>
                     <h2 className='text-xl font-semibold'>Generic</h2>
-                    <Button color='green' label={isDataAttributes ? 'Links' : 'Data attributes'} link onClick={toggleIsDataAttributes}/>
+                    <Button size='sm' type='button' variant='ghost' onClick={toggleIsDataAttributes}>{isDataAttributes ? 'Links' : 'Data attributes'}</Button>
                 </div>
                 <ActionList>
                     <PortalLink name='Default' value={isDataAttributes ? 'data-portal' : `${homePageURL}#/portal`} />

@@ -1,9 +1,9 @@
 import NavigationItemEditor from './navigation-item-editor';
 import React from 'react';
-import {Button, Icon} from '@tryghost/admin-x-design-system';
+import {Button, SortableList} from '@tryghost/shade/components';
+import {Icon} from '@tryghost/admin-x-design-system';
 import {Inline} from '@tryghost/shade/primitives';
 import {type NavigationEditor} from '../../../../hooks/site/use-navigation-editor';
-import {SortableList} from '@tryghost/shade/components';
 
 const NavigationEditForm: React.FC<{
     baseUrl: string;
@@ -17,7 +17,7 @@ const NavigationEditForm: React.FC<{
             itemSeparator={false}
             renderItem={item => (
                 <NavigationItemEditor
-                    action={<Button icon="trash" iconColorClass='dark:text-white' size='sm' onClick={() => navigation.removeItem(item.id)} />}
+                    action={<Button aria-label='Delete navigation item' size='icon' type='button' variant='ghost' onClick={() => navigation.removeItem(item.id)}><Icon name='trash' size='sm' /></Button>}
                     baseUrl={baseUrl}
                     clearError={key => navigation.clearError(item.id, key)}
                     item={item}
@@ -31,7 +31,7 @@ const NavigationEditForm: React.FC<{
                 <Icon colorClass='text-grey-300 dark:text-grey-900' name='add' size='sm' />
             </Inline>
             <NavigationItemEditor
-                action={<Button className='mx-2 rounded bg-green p-1' data-testid="add-button" icon="add" iconColorClass='text-white' size='sm' unstyled onClick={navigation.addItem} />}
+                action={<Button aria-label='Add navigation item' className='mx-2' data-testid="add-button" size='icon' type='button' variant='ghost' onClick={navigation.addItem}><Icon name='add' size='sm' /></Button>}
                 addItem={navigation.addItem}
                 baseUrl={baseUrl}
                 className="mt-1"

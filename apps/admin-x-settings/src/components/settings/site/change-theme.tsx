@@ -1,8 +1,8 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, LimitModal, SettingGroupContent} from '@tryghost/admin-x-design-system';
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {Icon, LimitModal, SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {Text} from '@tryghost/shade/primitives';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
@@ -81,7 +81,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className='-mr-3'>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button disabled={!activeTheme} icon='ellipsis' iconColorClass='text-base' label='Menu' size='sm' hideLabel />
+                                <Button aria-label='Menu' disabled={!activeTheme} size='icon' type='button' variant='ghost'><Icon name='ellipsis' size='sm' /></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align='end'>
                                 <DropdownMenuItem onSelect={openThemeEditor}>Edit code</DropdownMenuItem>
@@ -97,7 +97,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={
-                <Button className='mt-[-5px]' color='clear' label='Change theme' size='sm' onClick={openPreviewModal} />
+                <Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={openPreviewModal}>Change theme</Button>
             }
             description="Browse and install official themes or upload one"
             keywords={keywords}

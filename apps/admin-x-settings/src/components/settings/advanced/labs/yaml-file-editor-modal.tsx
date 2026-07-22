@@ -2,8 +2,9 @@ import CodeEditor from '../../../code-editor';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useState} from 'react';
 import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
-import {ButtonGroup, Modal} from '@tryghost/admin-x-design-system';
-import {Text} from '@tryghost/shade/primitives';
+import {Button} from '@tryghost/shade/components';
+import {Inline, Text} from '@tryghost/shade/primitives';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -153,19 +154,10 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
             <div className='flex h-full min-h-0 flex-col'>
                 <div className='mb-4 flex items-center justify-between'>
                     <Text as='h2' className='md:text-3xl' leading='heading' size='2xl' weight='bold'>{title}</Text>
-                    <ButtonGroup buttons={[
-                        {
-                            label: 'Close',
-                            color: 'outline',
-                            onClick: closeModal
-                        },
-                        {
-                            disabled: !canSave,
-                            label: isSaving ? 'Saving...' : 'Save',
-                            color: 'black',
-                            onClick: () => void handleSave()
-                        }
-                    ]} />
+                    <Inline gap='md'>
+                        <Button className='font-semibold' type='button' variant='ghost' onClick={closeModal}>Close</Button>
+                        <Button disabled={!canSave} type='button' onClick={() => void handleSave()}>{isSaving ? 'Saving...' : 'Save'}</Button>
+                    </Inline>
                 </div>
 
                 {(loadError || saveError) && (

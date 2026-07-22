@@ -3,8 +3,9 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './recommendation-description-form';
 import trackEvent from '../../../../utils/analytics';
+import {Button} from '@tryghost/shade/components';
 import {type EditOrAddRecommendation, useAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {Icon, Modal} from '@tryghost/admin-x-design-system';
 import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -49,13 +50,8 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         okLabel = 'Added';
     }
 
-    const leftButtonProps = {
-        label: 'Back',
-        icon: 'arrow-left',
-        iconColorClass: 'text-black dark:text-white',
-        link: true,
-        size: 'sm' as const,
-        onClick: () => {
+    const leftButton = (
+        <Button size='sm' type='button' variant='ghost' onClick={() => {
             if (saveState === 'saving') {
                 // Already saving
                 return;
@@ -70,8 +66,11 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
                     ...formState
                 }
             });
-        }
-    };
+        }}>
+            <Icon name='arrow-left' size='sm' />
+            Back
+        </Button>
+    );
 
     return <Modal
         afterClose={() => {
@@ -82,10 +81,10 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         backDropClick={false}
         cancelLabel={'Cancel'}
         dirty={true}
-        leftButtonProps={leftButtonProps}
-        okColor='black'
+        leftButton={leftButton}
         okLabel={okLabel}
         okLoading={loadingState}
+        okVariant='default'
         size='sm'
         testId='add-recommendation-modal'
         title={'Add recommendation'}

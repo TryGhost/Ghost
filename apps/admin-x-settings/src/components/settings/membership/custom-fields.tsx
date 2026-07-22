@@ -3,8 +3,8 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useFeatureFlag from '../../../hooks/use-feature-flag';
-import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {Button, Icon} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Icon} from '@tryghost/admin-x-design-system';
 import {TextCursorInput} from 'lucide-react';
 import {useBrowseMemberCustomFieldsIncludingArchived, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {withErrorBoundary} from '../../error-boundary';
@@ -56,7 +56,7 @@ const FieldList: React.FC<{
                                 </button>
                             </ActionListItemContent>
                             <ActionListItemActions>
-                                <Button color='green' label='Edit' link onClick={() => openModal(field)} />
+                                <Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' size='sm' type='button' variant='link' onClick={() => openModal(field)}>Edit</Button>
                             </ActionListItemActions>
                         </ActionListItem>
                     );
@@ -112,7 +112,7 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button color='clear' label='Add custom field' size='sm' onClick={() => openModal()} />}
+            customButtons={<Button size='sm' type='button' variant='ghost' onClick={() => openModal()}>Add custom field</Button>}
             description='Create and manage custom fields to store extra information about your members'
             keywords={keywords}
             navid='custom-fields'

@@ -17,7 +17,7 @@ const SettingGroupHeader: React.FC<SettingGroupHeaderProps> = ({title, descripti
                     {description && <p className="mt-1 mr-5 hidden text-pretty group-[.is-not-editing]/setting-group:visible! group-[.is-not-editing]/setting-group:block! md:visible! md:block!">{description}</p>}
                 </div>
             }
-            <div>
+            <div className='[&_button]:text-control!'>
                 {children}
             </div>
         </div>

@@ -1,7 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {Button, ConfirmationModal, Modal} from '@tryghost/admin-x-design-system';
-import {Dropzone} from '@tryghost/shade/components';
+import {Button, Dropzone} from '@tryghost/shade/components';
+import {ConfirmationModal, Modal} from '@tryghost/admin-x-design-system';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useImportContent} from '@tryghost/admin-x-framework/api/db';
 
@@ -17,7 +17,7 @@ const UniversalImportModal: React.FC = () => {
             footer={
                 <div className='flex w-full items-center justify-between p-8'>
                     <a className='text-green hover:text-green-400' href="https://docs.ghost.org/migration/ghost" rel='noopener noreferrer' target="_blank">Learn about importing</a>
-                    <Button color='outline' disabled={uploading} label='Cancel' onClick={() => modal.remove()} />
+                    <Button className='font-semibold' disabled={uploading} type='button' variant='ghost' onClick={() => modal.remove()}>Cancel</Button>
                 </div>
             }
             okLabel=''

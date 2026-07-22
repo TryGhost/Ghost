@@ -62,8 +62,8 @@ const FirstPromoterModal = NiceModal.create(() => {
             }}
             cancelLabel='Close'
             dirty={enabled !== firstPromoterEnabled || accountId !== firstPromoterId}
-            okColor={okLabel === 'Saved' ? 'green' : 'black'}
             okLabel={okLabel}
+            okVariant='default'
             testId='firstpromoter-modal'
             title=''
             onOk={async () => {

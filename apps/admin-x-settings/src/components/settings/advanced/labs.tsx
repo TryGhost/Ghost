@@ -3,8 +3,8 @@ import LabsBubbles from '../../../assets/images/labs-bg.svg';
 import PrivateFeatures from './labs/private-features';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, SettingGroupHeader} from '@tryghost/admin-x-design-system';
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Button, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {SettingGroupHeader} from '@tryghost/admin-x-design-system';
 import {useAutoExpandable} from '../../../hooks/use-auto-expandable';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {withErrorBoundary} from '../../error-boundary';
@@ -26,11 +26,11 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     />
                     <Button
                         className='mt-[-5px]'
-                        color={isOpen ? 'grey' : 'clear'}
-                        label={isOpen ? 'Close' : 'Open'}
                         size='sm'
+                        type='button'
+                        variant={isOpen ? 'secondary' : 'ghost'}
                         onClick={isOpen ? closeManually : openManually}
-                    />
+                    >{isOpen ? 'Close' : 'Open'}</Button>
                 </div>
             }
             isEditing={isOpen}

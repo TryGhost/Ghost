@@ -1,8 +1,8 @@
 import NiceModal from '@ebay/nice-modal-react';
 import WebhookModal from './webhook-modal';
-import {Button, ConfirmationModal} from '@tryghost/admin-x-design-system';
+import {Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {ConfirmationModal, Icon} from '@tryghost/admin-x-design-system';
 import {type Integration} from '@tryghost/admin-x-framework/api/integrations';
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getWebhookEventLabel} from './webhook-event-options';
 import {toast} from 'sonner';
@@ -17,7 +17,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
         NiceModal.show(ConfirmationModal, {
             title: 'Are you sure?',
             prompt: 'Deleting this webhook may prevent the integration from functioning.',
-            okColor: 'red',
+            okVariant: 'destructive',
             okLabel: 'Delete Webhook',
             onOk: async (confirmModal) => {
                 try {
@@ -71,10 +71,10 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                             })}
                         </TableCell>
                         <TableCell className='w-0 text-right'>
-                            <Button color='red' label='Delete' link onClick={(e) => {
-                                e?.stopPropagation();
+                            <Button className='text-destructive hover:text-destructive' size='sm' type='button' variant='ghost' onClick={(e) => {
+                                e.stopPropagation();
                                 handleDelete(webhook.id);
-                            }} />
+                            }}>Delete</Button>
                         </TableCell>
                     </TableRow>
                 ))}
@@ -82,17 +82,15 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
         </Table>
         <div className='mt-5'>
             <Button
-                color='green'
-                icon='add'
-                iconColorClass='text-green'
-                label='Add webhook'
+                className='h-auto p-0 text-green hover:text-green'
                 size='sm'
-                link
+                type='button'
+                variant='link'
                 onClick={() => {
                     NiceModal.show(WebhookModal, {
                         integrationId: integration.id
                     });
-                }} />
+                }}><Icon name='add' size='xs' />Add webhook</Button>
         </div>
     </div>);
 };

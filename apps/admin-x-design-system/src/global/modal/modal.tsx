@@ -1,12 +1,11 @@
 import {useModal} from '@ebay/nice-modal-react';
 import clsx from 'clsx';
 import React, {useEffect, useState, forwardRef} from 'react';
-import Button, {ButtonColor, ButtonProps} from '../button';
-import ButtonGroup from '../button-group';
-import {StickyFooter} from '@tryghost/shade/components';
+import {Button, type ButtonProps, LoadingIndicator, StickyFooter} from '@tryghost/shade/components';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
-import {Text} from '@tryghost/shade/primitives';
+import {Inline, Text} from '@tryghost/shade/primitives';
 import {useGlobalDirtyState} from '@tryghost/shade/utils';
+import Icon from '../icon';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed';
 
@@ -23,10 +22,10 @@ export interface ModalProps {
     testId?: string;
     title?: React.ReactNode;
     okLabel?: string;
-    okColor?: ButtonColor;
+    okVariant?: ButtonProps['variant'];
     okLoading?: boolean;
     cancelLabel?: string;
-    leftButtonProps?: ButtonProps;
+    leftButton?: React.ReactNode;
     buttonsDisabled?: boolean;
     okDisabled?: boolean;
     footer?: boolean | React.ReactNode;
@@ -64,12 +63,12 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
     cancelLabel = 'Cancel',
     footer,
     header,
-    leftButtonProps,
+    leftButton,
     buttonsDisabled,
     okDisabled,
     padding = true,
     onOk,
-    okColor = 'black',
+    okVariant = 'default',
     onCancel,
     topRightContent,
     hideXOnMobile = false,
@@ -161,8 +160,6 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
         }
     });
 
-    const buttons: ButtonProps[] = [];
-
     let contentClasses;
 
     const removeModal = () => {
@@ -171,34 +168,6 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
             afterClose?.();
         });
     };
-
-    if (!footer) {
-        if (cancelLabel) {
-            buttons.push({
-                key: 'cancel-modal',
-                label: cancelLabel,
-                color: 'outline',
-                testId: 'cancel-modal',
-                onClick: (onCancel ? onCancel : () => {
-                    removeModal();
-                }),
-                disabled: buttonsDisabled
-            });
-        }
-
-        if (okLabel) {
-            buttons.push({
-                key: 'ok-modal',
-                label: okLabel,
-                color: okColor,
-                className: 'min-w-[80px]',
-                testId: 'ok-modal',
-                onClick: onOk,
-                disabled: buttonsDisabled || okDisabled,
-                loading: okLoading
-            });
-        }
-    }
 
     let modalClasses = clsx(
         'relative z-50 flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden bg-white dark:bg-black',
@@ -413,11 +382,21 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
         footerContent = (
             <div className={footerClasses}>
                 <div>
-                    {leftButtonProps && <Button {...leftButtonProps} />}
+                    {leftButton}
                 </div>
-                <div className='flex gap-3'>
-                    <ButtonGroup buttons={buttons}/>
-                </div>
+                <Inline gap='md'>
+                    {cancelLabel && (
+                        <Button className='font-semibold' data-testid='cancel-modal' disabled={buttonsDisabled} type='button' variant='ghost' onClick={onCancel || removeModal}>
+                            {cancelLabel}
+                        </Button>
+                    )}
+                    {okLabel && (
+                        <Button className='min-w-20' data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={onOk}>
+                            {okLoading && <LoadingIndicator size='sm' />}
+                            {okLabel}
+                        </Button>
+                    )}
+                </Inline>
             </div>
         );
     }
@@ -448,7 +427,9 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
                         (<header className={headerClasses}>
                             {title && <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>{title}</Text>}
                             <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute top-6 right-6`}>
-                                <Button aria-label='Close modal' className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' iconColorClass='text-black dark:text-white' size='sm' testId='close-modal' unstyled onClick={removeModal} />
+                                <Button aria-label='Close modal' className='-m-2 opacity-50 hover:opacity-100' data-testid='close-modal' size='icon' type='button' variant='ghost' onClick={removeModal}>
+                                    <Icon name='close' size='sm' />
+                                </Button>
                             </div>
                         </header>)
                         :

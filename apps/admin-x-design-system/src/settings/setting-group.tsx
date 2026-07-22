@@ -1,8 +1,8 @@
 import clsx from 'clsx';
 import React, {forwardRef, useEffect} from 'react';
-import {ButtonProps} from '../global/button';
-import ButtonGroup from '../global/button-group';
 import SettingGroupHeader from './setting-group-header';
+import {Button} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
 
 export interface SettingGroupProps {
     navid?:string;
@@ -78,57 +78,20 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
 
     styles += ' border-grey-200 dark:border-grey-900 dark:hover:border-grey-800';
 
-    // The links visible before editing
-    const viewButtons: ButtonProps[] = [];
-
-    if (!hideEditButton) {
-        let label = 'Edit';
-        if (saveState === 'saved') {
-            label = 'Saved';
-        }
-        viewButtons.push(
-            {
-                label,
-                key: 'edit',
-                color: 'clear',
-                onClick: handleEdit
-            }
-        );
-    } else if (saveState === 'saved') {
-        viewButtons.push(
-            {
-                label: 'Saved',
-                key: 'edit',
-                color: 'green',
-                onClick: handleEdit
-            }
-        );
-    }
-
-    // The buttons that show when you are editing
-    const editButtons: ButtonProps[] = [
-        {
-            label: 'Cancel',
-            key: 'cancel',
-            onClick: handleCancel
-        }
-    ];
-
-    if (saveState === 'unsaved' || alwaysShowSaveButton) {
-        let label = 'Save';
-        if (saveState === 'saving') {
-            label = 'Saving...';
-        }
-        editButtons.push(
-            {
-                label: label,
-                key: 'save',
-                color: saveState === 'unsaved' ? 'green' : 'light-grey',
-                disabled: saveState !== 'unsaved',
-                onClick: handleSave
-            }
-        );
-    }
+    const buttons = isEditing ? (
+        <Inline className='mt-[-5px]' gap='sm'>
+            <Button size='sm' type='button' variant='ghost' onClick={handleCancel}>Cancel</Button>
+            {(saveState === 'unsaved' || alwaysShowSaveButton) && (
+                <Button disabled={saveState !== 'unsaved'} size='sm' type='button' onClick={handleSave}>
+                    {saveState === 'saving' ? 'Saving...' : 'Save'}
+                </Button>
+            )}
+        </Inline>
+    ) : (!hideEditButton || saveState === 'saved') ? (
+        <Button className='mt-[-5px] -mr-1' size='sm' type='button' variant='ghost' onClick={handleEdit}>
+            {saveState === 'saved' ? 'Saved' : 'Edit'}
+        </Button>
+    ) : null;
 
     useEffect(() => {
         const handleCMDS = (e: KeyboardEvent) => {
@@ -161,7 +124,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 {customHeader ? customHeader :
                     <SettingGroupHeader beta={beta} description={description} title={title!}>
                         {customButtons ? customButtons :
-                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : 'mt-[-5px] -mr-1'} size='sm' />)
+                            (onEditingChange && buttons)
                         }
                     </SettingGroupHeader>
                 }
@@ -175,7 +138,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 {customHeader ? customHeader :
                     <SettingGroupHeader beta={beta} description={description} title={title!}>
                         {customButtons ? customButtons :
-                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : 'mt-[-5px] -mr-1'} size='sm' />)
+                            (onEditingChange && buttons)
                         }
                     </SettingGroupHeader>
                 }

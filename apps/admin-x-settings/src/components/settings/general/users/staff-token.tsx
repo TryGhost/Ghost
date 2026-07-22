@@ -29,7 +29,7 @@ const StaffToken: React.FC = () => {
             title: 'Regenerate your Staff Access Token',
             prompt: 'You can regenerate your Staff Access Token any time, but any scripts or applications using it will need to be updated.',
             okLabel: 'Regenerate your Staff Access Token',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
                 try {
                     const newAPI = await newApiKey([]);

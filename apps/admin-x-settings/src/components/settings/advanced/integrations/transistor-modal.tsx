@@ -94,8 +94,8 @@ const TransistorModal = NiceModal.create(() => {
             }}
             cancelLabel='Close'
             dirty={enabled !== transistorEnabled}
-            okColor={okLabel === 'Saved' ? 'green' : 'black'}
             okLabel={okLabel}
+            okVariant='default'
             testId='transistor-modal'
             title=''
             onOk={handleSave}

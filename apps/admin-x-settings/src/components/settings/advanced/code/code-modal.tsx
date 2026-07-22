@@ -2,10 +2,10 @@ import CodeEditor from '../../../code-editor';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {ButtonGroup, Modal} from '@tryghost/admin-x-design-system';
+import {Button, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Inline, Text} from '@tryghost/shade/primitives';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {type ReactCodeMirrorRef} from '@uiw/react-codemirror';
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {Text} from '@tryghost/shade/primitives';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useSaveButton} from '../../../../hooks/use-save-button';
 
@@ -74,22 +74,13 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
         <div className='flex h-full flex-col'>
             <div className='mb-4 flex items-center justify-between'>
                 <Text as='h2' className='md:text-3xl' leading='heading' size='2xl' weight='bold'>Code injection</Text>
-                <ButtonGroup buttons={[
-                    {
-                        label: 'Close',
-                        color: 'outline',
-                        onClick: () => {
-                            modal.remove();
-                            afterClose?.();
-                        }
-                    },
-                    {
-                        disabled: isSaving,
-                        label: savingTitle,
-                        color: savingTitle === 'Saved' ? 'green' : 'black',
-                        onClick: onSaveClick
-                    }
-                ]} />
+                <Inline gap='md'>
+                    <Button className='font-semibold' type='button' variant='ghost' onClick={() => {
+                        modal.remove();
+                        afterClose?.();
+                    }}>Close</Button>
+                    <Button disabled={isSaving} type='button' onClick={onSaveClick}>{savingTitle}</Button>
+                </Inline>
             </div>
             <Tabs className='mb-16 flex flex-auto flex-col' value={selectedTab} variant='underline' onValueChange={value => setSelectedTab(value as typeof selectedTab)}>
                 <TabsList>

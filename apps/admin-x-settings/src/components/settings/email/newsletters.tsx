@@ -4,10 +4,10 @@ import React, {type ReactNode, useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Button, ConfirmationModal} from '@tryghost/admin-x-design-system';
+import {Button, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {ConfirmationModal} from '@tryghost/admin-x-design-system';
 import {type InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
 import {type Newsletter, type NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {arrayMove} from '@dnd-kit/sortable';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -18,10 +18,10 @@ const NavigateToNewsletter = ({id, children}: {id: string; children: ReactNode})
     const modal = useModal();
     const {updateRoute} = useRouting();
 
-    return <button className="text-green" type="button" onClick={() => {
+    return <Button className='h-auto p-0 text-green hover:text-green' type='button' variant='link' onClick={() => {
         updateRoute(`newsletters/${id}`);
         modal.remove();
-    }}>{children}</button>;
+    }}>{children}</Button>;
 };
 
 const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -93,9 +93,9 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     }, [verifyEmailToken, handleError, verifyEmail]);
 
     const buttons = (
-        <Button className='mt-[-5px]' color='clear' label='Add newsletter' size='sm' onClick={() => {
+        <Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={() => {
             openNewsletterModal();
-        }} />
+        }}>Add newsletter</Button>
     );
 
     const sortedActiveNewsletters = newsletters.filter(n => n.status === 'active').sort((a, b) => a.sort_order - b.sort_order) || [];
@@ -154,11 +154,9 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <TabsContent value='active-newsletters'><NewslettersList isLoading={isLoading} newsletters={sortedActiveNewsletters} isSortable onSort={onSort} /></TabsContent>
                 <TabsContent value='archived-newsletters'><NewslettersList isLoading={isLoading} newsletters={archivedNewsletters} /></TabsContent>
             </Tabs>
-            {isEnd === false && <Button
-                label={`Load more (showing ${formatNumber(newsletters?.length || 0)}/${formatNumber(meta?.pagination.total || 0)} newsletters)`}
-                link
-                onClick={() => fetchNextPage()}
-            />}
+            {isEnd === false && <Button type='button' variant='link' onClick={() => fetchNextPage()}>
+                Load more (showing {formatNumber(newsletters?.length || 0)}/{formatNumber(meta?.pagination.total || 0)} newsletters)
+            </Button>}
         </TopLevelGroup>
     );
 };

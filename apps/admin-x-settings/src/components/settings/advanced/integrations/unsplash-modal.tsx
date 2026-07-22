@@ -50,8 +50,8 @@ const UnsplashModal = NiceModal.create(() => {
             }}
             cancelLabel='Close'
             dirty={isDirty}
-            okColor={okLabel === 'Saved' ? 'green' : 'black'}
             okLabel={okLabel}
+            okVariant='default'
             testId='unsplash-modal'
             title=''
             onOk={handleToggleChange}

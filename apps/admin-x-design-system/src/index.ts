@@ -28,10 +28,6 @@ export type {PreviewModalProps} from './global/modal/preview-modal';
 
 export {default as Banner} from './global/banner';
 export type {BannerProps} from './global/banner';
-export {default as Button} from './global/button';
-export type {ButtonColor, ButtonProps} from './global/button';
-export {default as ButtonGroup} from './global/button-group';
-export type {ButtonGroupProps} from './global/button-group';
 export {default as ErrorBoundary} from './global/error-boundary';
 export type {ErrorBoundaryProps} from './global/error-boundary';
 export {default as Icon} from './global/icon';

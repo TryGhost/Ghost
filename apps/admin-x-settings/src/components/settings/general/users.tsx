@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import useQueryParams from '../../../hooks/use-query-params';
 import useStaffUsers from '../../../hooks/use-staff-users';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Avatar, NoValueLabel, NoValueLabelIcon, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade/components';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {type User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {type UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
 import {UserRoundX} from 'lucide-react';
@@ -50,7 +50,10 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
         <div className={clsx('group flex gap-3', hasAdminAccess(currentUser) && 'cursor-pointer')} data-testid='owner-user' onClick={showDetailModal}>
             <Avatar className='size-12' email={user.email} name={user.name} src={user.profile_image} />
             <div className='flex flex-col'>
-                <span>{user.name} &mdash; <strong>Owner</strong> {hasAdminAccess(currentUser) && <button className='ml-2 inline-block font-semibold text-green group-hover:visible md:invisible' type='button'>View profile</button>}</span>
+                <span>{user.name} &mdash; <strong>Owner</strong> {hasAdminAccess(currentUser) && <Button className='ml-2 h-auto p-0 text-green group-hover:visible hover:text-green md:invisible' type='button' variant='link' onClick={(event) => {
+                    event.stopPropagation();
+                    showDetailModal();
+                }}>View profile</Button>}</span>
                 <span className='text-sm text-grey-700'>{user.email}</span>
             </div>
         </div>
@@ -107,7 +110,7 @@ const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
                                 </div>
                             )}
                         </ActionListItemContent>
-                        {canEdit && <ActionListItemActions visibility='hover'><Button color='green' label='Edit' link={true} onClick={() => showDetailModal(user)}/></ActionListItemActions>}
+                        {canEdit && <ActionListItemActions visibility='hover'><Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' size='sm' type='button' variant='link' onClick={() => showDetailModal(user)}>Edit</Button></ActionListItemActions>}
                     </ActionListItem>
                 );
             })}
@@ -134,9 +137,11 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
     return (
         <div className='flex gap-2'>
             <Button
-                color='red'
-                label={revokeActionLabel}
-                link={true}
+                className='text-destructive hover:text-destructive'
+                disabled={revokeState === 'progress'}
+                size='sm'
+                type='button'
+                variant='ghost'
                 onClick={async () => {
                     try {
                         setRevokeState('progress');
@@ -148,12 +153,13 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                         setRevokeState('');
                     }
                 }}
-            />
+            >{revokeActionLabel}</Button>
             <Button
                 className='ml-2'
-                color='green'
-                label={resendActionLabel}
-                link={true}
+                disabled={resendState === 'progress'}
+                size='sm'
+                type='button'
+                variant='ghost'
                 onClick={async () => {
                     try {
                         setResendState('progress');
@@ -169,7 +175,7 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                         setResendState('');
                     }
                 }}
-            />
+            >{resendActionLabel}</Button>
         </div>
     );
 };
@@ -228,9 +234,9 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
     };
 
     const buttons = (
-        <Button className='mt-[-5px]' color='clear' label='Invite people' size='sm' linkWithPadding onClick={() => {
+        <Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={() => {
             showInviteModal();
-        }} />
+        }}>Invite people</Button>
     );
 
     const tabParam = useQueryParams().getParam('tab');
@@ -280,15 +286,15 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
             )}
 
             {hasNextPage && selectedTab !== 'invited' && <Button
-                label={`Load more (showing ${formatNumber(users.length)}/${formatNumber(totalUsers)} users)`}
-                link
+                type='button'
+                variant='link'
                 onClick={() => fetchNextPage()}
-            />}
+            >{`Load more (showing ${formatNumber(users.length)}/${formatNumber(totalUsers)} users)`}</Button>}
             {invitesHasNextPage && selectedTab === 'invited' && <Button
-                label={`Load more (showing ${formatNumber(invites.length)}/${formatNumber(totalInvites)} invites)`}
-                link
+                type='button'
+                variant='link'
                 onClick={() => fetchNextInvitePage()}
-            />}
+            >{`Load more (showing ${formatNumber(invites.length)}/${formatNumber(totalInvites)} invites)`}</Button>}
 
             {config?.security?.staffDeviceVerification && hasAdminAccess(currentUser) && (
                 <div className={`flex flex-col gap-6 ${users.length > 1 || invites.length > 0 ? '-mt-6' : ''}`}>

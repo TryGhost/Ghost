@@ -220,8 +220,8 @@ const DesignModal: React.FC = () => {
         cancelLabel='Close'
         deviceSelector={deviceSelector}
         dirty={saveState === 'unsaved'}
-        okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
+        okVariant={okProps.variant}
         preview={previewContent}
         previewToolbarTabs={previewTabs}
         sidebar={sidebarContent}
