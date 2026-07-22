@@ -65,6 +65,7 @@ interface ActionRow {
 
 type ActionStatsRow = {
     action_id: string;
+    email_clicked_count: number | null;
     email_sent_count: number | null;
     email_opened_count: number | null;
 };
@@ -165,6 +166,36 @@ export function createDatabaseAutomationsRepository({
             });
         },
 
+        async getAutomationActionLinks(automationId, actionId) {
+            const action = await knex('automation_actions')
+                .select('id')
+                .where({
+                    id: actionId,
+                    automation_id: automationId
+                })
+                .whereNull('deleted_at')
+                .first();
+
+            if (!action) {
+                return null;
+            }
+
+            const rows = await knex('redirects as redirects')
+                .select('redirects.to as url')
+                .countDistinct({clicked_count: 'members_click_events.member_id'})
+                .innerJoin('automation_action_revisions as revisions', 'revisions.id', 'redirects.automation_action_revision_id')
+                .leftJoin('members_click_events', 'members_click_events.redirect_id', 'redirects.id')
+                .where('revisions.action_id', actionId)
+                .groupBy('redirects.to')
+                .orderBy('clicked_count', 'desc')
+                .orderBy('redirects.to', 'asc');
+
+            return rows.map(row => ({
+                url: row.url,
+                clicked_count: Number(row.clicked_count)
+            }));
+        },
+
         async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
             return await knex.transaction(async (trx) => {
                 const automation = await loadAutomation(trx, id);
@@ -241,10 +272,59 @@ export function createDatabaseAutomationsRepository({
                     member_name: options.memberName,
                     automation_action_revision_id: options.automationActionRevisionId,
                     ...(options.mailgunMessageId ? {mailgun_message_id: options.mailgunMessageId} : {}),
+                    track_clicks: options.trackClicks,
                     track_opens: options.trackOpens,
                     created_at: now,
                     updated_at: now
                 });
+            });
+        },
+
+        async recordAutomationEmailClick(options): Promise<boolean> {
+            return await knex.transaction(async (trx) => {
+                const redirect = await trx('redirects')
+                    .select('automation_action_revision_id')
+                    .where('id', options.redirectId)
+                    .first();
+                const revisionId = redirect?.automation_action_revision_id;
+
+                if (!revisionId) {
+                    return false;
+                }
+
+                const recipients = await trx('automated_email_recipients')
+                    .select('id', 'clicked_at')
+                    .where({
+                        automation_action_revision_id: revisionId,
+                        member_id: options.memberId,
+                        track_clicks: true
+                    })
+                    .forUpdate();
+
+                const unclickedIds = recipients
+                    .filter(recipient => !recipient.clicked_at)
+                    .map(recipient => recipient.id);
+
+                if (unclickedIds.length === 0) {
+                    return false;
+                }
+
+                const isFirstClick = recipients.every(recipient => !recipient.clicked_at);
+                await trx('automated_email_recipients')
+                    .whereIn('id', unclickedIds)
+                    .update({
+                        clicked_at: toDatabaseDate(options.clickedAt)
+                    });
+
+                if (isFirstClick) {
+                    await trx('automation_action_revisions')
+                        .where('id', revisionId)
+                        .update({
+                            email_clicked_count: trx.raw('COALESCE(??, 0) + ?', ['email_clicked_count', 1])
+                        });
+                }
+
+                return isFirstClick;
             });
         },
 
@@ -1263,6 +1343,7 @@ async function loadActionStats(
     const rows: ActionStatsRow[] = await trx('automation_action_revisions')
         .select('action_id')
         .sum({
+            email_clicked_count: 'email_clicked_count',
             email_sent_count: 'email_sent_count',
             email_opened_count: 'email_opened_count'
         })
@@ -1318,6 +1399,7 @@ function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null):
 }
 
 const EMPTY_EMAIL_STATS: AutomationEmailStats = {
+    email_clicked_count: 0,
     email_sent_count: 0,
     email_opened_count: 0,
     opened_rate: null,
@@ -1325,16 +1407,19 @@ const EMPTY_EMAIL_STATS: AutomationEmailStats = {
 };
 
 function buildEmailStats(row: ActionStatsRow): AutomationEmailStats {
+    const emailClickedCount = row.email_clicked_count ?? 0;
     const emailSentCount = row.email_sent_count ?? 0;
     const emailOpenedCount = row.email_opened_count ?? 0;
     return {
+        email_clicked_count: emailClickedCount,
         email_sent_count: emailSentCount,
         email_opened_count: emailOpenedCount,
         opened_rate: emailSentCount
             ? Math.round(emailOpenedCount / emailSentCount * 100)
             : null,
-        // TODO(NY-1387) Populate clicked_rate once click tracking is implemented.
-        clicked_rate: null
+        clicked_rate: emailSentCount
+            ? Math.round(emailClickedCount / emailSentCount * 100)
+            : null
     };
 }
 

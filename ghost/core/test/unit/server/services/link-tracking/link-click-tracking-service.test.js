@@ -116,6 +116,31 @@ describe('LinkClickTrackingService', function () {
         });
     });
 
+    describe('addAutomationTrackingToUrl', function () {
+        it('reuses the revision redirect and appends the member UUID', async function () {
+            const getOrAddAutomationRedirect = sinon.stub().resolves({
+                from: new URL('https://example.com/r/uniqueslug'),
+                to: new URL('https://example.com/destination')
+            });
+            const service = new LinkClickTrackingService({
+                linkRedirectService: {getOrAddAutomationRedirect}
+            });
+
+            const updatedUrl = await service.addAutomationTrackingToUrl(
+                new URL('https://example.com/destination'),
+                'revision-id',
+                '00000000-0000-4000-8000-000000000001'
+            );
+
+            assert.equal(updatedUrl.href, 'https://example.com/r/uniqueslug?m=00000000-0000-4000-8000-000000000001');
+            sinon.assert.calledOnceWithExactly(
+                getOrAddAutomationRedirect,
+                'revision-id',
+                new URL('https://example.com/destination')
+            );
+        });
+    });
+
     describe('subscribe', function () {
         it('Ignores redirects without a member id', async function () {
             const event = RedirectEvent.create({

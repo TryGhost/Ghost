@@ -235,7 +235,8 @@ async function processRun({
                 member_uuid: member.get('uuid'),
                 member_email: member.get('email'),
                 member_name: member.get('name'),
-                track_opens: false
+                track_opens: false,
+                track_clicks: false
             }, {transacting});
 
             await markExited(run.id, 'finished', transacting);

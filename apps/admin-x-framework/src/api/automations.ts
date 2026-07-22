@@ -21,6 +21,7 @@ export type AutomationWaitAction = {
 }
 
 export type AutomationEmailStats = {
+    email_clicked_count: number;
     email_sent_count: number;
     email_opened_count: number;
     opened_rate: number | null;
@@ -78,6 +79,15 @@ export interface AutomationEmailPreviewResponseType {
     automation_email_previews: AutomationEmailPreview[];
 }
 
+export type AutomationActionLink = {
+    url: string;
+    clicked_count: number;
+}
+
+export interface AutomationActionLinksResponseType {
+    automation_action_links: AutomationActionLink[];
+}
+
 const dataType = 'AutomationsResponseType';
 
 export const useBrowseAutomations = createQuery<AutomationsResponseType>({
@@ -89,6 +99,17 @@ export const useReadAutomation = createQueryWithId<AutomationDetailResponseType>
     dataType,
     path: id => `/automations/${id}/`
 });
+
+const useBrowseAutomationActionLinksQuery = createQueryWithId<AutomationActionLinksResponseType>({
+    dataType: 'AutomationActionLinksResponseType',
+    path: id => `/automations/${id}/links/`
+});
+
+export const useBrowseAutomationActionLinks = (
+    automationId: string,
+    actionId: string,
+    options: Parameters<typeof useBrowseAutomationActionLinksQuery>[1] = {}
+) => useBrowseAutomationActionLinksQuery(`${automationId}/actions/${actionId}`, options);
 
 const serializeEditableAction = (action: AutomationAction): AutomationAction => {
     switch (action.type) {

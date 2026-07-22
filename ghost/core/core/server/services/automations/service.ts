@@ -15,11 +15,13 @@ const urlUtils = require('../../../shared/url-utils');
 const logging = require('@tryghost/logging');
 const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
+const {MemberLinkClickEvent} = require('../../../shared/events');
 const {welcomeEmailAutomationPoll} = require('./welcome-email-automation-poll');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
 
 type AutomationsServiceOptions = {
     apiUrl: string;
+    clickTrackingApi?: Pick<typeof automationsApi, 'recordAutomationEmailClick'>;
     domainEvents: Pick<DomainEvents, 'dispatch' | 'subscribe'>;
     internalKeys: InternalKeys;
     schedulerAdapter: Pick<SchedulerAdapter, 'schedule' | 'register'>;
@@ -32,7 +34,7 @@ const scheduleAutomationEmailAnalyticsJob = () => (
 export class AutomationsService {
     #enqueuePollAt: undefined | ((date: Readonly<Date>) => Promise<void>);
 
-    init({domainEvents, apiUrl, schedulerAdapter, internalKeys}: AutomationsServiceOptions): void {
+    init({domainEvents, apiUrl, clickTrackingApi = automationsApi, schedulerAdapter, internalKeys}: AutomationsServiceOptions): void {
         const isInitialized = Boolean(this.#enqueuePollAt);
         if (isInitialized) {
             return;
@@ -90,6 +92,18 @@ export class AutomationsService {
             memberWelcomeEmailService,
             enqueueAnotherPollAt: enqueuePollAt
         })));
+
+        domainEvents.subscribe(MemberLinkClickEvent, async (event: {timestamp: Date; data: {memberId: string; linkId: string}}) => {
+            try {
+                await clickTrackingApi.recordAutomationEmailClick({
+                    clickedAt: event.timestamp,
+                    memberId: event.data.memberId,
+                    redirectId: event.data.linkId
+                });
+            } catch (err) {
+                logging.error({err, memberId: event.data.memberId, redirectId: event.data.linkId}, 'Failed to record automation email click');
+            }
+        });
 
         schedulerAdapter.register(this);
 

@@ -193,6 +193,68 @@ describe('UNIT: LinkRedirectRepository class', function () {
         });
     });
 
+    describe('automation redirects', function () {
+        it('looks up redirects by revision and destination hash', async function () {
+            const findOne = sinon.stub().returns(createRedirectModel());
+            linkRedirectRepository = createLinkRedirectRepository({
+                LinkRedirect: {
+                    findOne,
+                    findAll: sinon.stub(),
+                    getFilteredCollectionQuery: sinon.stub(),
+                    add: sinon.stub()
+                }
+            });
+
+            const result = await linkRedirectRepository.getByAutomationActionRevisionAndURL('revision-id', new URL('https://google.com/'));
+
+            assert.equal(result.to.href, 'https://google.com/');
+            sinon.assert.calledOnceWithExactly(findOne, {
+                automation_action_revision_id: 'revision-id',
+                to_hash: '9d116b1b0c1200ca75016e4c010bc94836366881b021a658ea7f8548b6543c1e'
+            }, {});
+        });
+
+        it('returns undefined when no matching redirect exists', async function () {
+            linkRedirectRepository = createLinkRedirectRepository({
+                LinkRedirect: {
+                    findOne: sinon.stub().returns(null),
+                    findAll: sinon.stub(),
+                    getFilteredCollectionQuery: sinon.stub(),
+                    add: sinon.stub()
+                }
+            });
+
+            const result = await linkRedirectRepository.getByAutomationActionRevisionAndURL('revision-id', new URL('https://google.com/'));
+
+            assert.equal(result, undefined);
+        });
+
+        it('saves revision ownership and the destination hash', async function () {
+            const add = sinon.stub().callsFake(data => createRedirectModel(data));
+            linkRedirectRepository = createLinkRedirectRepository({
+                LinkRedirect: {
+                    findOne: sinon.stub(),
+                    findAll: sinon.stub(),
+                    getFilteredCollectionQuery: sinon.stub(),
+                    add
+                }
+            });
+            const linkRedirect = new LinkRedirect({
+                from: new URL('https://example.com/r/1234abcd'),
+                to: new URL('https://google.com')
+            });
+
+            await linkRedirectRepository.save(linkRedirect, {automationActionRevisionId: 'revision-id'});
+
+            sinon.assert.calledOnceWithExactly(add, {
+                from: '/r/1234abcd',
+                to: 'https://google.com/',
+                automation_action_revision_id: 'revision-id',
+                to_hash: '9d116b1b0c1200ca75016e4c010bc94836366881b021a658ea7f8548b6543c1e'
+            }, {});
+        });
+    });
+
     describe('caching', function () {
         it('should add a new link redirect to the cache on save', async function () {
             const cacheAdapterStub = {

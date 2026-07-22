@@ -133,7 +133,7 @@ describe('Automation email analytics', function () {
         });
     }
 
-    async function recordEmailSent({revision, mailgunMessageId, trackOpens = true}) {
+    async function recordEmailSent({revision, mailgunMessageId, trackClicks = true, trackOpens = true}) {
         const member = await createMember();
         await automationsApi.recordEmailSent({
             automationActionRevisionId: revision.id,
@@ -142,6 +142,7 @@ describe('Automation email analytics', function () {
             memberId: member.id,
             memberName: member.name,
             memberUuid: member.uuid,
+            trackClicks,
             trackOpens
         });
         return await testUtils.knex('automated_email_recipients')

@@ -25,10 +25,16 @@ export interface WaitAction {
 }
 
 export interface AutomationEmailStats {
+    email_clicked_count: number;
     email_sent_count: number;
     email_opened_count: number;
     opened_rate: number | null;
     clicked_rate: number | null;
+}
+
+export interface AutomationActionLink {
+    url: string;
+    clicked_count: number;
 }
 
 export interface SendEmailAction {
@@ -88,7 +94,14 @@ export type RecordEmailSentOptions = Readonly<{
     memberId: string;
     memberName: string | null;
     memberUuid: string;
+    trackClicks: boolean;
     trackOpens: boolean;
+}>;
+
+export type RecordAutomationEmailClickOptions = Readonly<{
+    clickedAt: Date;
+    memberId: string;
+    redirectId: string;
 }>;
 
 type AutomationStepBase = {
@@ -129,6 +142,7 @@ export type AutomationStepTerminalStatus =
 export interface AutomationsRepository {
     browse(): Promise<Page<AutomationSummary>>;
     getById(id: string): Promise<Automation | null>;
+    getAutomationActionLinks(automationId: string, actionId: string): Promise<AutomationActionLink[] | null>;
     edit(id: string, data: EditAutomationData): Promise<Automation | null>;
     trigger(options: {
         memberEmail: string;
@@ -181,6 +195,11 @@ export interface AutomationsRepository {
      * Record a sent email and increment its action revision's sent count.
      */
     recordEmailSent(options: RecordEmailSentOptions): Promise<void>;
+    /**
+     * Stamp tracked recipients on their first click for an action revision.
+     * Returns whether this was the member's first recorded click for the revision.
+     */
+    recordAutomationEmailClick(options: RecordAutomationEmailClickOptions): Promise<boolean>;
     /**
      * Fetch sent emails by their Mailgun IDs.
      */

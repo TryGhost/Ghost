@@ -20,6 +20,7 @@ const MAX_AUTOMATION_ACTIONS = 20;
 
 const messages = {
     automationNotFound: 'Automation not found.',
+    automationActionNotFound: 'Automation action not found.',
     invalidAutomationPayload: 'Automation edit payload must include status, actions, and edges.',
     invalidAutomationStatus: 'Automation status must be one of: active, inactive.',
     duplicateAutomationActionIdentity: 'Automation action identifiers must be unique.',
@@ -85,6 +86,18 @@ export async function read(automationId: string) {
     }
 
     return automation;
+}
+
+export async function browseActionLinks(automationId: string, actionId: string) {
+    const links = await repository.getAutomationActionLinks(automationId, actionId);
+
+    if (!links) {
+        throw new errors.NotFoundError({
+            message: tpl(messages.automationActionNotFound)
+        });
+    }
+
+    return links;
 }
 
 export async function edit(automationId: string, data: unknown) {
@@ -362,6 +375,10 @@ export async function retryStep(...args: Parameters<AutomationsRepository['retry
 
 export async function recordEmailSent(...args: Parameters<AutomationsRepository['recordEmailSent']>) {
     return await repository.recordEmailSent(...args);
+}
+
+export async function recordAutomationEmailClick(...args: Parameters<AutomationsRepository['recordAutomationEmailClick']>) {
+    return await repository.recordAutomationEmailClick(...args);
 }
 
 export async function getAutomatedEmailRecipientsByMailgunIds(
