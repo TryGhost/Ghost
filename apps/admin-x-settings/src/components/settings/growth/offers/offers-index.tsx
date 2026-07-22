@@ -1,14 +1,14 @@
+import {Badge, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Button, type ButtonProps, showToast} from '@tryghost/admin-x-design-system';
 import {ButtonGroup} from '@tryghost/admin-x-design-system';
-import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {Icon} from '@tryghost/admin-x-design-system';
+import {Inline, Stack} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {type RetentionOffer, getRetentionOffers} from './offers-retention';
 import {type Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {createOfferRedemptionFilterUrl, createOfferRedemptionsFilterUrl} from './offer-helpers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {numberWithCommas} from '../../../../utils/helpers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useModal} from '@ebay/nice-modal-react';
 import {useOffersShowArchived, useSortingState} from '../../../providers/settings-app-provider';
@@ -24,29 +24,26 @@ export const getOfferDuration = (duration: string): string => {
     return (duration === 'once' ? 'First payment' : duration === 'repeating' ? 'Repeating' : 'Forever');
 };
 
-export const getOfferDiscount = (type: string, amount: number, cadence: string, currency: string, tier: Tier | undefined): {discountColor: string, discountOffer: string, originalPriceWithCurrency: string, updatedPriceWithCurrency: string} => {
-    let discountColor = '';
+export const getOfferDiscount = (type: string, amount: number, cadence: string, currency: string, tier: Tier | undefined): {discountOffer: string, originalPriceWithCurrency: string, updatedPriceWithCurrency: string} => {
     let discountOffer = '';
     const originalPrice = cadence === 'month' ? tier?.monthly_price ?? 0 : tier?.yearly_price ?? 0;
     let updatedPrice = originalPrice;
 
     const formatToTwoDecimals = (num: number): number => parseFloat(num.toFixed(2));
+    const formatPrice = (num: number): string => formatNumber(formatToTwoDecimals(currencyToDecimal(num)), {maximumFractionDigits: 2});
 
-    let originalPriceWithCurrency = getSymbol(currency) + numberWithCommas(formatToTwoDecimals(currencyToDecimal(originalPrice)));
+    let originalPriceWithCurrency = getSymbol(currency) + formatPrice(originalPrice);
 
     switch (type) {
     case 'percent':
-        discountColor = 'text-green';
         discountOffer = `${formatNumber(amount)}% off`;
         updatedPrice = originalPrice - ((originalPrice * amount) / 100);
         break;
     case 'fixed':
-        discountColor = 'text-blue';
-        discountOffer = numberWithCommas(formatToTwoDecimals(currencyToDecimal(amount))) + ' ' + currency + ' off';
+        discountOffer = `${formatPrice(amount)} ${currency} off`;
         updatedPrice = originalPrice - amount;
         break;
     case 'trial':
-        discountColor = 'text-pink';
         discountOffer = `${formatNumber(amount)} days free`;
         originalPriceWithCurrency = '';
         break;
@@ -58,10 +55,9 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
         updatedPrice = 0;
     }
 
-    const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(formatToTwoDecimals(currencyToDecimal(updatedPrice)));
+    const updatedPriceWithCurrency = getSymbol(currency) + formatPrice(updatedPrice);
 
     return {
-        discountColor,
         discountOffer,
         originalPriceWithCurrency,
         updatedPriceWithCurrency
@@ -110,31 +106,33 @@ const RetentionOfferRow: React.FC<{
         : undefined;
 
     return (
-        <tr className='group relative border-b border-b-grey-200 dark:border-grey-800' data-testid='retention-offer-item'>
-            <td className='sticky left-0 z-10 bg-white p-0 dark:bg-black'>
-                <button className='block w-full cursor-pointer p-5 pl-0 text-left' type="button" onClick={onClick}>
-                    <span className='font-semibold'>{offer.name}</span><br />
-                    <span className='text-grey-700'>{offer.description}</span>
+        <TableRow data-testid='retention-offer-item'>
+            <TableCell className='sticky left-0 z-10 bg-background p-0'>
+                <button className='block w-full cursor-pointer p-5 pl-0 text-left' type='button' onClick={onClick}>
+                    <Stack gap='none'>
+                        <span className='font-semibold'>{offer.name}</span>
+                        <span className='text-muted-foreground'>{offer.description}</span>
+                    </Stack>
                 </button>
-            </td>
-            <td className='p-0 whitespace-nowrap'>
-                <button className='block w-full cursor-pointer p-5 text-left' type="button" onClick={onClick}>
+            </TableCell>
+            <TableCell className='p-0 whitespace-nowrap'>
+                <button className='block w-full cursor-pointer p-5 text-left' type='button' onClick={onClick}>
                     {offer.terms ? (
-                        <>
-                            <span className='text-[1.3rem] font-medium uppercase'>{offer.terms}</span><br />
-                            <span className='text-grey-700'>{offer.termsDetail}</span>
-                        </>
+                        <Stack gap='none'>
+                            <span className='text-sm font-medium uppercase'>{offer.terms}</span>
+                            <span className='text-muted-foreground'>{offer.termsDetail}</span>
+                        </Stack>
                     ) : (
-                        <span className='text-grey-700'>&ndash;</span>
+                        <span className='text-muted-foreground'>&ndash;</span>
                     )}
                 </button>
-            </td>
-            <td className='p-0 whitespace-nowrap'>
-                <button className='block w-full cursor-pointer p-5 text-left' type="button" onClick={onClick}>
-                    <span className='text-grey-700'>&ndash;</span>
+            </TableCell>
+            <TableCell className='p-0 whitespace-nowrap'>
+                <button className='block w-full cursor-pointer p-5 text-left' type='button' onClick={onClick}>
+                    <span className='text-muted-foreground'>&ndash;</span>
                 </button>
-            </td>
-            <td className='p-0 whitespace-nowrap'>
+            </TableCell>
+            <TableCell className='p-0 whitespace-nowrap'>
                 {redemptionFilterUrl ? (
                     <a
                         className='block cursor-pointer p-5 hover:underline'
@@ -153,17 +151,17 @@ const RetentionOfferRow: React.FC<{
                         {formatNumber(offer.redemptions)}
                     </button>
                 )}
-            </td>
-            <td className='p-0 whitespace-nowrap'>
-                <button className='block w-full cursor-pointer p-5 text-left' type="button" onClick={onClick}>
+            </TableCell>
+            <TableCell className='p-0 whitespace-nowrap'>
+                <button className='block w-full cursor-pointer p-5 text-left' type='button' onClick={onClick}>
                     {offer.status === 'active' ? (
-                        <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-2 py-0.5 text-xs font-semibold tracking-wide text-green uppercase'>Active</span>
+                        <Badge className='rounded-full uppercase' variant='success'>Active</Badge>
                     ) : (
-                        <span className='inline-flex items-center rounded-full bg-grey-200 px-2 py-0.5 text-xs font-semibold tracking-wide text-grey-700 uppercase dark:bg-grey-900 dark:text-grey-500'>Inactive</span>
+                        <Badge className='rounded-full uppercase' variant='secondary'>Inactive</Badge>
                     )}
                 </button>
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     );
 };
 
@@ -272,7 +270,7 @@ export const OffersIndexModal: React.FC = () => {
     ];
 
     const listLayoutOutput = <div className='overflow-x-auto'>
-        <table className='m-0 min-w-[900px]'>
+        <Table className='m-0 min-w-[900px]'>
             <colgroup>
                 <col className='w-[25%]' />
                 <col className='w-[200px]' />
@@ -280,14 +278,14 @@ export const OffersIndexModal: React.FC = () => {
                 <col className='w-[200px]' />
                 <col className='w-[220px]' />
             </colgroup>
-            <thead>
-                <tr className='border-b border-b-grey-200 dark:border-grey-800'>
-                    <th className='sticky left-0 z-10 bg-white p-0 pb-2.5 text-left text-sm font-medium tracking-wide text-grey-700 uppercase dark:bg-black'>Name</th>
-                    <th className='p-0 pb-2.5 pl-5 text-left text-sm font-medium tracking-wide text-grey-700 uppercase'>Terms</th>
-                    <th className='p-0 pb-2.5 pl-5 text-left text-sm font-medium tracking-wide text-grey-700 uppercase'>Price</th>
-                    <th className='p-0 pb-2.5 pl-5 text-left text-sm font-medium tracking-wide text-grey-700 uppercase'>Redemptions</th>
-                    <th className='p-0 pb-2.5 pl-5 text-left text-sm font-medium tracking-wide text-grey-700 uppercase'>
-                        <span className='flex items-center justify-between'>
+            <TableHeader>
+                <TableRow>
+                    <TableHead className='sticky left-0 z-10 h-auto bg-background p-0 pb-2.5 uppercase'>Name</TableHead>
+                    <TableHead className='h-auto p-0 pb-2.5 pl-5 uppercase'>Terms</TableHead>
+                    <TableHead className='h-auto p-0 pb-2.5 pl-5 uppercase'>Price</TableHead>
+                    <TableHead className='h-auto p-0 pb-2.5 pl-5 uppercase'>Redemptions</TableHead>
+                    <TableHead className='h-auto p-0 pb-2.5 pl-5 uppercase'>
+                        <Inline align='center' justify='between'>
                             Status
                             <OffersFilterMenu
                                 setShowArchived={setShowArchived}
@@ -297,11 +295,11 @@ export const OffersIndexModal: React.FC = () => {
                                 onDirectionChange={handleDirectionChange}
                                 onSortChange={handleSortChange}
                             />
-                        </span>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
+                        </Inline>
+                    </TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
                 {retentionOffers.map(offer => (
                     <RetentionOfferRow
                         key={offer.id}
@@ -321,25 +319,49 @@ export const OffersIndexModal: React.FC = () => {
                     const {discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
 
                     return (
-                        <tr key={offer.id} className={`group relative border-b border-b-grey-200 dark:border-grey-800 ${archived ? 'opacity-60' : ''}`} data-testid="offer-item">
-                            <td className='sticky left-0 z-10 bg-white p-0 dark:bg-black'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer.id)}><span className='font-semibold'>{offer?.name}</span><br /><span className='text-grey-700'>{offerTier.name} {getOfferCadence(offer.cadence)}</span></a></td>
-                            <td className='p-0 whitespace-nowrap'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='text-[1.3rem] font-medium uppercase'>{discountOffer}</span><br /><span className='text-grey-700'>{offer.type !== 'trial' ? getOfferDuration(offer.duration) : 'Trial period'}</span></a></td>
-                            <td className='p-0 whitespace-nowrap'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-sm text-grey-700 before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}</a></td>
-                            <td className='p-0 whitespace-nowrap'><a className={`block cursor-pointer p-5 ${offer.redemption_count === 0 ? '' : 'hover:underline'}`} href={offer.redemption_count > 0 && offer.id ? createOfferRedemptionFilterUrl(offer.id) : undefined} onClick={offer.redemption_count === 0 && offer.id ? () => handleOfferEdit(offer.id) : undefined}>{formatNumber(offer.redemption_count)}</a></td>
-                            <td className='p-0 whitespace-nowrap'>
-                                <a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}>
+                        <TableRow key={offer.id} className={archived ? 'opacity-60' : undefined} data-testid='offer-item'>
+                            <TableCell className='sticky left-0 z-10 bg-background p-0'>
+                                <button className='block w-full cursor-pointer p-5 pl-0 text-left' type='button' onClick={() => handleOfferEdit(offer.id)}>
+                                    <Stack gap='none'>
+                                        <span className='font-semibold'>{offer.name}</span>
+                                        <span className='text-muted-foreground'>{offerTier.name} {getOfferCadence(offer.cadence)}</span>
+                                    </Stack>
+                                </button>
+                            </TableCell>
+                            <TableCell className='p-0 whitespace-nowrap'>
+                                <button className='block w-full cursor-pointer p-5 text-left' type='button' onClick={() => handleOfferEdit(offer.id)}>
+                                    <Stack gap='none'>
+                                        <span className='text-sm font-medium uppercase'>{discountOffer}</span>
+                                        <span className='text-muted-foreground'>{offer.type !== 'trial' ? getOfferDuration(offer.duration) : 'Trial period'}</span>
+                                    </Stack>
+                                </button>
+                            </TableCell>
+                            <TableCell className='p-0 whitespace-nowrap'>
+                                <button className='block w-full cursor-pointer p-5 text-left' type='button' onClick={() => handleOfferEdit(offer.id)}>
+                                    <span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-sm text-muted-foreground before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}
+                                </button>
+                            </TableCell>
+                            <TableCell className='p-0 whitespace-nowrap'>
+                                {offer.redemption_count > 0 && offer.id ? (
+                                    <a className='block cursor-pointer p-5 hover:underline' href={createOfferRedemptionFilterUrl(offer.id)}>{formatNumber(offer.redemption_count)}</a>
+                                ) : (
+                                    <button className='block w-full cursor-pointer p-5 text-left' type='button' onClick={() => handleOfferEdit(offer.id)}>{formatNumber(offer.redemption_count)}</button>
+                                )}
+                            </TableCell>
+                            <TableCell className='p-0 whitespace-nowrap'>
+                                <button className='block w-full cursor-pointer p-5 text-left' type='button' onClick={() => handleOfferEdit(offer.id)}>
                                     {archived ? (
-                                        <span className='inline-flex items-center rounded-full bg-grey-200 px-2 py-0.5 text-xs font-semibold tracking-wide text-grey-700 uppercase dark:bg-grey-900 dark:text-grey-500'>Archived</span>
+                                        <Badge className='rounded-full uppercase' variant='secondary'>Archived</Badge>
                                     ) : (
-                                        <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-2 py-0.5 text-xs font-semibold tracking-wide text-green uppercase'>Active</span>
+                                        <Badge className='rounded-full uppercase' variant='success'>Active</Badge>
                                     )}
-                                </a>
-                            </td>
-                        </tr>
+                                </button>
+                            </TableCell>
+                        </TableRow>
                     );
                 })}
-            </tbody>
-        </table>
+            </TableBody>
+        </Table>
     </div>;
 
     return <Modal
@@ -357,8 +379,8 @@ export const OffersIndexModal: React.FC = () => {
         topRightContent={<ButtonGroup buttons={buttons} />}
         width={1140}
     >
-        <div className='flex h-full flex-col pt-8'>
+        <Stack className='h-full pt-8'>
             {listLayoutOutput}
-        </div>
+        </Stack>
     </Modal>;
 };
