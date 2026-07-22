@@ -272,55 +272,6 @@ describe('oembed-service', function () {
             assert.equal(response.metadata.title, 'Example');
         });
 
-        it('uses allowlisted provider metadata for explicit YouTube bookmark requests', async function () {
-            const thumbnailUrl = 'https://i.ytimg.com/vi/0i1Xz-xiYSU/hqdefault.jpg';
-            const processImageFromUrlStub = sinon.stub(oembedService, 'processImageFromUrl')
-                .resolves('/content/images/thumbnail/youtube.jpg');
-
-            nock('https://www.youtube.com')
-                .get('/watch')
-                .query({v: '0i1Xz-xiYSU'})
-                .reply(200, `<html><head>
-                    <title>Generic YouTube page title</title>
-                    <meta name="description" content="Description from the page">
-                </head></html>`);
-
-            nock('https://www.youtube.com')
-                .get('/oembed')
-                .query(true)
-                .reply(200, {
-                    title: 'Meet the people who fly spacecraft, without ever leaving Earth!',
-                    author_name: 'Matt Gray',
-                    author_url: 'https://www.youtube.com/@MattGrayYES',
-                    type: 'video',
-                    version: '1.0',
-                    provider_name: 'YouTube',
-                    provider_url: 'https://www.youtube.com/',
-                    thumbnail_url: thumbnailUrl,
-                    html: '<iframe src="https://www.youtube.com/embed/0i1Xz-xiYSU"></iframe>',
-                    width: 200,
-                    height: 113
-                });
-
-            try {
-                const response = await oembedService.fetchOembedDataFromUrl('https://www.youtube.com/watch?v=0i1Xz-xiYSU', 'bookmark');
-
-                assert.equal(response.version, '1.0');
-                assert.equal(response.type, 'bookmark');
-                assert.equal(response.url, 'https://www.youtube.com/watch?v=0i1Xz-xiYSU');
-                assert.equal(response.metadata.url, 'https://www.youtube.com/watch?v=0i1Xz-xiYSU');
-                assert.equal(response.metadata.title, 'Meet the people who fly spacecraft, without ever leaving Earth!');
-                assert.equal(response.metadata.description, 'Description from the page');
-                assert.equal(response.metadata.author, 'Matt Gray');
-                assert.equal(response.metadata.publisher, 'YouTube');
-                assert.equal(response.metadata.thumbnail, '/content/images/thumbnail/youtube.jpg');
-                assert.equal(response.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
-                sinon.assert.calledOnceWithExactly(processImageFromUrlStub, thumbnailUrl, 'thumbnail');
-            } finally {
-                sinon.restore();
-            }
-        });
-
         it('enriches other allowlisted provider bookmarks without discarding page metadata', async function () {
             const knownProviderStub = sinon.stub(oembedService, 'knownProvider')
                 .resolves({
@@ -458,7 +409,7 @@ describe('oembed-service', function () {
         // provider embed HTML into the bookmark card.
         it('builds a YouTube bookmark card from allowlisted oEmbed provider metadata (#24741)', async function () {
             const thumbnailUrl = 'https://i.ytimg.com/vi/0i1Xz-xiYSU/hqdefault.jpg';
-            sinon.stub(oembedService, 'processImageFromUrl')
+            const processImageFromUrlStub = sinon.stub(oembedService, 'processImageFromUrl')
                 .resolves('/content/images/thumbnail/youtube.jpg');
 
             nock('https://www.youtube.com')
@@ -466,6 +417,7 @@ describe('oembed-service', function () {
                 .query({v: '0i1Xz-xiYSU'})
                 .reply(200, `<html><head>
                     <title>Generic YouTube page title</title>
+                    <meta name="description" content="Description from the page">
                 </head></html>`);
 
             nock('https://www.youtube.com')
@@ -488,11 +440,17 @@ describe('oembed-service', function () {
             try {
                 const response = await oembedService.fetchOembedDataFromUrl('https://www.youtube.com/watch?v=0i1Xz-xiYSU', 'bookmark');
 
+                assert.equal(response.version, '1.0');
                 assert.equal(response.type, 'bookmark');
+                assert.equal(response.url, 'https://www.youtube.com/watch?v=0i1Xz-xiYSU');
+                assert.equal(response.metadata.url, 'https://www.youtube.com/watch?v=0i1Xz-xiYSU');
                 assert.equal(response.metadata.title, 'What happens in the European Space Agency\'s Mission Control?');
+                assert.equal(response.metadata.description, 'Description from the page');
                 assert.equal(response.metadata.author, 'Matt Gray');
                 assert.equal(response.metadata.publisher, 'YouTube');
                 assert.equal(response.metadata.thumbnail, '/content/images/thumbnail/youtube.jpg');
+                assert.equal(response.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+                sinon.assert.calledOnceWithExactly(processImageFromUrlStub, thumbnailUrl, 'thumbnail');
                 // The provider embed HTML must not leak into the bookmark card
                 assert.equal(response.metadata.html, undefined);
                 assert.equal(response.html, undefined);

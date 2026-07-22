@@ -205,9 +205,8 @@ class OEmbedService {
             return;
         }
 
-        const configuredTimeout = typeof options.timeout === 'number' ? options.timeout : options.timeout?.request;
-        const timeout = configuredTimeout ?? DEFAULT_REQUEST_TIMEOUT;
-        const signal = timeout > 0 ? AbortSignal.timeout(timeout) : undefined;
+        const timeout = options.timeout?.request ?? DEFAULT_REQUEST_TIMEOUT;
+        const signal = AbortSignal.timeout(timeout);
 
         let oembed;
         try {
@@ -576,7 +575,7 @@ class OEmbedService {
      * @param {string} url - oembed URL
      * @param {string} type - card type
      * @param {Object} [options] Specific fetch options
-     * @param {number|Object} [options.timeout] Change the default request timeout
+     * @param {Object} [options.timeout] Change the default request timeout, got-style ({request: ms})
      *
      * @returns {Promise<Object>}
      */
