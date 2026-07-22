@@ -6,6 +6,7 @@ export * from './components/patterns/gh-chart';
 export * from './components/patterns/kpi-card';
 export * from './components/patterns/kpi-tabs';
 export * from './components/patterns/filters';
+export * from './components/patterns/image-upload';
 export {default as ColorPicker} from './components/patterns/color-picker';
 export type {ColorPickerProps} from './components/patterns/color-picker';
 export {default as ShareModal} from './components/patterns/share-modal';

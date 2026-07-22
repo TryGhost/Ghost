@@ -4,8 +4,10 @@ import useFeatureFlag from '../../../hooks/use-feature-flag';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {FacebookLogo, GoogleLogo, Icon, ImageUpload, SettingGroupContent, TextField, XLogo} from '@tryghost/admin-x-design-system';
+import {FacebookLogo, GoogleLogo, Icon, SettingGroupContent, TextField, XLogo} from '@tryghost/admin-x-design-system';
 import {Field, FieldLabel, Switch, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {Pencil, Trash2} from 'lucide-react';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -216,27 +218,26 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
                 <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
                 <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
-                    <ImageUpload
-                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-50 p-3 font-semibold text-grey-800 hover:text-black dark:border-grey-900'
-                        height='300px'
-                        id='facebook-image'
-                        imageURL={facebookImage}
-                        pintura={
-                            {
-                                isEnabled: editor.isEnabled,
-                                openEditor: async () => editor.openEditor({
-                                    image: facebookImage || '',
-                                    handleSave: async (file:File) => {
-                                        const imageUrl = getImageUrl(await uploadImage({file}));
-                                        updateSetting('og_image', imageUrl);
-                                    }
-                                })
-                            }
-                        }
-                        onDelete={handleFacebookImageDelete}
-                        onUpload={handleFacebookImageUpload}
-                    >
-                        Upload Facebook image
+                    <ImageUpload className='h-75 rounded-b-none'>
+                        {facebookImage ? (
+                            <ImageUploadPreview className='rounded-b-none'>
+                                <ImageUploadImage id='facebook-image' src={facebookImage} />
+                                <ImageUploadActions>
+                                    {editor.isEnabled && <ImageUploadAction aria-label='Edit Facebook image' onClick={() => editor.openEditor({
+                                        image: facebookImage,
+                                        handleSave: async (file: File) => {
+                                            const imageUrl = getImageUrl(await uploadImage({file}));
+                                            updateSetting('og_image', imageUrl);
+                                        }
+                                    })}><Pencil /></ImageUploadAction>}
+                                    <ImageUploadAction aria-label='Remove Facebook image' data-testid='image-delete-button' onClick={handleFacebookImageDelete}><Trash2 /></ImageUploadAction>
+                                </ImageUploadActions>
+                            </ImageUploadPreview>
+                        ) : (
+                            <ImageUploadDropzone className='rounded-b-none' inputAriaLabel='Upload Facebook image' inputId='facebook-image' onDropAccepted={files => handleFacebookImageUpload(files[0])}>
+                                Upload Facebook image
+                            </ImageUploadDropzone>
+                        )}
                     </ImageUpload>
                     <div className="mt-5 flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
                         <TextField
@@ -272,27 +273,26 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
                 <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
                 <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
-                    <ImageUpload
-                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-50 p-3 font-semibold text-grey-800 hover:text-black dark:border-grey-900'
-                        height='300px'
-                        id='twitter-image'
-                        imageURL={twitterImage}
-                        pintura={
-                            {
-                                isEnabled: editor.isEnabled,
-                                openEditor: async () => editor.openEditor({
-                                    image: twitterImage || '',
-                                    handleSave: async (file:File) => {
-                                        const imageUrl = getImageUrl(await uploadImage({file}));
-                                        updateSetting('twitter_image', imageUrl);
-                                    }
-                                })
-                            }
-                        }
-                        onDelete={handleTwitterImageDelete}
-                        onUpload={handleTwitterImageUpload}
-                    >
-                        Upload X image
+                    <ImageUpload className='h-75 rounded-b-none'>
+                        {twitterImage ? (
+                            <ImageUploadPreview className='rounded-b-none'>
+                                <ImageUploadImage id='twitter-image' src={twitterImage} />
+                                <ImageUploadActions>
+                                    {editor.isEnabled && <ImageUploadAction aria-label='Edit X image' onClick={() => editor.openEditor({
+                                        image: twitterImage,
+                                        handleSave: async (file: File) => {
+                                            const imageUrl = getImageUrl(await uploadImage({file}));
+                                            updateSetting('twitter_image', imageUrl);
+                                        }
+                                    })}><Pencil /></ImageUploadAction>}
+                                    <ImageUploadAction aria-label='Remove X image' data-testid='image-delete-button' onClick={handleTwitterImageDelete}><Trash2 /></ImageUploadAction>
+                                </ImageUploadActions>
+                            </ImageUploadPreview>
+                        ) : (
+                            <ImageUploadDropzone className='rounded-b-none' inputAriaLabel='Upload X image' inputId='twitter-image' onDropAccepted={files => handleTwitterImageUpload(files[0])}>
+                                Upload X image
+                            </ImageUploadDropzone>
+                        )}
                     </ImageUpload>
                     <div className="mt-6 flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
                         <TextField

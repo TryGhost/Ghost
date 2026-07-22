@@ -1,6 +1,26 @@
 import * as React from 'react';
 import {Accept, DropEvent, FileRejection, useDropzone} from 'react-dropzone';
+import {cva, type VariantProps} from 'class-variance-authority';
+import {buttonVariants} from '@/components/ui/button';
+import {inputSurface} from '@/components/ui/input-surface';
 import {cn} from '@/lib/utils';
+
+const dropzoneVariants = cva(
+    'flex cursor-pointer flex-col items-center justify-center outline-hidden',
+    {
+        variants: {
+            variant: {
+                default: cn(inputSurface('self'), 'border-2 border-dashed bg-transparent p-10 hover:border-border-strong'),
+                filled: cn(inputSurface('self'), 'border-transparent bg-muted p-3 hover:bg-interactive-hover'),
+                button: cn(buttonVariants({variant: 'outline'}), 'flex-row'),
+                buttonSecondary: cn(buttonVariants({size: 'sm', variant: 'secondary'}), 'flex-row')
+            }
+        },
+        defaultVariants: {
+            variant: 'default'
+        }
+    }
+);
 
 type DropzoneRenderProps = {
     isDragActive: boolean;
@@ -11,11 +31,14 @@ type DropzoneRenderProps = {
     open: () => void;
 };
 
-export interface DropzoneProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
+export interface DropzoneProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'>, VariantProps<typeof dropzoneVariants> {
     accept?: Accept;
     multiple?: boolean;
     maxFiles?: number;
     disabled?: boolean;
+    inputId?: string;
+    inputAriaLabel?: string;
+    inputTestId?: string;
     onDropAccepted?: (files: File[], event: DropEvent) => void;
     onDropRejected?: (fileRejections: FileRejection[], event: DropEvent) => void;
     children?: React.ReactNode | ((props: DropzoneRenderProps) => React.ReactNode);
@@ -26,8 +49,12 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(({
     multiple = false,
     maxFiles = multiple ? 0 : 1,
     disabled = false,
+    inputId,
+    inputAriaLabel,
+    inputTestId,
     onDropAccepted,
     onDropRejected,
+    variant,
     className,
     children,
     ...props
@@ -70,12 +97,12 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(({
         role: 'button',
         tabIndex: disabled ? -1 : 0,
         'aria-disabled': disabled,
+        'aria-invalid': isDragReject || undefined,
         className: cn(
-            'flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed p-10 outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
+            dropzoneVariants({variant}),
             disabled && 'pointer-events-none cursor-not-allowed opacity-60',
             isDragReject && 'border-state-danger bg-state-danger/10',
             isDragActive && !isDragReject && !disabled && 'border-state-success bg-state-success/10',
-            !isDragActive && (disabled ? 'border-border-default' : 'border-border-default hover:border-border-strong'),
             className
         )
     }) as React.HTMLAttributes<HTMLDivElement> & {ref?: React.Ref<HTMLDivElement>};
@@ -88,10 +115,12 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(({
             ref={setRootRefs}
             {...rootProps}
         >
-            <input {...getInputProps()} />
+            <input {...getInputProps()} aria-label={inputAriaLabel} data-testid={inputTestId} id={inputId} />
             {content}
         </div>
     );
 });
 
 Dropzone.displayName = 'Dropzone';
+
+export {dropzoneVariants};

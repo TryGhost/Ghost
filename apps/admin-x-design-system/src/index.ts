@@ -18,8 +18,6 @@ export {default as ColorPicker} from './global/form/color-picker';
 export type {ColorPickerProps} from './global/form/color-picker';
 export {default as ColorPickerField} from './global/form/color-picker-field';
 export type {ColorPickerFieldProps} from './global/form/color-picker-field';
-export {default as FileUpload} from './global/form/file-upload';
-export type {FileUploadProps} from './global/form/file-upload';
 export {default as Form} from './global/form/form';
 export type {FormProps} from './global/form/form';
 export {default as HtmlEditor} from './global/form/html-editor';
@@ -28,8 +26,6 @@ export {default as HtmlField} from './global/form/html-field';
 export type {HtmlFieldProps} from './global/form/html-field';
 export {default as KoenigEditorBase, loadKoenig} from './global/form/koenig-editor-base';
 export type {KoenigEditorBaseProps, KoenigInstance, NodeType} from './global/form/koenig-editor-base';
-export {default as ImageUpload} from './global/form/image-upload';
-export type {ImageUploadProps} from './global/form/image-upload';
 export {default as TextField} from './global/form/text-field';
 export type {TextFieldProps} from './global/form/text-field';
 

@@ -3,8 +3,8 @@ import LabItem from './lab-item';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import YamlFileEditorModal from './yaml-file-editor-modal';
-import {ActionList} from '@tryghost/shade/components';
-import {Button, FileUpload, showToast} from '@tryghost/admin-x-design-system';
+import {ActionList, Dropzone, Button as ShadeButton} from '@tryghost/shade/components';
+import {Button, showToast} from '@tryghost/admin-x-design-system';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
@@ -80,9 +80,10 @@ const BetaFeatures: React.FC = () => {
             <LabItem
                 action={<Stack align='end' gap='xs'>
                     <Inline gap='sm'>
-                        <FileUpload
-                            id='upload-redirects'
-                            onUpload={async (file) => {
+                        <Dropzone
+                            inputId='upload-redirects'
+                            variant='buttonSecondary'
+                            onDropAccepted={async ([file]) => {
                                 try {
                                     setRedirectsUploading(true);
                                     await uploadRedirects(file);
@@ -97,9 +98,9 @@ const BetaFeatures: React.FC = () => {
                                 }
                             }}
                         >
-                            <Button color='grey' label={redirectsUploading ? 'Uploading ...' : 'Upload redirects file'} size='sm' tag='div' />
-                        </FileUpload>
-                        <Button color='grey' label='Edit' size='sm' onClick={openRedirectsEditor} />
+                            {redirectsUploading ? 'Uploading ...' : 'Upload redirects file'}
+                        </Dropzone>
+                        <ShadeButton size='sm' variant='secondary' onClick={openRedirectsEditor}>Edit</ShadeButton>
                     </Inline>
                     <Button color='green' label='Download current redirects' link onClick={() => downloadRedirects()} />
                 </Stack>}
@@ -109,9 +110,10 @@ const BetaFeatures: React.FC = () => {
             <LabItem
                 action={<Stack align='end' gap='xs'>
                     <Inline gap='sm'>
-                        <FileUpload
-                            id='upload-routes'
-                            onUpload={async (file) => {
+                        <Dropzone
+                            inputId='upload-routes'
+                            variant='buttonSecondary'
+                            onDropAccepted={async ([file]) => {
                                 try {
                                     setRoutesUploading(true);
                                     await uploadRoutes(file);
@@ -126,9 +128,9 @@ const BetaFeatures: React.FC = () => {
                                 }
                             }}
                         >
-                            <Button color='grey' label={routesUploading ? 'Uploading ...' : 'Upload routes file'} size='sm' tag='div' />
-                        </FileUpload>
-                        <Button color='grey' label='Edit' size='sm' onClick={openRoutesEditor} />
+                            {routesUploading ? 'Uploading ...' : 'Upload routes file'}
+                        </Dropzone>
+                        <ShadeButton size='sm' variant='secondary' onClick={openRoutesEditor}>Edit</ShadeButton>
                     </Inline>
                     <Button color='green' label='Download current routes' link onClick={() => downloadRoutes()} />
                 </Stack>}

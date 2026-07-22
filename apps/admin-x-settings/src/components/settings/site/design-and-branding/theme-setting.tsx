@@ -1,7 +1,9 @@
 import React, {useEffect, useState} from 'react';
-import {ColorPickerField, ImageUpload, TextField} from '@tryghost/admin-x-design-system';
+import {ColorPickerField, TextField} from '@tryghost/admin-x-design-system';
 import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {Trash2} from 'lucide-react';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {humanizeSettingKey} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -87,13 +89,22 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({setting, setSetting}) => {
     case 'image':
         return <>
             <FieldLabel>{humanizeSettingKey(setting.key)}</FieldLabel>
-            <ImageUpload
-                height={setting.value ? '100px' : '32px'}
-                id={`custom-${setting.key}`}
-                imageURL={setting.value || ''}
-                onDelete={() => setSetting(null)}
-                onUpload={file => handleImageUpload(file)}
-            >Upload image</ImageUpload>
+            <ImageUpload className={setting.value ? 'h-25' : 'h-8'}>
+                {setting.value ? (
+                    <ImageUploadPreview>
+                        <ImageUploadImage id={`custom-${setting.key}`} src={setting.value} />
+                        <ImageUploadActions>
+                            <ImageUploadAction aria-label='Remove image' onClick={() => setSetting(null)}>
+                                <Trash2 />
+                            </ImageUploadAction>
+                        </ImageUploadActions>
+                    </ImageUploadPreview>
+                ) : (
+                    <ImageUploadDropzone inputId={`custom-${setting.key}`} onDropAccepted={files => handleImageUpload(files[0])}>
+                        Upload image
+                    </ImageUploadDropzone>
+                )}
+            </ImageUpload>
             {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
         </>;
     }

@@ -5,11 +5,11 @@ import OfficialThemes from './theme/official-themes';
 import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/theme-installed-modal';
 import ThemePreview from './theme/theme-preview';
-import {Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, LimitModal, Modal, PageHeader, showToast} from '@tryghost/admin-x-design-system';
+import {Dropzone, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type OfficialTheme} from '../../providers/settings-app-provider';
-import {Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -35,17 +35,16 @@ const UploadModalContent: React.FC<{onUpload: (file: File) => void}> = ({onUploa
     const modal = useModal();
 
     return <div className="-mb-6">
-        <FileUpload
-            id="theme-upload"
-            onUpload={(file) => {
+        <Dropzone
+            accept={{'application/zip': ['.zip']}}
+            inputId="theme-upload"
+            onDropAccepted={([file]) => {
                 modal.remove();
                 onUpload(file);
             }}
         >
-            <div className="cursor-pointer bg-grey-50 p-10 text-center dark:bg-grey-950">
             Click to select or drag & drop zip file
-            </div>
-        </FileUpload>
+        </Dropzone>
     </div>;
 };
 

@@ -4,8 +4,10 @@ import clsx from 'clsx';
 import usePinturaEditor from '../../../../hooks/use-pintura-editor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
-import {ColorPickerField, Form, ImageUpload} from '@tryghost/admin-x-design-system';
+import {ColorPickerField, Form} from '@tryghost/admin-x-design-system';
 import {Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {Images, Pencil, Trash2} from 'lucide-react';
 import {type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {formatNumber} from '@tryghost/shade/utils';
@@ -174,28 +176,27 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         <FieldDescription className='mr-5 max-w-[160px]'>A square, social icon, at least {formatNumber(60)}×{formatNumber(60)}px</FieldDescription>
                     </div>
                     <div className='flex gap-3'>
-                        <ImageUpload
-                            deleteButtonClassName='top-1! right-1!'
-                            editButtonClassName='top-1! right-1!'
-                            height={values.icon ? '66px' : '36px'}
-                            id='logo'
-                            imageBWCheckedBg={true}
-                            imageURL={values.icon || ''}
-                            width={values.icon ? '66px' : '160px'}
-                            onDelete={() => updateSetting('icon', null)}
-                            onUpload={async (file) => {
-                                try {
-                                    updateSetting('icon', getImageUrl(await uploadImage({file})));
-                                } catch (e) {
-                                    const error = e as APIError;
-                                    if (error.response!.status === 415) {
-                                        error.message = 'Unsupported file type';
+                        <ImageUpload className={values.icon ? 'size-16.5' : 'h-9 w-40'}>
+                            {values.icon ? (
+                                <ImageUploadPreview background='checkerboard'>
+                                    <ImageUploadImage id='logo' src={values.icon} />
+                                    <ImageUploadActions className='top-1 right-1'>
+                                        <ImageUploadAction aria-label='Remove publication icon' data-testid='image-delete-button' onClick={() => updateSetting('icon', null)}><Trash2 /></ImageUploadAction>
+                                    </ImageUploadActions>
+                                </ImageUploadPreview>
+                            ) : (
+                                <ImageUploadDropzone inputId='logo' onDropAccepted={async ([file]) => {
+                                    try {
+                                        updateSetting('icon', getImageUrl(await uploadImage({file})));
+                                    } catch (e) {
+                                        const error = e as APIError;
+                                        if (error.response!.status === 415) {
+                                            error.message = 'Unsupported file type';
+                                        }
+                                        handleError(error);
                                     }
-                                    handleError(error);
-                                }
-                            }}
-                        >
-                        Upload icon
+                                }}>Upload icon</ImageUploadDropzone>
+                            )}
                         </ImageUpload>
                     </div>
                 </div>
@@ -205,28 +206,27 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         <FieldDescription className='mr-5 max-w-[160px]'>Appears usually in the main header of your theme</FieldDescription>
                     </div>
                     <div>
-                        <ImageUpload
-                            deleteButtonClassName='top-1! right-1!'
-                            height='60px'
-                            id='site-logo'
-                            imageBWCheckedBg={true}
-                            imageFit='contain'
-                            imageURL={values.logo || ''}
-                            width='160px'
-                            onDelete={() => updateSetting('logo', null)}
-                            onUpload={async (file) => {
-                                try {
-                                    updateSetting('logo', getImageUrl(await uploadImage({file})));
-                                } catch (e) {
-                                    const error = e as APIError;
-                                    if (error.response!.status === 415) {
-                                        error.message = 'Unsupported file type';
+                        <ImageUpload className='h-15 w-40'>
+                            {values.logo ? (
+                                <ImageUploadPreview background='checkerboard'>
+                                    <ImageUploadImage className='object-contain' id='site-logo' src={values.logo} />
+                                    <ImageUploadActions className='top-1 right-1'>
+                                        <ImageUploadAction aria-label='Remove publication logo' data-testid='image-delete-button' onClick={() => updateSetting('logo', null)}><Trash2 /></ImageUploadAction>
+                                    </ImageUploadActions>
+                                </ImageUploadPreview>
+                            ) : (
+                                <ImageUploadDropzone inputId='site-logo' onDropAccepted={async ([file]) => {
+                                    try {
+                                        updateSetting('logo', getImageUrl(await uploadImage({file})));
+                                    } catch (e) {
+                                        const error = e as APIError;
+                                        if (error.response!.status === 415) {
+                                            error.message = 'Unsupported file type';
+                                        }
+                                        handleError(error);
                                     }
-                                    handleError(error);
-                                }
-                            }}
-                        >
-                        Upload logo
+                                }}>Upload logo</ImageUploadDropzone>
+                            )}
                         </ImageUpload>
                     </div>
                 </div>
@@ -235,45 +235,42 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         <div>Publication cover</div>
                         <FieldDescription className='mr-5 max-w-[160px]'>Usually as a large banner image on your index pages</FieldDescription>
                     </div>
-                    <ImageUpload
-                        deleteButtonClassName='top-1! right-1!'
-                        editButtonClassName='top-1! right-10!'
-                        height='95px'
-                        id='cover'
-                        imageURL={values.coverImage || ''}
-                        openUnsplash={() => setShowUnsplash(true)}
-                        pintura={
-                            {
-                                isEnabled: editor.isEnabled,
-                                openEditor: async () => editor.openEditor({
-                                    image: values.coverImage || '',
-                                    handleSave: async (file:File) => {
-                                        try {
-                                            updateSetting('cover_image', getImageUrl(await uploadImage({file})));
-                                        } catch (e) {
-                                            handleError(e);
+                    <ImageUpload className='h-23.75 w-40'>
+                        {values.coverImage ? (
+                            <ImageUploadPreview>
+                                <ImageUploadImage id='cover' src={values.coverImage} />
+                                <ImageUploadActions className='top-1 right-1'>
+                                    {editor.isEnabled && <ImageUploadAction aria-label='Edit publication cover' onClick={() => editor.openEditor({
+                                        image: values.coverImage || '',
+                                        handleSave: async (file: File) => {
+                                            try {
+                                                updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                            } catch (e) {
+                                                handleError(e);
+                                            }
                                         }
+                                    })}><Pencil /></ImageUploadAction>}
+                                    <ImageUploadAction aria-label='Remove publication cover' data-testid='image-delete-button' onClick={() => updateSetting('cover_image', null)}><Trash2 /></ImageUploadAction>
+                                </ImageUploadActions>
+                            </ImageUploadPreview>
+                        ) : (
+                            <>
+                                <ImageUploadDropzone inputId='cover' onDropAccepted={async ([file]) => {
+                                    try {
+                                        updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                    } catch (e) {
+                                        const error = e as APIError;
+                                        if (error.response!.status === 415) {
+                                            error.message = 'Unsupported file type';
+                                        }
+                                        handleError(error);
                                     }
-                                })
-                            }
-                        }
-                        unsplashButtonClassName='bg-transparent! h-6! top-1.5! w-6! right-1.5! z-50'
-                        unsplashEnabled={unsplashEnabled}
-                        width='160px'
-                        onDelete={() => updateSetting('cover_image', null)}
-                        onUpload={async (file: File) => {
-                            try {
-                                updateSetting('cover_image', getImageUrl(await uploadImage({file})));
-                            } catch (e) {
-                                const error = e as APIError;
-                                if (error.response!.status === 415) {
-                                    error.message = 'Unsupported file type';
-                                }
-                                handleError(error);
-                            }
-                        }}
-                    >
-                    Upload cover
+                                }}>Upload cover</ImageUploadDropzone>
+                                {unsplashEnabled && <ImageUploadActions className='top-1 right-1 opacity-100'>
+                                    <ImageUploadAction aria-label='Select publication cover from Unsplash' data-testid='toggle-unsplash-button' onClick={() => setShowUnsplash(true)}><Images /></ImageUploadAction>
+                                </ImageUploadActions>}
+                            </>
+                        )}
                     </ImageUpload>
                     {
                         showUnsplash && unsplashConfig && unsplashEnabled && (

@@ -1,10 +1,11 @@
-import React, {useRef, useState} from 'react';
-import clsx from 'clsx';
+import React, {useState} from 'react';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
 import {Form, Icon, TextField} from '@tryghost/admin-x-design-system';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {Inline, Text} from '@tryghost/shade/primitives';
 import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {Trash2, Upload} from 'lucide-react';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -42,7 +43,6 @@ const LookAndFeel: React.FC<{
 }> = ({localSettings, updateSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
     const handleError = useHandleError();
-    const uploadInputRef = useRef<HTMLInputElement>(null);
 
     const [portalButton, portalButtonStyle, portalButtonIcon, portalButtonSignupText] = getSettingValues(localSettings, ['portal_button', 'portal_button_style', 'portal_button_icon', 'portal_button_signup_text']);
 
@@ -70,22 +70,6 @@ const LookAndFeel: React.FC<{
             updateSetting('portal_button_icon', null);
         }
         setUploadedIcon(undefined);
-    };
-
-    const handleImageInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            void handleImageUpload(file);
-        }
-        event.target.value = '';
-    };
-
-    const handleImageDrop = (event: React.DragEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        const file = event.dataTransfer.files?.[0];
-        if (file) {
-            void handleImageUpload(file);
-        }
     };
 
     const portalButtonOptions = [
@@ -128,15 +112,10 @@ const LookAndFeel: React.FC<{
                                     </ToggleGroupItem>
                                 ))}
                             </ToggleGroup>
-                            <div
-                                className={clsx('relative size-[46px] border', currentIcon === uploadedIcon ? 'border-primary' : 'border-transparent')}
-                                onDragOver={event => event.preventDefault()}
-                                onDrop={handleImageDrop}
-                            >
-                                <input ref={uploadInputRef} type='file' hidden onChange={handleImageInputChange} />
+                            <ImageUpload className={`size-[46px] overflow-visible border ${currentIcon === uploadedIcon ? 'border-primary' : 'border-transparent'}`}>
                                 {uploadedIcon ? (
-                                    <>
-                                        <img alt='' className='size-full object-cover' src={uploadedIcon} />
+                                    <ImageUploadPreview>
+                                        <ImageUploadImage src={uploadedIcon} />
                                         <Button
                                             aria-label='Use uploaded Portal icon'
                                             aria-pressed={currentIcon === uploadedIcon}
@@ -146,30 +125,18 @@ const LookAndFeel: React.FC<{
                                             variant='ghost'
                                             onClick={() => updateSetting('portal_button_icon', uploadedIcon)}
                                         />
-                                        <Button
-                                            aria-label='Delete uploaded Portal icon'
-                                            className='bg-surface-inverse text-surface-inverse-foreground hover:bg-surface-inverse/90 absolute -top-2 -right-2 z-20 size-6 rounded-full p-0'
-                                            size='icon'
-                                            type='button'
-                                            variant='ghost'
-                                            onClick={handleImageDelete}
-                                        >
-                                            <Icon colorClass='text-surface-inverse-foreground' name='trash' size='sm' />
-                                        </Button>
-                                    </>
+                                        <ImageUploadActions className='-top-2 -right-2 z-20 opacity-100'>
+                                            <ImageUploadAction aria-label='Delete uploaded Portal icon' className='size-6 rounded-full p-0' onClick={handleImageDelete}>
+                                                <Trash2 />
+                                            </ImageUploadAction>
+                                        </ImageUploadActions>
+                                    </ImageUploadPreview>
                                 ) : (
-                                    <Button
-                                        aria-label='Upload Portal icon'
-                                        className='size-full'
-                                        size='icon'
-                                        type='button'
-                                        variant='outline'
-                                        onClick={() => uploadInputRef.current?.click()}
-                                    >
-                                        <Icon name='upload' size='md' />
-                                    </Button>
+                                    <ImageUploadDropzone accept={{'image/*': []}} aria-label='Upload Portal icon' className='size-full p-0' inputAriaLabel='Upload Portal icon' onDropAccepted={files => handleImageUpload(files[0])}>
+                                        <Upload className='size-5' />
+                                    </ImageUploadDropzone>
                                 )}
-                            </div>
+                            </ImageUpload>
                         </Inline>
                     </div>
                 }
