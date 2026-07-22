@@ -61,9 +61,10 @@ module.exports = class MembersCSVImporter {
     /**
      * @param {MembersCSVImporterOptions} options
      */
-    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, getTierByName, getGiftService, sendEmail, isSet, addJob, knex, urlFor, context, stripeUtils}) {
+    constructor({storagePath, getTimezone, getInlineThreshold, getMembersRepository, getDefaultTier, getTierByName, getGiftService, sendEmail, isSet, addJob, knex, urlFor, context, stripeUtils}) {
         this._storagePath = storagePath;
         this._getTimezone = getTimezone;
+        this._getInlineThreshold = getInlineThreshold;
         this._getMembersRepository = getMembersRepository;
         this._getDefaultTier = getDefaultTier;
         this._getTierByName = getTierByName;
@@ -440,7 +441,7 @@ module.exports = class MembersCSVImporter {
 
         meta.originalImportSize = job.batches;
 
-        if ((job.batches <= 500 && !job.metadata.hasStripeData) || forceInline) {
+        if ((job.batches <= this._getInlineThreshold() && !job.metadata.hasStripeData) || forceInline) {
             const result = await this.perform(job.filePath, globalLabels);
             const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
             await verificationTrigger.testImportThreshold();
