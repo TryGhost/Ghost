@@ -1,9 +1,10 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
+import StripeButton from '../../stripe-button';
 import TiersList from './tiers/tiers-list';
 import TopLevelGroup from '../../top-level-group';
 import clsx from 'clsx';
-import {Button, LimitModal, StripeButton} from '@tryghost/admin-x-design-system';
+import {Button, LimitModal} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';

@@ -1,9 +1,11 @@
 import AnnouncementBarPreview from './announcement-bar/announcement-bar-preview';
+import ColorSwatchField from '../../color-swatch-field';
+import HtmlField from '../../html-field';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, Tabs, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {ColorIndicator, DesktopChrome, Form, HtmlField, MobileChrome, PreviewModalContent, showToast} from '@tryghost/admin-x-design-system';
+import {DesktopChrome, Form, MobileChrome, PreviewModalContent, showToast} from '@tryghost/admin-x-design-system';
 import {Laptop, Smartphone} from 'lucide-react';
 import {debounce} from '../../../utils/debounce';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -72,9 +74,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onBlur={onBlur}
                 onChange={announcementTextHandler}
             />
-            <ColorIndicator
-                isExpanded={false}
-                picker={false}
+            <ColorSwatchField
+                size='lg'
                 swatches={[
                     {
                         hex: '#08090c',
@@ -92,15 +93,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                         value: 'accent'
                     }
                 ]}
-                swatchSize='lg'
                 title='Background color'
                 value={announcementBackgroundColor}
-                onSwatchChange={(e) => {
+                onChange={(e) => {
                     if (e !== null) {
                         toggleColorSwatch(e);
                     }
                 }}
-                onTogglePicker={() => {}}
             />
             <FieldSet>
                 <FieldLegend variant='label'>Visibility</FieldLegend>

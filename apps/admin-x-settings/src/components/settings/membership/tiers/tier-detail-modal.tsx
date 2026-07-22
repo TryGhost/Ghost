@@ -3,9 +3,10 @@ import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './tier-detail-preview';
 import useCurrencyInput from '../../../../hooks/use-currency-input';
 import useSettingGroup from '../../../../hooks/use-setting-group';
+import useSortableIndexedList from '../../../../hooks/use-sortable-indexed-list';
 import useUrlInput from '../../../../hooks/use-url-input';
-import {Button, type ButtonProps, ConfirmationModal, Form, Icon, Modal, SortableList, TextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
-import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, Switch} from '@tryghost/shade/components';
+import {Button, type ButtonProps, ConfirmationModal, Form, Icon, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Text} from '@tryghost/shade/primitives';
@@ -235,12 +236,12 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         <div className='flex flex-col gap-10 md:flex-row'>
                             <div className='basis-1/2'>
                                 <div className='mb-1 flex h-6 items-center justify-between'>
-                                    <Text as='h6' className='text-base' tone='secondary' weight='semibold'>Prices</Text>
-                                    <div className='-mr-2 w-20'>
+                                    <Text as='h6' className='text-base' weight='semibold'>Prices</Text>
+                                    <div>
                                         <Field>
                                             <FieldLabel className='sr-only'>Currency</FieldLabel>
                                             <Combobox open={currencyOpen} onOpenChange={setCurrencyOpen}>
-                                                <ComboboxTrigger aria-label='Currency' className='border-0 bg-transparent px-0 shadow-none hover:bg-transparent focus-visible:ring-0'><ComboboxValue>{formState.currency}</ComboboxValue></ComboboxTrigger>
+                                                <ComboboxTrigger aria-label='Currency' className='w-auto justify-start border-0 bg-transparent px-0 shadow-none hover:bg-transparent focus-visible:ring-0'><ComboboxValue className='flex-none'>{formState.currency}</ComboboxValue></ComboboxTrigger>
                                                 <ComboboxContent align='end' className='w-64'>
                                                     <MultiSelectCombobox
                                                         groupBy={option => ({
@@ -353,10 +354,11 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                 <Form gap='none' title='Benefits' grouped>
                     <div className='-mt-3'>
                         <SortableList
+                            getDragHandleLabel={({item}) => `Reorder benefit${item ? `: ${item}` : ''}`}
                             items={benefits.items}
                             itemSeparator={false}
                             renderItem={({id, item}) => <div className='relative flex w-full items-center gap-5'>
-                                <div className='absolute top-[7px] left-[-32px] flex size-6 items-center justify-center bg-white group-hover:hidden dark:bg-black'><Icon name='check' size='sm' /></div>
+                                <div className='absolute top-1/2 left-[-32px] flex size-6 -translate-y-1/2 items-center justify-center bg-background group-hover:hidden'><Icon name='check' size='sm' /></div>
                                 <TextField
                                     // className='grow border-b border-grey-500 py-2 focus:border-grey-800 group-hover:border-grey-600'
                                     maxLength={191}
@@ -369,7 +371,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         />
                     </div>
                     <div className="relative mt-1 flex items-center gap-3">
-                        <Icon className='dark:text-white' name='check' size='sm' />
+                        <Icon name='check' size='sm' />
                         <TextField
                             className='grow'
                             containerClassName='w-100'

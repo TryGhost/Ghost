@@ -1,11 +1,12 @@
+import ColorPickerField from '../../../color-picker-field';
 import React, {useState} from 'react';
 import UnsplashSelector from '../../../selectors/unsplash-selector';
 import clsx from 'clsx';
 import usePinturaEditor from '../../../../hooks/use-pintura-editor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
-import {ColorPickerField, Form} from '@tryghost/admin-x-design-system';
 import {Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Form} from '@tryghost/admin-x-design-system';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {Images, Pencil, Trash2} from 'lucide-react';
 import {type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';

@@ -1,8 +1,7 @@
-import {describe, it} from 'vitest';
-import {expect} from 'chai';
-import {renderHook, act} from '@testing-library/react-hooks';
-import useSortableIndexedList from '../../../src/hooks/use-sortable-indexed-list';
-import sinon from 'sinon';
+import assert from 'node:assert/strict';
+import useSortableIndexedList from '@src/hooks/use-sortable-indexed-list';
+import {act, renderHook} from '@testing-library/react';
+import {describe, it, vi} from 'vitest';
 
 describe('useSortableIndexedList', () => {
     // Mock initial items and blank item
@@ -13,7 +12,7 @@ describe('useSortableIndexedList', () => {
     const canAddNewItem = (item: { name: string }) => !!item.name;
 
     it('should initialize with the given items', () => {
-        const setItems = sinon.spy();
+        const setItems = vi.fn();
 
         const {result} = renderHook(() => useSortableIndexedList({
             items: initialItems,
@@ -24,7 +23,7 @@ describe('useSortableIndexedList', () => {
         );
 
         // Assert initial items setup correctly
-        expect(result.current.items).to.deep.equal(initialItems.map((item, index) => ({item, id: index.toString()})));
+        assert.deepEqual(result.current.items, initialItems.map((item, index) => ({item, id: index.toString()})));
     });
 
     it('should add a new item', () => {
@@ -47,7 +46,7 @@ describe('useSortableIndexedList', () => {
         });
 
         // Assert items updated correctly after adding new item
-        expect(items).to.deep.equal([...initialItems, {name: 'New Item'}]);
+        assert.deepEqual(items, [...initialItems, {name: 'New Item'}]);
     });
 
     it('should update an item', () => {
@@ -69,7 +68,7 @@ describe('useSortableIndexedList', () => {
         });
 
         // Assert item updated correctly
-        expect(items[0]).to.deep.equal({name: 'Updated Item 1'});
+        assert.deepEqual(items[0], {name: 'Updated Item 1'});
     });
 
     it('should remove an item', () => {
@@ -91,7 +90,7 @@ describe('useSortableIndexedList', () => {
         });
 
         // Assert item removed correctly
-        expect(items).to.deep.equal([initialItems[1]]);
+        assert.deepEqual(items, [initialItems[1]]);
     });
 
     it('should move an item', () => {
@@ -113,11 +112,11 @@ describe('useSortableIndexedList', () => {
         });
 
         // Assert item moved correctly
-        expect(items).to.deep.equal([initialItems[1], initialItems[0]]);
+        assert.deepEqual(items, [initialItems[1], initialItems[0]]);
     });
 
     it('should not setItems for deeply equal items regardless of property order', () => {
-        const setItems = sinon.spy();
+        const setItems = vi.fn();
         const initialItem = [{name: 'Item 1', url: 'http://example.com'}];
         const blankItem1 = {name: '', url: ''};
 
@@ -137,7 +136,7 @@ describe('useSortableIndexedList', () => {
             }
         );
 
-        expect(setItems.callCount).to.equal(0);
+        assert.equal(setItems.mock.calls.length, 0);
 
         // Re-render with items in different order but same content
         rerender({
@@ -146,6 +145,6 @@ describe('useSortableIndexedList', () => {
         });
 
         // Expect no additional calls because the items are deeply equal
-        expect(setItems.callCount).to.equal(0);
+        assert.equal(setItems.mock.calls.length, 0);
     });
 });

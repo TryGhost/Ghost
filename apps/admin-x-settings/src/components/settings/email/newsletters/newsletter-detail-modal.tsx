@@ -1,10 +1,12 @@
+import ColorPickerField from '../../../color-picker-field';
+import HtmlField from '../../../html-field';
 import NewsletterPreview from './newsletter-preview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, HtmlField, Icon, LimitModal, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ConfirmationModal, Form, Icon, LimitModal, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
@@ -294,7 +296,7 @@ const Sidebar: React.FC<{
                 <Form className='mt-6' gap='sm' margins='lg' title='Header'>
                     <div>
                         <div>
-                            <Text as='h6' className="mb-2 text-base" tone='secondary' weight='semibold'>Header image</Text>
+                            <Text as='h6' className="mb-2 text-base" weight='semibold'>Header image</Text>
                         </div>
                         <div className='flex-column flex gap-1'>
                             <ImageUpload className='h-16.5'>

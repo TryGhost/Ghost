@@ -5,7 +5,7 @@ import useGlobalDirtyState from '../../hooks/use-global-dirty-state';
 import {confirmIfDirty} from '../../utils/modals';
 import Button, {ButtonColor, ButtonProps} from '../button';
 import ButtonGroup from '../button-group';
-import StickyFooter from '../sticky-footer';
+import {StickyFooter} from '@tryghost/shade/components';
 import {Text} from '@tryghost/shade/primitives';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed';

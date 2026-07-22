@@ -40,12 +40,17 @@ const TierBenefits: React.FC<{benefits: string[]}> = ({benefits}) => {
             </div>
         );
     }
+    const benefitOccurrences = new Map<string, number>();
+
     return (
         <>
             {
                 benefits.map((benefit) => {
+                    const occurrence = (benefitOccurrences.get(benefit) || 0) + 1;
+                    benefitOccurrences.set(benefit, occurrence);
+
                     return (
-                        <div key={benefit} className="mt-4 w-full text-md leading-snug text-grey-900">
+                        <div key={`${benefit}:${occurrence}`} className="mt-4 w-full text-md leading-snug text-grey-900">
                             <div className="mb-2.5 flex items-start">
                                 <Icon className="mt-[3px] mr-[10px] size-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
                                 <div>{benefit}</div>
@@ -88,7 +93,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
     return (
         <div data-testid="tier-preview">
             <div className="flex items-baseline justify-between">
-                <Text as='h6' className="pb-2 text-base" tone='secondary' weight='semibold'>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Text>
+                <Text as='h6' className="pb-2 text-base" weight='semibold'>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Text>
                 {!isFreeTier && <div className="flex gap-1">
                     <Button className={`${showingYearly === true ? 'text-grey-500' : 'text-grey-900 dark:text-white'}`} label="Monthly" link unstyled onClick={() => setShowingYearly(false)} />
                     <Button className={`ml-2 ${showingYearly === true ? 'text-grey-900 dark:text-white' : 'text-grey-500'}`} label="Yearly" link unstyled onClick={() => setShowingYearly(true)} />

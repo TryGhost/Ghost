@@ -1,6 +1,6 @@
+import useSortableIndexedList from '../use-sortable-indexed-list';
 import validator from 'validator';
 import {useCallback, useMemo} from 'react';
-import {useSortableIndexedList} from '@tryghost/admin-x-design-system';
 
 export type NavigationItem = {
     label: string;

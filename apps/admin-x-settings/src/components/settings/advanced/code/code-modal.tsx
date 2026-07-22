@@ -1,7 +1,8 @@
+import CodeEditor from '../../../code-editor';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {ButtonGroup, CodeEditor, Modal} from '@tryghost/admin-x-design-system';
+import {ButtonGroup, Modal} from '@tryghost/admin-x-design-system';
 import {type ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {Text} from '@tryghost/shade/primitives';

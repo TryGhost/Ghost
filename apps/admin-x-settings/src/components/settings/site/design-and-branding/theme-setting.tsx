@@ -1,8 +1,9 @@
+import ColorPickerField from '../../../color-picker-field';
 import React, {useEffect, useState} from 'react';
-import {ColorPickerField, TextField} from '@tryghost/admin-x-design-system';
 import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {TextField} from '@tryghost/admin-x-design-system';
 import {Trash2} from 'lucide-react';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {humanizeSettingKey} from '@tryghost/admin-x-framework/api/settings';

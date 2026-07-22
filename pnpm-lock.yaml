@@ -45,6 +45,15 @@ catalogs:
     '@codemirror/view':
       specifier: 6.43.6
       version: 6.43.6
+    '@dnd-kit/core':
+      specifier: 6.3.1
+      version: 6.3.1
+    '@dnd-kit/sortable':
+      specifier: 7.0.2
+      version: 7.0.2
+    '@dnd-kit/utilities':
+      specifier: 3.2.2
+      version: 3.2.2
     '@ebay/nice-modal-react':
       specifier: 1.2.13
       version: 1.2.13
@@ -832,12 +841,6 @@ importers:
 
   apps/admin-x-design-system:
     dependencies:
-      '@dnd-kit/core':
-        specifier: 6.3.1
-        version: 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@dnd-kit/sortable':
-        specifier: 7.0.2
-        version: 7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@ebay/nice-modal-react':
         specifier: 'catalog:'
         version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -859,28 +862,13 @@ importers:
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
-      '@uiw/react-codemirror':
-        specifier: 'catalog:'
-        version: 4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.6)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       clsx:
         specifier: 'catalog:'
         version: 2.1.1
-      react-colorful:
-        specifier: 5.7.0
-        version: 5.7.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-hot-toast:
         specifier: 'catalog:'
         version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
-      '@codemirror/lang-html':
-        specifier: 'catalog:'
-        version: 6.4.11
-      '@codemirror/state':
-        specifier: 'catalog:'
-        version: 6.7.1
-      '@dnd-kit/utilities':
-        specifier: 3.2.2
-        version: 3.2.2(react@18.3.1)
       '@internal/cfg-eslint-react':
         specifier: workspace:*
         version: link:../../configs/eslint-react
@@ -1092,11 +1080,14 @@ importers:
       '@codemirror/search':
         specifier: 'catalog:'
         version: 6.7.1
+      '@codemirror/state':
+        specifier: 'catalog:'
+        version: 6.7.1
       '@codemirror/theme-one-dark':
         specifier: 'catalog:'
         version: 6.1.3
       '@dnd-kit/sortable':
-        specifier: 7.0.2
+        specifier: 'catalog:'
         version: 7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@ebay/nice-modal-react':
         specifier: 'catalog:'
@@ -1838,6 +1829,15 @@ importers:
 
   apps/shade:
     dependencies:
+      '@dnd-kit/core':
+        specifier: 'catalog:'
+        version: 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@dnd-kit/sortable':
+        specifier: 'catalog:'
+        version: 7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      '@dnd-kit/utilities':
+        specifier: 'catalog:'
+        version: 3.2.2(react@18.3.1)
       '@hookform/resolvers':
         specifier: 5.4.0
         version: 5.4.0(react-hook-form@7.80.0(react@18.3.1))

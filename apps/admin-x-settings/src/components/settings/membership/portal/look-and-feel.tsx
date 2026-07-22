@@ -97,7 +97,7 @@ const LookAndFeel: React.FC<{
                 </Field>
                 {portalButtonStyle?.toString()?.includes('icon') &&
                     <div className='flex flex-col gap-2'>
-                        <Text as='h6' className='text-base' tone='secondary' weight='semibold'>Icon</Text>
+                        <Text as='h6' className='text-base' weight='semibold'>Icon</Text>
                         <Inline gap='xs' justify='between'>
                             <ToggleGroup
                                 aria-label='Portal button icon'

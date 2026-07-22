@@ -3,10 +3,11 @@ import GhostLogo from '../../../../assets/images/orb-squircle.png';
 import GhostLogoPink from '../../../../assets/images/orb-pink.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
+import StripeButton from '../../../stripe-button';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import StripeVerifiedBadge from '../../../../assets/images/stripe-verified.svg';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, ConfirmationModal, Form, LimitModal, Modal, StripeButton, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, LimitModal, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {Field, FieldError, FieldLabel, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
@@ -195,7 +196,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
                 <div className='mt-1'>Connected to <strong>{stripeConnectAccountName ? stripeConnectAccountName : 'Test mode'}</strong></div>
             </div>
             <div className='flex flex-col items-center'>
-                <Text as='h6' className='text-base' tone='secondary' weight='semibold'>Read next</Text>
+                <Text as='h6' className='text-base' weight='semibold'>Read next</Text>
                 <a className='mt-5 flex w-100 flex-col items-stretch justify-between overflow-hidden rounded-md border border-grey-200 transition-all hover:border-grey-400 md:flex-row dark:border-grey-900' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
                     <div className='order-2 p-4 md:order-1'>
                         <div className='text-md font-semibold'>How to setup and manage your Stripe account</div>

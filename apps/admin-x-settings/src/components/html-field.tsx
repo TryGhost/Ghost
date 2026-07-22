@@ -1,8 +1,7 @@
-import HtmlEditor, {HtmlEditorProps} from './html-editor';
+import HtmlEditor, {type HtmlEditorProps} from './html-editor';
 import React from 'react';
 import clsx from 'clsx';
-import LegacyHint from '../legacy-hint';
-import {FieldLabel} from '@tryghost/shade/components';
+import {FieldDescription, FieldLabel, inputSurface} from '@tryghost/shade/components';
 
 export type HtmlFieldProps = HtmlEditorProps & {
     title?: string;
@@ -34,10 +33,11 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
     ...props
 }) => {
     const textFieldClasses = unstyled ? '' : clsx(
-        'flex min-h-[32px] items-center rounded-md border border-transparent py-1.5 md:min-h-[var(--control-height)]',
-        clearBg ? 'bg-transparent' : 'bg-grey-100 px-3 dark:bg-grey-900',
-        error ? `border-red` : `transition-all hover:bg-grey-100 has-[:focus]:border-green has-[:focus]:bg-white has-[:focus]:shadow-[0_0_0_1px_rgba(48,207,67,1)] dark:selection:bg-[rgba(88,101,116,0.99)] dark:hover:bg-grey-900 dark:has-[:focus]:bg-grey-950`,
-        (title && !hideTitle && !clearBg) && `mt-2`,
+        inputSurface('within'),
+        'flex min-h-8 items-center py-1.5 md:min-h-[var(--control-height)]',
+        clearBg ? 'bg-transparent' : 'px-3',
+        error && 'border-destructive',
+        title && !hideTitle && !clearBg && 'mt-2',
         className
     );
 
@@ -47,7 +47,7 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
             <div className={textFieldClasses}>
                 <HtmlEditor {...props} value={value} />
             </div>
-            {hint && <LegacyHint className={clsx('mt-1', hintClassName)} error={error}>{hint}</LegacyHint>}
+            {hint && <FieldDescription className={clsx('mt-1', error && 'text-destructive', hintClassName)}>{hint}</FieldDescription>}
         </div>
     );
 };

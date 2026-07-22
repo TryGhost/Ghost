@@ -1,7 +1,7 @@
-import type {ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import React, {Suspense, forwardRef} from 'react';
 import type {CodeEditorProps} from './code-editor-view';
 import type {FetchKoenigLexical} from './html-editor';
+import type {ReactCodeMirrorRef} from '@uiw/react-codemirror';
 
 export type {CodeEditorProps, FetchKoenigLexical};
 

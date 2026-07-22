@@ -51,7 +51,7 @@ const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }>
             value: 'owner'
         };
         return (
-            <Field data-disabled>
+            <Field>
                 <FieldLabel>Role</FieldLabel>
                 <Select value={ownerOption.value} disabled>
                     <SelectTrigger aria-label='Role'><SelectValue /></SelectTrigger>

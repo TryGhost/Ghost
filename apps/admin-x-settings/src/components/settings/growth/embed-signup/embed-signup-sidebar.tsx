@@ -1,6 +1,7 @@
+import ColorPickerField from '../../../color-picker-field';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Button, ButtonGroup, ColorPickerField, Form, StickyFooter} from '@tryghost/admin-x-design-system';
-import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox, Textarea} from '@tryghost/shade/components';
+import {Button, ButtonGroup, Form} from '@tryghost/admin-x-design-system';
+import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox, StickyFooter, Textarea} from '@tryghost/shade/components';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
 import {Plus} from 'lucide-react';
 import {Text} from '@tryghost/shade/primitives';

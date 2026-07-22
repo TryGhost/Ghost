@@ -178,6 +178,9 @@ catalog:
   vitest-browser-react: 2.2.0
   zod: 4.4.3
   form-data: 4.0.6
+  '@dnd-kit/core': 6.3.1
+  '@dnd-kit/sortable': 7.0.2
+  '@dnd-kit/utilities': 3.2.2
 
 catalogs:
   react17:
