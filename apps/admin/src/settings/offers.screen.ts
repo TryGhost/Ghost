@@ -10,6 +10,7 @@ export const offersScreen = {
 
     listModal: () => page.getByTestId(testIds.listModal),
     listRows: () => page.getByTestId(testIds.listRow),
+    tableRows: () => page.getByTestId(testIds.tableBody).getByRole("row"),
     retentionRows: () => page.getByTestId(testIds.retentionRow),
     retentionRedemptionsLink: (cadence: "monthly" | "yearly") => page.getByTestId(testIds.retentionRedemptionsLink(cadence)),
     newOfferButton: () => page.getByTestId(testIds.listModal).getByRole("button", { name: names.newOfferButton }),
@@ -37,5 +38,15 @@ export const offersScreen = {
     async showArchivedOffers(): Promise<void> {
         await offersScreen.listModal().getByRole("button", { name: names.filterOptionsButton }).click();
         await page.getByRole("menuitemcheckbox", { name: names.showArchivedToggle }).click();
+    },
+
+    async sortOffersBy(option: "Date added" | "Name" | "Redemptions"): Promise<void> {
+        await offersScreen.listModal().getByRole("button", { name: names.filterOptionsButton }).click();
+        await page.getByRole("menuitemradio", { name: option }).click();
+    },
+
+    async toggleSortDirection(direction: "Ascending" | "Descending"): Promise<void> {
+        await offersScreen.listModal().getByRole("button", { name: names.filterOptionsButton }).click();
+        await page.getByRole("menuitem").filter({ hasText: direction }).click();
     },
 };

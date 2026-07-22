@@ -194,6 +194,46 @@ describe("Offers", () => {
         await expect.element(offersScreen.listModal()).toHaveTextContent("Third offer");
     });
 
+    it("sorts signup and retention offers by date, name and redemptions", async () => {
+        fakeSettingsScreens();
+        const supporter = supporterTier();
+        const tierRef = { id: supporter.id, name: supporter.name };
+        fakeTiers([supporter]);
+        fakeOffers([
+            offer({ name: "Alpha signup", created_at: "2026-01-04T12:00:00.000Z", redemption_count: 5, tier: tierRef }),
+            offer({ name: "Zulu signup", created_at: "2026-01-01T12:00:00.000Z", redemption_count: 1, tier: tierRef }),
+            retentionOffer({ name: "Monthly retention offer", created_at: "2026-01-03T12:00:00.000Z", redemption_count: 7 }),
+            retentionOffer({ name: "Yearly retention offer", cadence: "year", created_at: "2026-01-02T12:00:00.000Z", redemption_count: 3 }),
+        ]);
+        await renderAdminApp("/settings/offers/edit", withStripe());
+
+        const rows = offersScreen.tableRows();
+        await expect(rows).toHaveCount(4);
+
+        const expectOrder = async (names: string[]) => {
+            for (const [index, name] of names.entries()) {
+                await expect.element(rows.nth(index)).toHaveTextContent(name);
+            }
+        };
+
+        await expectOrder(["Alpha signup", "Monthly retention", "Yearly retention", "Zulu signup"]);
+
+        await offersScreen.sortOffersBy("Name");
+        await expectOrder(["Zulu signup", "Yearly retention", "Monthly retention", "Alpha signup"]);
+
+        await offersScreen.toggleSortDirection("Descending");
+        await expectOrder(["Alpha signup", "Monthly retention", "Yearly retention", "Zulu signup"]);
+
+        await offersScreen.sortOffersBy("Redemptions");
+        await expectOrder(["Zulu signup", "Yearly retention", "Alpha signup", "Monthly retention"]);
+
+        await offersScreen.toggleSortDirection("Ascending");
+        await expectOrder(["Monthly retention", "Alpha signup", "Yearly retention", "Zulu signup"]);
+
+        await offersScreen.sortOffersBy("Date added");
+        await expectOrder(["Alpha signup", "Monthly retention", "Yearly retention", "Zulu signup"]);
+    });
+
     it("supports updating an offer", async () => {
         fakeSettingsScreens();
         const supporter = supporterTier();
@@ -275,7 +315,7 @@ describe("Offers", () => {
             const rows = offersScreen.retentionRows();
             await expect(rows).toHaveCount(2);
 
-            const monthlyRow = rows.nth(0);
+            const monthlyRow = rows.filter({ hasText: "Monthly retention" });
             await expect.element(monthlyRow).toHaveTextContent("Monthly retention");
             await expect.element(monthlyRow).toHaveTextContent("25% OFF");
             await expect.element(monthlyRow).toHaveTextContent("First payment");
@@ -285,7 +325,7 @@ describe("Offers", () => {
                 .element(offersScreen.retentionRedemptionsLink("monthly"))
                 .toHaveAttribute("href", "/ghost/#/members?filter=offer_redemptions%3A%5Bretention-month-active%2Cretention-month-archived%5D");
 
-            const yearlyRow = rows.nth(1);
+            const yearlyRow = rows.filter({ hasText: "Yearly retention" });
             await expect.element(yearlyRow).toHaveTextContent("Yearly retention");
             await expect.element(yearlyRow).toHaveTextContent("Inactive");
             await expect.element(yearlyRow).toHaveTextContent("9");
