@@ -16,7 +16,7 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "SKIP_DEPENDENCY_CHECKER=true ember serve",
+    "dev": "SKIP_DEPENDENCY_CHECKER=true NODE_OPTIONS=--disable-warning=DEP0179 ember serve",
     "build": "ember build --environment=production --silent",
     "build:dev": "SKIP_DEPENDENCY_CHECKER=true pnpm build --environment=development",
     "test": "ember exam --split 2 --parallel",
