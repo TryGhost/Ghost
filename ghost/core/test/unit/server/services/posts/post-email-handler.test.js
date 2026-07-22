@@ -21,7 +21,7 @@ describe('PostEmailHandler', function () {
         };
 
         mockEmailService = {
-            checkCanSendEmail: sinon.stub().resolves(),
+            checkCanSendEmail: sinon.stub().resolves({emailCount: 42}),
             createEmail: sinon.stub(),
             retryEmail: sinon.stub()
         };
@@ -133,7 +133,7 @@ describe('PostEmailHandler', function () {
             setupExistingPost();
             const newsletter = setupNewsletter();
 
-            await postEmailHandler.validateBeforeSave(createFrame('published', {newsletter: 'default-newsletter'}));
+            const result = await postEmailHandler.validateBeforeSave(createFrame('published', {newsletter: 'default-newsletter'}));
 
             sinon.assert.calledOnceWithExactly(
                 mockModels.Post.findOne,
@@ -141,6 +141,11 @@ describe('PostEmailHandler', function () {
                 {columns: ['id', 'status', 'newsletter_id', 'email_recipient_filter']}
             );
             sinon.assert.calledOnceWithExactly(mockEmailService.checkCanSendEmail, newsletter, 'all');
+            assert.deepEqual(result, {
+                newsletter,
+                emailRecipientFilter: 'all',
+                emailCount: 42
+            });
         });
 
         it('validates when publishing post with existing newsletter_id', async function () {
@@ -382,11 +387,12 @@ describe('PostEmailHandler', function () {
         it('creates email when publishing fresh post', async function () {
             const model = createMockModel();
             const createdEmail = {id: 'email-123'};
+            const preflight = {emailCount: 42};
             mockEmailService.createEmail.resolves(createdEmail);
 
-            await postEmailHandler.createOrRetryEmail(model);
+            await postEmailHandler.createOrRetryEmail(model, {preflight});
 
-            sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model);
+            sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model, {preflight});
             sinon.assert.notCalled(mockEmailService.retryEmail);
             sinon.assert.calledOnceWithExactly(model.set, 'email', createdEmail);
         });
@@ -422,7 +428,7 @@ describe('PostEmailHandler', function () {
 
             await postEmailHandler.createOrRetryEmail(model);
 
-            sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model);
+            sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model, {preflight: undefined});
             sinon.assert.calledOnceWithExactly(model.set, 'email', createdEmail);
         });
 
@@ -432,7 +438,7 @@ describe('PostEmailHandler', function () {
 
             await postEmailHandler.createOrRetryEmail(model);
 
-            sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model);
+            sinon.assert.calledOnceWithExactly(mockEmailService.createEmail, model, {preflight: undefined});
             sinon.assert.notCalled(model.set);
         });
     });
