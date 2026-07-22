@@ -41,6 +41,7 @@ const TIMEDSAVE_TIMEOUT = 60000;
 
 const TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
 const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
+const FIRST_NAME_HELPER_REGEX = /\{first_name(?:,?\s*"(?:[^"\\]|\\.)*")?\}/g;
 
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
@@ -143,6 +144,32 @@ function textHasTk(text) {
     }
 
     return true;
+}
+
+function countFirstNameHelpers(text) {
+    const matches = text.match(FIRST_NAME_HELPER_REGEX);
+    return matches ? matches.length : 0;
+}
+
+function countInvalidFirstNameHelpers(value) {
+    if (typeof value === 'string') {
+        return countFirstNameHelpers(value);
+    }
+
+    if (Array.isArray(value)) {
+        return value.reduce((count, child) => count + countInvalidFirstNameHelpers(child), 0);
+    }
+
+    if (!value || typeof value !== 'object') {
+        return 0;
+    }
+
+    // {first_name} helpers are valid inside the Email card only
+    if (value.type === 'email') {
+        return 0;
+    }
+
+    return Object.values(value).reduce((count, child) => count + countInvalidFirstNameHelpers(child), 0);
 }
 
 @classic
@@ -306,6 +333,20 @@ export default class LexicalEditorController extends Controller {
         const titleTk = this.titleHasTk ? 1 : 0;
         const excerptTk = (this.feature.editorExcerpt && this.excerptHasTk) ? 1 : 0;
         return titleTk + excerptTk + this.postTkCount + this.featureImageTkCount;
+    }
+
+    @computed('post.lexicalScratch')
+    get invalidFirstNameCount() {
+        if (!this.post?.lexicalScratch) {
+            return 0;
+        }
+
+        try {
+            const lexical = JSON.parse(this.post.lexicalScratch);
+            return countInvalidFirstNameHelpers(lexical);
+        } catch (e) {
+            return 0;
+        }
     }
 
     @action
