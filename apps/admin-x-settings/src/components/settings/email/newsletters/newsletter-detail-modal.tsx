@@ -4,13 +4,15 @@ import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, HtmlField, Icon, LimitModal, PreviewModalContent, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Stack, Text} from '@tryghost/shade/primitives';
+import {Trash2} from 'lucide-react';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -295,24 +297,28 @@ const Sidebar: React.FC<{
                             <Text as='h6' className="mb-2 text-base" tone='secondary' weight='semibold'>Header image</Text>
                         </div>
                         <div className='flex-column flex gap-1'>
-                            <ImageUpload
-                                deleteButtonClassName='top-1! right-1!'
-                                height={newsletter.header_image ? '66px' : '64px'}
-                                id='logo'
-                                imageURL={newsletter.header_image || undefined}
-                                onDelete={() => {
-                                    updateNewsletter({header_image: null});
-                                }}
-                                onUpload={async (file) => {
-                                    try {
-                                        const imageUrl = getImageUrl(await uploadImage({file}));
-                                        updateNewsletter({header_image: imageUrl});
-                                    } catch (e) {
-                                        handleError(e);
-                                    }
-                                }}
-                            >
-                                <Icon colorClass='text-grey-700 dark:text-grey-300' name='picture' />
+                            <ImageUpload className='h-16.5'>
+                                {newsletter.header_image ? (
+                                    <ImageUploadPreview>
+                                        <ImageUploadImage id='logo' src={newsletter.header_image} />
+                                        <ImageUploadActions>
+                                            <ImageUploadAction aria-label='Remove header image' onClick={() => updateNewsletter({header_image: null})}>
+                                                <Trash2 />
+                                            </ImageUploadAction>
+                                        </ImageUploadActions>
+                                    </ImageUploadPreview>
+                                ) : (
+                                    <ImageUploadDropzone inputId='logo' onDropAccepted={async ([file]) => {
+                                        try {
+                                            const imageUrl = getImageUrl(await uploadImage({file}));
+                                            updateNewsletter({header_image: imageUrl});
+                                        } catch (e) {
+                                            handleError(e);
+                                        }
+                                    }}>
+                                        <Icon colorClass='text-grey-700 dark:text-grey-300' name='picture' />
+                                    </ImageUploadDropzone>
+                                )}
                             </ImageUpload>
                             <FieldDescription>{formatNumber(1200)}×{formatNumber(600)} recommended. Use a transparent PNG for best results on any background.</FieldDescription>
                         </div>

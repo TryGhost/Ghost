@@ -4,9 +4,11 @@ import React, {useEffect, useState} from 'react';
 import WebhooksTable from './webhooks-table';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {type APIKey, useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
-import {ConfirmationModal, Form, ImageUpload, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {type Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {Trash2} from 'lucide-react';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -94,30 +96,36 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         }}
     >
         <div className='mt-7 flex w-full flex-col gap-7 md:flex-row'>
-            <div>
-                <ImageUpload
-                    height='100px'
-                    id='custom-integration-icon'
-                    imageURL={formState.icon_image || undefined}
-                    width='100px'
-                    onDelete={() => updateForm(state => ({...state, icon_image: null}))}
-                    onUpload={async (file) => {
-                        try {
-                            const imageUrl = getImageUrl(await uploadImage({file}));
-                            updateForm(state => ({...state, icon_image: imageUrl}));
-                        } catch (e) {
-                            const error = e as APIError;
-                            if (error.response!.status === 415) {
-                                error.message = 'Unsupported file type';
+            <div className='shrink-0'>
+                <ImageUpload className='size-25'>
+                    {formState.icon_image ? (
+                        <ImageUploadPreview>
+                            <ImageUploadImage id='custom-integration-icon' src={formState.icon_image} />
+                            <ImageUploadActions>
+                                <ImageUploadAction aria-label='Remove icon' onClick={() => updateForm(state => ({...state, icon_image: null}))}>
+                                    <Trash2 />
+                                </ImageUploadAction>
+                            </ImageUploadActions>
+                        </ImageUploadPreview>
+                    ) : (
+                        <ImageUploadDropzone inputId='custom-integration-icon' onDropAccepted={async ([file]) => {
+                            try {
+                                const imageUrl = getImageUrl(await uploadImage({file}));
+                                updateForm(state => ({...state, icon_image: imageUrl}));
+                            } catch (e) {
+                                const error = e as APIError;
+                                if (error.response!.status === 415) {
+                                    error.message = 'Unsupported file type';
+                                }
+                                handleError(error);
                             }
-                            handleError(error);
-                        }
-                    }}
-                >
-                    Upload icon
+                        }}>
+                            Upload icon
+                        </ImageUploadDropzone>
+                    )}
                 </ImageUpload>
             </div>
-            <div className='flex grow flex-col'>
+            <div className='flex min-w-0 grow flex-col'>
                 <Form>
                     <TextField
                         error={Boolean(errors.name)}

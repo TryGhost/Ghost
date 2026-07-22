@@ -1,10 +1,10 @@
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import pinturaScreenshot from '../../../../assets/images/pintura-screenshot.png';
-import {Button, Form, Icon, Modal, showToast} from '@tryghost/admin-x-design-system';
-import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
+import {Dropzone, Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
+import {Form, Icon, Modal, showToast} from '@tryghost/admin-x-design-system';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -50,26 +50,9 @@ const PinturaModal = NiceModal.create(() => {
         }
     };
 
-    const jsUploadRef = useRef<HTMLInputElement>(null);
-    const cssUploadRef = useRef<HTMLInputElement>(null);
-    const triggerUpload = (form: string) => {
-        if (form === 'js') {
-            jsUploadRef.current?.click();
-        }
-
-        if (form === 'css') {
-            cssUploadRef.current?.click();
-        }
-    };
-
-    const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>, form: 'js' | 'css') => {
+    const handleUpload = async (file: File, form: 'js' | 'css') => {
         try {
             setUploadingState(prev => ({...prev, [form]: true}));
-
-            const file = event.target?.files?.[0];
-            if (!file) {
-                return;
-            }
 
             const {files} = await uploadFile({file});
             const url = files[0].url;
@@ -79,15 +62,14 @@ const PinturaModal = NiceModal.create(() => {
 
             await editSettings(updates);
 
-            setUploadingState(prev => ({...prev, [form]: false}));
-
             showToast({
                 type: 'success',
                 title: `Pintura ${form} uploaded`
             });
         } catch (e) {
-            setUploadingState({js: false, css: false});
             handleError(e);
+        } finally {
+            setUploadingState(prev => ({...prev, [form]: false}));
         }
     };
 
@@ -139,24 +121,18 @@ const PinturaModal = NiceModal.create(() => {
                                     <div>Upload Pintura script</div>
                                     <div className='text-sm text-grey-600'>Upload the <code>pintura-umd.js</code> file from the Pintura package</div>
                                 </div>
-                                <input ref={jsUploadRef} accept='.js' type="file" hidden onChange={async (e) => {
-                                    await handleUpload(e, 'js');
-                                }} />
-                                <Button color='outline' disabled={uploadingState.js} label='Upload' onClick={() => {
-                                    triggerUpload('js');
-                                }} />
+                                <Dropzone accept={{'text/javascript': ['.js'], 'application/javascript': ['.js']}} disabled={uploadingState.js} variant='button' onDropAccepted={files => handleUpload(files[0], 'js')}>
+                                    {uploadingState.js ? 'Uploading...' : 'Upload'}
+                                </Dropzone>
                             </div>
                             <div className='flex flex-col justify-between gap-1 md:flex-row md:items-center'>
                                 <div>
                                     <div>Upload Pintura styles</div>
                                     <div className='text-sm text-grey-600'>Upload the <code>pintura.css</code> file from the Pintura package</div>
                                 </div>
-                                <input ref={cssUploadRef} accept='.css' type="file" hidden onChange={async (e) => {
-                                    await handleUpload(e, 'css');
-                                }} />
-                                <Button color='outline' disabled={uploadingState.css} label='Upload' onClick={() => {
-                                    triggerUpload('css');
-                                }} />
+                                <Dropzone accept={{'text/css': ['.css']}} disabled={uploadingState.css} variant='button' onDropAccepted={files => handleUpload(files[0], 'css')}>
+                                    {uploadingState.css ? 'Uploading...' : 'Upload'}
+                                </Dropzone>
                             </div>
                         </>
                     )}

@@ -46,6 +46,20 @@ describe('Dropzone Component', () => {
         }
     });
 
+    it('forwards compatibility identifiers and labels to the file input', () => {
+        render(
+            <Dropzone inputAriaLabel='Upload redirects file' inputId='upload-redirects' inputTestId='redirects-input'>
+                Upload redirects file
+            </Dropzone>
+        );
+
+        const input = screen.getByLabelText('Upload redirects file');
+
+        assert.ok(input instanceof HTMLInputElement, 'Accessible upload label should resolve to the file input');
+        assert.equal(input.id, 'upload-redirects');
+        assert.equal(input.getAttribute('data-testid'), 'redirects-input');
+    });
+
     it('calls onDropAccepted for accepted files', async () => {
         const onDropAccepted = vi.fn();
         render(

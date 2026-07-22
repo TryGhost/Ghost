@@ -8,10 +8,12 @@ import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useStaffUsers from '../../../hooks/use-staff-users';
 import validator from 'validator';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {ConfirmationModal, Icon, ImageUpload, LimitModal, Modal, showToast} from '@tryghost/admin-x-design-system';
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Dropzone, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {ConfirmationModal, Icon, LimitModal, Modal, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {Pencil, Trash2} from 'lucide-react';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '../../../utils/social-urls/index';
 import {Text} from '@tryghost/shade/primitives';
@@ -308,9 +310,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     );
     const suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
-    const noCoverButtonClasses = 'rounded flex flex-nowrap items-center justify-center px-3 h-8 transition-all cursor-pointer font-medium border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white';
-
-    const coverButtonClasses = 'flex flex-nowrap items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 bg-[rgba(0,0,0,0.75)] rounded     text-white transition-all cursor-pointer font-medium nowrap';
+    const coverButtonClasses = 'h-8 bg-surface-inverse px-3 text-surface-inverse-foreground opacity-80 hover:bg-surface-inverse/90 hover:text-surface-inverse-foreground hover:opacity-100';
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 
@@ -352,71 +352,34 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         <div className='flex w-full flex-col gap-2'>
                             <div className='flex flex-nowrap items-start justify-between gap-3'>
                                 <div>
-                                    <ImageUpload
-                                        deleteButtonClassName='md:invisible absolute -right-1 -top-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
-                                        deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
-                                        editButtonClassName='md:invisible absolute -left-1 -top-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
-                                        fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
-                                        fileUploadProps={{dragIndicatorClassName: 'rounded-full', inputTestId: 'profile-image-upload'}}
-                                        id='avatar'
-                                        imageClassName='w-full h-full object-cover rounded-full shrink-0'
-                                        imageContainerClassName='relative group bg-cover bg-center -ml-1 h-[80px] w-[80px] shrink-0'
-                                        imageTestId='profile-image-preview'
-                                        imageURL={formState.profile_image ?? undefined}
-                                        pintura={
-                                            {
-                                                isEnabled: editor.isEnabled,
-                                                openEditor: async () => editor.openEditor({
-                                                    image: formState.profile_image || '',
-                                                    handleSave: async (file:File) => {
-                                                        handleImageUpload('profile_image', file);
-                                                    }
-                                                })
-                                            }
-                                        }
-                                        unstyled={true}
-                                        width='80px'
-                                        onDelete={() => {
-                                            handleImageDelete('profile_image');
-                                        }}
-                                        onUpload={(file: File) => {
-                                            handleImageUpload('profile_image', file);
-                                        }}
-                                    >
-                                        <Icon colorClass='black' name='user-add' size='lg' />
+                                    <ImageUpload className='-ml-1 size-20 overflow-visible rounded-full'>
+                                        {formState.profile_image ? (
+                                            <ImageUploadPreview className='rounded-full'>
+                                                <ImageUploadImage data-testid='profile-image-preview' id='avatar' src={formState.profile_image} />
+                                                <ImageUploadActions className='top-1 right-1'>
+                                                    {editor.isEnabled && <ImageUploadAction aria-label='Edit profile image' className='rounded-full' onClick={() => editor.openEditor({
+                                                        image: formState.profile_image || '',
+                                                        handleSave: async (file: File) => handleImageUpload('profile_image', file)
+                                                    })}><Pencil /></ImageUploadAction>}
+                                                    <ImageUploadAction aria-label='Remove profile image' className='rounded-full' onClick={() => handleImageDelete('profile_image')}><Trash2 /></ImageUploadAction>
+                                                </ImageUploadActions>
+                                            </ImageUploadPreview>
+                                        ) : (
+                                            <ImageUploadDropzone className='rounded-full bg-surface-inverse text-surface-inverse-foreground opacity-80 hover:opacity-100' inputId='avatar' inputTestId='profile-image-upload' onDropAccepted={files => handleImageUpload('profile_image', files[0])}>
+                                                <Icon colorClass='text-surface-inverse-foreground' name='user-add' size='lg' />
+                                            </ImageUploadDropzone>
+                                        )}
                                     </ImageUpload>
                                 </div>
                                 <div className='flex flex-nowrap items-start gap-3'>
-                                    <ImageUpload
-                                        buttonContainerClassName='flex items-end gap-4 justify-end flex-nowrap'
-                                        deleteButtonClassName={coverButtonClasses}
-                                        deleteButtonContent='Delete cover image'
-                                        editButtonClassName={coverButtonClasses}
-                                        fileUploadClassName={noCoverButtonClasses}
-                                        fileUploadProps={{inputTestId: 'cover-image-upload'}}
-                                        id='cover-image'
-                                        imageClassName='hidden'
-                                        imageTestId='cover-image-preview'
-                                        imageURL={formState.cover_image || ''}
-                                        pintura={
-                                            {
-                                                isEnabled: editor.isEnabled,
-                                                openEditor: async () => editor.openEditor({
-                                                    image: formState.cover_image || '',
-                                                    handleSave: async (file:File) => {
-                                                        handleImageUpload('cover_image', file);
-                                                    }
-                                                })
-                                            }
-                                        }
-                                        unstyled
-                                        onDelete={() => {
-                                            handleImageDelete('cover_image');
-                                        }}
-                                        onUpload={(file: File) => {
-                                            handleImageUpload('cover_image', file);
-                                        }}
-                                    >Upload cover image</ImageUpload>
+                                    {formState.cover_image ? <div className='flex flex-nowrap items-end justify-end gap-4'>
+                                        <img alt='' className='hidden' data-testid='cover-image-preview' src={formState.cover_image} />
+                                        {editor.isEnabled && <Button className={coverButtonClasses} onClick={() => editor.openEditor({
+                                            image: formState.cover_image || '',
+                                            handleSave: async (file: File) => handleImageUpload('cover_image', file)
+                                        })}>Edit cover image</Button>}
+                                        <Button className={coverButtonClasses} onClick={() => handleImageDelete('cover_image')}>Delete cover image</Button>
+                                    </div> : <Dropzone className='h-8' inputId='cover-image' inputTestId='cover-image-upload' variant='button' onDropAccepted={files => handleImageUpload('cover_image', files[0])}>Upload cover image</Dropzone>}
                                     {showMenu && <div className="z-10">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
