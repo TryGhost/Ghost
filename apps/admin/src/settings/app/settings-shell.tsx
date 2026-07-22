@@ -143,14 +143,17 @@ export function SettingsShell() {
     return (
         <ScrollSpyProvider navigatedSection={currentSegment}>
             <div className="flex size-full bg-background text-foreground">
-                <aside className="flex h-full w-[300px] shrink-0 flex-col overflow-y-auto overscroll-y-contain bg-sidebar px-6">
+                {/* Below the tablet breakpoint the sidebar collapses to a
+                    fixed search bar over the stacked sections, the legacy
+                    main-content responsive contract. */}
+                <aside className="fixed inset-x-0 top-0 z-[35] max-w-[calc(100%-56px)] bg-background px-6 tablet:relative tablet:inset-x-auto tablet:top-auto tablet:flex tablet:h-full tablet:w-[300px] tablet:max-w-none tablet:shrink-0 tablet:flex-col tablet:overflow-y-auto tablet:overscroll-y-contain tablet:bg-sidebar">
                     <SettingsSidebar
                         groups={groups}
                         onFilterScrollReset={() => scrollerRef.current?.scrollTo({ top: 0, left: 0 })}
                     />
                 </aside>
                 <div ref={scrollerRef} className="h-full flex-1 overflow-y-auto overscroll-y-contain">
-                    <div className="mx-auto flex max-w-[760px] flex-col gap-12 px-14 pt-16 pb-[60vh]">
+                    <div className="mx-auto flex max-w-[760px] flex-col gap-12 px-6 pt-28 pb-[60vh] tablet:px-14 tablet:pt-16">
                         {areas.map((area) => (
                             <AreaSection key={area.id} area={area} Component={AREA_COMPONENTS[area.id]} />
                         ))}

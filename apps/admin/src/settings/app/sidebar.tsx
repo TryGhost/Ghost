@@ -136,8 +136,8 @@ export function SettingsSidebar({ groups, onFilterScrollReset }: SidebarProps) {
     };
 
     return (
-        <div className="flex h-full w-full flex-col" data-testid="sidebar">
-            <div className="sticky top-0 z-10 bg-sidebar pt-6 pb-4">
+        <div className="flex w-full flex-col tablet:h-full" data-testid="sidebar">
+            <div className="sticky top-0 z-10 bg-background pt-6 pb-4 tablet:bg-sidebar">
                 <InputGroup className="bg-surface-elevated">
                     <InputGroupAddon align="inline-start">
                         <LucideIcon.Search aria-hidden="true" className="size-4" />
@@ -159,11 +159,13 @@ export function SettingsSidebar({ groups, onFilterScrollReset }: SidebarProps) {
                             }}>
                                 <LucideIcon.X aria-hidden="true" />
                             </InputGroupButton>
-                        ) : <Kbd>/</Kbd>}
+                        ) : <Kbd className="hidden tablet:inline-flex">/</Kbd>}
                     </InputGroupAddon>
                 </InputGroup>
             </div>
-            <nav className="flex flex-col gap-6 pb-10">
+            {/* The nav list is hidden below the tablet breakpoint — mobile
+                keeps only the search bar, the legacy sidebar contract. */}
+            <nav className="hidden flex-col gap-6 pb-10 tablet:flex">
                 {noResult && (
                     <div className="px-3 text-sm text-muted-foreground">
                         <h2 className="mb-2 text-sm font-semibold text-foreground">No result</h2>
