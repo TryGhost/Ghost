@@ -39,6 +39,7 @@ export const getGiftPreviewUrl = ({settings, config, siteData}: giftPreviewUrlTy
     params.append('giftPageDescription', encodeURIComponent(getSettingValue(settings, 'gift_page_description') || ''));
     params.append('giftPageImage', encodeURIComponent(getSettingValue(settings, 'gift_page_image') || ''));
     params.append('giftDurations', encodeURIComponent(getSettingValue(settings, 'gift_durations') || '[1,12]'));
+    params.append('giftTiers', encodeURIComponent(getSettingValue(settings, 'gift_tiers') || '[]'));
 
     params.append('disableBackground', 'false');
     params.append('admin_toolbar', '0');

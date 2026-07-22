@@ -25,6 +25,7 @@ Object {
     "gift_page_heading": null,
     "gift_page_image": null,
     "gift_subscriptions_enabled": true,
+    "gift_tiers": Array [],
     "icon": null,
     "instagram": null,
     "labs": Any<Object>,

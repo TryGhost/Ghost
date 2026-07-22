@@ -44,12 +44,28 @@ const GiftSidebar: React.FC<{
         ['gift_page_heading', 'gift_page_description', 'gift_page_image']
     );
 
-    const [giftDurationsJson, portalPlansJson] = getSettingValues(localSettings, ['gift_durations', 'portal_plans']);
+    const [giftDurationsJson, portalPlansJson, giftTiersJson] = getSettingValues(localSettings, ['gift_durations', 'portal_plans', 'gift_tiers']);
     const giftDurations = JSON.parse(giftDurationsJson?.toString() || '[1,12]') as number[];
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
     const offeredDurations = DURATION_OPTIONS.filter(({months, anchor}) => giftDurations.includes(months) && portalPlans.includes(anchor));
 
     const paidTiers = getPaidActiveTiers(localTiers || []);
+    const giftTiers = JSON.parse(giftTiersJson?.toString() || '[]') as string[];
+    // An empty gift_tiers list means "all paid tiers".
+    const isTierOffered = (tierId: string) => giftTiers.length === 0 || giftTiers.includes(tierId);
+    const offeredTiers = paidTiers.filter(tier => isTierOffered(tier.id));
+
+    const toggleTier = (tierId: string, checked: boolean) => {
+        const nextIds = paidTiers
+            .filter(tier => (tier.id === tierId ? checked : isTierOffered(tier.id)))
+            .map(tier => tier.id);
+        // Must offer at least one tier; ignore an unchecking that empties the list.
+        if (nextIds.length === 0) {
+            return;
+        }
+        // Store the canonical "all" ([]) when every tier is offered.
+        updateSetting('gift_tiers', JSON.stringify(nextIds.length === paidTiers.length ? [] : nextIds));
+    };
 
     // The gift page shows the description in full (no "Show more"), so cap it at
     // a length that always fits on screen alongside the form.
@@ -90,7 +106,7 @@ const GiftSidebar: React.FC<{
         });
     };
 
-    const showPricing = offeredDurations.length > 0 && paidTiers.length > 0;
+    const showPricing = offeredDurations.length > 0 && offeredTiers.length > 0;
 
     return (
         <div className='flex flex-col gap-8 pt-4'>
@@ -127,6 +143,24 @@ const GiftSidebar: React.FC<{
                 </div>
             </div>
 
+            {paidTiers.length > 1 && (
+                <div>
+                    <Heading level={6}>Tiers</Heading>
+                    <p className='mt-1 text-sm text-grey-700'>Choose which tiers readers can gift.</p>
+                    <div className='mt-3 flex flex-col gap-2'>
+                        {paidTiers.map(tier => (
+                            <Checkbox
+                                key={tier.id}
+                                checked={isTierOffered(tier.id)}
+                                label={tier.name}
+                                value={tier.id}
+                                onChange={checked => toggleTier(tier.id, checked)}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div>
                 <Heading level={6}>Durations</Heading>
                 <div className='mt-3 flex flex-col gap-2'>
@@ -155,11 +189,11 @@ const GiftSidebar: React.FC<{
                     <Heading level={6}>Pricing</Heading>
                     <p className='mt-1 text-sm text-grey-700'>Set a one-time gift price per duration, or leave a field blank to charge the default shown in grey (the monthly price × the duration, and the yearly price for a year).</p>
                     <div className='mt-4 flex flex-col gap-6'>
-                        {paidTiers.map((tier, i) => (
+                        {offeredTiers.map((tier, i) => (
                             <React.Fragment key={tier.id}>
                                 {i > 0 && <Separator />}
                                 <div>
-                                    {paidTiers.length > 1 && (
+                                    {offeredTiers.length > 1 && (
                                         <Heading className='mb-3' level={6}>{tier.name}</Heading>
                                     )}
                                     <div className='flex flex-col gap-3'>

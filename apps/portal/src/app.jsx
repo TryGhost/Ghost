@@ -508,6 +508,12 @@ export default class App extends React.Component {
                 } catch (e) {
                     // ignore malformed preview durations
                 }
+            } else if (key === 'giftTiers' && value) {
+                try {
+                    data.site.gift_tiers = JSON.parse(value);
+                } catch (e) {
+                    // ignore malformed preview tiers
+                }
             }
         }
         data.site.portal_plans = allowedPlans;

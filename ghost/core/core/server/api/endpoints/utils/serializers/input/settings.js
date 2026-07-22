@@ -83,6 +83,7 @@ const EDITABLE_SETTINGS = [
     'gift_page_description',
     'gift_page_image',
     'gift_durations',
+    'gift_tiers',
     'recommendations_enabled',
     'body_font',
     'heading_font',

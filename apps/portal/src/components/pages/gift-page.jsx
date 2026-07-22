@@ -948,7 +948,12 @@ const GiftPage = () => {
     const activeDuration = (selectedDuration && offeredDurations.includes(selectedDuration))
         ? selectedDuration
         : getDefaultGiftDuration({site});
-    const products = getAvailableProducts({site}).filter(p => p.type === 'paid');
+    // Publishers can choose which paid tiers are offered as gifts. An empty
+    // gift_tiers list means "all paid tiers" (backward compatible).
+    const giftTiers = Array.isArray(site.gift_tiers) ? site.gift_tiers : [];
+    const products = getAvailableProducts({site})
+        .filter(p => p.type === 'paid')
+        .filter(p => giftTiers.length === 0 || giftTiers.includes(p.id));
 
     const siteIcon = site.icon;
     const siteTitle = site.title || '';

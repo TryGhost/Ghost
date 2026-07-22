@@ -698,6 +698,10 @@
         "gift_durations": {
             "defaultValue": "[1,12]",
             "type": "array"
+        },
+        "gift_tiers": {
+            "defaultValue": "[]",
+            "type": "array"
         }
     },
     "recommendations": {
