@@ -86,6 +86,7 @@ export default class FeatureService extends Service {
     @feature('commentModeration') commentModeration;
     @feature('memberDetailsReact') memberDetailsReact;
     @feature('previewByTier') previewByTier;
+    @feature('automations') automations;
     _user = null;
 
     @computed('settings.labs')

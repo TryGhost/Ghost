@@ -67,6 +67,10 @@ export default class GhBillingIframe extends Component {
             this._handleForceUpgradeRequest();
         }
 
+        if (data?.request === 'navigateToAdmin') {
+            this.billing.navigateToAdminDestination(data.destination);
+        }
+
         if (data?.subscription) {
             await this._handleSubscriptionUpdate(data);
         }

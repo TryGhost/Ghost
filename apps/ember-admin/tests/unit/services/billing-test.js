@@ -4,8 +4,8 @@ import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {getSentryTestConfig} from 'ghost-admin/utils/sentry';
+import {settled, waitUntil} from '@ember/test-helpers';
 import {setupTest} from 'ember-mocha';
-import {waitUntil} from '@ember/test-helpers';
 
 const {sentryTransport, testkit} = sentryTestKit();
 
@@ -341,5 +341,128 @@ describe('Unit: Service: billing', function () {
         service.reportBillingAppLoadFailure();
 
         expect(testkit.reports()).to.have.lengthOf(0);
+    });
+
+    it('navigates newsletters to the emails route when the automations flag is enabled', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        sinon.stub(service.feature, 'automations').get(() => true);
+
+        service.navigateToAdminDestination('newsletters');
+
+        expect(transitionTo.calledOnceWithExactly('/settings/emails')).to.be.true;
+    });
+
+    it('navigates newsletters to the newsletters route when the automations flag is disabled', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+        sinon.stub(service.feature, 'automations').get(() => false);
+
+        service.navigateToAdminDestination('newsletters');
+
+        expect(transitionTo.calledOnceWithExactly('/settings/newsletters')).to.be.true;
+    });
+
+    it('ignores destinations that are not approved keys', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const transitionTo = sinon.stub(service.router, 'transitionTo');
+
+        service.navigateToAdminDestination('dashboard');
+        service.navigateToAdminDestination('__proto__');
+        service.navigateToAdminDestination('constructor');
+        service.navigateToAdminDestination(undefined);
+        service.navigateToAdminDestination({destination: 'analytics'});
+
+        expect(transitionTo.called).to.be.false;
+    });
+
+    function limitUpdateCalls(postMessage) {
+        return postMessage.getCalls().filter(call => call.args[0]?.query === 'limitUpdate');
+    }
+
+    it('sends limitUpdate when the billing overlay transitions from hidden to visible', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const postMessage = sinon.spy();
+        sinon.stub(service, 'getBillingIframe').returns({contentWindow: {postMessage}});
+
+        service.toggleProWindow(true);
+
+        const calls = limitUpdateCalls(postMessage);
+        expect(calls).to.have.lengthOf(1);
+        expect(calls[0].args).to.deep.equal([{query: 'limitUpdate'}, '*']);
+    });
+
+    it('does not send limitUpdate when the billing overlay is hidden', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const postMessage = sinon.spy();
+        sinon.stub(service, 'getBillingIframe').returns({contentWindow: {postMessage}});
+
+        service.toggleProWindow(false);
+
+        expect(limitUpdateCalls(postMessage)).to.have.lengthOf(0);
+    });
+
+    it('does not send limitUpdate when the billing iframe is not loaded', async function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const postMessage = sinon.spy();
+        const getBillingIframe = sinon.stub(service, 'getBillingIframe').returns(null);
+
+        expect(() => service.toggleProWindow(true)).to.not.throw();
+
+        // Restoring the iframe surfaces any send the transition might have
+        // queued or deferred instead of dropping
+        getBillingIframe.returns({contentWindow: {postMessage}});
+        await settled();
+        expect(limitUpdateCalls(postMessage)).to.have.lengthOf(0);
+    });
+
+    it('does not send limitUpdate on a redundant re-open of an already-visible overlay', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const postMessage = sinon.spy();
+        sinon.stub(service, 'getBillingIframe').returns({contentWindow: {postMessage}});
+        service.billingWindowOpen = true;
+
+        service.toggleProWindow(true);
+
+        expect(limitUpdateCalls(postMessage)).to.have.lengthOf(0);
+    });
+
+    it('does not send limitUpdate on checkout re-entry of an already-visible overlay', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const postMessage = sinon.spy();
+        sinon.stub(service, 'getBillingIframe').returns({contentWindow: {postMessage}});
+        service.billingWindowOpen = true;
+        service.action = 'checkout';
+
+        service.toggleProWindow(true);
+
+        expect(limitUpdateCalls(postMessage)).to.have.lengthOf(0);
+    });
+
+    it('sends limitUpdate exactly once via the nav-link entry path', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const postMessage = sinon.spy();
+        sinon.stub(service, 'getBillingIframe').returns({contentWindow: {postMessage}});
+        sinon.stub(service, 'getOwnerUser').resolves(null);
+        // Simulate ProRoute.model() driving the overlay open on transition
+        sinon.stub(service.router, 'transitionTo').callsFake(() => service.toggleProWindow(true));
+
+        const previousHash = window.location.hash;
+        try {
+            service.openBillingWindow('/posts', '/pro');
+        } finally {
+            window.location.hash = previousHash;
+        }
+
+        expect(limitUpdateCalls(postMessage)).to.have.lengthOf(1);
     });
 });
