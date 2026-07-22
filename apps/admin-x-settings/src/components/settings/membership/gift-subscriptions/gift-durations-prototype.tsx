@@ -167,7 +167,7 @@ const GiftDurationsPrototype: React.FC<{
 
             <div className='mt-6'>
                 <Heading level={6}>Pricing</Heading>
-                <p className='mt-1 mb-4 text-sm text-grey-700'>The default price (shown in grey) is worked out from the tier&apos;s plans: whole-year durations use the yearly price, and every other duration uses the monthly price × the number of months. Type to set your own, or reset a tier back to the defaults.</p>
+                <p className='mt-1 mb-4 text-sm text-grey-700'>The default price (shown in grey) is worked out from the tier&apos;s plans: whole-year durations use the yearly price × the number of years, and any other duration uses the monthly price × the number of months. Type to set your own, or reset a tier back to the defaults.</p>
                 {tiers.length === 0 && (
                     <p className='text-sm text-grey-600'>Add a paid tier to set pricing.</p>
                 )}
