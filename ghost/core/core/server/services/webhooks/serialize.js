@@ -1,4 +1,4 @@
-module.exports = async (event, model) => {
+module.exports = () => async (event, model) => {
     const _ = require('lodash');
     const api = require('../../api').endpoints;
     const apiFramework = require('@tryghost/api-framework');

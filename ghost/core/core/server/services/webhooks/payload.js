@@ -1,6 +1,4 @@
-const serialize = require('./serialize');
-
-module.exports = (event, model) => {
+module.exports = ({serialize}) => (event, model) => {
     const payload = {};
 
     if (model) {
