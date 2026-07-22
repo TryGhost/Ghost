@@ -28,40 +28,62 @@ export function sanitizeHtml(html: string): string {
 // (https://github.com/TryGhost/ActivityPub/blob/main/src/helpers/html.ts)
 const ALLOWED_SCRIPT_HOSTNAMES = ['platform.twitter.com', 'platform.x.com'];
 
+// Forced onto every iframe so embedded third-party frames (from arbitrary hosts)
+// cannot navigate the top-level window, escalate their own sandbox, or otherwise
+// misbehave. Must stay in sync with FORCED_IFRAME_SANDBOX in the backend sanitizer
+// (https://github.com/TryGhost/ActivityPub/blob/main/src/helpers/html.ts).
+// Omits allow-top-navigation (no tab hijacking); allow-same-origin is safe because
+// content iframes are cross-origin to the reader, so it only grants the frame its
+// own origin, never the reader's.
+const FORCED_IFRAME_SANDBOX = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation allow-forms';
+
 // Article content needs looser rules than sanitizeHtml (iframes for YouTube
 // embeds, scripts for Twitter embeds), so it gets its own DOMPurify instance
 const articlePurify = DOMPurify(window);
 
 articlePurify.addHook('uponSanitizeElement', (node, data) => {
-    if (data.tagName !== 'script') {
-        return;
-    }
-
     const element = node as Element;
-    const src = element.getAttribute('src') || '';
 
-    let hasAllowedSrc = false;
-    try {
-        // Relative URLs must not pass, so no base URL here
-        const url = new URL(src);
-        hasAllowedSrc = url.protocol === 'https:' && ALLOWED_SCRIPT_HOSTNAMES.includes(url.hostname);
-    } catch {
-        hasAllowedSrc = false;
-    }
+    if (data.tagName === 'script') {
+        const src = element.getAttribute('src') || '';
 
-    if (!hasAllowedSrc) {
-        element.parentNode?.removeChild(element);
+        let hasAllowedSrc = false;
+        try {
+            // Relative URLs must not pass, so no base URL here
+            const url = new URL(src);
+            hasAllowedSrc = url.protocol === 'https:' && ALLOWED_SCRIPT_HOSTNAMES.includes(url.hostname);
+        } catch {
+            hasAllowedSrc = false;
+        }
+
+        if (!hasAllowedSrc) {
+            element.parentNode?.removeChild(element);
+            return;
+        }
+
+        // Allowed scripts may only load code via src, never run inline code
+        element.textContent = '';
         return;
     }
 
-    // Allowed scripts may only load code via src, never run inline code
-    element.textContent = '';
+    if (data.tagName === 'iframe') {
+        const src = element.getAttribute('src') || '';
+        if (/^\s*(javascript|data|vbscript):/i.test(src)) {
+            element.parentNode?.removeChild(element);
+            return;
+        }
+
+        // Force our sandbox, overriding (not merging with) any supplied value.
+        // Set here (before attribute sanitization) so it survives via ADD_ATTR.
+        element.setAttribute('sandbox', FORCED_IFRAME_SANDBOX);
+        element.setAttribute('referrerpolicy', 'no-referrer');
+    }
 });
 
 export function sanitizeArticleContent(content: string): string {
     return articlePurify.sanitize(content, {
         ADD_TAGS: ['iframe', 'script'],
-        ADD_ATTR: ['target', 'frameborder', 'allowfullscreen', 'async', 'charset'],
+        ADD_ATTR: ['target', 'frameborder', 'allowfullscreen', 'async', 'charset', 'sandbox', 'referrerpolicy'],
         // Without this the HTML parser hoists leading <script>/<style> tags
         // into <head>, which DOMPurify then discards — content starting with
         // an embed script would lose it

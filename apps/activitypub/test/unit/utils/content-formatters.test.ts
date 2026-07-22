@@ -181,6 +181,27 @@ describe('Content Formatters', function () {
             expect(iframe.hasAttribute('allowfullscreen')).toBe(true);
         });
 
+        it('forces a restrictive sandbox on iframes, overriding any supplied value', function () {
+            const sandbox = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation allow-forms';
+
+            const result = sanitizeArticleContent(`
+                <iframe src="https://codepen.io/x/embed/abc"></iframe>
+                <iframe src="https://evil.example/phish" sandbox="allow-top-navigation allow-modals allow-same-origin"></iframe>
+            `);
+
+            const iframes = renderHtml(result).querySelectorAll('iframe');
+
+            expect(iframes).toHaveLength(2);
+            iframes.forEach((iframe) => {
+                // Overridden to our fixed set (attacker's allow-top-navigation is gone)
+                expect(iframe.getAttribute('sandbox')).toBe(sandbox);
+                expect(iframe.getAttribute('referrerpolicy')).toBe('no-referrer');
+            });
+            // Arbitrary embed hosts are kept (not host-filtered), just sandboxed
+            expect(iframes[0].getAttribute('src')).toBe('https://codepen.io/x/embed/abc');
+            expect(iframes[1].getAttribute('src')).toBe('https://evil.example/phish');
+        });
+
         it('removes unsafe iframe attributes and protocols', function () {
             const result = sanitizeArticleContent(`
                 <iframe src="javascript:alert(1)"></iframe>
