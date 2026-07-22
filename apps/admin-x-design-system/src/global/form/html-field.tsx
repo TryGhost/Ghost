@@ -2,6 +2,7 @@ import Heading from '../heading';
 import HtmlEditor, {HtmlEditorProps} from './html-editor';
 import React from 'react';
 import clsx from 'clsx';
+import LegacyHint from '../legacy-hint';
 
 export type HtmlFieldProps = HtmlEditorProps & {
     title?: string;
@@ -46,7 +47,7 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
             <div className={textFieldClasses}>
                 <HtmlEditor {...props} value={value} />
             </div>
-            {hint && <div className={clsx('mt-1 inline-block leading-snug', error ? 'text-red dark:text-red-500' : 'text-grey-700 dark:text-grey-600', hintClassName)} role={error ? 'alert' : undefined}>{hint}</div>}
+            {hint && <LegacyHint className={clsx('mt-1', hintClassName)} error={error}>{hint}</LegacyHint>}
         </div>
     );
 };
