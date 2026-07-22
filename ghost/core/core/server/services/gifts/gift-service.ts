@@ -138,6 +138,7 @@ export interface GiftPurchaseData {
     stripePaymentIntentId: string;
     buyerName: string | null;
     recipientEmail: string | null;
+    recipientName: string | null;
     message: string | null;
     deliverAt: string | null;
 }
@@ -162,6 +163,7 @@ interface DeliverySend {
     recipientEmail: string;
     buyerEmail: string;
     buyerName: string | null;
+    recipientName: string | null;
     message: string | null;
     expiresAt: Date;
 }
@@ -223,6 +225,7 @@ export class GiftService {
             buyerMemberId: member?.id ?? null,
             buyerName: data.buyerName,
             recipientEmail: data.recipientEmail,
+            recipientName: data.recipientName,
             message: data.message,
             tierId: data.tierId,
             cadence: data.cadence,
@@ -777,6 +780,7 @@ export class GiftService {
                 recipientEmail: locked.recipientEmail,
                 buyerEmail: locked.buyerEmail,
                 buyerName: locked.buyerName,
+                recipientName: locked.recipientName,
                 message: locked.message,
                 expiresAt: locked.expiresAt
             };
@@ -789,6 +793,7 @@ export class GiftService {
         await this.deps.giftEmailService.sendGiftDelivery({
             recipientEmail: result.recipientEmail,
             buyerName: result.buyerName,
+            recipientName: result.recipientName,
             message: result.message,
             token,
             tierName: tier.name,

@@ -35,6 +35,7 @@
     "Hey there,": "Pozdrav,",
     "Hey there!": "Pozdrav!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Možete zanemariti ovu e-poštu ako niste uputili ovaj zahtjev.",
     "If you did not make this request, you can simply delete this message.": "Možete obrisati ovu e-poštu ako niste uputili ovaj zahtjev.",

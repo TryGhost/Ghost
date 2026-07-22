@@ -33,6 +33,7 @@
     "Hey there,": "ආයුබෝවන්,",
     "Hey there!": "ආයුබෝවන්!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "ඔබ මෙම ඉල්ලීම සිදු නොකලේ නම්, මෙම email එක නොසළකාහරින්න.",
     "If you did not make this request, you can simply delete this message.": "ඔබ මෙම ඉල්ලීම සිදු නොකලේ නම්, මෙම පණිවිඩය මකා දැමිය හැක.",

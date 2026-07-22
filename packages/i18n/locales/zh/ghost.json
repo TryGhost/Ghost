@@ -31,6 +31,7 @@
     "Hey there,": "你好，",
     "Hey there!": "你好！",
     "Hi {firstName},": "{firstName} 您好，",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "如果您没有发出此请求，您可以放心地忽略此电子邮件。",
     "If you did not make this request, you can simply delete this message.": "如果您没有发出此请求，您可以直接删除此消息。",

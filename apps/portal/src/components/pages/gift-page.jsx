@@ -925,6 +925,7 @@ const GiftPage = () => {
     const [selectedProductId, setSelectedProductId] = useState(null);
     const [email, setEmail] = useState('');
     const [recipientEmail, setRecipientEmail] = useState('');
+    const [recipientName, setRecipientName] = useState('');
     const [buyerName, setBuyerName] = useState(member?.name || '');
     const [giftMessage, setGiftMessage] = useState('');
     const [deliveryMethod, setDeliveryMethod] = useState('email');
@@ -1033,6 +1034,16 @@ const GiftPage = () => {
         errorMessage: errors.buyerName || ''
     };
 
+    const recipientNameField = {
+        type: 'text',
+        value: recipientName,
+        placeholder: t('Taylor'),
+        label: t('Recipient\'s name'),
+        name: 'recipientName',
+        required: false,
+        errorMessage: ''
+    };
+
     const today = new Date();
     const minDeliveryDay = new Date(today);
     minDeliveryDay.setDate(minDeliveryDay.getDate() + 1);
@@ -1134,6 +1145,7 @@ const GiftPage = () => {
 
         const customerEmail = email.trim();
         const trimmedRecipientEmail = recipientEmail.trim();
+        const trimmedRecipientName = recipientName.trim();
         const trimmedBuyerName = buyerName.trim();
         const trimmedGiftMessage = giftMessage.trim();
         const isEmailDelivery = deliveryMethod === 'email';
@@ -1189,6 +1201,7 @@ const GiftPage = () => {
             cadence: getGiftCadenceParts(activeDuration).cadence,
             ...(!isLoggedIn ? {email: customerEmail} : {}),
             ...(isEmailDelivery ? {recipientEmail: trimmedRecipientEmail} : {}),
+            ...(isEmailDelivery && trimmedRecipientName ? {recipientName: trimmedRecipientName} : {}),
             ...(trimmedBuyerName ? {buyerName: trimmedBuyerName} : {}),
             ...(trimmedGiftMessage ? {giftMessage: trimmedGiftMessage} : {}),
             ...(isScheduled && deliveryDate ? {deliveryDate} : {})
@@ -1344,6 +1357,10 @@ const GiftPage = () => {
                                 {deliveryMethod === 'email' && <>
                                     <div className='gh-portal-gift-checkout-section'>
                                         <div className='gh-portal-gift-checkout-label'>{t('Who\'s this gift for?')}</div>
+                                        <InputField
+                                            {...recipientNameField}
+                                            onChange={event => setRecipientName(event.target.value)}
+                                        />
                                         <InputField
                                             {...recipientEmailField}
                                             onChange={handleRecipientEmailChange}

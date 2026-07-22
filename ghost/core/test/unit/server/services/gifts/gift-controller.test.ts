@@ -22,6 +22,7 @@ describe('GiftController', function () {
             buyerMemberId: 'buyer_member_1',
             buyerName: null,
             recipientEmail: null,
+            recipientName: null,
             message: null,
             redeemerMemberId: null,
             tierId: 'tier_1',
@@ -103,6 +104,7 @@ describe('GiftController', function () {
                 expires_at: new Date('2030-01-01T00:00:00.000Z'),
                 consumes_at: null,
                 buyer_name: null,
+                recipient_name: null,
                 message: null,
                 tier: {
                     id: 'tier_1',
@@ -281,6 +283,7 @@ describe('GiftController', function () {
                 expires_at: new Date('2030-01-01T00:00:00.000Z'),
                 consumes_at: new Date('2031-01-01T00:00:00.000Z'),
                 buyer_name: null,
+                recipient_name: null,
                 message: null,
                 tier: {
                     id: 'tier_1',

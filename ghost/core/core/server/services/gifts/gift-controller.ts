@@ -108,6 +108,7 @@ export class GiftController {
             expires_at: gift.expiresAt,
             consumes_at: gift.consumesAt,
             buyer_name: gift.buyerName,
+            recipient_name: gift.recipientName,
             message: gift.message,
             tier: {
                 id: tierJSON.id,

@@ -96,6 +96,7 @@ module.exports = class CheckoutSessionEventService {
             stripePaymentIntentId: session.payment_intent,
             buyerName: session.metadata?.gift_buyer_name ?? null,
             recipientEmail: session.metadata?.gift_recipient_email ?? null,
+            recipientName: session.metadata?.gift_recipient_name ?? null,
             message: session.metadata?.gift_message ?? null,
             deliverAt: session.metadata?.gift_deliver_at ?? null
         });

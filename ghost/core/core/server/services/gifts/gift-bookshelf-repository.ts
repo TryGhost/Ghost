@@ -26,6 +26,7 @@ type GiftRow = {
     buyer_member_id: string | null;
     buyer_name: string | null;
     recipient_email: string | null;
+    recipient_name: string | null;
     message: string | null;
     redeemer_member_id: string | null;
     tier_id: string;
@@ -215,6 +216,7 @@ export class GiftBookshelfRepository implements GiftRepository {
             buyer_member_id: gift.buyerMemberId,
             buyer_name: gift.buyerName,
             recipient_email: gift.recipientEmail,
+            recipient_name: gift.recipientName,
             message: gift.message,
             redeemer_member_id: gift.redeemerMemberId,
             tier_id: gift.tierId,
@@ -247,6 +249,7 @@ export class GiftBookshelfRepository implements GiftRepository {
             buyerMemberId: json.buyer_member_id,
             buyerName: json.buyer_name ?? null,
             recipientEmail: json.recipient_email ?? null,
+            recipientName: json.recipient_name ?? null,
             message: json.message ?? null,
             redeemerMemberId: json.redeemer_member_id,
             tierId: json.tier_id,

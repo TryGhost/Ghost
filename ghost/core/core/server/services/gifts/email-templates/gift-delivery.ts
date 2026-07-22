@@ -8,6 +8,7 @@ export interface GiftDeliveryData {
     accentColor: string | undefined;
     toEmail: string;
     buyerName: string | null;
+    recipientName: string | null;
     message: string | null;
     gift: {
         tierName: string;
@@ -37,9 +38,13 @@ export function renderText(data: GiftDeliveryData, t: Translate): string {
         ? `\n"${data.message}"${data.buyerName ? `\n— ${data.buyerName}` : ''}\n`
         : '';
 
+    const greeting = data.recipientName
+        ? `${t('Hi {recipientName},', {recipientName: data.recipientName, interpolation: {escapeValue: false}})}\n\n`
+        : '';
+
     return `${t('A gift, just for you')}
 
-${intro}
+${greeting}${intro}
 ${messageBlock}
 ${t('Redeem your gift')}:
 ${data.gift.link}

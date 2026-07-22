@@ -31,6 +31,7 @@
     "Hey there,": "안녕하세요,",
     "Hey there!": "안녕하세요!",
     "Hi {firstName},": "{firstName}님, 안녕하세요,",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "직접 요청하신게 아니라면, 이 이메일을 무시하셔도 돼요.",
     "If you did not make this request, you can simply delete this message.": "직접 요청하신게 아니라면, 이 메시지를 삭제하시면 돼요.",

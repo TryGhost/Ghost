@@ -31,6 +31,7 @@
     "Hey there,": "Chào bạn,",
     "Hey there!": "Chào bạn!",
     "Hi {firstName},": "Xin chào {firstName},",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.",
     "If you did not make this request, you can simply delete this message.": "Nếu bạn không thực hiện yêu cầu này, hãy xóa email này.",

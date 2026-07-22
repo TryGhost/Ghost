@@ -19,6 +19,7 @@ interface GiftData {
     buyerMemberId: string | null;
     buyerName: string | null;
     recipientEmail: string | null;
+    recipientName: string | null;
     message: string | null;
     redeemerMemberId: string | null;
     tierId: string;
@@ -47,6 +48,7 @@ export interface GiftFromPurchaseData {
     buyerMemberId: string | null;
     buyerName: string | null;
     recipientEmail: string | null;
+    recipientName: string | null;
     message: string | null;
     tierId: string;
     cadence: GiftCadence;
@@ -64,6 +66,7 @@ export class Gift {
     buyerMemberId: string | null;
     buyerName: string | null;
     recipientEmail: string | null;
+    recipientName: string | null;
     message: string | null;
     redeemerMemberId: string | null;
     tierId: string;
@@ -91,6 +94,7 @@ export class Gift {
         this.buyerMemberId = data.buyerMemberId;
         this.buyerName = data.buyerName;
         this.recipientEmail = data.recipientEmail;
+        this.recipientName = data.recipientName;
         this.message = data.message;
         this.redeemerMemberId = data.redeemerMemberId;
         this.tierId = data.tierId;

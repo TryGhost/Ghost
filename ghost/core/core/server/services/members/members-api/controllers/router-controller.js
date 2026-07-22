@@ -1317,7 +1317,7 @@ const GIFT_DELIVERY_HOUR = 9; // deliver at 9am in the site's timezone
  *
  * @param {object} body - request body
  * @param {string} timezone - the site timezone, used to anchor the delivery date
- * @returns {{recipientEmail: string | null, buyerName: string | null, giftMessage: string | null, deliverAt: Date | null}}
+ * @returns {{recipientEmail: string | null, buyerName: string | null, recipientName: string | null, giftMessage: string | null, deliverAt: Date | null}}
  */
 function parseGiftOptions(body, timezone) {
     let recipientEmail = null;
@@ -1336,6 +1336,11 @@ function parseGiftOptions(body, timezone) {
     let buyerName = null;
     if (body.buyerName && typeof body.buyerName === 'string') {
         buyerName = sanitizeHtml(body.buyerName, {allowedTags: [], allowedAttributes: {}}).trim().slice(0, GIFT_BUYER_NAME_MAX_LENGTH) || null;
+    }
+
+    let recipientName = null;
+    if (body.recipientName && typeof body.recipientName === 'string') {
+        recipientName = sanitizeHtml(body.recipientName, {allowedTags: [], allowedAttributes: {}}).trim().slice(0, GIFT_BUYER_NAME_MAX_LENGTH) || null;
     }
 
     let giftMessage = null;
@@ -1369,7 +1374,7 @@ function parseGiftOptions(body, timezone) {
         deliverAt = delivery.toDate();
     }
 
-    return {recipientEmail, buyerName, giftMessage, deliverAt};
+    return {recipientEmail, buyerName, recipientName, giftMessage, deliverAt};
 }
 
 function parsePersonalNote(rawText) {

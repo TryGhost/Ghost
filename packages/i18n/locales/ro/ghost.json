@@ -35,6 +35,7 @@
     "Hey there,": "Bună,",
     "Hey there!": "Salut!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Dacă nu ai făcut această solicitare, poți ignora în siguranță acest email.",
     "If you did not make this request, you can simply delete this message.": "Dacă nu ai făcut această solicitare, poți șterge pur și simplu acest mesaj.",

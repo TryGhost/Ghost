@@ -37,6 +37,7 @@
     "Hey there,": "Halò,",
     "Hey there!": "Halò!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Faodaidh tu leigeil seachad air a' phost-d seo mura dh'iarr thu e.",
     "If you did not make this request, you can simply delete this message.": "Faodaidh tu am post-d sguabadh às mura dh'iarr thu e.",

@@ -46,6 +46,7 @@ interface ReminderData {
 interface GiftDeliverySendData {
     recipientEmail: string;
     buyerName: string | null;
+    recipientName: string | null;
     message: string | null;
     token: string;
     tierName: string;
@@ -162,7 +163,7 @@ export class GiftEmailService {
         });
     }
 
-    async sendGiftDelivery({recipientEmail, buyerName, message, token, tierName, cadence, duration, expiresAt}: GiftDeliverySendData): Promise<void> {
+    async sendGiftDelivery({recipientEmail, buyerName, recipientName, message, token, tierName, cadence, duration, expiresAt}: GiftDeliverySendData): Promise<void> {
         const siteDomain = this.siteDomain;
         const siteUrl = this.urlUtils.getSiteUrl();
         const siteTitle = this.settingsCache.get('title') ?? siteDomain;
@@ -178,6 +179,7 @@ export class GiftEmailService {
             accentColor: this.settingsCache.get('accent_color'),
             toEmail: recipientEmail,
             buyerName,
+            recipientName,
             message,
             gift: {
                 tierName,

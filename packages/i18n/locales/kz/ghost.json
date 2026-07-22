@@ -35,6 +35,7 @@
     "Hey there,": "Сәлем,",
     "Hey there!": "Сәлем!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Егер мұндай сұраныс жасамаған болсаңыз, бұл хатқа мән бермесеңіз болады.",
     "If you did not make this request, you can simply delete this message.": "Егер мұндай сұраныс жасамаған болсаңыз, бұл хатты өшіре берсеңіз болады.",

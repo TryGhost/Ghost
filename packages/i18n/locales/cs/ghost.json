@@ -37,6 +37,7 @@
     "Hey there,": "Ahoj,",
     "Hey there!": "Ahoj!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Pokud jste tuto žádost nezaslali, můžete tento e-mail bezpečně ignorovat.",
     "If you did not make this request, you can simply delete this message.": "Pokud jste tuto žádost nezaslali, můžete tento e-mail jednoduše smazat.",

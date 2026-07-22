@@ -176,12 +176,13 @@ class PaymentsService {
      * @param {string} [params.email]
      * @param {string | null} [params.recipientEmail]
      * @param {string | null} [params.buyerName]
+     * @param {string | null} [params.recipientName]
      * @param {string | null} [params.giftMessage]
      * @param {Date | null} [params.deliverAt]
      *
      * @returns {Promise<string>}
      */
-    async getGiftPaymentLink({tier, cadence, duration, metadata, successUrl, cancelUrl, member, isAuthenticated, email, recipientEmail, buyerName, giftMessage, deliverAt}) {
+    async getGiftPaymentLink({tier, cadence, duration, metadata, successUrl, cancelUrl, member, isAuthenticated, email, recipientEmail, buyerName, recipientName, giftMessage, deliverAt}) {
         let customer = null;
         if (member && isAuthenticated) {
             customer = await this.getCustomerForMember(member);
@@ -231,6 +232,7 @@ class PaymentsService {
                 duration: String(duration),
                 ...(recipientEmail ? {gift_recipient_email: recipientEmail} : {}),
                 ...(buyerName ? {gift_buyer_name: buyerName} : {}),
+                ...(recipientName ? {gift_recipient_name: recipientName} : {}),
                 ...(giftMessage ? {gift_message: giftMessage} : {}),
                 ...(deliverAt ? {gift_deliver_at: deliverAt.toISOString()} : {})
             },

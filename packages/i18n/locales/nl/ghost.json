@@ -33,6 +33,7 @@
     "Hey there,": "Hallo,",
     "Hey there!": "Hallo!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Als jij deze aanvraag niet hebt gedaan kun je deze e-mail negeren.",
     "If you did not make this request, you can simply delete this message.": "Als jij deze aanvraag niet hebt gedaan kun je deze e-mail verwijderen.",

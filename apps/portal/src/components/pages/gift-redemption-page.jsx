@@ -47,17 +47,19 @@ const GiftRedemptionPage = () => {
     const {action, brandColor, doAction, member, pageData, site} = useContext(AppContext);
     const gift = pageData?.gift;
     const isLoggedIn = !!member;
-    const [name, setName] = useState(member?.name || '');
+    const [name, setName] = useState(member?.name || gift?.recipient_name || '');
     const [email, setEmail] = useState(member?.email || '');
     const [errors, setErrors] = useState({});
     const [showDetails, setShowDetails] = useState(false);
     const {cardRef, containerProps: cardTiltProps} = useCardTilt();
 
     useEffect(() => {
-        setName(member?.name || '');
+        // Prefill with the recipient name the buyer entered, so the gift card
+        // is personal before the recipient types anything.
+        setName(member?.name || gift?.recipient_name || '');
         setEmail(member?.email || '');
         setErrors({});
-    }, [member?.email, member?.name]);
+    }, [member?.email, member?.name, gift?.recipient_name]);
 
     useEffect(() => {
         if (gift) {

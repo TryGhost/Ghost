@@ -33,6 +33,7 @@
     "Hey there,": "Szia!",
     "Hey there!": "Szia!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Ha nem te kezdeményezted ezt a kérést, akkor nyugodtan hagyd figyelmen kívül ezt a levelet.",
     "If you did not make this request, you can simply delete this message.": "Ha nem te kezdeményezted ezt a kérést, nyugodtan töröld ezt a levelet.",

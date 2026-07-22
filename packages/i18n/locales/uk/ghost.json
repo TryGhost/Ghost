@@ -37,6 +37,7 @@
     "Hey there,": "Привіт,",
     "Hey there!": "Привіт!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Якщо цей запит не був зроблений тобою, можеш безпечно ігнорувати це повідомлення.",
     "If you did not make this request, you can simply delete this message.": "Якщо цей запит не був зроблений тобою, можеш просто видалити це повідомлення.",

@@ -31,6 +31,7 @@
     "Hey there,": "Hai,",
     "Hey there!": "Hai!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Jika anda tidak membuat permintaan ini, anda boleh mengabaikan e-mel ini dengan selamat.",
     "If you did not make this request, you can simply delete this message.": "Jika anda tidak membuat permintaan ini, anda boleh memadamkan mesej ini.",

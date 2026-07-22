@@ -33,6 +33,7 @@
     "Hey there,": "Здравейте,",
     "Hey there!": "Здравейте!",
     "Hi {firstName},": "Здравейте, {firstName},",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Ако не сте направили тази заявка, може да игнорирате този имейл.",
     "If you did not make this request, you can simply delete this message.": "Ако не сте направили тази заявка, може просто да изтриете този имейл.",

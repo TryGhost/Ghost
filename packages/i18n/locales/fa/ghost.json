@@ -33,6 +33,7 @@
     "Hey there,": "سلام،",
     "Hey there!": "سلام!",
     "Hi {firstName},": "{firstName} عزیز،",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "اگر شما این درخواست را نداده\u200cاید، می\u200cتوانید با خیال راحت این ایمیل را نادیده بگیرید.",
     "If you did not make this request, you can simply delete this message.": "اگر شما این درخواست را نداده\u200cاید، می\u200cتوانید به سادگی این پیام را حذف کنید.",

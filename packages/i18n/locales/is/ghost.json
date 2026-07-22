@@ -33,6 +33,7 @@
     "Hey there,": "Góðan dag,",
     "Hey there!": "Góðan daginn!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Ef þú stendur ekki að baki þessari beiðni geturðu leitt þennan tölvupóst hjá þér",
     "If you did not make this request, you can simply delete this message.": "Ef þú stendur ekki að baki þessari beiðni geturðu einfaldlega eytt þessum skilaboðum",

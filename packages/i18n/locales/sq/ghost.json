@@ -33,6 +33,7 @@
     "Hey there,": "Përshëndetje,",
     "Hey there!": "Përshëndetje!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Nëse nuk e keni bërë ju këtë kërkesë, mund ta injoroni lirisht këtë email.",
     "If you did not make this request, you can simply delete this message.": "Nëse nuk e keni bërë ju këtë kërkesë, thjesht fshini këtë mesazh.",

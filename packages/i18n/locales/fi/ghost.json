@@ -33,6 +33,7 @@
     "Hey there,": "Hei",
     "Hey there!": "Hei!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Jos et tehnyt tätä pyyntöä, voit olla reagoimatta viestiin.",
     "If you did not make this request, you can simply delete this message.": "Jos et tehnyt tätä pyyntöä, voit poistaa tämän viestin.",

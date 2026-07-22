@@ -35,6 +35,7 @@
     "Hey there,": "Sveiki,",
     "Hey there!": "Čau!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Ja jūs neiesniedzāt šo pieprasījumu, varat droši ignorēt šo e-pasta ziņojumu.",
     "If you did not make this request, you can simply delete this message.": "Ja jūs neiesniedzāt šo pieprasījumu, varat vienkārši izdzēst šo ziņojumu.",

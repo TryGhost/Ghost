@@ -1353,6 +1353,7 @@ module.exports = {
         buyer_name: {type: 'string', maxlength: 191, nullable: true},
 
         recipient_email: {type: 'string', maxlength: 191, nullable: true},
+        recipient_name: {type: 'string', maxlength: 191, nullable: true},
         message: {type: 'string', maxlength: 500, nullable: true},
 
         redeemer_member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},

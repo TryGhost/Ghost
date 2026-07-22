@@ -33,6 +33,7 @@
     "Hey there,": "Hei,",
     "Hey there!": "Hei!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "Hvis du ikke har bedt om dette, kan du trygt ignorere denne e-posten.",
     "If you did not make this request, you can simply delete this message.": "Hvis du ikke har bedt om dette, kan du fint slette denne meldingen.",

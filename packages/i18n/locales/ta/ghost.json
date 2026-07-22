@@ -33,6 +33,7 @@
     "Hey there,": "வணக்கம்,",
     "Hey there!": "வணக்கம்!",
     "Hi {firstName},": "",
+    "Hi {recipientName},": "",
     "If it doesn't arrive, you can also share the link below yourself.": "",
     "If you did not make this request, you can safely ignore this email.": "நீங்கள் இந்த கோரிக்கையை செய்ததாக இல்லை என்றால், இந்த மின்னஞ்சலைப் புறக்கணிக்கலாம்.",
     "If you did not make this request, you can simply delete this message.": "நீங்கள் இந்த கோரிக்கையைச் செய்யவில்லை என்றால், இந்த செய்தியை நீக்கலாம்.",
