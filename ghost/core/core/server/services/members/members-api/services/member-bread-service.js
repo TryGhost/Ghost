@@ -6,8 +6,12 @@ const moment = require('moment');
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
     memberAlreadyExists: 'Member already exists.',
-    memberNotFound: 'Member not found.'
+    memberNotFound: 'Member not found.',
+    customFieldsOnAdd: 'Custom field values cannot be set while creating a member. Create the member, then set values with an edit.'
 };
+
+// Stored in the action's `context.action_name`; Admin maps it to a display label.
+const CUSTOM_FIELDS_EDITED_ACTION = 'custom_fields_edited';
 
 /**
  * @typedef {object} ILabsService
@@ -33,6 +37,16 @@ const messages = {
  * @prop {{getActiveByMembers: (memberIds: string[]) => Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>}} service
  */
 
+/**
+ * @typedef {object} ICustomFieldsServiceWrapper
+ * @prop {{
+ *   getValuesForMembers: (memberIds: string[]) => Promise<Map<string, Record<string, unknown>>>,
+ *   namesValues: (values: unknown) => boolean,
+ *   planWrite: (values: unknown) => Promise<object[]>,
+ *   applyWrite: (memberId: string, writes: object[]) => Promise<void>
+ * }} values
+ */
+
 module.exports = class MemberBREADService {
     /**
      * @param {object} deps
@@ -46,8 +60,9 @@ module.exports = class MemberBREADService {
      * @param {import('../../../settings-helpers/settings-helpers')} deps.settingsHelpers
      * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
      * @param {IGiftServiceWrapper} deps.giftService
+     * @param {ICustomFieldsServiceWrapper} deps.customFieldsService
      */
-    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService, giftService}) {
+    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService, giftService, customFieldsService}) {
         this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
@@ -69,6 +84,37 @@ module.exports = class MemberBREADService {
         this.commentsService = commentsService;
         /** @private */
         this.giftService = giftService;
+        /** @private */
+        this.customFieldsService = customFieldsService;
+    }
+
+    /**
+     * @private
+     * Custom field values keyed by member id, or `null` when the feature is off —
+     * the flag lives here, so callers just check the result: `null` means omit the
+     * `custom_fields` key entirely, keeping a pre-feature member payload identical.
+     *
+     * A read gets values on the flag alone, with no opt-in include: a member's
+     * custom fields are their own data, like labels and tiers, which a read
+     * already returns unasked. `include` is for things that are expensive or
+     * aggregate (email_recipients, counts), and one flat lookup on a read that
+     * already issues a dozen queries is neither. The flag, not an include, is what
+     * protects consumers that predate the feature — an include would outlive it
+     * and become permanent API surface.
+     *
+     * Browse is the opposite — opt-in via `include=custom_fields`, exactly how
+     * `products`/`tiers` already behave: a read always carries them, a list only
+     * when asked. Read and browse must stay format-identical, so a browse that
+     * asks gets the same key a read gives unasked.
+     * @param {string[]} memberIds
+     * @returns {Promise<Map<string, Record<string, unknown>> | null>}
+     */
+    async fetchCustomFieldValues(memberIds) {
+        if (!this.labsService.isSet('membersCustomFields')) {
+            return null;
+        }
+
+        return this.customFieldsService.values.getValuesForMembers(memberIds);
     }
 
     /**
@@ -392,10 +438,45 @@ module.exports = class MemberBREADService {
         const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
         member.unsubscribe_url = unsubscribeUrl;
 
+        const customFields = await this.fetchCustomFieldValues([member.id]);
+        if (customFields) {
+            member.custom_fields = customFields.get(member.id) ?? {};
+        }
+
         return member;
     }
 
+    /**
+     * @private
+     * The write-side flag gate, paired with `fetchCustomFieldValues` on the read
+     * side. The schema declares `custom_fields` for every site, so the key arrives
+     * whether or not the feature is on and this is what decides it goes no further.
+     * @param {object} data
+     */
+    dropCustomFieldsWhenDisabled(data) {
+        if (!this.labsService.isSet('membersCustomFields')) {
+            delete data.custom_fields;
+        }
+    }
+
     async add(data, options) {
+        this.dropCustomFieldsWhenDisabled(data);
+
+        // Values cannot be set on create, only on a subsequent edit. `namesValues`
+        // both judges the body and rejects a malformed one, so create and edit agree
+        // on what a write is. Reached only when the key is present, so a create
+        // without custom fields does not depend on the values service.
+        if (data.custom_fields !== undefined && this.customFieldsService.values.namesValues(data.custom_fields)) {
+            throw new errors.ValidationError({
+                message: tpl(messages.customFieldsOnAdd),
+                property: 'custom_fields'
+            });
+        }
+
+        // Not a member column, so it comes off before the repository sees it. Only
+        // an absent key or one naming no values gets this far.
+        delete data.custom_fields;
+
         if (!this.stripeService.configured && (data.comped || data.stripe_customer_id)) {
             const property = data.comped ? 'comped' : 'stripe_customer_id';
             throw new errors.ValidationError({
@@ -478,6 +559,24 @@ module.exports = class MemberBREADService {
     async edit(data, options) {
         delete data.last_seen_at;
 
+        this.dropCustomFieldsWhenDisabled(data);
+
+        // Values live in their own table, so they come off the member data before
+        // the repository sees it — `custom_fields` is not a member column. The gate
+        // above has already dropped it when the feature is off, so by this point its
+        // presence is the signal to write.
+        const customFields = data.custom_fields;
+        const writeCustomFields = customFields !== undefined;
+        delete data.custom_fields;
+
+        // Plan (which validates) before the member is touched, so a bad value 422s
+        // here rather than after the member edit has been applied — and keep the
+        // plan to apply once below, so the values aren't resolved and validated
+        // twice.
+        const plannedCustomFields = writeCustomFields
+            ? await this.customFieldsService.values.planWrite(customFields)
+            : null;
+
         let model;
 
         try {
@@ -520,6 +619,38 @@ module.exports = class MemberBREADService {
                         transacting: options.transacting
                     });
                 }
+            }
+        }
+
+        if (plannedCustomFields) {
+            await this.customFieldsService.values.applyWrite(model.id, plannedCustomFields);
+
+            // Custom fields aren't a member column or relation, so an edit touching
+            // only them leaves `model._changed` empty and the save fires nothing.
+            // Declare the change into `_changed` — as bookshelf-relations does for a
+            // labels change — so the member's edited lifecycle fires its usual signals
+            // (audit action + the webhook event, no `updated_at` bump).
+            //
+            // Guarded to the row-unchanged case: a real member change already
+            // populated `_changed` and fired the edited event during update(), so
+            // re-firing would duplicate it (this also covers a full PUT that resends
+            // unchanged member fields — `_changed` stays empty there too). That
+            // combined event omits `custom_fields` from `_changed`, which nothing
+            // reads: custom fields aren't in the webhook payload (they're injected
+            // into read/browse responses, not the model), and `_changed` only gates
+            // whether the event fires.
+            const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
+            if (memberUnchanged && plannedCustomFields.length > 0) {
+                model._changed = {custom_fields: true};
+                // A mixed edit keeps the generic label on purpose: relabelling the
+                // one action a member change already fired would bury that change
+                // behind this one.
+                const eventOptions = {
+                    context: options.context,
+                    transacting: options.transacting,
+                    actionName: CUSTOM_FIELDS_EDITED_ACTION
+                };
+                await model.triggerThen('updated', model, eventOptions);
             }
         }
 
@@ -640,6 +771,12 @@ module.exports = class MemberBREADService {
 
         const bulkSuppressionData = await this.emailSuppressionList.getBulkSuppressionData(page.data.map(member => member.get('email')));
 
+        // One query for the whole page, not one per member. `null` when the flag
+        // is off or the caller didn't ask — the same truthiness guard read uses.
+        const customFieldsByMember = options.includeCustomFields
+            ? await this.fetchCustomFieldValues(page.data.map(model => model.id))
+            : null;
+
         const data = page.data.map((model, index) => {
             const member = model.toJSON(options);
             member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
@@ -648,6 +785,9 @@ module.exports = class MemberBREADService {
             this.attachNextPaymentToSubscriptions(member);
             if (!originalWithRelated.includes('products')) {
                 delete member.products;
+            }
+            if (customFieldsByMember) {
+                member.custom_fields = customFieldsByMember.get(model.id) ?? {};
             }
             member.email_suppression = {
                 suppressed: bulkSuppressionData[index].suppressed || !!model.get('email_disabled'),

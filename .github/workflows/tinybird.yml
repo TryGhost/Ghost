@@ -1,0 +1,140 @@
+name: Tinybird
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    # Run on pushes to main, release branches, and previous/future major version branches.
+    branches:
+      - main
+      - 'v[0-9]+.*'
+      - '[0-9]+.x'
+    tags:
+      - 'v[0-9]*'
+    paths:
+      - '.github/workflows/tinybird.yml'
+      - 'compose.dev.analytics.yaml'
+      - 'ghost/core/core/server/data/tinybird/**'
+      - '!ghost/core/core/server/data/tinybird/**/*.md'
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Detect Tinybird changes
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      tinybird: ${{ steps.changed.outputs.tinybird }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      # Pushes remain filtered at the workflow level, so change detection is
+      # only needed to decide whether the tests should run for a pull request.
+      - name: Determine whether Tinybird files changed
+        id: changed
+        if: github.event_name == 'pull_request'
+        uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
+        with:
+          filters: |
+            tinybird:
+              - '.github/workflows/tinybird.yml'
+              - 'compose.dev.analytics.yaml'
+              - 'ghost/core/core/server/data/tinybird/**'
+              - '!ghost/core/core/server/data/tinybird/**/*.md'
+
+  tests:
+    name: Tinybird Tests
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: github.event_name != 'pull_request' || needs.changes.outputs.tinybird == 'true'
+    defaults:
+      run:
+        working-directory: ghost/core/core/server/data/tinybird
+    services:
+      tinybird:
+        image: tinybirdco/tinybird-local:latest@sha256:942cb8a703806bedc39a5ca77bc9cd36dd813ddad1556d46022ce9492f5acdb8
+        ports:
+          - 7181:7181
+    outputs:
+      datafiles_changed: ${{ steps.datafiles.outputs.tinybird }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Determine whether Tinybird datafiles changed
+        id: datafiles
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
+        with:
+          filters: |
+            tinybird:
+              - 'ghost/core/core/server/data/tinybird/**'
+              - '!ghost/core/core/server/data/tinybird/**/*.md'
+
+      - name: Install Tinybird CLI
+        run: curl -fsSL https://tinybird.co/install.sh | sh
+
+      - name: Build project
+        run: tb build
+
+      - name: Test project
+        run: tb test run
+
+      - name: Trigger and watch traffic analytics infra Tinybird workflow
+        if: github.repository == 'TryGhost/Ghost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
+        uses: ./.github/actions/dispatch-workflow
+        with:
+          repo: TryGhost/traffic-analytics-infra
+          workflow: tinybird.yml
+          branch: main
+          dispatch-inputs: >-
+            {
+              "ghost_ref": "${{ github.sha }}",
+              "caller_run_id": "${{ github.run_id }}",
+              "run_local_tests": false
+            }
+
+  required:
+    name: Tinybird required tests passed or skipped
+    needs: [changes, tests]
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-slim
+    steps:
+      - name: Check if any required jobs failed or were cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "Tinybird change detection or tests failed or were cancelled." && exit 1
+
+  deploy:
+    name: Deploy Tinybird
+    runs-on: ubuntu-latest
+    needs: [tests]
+    if: github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.tests.outputs.datafiles_changed == 'true'
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Trigger and watch traffic analytics infra Tinybird workflow
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_ANALYTICS_GITHUB_TOKEN }}
+        uses: ./.github/actions/dispatch-workflow
+        with:
+          repo: TryGhost/traffic-analytics-infra
+          workflow: tinybird.yml
+          branch: main
+          dispatch-inputs: >-
+            {
+              "ghost_ref": "${{ github.sha }}",
+              "caller_run_id": "${{ github.run_id }}",
+              "run_local_tests": false,
+              "deploy_staging": true,
+              "deploy_production": true
+            }

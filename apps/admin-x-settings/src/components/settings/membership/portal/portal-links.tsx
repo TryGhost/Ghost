@@ -1,5 +1,6 @@
 import React, {useEffect, useId, useState} from 'react';
-import {Button, List, ListItem, ModalPage, Select, TextField} from '@tryghost/admin-x-design-system';
+import {Button, List, ListItem, ModalPage, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -78,15 +79,15 @@ const PortalLinks: React.FC = () => {
                 >
                     <div className='flex w-full items-center gap-2 py-2'>
                         <span className='inline-block w-[180px] min-w-[180px] shrink-0'>Tier:</span>
-                        <Select
-                            options={tierOptions}
-                            selectedOption={tierOptions.find(option => option.value === selectedTier)}
-                            onSelect={(option) => {
-                                if (option) {
-                                    setSelectedTier(option?.value);
-                                }
-                            }}
-                        />
+                        <Field className='grow'>
+                            <FieldLabel className='sr-only'>Tier</FieldLabel>
+                            <Select value={selectedTier} onValueChange={setSelectedTier}>
+                                <SelectTrigger aria-label='Tier'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {tierOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </Field>
                     </div>
                 </ListItem>
                 <PortalLink name='Signup / Monthly' value={isDataAttributes ? `data-portal="signup/${selectedTier}/monthly"` : `${homePageURL}#/portal/signup/${selectedTier}/monthly`} />

@@ -1,6 +1,6 @@
 import {resolve} from 'path';
 import pkg from './package.json';
-import {publicAppViteConfig} from '../_shared/vite-public-app.mjs';
+import {publicAppViteConfig} from '@internal/cfg-vite-public-app';
 import {stripFingerprintingPlugin} from './vite-plugin-strip-fingerprinting';
 
 export default publicAppViteConfig({
@@ -30,11 +30,6 @@ export default publicAppViteConfig({
             alias: {
                 react: resolve(import.meta.dirname, 'node_modules/react'),
                 'react-dom': resolve(import.meta.dirname, 'node_modules/react-dom')
-            }
-        },
-        build: {
-            rollupOptions: {
-                output: {}
             }
         },
         test: {

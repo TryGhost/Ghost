@@ -40,8 +40,8 @@ function createMockStateBridge(sidebarVisible = true) {
         onUpdate: vi.fn(),
         onInvalidate: vi.fn(),
         onDelete: vi.fn(),
-        on: on as StateBridge['on'],
-        off: off as StateBridge['off'],
+        on,
+        off,
         sidebarVisible,
         getRouteUrl: vi.fn(),
         isRouteActive: vi.fn(),
@@ -121,8 +121,8 @@ describe('useEmberDataSync', () => {
         const sidebarMemberCountKey = getMemberCountQueryKey();
         const postsKey = ['PostsResponseType', '/posts'];
 
-        queryClient.setQueryDefaults(sidebarMemberCountKey, {cacheTime: Infinity});
-        queryClient.setQueryDefaults(postsKey, {cacheTime: Infinity});
+        queryClient.setQueryDefaults(sidebarMemberCountKey, {gcTime: Infinity});
+        queryClient.setQueryDefaults(postsKey, {gcTime: Infinity});
         queryClient.setQueryData(sidebarMemberCountKey, {
             members: [],
             meta: {pagination: {page: 1, limit: 1, pages: 1, total: 102466, next: null, prev: null}}

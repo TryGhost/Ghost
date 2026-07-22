@@ -93,6 +93,13 @@ async function initDatabase({config}) {
 async function initCore({ghostServer, config, frontend}) {
     debug('Begin: initCore');
 
+    // Validate configured adapters up-front so misconfiguration fails at boot
+    // rather than on first lazy use (e.g. first image upload or scheduled job)
+    debug('Begin: adapters');
+    const adapterManager = require('./server/services/adapter-manager').default;
+    adapterManager.init();
+    debug('End: adapters');
+
     // URL Utils is a bit slow, put it here so the timing is visible separate from models
     debug('Begin: Load urlUtils');
     require('./shared/url-utils');
@@ -132,6 +139,12 @@ async function initCore({ghostServer, config, frontend}) {
     const giftLinksService = require('./server/services/gift-links');
     giftLinksService.init();
     debug('End: Gift Links Service');
+
+    // Member custom fields service: knex-backed, wired once the DB is ready.
+    debug('Begin: Member Custom Fields Service');
+    const memberCustomFieldsService = require('./server/services/members-custom-fields');
+    memberCustomFieldsService.init();
+    debug('End: Member Custom Fields Service');
 
     if (ghostServer) {
         // Job Service allows parts of Ghost to run in the background
@@ -323,8 +336,8 @@ async function initServices({ghostServer} = {}) {
     const members = require('./server/services/members');
     const tiers = require('./server/services/tiers');
     const permissions = require('./server/services/permissions');
-    const indexnow = require('./server/services/indexnow');
-    const slack = require('./server/services/slack');
+    const indexnow = require('./server/services/indexnow-ping').default;
+    const slack = require('./server/services/slack-ping').default;
     const webhooks = require('./server/services/webhooks');
     const postScheduling = require('./server/services/post-scheduling').default;
     const comments = require('./server/services/comments');
@@ -349,15 +362,16 @@ async function initServices({ghostServer} = {}) {
     const explorePingService = require('./server/services/explore-ping');
     const domainEvents = require('@tryghost/domain-events');
     const automations = require('./server/services/automations');
+    const adapterManager = require('./server/services/adapter-manager').default;
+    const {withErrorCapture} = require('./server/adapters/scheduling/error-capture');
 
-    const {createAdapter: createSchedulerAdapter} = require('./server/adapters/scheduling/utils');
     const urlUtils = require('./shared/url-utils');
     const internalKeys = require('./server/services/internal-keys').default;
 
     // Initialize things that other services depend on first.
     emailAddressService.init();
     const apiUrl = urlUtils.urlFor('api', {type: 'admin'}, true);
-    const schedulerAdapter = createSchedulerAdapter();
+    const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
     schedulerAdapter.run();
     await stripe.init();
 
@@ -372,8 +386,8 @@ async function initServices({ghostServer} = {}) {
         postsPublic.init(),
         membersEvents.init(),
         permissions.init(),
-        indexnow.listen(),
-        slack.listen(),
+        indexnow.init(),
+        slack.init(),
         audienceFeedback.init(),
         emailService.init({ghostServer}),
         emailAnalytics.init(),
@@ -444,7 +458,10 @@ async function initBackgroundServices({config}) {
     // Load email analytics recurring jobs
     if (config.get('backgroundJobs:emailAnalytics')) {
         const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
-        await emailAnalyticsJobs.scheduleRecurringJobs();
+        await Promise.all([
+            emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
+            emailAnalyticsJobs.scheduleRecurringAutomationsJob()
+        ]);
     }
 
     const updateCheck = require('./server/services/update-check');

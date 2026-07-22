@@ -2,13 +2,15 @@ import React from 'react';
 import SettingImg from '../../../assets/images/network.png';
 import TopLevelGroup from '../../top-level-group';
 import validator from 'validator';
-import {Icon, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Icon, SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {Switch} from '@tryghost/shade/components';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useLimiter} from '../../../hooks/use-limiter';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
@@ -41,9 +43,9 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const isChecked = !!socialWebSetting && !isDisabled;
 
     // Handle toggle change
-    const toggleSocialWebSetting = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const toggleSocialWebSetting = async (checked: boolean) => {
         const updatedSetting: Setting[] = [
-            {key: 'social_web', value: event.target.checked}
+            {key: 'social_web', value: checked}
         ];
 
         try {
@@ -55,12 +57,11 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (<TopLevelGroup
         customButtons={
-            <Toggle
-                key={`${isChecked}-${isDisabled}`}
+            <Switch
+                aria-label='Network'
                 checked={isChecked}
-                direction='rtl'
                 disabled={isDisabled}
-                onChange={toggleSocialWebSetting}
+                onCheckedChange={toggleSocialWebSetting}
             />
         }
         description='Distribute posts to the social web, so people can discover and follow your content across BlueSky, Threads, Mastodon, Flipboard, WordPress, and more.'

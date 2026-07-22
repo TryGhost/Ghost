@@ -66,7 +66,7 @@
         "test:unit": "pnpm test:types && vitest run",
         "test:types": "tsc --noEmit",
         "lint:code": "eslint src/ scripts/ --cache",
-        "lint": "pnpm lint:code && pnpm lint:test",
+        "lint": "pnpm run '/^lint:/'",
         "lint:test": "eslint test/ --cache",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
@@ -82,29 +82,18 @@
         "preflight.css"
     ],
     "devDependencies": {
+        "@internal/cfg-eslint-react": "workspace:*",
         "@storybook/addon-docs": "catalog:",
         "@storybook/addon-links": "catalog:",
         "@storybook/react-vite": "catalog:",
         "@tailwindcss/postcss": "catalog:",
         "@testing-library/react": "catalog:",
         "@types/node": "catalog:",
-        "@typescript-eslint/eslint-plugin": "catalog:",
-        "@typescript-eslint/parser": "catalog:",
         "@vitejs/plugin-react": "catalog:",
         "@vitest/coverage-v8": "catalog:",
-        "@eslint/js": "catalog:",
-        "c8": "catalog:",
         "eslint": "catalog:",
-        "eslint-plugin-ghost": "catalog:",
-        "eslint-plugin-react": "catalog:",
-        "eslint-plugin-react-hooks": "catalog:",
-        "eslint-plugin-react-refresh": "catalog:",
-        "eslint-plugin-storybook": "10.4.6",
-        "eslint-plugin-tailwindcss": "catalog:",
         "glob": "catalog:",
-        "globals": "catalog:",
         "jsdom": "catalog:",
-        "typescript-eslint": "catalog:",
         "postcss": "catalog:",
         "remark-gfm": "4.0.1",
         "storybook": "catalog:",
@@ -112,6 +101,7 @@
         "tsc-alias": "1.8.17",
         "tsx": "catalog:",
         "tw-animate-css": "catalog:",
+        "@typescript/native": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:",
         "vite-plugin-svgr": "catalog:",
@@ -130,6 +120,7 @@
         "@radix-ui/react-hover-card": "1.1.18",
         "@radix-ui/react-label": "2.1.11",
         "@radix-ui/react-popover": "catalog:",
+        "@radix-ui/react-radio-group": "catalog:",
         "@radix-ui/react-select": "2.3.2",
         "@radix-ui/react-separator": "catalog:",
         "@radix-ui/react-slider": "1.4.2",
@@ -174,7 +165,7 @@
                     "command": "vite build --watch"
                 },
                 "dependsOn": [
-                    "^build"
+                    "build"
                 ]
             },
             "build": {

@@ -1,11 +1,6 @@
 import {z} from 'zod';
 import type {Knex} from 'knex';
-
-// MySQL returns a Date, SQLite a string/number; normalise to Date on read.
-const DbDate = z.codec(z.union([z.date(), z.string(), z.number()]), z.date(), {
-    decode: value => new Date(value),
-    encode: date => date
-});
+import {DbDate} from '../../lib/db-date';
 
 export const DbGiftLink = z.object({
     token: z.string(),

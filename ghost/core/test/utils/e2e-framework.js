@@ -14,7 +14,6 @@
 // The output state checker is responsible for checking the response from the app after performing a request.
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('test');
-const {sequence} = require('@tryghost/promise');
 const {any, stringMatching} = require('@tryghost/express-test').snapshot;
 const {AsymmetricMatcher} = require('expect');
 const fs = require('fs-extra');
@@ -41,7 +40,7 @@ const db = require('./db-utils');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const supertest = require('supertest');
 const {stopGhost} = require('./e2e-utils');
-const adapterManager = require('../../core/server/services/adapter-manager');
+const adapterManager = require('../../core/server/services/adapter-manager').default;
 const DomainEvents = require('@tryghost/domain-events');
 
 // Require additional assertions which help us keep our tests small and clear
@@ -161,7 +160,12 @@ const initFixtures = async (...options) => {
 
     const fixtureOps = fixtureUtils.getFixtureOps(options);
 
-    return sequence(fixtureOps);
+    const results = [];
+    for (const fixtureOp of fixtureOps) {
+        results.push(await fixtureOp());
+    }
+
+    return results;
 };
 
 const getFixture = (type, index = 0) => {

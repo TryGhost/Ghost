@@ -1,4 +1,3 @@
-import { test as baseTest } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { TestWrapper } from "@tryghost/admin-x-framework/test/test-utils";
@@ -12,24 +11,18 @@ export type TestWrapperComponent = ({ children }: { children: ReactNode }) => JS
  * Configures QueryClient for optimal test performance:
  * - No retries (tests should pass on first attempt)
  * - No caching (tests should be isolated)
- * - Silenced logging (cleaner test output)
  */
 function createTestQueryClient(): QueryClient {
     return new QueryClient({
         defaultOptions: {
             queries: {
                 retry: false,
-                cacheTime: 0,
+                gcTime: 0,
                 staleTime: 0,
             },
             mutations: {
                 retry: false,
             },
-        },
-        logger: {
-            log: () => {},
-            warn: () => {},
-            error: () => {},
         },
     });
 }
@@ -48,8 +41,10 @@ function createTestQueryClient(): QueryClient {
  * Usage:
  *
  * @example
- * import { testWithQueryClient as test } from "@test/fixtures/query-client";
+ * // Compose the fixtures into your test via vitest's test.extend
+ * import { queryClientFixtures } from "@test-utils/fixtures/query-client";
  * import { describe, expect } from "vitest";
+ * const test = baseTest.extend({ ...queryClientFixtures });
  *
  * describe("useMyHook", () => {
  *   test("computes derived state", ({ queryClient, wrapper }) => {
@@ -88,8 +83,3 @@ export const queryClientFixtures = {
         await provide(wrapper);
     },
 } as const;
-
-export const testWithQueryClient = baseTest.extend<{
-    queryClient: QueryClient;
-    wrapper: TestWrapperComponent;
-}>(queryClientFixtures);

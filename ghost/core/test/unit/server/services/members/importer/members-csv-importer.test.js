@@ -438,6 +438,20 @@ describe('MembersCSVImporter', function () {
         });
     });
 
+    describe('generateErrorCSV', function () {
+        // The intermediate import file turns formula escaping off. This is the CSV a
+        // human is emailed, so it must keep escaping regardless.
+        it('escapes a value a spreadsheet would read as a formula', function () {
+            const importer = buildMockImporterInstance();
+
+            const csv = importer.generateErrorCSV({
+                errors: [{email: 'a@example.com', name: '=1+2', error: 'some error'}]
+            });
+
+            assert.ok(csv.includes(`"'=1+2"`), csv);
+        });
+    });
+
     describe('sendErrorEmail', function () {
         it('should send email with errors for invalid CSV file', async function () {
             const importer = buildMockImporterInstance();

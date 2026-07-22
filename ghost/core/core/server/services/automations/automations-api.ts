@@ -359,3 +359,19 @@ export async function markStepTerminal(...args: Parameters<AutomationsRepository
 export async function retryStep(...args: Parameters<AutomationsRepository['retryStep']>) {
     return await repository.retryStep(...args);
 }
+
+export async function recordEmailSent(...args: Parameters<AutomationsRepository['recordEmailSent']>) {
+    return await repository.recordEmailSent(...args);
+}
+
+export async function getAutomatedEmailRecipientsByMailgunIds(
+    ...args: Parameters<AutomationsRepository['getAutomatedEmailRecipientsByMailgunIds']>
+) {
+    return await repository.getAutomatedEmailRecipientsByMailgunIds(...args);
+}
+
+export async function trackEmailDeliveredAndOpened(
+    ...args: Parameters<AutomationsRepository['trackEmailDeliveredAndOpened']>
+) {
+    return await repository.trackEmailDeliveredAndOpened(...args);
+}

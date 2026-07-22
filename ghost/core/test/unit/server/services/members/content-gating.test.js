@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {getPostAccessFilter, checkPostAccess, checkGatedBlockAccess} = require('../../../../../core/server/services/members/content-gating');
+const {getPostAccessFilter, checkPostAccess, checkSegmentPostAccess, checkGatedBlockAccess} = require('../../../../../core/server/services/members/content-gating');
 
 describe('Members Service - Content gating', function () {
     describe('getPostAccessFilter', function () {
@@ -120,6 +120,76 @@ describe('Members Service - Content gating', function () {
             }]};
             access = checkPostAccess(post, member);
             assert.equal(access, false);
+        });
+    });
+
+    describe('checkSegmentPostAccess', function () {
+        const paidPost = {visibility: 'paid'};
+        const tiersPost = {visibility: 'tiers', tiers: [{slug: 'gold'}, {slug: 'silver'}]};
+
+        it('permits the paid segment on a paid post', function () {
+            assert.equal(checkSegmentPostAccess(paidPost, 'status:-free'), true);
+        });
+
+        it('blocks the free segment on a paid post', function () {
+            assert.equal(checkSegmentPostAccess(paidPost, 'status:free'), false);
+        });
+
+        it('permits a tier segment on a paid post', function () {
+            assert.equal(checkSegmentPostAccess(paidPost, 'status:-free+product:\'gold\''), true);
+        });
+
+        it('blocks the plain paid segment on a tiers post', function () {
+            // members without a matching tier are paid too — least privilege wins
+            assert.equal(checkSegmentPostAccess(tiersPost, 'status:-free'), false);
+        });
+
+        it('permits a matching tier segment on a tiers post', function () {
+            assert.equal(checkSegmentPostAccess(tiersPost, 'status:-free+product:\'silver\''), true);
+        });
+
+        it('blocks a non-matching tier segment on a tiers post', function () {
+            assert.equal(checkSegmentPostAccess(tiersPost, 'status:-free+product:\'bronze\''), false);
+        });
+
+        it('permits the send pipeline access variant on a tiers post', function () {
+            assert.equal(checkSegmentPostAccess(tiersPost, 'status:-free+(product:\'gold\',product:\'silver\')'), true);
+        });
+
+        it('blocks the send pipeline no-access variant on a tiers post', function () {
+            assert.equal(checkSegmentPostAccess(tiersPost, 'status:-free+(product:-\'gold\'+product:-\'silver\')'), false);
+        });
+
+        it('permits a multi-tier segment when one named tier grants access', function () {
+            const goldOnlyPost = {visibility: 'tiers', tiers: [{slug: 'gold'}]};
+            assert.equal(checkSegmentPostAccess(goldOnlyPost, 'product:\'gold\'+product:\'silver\''), true);
+        });
+
+        it('blocks a mixed free/paid segment on a paid post', function () {
+            assert.equal(checkSegmentPostAccess(paidPost, 'status:free,status:-free+product:\'gold\''), false);
+        });
+
+        it('blocks a negated tier segment on a paid post', function () {
+            // matches free members too, so least privilege wins
+            assert.equal(checkSegmentPostAccess(paidPost, 'product:-\'gold\''), false);
+        });
+
+        it('blocks an OR of tiers when one named tier lacks access', function () {
+            const goldOnlyPost = {visibility: 'tiers', tiers: [{slug: 'gold'}]};
+            assert.equal(checkSegmentPostAccess(goldOnlyPost, 'product:\'gold\',product:\'silver\''), false);
+        });
+
+        it('blocks any segment on a tiers post with no tiers configured', function () {
+            const misconfiguredPost = {visibility: 'tiers', tiers: []};
+            assert.equal(checkSegmentPostAccess(misconfiguredPost, 'status:-free+product:\'gold\''), false);
+        });
+
+        it('blocks segments with only unknown keys', function () {
+            assert.equal(checkSegmentPostAccess(paidPost, 'label:vip'), false);
+        });
+
+        it('blocks malformed segments', function () {
+            assert.equal(checkSegmentPostAccess(paidPost, 'status:(('), false);
         });
     });
 

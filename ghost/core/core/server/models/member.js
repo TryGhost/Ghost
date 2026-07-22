@@ -4,6 +4,70 @@ const _ = require('lodash');
 const config = require('../../shared/config');
 const {MemberCommentingCodec} = require('../services/members/commenting');
 
+const DEEP_OFFSET_THRESHOLD = 1000;
+
+// The rewrite only applies to the plain single-table browse query. Joins,
+// group by, unions etc. at the top level of the statement mean some other
+// query shape — but the same keywords inside parens (NQL filters and search
+// compile to `where members.id in (select ... join ...)`) are fine, so only
+// depth-0 SQL is inspected. Bindings are `?` placeholders, so no user data
+// appears in the inspected string.
+function sqlOutsideParens(sql) {
+    let depth = 0;
+    let result = '';
+
+    for (const char of sql) {
+        if (char === '(') {
+            depth += 1;
+        } else if (char === ')') {
+            depth -= 1;
+        } else if (depth === 0) {
+            result += char;
+        }
+    }
+
+    return result;
+}
+
+// Deferred join for deep OFFSET pagination: plain LIMIT/OFFSET does a full
+// row lookup for every discarded OFFSET row, so deep browse pages took ~10s
+// on large sites. Instead, run LIMIT/OFFSET over a subquery selecting only
+// the primary key (covered by the (created_at, id) index), then join back to
+// fetch full rows for just the final page.
+//
+// The query is inspected via its compiled SQL (`qb.toSQL()`, public knex API)
+// rather than knex's internal builder state. The prefix/suffix anchors below
+// mean anything unexpected — custom selects, a lock clause, missing
+// limit/offset — safely skips the rewrite.
+function applyDeferredJoinForDeepOffset(qb) {
+    const {sql, bindings} = qb.toSQL();
+
+    // The plain browse query compiles to
+    // `select * from `members` [where ...] order by ... limit ? offset ?`;
+    // knex passes limit and offset as the last two bindings
+    if (!sql.startsWith('select * from `members`') || !sql.endsWith('limit ? offset ?')) {
+        return;
+    }
+
+    const offset = bindings[bindings.length - 1];
+
+    if (!Number.isInteger(offset) || offset < DEEP_OFFSET_THRESHOLD) {
+        return;
+    }
+
+    const topLevelSql = sqlOutsideParens(sql);
+    if ([' join ', ' group by ', ' having ', ' union '].some(keyword => topLevelSql.includes(keyword))) {
+        return;
+    }
+
+    // Aliased so the default raw browse order (`created_at DESC, id DESC`)
+    // stays unambiguous in the outer query
+    const idSubquery = qb.clone().select('members.id as deep_page_id');
+
+    qb.clear('where').clear('limit').clear('offset')
+        .innerJoin(idSubquery.as('deep_page'), 'members.id', 'deep_page.deep_page_id');
+}
+
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
 
@@ -355,6 +419,15 @@ const Member = ghostBookshelf.Model.extend({
         model.emitChange('edited', options);
 
         return result;
+    },
+
+    // Fires with the fully-built knex query (filters/order/limit/offset
+    // applied, select columns not yet); the count query runs before this
+    // event, so pagination meta is unaffected by the rewrite
+    onFetchingCollection: function onFetchingCollection(collection, columns, options) {
+        ghostBookshelf.Model.prototype.onFetchingCollection.apply(this, arguments);
+
+        applyDeferredJoinForDeepOffset(options.query);
     },
 
     onDestroyed: function onDestroyed(model, options) {

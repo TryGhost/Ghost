@@ -1,10 +1,13 @@
 import type {AutomationStepToRun, AutomationsRepository} from './automations-repository';
+import {getMailgunMessageId} from './mailgun-message-id';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import {MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import {MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS} from './constants';
 // @ts-expect-error Models currently lack type definitions.
-import {AutomatedEmailRecipient, Member} from '../../models';
+import {Member} from '../../models';
+
+const settingsCache = require('../../../shared/settings-cache');
 
 type MemberWelcomeEmailService = {
     init: () => unknown;
@@ -21,6 +24,7 @@ type MemberWelcomeEmailService = {
                 uuid: string;
             };
             memberStatus: 'free' | 'paid';
+            trackOpens: boolean;
         }) => Promise<unknown>;
     };
 };
@@ -39,9 +43,11 @@ type PollOptions = {
         'fetchAndLockSteps' |
         'finishStepAndEnqueueNext' |
         'markStepTerminal' |
+        'recordEmailSent' |
         'retryStep'
     >;
     enqueueAnotherPollAt: (date: Readonly<Date>) => unknown;
+    scheduleAutomationEmailAnalyticsJob: () => Promise<void>;
     memberWelcomeEmailService: MemberWelcomeEmailService;
 };
 
@@ -103,8 +109,9 @@ const handleStepExecutionFailure = async ({
 const processStep = async ({
     automationsApi,
     memberWelcomeEmailService,
+    scheduleAutomationEmailAnalyticsJob,
     step
-}: Readonly<Pick<PollOptions, 'automationsApi' | 'memberWelcomeEmailService'> & {
+}: Readonly<Pick<PollOptions, 'automationsApi' | 'memberWelcomeEmailService' | 'scheduleAutomationEmailAnalyticsJob'> & {
     step: AutomationStepToRun;
 }>): Promise<Date | null> => {
     if (step.automation_status !== 'active') {
@@ -164,7 +171,7 @@ const processStep = async ({
         switch (step.type) {
         case 'wait':
             break;
-        case 'send_email':
+        case 'send_email': {
             if (!hasUpdatesAndAnnouncementsEnabled(member)) {
                 logging.info({
                     system: {
@@ -176,7 +183,8 @@ const processStep = async ({
                 break;
             }
             memberWelcomeEmailService.init();
-            await memberWelcomeEmailService.api.sendAutomationEmail({
+            const trackOpens = Boolean(settingsCache.get('email_track_opens'));
+            const sendResult = await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
                     designSettingId: step.email_design_setting_id,
                     lexical: step.email_lexical,
@@ -187,15 +195,21 @@ const processStep = async ({
                     name: member.get('name'),
                     uuid: member.get('uuid')
                 },
-                memberStatus
+                memberStatus,
+                trackOpens
             });
+            const mailgunMessageId = getMailgunMessageId(sendResult);
+            // Only Mailgun sends can produce open events for automation emails
+            const trackOpensForRecipient = trackOpens && Boolean(mailgunMessageId);
             try {
-                await AutomatedEmailRecipient.add({
-                    member_id: step.member_id,
-                    member_uuid: member.get('uuid'),
-                    member_email: member.get('email'),
-                    member_name: member.get('name'),
-                    automation_action_revision_id: step.automation_action_revision_id
+                await automationsApi.recordEmailSent({
+                    automationActionRevisionId: step.automation_action_revision_id,
+                    ...(mailgunMessageId ? {mailgunMessageId} : {}),
+                    memberEmail: member.get('email'),
+                    memberId: step.member_id,
+                    memberName: member.get('name'),
+                    memberUuid: member.get('uuid'),
+                    trackOpens: trackOpensForRecipient
                 });
             } catch (err) {
                 logging.error({
@@ -207,7 +221,22 @@ const processStep = async ({
                     }
                 }, `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`);
             }
+            if (mailgunMessageId) {
+                try {
+                    await scheduleAutomationEmailAnalyticsJob();
+                } catch (err) {
+                    logging.error({
+                        err,
+                        system: {
+                            event: 'automations.poll.analytics_scheduling_failed',
+                            member_id: step.member_id,
+                            step_id: step.id
+                        }
+                    }, `[AUTOMATIONS] Failed to schedule email analytics job for step ${step.id}`);
+                }
+            }
             break;
+        }
         default: {
             const _exhaustive: never = step;
             throw new errors.InternalServerError({
@@ -241,6 +270,7 @@ const dateMin = (a: Date | null, b: Date | null): Date | null => {
 export const poll = async ({
     automationsApi,
     enqueueAnotherPollAt,
+    scheduleAutomationEmailAnalyticsJob,
     memberWelcomeEmailService
 }: Readonly<PollOptions>): Promise<void> => {
     const {steps, nextStepReadyAt} = await automationsApi.fetchAndLockSteps(MAX_STEPS_PER_BATCH);
@@ -263,6 +293,7 @@ export const poll = async ({
             const stepNextPollAt = await processStep({
                 automationsApi,
                 memberWelcomeEmailService,
+                scheduleAutomationEmailAnalyticsJob,
                 step
             });
             nextPollAt = dateMin(nextPollAt, stepNextPollAt);

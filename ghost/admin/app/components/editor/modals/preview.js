@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action} from '@ember/object';
+import {groupTiersByActive} from 'ghost-admin/utils/group-tiers';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -22,14 +23,26 @@ export default class EditorPostPreviewModal extends Component {
     @tracked previewEmailAddress = this.session.user.email;
     @tracked previewAsSegment = 'free';
     @tracked previewAsOptions = [];
+    @tracked previewTierSlug;
+
+    tiers = this.args.data.tiers || [];
 
     constructor() {
         super(...arguments);
         this.saveFirstTask.perform();
 
-        const {initialPreviewAsSegment} = this.args.data;
+        const {initialPreviewAsSegment, initialPreviewTierSlug} = this.args.data;
+
+        const defaultTier = this.tiers.find(tier => tier.slug === initialPreviewTierSlug)
+            || this.tiers.find(tier => tier.active)
+            || this.tiers[0];
+        this.previewTierSlug = defaultTier?.slug;
+
         if (initialPreviewAsSegment) {
-            this.changePreviewAsSegment(initialPreviewAsSegment);
+            const segment = initialPreviewAsSegment === 'tier' && !this.previewTierSlug
+                ? (this.settings.paidMembersEnabled ? 'paid' : 'free')
+                : initialPreviewAsSegment;
+            this.changePreviewAsSegment(segment);
         }
 
         this.setPreviewAsOptions();
@@ -37,6 +50,18 @@ export default class EditorPostPreviewModal extends Component {
 
     get selectedPreviewAsOption() {
         return this.previewAsOptions.find(option => option.value === this.previewAsSegment);
+    }
+
+    get selectedPreviewTier() {
+        return this.tiers.find(tier => tier.slug === this.previewTierSlug);
+    }
+
+    get previewTierOptions() {
+        return groupTiersByActive(this.tiers).filter(group => group.options.length > 0);
+    }
+
+    get showTierDropdown() {
+        return this.previewAsSegment === 'tier' && this.tiers.length > 0;
     }
 
     get showMemberSegmentDropdown() {
@@ -54,8 +79,35 @@ export default class EditorPostPreviewModal extends Component {
 
     get browserPreviewUrl() {
         const url = new URL(this.args.data.publishOptions.post.previewUrl);
-        url.searchParams.set('member_status', this.previewAsSegment);
+        url.searchParams.set('member_status', this.previewAsSegment === 'tier' ? 'paid' : this.previewAsSegment);
+
+        if (this.previewAsSegment === 'tier' && this.previewTierSlug) {
+            url.searchParams.set('member_tier', this.previewTierSlug);
+        } else {
+            url.searchParams.delete('member_tier');
+        }
+
         return url.toString();
+    }
+
+    get emailMemberStatus() {
+        if (this.previewAsSegment === 'paid' || this.previewAsSegment === 'tier') {
+            return 'paid';
+        }
+
+        return 'free';
+    }
+
+    get emailMemberTier() {
+        return this.previewAsSegment === 'tier' ? this.previewTierSlug : null;
+    }
+
+    get emailMemberDescription() {
+        if (this.previewAsSegment === 'tier' && this.selectedPreviewTier) {
+            return `${this.selectedPreviewTier.name} tier member`;
+        }
+
+        return `${this.previewAsSegment} member`;
     }
 
     // manually set the tracked property rather than using a getter so we have
@@ -77,6 +129,12 @@ export default class EditorPostPreviewModal extends Component {
             this.previewAsOptions.push(
                 {label: 'Paid member', value: 'paid'}
             );
+
+            if (this.tiers.length > 0) {
+                this.previewAsOptions.push(
+                    {label: 'Specific tier', value: 'tier'}
+                );
+            }
         }
     }
 
@@ -111,6 +169,12 @@ export default class EditorPostPreviewModal extends Component {
     @action
     changePreviewAsOption(option) {
         this.changePreviewAsSegment(option.value);
+    }
+
+    @action
+    changePreviewTier(tier) {
+        this.previewTierSlug = tier.slug;
+        this.args.data.changePreviewTier?.(tier.slug);
     }
 
     @action

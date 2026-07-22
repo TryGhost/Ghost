@@ -5,7 +5,9 @@ import {poll} from '../../../../../core/server/services/automations/poll';
 import type {AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
 import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../../../core/server/services/member-welcome-emails/constants';
 // @ts-expect-error Models currently lack type definitions.
-import {AutomatedEmailRecipient, Member} from '../../../../../core/server/models';
+import {Member} from '../../../../../core/server/models';
+
+const settingsCache = require('../../../../../core/shared/settings-cache');
 
 const MAX_STEPS_PER_BATCH = 100;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
@@ -41,7 +43,6 @@ type PollOptionsStubs = PollOptions & {
     enqueueAnotherPollAt: StubbedFunction<PollOptions['enqueueAnotherPollAt']>;
     memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
 };
-type AutomatedEmailRecipientAdd = typeof AutomatedEmailRecipient.add;
 
 type MemberFixture = {
     email: string;
@@ -119,9 +120,10 @@ function buildEmailStep(attrs: Partial<SendEmailStep> = {}): SendEmailStep {
 
 describe('automations poll', function () {
     let automationsApi: AutomationsApiStubs;
-    let automatedEmailRecipientAdd: sinon.SinonStub<Parameters<AutomatedEmailRecipientAdd>, ReturnType<AutomatedEmailRecipientAdd>>;
     let memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
+    let scheduleAutomationEmailAnalyticsJob: sinon.SinonStub;
     let options: PollOptionsStubs;
+    let settingsCacheGet: sinon.SinonStub;
 
     beforeEach(function () {
         sinon.useFakeTimers({now: new Date('2026-01-01T12:00:00.000Z'), shouldAdvanceTime: true});
@@ -130,6 +132,7 @@ describe('automations poll', function () {
             fetchAndLockSteps: fake<AutomationsApi['fetchAndLockSteps']>().resolves({steps: [], nextStepReadyAt: null}),
             finishStepAndEnqueueNext: fake<AutomationsApi['finishStepAndEnqueueNext']>().resolves(null),
             markStepTerminal: fake<AutomationsApi['markStepTerminal']>().resolves(true),
+            recordEmailSent: fake<AutomationsApi['recordEmailSent']>().resolves(),
             retryStep: fake<AutomationsApi['retryStep']>().resolves(true)
         };
 
@@ -141,14 +144,18 @@ describe('automations poll', function () {
             }
         };
 
+        scheduleAutomationEmailAnalyticsJob = sinon.stub().resolves();
+
         options = {
             automationsApi,
             enqueueAnotherPollAt: fake<PollOptions['enqueueAnotherPollAt']>(),
+            scheduleAutomationEmailAnalyticsJob,
             memberWelcomeEmailService
         };
 
+        settingsCacheGet = sinon.stub(settingsCache, 'get');
+        settingsCacheGet.withArgs('email_track_opens').returns(false);
         sinon.stub(Member, 'findOne').resolves(buildMember());
-        automatedEmailRecipientAdd = sinon.stub(AutomatedEmailRecipient, 'add').resolves();
     });
 
     afterEach(function () {
@@ -264,7 +271,7 @@ describe('automations poll', function () {
 
         sinon.assert.notCalled(memberWelcomeEmailService.init);
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
-        sinon.assert.notCalled(automatedEmailRecipientAdd);
+        sinon.assert.notCalled(automationsApi.recordEmailSent);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
@@ -299,7 +306,7 @@ describe('automations poll', function () {
 
         sinon.assert.notCalled(memberWelcomeEmailService.init);
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
-        sinon.assert.notCalled(automatedEmailRecipientAdd);
+        sinon.assert.notCalled(automationsApi.recordEmailSent);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
@@ -345,19 +352,104 @@ describe('automations poll', function () {
             automation_action_revision_id: 'revision-id'
         });
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+            id: ' <mailgun-message-id> '
+        });
 
         await poll(options);
 
-        sinon.assert.calledOnceWithExactly(automatedEmailRecipientAdd, {
-            member_id: step.member_id,
-            member_uuid: '00000000-0000-4000-8000-000000000001',
-            member_email: 'member@example.com',
-            member_name: 'Test Member',
-            automation_action_revision_id: 'revision-id'
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackOpens: false
+        }));
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
+            automationActionRevisionId: 'revision-id',
+            mailgunMessageId: 'mailgun-message-id',
+            memberEmail: 'member@example.com',
+            memberId: 'member-id',
+            memberName: 'Test Member',
+            memberUuid: '00000000-0000-4000-8000-000000000001',
+            trackOpens: false
         });
         sinon.assert.callOrder(
             memberWelcomeEmailService.api.sendAutomationEmail,
-            automatedEmailRecipientAdd,
+            automationsApi.recordEmailSent,
+            scheduleAutomationEmailAnalyticsJob,
+            automationsApi.finishStepAndEnqueueNext
+        );
+    });
+
+    it('enables open tracking for the send and recipient when the setting is enabled', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_opens').returns(true);
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({id: '<mailgun-message-id>'});
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackOpens: true
+        }));
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            trackOpens: true
+        }));
+    });
+
+    it('does not enable open tracking for the send and recipient when the setting is disabled', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_opens').returns(false);
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({id: '<mailgun-message-id>'});
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackOpens: false
+        }));
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, sinon.match({
+            trackOpens: false
+        }));
+    });
+
+    it('does not schedule email analytics when the send has no Mailgun message ID', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+            messageId: '<smtp-message-id>',
+            response: '250 Message accepted'
+        });
+
+        await poll(options);
+
+        sinon.assert.notCalled(scheduleAutomationEmailAnalyticsJob);
+    });
+
+    it('records the automated email recipient without a Mailgun message ID after an SMTP send', async function () {
+        const step = buildEmailStep({
+            automation_action_revision_id: 'revision-id'
+        });
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        settingsCacheGet.withArgs('email_track_opens').returns(true);
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+            messageId: '<smtp-message-id>',
+            response: '250 Message accepted'
+        });
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            trackOpens: true
+        }));
+        sinon.assert.calledOnceWithExactly(automationsApi.recordEmailSent, {
+            automationActionRevisionId: 'revision-id',
+            memberEmail: 'member@example.com',
+            memberId: 'member-id',
+            memberName: 'Test Member',
+            memberUuid: '00000000-0000-4000-8000-000000000001',
+            trackOpens: false
+        });
+        sinon.assert.callOrder(
+            memberWelcomeEmailService.api.sendAutomationEmail,
+            automationsApi.recordEmailSent,
             automationsApi.finishStepAndEnqueueNext
         );
     });
@@ -365,12 +457,27 @@ describe('automations poll', function () {
     it('does not retry the email send when recording the automated email recipient fails', async function () {
         const step = buildEmailStep();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
-        automatedEmailRecipientAdd.rejects(new Error('recipient persistence failed'));
+        automationsApi.recordEmailSent.rejects(new Error('recipient persistence failed'));
 
         await poll(options);
 
         sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
-        sinon.assert.calledOnce(automatedEmailRecipientAdd);
+        sinon.assert.calledOnce(automationsApi.recordEmailSent);
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.notCalled(automationsApi.retryStep);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+    });
+
+    it('does not retry the email send when scheduling email analytics fails', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({id: '<mailgun-message-id>'});
+        scheduleAutomationEmailAnalyticsJob.rejects(new Error('email analytics scheduling failed'));
+
+        await poll(options);
+
+        sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.calledOnce(scheduleAutomationEmailAnalyticsJob);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.notCalled(automationsApi.retryStep);
         sinon.assert.notCalled(automationsApi.markStepTerminal);

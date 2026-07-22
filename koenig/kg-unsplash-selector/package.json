@@ -1,0 +1,74 @@
+{
+  "name": "@tryghost/kg-unsplash-selector",
+  "version": "0.4.3",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "koenig/kg-unsplash-selector"
+  },
+  "author": "Ghost Foundation",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist/"
+  ],
+  "type": "module",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "VITE_APP_DEV=true vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "pretest": "tsc -p tsconfig.test.json",
+    "lint": "eslint",
+    "test": "pnpm test:unit && pnpm test:acceptance",
+    "test:unit": "pnpm nx build && vitest run",
+    "test:acceptance": "playwright test",
+    "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 pnpm test:acceptance --headed",
+    "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance"
+  },
+  "peerDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@playwright/test": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "autoprefixer": "10.5.2",
+    "eslint": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
+    "eslint-plugin-react": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
+    "eslint-plugin-react-refresh": "catalog:",
+    "eslint-plugin-tailwindcss": "catalog:tailwind3",
+    "jsdom": "catalog:",
+    "postcss": "catalog:",
+    "postcss-import": "16.1.1",
+    "tailwindcss": "catalog:tailwind3",
+    "@typescript/native": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "5.0.3",
+    "vite-plugin-svgr": "5.2.0",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "playwright"
+    ],
+    "targets": {
+      "test:acceptance": {
+        "dependsOn": [
+          "^build"
+        ]
+      }
+    }
+  }
+}

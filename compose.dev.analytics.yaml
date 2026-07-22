@@ -14,8 +14,10 @@ services:
       - "3000"
     healthcheck:
       test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))\""]
-      interval: 1s
-      retries: 120
+      interval: 30s
+      retries: 5
+      start_period: 120s
+      start_interval: 1s
     volumes:
       - ./docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
       - shared-config:/mnt/shared-config:ro
@@ -37,9 +39,11 @@ services:
       - "7181:7181"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health"]
-      interval: 1s
+      interval: 30s
       timeout: 5s
-      retries: 120
+      retries: 5
+      start_period: 120s
+      start_interval: 1s
 
   tb-cli:
     build:

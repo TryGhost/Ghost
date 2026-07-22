@@ -1,10 +1,13 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Banner, Icon, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Banner, Switch} from '@tryghost/shade/components';
+import {Icon, SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {Inline} from '@tryghost/shade/primitives';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {withErrorBoundary} from '../../error-boundary';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
@@ -16,12 +19,12 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const isDisabled = membersSignupAccess === 'none';
 
-    const handleToggleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleToggleChange = async (checked: boolean) => {
         const updates: Setting[] = [
-            {key: 'editor_default_email_recipients', value: (e.target.checked ? 'visibility' : 'disabled')}
+            {key: 'editor_default_email_recipients', value: (checked ? 'visibility' : 'disabled')}
         ];
 
-        if (!e.target.checked) {
+        if (!checked) {
             updates.push({key: 'editor_default_email_recipients_filter', value: null});
         }
 
@@ -34,11 +37,11 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const enableToggle = (
         <>
-            <Toggle
+            <Switch
+                aria-label='Newsletters'
                 checked={newslettersEnabled !== 'disabled' && !isDisabled}
-                direction='rtl'
                 disabled={isDisabled}
-                onChange={handleToggleChange}
+                onCheckedChange={handleToggleChange}
             />
         </>
     );
@@ -57,18 +60,18 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 {
                     key: 'private',
                     value: (newslettersEnabled !== 'disabled' && !isDisabled) ? (<div className='w-full'>
-                        <div className='flex items-center gap-2'>
-                            <Icon colorClass='text-green' name='check' size='sm' />
+                        <Inline align='center' gap='sm'>
+                            <Icon colorClass='text-state-success' name='check' size='sm' />
                             <span>Enabled</span>
-                        </div>
+                        </Inline>
                     </div>) :
                         <div className='w-full'>
-                            <div className='flex items-center gap-2 text-grey-900'>
-                                <Icon colorClass='text-grey-600' name='mail-block' size='sm' />
+                            <Inline align='center' className='text-foreground' gap='sm'>
+                                <Icon colorClass='text-muted-foreground' name='mail-block' size='sm' />
                                 <span>Disabled</span>
-                            </div>
+                            </Inline>
                             {isDisabled &&
-                            <Banner className='mt-6' color='grey'>
+                            <Banner className='mt-6' size='sm' variant='default'>
                                 Your <button className='underline!' type="button" onClick={() => {
                                     updateRoute('members');
                                 }}>Subscription access</button> is set to &lsquo;Nobody&rsquo;, which disables all newsletter sending. Change to &lsquo;Invite-only&rsquo; to send newsletters to existing members without allowing new signups.

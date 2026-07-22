@@ -1,0 +1,200 @@
+/* .koenig-lexical > .markdown-editor {
+    height: 100vh;
+} */
+
+.koenig-lexical .markdown-editor {
+        position: static;
+        z-index: 0;
+        overflow: visible;
+        width: 100%;
+        padding-top: 2px;
+
+    /* Ugly workaround to fix inheritance from `.koenig-lexical .kg-prose:where(div):not(:where(.not-kg-prose, [class~='not-kg-prose'] *))` breaking markdown editor */
+    div {
+        max-width: initial;
+        line-height: initial;
+    }
+
+    /* ensure there's no flash of unstyled textarea while initializing */
+    .markdown-editor textarea {
+        opacity: 0;
+    }
+
+    .editor-toolbar {
+        position: sticky;
+        position: -webkit-sticky; /* Safari */
+        bottom: 0;
+        z-index: 2;
+        display: flex;
+        padding: 6px;
+        margin: auto -12px;
+        border-top: 1px solid var(--grey-200);
+        border-right: none;
+        border-left: none;
+        background: var(--white);
+        opacity: 1;
+        border-radius: 0;
+    }
+
+    /* override simplemde.css */
+    .editor-toolbar:hover {
+        opacity: 1;
+    }
+
+    .editor-toolbar a {
+        color: var(--grey-900) !important;
+    }
+
+    .editor-toolbar a.active,
+    .editor-toolbar a:hover {
+        border-color: var(--grey-400);
+    }
+
+    .editor-toolbar a.disabled {
+        color: var(--lightgrey) !important;
+        pointer-events: none;
+    }
+
+    .editor-toolbar a.disabled:hover {
+        border: none;
+    }
+
+    .editor-toolbar .fa-check {
+        position: relative;
+        margin-left: auto;
+        vertical-align: bottom;
+    }
+
+    .editor-toolbar .fa-check:before {
+        position: absolute;
+        right: 3px;
+        bottom: 4px;
+        font-size: 14px;
+        line-height: 14px;
+    }
+
+    .editor-toolbar .fa-check:after {
+        content: "abc";
+        position: absolute;
+        top: 6px;
+        left: 4px;
+        font-family: var(--font-family);
+        font-size: 9px;
+        line-height: 9px;
+    }
+
+    .editor-toolbar .separator:last-of-type {
+        display: none;
+    }
+
+    .editor-toolbar i.separator {
+        border-right: none;
+        border-left: color-mod(var(--lightgrey) l(-3%)) 1px solid;
+    }
+
+    .CodeMirror {
+        margin-bottom: 49px;
+        overflow: visible;
+        padding: 0;
+        background: transparent;
+        border: none;
+    }
+
+    /* Prevent confusing select behaviour, see https://github.com/TryGhost/Ghost/issues/9356 */
+    .CodeMirror-code:not([contenteditable="true"]) {
+        user-select: none;
+    }
+
+    .CodeMirror-code .cm-link {
+        color: var(--green);
+        text-decoration: none;
+    }
+
+    .CodeMirror-cursor {
+        border-width: 3px;
+        border-color: var(--green);
+    }
+
+    /* fix visible scrollbars when OSX is set to show them */
+    .CodeMirror-scroll {
+        overflow: visible !important;
+        padding-bottom: 5rem; /* pad so text doesn't go behind toolbar */
+    }
+
+    .CodeMirror-scroll:hover {
+        cursor: text;
+    }
+
+    /* prevent markdown content showing after the preview if the preview is shorter */
+    /* .CodeMirror-scroll {
+        display: none;
+    } */
+
+    .CodeMirror-wrap {
+        max-width: 740px;
+        margin-right: auto;
+        margin-left: auto;
+        border: none;
+        background: transparent;
+    }
+
+    .CodeMirror-wrap > div > textarea {
+        top: 0;
+        height: 26px;
+        min-width: 0;
+        min-height: 26px;
+        margin-bottom: -26px;
+    }
+
+    .CodeMirror pre {
+        padding: 0;
+        color: var(--grey-900);
+        font-family: "Consolas", monaco, monospace;
+        font-size: 1.6rem;
+    }
+
+    .CodeMirror .cm-strong {
+        color: var(--grey-900);
+    }
+
+    .CodeMirror .cm-url {
+        text-decoration: underline;
+    }
+
+    .CodeMirror-selectedtext {
+        color: #000 !important;
+        background: color-mod(var(--blue) lightness(+30%));
+    }
+}
+
+/* TODO: we should add darkmode toolbar */
+.koenig-lexical.dark .markdown-editor {
+    .CodeMirror pre {
+        color: var(--grey-100);
+    }
+    .CodeMirror .cm-strong {
+        color: var(--grey-100);
+    }
+    .editor-toolbar {
+        border-top: 1px solid var(--grey-950);
+        background: var(--grey-950);
+    }
+    .editor-toolbar a {
+        color: var(--grey-450) !important;
+    }
+
+    .editor-toolbar a.active,
+    .editor-toolbar a:hover {
+        border-color: var(--black);
+        background: var(--grey-900);
+    }
+
+    .editor-toolbar a.disabled {
+        color: var(--orange) !important;
+    }
+
+    .editor-toolbar i.separator {
+        border-right: none;
+        border-left: color-mod(var(--yellow) l(-3%)) 1px solid;
+    }
+}

@@ -1179,7 +1179,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 
 .gh-editor-drop-target .drop-target-message {
     padding: 1em;
-    background-color: #fff;
+    background-color: var(--white);
     border-radius: 1em;
 }
 
@@ -1194,7 +1194,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     align-items: center;
     max-width: 80%;
     padding: 1em;
-    background-color: #fff;
+    background-color: var(--white);
     border-radius: 1em;
 }
 

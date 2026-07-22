@@ -58,6 +58,7 @@ const Sidebar: React.FC = () => {
     const [hasTipsAndDonations, isPrivate, paidMembersEnabled, newslettersEnabled] = getSettingValues(settings, ['donations_enabled', 'is_private', 'paid_members_enabled', 'editor_default_email_recipients']) as [boolean, boolean, boolean, string];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
     const hasAutomations = useFeatureFlag('automations');
+    const hasCustomFields = useFeatureFlag('membersCustomFields');
     const hasNewslettersEnabled = newslettersEnabled !== 'disabled';
     const mailgunIsConfigured = Boolean(config.mailgunIsConfigured);
     const hasMailgun = hasNewslettersEnabled && !mailgunIsConfigured;
@@ -67,8 +68,9 @@ const Sidebar: React.FC = () => {
         membershipSearchKeywords.portal,
         ...(paidMembersEnabled ? [membershipSearchKeywords.giftSubscriptions] : []),
         ...(hasAutomations ? [] : [membershipSearchKeywords.memberEmails]),
-        ...(hasTipsAndDonations && hasStripeEnabled ? [membershipSearchKeywords.tips] : [])
-    ].flat(), [hasStripeEnabled, hasTipsAndDonations, paidMembersEnabled, hasAutomations]);
+        ...(hasTipsAndDonations && hasStripeEnabled ? [membershipSearchKeywords.tips] : []),
+        ...(hasCustomFields ? [membershipSearchKeywords.customFields] : [])
+    ].flat(), [hasStripeEnabled, hasTipsAndDonations, paidMembersEnabled, hasAutomations, hasCustomFields]);
     const visibleEmailSearchKeywords = React.useMemo(() => {
         const keywords = hasAutomations ? emailsSearchKeywords : emailSearchKeywords;
         return [
@@ -241,6 +243,7 @@ const Sidebar: React.FC = () => {
                     {paidMembersEnabled && <NavItem icon='gift' keywords={membershipSearchKeywords.giftSubscriptions} navid='gift-subscriptions' title="Gift subscriptions" onClick={handleSectionClick} />}
                     {!hasAutomations && <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />}
                     {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
+                    {hasCustomFields && <NavItem icon='textfield' keywords={membershipSearchKeywords.customFields} navid='custom-fields' title="Custom fields" onClick={handleSectionClick} />}
                     {hasAutomations
                         ? <NavItem icon='email' keywords={visibleEmailSearchKeywords} navid={['enable-newsletters', 'default-recipients', 'emails', 'mailgun']} title="Email" onClick={handleSectionClick} />
                         : <NavItem icon='email' keywords={visibleEmailSearchKeywords} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />

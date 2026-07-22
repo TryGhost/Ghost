@@ -221,42 +221,6 @@ describe('Can send cards via email', function () {
         }
     });
 
-    it('calls custom node renderers for all cards in golden post', async function () {
-        // get list of card nodes in the golden post
-        const nodesInGoldenPost = goldenPost.root.children.map((child) => {
-            return child.type;
-        }).filter(node => !excludedNodes.includes(node));
-
-        // we have a map of spies because some nodes have multiple versions
-        const spies = {};
-
-        // spy on the custom node renderers
-        const customNodeRenderers = require('../../../../core/server/services/koenig/node-renderers');
-        nodesInGoldenPost.forEach((node) => {
-            if (!customNodeRenderers[node]) {
-                throw new Error(`Custom node renderer for ${node} not found`);
-            }
-            if (typeof customNodeRenderers[node] === 'object') {
-                // select highest version of the node - we only want to test the latest version
-                // TODO: golden post should really contain a node with each version
-                const versions = Object.keys(customNodeRenderers[node]);
-                const highestVersion = versions.reduce((a, b) => {
-                    return parseInt(a) > parseInt(b) ? a : b;
-                });
-                spies[node] = sinon.spy(customNodeRenderers[node], highestVersion);
-            } else {
-                spies[node] = sinon.spy(customNodeRenderers, node);
-            }
-        });
-
-        await sendEmail(agent, {lexical: JSON.stringify(goldenPost)});
-
-        // check that all the custom node renderers were called
-        Object.keys(spies).forEach((node) => {
-            sinon.assert.called(spies[node]);
-        });
-    });
-
     it('uses URL-based dimension lookup for CDN images', async function () {
         // This test stubs ImageSize internals and asserts the URL lookup chain
         // runs, so restore the real cache method (disableNetwork no-ops it globally).

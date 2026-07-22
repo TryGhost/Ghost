@@ -11,6 +11,14 @@ const models = require('../../../core/server/models');
 
 let request;
 
+async function countMembers(agent) {
+    const res = await agent
+        .get(localUtils.API.getApiQuery('members/?limit=1'))
+        .set('Origin', config.get('url'))
+        .expect(200);
+    return res.body.meta.pagination.total;
+}
+
 async function getNewsletters() {
     return (await models.Newsletter.findAll({filter: 'status:active'})).models;
 }
@@ -312,6 +320,79 @@ describe('Members Importer API', function () {
             .expect(200);
 
         assert.equal(postLabelRemoveBrowseResponse.body.members.length, 0);
+    });
+
+    it('Imports a CSV of headers with no rows without failing', async function () {
+        const before = await countMembers(request);
+
+        const res = await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-headers-only.csv'))
+            .set('Origin', config.get('url'))
+            .expect(201);
+
+        assert.equal(res.body.meta.stats.imported, 0);
+        assert.equal(await countMembers(request), before, 'nobody should have been created');
+    });
+
+    it('Keeps every column when the first row has fewer fields than the header', async function () {
+        await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-ragged-row.csv'))
+            .set('Origin', config.get('url'))
+            .expect(201);
+
+        const res = await request
+            .get(localUtils.API.getApiQuery('members/?search=ragged-full'))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        const member = res.body.members.find(m => m.email === 'ragged-full@example.com');
+        assertExists(member);
+        assert.equal(member.name, 'Bob');
+        assert.equal(member.note, 'a note');
+    });
+
+    it('Stores values that look like formulas exactly as given', async function () {
+        await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-formula-like-values.csv'))
+            .set('Origin', config.get('url'))
+            .expect(201);
+
+        const res = await request
+            .get(localUtils.API.getApiQuery('members/?search=formula'))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        const dash = res.body.members.find(m => m.email === 'formula@example.com');
+        assertExists(dash);
+        assert.equal(dash.name, '-5');
+        assert.equal(dash.note, '+44 123');
+
+        const symbols = res.body.members.find(m => m.email === 'formula2@example.com');
+        assertExists(symbols);
+        assert.equal(symbols.name, '=SUM(A1)');
+        assert.equal(symbols.note, '@handle');
+    });
+
+    it('Keeps a form label that contains a comma as one label', async function () {
+        await request
+            .post(localUtils.API.getApiQuery(`members/upload/`))
+            .field('labels', ['Bristol, UK'])
+            .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/valid-members-labels.csv'))
+            .set('Origin', config.get('url'))
+            .expect(201);
+
+        const res = await request
+            .get(localUtils.API.getApiQuery("members/?filter=label:'bristol-uk'"))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        assert.equal(res.body.meta.pagination.total, 2, 'both members should carry the whole label');
+        const labels = res.body.members[0].labels.map(l => l.name);
+        assert.ok(labels.includes('Bristol, UK'), `expected "Bristol, UK", got ${JSON.stringify(labels)}`);
+        assert.equal(labels.includes('Bristol'), false, 'the label must not have been split');
     });
 
     it('Can handle empty body', async function () {

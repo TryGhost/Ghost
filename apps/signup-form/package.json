@@ -27,7 +27,7 @@
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
         "preship": "pnpm lint",
-        "ship": "node ../../.github/scripts/release-apps.js",
+        "ship": "node ../../scripts/release-apps.js",
         "prepublishOnly": "pnpm build"
     },
     "dependencies": {
@@ -36,32 +36,25 @@
         "react-dom": "catalog:"
     },
     "devDependencies": {
-        "@eslint/js": "catalog:",
+        "@typescript/native": "catalog:",
+        "typescript": "catalog:",
+        "@internal/cfg-eslint-react": "workspace:*",
+        "@internal/cfg-vite-public-app": "workspace:*",
         "@playwright/test": "catalog:",
         "@storybook/addon-docs": "catalog:",
         "@storybook/addon-links": "catalog:",
         "@storybook/react-vite": "catalog:",
-        "@tailwindcss/line-clamp": "0.4.4",
         "@tryghost/i18n": "workspace:*",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
-        "@vitejs/plugin-react": "catalog:",
         "autoprefixer": "10.5.2",
-        "concurrently": "catalog:",
         "eslint": "catalog:",
-        "eslint-plugin-ghost": "catalog:",
-        "eslint-plugin-react": "catalog:",
         "eslint-plugin-tailwindcss": "catalog:tailwind3",
-        "globals": "catalog:",
-        "jsdom": "catalog:",
-        "typescript-eslint": "catalog:",
         "postcss": "catalog:",
         "postcss-import": "16.1.1",
         "storybook": "catalog:",
         "tailwindcss": "catalog:tailwind3",
-        "vite": "catalog:",
-        "vite-plugin-svgr": "catalog:",
-        "vitest": "catalog:"
+        "vite": "catalog:"
     },
     "nx": {
         "targets": {
@@ -76,7 +69,8 @@
         },
         "tags": [
             "i18n",
-            "public-app"
+            "public-app",
+            "playwright"
         ]
     }
 }

@@ -5,7 +5,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
-const adapterManager = require('../../../core/server/services/adapter-manager');
+const adapterManager = require('../../../core/server/services/adapter-manager').default;
 const mailService = require('../../../core/server/services/mail');
 const membersService = require('../../../core/server/services/members');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
@@ -79,16 +79,33 @@ async function upsertEmailDesignSetting({id, senderReplyTo}) {
         });
 }
 
+function serializeEditableAction(action) {
+    if (action.type !== 'send_email') {
+        return action;
+    }
+
+    return {
+        id: action.id,
+        type: action.type,
+        data: {
+            email_subject: action.data.email_subject,
+            email_lexical: action.data.email_lexical,
+            email_design_setting_id: action.data.email_design_setting_id
+        }
+    };
+}
+
 async function updateAutomationEmailDesignSetting(automation, emailDesignSettingId) {
     const actions = automation.actions.map((action) => {
         if (action.type !== 'send_email') {
             return action;
         }
 
+        const editableAction = serializeEditableAction(action);
         return {
-            ...action,
+            ...editableAction,
             data: {
-                ...action.data,
+                ...editableAction.data,
                 email_design_setting_id: emailDesignSettingId
             }
         };
@@ -114,7 +131,7 @@ async function updateAutomation(automation, overrides = {}) {
         .body({
             automations: [{
                 status: automation.status,
-                actions: automation.actions,
+                actions: automation.actions.map(serializeEditableAction),
                 edges: automation.edges,
                 ...overrides
             }]
@@ -128,6 +145,45 @@ function getAutomationEmailSends() {
     return mailService.GhostMailer.prototype.send.getCalls()
         .map(call => call.args[0])
         .filter(emailToSend => emailToSend.tags?.includes('automation-email'));
+}
+
+async function getEmailSentCounts(actions) {
+    const actionIds = actions.map(action => action.id);
+    const rows = await db.knex('automation_action_revisions')
+        .select('action_id', 'email_sent_count')
+        .whereIn('action_id', actionIds);
+
+    const countsByActionId = new Map(rows.map(row => [row.action_id, row.email_sent_count]));
+
+    return actionIds.map(actionId => countsByActionId.get(actionId));
+}
+
+async function runAutomationForFreeMember(automation, email) {
+    const member = await membersService.api.members.create({
+        email,
+        name: 'Automation Test Member',
+        status: 'free',
+        email_disabled: false
+    });
+    assert.equal(member.get('status'), 'free');
+
+    await DomainEvents.allSettled();
+
+    const clock = mockSystemTime(new Date());
+
+    try {
+        for (const action of automation.actions) {
+            if (action.type === 'wait') {
+                clock.setSystemTime(new Date(Date.now() + action.data.wait_hours * HOUR_MS));
+            }
+
+            await runSchedulerPoll();
+        }
+
+        await runSchedulerPoll();
+    } finally {
+        clock.restore();
+    }
 }
 
 describe('Members Automations', function () {
@@ -161,6 +217,7 @@ describe('Members Automations', function () {
 
         const sendEmailActions = automation.actions.filter(action => action.type === 'send_email');
         assert.equal(sendEmailActions.length, 2);
+        assert.deepEqual(await getEmailSentCounts(sendEmailActions), [null, null]);
 
         const emailDesignSettingId = sendEmailActions[0].data.email_design_setting_id;
         assert(emailDesignSettingId, 'Expected send email action to have an email design setting');
@@ -178,31 +235,7 @@ describe('Members Automations', function () {
         );
 
         const email = `automation-free-member-${Date.now()}@test.example`;
-        const member = await membersService.api.members.create({
-            email,
-            name: 'Automation Test Member',
-            status: 'free',
-            email_disabled: false
-        });
-        assert.equal(member.get('status'), 'free');
-
-        await DomainEvents.allSettled();
-
-        const clock = mockSystemTime(new Date());
-
-        try {
-            for (const action of automation.actions) {
-                if (action.type === 'wait') {
-                    clock.setSystemTime(new Date(Date.now() + action.data.wait_hours * HOUR_MS));
-                }
-
-                await runSchedulerPoll();
-            }
-
-            await runSchedulerPoll();
-        } finally {
-            clock.restore();
-        }
+        await runAutomationForFreeMember(automation, email);
 
         const sentEmails = getAutomationEmailSends();
         assert.equal(sentEmails.length, 2);
@@ -224,6 +257,12 @@ describe('Members Automations', function () {
             to: email,
             subject: 'Follow up'
         });
+        assert.deepEqual(await getEmailSentCounts(sendEmailActions), [1, 1]);
+
+        const secondEmail = `automation-second-free-member-${Date.now()}@test.example`;
+        await runAutomationForFreeMember(automation, secondEmail);
+
+        assert.deepEqual(await getEmailSentCounts(sendEmailActions), [2, 2]);
     });
 
     it('does nothing when the automation is inactive', async function () {

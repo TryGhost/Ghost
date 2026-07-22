@@ -146,6 +146,11 @@
                     "object_type": "db"
                 },
                 {
+                    "name": "Import content",
+                    "action_type": "importContent",
+                    "object_type": "content_import"
+                },
+                {
                     "name": "Send mail",
                     "action_type": "send",
                     "object_type": "mail"
@@ -549,6 +554,31 @@
                     "name": "Delete labels",
                     "action_type": "destroy",
                     "object_type": "label"
+                },
+                {
+                    "name": "Browse member custom fields",
+                    "action_type": "browse",
+                    "object_type": "member_custom_field"
+                },
+                {
+                    "name": "Read member custom fields",
+                    "action_type": "read",
+                    "object_type": "member_custom_field"
+                },
+                {
+                    "name": "Edit member custom fields",
+                    "action_type": "edit",
+                    "object_type": "member_custom_field"
+                },
+                {
+                    "name": "Add member custom fields",
+                    "action_type": "add",
+                    "object_type": "member_custom_field"
+                },
+                {
+                    "name": "Delete member custom fields",
+                    "action_type": "destroy",
+                    "object_type": "member_custom_field"
                 },
                 {
                     "name": "Browse automated emails",
@@ -1095,6 +1125,7 @@
             "entries": {
                 "Administrator": {
                     "db": "all",
+                    "content_import": "all",
                     "mail": "all",
                     "notification": "all",
                     "post": "all",
@@ -1113,6 +1144,7 @@
                     "member": "all",
                     "product": "all",
                     "label": "all",
+                    "member_custom_field": "all",
                     "automated_email": "all",
                     "email_design_setting": "all",
                     "email_preview": "all",
@@ -1148,6 +1180,7 @@
                 },
                 "Self-Serve Migration Integration": {
                     "db": "importContent",
+                    "content_import": "importContent",
                     "member": "add",
                     "tag": "read"
                 },
@@ -1168,6 +1201,7 @@
                     "member": "all",
                     "member_signin_url": "read",
                     "label": "all",
+                    "member_custom_field": "all",
                     "automated_email": "all",
                     "email_design_setting": "all",
                     "email_preview": "all",
@@ -1242,6 +1276,7 @@
                     "recommendation": ["browse", "read"],
                     "member": ["browse", "read", "add", "edit", "destroy"],
                     "member_signin_url": "read",
+                    "member_custom_field": ["browse", "read"],
                     "offer": ["browse", "read"],
                     "comment": "all",
                     "gift_link": "manage"

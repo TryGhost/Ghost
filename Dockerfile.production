@@ -2,11 +2,16 @@
 
 # Production Dockerfile for Ghost
 # Targets:
-#   deps — production node_modules only (build-only stage, never shipped)
+#   deploy — build the prod dependency closure + a self-contained /home/ghost
+#            (build-only stage, never shipped)
 #   core — server + production deps, no admin (Ghost-Pro base)
 #   full — core + built admin (self-hosting)
 #
-# Build context: extracted `npm pack` output from ghost/core
+# Build context: the monorepo repo root. The deploy stage runs `pnpm deploy`
+# against the workspace to produce a self-contained app dir (source + resolved
+# node_modules), so this image no longer depends on the `pnpm pack` output that
+# Ghost-CLI uses (scripts/pack.mjs). The `full` stage's admin build is injected
+# into the context by CI at core/built/admin.
 #
 # Ownership model: application code (node_modules, server source, admin) is owned
 # by nobody:nogroup so the runtime user (ghost, uid 1000) can read but not modify
@@ -16,26 +21,62 @@
 # duplicated node_modules (~600MB) and the admin build (~80MB) and inflated every
 # image pull.
 
-ARG NODE_VERSION=22.18.0
+ARG NODE_VERSION=22.23.1
 
-# ---- deps: production node_modules (build-only stage, not shipped) ----
-FROM node:$NODE_VERSION-bookworm-slim AS deps
+# ---- deploy: build closure + self-contained app dir (build-only, not shipped) ----
+FROM node:$NODE_VERSION-bookworm-slim AS deploy
 
-WORKDIR /home/ghost
+WORKDIR /build
 
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY components ./components
+# Full workspace source is needed so pnpm can resolve the workspace graph for the
+# `ghost...` filter. .dockerignore prunes node_modules/build/dist/.git/.nx so the
+# build starts from a clean tree and rebuilds outputs in-container.
+#
+# --exclude core/built: for the `full` target CI injects the admin build into the
+# context at ghost/core/core/built/admin. Excluding the whole built dir (not just
+# built/admin — the built dir itself is absent on a fresh checkout, so excluding
+# only its child would still leave a differing directory entry) keeps this COPY
+# layer's hash identical between the core and full builds. That lets `full` reuse
+# `core`'s cached deploy/install/build layers instead of re-running the whole
+# closure build, and keeps admin out of the deploy output so `core` stays
+# admin-free. The server's own core/built output is regenerated in-container by the
+# build steps below, so nothing is lost by excluding the host copy.
+COPY --exclude=ghost/core/core/built . .
 
-# build-essential/python3 are only needed to compile native deps (better-sqlite3).
-# Because this stage is discarded, they never reach the shipped image, so there's
-# no purge step to keep the layer clean.
+# Install only ghost and its dependency subgraph (`ghost...`), not the whole
+# monorepo (admin, apps, ...). Dev deps are included — tsc etc. are needed to build
+# the closure. Scripts are NOT ignored: better-sqlite3's install script runs and
+# prebuild-install fetches its prebuilt binary (permitted by allowBuilds in
+# pnpm-workspace.yaml). No build-essential/python3 is installed, so a node-gyp
+# source-compile fallback fails loudly instead of silently pulling a toolchain into
+# a discarded layer.
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
-    apt-get update && \
-    apt-get install -y --no-install-recommends build-essential python3 && \
-    pnpm install --frozen-lockfile --ignore-scripts --prod --prefer-offline && \
-    (cd node_modules/better-sqlite3 && npm run install)
+    pnpm install --filter "ghost..." --frozen-lockfile --prefer-offline
+
+# Build ghost's production workspace dependency closure (kg-*/adapters; @tryghost/i18n
+# has no build script and is skipped) plus ghost's own server output. Driven with
+# pnpm recursive filters rather than nx to avoid the NX_NATIVE_COMMAND_RUNNER
+# segfault workaround inside the container.
+RUN pnpm --filter-prod "ghost^..." -r run build && \
+    pnpm --filter ghost run build:tsc && \
+    pnpm --filter ghost run build:assets
+
+# Produce a self-contained deploy dir: ghost/core's `files` set + a fully resolved,
+# production-only node_modules (--prod drops devDeps, keeps optional better-sqlite3).
+# Admin is never built here, so core/built/admin is absent — the core image stays
+# admin-free and the full stage injects admin from the build context.
+#
+# inject-workspace-packages: hard-copy the workspace deps (kg-*/adapters/i18n) into
+# node_modules instead of linking them back to the workspace. The deploy dir is
+# COPYed into the runtime image away from the workspace, so links would dangle.
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
+    pnpm --filter=ghost --config.inject-workspace-packages=true deploy --prod /home/ghost
+
+# Fail the build now if the native module didn't install correctly (missing/broken
+# prebuilt binary) rather than at container runtime.
+RUN cd /home/ghost && node -e "require('better-sqlite3'); console.log('better-sqlite3 OK')"
 
 # ---- Core: server + production deps ----
 FROM node:$NODE_VERSION-bookworm-slim AS core
@@ -51,12 +92,10 @@ RUN apt-get update && \
 
 WORKDIR /home/ghost
 
-RUN corepack enable
-
-# node_modules is compiled in the deps stage and copied once with its final
-# ownership — no separate `chown -R` layer, so it isn't duplicated in the image.
-COPY --chown=nobody:nogroup --from=deps /home/ghost/node_modules ./node_modules
-COPY --chown=nobody:nogroup --exclude=core/built/admin . .
+# The deploy stage produced a self-contained app dir (server source + resolved
+# node_modules, no admin). Copy it once with its final ownership — no separate
+# `chown -R` layer, so node_modules isn't duplicated in the image.
+COPY --chown=nobody:nogroup --from=deploy /home/ghost ./
 
 # cp -a preserves the nobody:nogroup ownership set at COPY time, so base_content
 # and default need no re-chown; only the writable content/log dirs flip to ghost.
@@ -82,5 +121,9 @@ CMD ["node", "index.js"]
 FROM core AS full
 
 # COPY --chown sets ownership in the copy layer; a post-hoc `chown -R` would
-# duplicate the ~80MB admin build into a second layer.
-COPY --chown=nobody:nogroup core/built/admin core/built/admin
+# duplicate the ~80MB admin build into a second layer. Admin is injected into the
+# build context by CI (downloaded from the admin build job) at
+# ghost/core/core/built/admin — the deploy stage excludes that path, so this is the
+# only stage that carries admin. Local `full` builds must populate that path first
+# (e.g. `pnpm nx run @tryghost/admin:build`).
+COPY --chown=nobody:nogroup ghost/core/core/built/admin core/built/admin

@@ -1,10 +1,11 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
-import {Form, LimitModal, Modal, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
+import {Form, LimitModal, Modal, TextArea, TextField} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {numberWithCommas} from '../../../../utils/helpers';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -126,17 +127,18 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 value={formState.description}
                 onChange={e => updateForm(state => ({...state, description: e.target.value}))}
             />
-            <Toggle
-                checked={formState.optInExistingSubscribers}
-                direction='rtl'
-                hint={formState.optInExistingSubscribers ?
-                    `This newsletter will be available to all members. Your ${subscriberCount === undefined ? '' : numberWithCommas(subscriberCount)} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
-                    'The newsletter will be available to all new members. Existing members won’t be subscribed, but may visit their account area to opt-in to future emails.'
-                }
-                label='Opt-in existing subscribers'
-                labelStyle='heading'
-                onChange={e => updateForm(state => ({...state, optInExistingSubscribers: e.target.checked}))}
-            />
+            <Field orientation='horizontal'>
+                <FieldContent>
+                    <FieldLabel htmlFor='opt-in-existing-subscribers'>Opt-in existing subscribers</FieldLabel>
+                    <FieldDescription>
+                        {formState.optInExistingSubscribers ?
+                            `This newsletter will be available to all members. Your ${subscriberCount === undefined ? '' : formatNumber(subscriberCount)} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
+                            'The newsletter will be available to all new members. Existing members won’t be subscribed, but may visit their account area to opt-in to future emails.'
+                        }
+                    </FieldDescription>
+                </FieldContent>
+                <Switch checked={formState.optInExistingSubscribers} id='opt-in-existing-subscribers' onCheckedChange={checked => updateForm(state => ({...state, optInExistingSubscribers: checked}))} />
+            </Field>
         </Form>
     </Modal>;
 };

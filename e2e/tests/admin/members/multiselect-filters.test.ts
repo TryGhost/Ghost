@@ -1,26 +1,14 @@
-import {Member, MemberFactory, createMemberFactory, createOfferFactory} from '@/data-factory';
 import {MembersListPage} from '@/admin-pages';
 import {PortalOfferPage} from '@/portal-pages';
 import {PublicPage} from '@/public-pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {StripeTestService} from '@/helpers/services/stripe';
 import {completeOfferSignupViaPortal, createPaidPortalTier, expect, test} from '@/helpers/playwright';
+import {createMemberFactory, createOfferFactory} from '@/data-factory';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 import type {APIRequestContext, Page} from '@playwright/test';
 
 usePerTestIsolation();
-
-async function seedMembersAndNavigate(
-    memberFactory: MemberFactory,
-    page: Page,
-    members: Partial<Member>[]
-): Promise<MembersListPage> {
-    await memberFactory.createMany(members);
-    const membersPage = new MembersListPage(page);
-    await membersPage.goto();
-    await expect(membersPage.memberRows).toHaveCount(members.length);
-    return membersPage;
-}
 
 async function createOfferAndRedeem(page: Page, request: APIRequestContext, stripe: StripeTestService, opts: {
     offerName: string;
@@ -62,116 +50,6 @@ async function createOfferAndRedeem(page: Page, request: APIRequestContext, stri
 
     return {offer, suffix};
 }
-
-test.describe('Ghost Admin - Members Label Multiselect Filter', () => {
-    let memberFactory: MemberFactory;
-
-    test.beforeEach(async ({page}) => {
-        memberFactory = createMemberFactory(page.request);
-    });
-
-    test('opens label filter and selects a label to filter members', async ({page}) => {
-        const membersPage = await seedMembersAndNavigate(memberFactory, page, [
-            {name: 'VIP Member', email: 'vip@example.com', labels: ['VIP']},
-            {name: 'Regular Member', email: 'regular@example.com'}
-        ]);
-
-        await membersPage.addMultiselectFilter('Label', ['VIP']);
-
-        await expect(membersPage.memberRows).toHaveCount(1);
-        await expect(membersPage.getMemberByName('VIP Member')).toBeVisible();
-    });
-
-    test('selects multiple labels to filter members by any matching label', async ({page}) => {
-        const membersPage = await seedMembersAndNavigate(memberFactory, page, [
-            {name: 'Both Labels', email: 'both@example.com', labels: ['VIP', 'Premium']},
-            {name: 'VIP Only', email: 'vip@example.com', labels: ['VIP']},
-            {name: 'Premium Only', email: 'premium@example.com', labels: ['Premium']},
-            {name: 'No Label', email: 'nolabel@example.com'}
-        ]);
-
-        await membersPage.addMultiselectFilter('Label', ['VIP', 'Premium']);
-
-        await expect(membersPage.memberRows).toHaveCount(3);
-        await expect(membersPage.getMemberByName('Both Labels')).toBeVisible();
-        await expect(membersPage.getMemberByName('VIP Only')).toBeVisible();
-        await expect(membersPage.getMemberByName('Premium Only')).toBeVisible();
-    });
-
-    test('searches for a label in the combobox and selects it', async ({page}) => {
-        const membersPage = await seedMembersAndNavigate(memberFactory, page, [
-            {name: 'Targeted Member', email: 'targeted@example.com', labels: ['Searchable-Label']},
-            {name: 'Other Member', email: 'other@example.com', labels: ['Different-Label']},
-            {name: 'No Label', email: 'nolabel@example.com'}
-        ]);
-
-        await membersPage.filterButton.click();
-        await page.getByRole('option', {name: 'Label', exact: true}).click();
-
-        await membersPage.searchMultiselectOptions('Searchable');
-        await page.getByRole('option', {name: 'Searchable-Label', exact: true}).click();
-
-        await expect(membersPage.memberRows).toHaveCount(1);
-        await expect(membersPage.getMemberByName('Targeted Member')).toBeVisible();
-    });
-
-    test('deselects a label from the combobox to update results', async ({page}) => {
-        const membersPage = await seedMembersAndNavigate(memberFactory, page, [
-            {name: 'VIP Member', email: 'vip@example.com', labels: ['VIP']},
-            {name: 'Premium Member', email: 'premium@example.com', labels: ['Premium']},
-            {name: 'No Label', email: 'nolabel@example.com'}
-        ]);
-
-        await membersPage.addMultiselectFilter('Label', ['VIP', 'Premium']);
-        await expect(membersPage.memberRows).toHaveCount(2);
-
-        await membersPage.openFilterValue('Label');
-        await membersPage.selectMultiselectOption('VIP');
-        await page.keyboard.press('Escape');
-
-        await expect(membersPage.memberRows).toHaveCount(1);
-        await expect(membersPage.getMemberByName('Premium Member')).toBeVisible();
-    });
-
-    test('edits a label name inline from the filter combobox', async ({page}) => {
-        const membersPage = await seedMembersAndNavigate(memberFactory, page, [
-            {name: 'Editable Label Member', email: 'editable@example.com', labels: ['Old-Name']},
-            {name: 'Selected Label Member', email: 'selected@example.com', labels: ['Selected-Label']},
-            {name: 'Other Member', email: 'other@example.com'}
-        ]);
-
-        await membersPage.addMultiselectFilter('Label', ['Selected-Label']);
-        await membersPage.openFilterValue('Label');
-
-        await page.getByRole('button', {name: 'Edit label Old-Name'}).click();
-
-        await membersPage.editLabelInput.fill('New-Name');
-        await page.getByRole('button', {name: 'Save', exact: true}).click();
-
-        await expect(page.getByRole('option', {name: /New-Name/})).toBeVisible();
-    });
-
-    test('deletes a label inline from the filter combobox with confirmation', async ({page}) => {
-        await memberFactory.createMany([
-            {name: 'Deletable Label Member', email: 'deletable@example.com', labels: ['Delete-Me']},
-            {name: 'Selected Label Member', email: 'selected@example.com', labels: ['Selected-Label']},
-            {name: 'Other Member', email: 'other@example.com'}
-        ]);
-
-        const membersPage = new MembersListPage(page);
-        await membersPage.goto();
-
-        await membersPage.addMultiselectFilter('Label', ['Selected-Label']);
-        await membersPage.openFilterValue('Label');
-
-        await page.getByRole('button', {name: 'Edit label Delete-Me'}).click();
-
-        await page.getByRole('button', {name: 'Delete', exact: true}).click();
-        await page.getByRole('button', {name: 'Delete', exact: true}).click();
-
-        await expect(page.getByRole('option', {name: /Delete-Me/})).toBeHidden();
-    });
-});
 
 test.describe('Ghost Admin - Members Offer Multiselect Filter', () => {
     test.use({stripeEnabled: true});

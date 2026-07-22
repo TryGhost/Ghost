@@ -78,7 +78,7 @@ export const useInvalidateLabels = () => {
     const queryClient = useQueryClient();
 
     return useCallback(() => {
-        queryClient.invalidateQueries([dataType]);
+        queryClient.invalidateQueries({queryKey: [dataType]});
     }, [queryClient]);
 };
 

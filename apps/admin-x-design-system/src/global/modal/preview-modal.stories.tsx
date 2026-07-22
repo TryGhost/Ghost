@@ -101,6 +101,8 @@ export const BreadcrumbsToolbar: Story = {
     args: {
         ...Default.args,
         previewToolbarTabs: undefined,
-        previewToolbarBreadcrumbs: [{label: 'Previous', onClick: () => {}}, {label: 'Current'}]
+        previewToolbarBreadcrumbs: (
+            <span className='text-sm text-grey-500'>Toolbar breadcrumbs slot</span>
+        )
     }
 };

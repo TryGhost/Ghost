@@ -1,17 +1,19 @@
-#!/usr/bin/env node
-'use strict';
+import {existsSync} from 'node:fs';
+import {join, relative} from 'node:path';
+import {execSync} from 'node:child_process';
+import {parseArgs as baseParseArgs} from 'node:util';
+import semver from 'semver';
+import camelcaseKeys from 'camelcase-keys';
+import {setTimeout} from 'node:timers/promises';
 
-const path = require('node:path');
-const fs = require('node:fs');
-const {execSync} = require('node:child_process');
-const semver = require('semver');
-const {resolveBaseTag} = require('./lib/resolve-base-tag');
+import {ROOT_DIR} from './lib/constants.js';
+import {resolveBaseTag} from './lib/resolve-base-tag.js';
+import {readJsonSync, writeJsonSync} from './lib/utils.js';
 
-const ROOT = path.resolve(__dirname, '..');
-const GHOST_CORE_PKG = path.join(ROOT, 'ghost/core/package.json');
-const GHOST_ADMIN_PKG = path.join(ROOT, 'ghost/admin/package.json');
-const CASPER_DIR = path.join(ROOT, 'ghost/core/content/themes/casper');
-const SOURCE_DIR = path.join(ROOT, 'ghost/core/content/themes/source');
+const GHOST_CORE_PKG = join(ROOT_DIR, 'ghost/core/package.json');
+const GHOST_ADMIN_PKG = join(ROOT_DIR, 'ghost/admin/package.json');
+const CASPER_DIR = join(ROOT_DIR, 'ghost/core/content/themes/casper');
+const SOURCE_DIR = join(ROOT_DIR, 'ghost/core/content/themes/source');
 
 const MAX_WAIT_MS = 30 * 60 * 1000; // 30 minutes
 const POLL_INTERVAL_MS = 30 * 1000; // 30 seconds
@@ -19,47 +21,41 @@ const POLL_INTERVAL_MS = 30 * 1000; // 30 seconds
 // --- Argument parsing ---
 
 function parseArgs() {
-    const args = process.argv.slice(2);
-    const opts = {
-        bumpType: 'auto',
-        branch: 'main',
-        dryRun: false,
-        skipChecks: false
-    };
+    // Defaults fall back to RELEASE_* env vars so CI can set them on the job and
+    // invoke the script bare (a passed CLI flag still wins). Booleans read the
+    // literal string "true".
+    const env = process.env;
+    const {values} = baseParseArgs({
+        options: {
+            'bump-type': {type: 'string', default: env.RELEASE_BUMP_TYPE || 'auto'},
+            'branch': {type: 'string', default: env.RELEASE_BRANCH || 'main'},
+            'dry-run': {type: 'boolean', default: env.RELEASE_DRY_RUN === 'true'},
+            'skip-checks': {type: 'boolean', default: env.RELEASE_SKIP_CHECKS === 'true'},
+            // Version and commit the pending package changesets without touching
+            // Ghost's version, cutting a tag, or publishing. Publishing is a
+            // separate step (the "Publish Packages" workflow_dispatch).
+            'packages-only': {type: 'boolean', default: env.RELEASE_PACKAGES_ONLY === 'true'}
+        },
+    });
 
-    for (const arg of args) {
-        if (arg.startsWith('--bump-type=')) {
-            opts.bumpType = arg.split('=')[1];
-        } else if (arg.startsWith('--branch=')) {
-            opts.branch = arg.split('=')[1];
-        } else if (arg === '--dry-run') {
-            opts.dryRun = true;
-        } else if (arg === '--skip-checks') {
-            opts.skipChecks = true;
-        } else {
-            console.error(`Unknown argument: ${arg}`);
-            process.exit(1);
-        }
-    }
-
-    return opts;
+    return camelcaseKeys(values);
 }
 
 // --- Helpers ---
 
 function run(cmd, opts = {}) {
-    const result = execSync(cmd, {cwd: ROOT, encoding: 'utf8', ...opts});
+    const result = execSync(cmd, {cwd: ROOT_DIR, encoding: 'utf8', ...opts});
     return result.trim();
 }
 
 function readPkgVersion(pkgPath) {
-    return JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version;
+    return readJsonSync(pkgPath).version;
 }
 
 function writePkgVersion(pkgPath, version) {
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    const pkg = readJsonSync(pkgPath);
     pkg.version = version;
-    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+    writeJsonSync(pkgPath, pkg);
 }
 
 function log(msg) {
@@ -68,6 +64,22 @@ function log(msg) {
 
 function logStep(msg) {
     console.log(`\n▸ ${msg}`);
+}
+
+// Consume changesets → version the publishable workspace packages. `pnpm
+// version -r` reads .changeset/, writes each package's new version, rewrites
+// dependent workspace ranges, and deletes the consumed intents. Recursive mode
+// never creates its own commit or tag, so the caller commits the result.
+function applyChangesetVersions() {
+    if (!existsSync(join(ROOT_DIR, '.changeset'))) {
+        log('No .changeset directory — nothing to version');
+        return;
+    }
+    // --no-git-checks: the working tree is intentionally dirty here — the normal
+    // release has already written the Ghost version bumps (committed together
+    // below), and the packages-only path commits straight after. `pnpm version
+    // -r` refuses on an unclean tree by default.
+    run('pnpm version -r --no-git-checks');
 }
 
 // --- Version detection ---
@@ -133,7 +145,7 @@ async function waitForChecks(commit) {
 
     const startTime = Date.now();
 
-    while (true) { // eslint-disable-line no-constant-condition
+    while (true) {
         const response = await fetch(`https://api.github.com/repos/TryGhost/Ghost/commits/${commit}/check-runs`, {
             headers: {
                 Authorization: `token ${token}`,
@@ -171,20 +183,19 @@ async function waitForChecks(commit) {
         }
 
         log(`(${elapsed}s elapsed), polling in 30s...`);
-        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+        await setTimeout(POLL_INTERVAL_MS);
     }
 }
 
 // --- Theme submodule updates ---
 
 function updateThemeSubmodule(themeDir, themeName) {
-    if (!fs.existsSync(themeDir)) {
+    if (!existsSync(themeDir)) {
         log(`${themeName} not present, skipping`);
         return false;
     }
 
-    const currentPkg = JSON.parse(fs.readFileSync(path.join(themeDir, 'package.json'), 'utf8'));
-    const currentVersion = currentPkg.version;
+    const currentVersion = readPkgVersion(join(themeDir, 'package.json'));
 
     // Checkout latest stable tag on main branch
     try {
@@ -197,12 +208,11 @@ function updateThemeSubmodule(themeDir, themeName) {
         return false;
     }
 
-    const updatedPkg = JSON.parse(fs.readFileSync(path.join(themeDir, 'package.json'), 'utf8'));
-    const newVersion = updatedPkg.version;
+    const newVersion = readPkgVersion(join(themeDir, 'package.json'));
 
     if (semver.gt(newVersion, currentVersion)) {
         log(`${themeName} updated: v${currentVersion} → v${newVersion}`);
-        run(`git add -f ${path.relative(ROOT, themeDir)}`);
+        run(`git add -f ${relative(ROOT_DIR, themeDir)}`);
         run(`git commit -m "🎨 Updated ${themeName} to v${newVersion}"`);
         return true;
     }
@@ -211,10 +221,57 @@ function updateThemeSubmodule(themeDir, themeName) {
     return false;
 }
 
+// --- Packages-only release ---
+
+// Version and commit the pending package changesets without bumping Ghost,
+// cutting a tag, or advancing the RC. Publishing happens separately (the
+// "Publish Packages" workflow_dispatch, which publishes any committed version
+// missing from npm), so this only needs to land the bumps on the branch.
+async function runPackagesOnlyRelease(opts) {
+    console.log('Ghost Packages-Only Release');
+    console.log('===========================');
+    log(`Branch: ${opts.branch}`);
+    log(`Dry run: ${opts.dryRun}`);
+
+    logStep('Applying changeset versions to publishable packages');
+    applyChangesetVersions();
+
+    // version -r writes package.json bumps, rewrites workspace ranges, removes
+    // consumed changesets, and may touch the lockfile. Nothing staged means
+    // there were no pending changesets to release.
+    const changes = run('git status --porcelain');
+    if (!changes) {
+        log('No pending package changes to release');
+        console.log('\n✓ Nothing to publish');
+        return;
+    }
+
+    logStep('Committing package versions');
+    run('git add -A');
+    run('git commit -m "Versioned pending package changesets"');
+
+    if (opts.dryRun) {
+        logStep('DRY RUN — skipping push');
+        log(`Would push branch ${opts.branch}`);
+    } else {
+        logStep('Pushing');
+        run('git push origin HEAD');
+        log('Pushed package version bumps');
+    }
+
+    console.log('\n✓ Packages-only release complete');
+    log('Run the "Publish Packages" workflow to publish the new versions to npm');
+}
+
 // --- Main ---
 
 async function main() {
     const opts = parseArgs();
+
+    if (opts.packagesOnly) {
+        await runPackagesOnlyRelease(opts);
+        return;
+    }
 
     console.log('Ghost Release Script');
     console.log('====================');
@@ -229,7 +286,7 @@ async function main() {
 
     // 2. Resolve base tag
     logStep('Resolving base tag');
-    const {tag: baseTag, isPrerelease} = resolveBaseTag(currentVersion, ROOT);
+    const {tag: baseTag, isPrerelease} = resolveBaseTag(currentVersion, ROOT_DIR);
     if (isPrerelease) {
         log(`Prerelease detected (${currentVersion}), resolved base tag: ${baseTag}`);
     } else {
@@ -283,8 +340,18 @@ async function main() {
     writePkgVersion(GHOST_CORE_PKG, newVersion);
     writePkgVersion(GHOST_ADMIN_PKG, newVersion);
 
+    // 7b. Consume changesets → version the publishable workspace packages
+    // (kg-*, packages/*, ...). These changes land in the Ghost release commit
+    // below, tying every package version to the Ghost release that carries its
+    // content; publishing (scripts/publish-packages.js) reads those off npm.
+    logStep('Applying changeset versions to publishable packages');
+    applyChangesetVersions();
+
     // 8. Commit and tag
-    run(`git add ${path.relative(ROOT, GHOST_CORE_PKG)} ${path.relative(ROOT, GHOST_ADMIN_PKG)}`);
+    // Stage everything: the two Ghost manifests plus whatever `pnpm version -r`
+    // touched (package.jsons, workspace-range rewrites, removed changesets,
+    // pnpm-lock.yaml). Theme submodule bumps are already committed above.
+    run('git add -A');
     run(`git commit -m "v${newVersion}"`);
     run(`git tag v${newVersion}`);
     log(`Created tag v${newVersion}`);
@@ -310,7 +377,7 @@ async function main() {
     log(`Next RC: ${nextRc}`);
     writePkgVersion(GHOST_CORE_PKG, nextRc);
     writePkgVersion(GHOST_ADMIN_PKG, nextRc);
-    run(`git add ${path.relative(ROOT, GHOST_CORE_PKG)} ${path.relative(ROOT, GHOST_ADMIN_PKG)}`);
+    run(`git add ${relative(ROOT_DIR, GHOST_CORE_PKG)} ${relative(ROOT_DIR, GHOST_ADMIN_PKG)}`);
     run(`git commit -m "Bumped version to ${nextRc}"`);
 
     if (opts.dryRun) {

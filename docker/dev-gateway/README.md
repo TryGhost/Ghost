@@ -19,15 +19,14 @@ Caddy uses environment variables (set in `compose.dev.yaml`) to configure proxy 
 - `SIGNUP_DEV_SERVER` - Signup form (e.g., `host.docker.internal:6174`)
 - `SEARCH_DEV_SERVER` - Sodo search (e.g., `host.docker.internal:4178`)
 - `ANNOUNCEMENT_DEV_SERVER` - Announcement bar (e.g., `host.docker.internal:4177`)
-- `LEXICAL_DEV_SERVER` - *Optional:* Local Koenig Lexical editor dev server (e.g., `host.docker.internal:4173`)
-  - For developing Lexical in the separate [Koenig repository](https://github.com/TryGhost/Koenig)
-  - Requires `EDITOR_URL=/ghost/assets/koenig-lexical/` when starting admin dev server
+- `LEXICAL_DEV_SERVER` - *Optional:* Koenig Lexical editor preview server (e.g., `host.docker.internal:4173`)
+  - Started by `pnpm dev:lexical` at the repo root, which runs `koenig/koenig-lexical`'s `dev:integrated` target (editor rebuild watcher + `vite preview` on port 4173) and sets Admin's `EDITOR_URL` to point at it
   - Automatically falls back to Ghost backend (built package) if dev server is not running
 - `ACTIVITYPUB_PROXY_TARGET` - *Optional:* ActivityPub service (e.g., `host.docker.internal:8080`)
   - For developing with the [ActivityPub project](https://github.com/TryGhost/ActivityPub) running locally
   - Requires the ActivityPub docker-compose services to be running
 
-**Note:** AdminX React apps (admin-x-settings, activitypub, posts, stats) are served through the admin dev server so they don't need separate proxy entries.
+**Note:** AdminX React apps (admin-x-settings, activitypub) are served through the admin dev server so they don't need separate proxy entries.
 
 ### Ghost Configuration
 Ghost is configured via environment variables in `compose.dev.yaml` to load public app assets from `/ghost/assets/*` (e.g., `portal__url: /ghost/assets/portal/portal.min.js`). This uses the same path structure as built admin assets.
@@ -42,7 +41,7 @@ The Caddyfile defines these routing rules:
 | `/.ghost/activitypub/*`              | ActivityPub server (port 8080)      | *Optional:* ActivityPub API (requires AP project running)              |
 | `/.well-known/webfinger`             | ActivityPub server (port 8080)      | *Optional:* WebFinger for federation                                   |
 | `/.well-known/nodeinfo`              | ActivityPub server (port 8080)      | *Optional:* NodeInfo for federation                                    |
-| `/ghost/assets/koenig-lexical/*`     | Lexical dev server (port 4173)      | *Optional:* Koenig Lexical editor (falls back to Ghost if not running) |
+| `/ghost/assets/koenig-lexical/*`     | Lexical dev server (port 4173)      | *Optional:* Koenig editor via `pnpm dev:lexical` (falls back to Ghost) |
 | `/ghost/assets/portal/*`             | Portal dev server (port 4175)       | Membership UI                                                          |
 | `/ghost/assets/comments-ui/*`        | Comments dev server (port 7173)     | Comments widget                                                        |
 | `/ghost/assets/signup-form/*`        | Signup dev server (port 6174)       | Signup form widget                                                     |

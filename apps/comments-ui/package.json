@@ -19,14 +19,17 @@
         "dev": "vite build --watch --mode development",
         "dev:test": "vite build && vite preview --port 7175",
         "build": "vite build",
-        "test": "pnpm test:unit",
+        "test": "pnpm run '/^test:(types|unit)$/'",
+        "test:types": "tsc --noEmit --incremental false && tsc -p tsconfig.node.json --noEmit",
         "test:unit": "vitest run --coverage",
         "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
         "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=1000 pnpm test:acceptance --headed",
         "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
-        "lint": "eslint src --cache",
+        "lint": "pnpm run '/^lint:/'",
+        "lint:code": "eslint src --cache",
+        "lint:types": "pnpm test:types",
         "preship": "pnpm lint",
-        "ship": "node ../../.github/scripts/release-apps.js",
+        "ship": "node ../../scripts/release-apps.js",
         "prepublishOnly": "pnpm build"
     },
     "browserslist": {
@@ -42,7 +45,7 @@
         ]
     },
     "dependencies": {
-        "@doist/react-interpolate": "2.2.2",
+        "@doist/react-interpolate": "2.2.3",
         "@headlessui/react": "1.7.19",
         "@tiptap/core": "2.27.2",
         "@tiptap/extension-blockquote": "2.27.2",
@@ -60,7 +63,10 @@
         "react-string-replace": "2.0.1"
     },
     "devDependencies": {
-        "@eslint/js": "catalog:",
+        "@typescript/native": "catalog:",
+        "typescript": "catalog:",
+        "@internal/cfg-eslint-react": "workspace:*",
+        "@internal/cfg-vite-public-app": "workspace:*",
         "@playwright/test": "catalog:",
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:react17",
@@ -68,26 +74,18 @@
         "@tryghost/nql": "catalog:",
         "@types/react": "catalog:react17",
         "@types/react-dom": "catalog:react17",
-        "@vitejs/plugin-react": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "autoprefixer": "10.5.2",
         "bson-objectid": "catalog:",
-        "concurrently": "catalog:",
         "eslint": "catalog:",
-        "eslint-plugin-ghost": "catalog:",
-        "eslint-plugin-i18next": "6.1.5",
-        "eslint-plugin-react": "catalog:",
         "eslint-plugin-tailwindcss": "catalog:tailwind3",
-        "globals": "catalog:",
         "jsdom": "catalog:",
-        "typescript-eslint": "catalog:",
         "moment": "2.30.1",
         "postcss": "catalog:",
         "postcss-import": "16.1.1",
         "sinon": "catalog:",
         "tailwindcss": "catalog:tailwind3",
         "vite": "catalog:",
-        "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"
     },
     "nx": {
@@ -103,7 +101,8 @@
         },
         "tags": [
             "i18n",
-            "public-app"
+            "public-app",
+            "playwright"
         ]
     }
 }

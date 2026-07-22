@@ -1,5 +1,7 @@
-import React, {Suspense, useCallback, useMemo, useRef} from 'react';
-import {ErrorBoundary, type KoenigInstance, LoadingIndicator, loadKoenig, useDesignSystem} from '@tryghost/admin-x-design-system';
+import ErrorBoundary from '../../../error-boundary';
+import React, {Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {type KoenigInstance, loadKoenig, useDesignSystem} from '@tryghost/admin-x-design-system';
+import {LoadingIndicator} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -20,6 +22,21 @@ const fileUploader = {
 };
 
 type EditorResource = ReturnType<typeof loadKoenig>;
+
+const DelayedLoadingIndicator: React.FC<{delay: number}> = ({delay}) => {
+    const [show, setShow] = useState(false);
+
+    useEffect(() => {
+        const timeout = setTimeout(() => setShow(true), delay);
+        return () => clearTimeout(timeout);
+    }, [delay]);
+
+    return (
+        <div className={`flex h-64 items-center justify-center transition-opacity ${show ? 'opacity-100' : 'opacity-0'}`}>
+            <LoadingIndicator size="lg" />
+        </div>
+    );
+};
 
 const baseEditorStyles = cn(
     // Base typography
@@ -100,7 +117,6 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     const {config, settings} = useGlobalData();
     const {fetchAutocompleteLinks, searchLinks} = useWelcomeEmailLinkSuggestions();
     const fetchEmbed = useKoenigFetchEmbed();
-    const tenorConfig = config.tenor?.googleApiKey ? config.tenor : null;
     const klipyConfig = config.klipy?.apiKey ? config.klipy : null;
     const {fetchKoenigLexical, darkMode} = useDesignSystem();
     const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
@@ -109,7 +125,6 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     const cardConfig = useMemo(() => ({
         unsplash: unsplashConfig,
         pinturaConfig,
-        tenor: tenorConfig,
         klipy: klipyConfig,
         fetchEmbed,
         fetchAutocompleteLinks,
@@ -118,7 +133,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
             transistor: transistorEnabled
         },
         visibilitySettings: 'none'
-    }), [unsplashConfig, pinturaConfig, tenorConfig, klipyConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks, transistorEnabled]);
+    }), [unsplashConfig, pinturaConfig, klipyConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks, transistorEnabled]);
 
     const registerEditorAPI = useCallback((API: KoenigInstance | null) => {
         editorAPIRef.current = API;
@@ -149,7 +164,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     return (
         <div className="h-full" onKeyDown={handleKeyDown} onMouseDown={handleEditorMouseDown}>
             <ErrorBoundary name="email-editor">
-                <Suspense fallback={<LoadingIndicator delay={200} size="lg" />}>
+                <Suspense fallback={<DelayedLoadingIndicator delay={200} />}>
                     <EmailEditorInner
                         cardConfig={cardConfig}
                         className={className}

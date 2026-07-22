@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../utils');
+const {waitUntilFinished} = require('../utils/url-service-utils');
 const models = require('../../core/server/models');
 const db = require('../../core/server/data/db');
 const UrlService = require('../../core/server/services/url/url-service');
@@ -64,21 +65,6 @@ const SCENARIOS = [
         ]
     }
 ];
-
-function waitUntilFinished(urlService, timeout = 5000) {
-    return new Promise((resolve, reject) => {
-        const start = Date.now();
-        (function retry() {
-            if (urlService.hasFinished()) {
-                return resolve();
-            }
-            if (Date.now() - start > timeout) {
-                return reject(new Error('Eager UrlService did not finish in time'));
-            }
-            setTimeout(retry, 50);
-        })();
-    });
-}
 
 describe('Integration: eager/lazy URL service parity', function () {
     let zeroPostTag;

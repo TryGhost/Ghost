@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import {Button, Heading} from '@tryghost/admin-x-design-system';
 
 export interface APIKeyFieldProps {
+    id: string;
     label?: string;
     text?: string;
     hint?: ReactNode;
@@ -38,7 +39,7 @@ const APIKeyField: React.FC<APIKeyFieldProps> = ({label, text = '', hint, onRege
 const APIKeys: React.FC<{hasLabel?: boolean; keys: APIKeyFieldProps[];}> = ({keys}) => {
     return (
         <div data-testid='api-keys'>
-            {keys.map(key => <APIKeyField key={key.label} {...key} />)}
+            {keys.map(key => <APIKeyField key={key.id} {...key} />)}
         </div>
     );
 };

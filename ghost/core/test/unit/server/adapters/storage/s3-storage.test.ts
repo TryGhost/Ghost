@@ -91,6 +91,63 @@ describe('S3Storage', function () {
         }, /requires multipartChunkSizeBytes option/);
     });
 
+    describe('validate', function () {
+        it('passes for valid options without instantiating a client', function () {
+            const s3ClientSpy = sinon.spy(S3Client.prototype, 'send' as never);
+            assert.doesNotThrow(() => S3Storage.validate(baseOptions));
+            sinon.assert.notCalled(s3ClientSpy);
+        });
+
+        it('throws IncorrectUsageError for invalid options', function () {
+            const options: any = {...baseOptions};
+            delete options.bucket;
+            assert.throws(() => S3Storage.validate(options), /requires a bucket name/);
+        });
+
+        it('throws when multipart chunk size is below the 5 MiB minimum', function () {
+            assert.throws(
+                () => S3Storage.validate({...baseOptions, multipartChunkSizeBytes: MIN_MULTIPART_CHUNK_SIZE - 1}),
+                /at least 5 MiB/
+            );
+        });
+
+        it('reports every invalid field, not just the first', function () {
+            const options: any = {...baseOptions};
+            delete options.bucket;
+            delete options.cdnUrl;
+            delete options.multipartUploadThresholdBytes;
+
+            assert.throws(() => S3Storage.validate(options), (err: Error) => {
+                assert.match(err.message, /requires a bucket name/);
+                assert.match(err.message, /requires a cdnUrl option/);
+                assert.match(err.message, /requires multipartUploadThresholdBytes option/);
+                return true;
+            });
+        });
+
+        it('throws when multipart byte counts are not integers', function () {
+            assert.throws(
+                () => S3Storage.validate({...baseOptions, multipartUploadThresholdBytes: 1024.5}),
+                /multipartUploadThresholdBytes must be an integer/
+            );
+            assert.throws(
+                () => S3Storage.validate({...baseOptions, multipartChunkSizeBytes: MIN_MULTIPART_CHUNK_SIZE + 0.5}),
+                /multipartChunkSizeBytes must be an integer/
+            );
+        });
+
+        it('throws when only part of the credential pair is provided', function () {
+            assert.throws(
+                () => S3Storage.validate({...baseOptions, accessKeyId: 'AKIA'}),
+                /both accessKeyId and secretAccessKey/
+            );
+            assert.throws(
+                () => S3Storage.validate({...baseOptions, secretAccessKey: 'shh'}),
+                /both accessKeyId and secretAccessKey/
+            );
+        });
+    });
+
     it('strips leading and trailing slashes from config options', function () {
         const {storage} = createStorage({
             tenantPrefix: '/client-a/',
