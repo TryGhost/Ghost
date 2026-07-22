@@ -1,3 +1,4 @@
+import GiftDurationsPrototype from './gift-durations-prototype';
 import GiftPreview from './gift-preview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo} from 'react';
@@ -220,6 +221,9 @@ const GiftSidebar: React.FC<{
                     </div>
                 </div>
             )}
+
+            <Separator />
+            <GiftDurationsPrototype initialMonths={giftDurations} tiers={offeredTiers.length ? offeredTiers : paidTiers} />
         </div>
     );
 };
