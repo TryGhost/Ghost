@@ -1345,7 +1345,24 @@ module.exports = {
         track_opens: {type: 'boolean', nullable: false, defaultTo: false},
         track_clicks: {type: 'boolean', nullable: false, defaultTo: false},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            // `mailgun_message_id` is too long for a MySQL index, so we use a
+            // prefix.
+            //
+            // We choose 31 because Mailgun message IDs look like this:
+            //
+            //     20200420080647.ab01cd02ef03ba04@mailgun.domain.example
+            //     YYYYMMDDHHMMSS.RANDOM-HEX-BYTES@DOMAIN
+            //
+            // That first part is unlikely to have conflicts, so let's use
+            // that. This index is for performance, not uniqueness, so it's
+            // okay if there's a conflict.
+            //
+            // Note that this prefix index only happens for MySQL. SQLite
+            // indexes the full value.
+            {columns: ['mailgun_message_id'], length: 31}
+        ]
     },
     gifts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

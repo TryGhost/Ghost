@@ -5,6 +5,7 @@ const tpl = require('@tryghost/tpl');
 const db = require('../db');
 const DatabaseInfo = require('@tryghost/database-info');
 const schema = require('./schema');
+const {defaultIndexName} = require('./lib/default-index-name');
 
 const messages = {
     hasPrimaryKeySQLiteError: 'Must use hasPrimaryKeySQLite on an SQLite3 database',
@@ -192,18 +193,37 @@ async function renameColumn(tableName, from, to, transaction = db.knex) {
 }
 
 /**
+ * Builds the column arguments for a MySQL index prefix, such as `col(123)`.
+ *
+ * @param {import('knex').Knex} knex
+ * @param {string|string[]} columns
+ * @param {number} length
+ * @returns {import('knex').Knex.Raw[]}
+ */
+function prefixIndexColumns(knex, columns, length) {
+    return (Array.isArray(columns) ? columns : [columns])
+        .map(col => knex.raw('?? (?)', [col, length]));
+}
+
+/**
  * Adds an non-unique index to a table over the given columns.
  *
  * @param {string} tableName - name of the table to add indexes to
  * @param {string|string[]} columns - column(s) to add indexes for
  * @param {import('knex').Knex} [transaction] - connection object containing knex reference
+ * @param {object} [options]
+ * @param {number} [options.length] - MySQL only: create a prefix index of this many characters
  */
-async function addIndex(tableName, columns, transaction = db.knex) {
+async function addIndex(tableName, columns, transaction = db.knex, options = {}) {
     try {
         logging.info(`Adding index for '${columns}' in table '${tableName}'`);
 
         return await transaction.schema.table(tableName, function (table) {
-            table.index(columns);
+            if (options.length && DatabaseInfo.isMySQL(transaction)) {
+                table.index(prefixIndexColumns(transaction, columns, options.length), defaultIndexName(tableName, columns));
+            } else {
+                table.index(columns);
+            }
         });
     } catch (err) {
         if (err.code === 'SQLITE_ERROR') {
@@ -500,7 +520,21 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
             .forEach(column => addTableColumn(table, t, column, tableSpec[column]));
 
         if (tableSpec['@@INDEXES@@']) {
-            tableSpec['@@INDEXES@@'].forEach(index => t.index(index));
+            tableSpec['@@INDEXES@@'].forEach((index) => {
+                if (index && typeof index === 'object' && !Array.isArray(index)) {
+                    if (index.length && DatabaseInfo.isMySQL(transaction)) {
+                        t.index(
+                            prefixIndexColumns(transaction, index.columns, index.length),
+                            defaultIndexName(table, index.columns)
+                        );
+                    } else {
+                        // SQLite doesn't support prefix indexes, so we index the whole thing.
+                        t.index(index.columns);
+                    }
+                } else {
+                    t.index(index);
+                }
+            });
         }
         if (tableSpec['@@UNIQUE_CONSTRAINTS@@']) {
             tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach(unique => t.unique(unique));
