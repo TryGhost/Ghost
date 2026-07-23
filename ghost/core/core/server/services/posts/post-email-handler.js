@@ -100,7 +100,10 @@ class PostEmailHandler {
      *
      * @param {Object} model - The post model
      * @param {Object} [options]
-     * @param {Object} [options.preflight]
+     * @param {Object} [options.preflight] - Validation result from validateBeforeSave, passed through to createEmail
+     * @param {Object} [options.preflight.newsletter]
+     * @param {string} [options.preflight.emailRecipientFilter]
+     * @param {number} [options.preflight.emailCount]
      * @returns {Promise<void>}
      */
     async createOrRetryEmail(model, {preflight} = {}) {

@@ -6,6 +6,11 @@
  * @typedef {object} LimitService
  * @typedef {{checkVerificationRequired(): Promise<boolean>}} VerificationTrigger
  * @typedef {import ('./domain-warming-service').DomainWarmingService} DomainWarmingService
+ *
+ * @typedef {object} EmailPreflight - Validation result from a pre-save checkCanSendEmail call
+ * @property {object} newsletter
+ * @property {string} emailRecipientFilter
+ * @property {number} emailCount
  */
 
 const BatchSendingService = require('./batch-sending-service');
@@ -153,7 +158,7 @@ class EmailService {
      *
      * @param {Post} post
      * @param {object} [options]
-     * @param {object} [options.preflight]
+     * @param {EmailPreflight} [options.preflight] - The emailCount is reused if the newsletter and filter still match the saved post
      * @returns {Promise<Email>}
      */
     async createEmail(post, {preflight} = {}) {
