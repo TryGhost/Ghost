@@ -93,7 +93,6 @@ describe('Toggle card script', function () {
         `);
 
         const toggleCard = env.document.querySelector('.kg-toggle-card');
-        const toggleHeading = env.document.querySelector('.kg-toggle-heading');
         const toggleControl = env.document.querySelector('.kg-toggle-card-icon');
         const toggleContent = env.document.querySelector('.kg-toggle-content');
 
@@ -105,7 +104,7 @@ describe('Toggle card script', function () {
         });
         assert.equal(toggleControl.getAttribute('aria-label'), 'Spoilers below');
 
-        toggleHeading.click();
+        toggleControl.click();
 
         assertToggleState({
             toggleCard,
@@ -114,7 +113,7 @@ describe('Toggle card script', function () {
             state: 'open'
         });
 
-        toggleHeading.click();
+        toggleControl.click();
 
         assertToggleState({
             toggleCard,
