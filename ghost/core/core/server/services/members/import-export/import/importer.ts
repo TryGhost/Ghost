@@ -11,21 +11,22 @@ const logging = require('@tryghost/logging');
 
 // The members CSV importer, sliced into the concerns an import moves through:
 //
-//   importCSV()        the service entry: read the rows, run them, return the outcome
-//   importMembers()    orchestration: decide, then run the rows now or defer them
+//   importCSV()        request entry: read, then import now or defer by load
+//   importInline()     inline entry: read and import now, for callers that need it
 //   canImportInline()  routing: inline vs deferred from generic signals (size, cost)
 //   importRows()       members kernel: create or update a member from each row
 //   deferImport()      deferred work: resolve recipient, spool the rows, queue the job
 //   runImportJob()     the queued job: import the spooled rows, notify, clean up
 //
-// importCSV takes plain arguments -- where the CSV is, who to email -- and reads it via
-// the injected readRows into a plain MemberImportRow array. The endpoint adapts the
-// request frame into those arguments and shapes the returned outcome into the API
-// response, so neither the frame nor the response envelope crosses into the domain.
-// From there orchestration is source-agnostic: importMembers takes rows, decides, and
-// either imports them now or defers a job that reads the same rows back from a spool
-// file. Both the CSV reader and the spool read produce a rows array, so the kernel just
-// takes rows and a test can drive it from a literal array. The kernel yields only the
+// Both entries take plain arguments -- where the CSV is, who to email -- and read it via
+// the injected readRows into a plain MemberImportRow array. importCSV decides inline vs
+// deferred by load, since a large import must not hold a request open; importInline is
+// for callers with no request to protect (the Revue data import), so it always runs now.
+// The endpoint adapts the request frame into those arguments and shapes importCSV's
+// outcome into the API response, so neither the frame nor the response envelope crosses
+// into the domain. A deferred import reads the same rows back from a spool file; both the
+// CSV reader and the spool read produce a rows array, so the kernel just takes rows and a
+// test can drive it from a literal array. The kernel yields only the
 // result (the counts and the failed rows); shaping that into an email, error report and
 // all, belongs to the email presenter (completion-email). The rest is one
 // collaborator per concern: the members aggregate it writes; the tiers, Stripe and
@@ -34,16 +35,14 @@ const logging = require('@tryghost/logging');
 // model is referenced below the boundary that owns it.
 
 // The arguments the import service takes: where the CSV is and how to map its columns,
-// labels to add to every member, who a deferred import emails (null when the request
-// carried no user, so the deferred path falls back to the site owner), and whether to
-// run inline regardless of size. The endpoint builds this from the request frame, so no
-// frame crosses into the domain.
+// labels to add to every member, and who a deferred import emails (null when the request
+// carried no user, so the deferred path falls back to the site owner). The endpoint
+// builds this from the request frame, so no frame crosses into the domain.
 export interface ImportRequest {
     filePath: string;
     mapping?: Record<string, string>;
     extraLabels?: Label[];
     requestUserEmail: string | null;
-    forceInline?: boolean;
 }
 
 interface VerificationTrigger {
@@ -216,31 +215,32 @@ class MembersCSVImporter {
         this._getInlineThreshold = getInlineThreshold;
     }
 
-    // The service entry: read the CSV into rows and run them, returning the domain
-    // outcome. Callers build the request and shape the outcome; this owns only that the
-    // input is a CSV.
+    // The request entry: read the CSV and either import it now or defer it to a job,
+    // deciding by load so a large import does not hold the request open. The endpoint
+    // uses this and shapes the returned outcome into the response.
     async importCSV(request: ImportRequest, verificationTrigger: VerificationTrigger): Promise<ImportOutcome> {
         const rows = await this._readRows(request.filePath, request.mapping);
-        return this.importMembers(rows, request, verificationTrigger);
-    }
-
-    // The domain service: given the rows, decide how to run them, then import them now
-    // or hand them to a background job. Agnostic to where the rows came from.
-    private async importMembers(
-        rows: MemberImportRow[],
-        {extraLabels = [], requestUserEmail, forceInline}: ImportRequest,
-        verificationTrigger: VerificationTrigger
-    ): Promise<ImportOutcome> {
         const labelName = buildImportLabelName(this._getTimezone());
+        const extraLabels = request.extraLabels ?? [];
 
-        if (forceInline || canImportInline(rows.length, hasExpensiveColumns(rows), this._getInlineThreshold())) {
+        if (canImportInline(rows.length, hasExpensiveColumns(rows), this._getInlineThreshold())) {
             const result = await this.importRows(rows, labelName, extraLabels);
             await verificationTrigger.testImportThreshold();
             return {deferred: false, originalImportSize: rows.length, result};
         }
 
-        await this.deferImport(rows, {labelName, extraLabels, requestUserEmail}, verificationTrigger);
+        await this.deferImport(rows, {labelName, extraLabels, requestUserEmail: request.requestUserEmail}, verificationTrigger);
         return {deferred: true, originalImportSize: rows.length};
+    }
+
+    // The inline entry: read the CSV and import it now, returning the result. Callers
+    // that need the import to finish synchronously (the Revue data import) use this --
+    // there is no request to hold open, so it never defers.
+    async importInline(request: ImportRequest, verificationTrigger: VerificationTrigger): Promise<ImportResult> {
+        const rows = await this._readRows(request.filePath, request.mapping);
+        const result = await this.importRows(rows, buildImportLabelName(this._getTimezone()), request.extraLabels ?? []);
+        await verificationTrigger.testImportThreshold();
+        return result;
     }
 
     // Deferred work: resolve the recipient, spool the rows, and queue the import job.
