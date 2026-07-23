@@ -1,8 +1,7 @@
 import BrandIcon, {type BrandIconName} from '../../../icons/brand-icon';
 import React, {useState} from 'react';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Button, Field, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {Form} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldGroup, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {Inline, Text} from '@tryghost/shade/primitives';
 import {type Setting, type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -79,7 +78,7 @@ const LookAndFeel: React.FC<{
         {value: 'text-only', label: 'Text only'}
     ];
 
-    return <div className='mt-7'><Form className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+    return <div className='mt-7'><FieldGroup className='mb-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
         <Field orientation='horizontal'>
             <FieldLabel htmlFor='show-portal-button'>Show portal button</FieldLabel>
             <Switch checked={Boolean(portalButton)} id='show-portal-button' onCheckedChange={checked => updateSetting('portal_button', checked)} />
@@ -149,7 +148,7 @@ const LookAndFeel: React.FC<{
                 }
             </>
         )}
-    </Form></div>;
+    </FieldGroup></div>;
 };
 
 export default LookAndFeel;

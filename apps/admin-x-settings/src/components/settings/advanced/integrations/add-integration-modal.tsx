@@ -1,8 +1,8 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
-import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
-import {Form, LimitModal, Modal} from '@tryghost/admin-x-design-system';
+import {Field, FieldError, FieldGroup, FieldLabel, Input} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
+import {LimitModal, Modal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useCreateIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -56,17 +56,13 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
         }}
     >
         <div className='mt-5'>
-            <Form
-                className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'
-                marginBottom={false}
-                marginTop={false}
-            >
+            <FieldGroup className='gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                 <Field data-invalid={Boolean(errors.name) || undefined}>
                     <FieldLabel htmlFor='integration-name'>Name</FieldLabel>
                     <Input aria-invalid={Boolean(errors.name) || undefined} id='integration-name' maxLength={191} placeholder='Custom integration' value={name} autoFocus onChange={e => setName(e.target.value)} onInput={() => errors.name && setErrors({name: ''})} />
                     {errors.name && <FieldError>{errors.name}</FieldError>}
                 </Field>
-            </Form>
+            </FieldGroup>
         </div>
     </Modal>;
 };

@@ -3,9 +3,9 @@ import IsaacSaul from '../../../../assets/images/isaac-saul.png';
 import JoelWarner from '../../../../assets/images/joel-warner.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import {Avatar, Field, FieldError, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
+import {Avatar, Field, FieldError, FieldGroup, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
 import {Button, LoadingIndicator} from '@tryghost/shade/components';
-import {Form, Modal} from '@tryghost/admin-x-design-system';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -108,7 +108,7 @@ const TestimonialsModal = NiceModal.create(() => {
             topRightContent='close'
             width={920}
         >
-            <Form className='mb-0!'>
+            <FieldGroup className='gap-8'>
                 <div className='flex items-stretch'>
                     <div className='hidden w-full flex-col justify-between bg-gradient-to-tl from-grey-100/50 to-grey-100/80 p-8 dark:from-grey-900/40 dark:to-grey-900/60 [@media(min-width:905px)]:visible! [@media(min-width:905px)]:flex!'>
                         <div className='pr-6'>
@@ -232,7 +232,7 @@ const TestimonialsModal = NiceModal.create(() => {
                         </div>
                     </div>
                 </div>
-            </Form>
+            </FieldGroup>
         </Modal>
     );
 });

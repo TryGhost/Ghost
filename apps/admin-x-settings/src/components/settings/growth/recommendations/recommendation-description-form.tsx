@@ -2,8 +2,7 @@ import React from 'react';
 import RecommendationIcon from './recommendation-icon';
 import {type EditOrAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type ErrorMessages} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldDescription, FieldError, FieldLabel, Input, Textarea} from '@tryghost/shade/components';
-import {Form} from '@tryghost/admin-x-design-system';
+import {Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Textarea} from '@tryghost/shade/components';
 import {Text} from '@tryghost/shade/primitives';
 import {formatNumber} from '@tryghost/shade/utils';
 
@@ -63,11 +62,7 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
         setErrors(validateDescriptionForm(formState));
     }, [formState, setErrors]);
 
-    return <Form
-        className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'
-        marginBottom={false}
-        marginTop
-    >
+    return <FieldGroup className='mt-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
         <div>
             <Text as='h6' className='mb-2 block tracking-wider uppercase' leading='normal' size='xs' tone='secondary' weight='semibold'>Preview</Text>
             <div className="-mx-8 flex items-center justify-center overflow-hidden border-y border-grey-100 bg-grey-50 px-7 py-4 dark:border-grey-950 dark:bg-black">
@@ -120,7 +115,7 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
             />
             <FieldDescription>Max: <strong>{formatNumber(200)}</strong> characters. You&#8217;ve used <strong className={descriptionLengthColor}>{formatNumber(descriptionLength)}</strong></FieldDescription>
         </Field>
-    </Form>;
+    </FieldGroup>;
 }
 
 export default RecommendationDescriptionForm;

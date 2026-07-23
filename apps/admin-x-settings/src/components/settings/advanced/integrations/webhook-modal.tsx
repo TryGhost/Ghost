@@ -2,8 +2,8 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import validator from 'validator';
 import webhookEventOptions from './webhook-event-options';
-import {Field, FieldError, FieldLabel, Input, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {Form, Modal} from '@tryghost/admin-x-design-system';
+import {Field, FieldError, FieldGroup, FieldLabel, Input, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {type Webhook, useCreateWebhook, useEditWebhook} from '@tryghost/admin-x-framework/api/webhooks';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -66,11 +66,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
         }}
     >
         <div className='mt-5'>
-            <Form
-                className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'
-                marginBottom={false}
-                marginTop={false}
-            >
+            <FieldGroup className='gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                 <Field data-invalid={Boolean(errors.name) || undefined}>
                     <FieldLabel htmlFor='webhook-name'>Name</FieldLabel>
                     <Input aria-invalid={Boolean(errors.name) || undefined} id='webhook-name' maxLength={191} placeholder='Custom webhook' value={formState.name ?? ''} onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
@@ -108,7 +104,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                     <FieldLabel htmlFor='webhook-secret'>Secret</FieldLabel>
                     <Input id='webhook-secret' maxLength={191} placeholder='https://example.com' value={formState.secret || ''} onChange={e => updateForm(state => ({...state, secret: e.target.value}))} />
                 </Field>
-            </Form>
+            </FieldGroup>
         </div>
     </Modal>;
 };
