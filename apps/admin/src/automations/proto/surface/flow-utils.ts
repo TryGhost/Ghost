@@ -7,9 +7,36 @@ import {LucideIcon} from '@tryghost/shade/utils';
 // those can export only components (react-refresh/only-export-components). Both
 // the read-only (flow-canvas) and editable (edit-canvas) canvases build on these.
 
-// Column layout — a single vertical stack of fixed-width nodes.
+// Column layout — a single vertical stack of fixed-width nodes. Node y-positions
+// are derived from each node's *rendered height* plus a constant visible gap, so
+// the connector lines read as evenly spaced no matter how tall any individual node
+// is (an email node with a stats footer is much taller than a bare wait node).
+// Mirrors the real editor's automation-canvas layout.
 export const NODE_WIDTH = 320;
-export const NODE_GAP = 200;
+
+// Visible space between one node's bottom and the next node's top — constant
+// across every pair.
+export const NODE_VISUAL_GAP = 112;
+
+// Approximate rendered heights, used only to keep the *visible* gap uniform. If a
+// node's body layout changes, retune these. (The real canvas hardcodes the same
+// way — see REGULAR_NODE_HEIGHT / EMAIL_NODE_WITH_STATS_HEIGHT there.)
+export const REGULAR_NODE_HEIGHT = 72; // trigger / wait / email header only
+export const STATS_FOOTER_HEIGHT = 64; // email node's 3-metric stats footer
+export const DETAIL_FOOTER_HEIGHT = 36; // read-only run-detail footer (single line)
+export const TERMINAL_NODE_HEIGHT = 40; // read-only "Complete" pill
+export const TAIL_NODE_HEIGHT = 48; // editable "add step" tail button
+
+// Cumulative top-Y for a vertical stack of nodes with the given rendered heights,
+// keeping NODE_VISUAL_GAP of visible space between each consecutive pair.
+export const stackNodeY = (heights: number[], gap: number = NODE_VISUAL_GAP): number[] => {
+    let cursor = 0;
+    return heights.map((height) => {
+        const y = cursor;
+        cursor += height + gap;
+        return y;
+    });
+};
 
 // The three editable step kinds share one icon per kind across both canvases.
 // (The read-only canvas's "terminal" marker renders its own chrome, so it isn't

@@ -1,27 +1,38 @@
 import '@xyflow/react/dist/style.css';
 import React, {useMemo, useState} from 'react';
-import {Background, BaseEdge, type Edge, type EdgeProps, Handle, type Node, type NodeProps, Position, ReactFlow, getSmoothStepPath} from '@xyflow/react';
+import StepPicker, {type StepPickerType} from '@/automations/components/canvas/step-picker';
+import {Background, BackgroundVariant, BaseEdge, type Edge, EdgeLabelRenderer, type EdgeProps, Handle, type Node, type NodeProps, Position, ReactFlow, getSmoothStepPath} from '@xyflow/react';
 import type {AutomationDetail, AutomationEmailStats, InsertActionAnchor} from '@tryghost/admin-x-framework/api/automations';
 import {insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {NODE_GAP, type StepKind, formatWait, orderActions, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TAIL_NODE_HEIGHT, type StepKind, formatWait, orderActions, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {StepNodeHeader} from './flow-node-shell';
 import {EmailStatsFooter} from './email-analytics';
 import {StepSidebar} from './step-sidebar';
 
-const AddStepMenu: React.FC<{children: React.ReactNode; onPick: (kind: 'email' | 'wait') => void}> = ({children, onPick}) => (
-    <DropdownMenu>
-        <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-        <DropdownMenuContent align="center" className="w-40">
-            <DropdownMenuItem onClick={() => onPick('email')}>
-                <LucideIcon.Mail /> Email
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onPick('wait')}>
-                <LucideIcon.Clock /> Wait
-            </DropdownMenuItem>
-        </DropdownMenuContent>
-    </DropdownMenu>
+// Edge stroke + canvas theme vars, matched to the real automation-canvas so the
+// connector lines and dot background render identically (and adapt in dark mode).
+const EDGE_STROKE = 'var(--xy-edge-stroke)';
+const REACT_FLOW_THEME = '[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]';
+
+// The real editor's StepPicker speaks 'send_email' | 'wait'; the proto's graph
+// helpers here take 'email' | 'wait'.
+const toInsertKind = (type: StepPickerType): 'email' | 'wait' => (type === 'send_email' ? 'email' : 'wait');
+
+// Dashed circular "insert step" button, matched to the real add-step-edge.
+const INSERT_BUTTON_CLASSES = 'border-dashed border-border-default bg-surface-page text-text-secondary shadow-sm hover:border-border-strong';
+
+const AddStepPopover: React.FC<{children: React.ReactNode; onPick: (type: StepPickerType) => void; open: boolean; onOpenChange: (open: boolean) => void}> = ({children, onPick, open, onOpenChange}) => (
+    <Popover open={open} onOpenChange={onOpenChange}>
+        <PopoverTrigger asChild>{children}</PopoverTrigger>
+        <PopoverContent align="center" className="border-0 p-0 shadow-lg" side="top" sideOffset={12}>
+            <StepPicker onPick={(type) => {
+                onOpenChange(false);
+                onPick(type);
+            }} />
+        </PopoverContent>
+    </Popover>
 );
 
 type StepNodeData = {kind: StepKind; title: string; subtitle: string; selected: boolean; stats?: AutomationEmailStats};
@@ -39,42 +50,67 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
     );
 };
 
-type TailNodeData = {onAdd: (kind: 'email' | 'wait') => void};
+type TailNodeData = {onPick: (type: StepPickerType) => void};
 
 const TailNode: React.FC<NodeProps> = ({data}) => {
-    const d = data as TailNodeData;
+    const {onPick} = data as TailNodeData;
+    const [open, setOpen] = useState(false);
     return (
-        <div className="flex w-80 justify-center">
+        <div className="flex w-80">
             <Handle position={Position.Top} style={{opacity: 0}} type="target" />
-            <AddStepMenu onPick={d.onAdd}>
-                <button aria-label="Add step" className="flex size-9 items-center justify-center rounded-full border border-dashed border-border-default bg-background text-muted-foreground transition-colors hover:border-blue hover:text-blue" type="button">
-                    <LucideIcon.Plus className="size-4" />
+            <AddStepPopover open={open} onOpenChange={setOpen} onPick={onPick}>
+                <button aria-label="Add step" className="flex h-12 w-80 items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page text-text-secondary transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none" type="button">
+                    <LucideIcon.Plus className="size-5" strokeWidth={1.5} />
                 </button>
-            </AddStepMenu>
+            </AddStepPopover>
         </div>
     );
 };
 
 const nodeTypes = {step: StepNode, tail: TailNode};
 
-type PlusEdgeData = {onPick: (kind: 'email' | 'wait') => void};
+type PlusEdgeData = {onPick: (type: StepPickerType) => void};
 
-const PlusEdge: React.FC<EdgeProps> = ({sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, markerEnd, data}) => {
-    const [path, labelX, labelY] = getSmoothStepPath({sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, borderRadius: 20});
+// Connecting line with a hover-revealed circular "+" at its midpoint, matched to
+// the real add-step-edge: the button fades in while the cursor is near the edge
+// (or the picker is open) and opens the shared StepPicker.
+const PlusEdge: React.FC<EdgeProps> = ({id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data}) => {
+    const [open, setOpen] = useState(false);
+    const [edgeHovered, setEdgeHovered] = useState(false);
+    const [labelHovered, setLabelHovered] = useState(false);
     const onPick = (data as PlusEdgeData | undefined)?.onPick;
+    const [path, labelX, labelY] = getSmoothStepPath({sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition});
+
+    if (!onPick) {
+        return <BaseEdge id={id} path={path} style={{stroke: EDGE_STROKE}} />;
+    }
+
+    const visible = open || edgeHovered || labelHovered;
     return (
-        <>
-            <BaseEdge markerEnd={markerEnd} path={path} style={{stroke: 'var(--color-grey-400)', strokeWidth: 2}} />
-            {onPick && (
-                <foreignObject className="overflow-visible" height={28} width={28} x={labelX - 14} y={labelY - 14}>
-                    <AddStepMenu onPick={onPick}>
-                        <button aria-label="Add step" className="flex size-6 items-center justify-center rounded-full border border-border-default bg-background text-muted-foreground shadow-sm transition-colors hover:border-blue hover:text-blue" type="button">
-                            <LucideIcon.Plus className="size-3.5" />
-                        </button>
-                    </AddStepMenu>
-                </foreignObject>
-            )}
-        </>
+        <g onMouseEnter={() => setEdgeHovered(true)} onMouseLeave={() => setEdgeHovered(false)}>
+            <BaseEdge id={id} interactionWidth={30} path={path} style={{stroke: EDGE_STROKE}} />
+            <EdgeLabelRenderer>
+                <div
+                    className="pointer-events-auto absolute"
+                    style={{transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`}}
+                    onMouseEnter={() => setLabelHovered(true)}
+                    onMouseLeave={() => setLabelHovered(false)}
+                >
+                    {/* Wider hit zone so the + reveals when the cursor is near the edge midpoint. */}
+                    <div className="flex h-10 w-16 items-center justify-center">
+                        <AddStepPopover open={open} onOpenChange={setOpen} onPick={onPick}>
+                            <button
+                                aria-label="Insert step here"
+                                className={cn('flex size-8 items-center justify-center rounded-full border transition-opacity focus-visible:opacity-100 focus-visible:outline-none', INSERT_BUTTON_CLASSES, visible ? 'opacity-100' : 'opacity-0')}
+                                type="button"
+                            >
+                                <LucideIcon.Plus className="size-5" strokeWidth={1.5} />
+                            </button>
+                        </AddStepPopover>
+                    </div>
+                </div>
+            </EdgeLabelRenderer>
+        </g>
     );
 };
 
@@ -113,11 +149,20 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
     };
 
     const {nodes, edges} = useMemo(() => {
+        // Height-aware layout: trigger, then each action (email nodes carry a stats
+        // footer), then the tail button. Even visible gaps regardless of node height.
+        const heights = [REGULAR_NODE_HEIGHT];
+        ordered.forEach((action) => {
+            heights.push(action.type === 'send_email' ? REGULAR_NODE_HEIGHT + STATS_FOOTER_HEIGHT : REGULAR_NODE_HEIGHT);
+        });
+        heights.push(TAIL_NODE_HEIGHT);
+        const ys = stackNodeY(heights);
+
         const built: Node[] = [];
         built.push({
             id: '__trigger__',
             type: 'step',
-            position: {x: 0, y: 0},
+            position: {x: 0, y: ys[0]},
             data: {kind: 'trigger', title: 'Trigger', subtitle: 'Member signup', selected: false},
             draggable: false,
             connectable: false,
@@ -128,7 +173,7 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
             built.push({
                 id: action.id,
                 type: 'step',
-                position: {x: 0, y: (i + 1) * NODE_GAP},
+                position: {x: 0, y: ys[i + 1]},
                 data: {
                     kind: isEmail ? 'email' : 'wait',
                     title: isEmail ? 'Send email' : 'Wait',
@@ -145,8 +190,8 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
         built.push({
             id: '__tail__',
             type: 'tail',
-            position: {x: 0, y: (ordered.length + 1) * NODE_GAP},
-            data: {onAdd: (kind: 'email' | 'wait') => insert({previousActionId: lastId}, kind)},
+            position: {x: 0, y: ys[ys.length - 1]},
+            data: {onPick: (type: StepPickerType) => insert({previousActionId: lastId}, toInsertKind(type))},
             draggable: false,
             connectable: false,
             selectable: false
@@ -163,12 +208,12 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                 source,
                 target,
                 type: toTail ? 'smoothstep' : 'plus',
-                style: toTail ? {stroke: 'var(--color-grey-400)', strokeWidth: 2} : undefined,
+                style: toTail ? {stroke: EDGE_STROKE} : undefined,
                 data: toTail ? undefined : {
-                    onPick: (kind: 'email' | 'wait') => insert({
+                    onPick: (type: StepPickerType) => insert({
                         previousActionId: source === '__trigger__' ? undefined : source,
                         nextActionId: target
-                    }, kind)
+                    }, toInsertKind(type))
                 }
             });
         }
@@ -179,6 +224,7 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
         <div className="flex size-full">
             <div ref={canvasRef} className="min-h-0 flex-1">
                 <ReactFlow
+                    className={REACT_FLOW_THEME}
                     edges={edges}
                     edgeTypes={edgeTypes}
                     nodes={nodes}
@@ -197,7 +243,7 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                     }}
                     onPaneClick={() => setSelectedId(null)}
                 >
-                    <Background color="var(--color-grey-300)" />
+                    <Background variant={BackgroundVariant.Dots} />
                 </ReactFlow>
             </div>
             {selectedAction && (

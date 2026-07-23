@@ -4,7 +4,7 @@ import {Background, type Edge, Handle, type Node, type NodeProps, Position, Reac
 import type {AutomationDetail, AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import type {AutomationRun, RunStepState} from '@/automations/proto/shared/mock';
-import {NODE_GAP, type StepKind, formatWait, orderActions, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {DETAIL_FOOTER_HEIGHT, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, type StepKind, formatWait, orderActions, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {StepNodeHeader} from './flow-node-shell';
 import {EmailStatsFooter} from './email-analytics';
 
@@ -75,28 +75,21 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
         const ordered = orderActions(automation);
         const stepByAction = new Map((selectedRun?.steps ?? []).map(s => [s.action_id, s]));
 
-        const built: Node[] = [];
-        const makeNode = (id: string, index: number, data: FlowNodeData): Node => ({
-            id,
-            type: 'flowStep',
-            position: {x: 0, y: index * NODE_GAP},
-            data: data,
-            draggable: false,
-            connectable: false,
-            selectable: false
-        });
+        // Collect node data in flow order first, so we can position each from its
+        // rendered height (which footer, if any, it carries) for even visible gaps.
+        const descriptors: {id: string; data: FlowNodeData}[] = [];
 
         // Trigger — always "done" once enrolled.
-        built.push(makeNode('__trigger__', 0, {
+        descriptors.push({id: '__trigger__', data: {
             kind: 'trigger',
             title: 'Trigger',
             subtitle: 'Member signup',
             focused,
             state: focused ? 'done' : undefined,
             stateDetail: selectedRun ? fmtDateTime(selectedRun.enrolled_at) : null
-        }));
+        }});
 
-        ordered.forEach((action, i) => {
+        ordered.forEach((action) => {
             const step = stepByAction.get(action.id);
             const isEmail = action.type === 'send_email';
             const stats = action.type === 'send_email' ? action.stats : undefined;
@@ -112,7 +105,7 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
                     stateDetail = 'Skipped';
                 }
             }
-            built.push(makeNode(action.id, i + 1, {
+            descriptors.push({id: action.id, data: {
                 kind: isEmail ? 'email' : 'wait',
                 title: isEmail ? 'Send email' : 'Wait',
                 subtitle: isEmail ? (action.data.email_subject || 'Untitled') : formatWait(action.data.wait_hours),
@@ -120,7 +113,7 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
                 state: step?.state,
                 stateDetail,
                 stats
-            }));
+            }});
         });
 
         // Terminal marker.
@@ -130,12 +123,34 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
         const terminalState: FlowNodeData['state'] = !focused
             ? undefined
             : selectedRun?.status === 'completed' ? 'done' : selectedRun?.status === 'exited_early' ? 'skipped' : 'upcoming';
-        built.push(makeNode('__terminal__', ordered.length + 1, {
+        descriptors.push({id: '__terminal__', data: {
             kind: 'terminal',
             title: terminalLabel,
             subtitle: '',
             focused,
             state: terminalState
+        }});
+
+        // Height of a node = base + whichever footer it renders. When focused, a
+        // step shows its single-line run detail; unfocused, an email shows its stats.
+        const nodeHeight = (data: FlowNodeData): number => {
+            if (data.kind === 'terminal') {
+                return TERMINAL_NODE_HEIGHT;
+            }
+            const footer = focused
+                ? (data.stateDetail ? DETAIL_FOOTER_HEIGHT : 0)
+                : (data.stats ? STATS_FOOTER_HEIGHT : 0);
+            return REGULAR_NODE_HEIGHT + footer;
+        };
+        const ys = stackNodeY(descriptors.map(d => nodeHeight(d.data)));
+        const built: Node[] = descriptors.map((descriptor, i) => ({
+            id: descriptor.id,
+            type: 'flowStep',
+            position: {x: 0, y: ys[i]},
+            data: descriptor.data,
+            draggable: false,
+            connectable: false,
+            selectable: false
         }));
 
         // Edges follow the node order.
