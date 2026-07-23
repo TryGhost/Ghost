@@ -6,8 +6,6 @@ export {default as XLogo} from './assets/images/x-logo.svg?react';
 export {default as DesktopChromeHeader} from './global/chrome/desktop-chrome-header';
 export type {DesktopChromeHeaderProps} from './global/chrome/desktop-chrome-header';
 
-export {default as Modal, topLevelBackdropClasses} from './global/modal/modal';
-export type {ModalProps} from './global/modal/modal';
 export {default as PreviewModal, PreviewModalContent} from './global/modal/preview-modal';
 export type {PreviewModalProps} from './global/modal/preview-modal';
 

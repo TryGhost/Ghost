@@ -2,8 +2,8 @@ import BrandIcon from '../../../icons/brand-icon';
 import SettingsBreadcrumbs from '../../settings-breadcrumbs';
 import {Button, Input} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {Modal} from '@tryghost/admin-x-design-system';
 import {type Offer, useBrowseOffersById} from '@tryghost/admin-x-framework/api/offers';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {currencyToDecimal} from '../../../../utils/currency';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -69,7 +69,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
         window.open(`http://www.linkedin.com/shareArticle?mini=true&url=${encodeURI(offerLink)}&title=${getShareText()}`, '_blank');
     };
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             updateRoute('offers');
         }}
@@ -105,7 +105,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
                 </div>
             </div>
         </div>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default OfferSuccess;

@@ -4,7 +4,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
 import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input} from '@tryghost/shade/components';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues, useTestSlack} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -39,7 +39,7 @@ const SlackModal = NiceModal.create(() => {
     const isDirty = localSettings.some(setting => setting.dirty);
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('integrations');
             }}
@@ -81,7 +81,7 @@ const SlackModal = NiceModal.create(() => {
                     </FieldGroup>
                 </FieldSet>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

@@ -3,7 +3,7 @@ import validator from 'validator';
 import {APIError, ValidationError} from '@tryghost/admin-x-framework/errors';
 import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSeparator, FieldSet, Input, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
@@ -207,7 +207,7 @@ const InviteUserModal = NiceModal.create(() => {
     }
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('staff');
             }}
@@ -263,7 +263,7 @@ const InviteUserModal = NiceModal.create(() => {
                     <FieldSeparator />
                 </FieldSet>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

@@ -3,8 +3,8 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import {Field, FieldError, FieldGroup, FieldLabel, Input} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
-import {Modal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {useCreateIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -32,7 +32,7 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
         }
     }, [limiter, modal, updateRoute]);
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             updateRoute('integrations');
         }}
@@ -65,7 +65,7 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
                 </Field>
             </FieldGroup>
         </div>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(AddIntegrationModal);

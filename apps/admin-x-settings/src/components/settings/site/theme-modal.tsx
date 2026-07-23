@@ -10,8 +10,9 @@ import ThemePreview from './theme/theme-preview';
 import {Button, Dropzone, LoadingIndicator, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {Modal, PageHeader} from '@tryghost/admin-x-design-system';
 import {type OfficialTheme} from '../../providers/settings-app-provider';
+import {PageHeader} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -502,7 +503,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     }
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('');
             }}
@@ -553,7 +554,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     }
                 </div>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 };
 

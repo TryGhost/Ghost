@@ -6,7 +6,7 @@ import MemberEmailEditor from './member-email-editor';
 import WelcomeEmailPreviewFrame from './welcome-email-preview-frame';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {FieldError, Input} from '@tryghost/shade/components';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
 import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
@@ -203,7 +203,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     }, [setFormState, updateForm]);
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('memberemails');
             }}
@@ -330,7 +330,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 </div>
             </EmailPreviewModalContent>
             <DirtyConfirmDialog {...dialogProps} />
-        </Modal>
+        </SettingsModal>
     );
 });
 

@@ -9,8 +9,8 @@ import useUrlInput from '../../../../hooks/use-url-input';
 import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {Modal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
@@ -179,7 +179,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         }
     }
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             updateRoute('tiers');
         }}
@@ -382,7 +382,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                 <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />
             </div>
         </div>
-    </Modal>;
+    </SettingsModal>;
 };
 
 const TierDetailModal: React.FC<RoutingModalProps> = ({params}) => {
