@@ -1,7 +1,8 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
 import {default as Flexsearch} from 'flexsearch';
-import {SEARCHABLES, createSearchResult, sortSearchResultsByStatus} from '../utils/search';
+import {SEARCHABLES, createSearchResult, isSearchableAvailable, sortSearchResultsByStatus} from '../utils/search';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
@@ -13,6 +14,9 @@ export default class SearchProviderFlexService extends Service {
     @service ajax;
     @service notifications;
     @service ghostPaths;
+    @service session;
+
+    @inject config;
 
     indexes = SEARCHABLES.reduce((indexes, searchable) => {
         indexes[searchable.model] = new Document({
@@ -33,6 +37,10 @@ export default class SearchProviderFlexService extends Service {
         const results = [];
 
         SEARCHABLES.forEach((searchable) => {
+            if (!isSearchableAvailable(searchable, this)) {
+                return;
+            }
+
             const searchResults = this.indexes[searchable.model].search(term, {enrich: true});
             const usedIds = new Set();
             let groupResults = [];
@@ -77,6 +85,14 @@ export default class SearchProviderFlexService extends Service {
     }
 
     async #loadSearchable(searchable) {
+        // static searchables (eg. Ghost (Pro) pages) are indexed client-side
+        if (searchable.staticItems) {
+            searchable.staticItems.forEach((item) => {
+                this.indexes[searchable.model].add(item);
+            });
+            return;
+        }
+
         const url = this.ghostPaths.url.api(`search-index/${pluralize(searchable.model)}`);
         const query = {};
 

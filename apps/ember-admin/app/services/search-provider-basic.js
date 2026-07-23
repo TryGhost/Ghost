@@ -1,6 +1,7 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
-import {SEARCHABLES, createSearchResult, sortSearchResultsByStatus} from '../utils/search';
+import {SEARCHABLES, createSearchResult, isSearchableAvailable, sortSearchResultsByStatus} from '../utils/search';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
@@ -10,6 +11,9 @@ export default class SearchProviderBasicService extends Service {
     @service ajax;
     @service notifications;
     @service ghostPaths;
+    @service session;
+
+    @inject config;
 
     content = [];
 
@@ -20,11 +24,21 @@ export default class SearchProviderBasicService extends Service {
         const results = [];
 
         SEARCHABLES.forEach((searchable) => {
+            if (!isSearchableAvailable(searchable, this)) {
+                return;
+            }
+
             let matchedContent = this.content.filter((item) => {
+                if (item.groupName !== searchable.name) {
+                    return false;
+                }
+
                 const normalizedTitle = item.title.toString().toLowerCase();
+                const normalizedKeywords = item.keywords ? item.keywords.toString().toLowerCase() : '';
+
                 return (
-                    item.groupName === searchable.name &&
-                    normalizedTitle.indexOf(normalizedTerm) >= 0
+                    normalizedTitle.indexOf(normalizedTerm) >= 0 ||
+                    normalizedKeywords.indexOf(normalizedTerm) >= 0
                 );
             });
 
@@ -57,6 +71,16 @@ export default class SearchProviderBasicService extends Service {
     }
 
     async _loadSearchable(searchable, content) {
+        // static searchables (eg. Ghost (Pro) pages) are indexed client-side
+        if (searchable.staticItems) {
+            const items = searchable.staticItems.map(
+                item => createSearchResult(searchable, item)
+            );
+
+            content.push(...items);
+            return;
+        }
+
         const url = this.ghostPaths.url.api(`search-index/${pluralize(searchable.model)}`);
         const query = {};
 

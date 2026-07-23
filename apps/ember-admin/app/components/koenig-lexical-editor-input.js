@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
+import {GHOST_PRO_GROUP_NAME} from 'ghost-admin/utils/search';
 import {action} from '@ember/object';
 import {decoratePostSearchResult} from 'ghost-admin/components/koenig-lexical-editor';
 import {didCancel} from 'ember-concurrency';
@@ -142,6 +143,11 @@ export default class KoenigLexicalEditorInput extends Component {
             const filteredResults = [];
             results.forEach((group) => {
                 let items = group.options;
+
+                // Ghost (Pro) results are admin billing pages, not linkable site content
+                if (group.groupName === GHOST_PRO_GROUP_NAME) {
+                    return;
+                }
 
                 if (group.groupName === 'Posts' || group.groupName === 'Pages') {
                     items = items.filter(i => i.status === 'published');

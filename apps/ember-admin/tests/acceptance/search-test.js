@@ -359,6 +359,54 @@ describe('Acceptance: Search', function () {
 
             expect(currentURL()).to.equal(`/settings/staff/${testData.user.slug}`);
         });
+
+        describe('Ghost (Pro) results', function () {
+            const enableBilling = (server) => {
+                server.db.configs.update(1, {
+                    hostSettings: {
+                        billing: {
+                            enabled: true,
+                            url: 'http://localhost:4200/billing-app'
+                        }
+                    }
+                });
+            };
+
+            it('shows Ghost (Pro) results before content results', async function () {
+                enableBilling(this.server);
+                this.server.create('post', {title: 'Backup post', slug: 'backup-post'});
+
+                await visit('/analytics');
+                await openSearch(this.owner);
+                await searchFor('backup');
+
+                assertSearchGroups(['Ghost (Pro)', 'Posts']);
+
+                const searchOptions = getSearchOptions();
+                const titles = searchOptions.map(option => getTitleText(option));
+                expect(titles).to.include('Ghost (Pro) → Request backup');
+            });
+
+            it('navigates to the billing page when selecting a Ghost (Pro) result', async function () {
+                enableBilling(this.server);
+
+                await visit('/analytics');
+                await openSearch(this.owner);
+                await searchFor('contact support');
+
+                await selectWithEnter();
+
+                expect(currentURL()).to.equal('/pro/support');
+            });
+
+            it('does not show Ghost (Pro) results when billing is not enabled', async function () {
+                await visit('/analytics');
+                await openSearch(this.owner);
+                await searchFor('backup');
+
+                assertNoResults();
+            });
+        });
     });
 
     describe('BasicSearch Provider', function () {

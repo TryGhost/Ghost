@@ -1,9 +1,11 @@
 import Component from '@glimmer/component';
+import {GHOST_PRO_GROUP_NAME} from 'ghost-admin/utils/search';
 import {action} from '@ember/object';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export default class GhSearchInputComponent extends Component {
+    @service billing;
     @service router;
     @service search;
 
@@ -33,6 +35,14 @@ export default class GhSearchInputComponent extends Component {
         if (selected.groupName === 'Tags') {
             let id = selected.id.replace('tag.', '');
             this.router.transitionTo('tag', id);
+        }
+
+        if (selected.groupName === GHOST_PRO_GROUP_NAME) {
+            // the BMA iframe navigates via postMessage — the transition alone
+            // isn't enough when Ember considers the route unchanged (eg. after
+            // the BMA rewrote the hash itself via history.replaceState)
+            this.billing.navigateToSubRoute(selected.path.replace('/pro', ''));
+            this.router.transitionTo(selected.path);
         }
     }
 

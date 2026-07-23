@@ -63,6 +63,8 @@ export default class BillingService extends Service {
     billingAppIframeSrcSetAt = null;
     billingAppIframeLoadFired = false;
 
+    pendingSubRoute = null;
+
     _loadListenerAttachedTo = null;
 
     willDestroy() {
@@ -179,6 +181,9 @@ export default class BillingService extends Service {
         this.billingAppIframeSrcSetAt = Date.now();
         this.resetBillingAppLoadDiagnostics();
         iframe.src = this.getIframeURL();
+        // any pending sub route is now part of the iframe URL, so the app
+        // boots directly on it and no post-load route update is needed
+        this.pendingSubRoute = null;
     }
 
     reloadBillingIframe(options = {}) {
@@ -198,6 +203,12 @@ export default class BillingService extends Service {
         this.billingAppReadyReceivedAt = Date.now();
         this.billingAppReadyPayload = payload;
         this.clearBillingAppLoadMonitor();
+
+        if (this.pendingSubRoute) {
+            const route = this.pendingSubRoute;
+            this.pendingSubRoute = null;
+            this.navigateToSubRoute(route);
+        }
     }
 
     resetBillingAppLoadDiagnostics() {
@@ -312,10 +323,21 @@ export default class BillingService extends Service {
         this.clearBillingAppLoadMonitor();
         this.billingAppLoadAttempts = 0;
 
-        if (hadPreloadFailure || hadVisibleFailure) {
+        if (hadPreloadFailure || hadVisibleFailure || this.pendingSubRoute) {
+            let reloadReason = 'visible_open_with_destination_route';
+
+            if (hadPreloadFailure) {
+                reloadReason = 'visible_open_after_preload_failure';
+            } else if (hadVisibleFailure) {
+                reloadReason = 'visible_open_after_load_failure';
+            }
+
+            // reloading with a pending sub route boots the billing app directly
+            // on the destination, avoiding a race with the app's own initial
+            // redirects that a post-load route update message can lose
             this.reloadBillingIframe({
                 source: BILLING_APP_ATTEMPT_SOURCE_USER_OPEN,
-                reloadReason: hadPreloadFailure ? 'visible_open_after_preload_failure' : 'visible_open_after_load_failure'
+                reloadReason
             });
         } else {
             this.billingAppLoadAttemptSource = BILLING_APP_ATTEMPT_SOURCE_USER_OPEN;
@@ -451,12 +473,17 @@ export default class BillingService extends Service {
 
         let url = this.config.hostSettings?.billing?.url;
 
-        if (window.location.hash && window.location.hash.includes(this.billingRouteRoot)) {
-            let destinationRoute = window.location.hash.replace(this.billingRouteRoot, '');
+        // a pending sub route takes precedence over the URL hash — Ember model
+        // hooks run before the browser URL updates, so during an in-app
+        // transition to /pro/* the hash still points at the previous route
+        let destinationRoute = this.pendingSubRoute;
 
-            if (destinationRoute) {
-                url += destinationRoute;
-            }
+        if (!destinationRoute && window.location.hash && window.location.hash.includes(this.billingRouteRoot)) {
+            destinationRoute = window.location.hash.replace(this.billingRouteRoot, '');
+        }
+
+        if (url && destinationRoute) {
+            url = url.replace(/\/$/, '') + destinationRoute;
         }
 
         return this.addBillingAppAttemptIdToURL(url);
@@ -489,6 +516,26 @@ export default class BillingService extends Service {
             this.ownerUser = user;
         }
         return this.ownerUser;
+    }
+
+    // Navigates the BMA iframe to a child route (eg. '/domain'). The iframe is
+    // preloaded when Admin boots, so in-app deep links (eg. search results)
+    // can't rely on the initial iframe URL — the loaded app is told to navigate
+    // via postMessage instead. If the app isn't ready yet the route is kept and
+    // sent once it reports ready (see markBillingAppLoaded)
+    navigateToSubRoute(destinationRoute) {
+        if (!destinationRoute) {
+            return;
+        }
+
+        if (this.billingAppLoaded && this._isBillingIframeLoaded()) {
+            this.getBillingIframe().contentWindow.postMessage({
+                query: 'routeUpdate',
+                response: destinationRoute
+            }, '*');
+        } else {
+            this.pendingSubRoute = destinationRoute;
+        }
     }
 
     // Sends a route update to a child route in the BMA, because we can't control

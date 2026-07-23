@@ -1,3 +1,73 @@
+export const GHOST_PRO_GROUP_NAME = 'Ghost (Pro)';
+
+// Static list of Ghost (Pro) billing pages/actions. These don't come from the
+// search-index API — they're indexed client-side and only shown when the
+// current user can access the billing app (see isSearchableAvailable).
+export const GHOST_PRO_SEARCH_ITEMS = [
+    {
+        id: 'start-subscription',
+        title: 'Ghost (Pro) → Start subscription',
+        path: '/pro/plans',
+        keywords: 'billing subscription plan upgrade payment pricing price cost trial'
+    },
+    {
+        id: 'change-plan',
+        title: 'Ghost (Pro) → Change plan',
+        path: '/pro/plans',
+        keywords: 'billing subscription plan upgrade downgrade payment pricing price cost annual yearly monthly discount limit limits renew renewal'
+    },
+    {
+        id: 'cancel-subscription',
+        title: 'Ghost (Pro) → Cancel subscription',
+        path: '/pro/plans',
+        keywords: 'billing subscription plan cancel close delete account'
+    },
+    {
+        id: 'view-invoices',
+        title: 'Ghost (Pro) → View invoices',
+        path: '/pro/billing',
+        keywords: 'billing invoice invoices receipt tax vat billing contact'
+    },
+    {
+        id: 'update-payment-method',
+        title: 'Ghost (Pro) → Update payment method',
+        path: '/pro/billing',
+        keywords: 'billing payment method credit card expired declined failed'
+    },
+    {
+        id: 'setup-custom-domain',
+        title: 'Ghost (Pro) → Set up a custom domain',
+        path: '/pro/domain',
+        keywords: 'domain custom dns cname ssl url address'
+    },
+    {
+        id: 'change-ghost-io-domain',
+        title: 'Ghost (Pro) → Change ghost.io domain',
+        path: '/pro/domain',
+        keywords: 'domain subdomain ghost.io url address'
+    },
+    {
+        id: 'buy-new-domain',
+        title: 'Ghost (Pro) → Buy a new domain',
+        path: '/pro/domain',
+        keywords: 'domain buy purchase register new'
+    },
+    // note: 'export' is deliberately not a keyword for backups to avoid
+    // colliding with content export (Settings → Import/Export)
+    {
+        id: 'request-backup',
+        title: 'Ghost (Pro) → Request backup',
+        path: '/pro/backups',
+        keywords: 'backup request restore data'
+    },
+    {
+        id: 'contact-support',
+        title: 'Ghost (Pro) → Contact support',
+        path: '/pro/support',
+        keywords: 'support help contact email refund'
+    }
+];
+
 export const SEARCHABLES = [
     {
         name: 'Staff',
@@ -14,6 +84,16 @@ export const SEARCHABLES = [
         idField: 'slug',
         titleField: 'name',
         index: ['name']
+    },
+    {
+        name: GHOST_PRO_GROUP_NAME,
+        model: 'pro-page',
+        pathField: 'id',
+        idField: 'id',
+        titleField: 'title',
+        index: ['title', 'keywords'],
+        staticItems: GHOST_PRO_SEARCH_ITEMS,
+        requiresBillingAccess: true
     },
     {
         name: 'Posts',
@@ -57,10 +137,26 @@ export function createSearchResult(searchable, item) {
     return {
         id: `${searchable.model}.${item[idField]}`,
         url: item.url,
+        path: item.path,
         title: item[searchable.titleField],
+        keywords: item.keywords,
         groupName: searchable.name,
         status: item.status,
         visibility: item.visibility,
         publishedAt: item.published_at
     };
+}
+
+// Searchables that require billing access (Ghost (Pro) pages) are only shown
+// when the billing app is enabled for the site and the current user is allowed
+// to open it (mirrors the access rules in the `pro` route)
+export function isSearchableAvailable(searchable, {config, session}) {
+    if (!searchable.requiresBillingAccess) {
+        return true;
+    }
+
+    const billingEnabled = Boolean(config?.hostSettings?.billing?.enabled);
+    const userCanAccessBilling = Boolean(session?.user?.isOwnerOnly) || Boolean(config?.hostSettings?.forceUpgrade);
+
+    return billingEnabled && userCanAccessBilling;
 }
