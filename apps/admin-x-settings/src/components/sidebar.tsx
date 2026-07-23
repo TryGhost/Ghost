@@ -175,7 +175,7 @@ const Sidebar: React.FC = () => {
     return (
         <div className='ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]' data-testid="sidebar">
             <div className='sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-grey-50 xl:h-20 dark:bg-grey-950 dark:tablet:bg-[#101114]'>
-                <InputGroup className='mr-8 rounded-full border-transparent bg-surface-elevated shadow-sm has-[[data-slot=input-group-control]:focus-visible]:border-green! has-[[data-slot=input-group-control]:focus-visible]:bg-surface-elevated! has-[[data-slot=input-group-control]:focus-visible]:ring-green/25! tablet:mr-0'>
+                <InputGroup className='mr-8 rounded-full border-control-border bg-surface-elevated-2 shadow-sm has-[[data-slot=input-group-control]:focus-visible]:border-green! has-[[data-slot=input-group-control]:focus-visible]:bg-surface-elevated-2! has-[[data-slot=input-group-control]:focus-visible]:ring-green/25! tablet:mr-0'>
                     <InputGroupAddon align='inline-start'>
                         <Search aria-hidden='true' className='size-4' />
                     </InputGroupAddon>

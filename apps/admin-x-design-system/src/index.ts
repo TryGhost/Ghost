@@ -44,12 +44,6 @@ export {default as ViewContainer} from './global/layout/view-container';
 export type {View} from './global/layout/view-container';
 export type {PrimaryActionProps} from './global/layout/view-container';
 
-export {default as SettingGroup} from './settings/setting-group';
-export type {SettingGroupProps} from './settings/setting-group';
-export {default as SettingGroupContent} from './settings/setting-group-content';
-export type {SettingGroupContentProps} from './settings/setting-group-content';
-export {default as SettingGroupHeader} from './settings/setting-group-header';
-export type {SettingGroupHeaderProps} from './settings/setting-group-header';
 export {default as SettingNavItem} from './settings/setting-nav-item';
 export type {SettingNavItemProps} from './settings/setting-nav-item';
 export {default as SettingNavSection} from './settings/setting-nav-section';
@@ -58,9 +52,6 @@ export {default as SettingSection} from './settings/setting-section';
 export type {SettingSectionProps} from './settings/setting-section';
 export {default as SettingSectionHeader} from './settings/setting-section-header';
 export type {SettingSectionHeaderProps} from './settings/setting-section-header';
-export {default as SettingValue} from './settings/setting-value';
-export type {SettingValueProps} from './settings/setting-value';
-
 export {debounce} from './utils/debounce';
 export {formatUrl} from './utils/format-url';
 

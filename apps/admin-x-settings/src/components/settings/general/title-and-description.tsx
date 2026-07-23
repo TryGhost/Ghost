@@ -1,7 +1,8 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
+import {SettingGroupContent, SettingGroupValue, SettingGroupValueContent, SettingGroupValueTitle} from '@tryghost/shade/patterns';
+import {TextField} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {withErrorBoundary} from '../../error-boundary';
 
@@ -52,21 +53,16 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const values = (
-        <SettingGroupContent
-            columns={2}
-            values={[
-                {
-                    heading: 'Site title',
-                    key: 'site-title',
-                    value: title
-                },
-                {
-                    heading: 'Site description',
-                    key: 'site-description',
-                    value: description
-                }
-            ]}
-        />
+        <SettingGroupContent columns={2}>
+            <SettingGroupValue>
+                <SettingGroupValueTitle>Site title</SettingGroupValueTitle>
+                <SettingGroupValueContent className='mt-1'>{title}</SettingGroupValueContent>
+            </SettingGroupValue>
+            <SettingGroupValue>
+                <SettingGroupValueTitle>Site description</SettingGroupValueTitle>
+                <SettingGroupValueContent className='mt-1'>{description}</SettingGroupValueContent>
+            </SettingGroupValue>
+        </SettingGroupContent>
     );
 
     const inputFields = (

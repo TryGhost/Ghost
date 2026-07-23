@@ -2,7 +2,8 @@ import ChangePasswordForm from './change-password-form';
 import RoleSelector from './role-selector';
 import StaffToken from './staff-token';
 import {Field, FieldDescription, FieldError, FieldLabel, Textarea} from '@tryghost/shade/components';
-import {SettingGroup, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
+import {SettingGroup, SettingGroupContent} from '@tryghost/shade/patterns';
+import {TextField} from '@tryghost/admin-x-design-system';
 import {type UserDetailProps} from '../user-detail-modal';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -80,7 +81,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUs
 
 const ProfileTab: React.FC<UserDetailProps> = (props) => {
     return (
-        <SettingGroup border={false}>
+        <SettingGroup variant='plain'>
             <BasicInputs {...props} />
         </SettingGroup>
     );

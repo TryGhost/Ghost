@@ -688,7 +688,7 @@ const Sidebar: React.FC<{
         <div className='flex flex-col'>
             <div className='px-7 pt-0 pb-7'>
                 <Tabs value={selectedTab} variant='underline' onValueChange={handleTabChange}>
-                    <TabsList className='sticky top-0 z-50 bg-background'>
+                    <TabsList className='sticky top-0 z-50 bg-surface-elevated-2'>
                         {tabs.map(tab => <TabsTrigger key={tab.id} value={tab.id}>{tab.title}</TabsTrigger>)}
                     </TabsList>
                     {tabs.map(tab => <TabsContent key={tab.id} value={tab.id}>{tab.contents}</TabsContent>)}

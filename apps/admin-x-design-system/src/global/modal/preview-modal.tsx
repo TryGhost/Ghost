@@ -206,7 +206,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                     {preview}
                 </div>
                 {sidebar &&
-                    <div className='relative flex size-full flex-col border-l border-grey-100 dark:border-grey-900 [@media(min-width:801px)]:w-auto [@media(min-width:801px)]:basis-[400px]'>
+                    <div className='relative flex size-full flex-col border-l border-border-default bg-surface-elevated-2 [@media(min-width:801px)]:w-auto [@media(min-width:801px)]:basis-[400px]'>
                         {sidebarHeader ? sidebarHeader : (
                             <div className='flex max-h-[82px] items-center justify-between gap-3 px-7 py-6'>
                                 <Text

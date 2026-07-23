@@ -5,7 +5,7 @@ import useSettingGroup from '../../../hooks/use-setting-group';
 import {Button, CopyField, CopyFieldActions, CopyFieldContent, CopyFieldCopyButton, CopyFieldLabel, CopyFieldValue, Field, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, MultiSelectCombobox, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {ChevronDown} from 'lucide-react';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
-import {SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {currencySelectGroups, validateCurrencyAmount} from '../../../utils/currency';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {withErrorBoundary} from '../../error-boundary';

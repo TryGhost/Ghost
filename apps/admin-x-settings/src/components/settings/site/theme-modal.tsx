@@ -256,7 +256,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         </div>;
 
     return (<>
-        <PageHeader containerClassName='bg-white dark:bg-black' left={left} right={right} />
+        <PageHeader containerClassName='sticky -top-px bg-background' left={left} right={right} sticky={false} />
         <div className='px-[8vmin] md:hidden'>
             <Tabs value={currentTab} variant='button-sm' onValueChange={setCurrentTab}>
                 <TabsList>

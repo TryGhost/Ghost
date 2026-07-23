@@ -4,7 +4,6 @@ import PrivateFeatures from './labs/private-features';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import {Button, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {SettingGroupHeader} from '@tryghost/admin-x-design-system';
 import {useAutoExpandable} from '../../../hooks/use-auto-expandable';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {withErrorBoundary} from '../../error-boundary';
@@ -18,25 +17,21 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customHeader={
-                <div className='z-10 flex items-start justify-between'>
-                    <SettingGroupHeader
-                        description='This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.'
-                        title='Labs'
-                    />
-                    <Button
-                        className='mt-[-5px]'
-                        size='sm'
-                        type='button'
-                        variant={isOpen ? 'secondary' : 'ghost'}
-                        onClick={isOpen ? closeManually : openManually}
-                    >{isOpen ? 'Close' : 'Open'}</Button>
-                </div>
-            }
+            customButtons={(
+                <Button
+                    className='mt-[-5px]'
+                    size='sm'
+                    type='button'
+                    variant={isOpen ? 'secondary' : 'ghost'}
+                    onClick={isOpen ? closeManually : openManually}
+                >{isOpen ? 'Close' : 'Open'}</Button>
+            )}
+            description='This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.'
             isEditing={isOpen}
             keywords={keywords}
             navid='labs'
             testId='labs'
+            title='Labs'
         >
             {isOpen ? (
                 <Tabs value={selectedTab} variant='underline' onValueChange={value => setSelectedTab(value as LabsTab)}>
