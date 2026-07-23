@@ -1,4 +1,5 @@
 import AdvancedThemeSettings from './theme/advanced-theme-settings';
+import ConfirmationModal from '@src/components/confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './theme/invalid-theme-modal';
 import NiceModal, {type NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/official-themes';
@@ -6,9 +7,9 @@ import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/theme-installed-modal';
 import ThemePreview from './theme/theme-preview';
 import {Button, Dropzone, LoadingIndicator, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {ConfirmationModal, LimitModal, Modal, PageHeader} from '@tryghost/admin-x-design-system';
 import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
+import {LimitModal, Modal, PageHeader} from '@tryghost/admin-x-design-system';
 import {type OfficialTheme} from '../../providers/settings-app-provider';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';

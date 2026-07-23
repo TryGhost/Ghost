@@ -92,7 +92,7 @@ const SettingGroupContent = React.forwardRef<HTMLDivElement, SettingGroupContent
     }
 
     return (
-        <Stack ref={ref} className={cn(!className && 'gap-y-7', className)} gap='none' {...props}>
+        <Stack ref={ref} className={cn('gap-y-7', className)} gap='none' {...props}>
             {children}
         </Stack>
     );

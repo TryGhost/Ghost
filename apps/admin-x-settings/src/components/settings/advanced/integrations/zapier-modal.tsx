@@ -1,11 +1,12 @@
 import APIKeys from './api-keys';
 import BrandIcon from '../../../icons/brand-icon';
+import ConfirmationModal from '@src/components/confirmation-modal';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import ZapierLogo from '../../../../assets/images/zapier-logo.svg';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button} from '@tryghost/shade/components';
-import {ConfirmationModal, Modal} from '@tryghost/admin-x-design-system';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
 import {useEffect, useState} from 'react';

@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {type ReactNode} from 'react';
-import {ConfirmationModalContent} from '@tryghost/admin-x-design-system';
+import {ConfirmationModalContent} from '@src/components/confirmation-modal';
 import {ErrorTextCard, type FatalErrors, ThemeValidationDetailsDisclosure, ValidationProblemCard, getIssuesFromFatalErrors} from './theme-validation-details';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 

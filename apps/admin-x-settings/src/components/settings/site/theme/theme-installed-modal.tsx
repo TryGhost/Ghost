@@ -1,7 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {type ReactNode} from 'react';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
-import {ConfirmationModalContent} from '@tryghost/admin-x-design-system';
+import {ConfirmationModalContent} from '@src/components/confirmation-modal';
 import {type InstalledTheme, useActivateTheme} from '@tryghost/admin-x-framework/api/themes';
 import {OutcomeBanner, ThemeValidationDetailsDisclosure, getIssuesFromInstalledTheme} from './theme-validation-details';
 import {getHomepageUrl, useBrowseSite} from '@tryghost/admin-x-framework/api/site';

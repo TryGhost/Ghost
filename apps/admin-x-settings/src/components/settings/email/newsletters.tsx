@@ -1,3 +1,4 @@
+import ConfirmationModal from '@src/components/confirmation-modal';
 import NewslettersList from './newsletters/newsletters-list';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {type ReactNode, useEffect, useState} from 'react';
@@ -5,7 +6,6 @@ import TopLevelGroup from '../../top-level-group';
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {ConfirmationModal} from '@tryghost/admin-x-design-system';
 import {type InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
 import {type Newsletter, type NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
 import {arrayMove} from '@dnd-kit/sortable';

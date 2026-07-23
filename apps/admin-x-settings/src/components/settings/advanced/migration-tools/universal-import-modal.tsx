@@ -1,7 +1,8 @@
+import ConfirmationModal from '@src/components/confirmation-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {Button, Dropzone} from '@tryghost/shade/components';
-import {ConfirmationModal, Modal} from '@tryghost/admin-x-design-system';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useImportContent} from '@tryghost/admin-x-framework/api/db';
 

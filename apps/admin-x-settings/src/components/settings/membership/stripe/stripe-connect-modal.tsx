@@ -1,4 +1,5 @@
 import BookmarkThumb from '../../../../assets/images/stripe-thumb.jpg';
+import ConfirmationModal from '@src/components/confirmation-modal';
 import GhostLogo from '../../../../assets/images/orb-squircle.png';
 import GhostLogoPink from '../../../../assets/images/orb-pink.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
@@ -8,9 +9,9 @@ import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import StripeVerifiedBadge from '../../../../assets/images/stripe-verified.svg';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import {Button, Field, FieldError, FieldGroup, FieldLabel, Input, Switch, Textarea} from '@tryghost/shade/components';
-import {ConfirmationModal, LimitModal, Modal} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
+import {LimitModal, Modal} from '@tryghost/admin-x-design-system';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Text} from '@tryghost/shade/primitives';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';

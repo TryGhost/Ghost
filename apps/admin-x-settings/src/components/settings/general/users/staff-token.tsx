@@ -1,6 +1,6 @@
 import APIKeys from '../../advanced/integrations/api-keys';
+import ConfirmationModal from '@src/components/confirmation-modal';
 import NiceModal from '@ebay/nice-modal-react';
-import {ConfirmationModal} from '@tryghost/admin-x-design-system';
 import {Text} from '@tryghost/shade/primitives';
 import {genStaffToken, getStaffToken} from '@tryghost/admin-x-framework/api/staff-token';
 import {useEffect, useState} from 'react';

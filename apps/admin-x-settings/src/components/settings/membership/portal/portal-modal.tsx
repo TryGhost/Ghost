@@ -1,12 +1,13 @@
 import AccountPage from './account-page';
+import ConfirmationModal from '@src/components/confirmation-modal';
 import LookAndFeel from './look-and-feel';
 import NiceModal from '@ebay/nice-modal-react';
 import PortalPreview from './portal-preview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './signup-options';
 import useQueryParams from '../../../../hooks/use-query-params';
-import {ConfirmationModal, PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
