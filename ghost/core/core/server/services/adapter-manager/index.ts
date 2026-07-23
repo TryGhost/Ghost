@@ -5,6 +5,8 @@ import {CacheBase} from '@tryghost/adapter-base-cache';
 import {RedirectsStoreBase} from '@tryghost/adapter-base-redirects';
 import {RouteSettingsStoreBase} from '@tryghost/adapter-base-route-settings';
 
+const EmailProviderBase = require('../../adapters/email/email-provider-base');
+
 import {AdapterManager} from './adapter-manager';
 import config from '../../../shared/config';
 
@@ -35,6 +37,7 @@ const adapterManager = new AdapterManager({
         scheduling: SchedulingBase,
         sso: SSOBase,
         cache: CacheBase,
+        email: EmailProviderBase,
         redirects: RedirectsStoreBase,
         'route-settings': RouteSettingsStoreBase
     }
