@@ -2,7 +2,7 @@ import ConfirmationModal from '../../../confirmation-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {Button, Dropzone} from '@tryghost/shade/components';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useImportContent} from '@tryghost/admin-x-framework/api/db';
 
@@ -13,7 +13,7 @@ const UniversalImportModal: React.FC = () => {
     const handleError = useHandleError();
 
     return (
-        <Modal
+        <SettingsModal
             backDropClick={false}
             footer={
                 <div className='flex w-full items-center justify-between p-8'>
@@ -57,7 +57,7 @@ const UniversalImportModal: React.FC = () => {
                     </div>
                 </Dropzone>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 };
 

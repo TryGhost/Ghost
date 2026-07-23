@@ -27,6 +27,8 @@
     --surface-elevated-2: var(--color-white);
     --surface-overlay: var(--color-white);
     --surface-overlay-foreground: var(--color-black);
+    --modal-backdrop: rgb(98 109 121 / 0.2);
+    --form-sheet-backdrop: rgb(98 109 121 / 0.08);
     --surface-inverse: var(--color-black);
     --surface-inverse-foreground: var(--color-white);
     --text-primary: var(--color-black);

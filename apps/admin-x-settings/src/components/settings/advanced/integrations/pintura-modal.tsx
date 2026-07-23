@@ -3,8 +3,8 @@ import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import pinturaScreenshot from '../../../../assets/images/pintura-screenshot.png';
 import {Dropzone, Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Switch} from '@tryghost/shade/components';
-import {Modal} from '@tryghost/admin-x-design-system';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -75,7 +75,7 @@ const PinturaModal = NiceModal.create(() => {
     const isDirty = !(enabled === pinturaEnabled);
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('integrations');
             }}
@@ -140,7 +140,7 @@ const PinturaModal = NiceModal.create(() => {
                     </FieldGroup>
                 </FieldSet>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

@@ -5,8 +5,8 @@ import {AlreadyExistsError} from '@tryghost/admin-x-framework/errors';
 import {type EditOrAddRecommendation, useCheckRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, LoadingIndicator} from '@tryghost/shade/components';
-import {Modal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {formatUrl} from '../../../../utils/format-url';
 import {toast} from 'sonner';
 
@@ -157,7 +157,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
     }, [formState]);
 
     if (showLoadingView) {
-        return <Modal
+        return <SettingsModal
             afterClose={() => {
                 // Closed without saving: reset route
                 updateRoute('recommendations');
@@ -173,10 +173,10 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                     <LoadingIndicator size='lg' />
                 </div>
             </div>
-        </Modal>;
+        </SettingsModal>;
     }
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             // Closed without saving: reset route
             updateRoute('recommendations');
@@ -221,7 +221,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 {errors.url ? <FieldError>{errors.url}</FieldError> : <FieldDescription>Need inspiration? <a className='text-green' href="https://www.ghost.org/explore" rel="noopener noreferrer" target='_blank'>Explore thousands of sites</a> to recommend</FieldDescription>}
             </Field>
         </FieldGroup>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(AddRecommendationModal);

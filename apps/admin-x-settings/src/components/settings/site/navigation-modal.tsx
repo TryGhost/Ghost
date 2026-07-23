@@ -2,7 +2,7 @@ import NavigationEditForm from './navigation/navigation-edit-form';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useNavigationEditor, {type NavigationItem} from '../../../hooks/site/use-navigation-editor';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useCallback, useMemo, useState} from 'react';
@@ -45,7 +45,7 @@ const NavigationModal = NiceModal.create(() => {
     const [selectedTab, setSelectedTab] = useState('primary-nav');
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('navigation');
             }}
@@ -76,7 +76,7 @@ const NavigationModal = NiceModal.create(() => {
                     <TabsContent value='secondary-nav'><NavigationEditForm baseUrl={siteData!.url} navigation={secondaryNavigation} /></TabsContent>
                 </Tabs>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

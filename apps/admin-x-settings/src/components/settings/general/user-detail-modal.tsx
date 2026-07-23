@@ -15,10 +15,10 @@ import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-fra
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {Modal} from '@tryghost/admin-x-design-system';
 import {Pencil, Trash2} from 'lucide-react';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '../../../utils/social-urls/index';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';
 import {type User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useGetUserBySlug, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
@@ -323,7 +323,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
     };
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={navigateOnClose}
             animate={canAccessSettings(currentUser)}
             backDrop={canAccessSettings(currentUser)}
@@ -394,7 +394,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                                                     <LucideIcon.Ellipsis className={clsx('size-5', formState.cover_image && 'text-white')} />
                                                 </button>
                                             </DropdownMenuTrigger>
-                                            {/* legacy Modal overlay is z-[1000]; keep the portalled menu above it */}
+                                            {/* legacy SettingsModal overlay is z-[1000]; keep the portalled menu above it */}
                                             <DropdownMenuContent align='end' className='z-[9999]'>
                                                 {canMakeOwner && (
                                                     <DropdownMenuItem onSelect={confirmMakeOwner}>
@@ -449,7 +449,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                     </Tabs>
                 </div>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 };
 

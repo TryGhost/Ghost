@@ -1,7 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import clsx from 'clsx';
 import React, {useEffect} from 'react';
-import Modal, {ModalSize} from './modal';
+import {SettingsModal, type SettingsModalSize} from '@tryghost/shade/patterns';
 import {Button, type ButtonProps} from '@tryghost/shade/components';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {Inline, Text, type TextElement, type TextLeading, type TextSize} from '@tryghost/shade/primitives';
@@ -40,7 +40,7 @@ export interface PreviewModalProps {
     testId?: string;
     title?: string;
     titleHeadingLevel?: HeadingLevel;
-    size?: ModalSize;
+    size?: SettingsModalSize;
     width?: 'full' | number;
     height?: 'full' | number;
     sidebar?: boolean | React.ReactNode;
@@ -187,7 +187,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     });
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={afterClose}
             animate={false}
             backDropClick={backDropClick}
@@ -234,7 +234,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                 }
             </div>
             <DirtyConfirmDialog {...dialogProps} />
-        </Modal>
+        </SettingsModal>
     );
 };
 

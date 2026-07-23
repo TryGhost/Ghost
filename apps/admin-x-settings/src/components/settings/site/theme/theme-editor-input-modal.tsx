@@ -1,7 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {Field, FieldLabel, Input} from '@tryghost/shade/components';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 
 export type ThemeEditorInputModalProps = {
     title: string;
@@ -31,7 +31,7 @@ const ThemeEditorInputModal = NiceModal.create<ThemeEditorInputModalProps>(({
     };
 
     return (
-        <Modal
+        <SettingsModal
             backDropClick={false}
             cancelLabel={cancelLabel}
             okDisabled={!value.trim()}
@@ -49,7 +49,7 @@ const ThemeEditorInputModal = NiceModal.create<ThemeEditorInputModalProps>(({
                     <Input className='h-[var(--control-height)] border-transparent bg-muted' id='theme-editor-input' placeholder={placeholder} value={value} autoFocus onChange={event => setValue(event.target.value)} />
                 </Field>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

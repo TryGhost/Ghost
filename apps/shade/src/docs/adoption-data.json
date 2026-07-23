@@ -1,15 +1,15 @@
 {
   "snapshot": {
-    "generatedAt": "2026-07-23T16:03:50.691Z",
-    "sha": "cadcb2fb49b0ea46452b404422b57413ab3c2608",
-    "branch": "codex/admin-settings-shade-confirmation"
+    "generatedAt": "2026-07-23T21:16:04.661Z",
+    "sha": "526cf1eae7992ea02ea8e7c0e1fa93867f7ea7e2",
+    "branch": "codex/admin-settings-shade-modal"
   },
   "summary": {
-    "adminReactFilesTotal": 705,
-    "adminReactFilesUsingShade": 375,
-    "shadeAdoptionPct": 53.2,
-    "uniqueShadeComponentsUsed": 295,
-    "adminXDsComponentsStillUsed": 19
+    "adminReactFilesTotal": 706,
+    "adminReactFilesUsingShade": 376,
+    "shadeAdoptionPct": 53.3,
+    "uniqueShadeComponentsUsed": 299,
+    "adminXDsComponentsStillUsed": 13
   },
   "apps": [
     {
@@ -1200,9 +1200,9 @@
     },
     {
       "name": "admin-x-settings",
-      "files": 252,
-      "shadeFiles": 148,
-      "adminXDsFiles": 55,
+      "files": 253,
+      "shadeFiles": 149,
+      "adminXDsFiles": 15,
       "shadeComponents": [
         {
           "name": "Button",
@@ -1227,6 +1227,10 @@
         {
           "name": "Input",
           "count": 35
+        },
+        {
+          "name": "SettingsModal",
+          "count": 34
         },
         {
           "name": "FieldError",
@@ -1481,6 +1485,14 @@
           "count": 3
         },
         {
+          "name": "PreviewChrome",
+          "count": 3
+        },
+        {
+          "name": "ModalPage",
+          "count": 3
+        },
+        {
           "name": "SortableList",
           "count": 3
         },
@@ -1599,6 +1611,10 @@
         {
           "name": "GhostOrb",
           "count": 2
+        },
+        {
+          "name": "topLevelBackdropClasses",
+          "count": 1
         },
         {
           "name": "SettingGroupActions",
@@ -1755,28 +1771,8 @@
       ],
       "adminXDsComponents": [
         {
-          "name": "Modal",
-          "count": 34
-        },
-        {
-          "name": "LimitModal",
-          "count": 10
-        },
-        {
           "name": "PreviewModalContent",
           "count": 7
-        },
-        {
-          "name": "DesktopChrome",
-          "count": 3
-        },
-        {
-          "name": "MobileChrome",
-          "count": 3
-        },
-        {
-          "name": "ModalPage",
-          "count": 3
         },
         {
           "name": "useDesignSystem",
@@ -1785,10 +1781,6 @@
         {
           "name": "PageHeader",
           "count": 2
-        },
-        {
-          "name": "topLevelBackdropClasses",
-          "count": 1
         },
         {
           "name": "DesignSystemApp",
@@ -1875,6 +1867,10 @@
       "count": 34
     },
     {
+      "name": "SettingsModal",
+      "count": 34
+    },
+    {
       "name": "Tabs",
       "count": 31
     },
@@ -1909,36 +1905,12 @@
     {
       "name": "Skeleton",
       "count": 26
-    },
-    {
-      "name": "Select",
-      "count": 26
     }
   ],
   "adminXDsComponentsAggregate": [
     {
-      "name": "Modal",
-      "count": 34
-    },
-    {
-      "name": "LimitModal",
-      "count": 10
-    },
-    {
       "name": "PreviewModalContent",
       "count": 7
-    },
-    {
-      "name": "DesktopChrome",
-      "count": 3
-    },
-    {
-      "name": "MobileChrome",
-      "count": 3
-    },
-    {
-      "name": "ModalPage",
-      "count": 3
     },
     {
       "name": "useDesignSystem",
@@ -1947,10 +1919,6 @@
     {
       "name": "PageHeader",
       "count": 2
-    },
-    {
-      "name": "topLevelBackdropClasses",
-      "count": 1
     },
     {
       "name": "DesignSystemApp",

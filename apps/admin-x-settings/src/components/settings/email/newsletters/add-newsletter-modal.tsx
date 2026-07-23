@@ -4,8 +4,8 @@ import React, {useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import {Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
-import {Modal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
@@ -89,7 +89,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         return null;
     }
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             updateRoute(returnRoute);
         }}
@@ -130,7 +130,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 <Switch checked={formState.optInExistingSubscribers} id='opt-in-existing-subscribers' onCheckedChange={checked => updateForm(state => ({...state, optInExistingSubscribers: checked}))} />
             </Field>
         </FieldGroup>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(AddNewsletterModal);

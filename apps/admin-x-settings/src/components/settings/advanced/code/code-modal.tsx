@@ -4,8 +4,8 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import {Button, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {Inline, Text} from '@tryghost/shade/primitives';
-import {Modal} from '@tryghost/admin-x-design-system';
 import {type ReactCodeMirrorRef} from '@uiw/react-codemirror';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useSaveButton} from '../../../../hooks/use-save-button';
 
@@ -62,7 +62,7 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
         };
     });
 
-    return <Modal
+    return <SettingsModal
         afterClose={afterClose}
         backDropClick={false}
         cancelLabel='Close'
@@ -95,7 +95,7 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
                 </TabsContent>
             </Tabs>
         </div>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(CodeModal);

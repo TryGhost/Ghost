@@ -5,7 +5,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import {Avatar, Field, FieldError, FieldGroup, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
 import {Button, LoadingIndicator} from '@tryghost/shade/components';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -96,7 +96,7 @@ const TestimonialsModal = NiceModal.create(() => {
     ];
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('explore');
             }}
@@ -233,7 +233,7 @@ const TestimonialsModal = NiceModal.create(() => {
                     </div>
                 </div>
             </FieldGroup>
-        </Modal>
+        </SettingsModal>
     );
 });
 

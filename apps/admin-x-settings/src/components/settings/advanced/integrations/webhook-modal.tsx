@@ -3,7 +3,7 @@ import React from 'react';
 import validator from 'validator';
 import webhookEventOptions from './webhook-event-options';
 import {Field, FieldError, FieldGroup, FieldLabel, Input, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {type Webhook, useCreateWebhook, useEditWebhook} from '@tryghost/admin-x-framework/api/webhooks';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -52,7 +52,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
         }
     });
 
-    return <Modal
+    return <SettingsModal
         okLabel={webhook ? 'Update' : 'Add'}
         okVariant='default'
         size='sm'
@@ -106,7 +106,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                 </Field>
             </FieldGroup>
         </div>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(WebhookModal);

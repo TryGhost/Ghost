@@ -1,8 +1,8 @@
 import NiceModal from '@ebay/nice-modal-react';
 import {GhostLogo, Separator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {Modal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {linkToGitHubReleases} from '../../../utils/link-to-github-releases';
 import {showDatabaseWarning} from '../../../utils/show-database-warning';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -51,7 +51,7 @@ const AboutModal = NiceModal.create<RoutingModalProps>(() => {
     }
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('');
             }}
@@ -113,7 +113,7 @@ const AboutModal = NiceModal.create<RoutingModalProps>(() => {
                     Copyright © 2013 &ndash; {copyrightYear()} Ghost Foundation, released under the <a className='text-green' href="https://github.com/TryGhost/Ghost/blob/main/LICENSE" rel="noopener noreferrer" target="_blank">MIT license</a>. <a className='text-green' href="https://ghost.org/" rel="noopener noreferrer" target="_blank">Ghost</a> is a registered trademark of <a className='text-green' href="https://ghost.org/trademark/" rel="noopener noreferrer" target="_blank">Ghost Foundation Ltd</a>.
                 </p>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

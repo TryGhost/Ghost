@@ -13,7 +13,7 @@ import {Button, Field, FieldError, FieldGroup, FieldLabel, Input, Switch, Textar
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
@@ -313,7 +313,7 @@ const StripeConnectModal: React.FC = () => {
         contents = <Connect />;
     }
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             updateRoute('tiers');
         }}
@@ -325,7 +325,7 @@ const StripeConnectModal: React.FC = () => {
         hideXOnMobile
     >
         {contents}
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(StripeConnectModal);

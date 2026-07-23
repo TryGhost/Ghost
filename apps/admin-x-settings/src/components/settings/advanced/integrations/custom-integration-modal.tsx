@@ -8,8 +8,8 @@ import {type APIKey, useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api
 import {Field, FieldError, FieldGroup, FieldLabel, Input} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {type Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
-import {Modal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {Trash2} from 'lucide-react';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
@@ -80,7 +80,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         });
     };
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             updateRoute('integrations');
         }}
@@ -166,7 +166,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         <div>
             <WebhooksTable integration={integration} />
         </div>
-    </Modal>;
+    </SettingsModal>;
 };
 
 const CustomIntegrationModal: React.FC<RoutingModalProps> = ({params}) => {
