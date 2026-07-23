@@ -1,23 +1,13 @@
 import '@xyflow/react/dist/style.css';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Background, BaseEdge, type Edge, type EdgeProps, Handle, type Node, type NodeProps, Position, ReactFlow, type ReactFlowInstance, getSmoothStepPath} from '@xyflow/react';
+import React, {useMemo, useState} from 'react';
+import {Background, BaseEdge, type Edge, type EdgeProps, Handle, type Node, type NodeProps, Position, ReactFlow, getSmoothStepPath} from '@xyflow/react';
 import type {AutomationDetail, InsertActionAnchor} from '@tryghost/admin-x-framework/api/automations';
 import {insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {formatWait, orderActions} from './flow-utils';
+import {NODE_GAP, type StepKind, formatWait, orderActions, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {StepNodeHeader} from './flow-node-shell';
 import {StepSidebar} from './step-sidebar';
-
-const NODE_WIDTH = 320;
-const NODE_GAP = 200;
-
-type StepKind = 'trigger' | 'email' | 'wait';
-
-const kindIcon: Record<StepKind, React.ElementType> = {
-    trigger: LucideIcon.Zap,
-    email: LucideIcon.Mail,
-    wait: LucideIcon.Clock
-};
 
 const AddStepMenu: React.FC<{children: React.ReactNode; onPick: (kind: 'email' | 'wait') => void}> = ({children, onPick}) => (
     <DropdownMenu>
@@ -37,20 +27,11 @@ type StepNodeData = {kind: StepKind; title: string; subtitle: string; selected: 
 
 const StepNode: React.FC<NodeProps> = ({data}) => {
     const d = data as StepNodeData;
-    const Icon = kindIcon[d.kind];
     const clickable = d.kind !== 'trigger';
     return (
         <div className={cn('w-80 rounded-xl border bg-background p-4 shadow-sm transition-colors', clickable && 'cursor-pointer', d.selected ? 'border-blue ring-1 ring-blue' : 'border-border-default', clickable && !d.selected && 'hover:border-blue/50')}>
             <Handle position={Position.Top} style={{opacity: 0}} type="target" />
-            <div className="flex items-center gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                    <Icon className="size-4" />
-                </span>
-                <div className="flex min-w-0 flex-col">
-                    <span className="text-xs text-muted-foreground">{d.title}</span>
-                    <span className="truncate font-medium">{d.subtitle}</span>
-                </div>
-            </div>
+            <StepNodeHeader icon={stepKindIcon[d.kind]} subtitle={d.subtitle} title={d.title} />
             <Handle position={Position.Bottom} style={{opacity: 0}} type="source" />
         </div>
     );
@@ -103,7 +84,7 @@ interface SurfaceEditCanvasProps {
 }
 
 export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onChange}) => {
-    const canvasRef = useRef<HTMLDivElement>(null);
+    const {canvasRef, onInit} = useCenteredColumn();
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
     const ordered = orderActions(draft);
@@ -191,31 +172,6 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
         return {nodes: built, edges: builtEdges};
     }, [draft, ordered, selectedId]);
 
-    const flowRef = useRef<ReactFlowInstance | null>(null);
-
-    // Keep the flow column horizontally centred in the canvas. Runs on every
-    // resize — so it re-centres through the edit-mode expand animation and when
-    // the step sidebar opens/closes — while preserving the user's pan and zoom.
-    const centerColumn = useCallback(() => {
-        const instance = flowRef.current;
-        const el = canvasRef.current;
-        if (!instance || !el) {
-            return;
-        }
-        const {y, zoom} = instance.getViewport();
-        void instance.setViewport({x: Math.round(el.clientWidth / 2 - (NODE_WIDTH * zoom) / 2), y, zoom});
-    }, []);
-
-    useEffect(() => {
-        const el = canvasRef.current;
-        if (!el) {
-            return;
-        }
-        const observer = new ResizeObserver(() => centerColumn());
-        observer.observe(el);
-        return () => observer.disconnect();
-    }, [centerColumn]);
-
     return (
         <div className="flex size-full">
             <div ref={canvasRef} className="min-h-0 flex-1">
@@ -230,11 +186,7 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                     zoomOnScroll={false}
                     panOnDrag
                     panOnScroll
-                    onInit={(instance) => {
-                        flowRef.current = instance;
-                        const width = canvasRef.current?.clientWidth ?? 800;
-                        void instance.setViewport({x: Math.round(width / 2 - NODE_WIDTH / 2), y: 48, zoom: 1});
-                    }}
+                    onInit={onInit}
                     onNodeClick={(_, node) => {
                         if (node.type === 'step' && node.id !== '__trigger__') {
                             setSelectedId(node.id);
