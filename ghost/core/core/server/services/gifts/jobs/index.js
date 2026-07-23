@@ -3,7 +3,8 @@ const jobsService = require('../../jobs');
 
 let hasScheduled = {
     cleanup: false,
-    reminders: false
+    reminders: false,
+    deliveries: false
 };
 
 function scheduleJob(key, name, jobFile) {
@@ -36,5 +37,9 @@ module.exports = {
 
     scheduleGiftReminderJob() {
         return scheduleJob('reminders', 'send-gift-reminders', 'send-gift-reminders-job.js');
+    },
+
+    scheduleGiftDeliveryJob() {
+        return scheduleJob('deliveries', 'send-gift-deliveries', 'send-gift-deliveries-job.js');
     }
 };

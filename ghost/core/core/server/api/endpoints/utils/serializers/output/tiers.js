@@ -65,6 +65,7 @@ function serializeTier(tier, options) {
         currency: json.currency,
         monthly_price: json.monthlyPrice,
         yearly_price: json.yearlyPrice,
+        gift_prices: json.giftPrices ?? {},
         trial_days: json.trialDays
     };
 
@@ -76,6 +77,7 @@ function serializeTier(tier, options) {
         delete serialized.currency;
         delete serialized.monthly_price;
         delete serialized.yearly_price;
+        delete serialized.gift_prices;
     }
 
     return serialized;

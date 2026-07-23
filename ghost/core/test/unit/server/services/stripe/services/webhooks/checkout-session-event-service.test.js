@@ -658,6 +658,45 @@ describe('CheckoutSessionEventService', function () {
             assert.equal(purchaseData.amount, 5000);
             assert.equal(purchaseData.stripeCheckoutSessionId, 'cs_test_123');
             assert.equal(purchaseData.stripePaymentIntentId, 'pi_test_456');
+            assert.equal(purchaseData.buyerName, null);
+            assert.equal(purchaseData.recipientEmail, null);
+            assert.equal(purchaseData.message, null);
+            assert.equal(purchaseData.deliverAt, null);
+        });
+
+        it('passes personalisation and delivery metadata through to recordPurchase', async function () {
+            const service = createService();
+            const session = {
+                id: 'cs_test_123',
+                mode: 'payment',
+                amount_total: 5000,
+                currency: 'usd',
+                customer: 'cust_123',
+                payment_intent: 'pi_test_456',
+                customer_details: {
+                    email: 'buyer@example.com'
+                },
+                metadata: {
+                    ghost_gift: 'true',
+                    gift_token: 'abc-123-token',
+                    tier_id: 'tier_456',
+                    cadence: 'year',
+                    duration: '1',
+                    gift_buyer_name: 'Sarah',
+                    gift_recipient_email: 'taylor@example.com',
+                    gift_message: 'Happy birthday!',
+                    gift_deliver_at: '2026-12-25T09:00:00.000Z'
+                }
+            };
+
+            await service.handleGiftEvent(session);
+
+            const purchaseData = giftService.recordPurchase.getCall(0).args[0];
+
+            assert.equal(purchaseData.buyerName, 'Sarah');
+            assert.equal(purchaseData.recipientEmail, 'taylor@example.com');
+            assert.equal(purchaseData.message, 'Happy birthday!');
+            assert.equal(purchaseData.deliverAt, '2026-12-25T09:00:00.000Z');
         });
 
         it('passes null stripeCustomerId for unauthenticated purchasers', async function () {

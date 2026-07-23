@@ -15,6 +15,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'staff/:slug/edit': 'UserDetailModal',
     'staff/:slug': 'UserDetailModal',
     'portal/edit': 'PortalModal',
+    'gift-subscriptions/edit': 'GiftModal',
     'tiers/add': 'TierDetailModal',
     'tiers/:id': 'TierDetailModal',
     'stripe-connect': 'StripeConnectModal',

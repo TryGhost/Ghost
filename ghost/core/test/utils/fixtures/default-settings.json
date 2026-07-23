@@ -368,6 +368,14 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "gift_subscriptions_enabled": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "portal": {
@@ -628,6 +636,31 @@
                 "isEmpty": false
             },
             "type": "number"
+        }
+    },
+    "gifts": {
+        "gift_page_heading": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "gift_page_description": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "gift_page_image": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "gift_durations": {
+            "defaultValue": "[1,12]",
+            "type": "array"
+        },
+        "gift_tiers": {
+            "defaultValue": "[]",
+            "type": "array"
         }
     },
     "recommendations": {

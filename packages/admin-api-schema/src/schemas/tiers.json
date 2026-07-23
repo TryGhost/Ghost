@@ -41,6 +41,15 @@
         "yearly_price": {
           "type": ["number", "null"]
         },
+        "gift_prices": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "patternProperties": {
+            "^[0-9]+$": {
+              "type": ["number", "null"]
+            }
+          }
+        },
         "trial_days": {
           "type": ["number", "null"]
         },

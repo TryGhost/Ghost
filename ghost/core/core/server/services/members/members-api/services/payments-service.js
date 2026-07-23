@@ -174,16 +174,30 @@ class PaymentsService {
      * @param {object} [params.member]
      * @param {boolean} params.isAuthenticated
      * @param {string} [params.email]
+     * @param {string | null} [params.recipientEmail]
+     * @param {string | null} [params.buyerName]
+     * @param {string | null} [params.recipientName]
+     * @param {string | null} [params.giftMessage]
+     * @param {Date | null} [params.deliverAt]
      *
      * @returns {Promise<string>}
      */
-    async getGiftPaymentLink({tier, cadence, duration, metadata, successUrl, cancelUrl, member, isAuthenticated, email}) {
+    async getGiftPaymentLink({tier, cadence, duration, metadata, successUrl, cancelUrl, member, isAuthenticated, email, recipientEmail, buyerName, recipientName, giftMessage, deliverAt}) {
         let customer = null;
         if (member && isAuthenticated) {
             customer = await this.getCustomerForMember(member);
         }
 
-        const amount = tier.getPrice(cadence);
+        // The charge is a one-time payment for the full gifted period. A tier
+        // can set an explicit gift price for a duration; otherwise the amount
+        // is derived from the anchor cadence price
+        const months = cadence === 'year' ? duration * 12 : duration;
+        const amount = tier.getGiftPrice(months) ?? tier.getPrice(cadence) * duration;
+        if (!Number.isSafeInteger(amount) || amount <= 0) {
+            throw new BadRequestError({
+                message: `Tier does not have a valid ${cadence}ly price for gifting`
+            });
+        }
         const currency = tier.currency.toLowerCase();
 
         const token = this.giftService.service.generateToken();
@@ -193,6 +207,15 @@ class PaymentsService {
         successUrlObj.searchParams.set('gift_token', token);
         successUrlObj.searchParams.set('gift_tier', tier.id.toHexString());
         successUrlObj.searchParams.set('gift_cadence', cadence);
+        successUrlObj.searchParams.set('gift_duration', String(duration));
+        // Only a delivery flag and date go in the URL — the recipient's email
+        // is deliberately kept out of query params (server logs, referrers)
+        if (recipientEmail) {
+            successUrlObj.searchParams.set('gift_delivery', deliverAt ? 'scheduled' : 'sent');
+            if (deliverAt) {
+                successUrlObj.searchParams.set('gift_deliver_date', deliverAt.toISOString());
+            }
+        }
 
         const data = {
             amount,
@@ -206,7 +229,12 @@ class PaymentsService {
                 gift_token: token,
                 tier_id: tier.id.toHexString(),
                 cadence,
-                duration: String(duration)
+                duration: String(duration),
+                ...(recipientEmail ? {gift_recipient_email: recipientEmail} : {}),
+                ...(buyerName ? {gift_buyer_name: buyerName} : {}),
+                ...(recipientName ? {gift_recipient_name: recipientName} : {}),
+                ...(giftMessage ? {gift_message: giftMessage} : {}),
+                ...(deliverAt ? {gift_deliver_at: deliverAt.toISOString()} : {})
             },
             successUrl: successUrlObj.toString(),
             cancelUrl,

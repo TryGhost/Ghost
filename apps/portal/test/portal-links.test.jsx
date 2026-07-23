@@ -566,9 +566,11 @@ describe('Portal Data links:', () => {
             expect(popupFrame).toBeInTheDocument();
 
             const popupIframeDocument = popupFrame.contentDocument;
-            expect(await within(popupIframeDocument).findByText(/You've been gifted a membership/i)).toBeInTheDocument();
-            expect(within(popupIframeDocument).queryByText(/Bronze/i)).toBeInTheDocument();
-            expect(within(popupIframeDocument).queryByText(/1 year/i)).toBeInTheDocument();
+            // The subtitle bolds "{duration} {tier}" (its own <strong>), so match a
+            // contiguous portion of the sentence and count the emphasised tokens.
+            expect(await within(popupIframeDocument).findByText(/membership to The Blueprint/i)).toBeInTheDocument();
+            expect(within(popupIframeDocument).queryAllByText(/Bronze/i).length).toBeGreaterThan(0);
+            expect(within(popupIframeDocument).queryAllByText(/1 year/i).length).toBeGreaterThan(0);
             expect(within(popupIframeDocument).queryByText(/Five great stories to read every day/i)).toBeInTheDocument();
             expect(within(popupIframeDocument).queryByLabelText(/your name/i)).not.toBeInTheDocument();
             expect(within(popupIframeDocument).queryByLabelText(/your email/i)).not.toBeInTheDocument();

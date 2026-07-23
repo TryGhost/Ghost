@@ -148,8 +148,24 @@ module.exports = class Tier {
         this.#yearlyPrice = validateYearlyPrice(value, this.#type);
     }
 
-    updatePricing({currency, monthlyPrice, yearlyPrice}) {
-        if (this.#type !== 'paid' && (currency || monthlyPrice || yearlyPrice)) {
+    /** @type {Object.<number, number>} */
+    #giftPrices;
+    get giftPrices() {
+        return {...this.#giftPrices};
+    }
+
+    /**
+     * One-off gift price override for a duration, or null to use derived pricing
+     *
+     * @param {number} months
+     * @returns {number|null}
+     */
+    getGiftPrice(months) {
+        return this.#giftPrices[months] ?? null;
+    }
+
+    updatePricing({currency, monthlyPrice, yearlyPrice, giftPrices}) {
+        if (this.#type !== 'paid' && (currency || monthlyPrice || yearlyPrice || (giftPrices && Object.keys(giftPrices).length))) {
             throw new ValidationError({
                 message: 'Cannot set pricing for free tiers'
             });
@@ -158,14 +174,18 @@ module.exports = class Tier {
         const newCurrency = validateCurrency(currency, this.#type);
         const newMonthlyPrice = validateMonthlyPrice(monthlyPrice, this.#type);
         const newYearlyPrice = validateYearlyPrice(yearlyPrice, this.#type);
+        const newGiftPrices = validateGiftPrices(giftPrices ?? this.#giftPrices, this.#type);
 
-        if (newCurrency === this.#currency && newMonthlyPrice === this.#monthlyPrice && newYearlyPrice === this.#yearlyPrice) {
+        const giftPricesChanged = JSON.stringify(newGiftPrices) !== JSON.stringify(this.#giftPrices);
+
+        if (newCurrency === this.#currency && newMonthlyPrice === this.#monthlyPrice && newYearlyPrice === this.#yearlyPrice && !giftPricesChanged) {
             return;
         }
 
         this.#currency = newCurrency;
         this.#monthlyPrice = newMonthlyPrice;
         this.#yearlyPrice = newYearlyPrice;
+        this.#giftPrices = newGiftPrices;
 
         this.events.push(TierPriceChangeEvent.create({
             tier: this
@@ -198,6 +218,7 @@ module.exports = class Tier {
             currency: this.#currency,
             monthlyPrice: this.#monthlyPrice,
             yearlyPrice: this.#yearlyPrice,
+            giftPrices: {...this.#giftPrices},
             createdAt: this.#createdAt,
             updatedAt: this.#updatedAt,
             benefits: this.#benefits
@@ -220,6 +241,7 @@ module.exports = class Tier {
         this.#currency = data.currency;
         this.#monthlyPrice = data.monthly_price;
         this.#yearlyPrice = data.yearly_price;
+        this.#giftPrices = data.gift_prices;
         this.#createdAt = data.created_at;
         this.#updatedAt = data.updated_at;
         this.#benefits = data.benefits;
@@ -257,6 +279,7 @@ module.exports = class Tier {
         let trialDays = validateTrialDays(data.trialDays || 0, type);
         let monthlyPrice = validateMonthlyPrice(data.monthlyPrice || null, type);
         let yearlyPrice = validateYearlyPrice(data.yearlyPrice || null , type);
+        let giftPrices = validateGiftPrices(data.giftPrices, type);
         let createdAt = validateCreatedAt(data.createdAt);
         let updatedAt = validateUpdatedAt(data.updatedAt);
         let benefits = validateBenefits(data.benefits);
@@ -274,6 +297,7 @@ module.exports = class Tier {
             currency,
             monthly_price: monthlyPrice,
             yearly_price: yearlyPrice,
+            gift_prices: giftPrices,
             created_at: createdAt,
             updated_at: updatedAt,
             benefits
@@ -468,6 +492,54 @@ function validateYearlyPrice(value, type) {
         });
     }
     return value;
+}
+
+// Gift prices are a map of duration in months -> one-off price amount. Only
+// durations with an override live here; everything else uses derived pricing
+// (monthly price × months, yearly price at multiples of 12).
+function validateGiftPrices(value, type) {
+    if (value === null || value === undefined) {
+        return {};
+    }
+    if (typeof value !== 'object' || Array.isArray(value)) {
+        throw new ValidationError({
+            message: 'Tier gift prices must be a map of months to amounts'
+        });
+    }
+    if (type === 'free') {
+        if (Object.keys(value).length !== 0) {
+            throw new ValidationError({
+                message: 'Free Tiers cannot have gift prices'
+            });
+        }
+        return {};
+    }
+
+    const giftPrices = {};
+    for (const [key, amount] of Object.entries(value)) {
+        const months = Number(key);
+        if (!Number.isSafeInteger(months) || months < 1 || months > 120) {
+            throw new ValidationError({
+                message: 'Tier gift price durations must be whole numbers of months between 1 and 120'
+            });
+        }
+        // An empty override means "use derived pricing" — drop it
+        if (amount === null || amount === undefined) {
+            continue;
+        }
+        if (!Number.isSafeInteger(amount) || amount <= 0) {
+            throw new ValidationError({
+                message: 'Tier gift prices must be positive integers'
+            });
+        }
+        if (amount > 9999999999) {
+            throw new ValidationError({
+                message: 'Tier prices may not exceed 999999.99'
+            });
+        }
+        giftPrices[months] = amount;
+    }
+    return giftPrices;
 }
 
 function validateCreatedAt(value) {

@@ -36,6 +36,11 @@ type GiftDTO = {
     amount: number;
     expires_at: Date;
     consumes_at: Date | null;
+    // Personalisation shown on the redemption page. The buyer's email is
+    // deliberately not exposed — only the name they chose to attach
+    buyer_name: string | null;
+    recipient_name: string | null;
+    message: string | null;
     tier: SerializedTier;
 };
 
@@ -103,6 +108,9 @@ export class GiftController {
             amount: gift.amount,
             expires_at: gift.expiresAt,
             consumes_at: gift.consumesAt,
+            buyer_name: gift.buyerName,
+            recipient_name: gift.recipientName,
+            message: gift.message,
             tier: {
                 id: tierJSON.id,
                 name: tierJSON.name,

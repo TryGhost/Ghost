@@ -19,6 +19,7 @@ export type Tier = {
     currency?: string;
     monthly_price?: number;
     yearly_price?: number;
+    gift_prices?: Record<number, number | null>;
     trial_days: number;
 }
 

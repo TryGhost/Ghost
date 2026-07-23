@@ -271,6 +271,101 @@ describe('Gift Subscriptions', function () {
             assert.equal(gift.get('status'), 'purchased');
         });
 
+        it('Can purchase a multi-month gift when the duration is offered', async function () {
+            const paidTier = await getPaidTier();
+
+            await adminAgent.put('/settings/')
+                .body({settings: [{key: 'gift_durations', value: '[1,3,6,12]'}]})
+                .expectStatus(200);
+
+            try {
+                await membersAgent.post('/api/create-stripe-checkout-session/')
+                    .body({
+                        type: 'gift',
+                        tierId: paidTier.id,
+                        duration: 6,
+                        metadata: {}
+                    })
+                    .expectStatus(200);
+
+                const checkoutSession = getLatestCheckoutSession();
+
+                assert.ok(checkoutSession, 'Checkout session should be captured');
+                assert.equal(checkoutSession.metadata.cadence, 'month');
+                assert.equal(String(checkoutSession.metadata.duration), '6');
+                assert.equal(String(checkoutSession.line_items[0].price_data.unit_amount), String(paidTier.monthly_price * 6));
+
+                await stripeMocker.sendWebhook({
+                    type: 'checkout.session.completed',
+                    data: {
+                        object: {
+                            id: checkoutSession.id,
+                            mode: 'payment',
+                            amount_total: paidTier.monthly_price * 6,
+                            currency: paidTier.currency.toLowerCase(),
+                            customer: checkoutSession.customer,
+                            customer_details: {email: 'gift-multi-month-buyer@example.com'},
+                            metadata: toWebhookMetadata(checkoutSession.metadata),
+                            payment_intent: 'pi_gift_multi_month_789'
+                        }
+                    }
+                });
+
+                await DomainEvents.allSettled();
+
+                const gift = await models.Gift.findOne({
+                    token: checkoutSession.metadata.gift_token
+                }, {require: true});
+
+                assert.equal(gift.get('cadence'), 'month');
+                assert.equal(gift.get('duration'), 6);
+                assert.equal(gift.get('amount'), paidTier.monthly_price * 6);
+                assert.equal(gift.get('status'), 'purchased');
+            } finally {
+                await adminAgent.put('/settings/')
+                    .body({settings: [{key: 'gift_durations', value: '[1,12]'}]})
+                    .expectStatus(200);
+            }
+        });
+
+        it('Rejects a duration the site does not offer', async function () {
+            await expectGiftCheckoutError({duration: 5});
+        });
+
+        it('Charges the tier gift price override when one is set', async function () {
+            const paidTier = await getPaidTier();
+
+            await adminAgent.put('/settings/')
+                .body({settings: [{key: 'gift_durations', value: '[1,6,12]'}]})
+                .expectStatus(200);
+
+            await adminAgent.put(`/tiers/${paidTier.id}/`)
+                .body({tiers: [{gift_prices: {6: 4450}}]})
+                .expectStatus(200);
+
+            try {
+                await membersAgent.post('/api/create-stripe-checkout-session/')
+                    .body({
+                        type: 'gift',
+                        tierId: paidTier.id,
+                        duration: 6,
+                        metadata: {}
+                    })
+                    .expectStatus(200);
+
+                const checkoutSession = getLatestCheckoutSession();
+                assert.equal(String(checkoutSession.line_items[0].price_data.unit_amount), '4450');
+                assert.equal(String(checkoutSession.metadata.duration), '6');
+            } finally {
+                await adminAgent.put(`/tiers/${paidTier.id}/`)
+                    .body({tiers: [{gift_prices: {}}]})
+                    .expectStatus(200);
+                await adminAgent.put('/settings/')
+                    .body({settings: [{key: 'gift_durations', value: '[1,12]'}]})
+                    .expectStatus(200);
+            }
+        });
+
         it('Includes gift token in the purchase success URL', async function () {
             const paidTier = await getPaidTier();
 

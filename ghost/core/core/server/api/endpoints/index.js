@@ -312,6 +312,10 @@ module.exports = {
         return apiFramework.pipeline(require('./gift-links'), localUtils);
     },
 
+    get giftDeliveries() {
+        return apiFramework.pipeline(require('./gift-deliveries'), localUtils);
+    },
+
     get giftReminders() {
         return apiFramework.pipeline(require('./gift-reminders'), localUtils);
     },

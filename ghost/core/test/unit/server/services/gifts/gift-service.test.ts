@@ -39,6 +39,8 @@ describe('GiftService', function () {
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
         findUnsentReminders: sinon.SinonStub<[], Promise<Gift[]>>;
+        findPendingDelivery: sinon.SinonStub<[], Promise<Gift[]>>;
+        findUnsentDeliveries: sinon.SinonStub<[], Promise<Gift[]>>;
         create: sinon.SinonStub;
         update: sinon.SinonStub;
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
@@ -57,6 +59,8 @@ describe('GiftService', function () {
     let giftEmailService: {
         sendPurchaseConfirmation: sinon.SinonStub;
         sendReminder: sinon.SinonStub;
+        sendGiftDelivery: sinon.SinonStub;
+        sendDeliveredConfirmation: sinon.SinonStub;
     };
     let tiersService: {
         api: {
@@ -73,7 +77,12 @@ describe('GiftService', function () {
         currency: 'usd',
         amount: 5000,
         stripeCheckoutSessionId: 'cs_123',
-        stripePaymentIntentId: 'pi_456'
+        stripePaymentIntentId: 'pi_456',
+        buyerName: null,
+        recipientEmail: null,
+        recipientName: null,
+        message: null,
+        deliverAt: null
     };
 
     beforeEach(function () {
@@ -88,6 +97,8 @@ describe('GiftService', function () {
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
             findUnsentReminders: sinon.stub<[], Promise<Gift[]>>().resolves([]),
+            findPendingDelivery: sinon.stub<[], Promise<Gift[]>>().resolves([]),
+            findUnsentDeliveries: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             create: sinon.stub(),
             update: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
@@ -109,7 +120,9 @@ describe('GiftService', function () {
         };
         giftEmailService = {
             sendPurchaseConfirmation: sinon.stub().resolves(undefined),
-            sendReminder: sinon.stub().resolves(undefined)
+            sendReminder: sinon.stub().resolves(undefined),
+            sendGiftDelivery: sinon.stub().resolves(undefined),
+            sendDeliveredConfirmation: sinon.stub().resolves(undefined)
         };
         tiersService = {
             api: {
@@ -131,11 +144,16 @@ describe('GiftService', function () {
     });
 
     let giftReminderScheduler: {scheduleFor: sinon.SinonStub};
+    let giftDeliveryScheduler: {scheduleFor: sinon.SinonStub};
 
     function createService(overrides: {
         giftReminderScheduler?: {scheduleFor: sinon.SinonStub};
+        giftDeliveryScheduler?: {scheduleFor: sinon.SinonStub};
     } = {}) {
         giftReminderScheduler = overrides.giftReminderScheduler ?? {
+            scheduleFor: sinon.stub().resolves()
+        };
+        giftDeliveryScheduler = overrides.giftDeliveryScheduler ?? {
             scheduleFor: sinon.stub().resolves()
         };
         return new GiftService({
@@ -144,7 +162,8 @@ describe('GiftService', function () {
             tiersService,
             giftEmailService,
             staffServiceEmails,
-            giftReminderScheduler
+            giftReminderScheduler,
+            giftDeliveryScheduler
         });
     }
 
@@ -349,6 +368,141 @@ describe('GiftService', function () {
 
             assert.equal(result, true);
             sinon.assert.calledOnce(giftRepository.create);
+        });
+
+        it('stores buyer name, recipient email and message on the gift', async function () {
+            const service = createService();
+
+            await service.recordPurchase({
+                ...purchaseData,
+                buyerName: 'Sarah',
+                recipientEmail: 'taylor@example.com',
+                message: 'Happy birthday!'
+            });
+
+            const gift = giftRepository.create.getCall(0).args[0] as Gift;
+
+            assert.equal(gift.buyerName, 'Sarah');
+            assert.equal(gift.recipientEmail, 'taylor@example.com');
+            assert.equal(gift.message, 'Happy birthday!');
+            assert.equal(gift.deliverAt, null);
+        });
+
+        it('sends the gift to the recipient immediately when no delivery date is set and marks it delivered', async function () {
+            const service = createService();
+
+            await service.recordPurchase({
+                ...purchaseData,
+                buyerName: 'Sarah',
+                recipientEmail: 'taylor@example.com',
+                message: 'Happy birthday!'
+            });
+
+            sinon.assert.calledOnce(giftEmailService.sendGiftDelivery);
+
+            const deliveryData = giftEmailService.sendGiftDelivery.getCall(0).args[0];
+
+            assert.equal(deliveryData.recipientEmail, 'taylor@example.com');
+            assert.equal(deliveryData.buyerName, 'Sarah');
+            assert.equal(deliveryData.message, 'Happy birthday!');
+            assert.equal(deliveryData.token, 'abc-123');
+            assert.equal(deliveryData.tierName, 'Bronze');
+            assert.deepEqual(deliveryData.benefits, ['Benefit 1', 'Benefit 2']);
+
+            sinon.assert.calledOnce(giftRepository.update);
+
+            const updated = giftRepository.update.getCall(0).args[0] as Gift;
+
+            assert.ok(updated.deliveredAt instanceof Date);
+            sinon.assert.notCalled(giftDeliveryScheduler.scheduleFor);
+        });
+
+        it('does not fail purchase when the delivery email throws', async function () {
+            giftEmailService.sendGiftDelivery.rejects(new Error('SMTP error'));
+
+            const service = createService();
+
+            const result = await service.recordPurchase({
+                ...purchaseData,
+                recipientEmail: 'taylor@example.com'
+            });
+
+            assert.equal(result, true);
+            sinon.assert.calledOnce(giftRepository.create);
+            // Not marked as delivered — the email never went out
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('schedules delivery instead of sending when a future delivery date is set', async function () {
+            const deliverAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+            const service = createService();
+
+            await service.recordPurchase({
+                ...purchaseData,
+                recipientEmail: 'taylor@example.com',
+                deliverAt: deliverAt.toISOString()
+            });
+
+            sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
+            sinon.assert.calledOnce(giftDeliveryScheduler.scheduleFor);
+
+            const gift = giftRepository.create.getCall(0).args[0] as Gift;
+
+            assert.equal(gift.deliverAt?.getTime(), deliverAt.getTime());
+        });
+
+        it('starts the expiry clock at the delivery date for scheduled gifts', async function () {
+            const deliverAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+            const service = createService();
+
+            await service.recordPurchase({
+                ...purchaseData,
+                recipientEmail: 'taylor@example.com',
+                deliverAt: deliverAt.toISOString()
+            });
+
+            const gift = giftRepository.create.getCall(0).args[0] as Gift;
+            const expectedExpiry = new Date(deliverAt);
+
+            expectedExpiry.setDate(expectedExpiry.getDate() + 365);
+            assert.equal(gift.expiresAt.getTime(), expectedExpiry.getTime());
+        });
+
+        it('treats an unparseable delivery date as immediate delivery instead of failing the webhook', async function () {
+            const service = createService();
+
+            const result = await service.recordPurchase({
+                ...purchaseData,
+                recipientEmail: 'taylor@example.com',
+                deliverAt: 'not-a-date'
+            });
+
+            assert.equal(result, true);
+
+            const gift = giftRepository.create.getCall(0).args[0] as Gift;
+
+            assert.equal(gift.deliverAt, null);
+            sinon.assert.calledOnce(giftEmailService.sendGiftDelivery);
+            sinon.assert.notCalled(giftDeliveryScheduler.scheduleFor);
+        });
+
+        it('passes recipient and delivery date through to the buyer confirmation email', async function () {
+            const deliverAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+            const service = createService();
+
+            await service.recordPurchase({
+                ...purchaseData,
+                recipientEmail: 'taylor@example.com',
+                deliverAt: deliverAt.toISOString()
+            });
+
+            const emailData = giftEmailService.sendPurchaseConfirmation.getCall(0).args[0];
+
+            assert.equal(emailData.recipientEmail, 'taylor@example.com');
+            assert.equal(emailData.deliverAt?.getTime(), deliverAt.getTime());
         });
     });
 
@@ -1076,6 +1230,208 @@ describe('GiftService', function () {
             assert.equal(result.failedCount, 0);
             assert.equal(giftEmailService.sendReminder.callCount, 2);
             assert.equal(giftRepository.update.callCount, 2);
+        });
+    });
+
+    describe('processDeliveries', function () {
+        function buildScheduledGift(overrides: Parameters<typeof buildGift>[0] = {}) {
+            return buildGift({
+                token: 'gift-token',
+                status: 'purchased',
+                recipientEmail: 'taylor@example.com',
+                buyerName: 'Sarah',
+                message: 'Happy birthday!',
+                deliverAt: new Date('2026-04-01T09:00:00.000Z'),
+                deliveredAt: null,
+                ...overrides
+            });
+        }
+
+        it('returns zero counts when no gifts are pending delivery', async function () {
+            const service = createService();
+            const result = await service.processDeliveries();
+
+            assert.deepEqual(result, {deliveredCount: 0, skippedCount: 0, failedCount: 0});
+            sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
+        });
+
+        it('sends the delivery email, marks the gift as delivered, and returns counts', async function () {
+            const gift = buildScheduledGift();
+
+            giftRepository.findPendingDelivery.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+
+            const service = createService();
+            const result = await service.processDeliveries();
+
+            assert.equal(result.deliveredCount, 1);
+            assert.equal(result.skippedCount, 0);
+            assert.equal(result.failedCount, 0);
+
+            sinon.assert.calledOnce(giftRepository.transaction);
+
+            // getByToken is called twice: once unlocked (before the tier check) and
+            // once locked (inside the transaction).
+            assert.equal(giftRepository.getByToken.callCount, 2);
+            sinon.assert.calledWithExactly(giftRepository.getByToken.secondCall, gift.token, {transacting: 'trx', forUpdate: true});
+
+            sinon.assert.calledOnce(giftEmailService.sendGiftDelivery);
+
+            const emailArgs = giftEmailService.sendGiftDelivery.getCall(0).args[0];
+
+            assert.equal(emailArgs.recipientEmail, 'taylor@example.com');
+            assert.equal(emailArgs.buyerName, 'Sarah');
+            assert.equal(emailArgs.message, 'Happy birthday!');
+            assert.equal(emailArgs.tierName, 'Bronze');
+            assert.deepEqual(emailArgs.benefits, ['Benefit 1', 'Benefit 2']);
+            assert.equal(emailArgs.token, 'gift-token');
+
+            sinon.assert.calledOnce(giftRepository.update);
+
+            const savedGift = giftRepository.update.getCall(0).args[0];
+
+            assert.notEqual(savedGift.deliveredAt, null);
+        });
+
+        it('notifies the buyer that their gift has been delivered', async function () {
+            const gift = buildScheduledGift();
+
+            giftRepository.findPendingDelivery.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+
+            const service = createService();
+            await service.processDeliveries();
+
+            sinon.assert.calledOnce(giftEmailService.sendDeliveredConfirmation);
+
+            const confirmArgs = giftEmailService.sendDeliveredConfirmation.getCall(0).args[0];
+
+            assert.equal(confirmArgs.buyerEmail, 'buyer@example.com');
+            assert.equal(confirmArgs.recipientEmail, 'taylor@example.com');
+            assert.equal(confirmArgs.tierName, 'Bronze');
+            assert.equal(confirmArgs.token, 'gift-token');
+        });
+
+        it('still counts the delivery as sent when the buyer confirmation fails', async function () {
+            const gift = buildScheduledGift();
+
+            giftRepository.findPendingDelivery.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+            giftEmailService.sendDeliveredConfirmation.rejects(new Error('SMTP error'));
+
+            const service = createService();
+            const result = await service.processDeliveries();
+
+            assert.equal(result.deliveredCount, 1);
+            assert.equal(result.failedCount, 0);
+            sinon.assert.calledOnce(giftEmailService.sendGiftDelivery);
+        });
+
+        it('does not notify the buyer when the recipient email fails', async function () {
+            const gift = buildScheduledGift();
+
+            giftRepository.findPendingDelivery.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+            giftEmailService.sendGiftDelivery.rejects(new Error('SMTP error'));
+
+            const service = createService();
+            const result = await service.processDeliveries();
+
+            assert.equal(result.failedCount, 1);
+            sinon.assert.notCalled(giftEmailService.sendDeliveredConfirmation);
+        });
+
+        it('skips gifts no longer in purchased status when re-loaded', async function () {
+            const gift = buildScheduledGift();
+
+            giftRepository.findPendingDelivery.resolves([gift]);
+            // A concurrent redeem (via the buyer's shared link) happened between
+            // the pending query and the locked re-read
+            giftRepository.getByToken.resolves(buildScheduledGift({
+                status: 'redeemed',
+                redeemedAt: new Date(),
+                redeemerMemberId: 'member_1'
+            }));
+
+            const service = createService();
+            const result = await service.processDeliveries();
+
+            assert.equal(result.deliveredCount, 0);
+            assert.equal(result.skippedCount, 1);
+            sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('skips gifts that have already been delivered', async function () {
+            const gift = buildScheduledGift();
+
+            giftRepository.findPendingDelivery.resolves([gift]);
+            giftRepository.getByToken.resolves(buildScheduledGift({
+                deliveredAt: new Date('2026-04-01T09:00:05.000Z')
+            }));
+
+            const service = createService();
+            const result = await service.processDeliveries();
+
+            assert.equal(result.deliveredCount, 0);
+            assert.equal(result.skippedCount, 1);
+            sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('marks the gift as delivered before sending so a failed email does not cause a duplicate send on retry', async function () {
+            const gift = buildScheduledGift();
+
+            giftRepository.findPendingDelivery.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+            giftEmailService.sendGiftDelivery.rejects(new Error('SMTP error'));
+
+            const service = createService();
+            const result = await service.processDeliveries();
+
+            assert.equal(result.deliveredCount, 0);
+            assert.equal(result.failedCount, 1);
+            sinon.assert.calledOnce(giftRepository.update);
+
+            const savedGift = giftRepository.update.getCall(0).args[0];
+
+            assert.notEqual(savedGift.deliveredAt, null);
+        });
+
+        it('does not mark the gift as delivered when the tier is missing so an admin fix recovers the delivery', async function () {
+            const gift = buildScheduledGift();
+
+            giftRepository.findPendingDelivery.resolves([gift]);
+            giftRepository.getByToken.resolves(gift);
+            tiersService.api.read.resolves(null);
+
+            const service = createService();
+            const result = await service.processDeliveries();
+
+            assert.equal(result.deliveredCount, 0);
+            assert.equal(result.failedCount, 1);
+            sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.notCalled(giftEmailService.sendGiftDelivery);
+        });
+
+        it('continues processing the batch when one gift fails', async function () {
+            const failing = buildScheduledGift({token: 'failing-token'});
+            const succeeding = buildScheduledGift({token: 'ok-token'});
+
+            giftRepository.findPendingDelivery.resolves([failing, succeeding]);
+            giftRepository.getByToken.withArgs('failing-token').resolves(failing);
+            giftRepository.getByToken.withArgs('failing-token', sinon.match.any).resolves(failing);
+            giftRepository.getByToken.withArgs('ok-token').resolves(succeeding);
+            giftRepository.getByToken.withArgs('ok-token', sinon.match.any).resolves(succeeding);
+            giftEmailService.sendGiftDelivery.onFirstCall().rejects(new Error('SMTP error'));
+            giftEmailService.sendGiftDelivery.onSecondCall().resolves(undefined);
+
+            const service = createService();
+            const result = await service.processDeliveries();
+
+            assert.equal(result.deliveredCount, 1);
+            assert.equal(result.failedCount, 1);
+            assert.equal(giftEmailService.sendGiftDelivery.callCount, 2);
         });
     });
 

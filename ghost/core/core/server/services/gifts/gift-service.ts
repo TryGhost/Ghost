@@ -4,6 +4,7 @@ import logging from '@tryghost/logging';
 import {Gift} from './gift';
 import type {GiftRepository} from './gift-repository';
 import type {GiftReminderScheduler} from './gift-reminder-scheduler';
+import type {GiftDeliveryScheduler} from './gift-delivery-scheduler';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
 
@@ -47,6 +48,7 @@ interface MemberRepository {
 
 type Tier = {
     name: string;
+    benefits: string[];
     currency: string | null;
     monthlyPrice: number | null;
     yearlyPrice: number | null;
@@ -72,12 +74,35 @@ interface GiftEmailService {
         cadence: 'month' | 'year';
         duration: number;
         expiresAt: Date;
+        recipientEmail: string | null;
+        deliverAt: Date | null;
     }): Promise<void>;
     sendReminder(data: {
         memberEmail: string;
         memberName: string | null;
         tierName: string;
         consumesAt: Date;
+    }): Promise<void>;
+    sendGiftDelivery(data: {
+        recipientEmail: string;
+        buyerName: string | null;
+        recipientName: string | null;
+        message: string | null;
+        token: string;
+        tierName: string;
+        benefits: string[];
+        cadence: 'month' | 'year';
+        duration: number;
+        expiresAt: Date;
+    }): Promise<void>;
+    sendDeliveredConfirmation(data: {
+        buyerEmail: string;
+        recipientEmail: string;
+        token: string;
+        tierName: string;
+        cadence: 'month' | 'year';
+        duration: number;
+        expiresAt: Date;
     }): Promise<void>;
 }
 
@@ -114,6 +139,11 @@ export interface GiftPurchaseData {
     amount: number;
     stripeCheckoutSessionId: string;
     stripePaymentIntentId: string;
+    buyerName: string | null;
+    recipientEmail: string | null;
+    recipientName: string | null;
+    message: string | null;
+    deliverAt: string | null;
 }
 
 interface GiftServiceDeps {
@@ -123,12 +153,22 @@ interface GiftServiceDeps {
     giftEmailService: GiftEmailService;
     staffServiceEmails: StaffServiceEmails;
     giftReminderScheduler: Pick<GiftReminderScheduler, 'scheduleFor'>;
+    giftDeliveryScheduler: Pick<GiftDeliveryScheduler, 'scheduleFor'>;
 }
 
 interface ReminderSend {
     memberEmail: string;
     memberName: string | null;
     consumesAt: Date;
+}
+
+interface DeliverySend {
+    recipientEmail: string;
+    buyerEmail: string;
+    buyerName: string | null;
+    recipientName: string | null;
+    message: string | null;
+    expiresAt: Date;
 }
 
 export class GiftService {
@@ -168,17 +208,36 @@ export class GiftService {
             ? await this.deps.memberRepository.get({customer_id: data.stripeCustomerId})
             : null;
 
+        // The delivery date is validated at checkout creation; an unparseable
+        // value here means corrupt metadata. Fall back to immediate delivery
+        // rather than failing the webhook after payment has been taken
+        let deliverAt: Date | null = null;
+        if (data.deliverAt) {
+            const parsed = new Date(data.deliverAt);
+
+            if (Number.isNaN(parsed.getTime())) {
+                logging.warn(`Ignoring invalid gift delivery date: ${data.deliverAt}`);
+            } else {
+                deliverAt = parsed;
+            }
+        }
+
         const gift = Gift.fromPurchase({
             token: data.token,
             buyerEmail: data.buyerEmail,
             buyerMemberId: member?.id ?? null,
+            buyerName: data.buyerName,
+            recipientEmail: data.recipientEmail,
+            recipientName: data.recipientName,
+            message: data.message,
             tierId: data.tierId,
             cadence: data.cadence,
             duration,
             currency: data.currency,
             amount: data.amount,
             stripeCheckoutSessionId: data.stripeCheckoutSessionId,
-            stripePaymentIntentId: data.stripePaymentIntentId
+            stripePaymentIntentId: data.stripePaymentIntentId,
+            deliverAt
         });
 
         await this.deps.giftRepository.create(gift);
@@ -211,10 +270,41 @@ export class GiftService {
                 tierName: tier.name,
                 cadence: data.cadence,
                 duration,
-                expiresAt: gift.expiresAt
+                expiresAt: gift.expiresAt,
+                recipientEmail: gift.recipientEmail,
+                deliverAt: gift.deliverAt
             });
         } catch (err) {
             logging.error('Failed to send gift purchase confirmation email', err);
+        }
+
+        if (gift.recipientEmail) {
+            if (gift.deliverAt) {
+                await this.deps.giftDeliveryScheduler.scheduleFor(gift);
+            } else {
+                try {
+                    await this.deps.giftEmailService.sendGiftDelivery({
+                        recipientEmail: gift.recipientEmail,
+                        buyerName: gift.buyerName,
+                        recipientName: gift.recipientName,
+                        message: gift.message,
+                        token: gift.token,
+                        tierName: tier.name,
+                        benefits: tier.benefits,
+                        cadence: gift.cadence,
+                        duration: gift.duration,
+                        expiresAt: gift.expiresAt
+                    });
+
+                    const delivered = gift.deliver();
+
+                    if (delivered) {
+                        await this.deps.giftRepository.update(delivered);
+                    }
+                } catch (err) {
+                    logging.error('Failed to send gift delivery email', err);
+                }
+            }
         }
 
         return true;
@@ -618,6 +708,123 @@ export class GiftService {
         }
 
         return {remindedCount, skippedCount, failedCount};
+    }
+
+    async processDeliveries(): Promise<{deliveredCount: number; skippedCount: number; failedCount: number}> {
+        const toDeliver = await this.deps.giftRepository.findPendingDelivery();
+
+        if (toDeliver.length === 0) {
+            return {deliveredCount: 0, skippedCount: 0, failedCount: 0};
+        }
+
+        let deliveredCount = 0;
+        let skippedCount = 0;
+        let failedCount = 0;
+
+        for (const gift of toDeliver) {
+            try {
+                const sent = await this.sendDeliveryForGift(gift.token);
+
+                if (sent) {
+                    deliveredCount += 1;
+                } else {
+                    skippedCount += 1;
+                }
+            } catch (err) {
+                logging.error(err);
+
+                failedCount += 1;
+            }
+        }
+
+        return {deliveredCount, skippedCount, failedCount};
+    }
+
+    private async sendDeliveryForGift(token: string): Promise<boolean> {
+        const gift = await this.deps.giftRepository.getByToken(token);
+
+        if (!gift) {
+            return false;
+        }
+
+        const tier = await this.deps.tiersService.api.read(gift.tierId);
+
+        if (!tier) {
+            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.tierId}`});
+        }
+
+        const result = await this.deps.giftRepository.transaction(async (transacting): Promise<DeliverySend | null> => {
+            const locked = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
+
+            if (!locked) {
+                return null;
+            }
+
+            if (
+                // The gift must still be waiting on delivery — a concurrent
+                // refund, an early redeem via the buyer's shared link, or a
+                // rerun of this job can all happen between `findPendingDelivery`
+                // and this re-read. Marking before sending also means gifts with
+                // permanently unreachable recipients aren't retried on every poll
+                !locked.hasPendingDelivery()
+                // Narrows `recipientEmail` from `string | null` to `string` — always set for pending deliveries
+                || locked.recipientEmail === null
+            ) {
+                return null;
+            }
+
+            const delivered = locked.deliver();
+
+            if (!delivered) {
+                return null;
+            }
+
+            await this.deps.giftRepository.update(delivered, {transacting});
+
+            return {
+                recipientEmail: locked.recipientEmail,
+                buyerEmail: locked.buyerEmail,
+                buyerName: locked.buyerName,
+                recipientName: locked.recipientName,
+                message: locked.message,
+                expiresAt: locked.expiresAt
+            };
+        });
+
+        if (!result) {
+            return false;
+        }
+
+        await this.deps.giftEmailService.sendGiftDelivery({
+            recipientEmail: result.recipientEmail,
+            buyerName: result.buyerName,
+            recipientName: result.recipientName,
+            message: result.message,
+            token,
+            tierName: tier.name,
+            benefits: tier.benefits,
+            cadence: gift.cadence,
+            duration: gift.duration,
+            expiresAt: result.expiresAt
+        });
+
+        // Close the loop with the buyer — this is the moment they chose when
+        // scheduling the gift. Failure here shouldn't fail the delivery
+        try {
+            await this.deps.giftEmailService.sendDeliveredConfirmation({
+                buyerEmail: result.buyerEmail,
+                recipientEmail: result.recipientEmail,
+                token,
+                tierName: tier.name,
+                cadence: gift.cadence,
+                duration: gift.duration,
+                expiresAt: result.expiresAt
+            });
+        } catch (err) {
+            logging.error('Failed to send gift delivered confirmation email', err);
+        }
+
+        return true;
     }
 
     private async sendReminderForGift(token: string): Promise<boolean> {

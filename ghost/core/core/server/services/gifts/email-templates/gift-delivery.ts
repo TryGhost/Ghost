@@ -1,0 +1,68 @@
+import type {Translate} from '../gift-email-renderer';
+
+export interface GiftDeliveryData {
+    siteTitle: string;
+    siteUrl: string;
+    siteIconUrl: string | null;
+    siteDomain: string;
+    accentColor: string | undefined;
+    toEmail: string;
+    buyerName: string | null;
+    recipientName: string | null;
+    message: string | null;
+    gift: {
+        tierName: string;
+        benefits: string[];
+        cadenceLabel: string;
+        link: string;
+        expiresAt: string;
+    };
+}
+
+export function renderText(data: GiftDeliveryData, t: Translate): string {
+    const intro = data.buyerName
+        ? t('{buyerName} has gifted you a {cadenceLabel} {tierName} membership to {siteTitle}.', {
+            buyerName: data.buyerName,
+            cadenceLabel: data.gift.cadenceLabel,
+            tierName: data.gift.tierName,
+            siteTitle: data.siteTitle,
+            interpolation: {escapeValue: false}
+        })
+        : t('You\'ve been gifted a {cadenceLabel} {tierName} membership to {siteTitle}.', {
+            cadenceLabel: data.gift.cadenceLabel,
+            tierName: data.gift.tierName,
+            siteTitle: data.siteTitle,
+            interpolation: {escapeValue: false}
+        });
+
+    const benefitsBlock = data.gift.benefits.length
+        ? `\n${t('What\'s included:')}\n${data.gift.benefits.map(benefit => `- ${benefit}`).join('\n')}\n`
+        : '';
+
+    const messageBlock = data.message
+        ? `\n"${data.message}"${data.buyerName ? `\n— ${data.buyerName}` : ''}\n`
+        : '';
+
+    const greeting = data.recipientName
+        ? `${t('Hi {recipientName},', {recipientName: data.recipientName, interpolation: {escapeValue: false}})}\n\n`
+        : '';
+
+    return `${t('A gift, just for you')}
+
+${greeting}${intro}
+${messageBlock}${benefitsBlock}
+${t('Redeem your gift')}:
+${data.gift.link}
+
+${t('This gift can only be redeemed once and expires on {expiresAt}.', {
+        expiresAt: data.gift.expiresAt,
+        interpolation: {escapeValue: false}
+    })}
+
+---
+${t('This message was sent from {siteDomain} to {email}.', {
+        siteDomain: data.siteDomain,
+        email: data.toEmail,
+        interpolation: {escapeValue: false}
+    })}`;
+}

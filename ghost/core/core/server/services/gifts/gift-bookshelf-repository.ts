@@ -24,6 +24,10 @@ type GiftRow = {
     token: string;
     buyer_email: string;
     buyer_member_id: string | null;
+    buyer_name: string | null;
+    recipient_email: string | null;
+    recipient_name: string | null;
+    message: string | null;
     redeemer_member_id: string | null;
     tier_id: string;
     cadence: GiftCadence;
@@ -34,6 +38,8 @@ type GiftRow = {
     stripe_payment_intent_id: string;
     consumes_at: Date | null;
     expires_at: Date;
+    deliver_at: Date | null;
+    delivered_at: Date | null;
     status: GiftStatus;
     purchased_at: Date;
     redeemed_at: Date | null;
@@ -158,6 +164,26 @@ export class GiftBookshelfRepository implements GiftRepository {
         return collection.models.map(model => this.toGift(model));
     }
 
+    async findPendingDelivery(): Promise<Gift[]> {
+        const now = new Date();
+
+        const collection = await this.model.findAll({
+            filter: `status:purchased+deliver_at:<='${now.toISOString()}'+delivered_at:null+recipient_email:-null`
+        });
+
+        return collection.models.map(model => this.toGift(model));
+    }
+
+    async findUnsentDeliveries(): Promise<Gift[]> {
+        const now = new Date().toISOString();
+
+        const collection = await this.model.findAll({
+            filter: `status:purchased+deliver_at:>'${now}'+delivered_at:null+recipient_email:-null`
+        });
+
+        return collection.models.map(model => this.toGift(model));
+    }
+
     async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
         await this.model.add(this.toRow(gift), options);
     }
@@ -188,6 +214,10 @@ export class GiftBookshelfRepository implements GiftRepository {
             token: gift.token,
             buyer_email: gift.buyerEmail,
             buyer_member_id: gift.buyerMemberId,
+            buyer_name: gift.buyerName,
+            recipient_email: gift.recipientEmail,
+            recipient_name: gift.recipientName,
+            message: gift.message,
             redeemer_member_id: gift.redeemerMemberId,
             tier_id: gift.tierId,
             cadence: gift.cadence,
@@ -198,6 +228,8 @@ export class GiftBookshelfRepository implements GiftRepository {
             stripe_payment_intent_id: gift.stripePaymentIntentId,
             consumes_at: gift.consumesAt,
             expires_at: gift.expiresAt,
+            deliver_at: gift.deliverAt,
+            delivered_at: gift.deliveredAt,
             status: gift.status,
             purchased_at: gift.purchasedAt,
             redeemed_at: gift.redeemedAt,
@@ -215,6 +247,10 @@ export class GiftBookshelfRepository implements GiftRepository {
             token: json.token,
             buyerEmail: json.buyer_email,
             buyerMemberId: json.buyer_member_id,
+            buyerName: json.buyer_name ?? null,
+            recipientEmail: json.recipient_email ?? null,
+            recipientName: json.recipient_name ?? null,
+            message: json.message ?? null,
             redeemerMemberId: json.redeemer_member_id,
             tierId: json.tier_id,
             cadence: json.cadence,
@@ -225,6 +261,8 @@ export class GiftBookshelfRepository implements GiftRepository {
             stripePaymentIntentId: json.stripe_payment_intent_id,
             consumesAt: json.consumes_at,
             expiresAt: json.expires_at,
+            deliverAt: json.deliver_at ?? null,
+            deliveredAt: json.delivered_at ?? null,
             status: json.status,
             purchasedAt: json.purchased_at,
             redeemedAt: json.redeemed_at,

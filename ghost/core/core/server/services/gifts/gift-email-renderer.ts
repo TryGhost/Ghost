@@ -5,6 +5,10 @@ import type {GiftPurchaseConfirmationData} from './email-templates/gift-purchase
 import {renderText as renderPurchaseConfirmationText} from './email-templates/gift-purchase-confirmation';
 import type {GiftReminderData} from './email-templates/gift-reminder';
 import {renderText as renderReminderText} from './email-templates/gift-reminder';
+import type {GiftDeliveryData} from './email-templates/gift-delivery';
+import {renderText as renderDeliveryText} from './email-templates/gift-delivery';
+import type {GiftDeliveredConfirmationData} from './email-templates/gift-delivered-confirmation';
+import {renderText as renderDeliveredConfirmationText} from './email-templates/gift-delivered-confirmation';
 
 export type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -14,6 +18,8 @@ export class GiftEmailRenderer {
 
     private purchaseConfirmationTemplate: HandlebarsTemplateDelegate | null = null;
     private reminderTemplate: HandlebarsTemplateDelegate | null = null;
+    private deliveryTemplate: HandlebarsTemplateDelegate | null = null;
+    private deliveredConfirmationTemplate: HandlebarsTemplateDelegate | null = null;
 
     constructor({t}: {t: Translate}) {
         this.t = t;
@@ -44,6 +50,32 @@ export class GiftEmailRenderer {
         return {
             html: this.reminderTemplate(data),
             text: renderReminderText(data, this.t)
+        };
+    }
+
+    async renderDelivery(data: GiftDeliveryData): Promise<{html: string; text: string}> {
+        if (!this.deliveryTemplate) {
+            const source = await fs.readFile(path.join(__dirname, './email-templates/gift-delivery.hbs'), 'utf8');
+
+            this.deliveryTemplate = this.handlebars.compile(source);
+        }
+
+        return {
+            html: this.deliveryTemplate(data),
+            text: renderDeliveryText(data, this.t)
+        };
+    }
+
+    async renderDeliveredConfirmation(data: GiftDeliveredConfirmationData): Promise<{html: string; text: string}> {
+        if (!this.deliveredConfirmationTemplate) {
+            const source = await fs.readFile(path.join(__dirname, './email-templates/gift-delivered-confirmation.hbs'), 'utf8');
+
+            this.deliveredConfirmationTemplate = this.handlebars.compile(source);
+        }
+
+        return {
+            html: this.deliveredConfirmationTemplate(data),
+            text: renderDeliveredConfirmationText(data, this.t)
         };
     }
 

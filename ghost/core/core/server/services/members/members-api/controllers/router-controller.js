@@ -1,5 +1,6 @@
 const dns = require('node:dns/promises');
 const crypto = require('node:crypto');
+const moment = require('moment-timezone');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const sanitizeHtml = require('sanitize-html');
@@ -34,7 +35,9 @@ const messages = {
     otcNotSupported: 'OTC verification not supported.',
     invalidCode: 'Invalid verification code.',
     failedToVerifyCode: 'Failed to verify code, please try again.',
-    signInRequired: 'You must be signed in to continue.'
+    signInRequired: 'You must be signed in to continue.',
+    invalidGiftRecipientEmail: 'Recipient email is not valid.',
+    invalidGiftDeliveryDate: 'Gift delivery date is not valid.'
 };
 
 // helper utility for logic shared between sendMagicLink and verifyOTC
@@ -69,6 +72,10 @@ const RESERVED_CHECKOUT_METADATA_KEYS = new Set([
     'ghost_gift',
     'ghostSignupContext',
     'gift_token',
+    'gift_recipient_email',
+    'gift_buyer_name',
+    'gift_message',
+    'gift_deliver_at',
     'tier_id',
     'cadence',
     'duration'
@@ -683,8 +690,46 @@ module.exports = class RouterController {
      * @param {boolean} options.isAuthenticated
      * @returns
      */
+    /**
+     * Resolves a requested gift duration against the durations the site offers.
+     *
+     * Durations are configured as month-counts in the `gift_durations` setting.
+     * Multiples of 12 are anchored to the tier's yearly price, everything else
+     * to the monthly price.
+     *
+     * @param {object} body
+     * @param {number|string} [body.duration] - requested duration in months
+     * @param {'month'|'year'} [body.cadence] - legacy clients send a cadence instead of a duration
+     * @returns {{cadence: 'month'|'year', duration: number}}
+     */
+    _getGiftDuration(body) {
+        let months;
+        if (body.duration !== undefined && body.duration !== null) {
+            months = Number(body.duration);
+        } else if (body.cadence === 'year') {
+            months = 12;
+        } else if (body.cadence === 'month') {
+            months = 1;
+        }
+
+        const configuredDurations = this._settingsCache.get('gift_durations');
+        const offeredDurations = Array.isArray(configuredDurations) ? configuredDurations.map(Number) : [1, 12];
+
+        if (!Number.isInteger(months) || months <= 0 || !offeredDurations.includes(months)) {
+            throw new BadRequestError({
+                message: tpl(messages.badRequest),
+                context: `Gift duration "${body.duration ?? body.cadence}" is not available`
+            });
+        }
+
+        if (months % 12 === 0) {
+            return {cadence: 'year', duration: months / 12};
+        }
+        return {cadence: 'month', duration: months};
+    }
+
     async _createGiftCheckoutSession(options) {
-        if (!this._settingsHelpers.arePaidMembersEnabled()) {
+        if (!this._settingsHelpers.areGiftSubscriptionsEnabled()) {
             throw new DisabledFeatureError({
                 message: tpl(messages.notConfigured)
             });
@@ -842,12 +887,15 @@ module.exports = class RouterController {
                 });
             }
 
-            const data = await this._getSubscriptionCheckoutData(req.body);
+            const {cadence, duration} = this._getGiftDuration(req.body);
+            const data = await this._getSubscriptionCheckoutData({...req.body, cadence});
+            const giftOptions = parseGiftOptions(req.body, this._settingsCache.get('timezone'));
 
             response = await this._createGiftCheckoutSession({
                 ...options,
                 ...data,
-                duration: 1, // gifts are currently 1 month or 1 year only
+                ...giftOptions,
+                duration,
                 successUrl: siteUrl,
                 cancelUrl: options.cancelUrl || siteUrl
             });
@@ -1251,6 +1299,83 @@ module.exports = class RouterController {
         return sendOffersResponse(offers);
     }
 };
+
+const GIFT_MESSAGE_MAX_LENGTH = 500; // bounded by Stripe's 500-char metadata value limit
+const GIFT_BUYER_NAME_MAX_LENGTH = 191;
+const GIFT_MAX_SCHEDULE_DAYS = 365;
+const GIFT_DELIVERY_HOUR = 9; // deliver at 9am in the site's timezone
+
+/**
+ * Parse and validate the optional gift personalisation fields on a gift
+ * checkout request: recipient email, buyer name, personal message and
+ * scheduled delivery date.
+ *
+ * The buyer name and message are allowed without a recipient email (they're
+ * shown on the redemption page even when the buyer shares the link
+ * themselves); a delivery date requires a recipient email, since there's
+ * nobody to deliver to otherwise.
+ *
+ * @param {object} body - request body
+ * @param {string} timezone - the site timezone, used to anchor the delivery date
+ * @returns {{recipientEmail: string | null, buyerName: string | null, recipientName: string | null, giftMessage: string | null, deliverAt: Date | null}}
+ */
+function parseGiftOptions(body, timezone) {
+    let recipientEmail = null;
+    if (body.recipientEmail) {
+        if (typeof body.recipientEmail !== 'string' || !isEmail(body.recipientEmail)) {
+            throw new BadRequestError({message: tpl(messages.invalidGiftRecipientEmail)});
+        }
+
+        recipientEmail = normalizeEmail(body.recipientEmail);
+
+        if (!recipientEmail) {
+            throw new BadRequestError({message: tpl(messages.invalidGiftRecipientEmail)});
+        }
+    }
+
+    let buyerName = null;
+    if (body.buyerName && typeof body.buyerName === 'string') {
+        buyerName = sanitizeHtml(body.buyerName, {allowedTags: [], allowedAttributes: {}}).trim().slice(0, GIFT_BUYER_NAME_MAX_LENGTH) || null;
+    }
+
+    let recipientName = null;
+    if (body.recipientName && typeof body.recipientName === 'string') {
+        recipientName = sanitizeHtml(body.recipientName, {allowedTags: [], allowedAttributes: {}}).trim().slice(0, GIFT_BUYER_NAME_MAX_LENGTH) || null;
+    }
+
+    let giftMessage = null;
+    if (body.giftMessage && typeof body.giftMessage === 'string') {
+        if (body.giftMessage.length > GIFT_MESSAGE_MAX_LENGTH) {
+            logging.warn('Gift message is too long, ignoring');
+        } else {
+            giftMessage = sanitizeHtml(body.giftMessage, {allowedTags: [], allowedAttributes: {}}).trim() || null;
+        }
+    }
+
+    let deliverAt = null;
+    if (body.deliveryDate) {
+        if (!recipientEmail
+            || typeof body.deliveryDate !== 'string'
+            || !/^\d{4}-\d{2}-\d{2}$/.test(body.deliveryDate)
+        ) {
+            throw new BadRequestError({message: tpl(messages.invalidGiftDeliveryDate)});
+        }
+
+        const safeTimezone = (typeof timezone === 'string' && moment.tz.zone(timezone)) ? timezone : 'Etc/UTC';
+        const delivery = moment.tz(body.deliveryDate, 'YYYY-MM-DD', true, safeTimezone).hour(GIFT_DELIVERY_HOUR);
+
+        if (!delivery.isValid()
+            || delivery.valueOf() <= Date.now()
+            || delivery.valueOf() > moment().add(GIFT_MAX_SCHEDULE_DAYS, 'days').valueOf()
+        ) {
+            throw new BadRequestError({message: tpl(messages.invalidGiftDeliveryDate)});
+        }
+
+        deliverAt = delivery.toDate();
+    }
+
+    return {recipientEmail, buyerName, recipientName, giftMessage, deliverAt};
+}
 
 function parsePersonalNote(rawText) {
     if (rawText && typeof rawText !== 'string') {

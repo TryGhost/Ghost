@@ -7,7 +7,7 @@ import NewsletterSelectionPage from './newsletter-selection-page';
 import ProductsSection from '../common/products-section';
 import InputForm from '../common/input-form';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed, areGiftSubscriptionsEnabled, getAvailableProducts} from '../../utils/helpers';
 import InvitationIcon from '../../images/icons/invitation.svg?react';
 import {interceptAnchorClicks} from '../../utils/links';
 import {sanitizeHtml} from '../../utils/sanitize-html';
@@ -675,7 +675,10 @@ class SignupPage extends React.Component {
     }
 
     renderLoginMessage() {
-        const {brandColor, doAction} = this.context;
+        const {brandColor, doAction, site} = this.context;
+        // A gift entry point, like Substack: only when gifting is enabled in
+        // Portal and there's a purchasable paid tier (so it doesn't dead-end).
+        const canGift = areGiftSubscriptionsEnabled({site}) && getAvailableProducts({site}).some(product => product.type === 'paid');
         return (
             <div>
                 {this.renderFreeTrialMessage()}
@@ -691,6 +694,20 @@ class SignupPage extends React.Component {
                         <span>{t('Sign in')}</span>
                     </button>
                 </div>
+                {canGift && (
+                    <div className='gh-portal-signup-message'>
+                        <div>{t('Buying for someone else?')}</div>
+                        <button
+                            data-test-button='gift-switch'
+                            data-testid='gift-switch'
+                            className='gh-portal-btn gh-portal-btn-link'
+                            style={{color: brandColor}}
+                            onClick={() => doAction('switchPage', {page: 'gift'})}
+                        >
+                            <span>{t('Gift a membership')}</span>
+                        </button>
+                    </div>
+                )}
             </div>
         );
     }

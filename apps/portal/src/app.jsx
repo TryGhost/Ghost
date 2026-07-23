@@ -15,7 +15,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import {getGiftRedemptionErrorMessage} from './utils/gift-redemption-notification';
 import './app.css';
-import {hasRecommendations, arePaidMembersEnabled, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, canGiftSubscriptions, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
 
@@ -189,7 +189,7 @@ export default class App extends React.Component {
             }
             const {page, pageQuery, pageData} = linkData;
             if (this.state.initStatus === 'success') {
-                if (page === 'gift' && !arePaidMembersEnabled({site: this.state.site})) {
+                if (page === 'gift' && !canGiftSubscriptions({site: this.state.site})) {
                     this.invalidateGiftRedemptionRequest();
                     removePortalLinkFromUrl();
 
@@ -330,22 +330,35 @@ export default class App extends React.Component {
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
         const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
         let page = '';
+        const site = {
+            ...apiSiteData,
+            ...linkSiteData,
+            ...previewSiteData,
+            ...notificationSiteData,
+            ...devSiteData,
+            plans: {
+                ...(devSiteData || {}).plans,
+                ...(apiSiteData || {}).plans,
+                ...(previewSiteData || {}).plans
+            }
+        };
+        // Apply unsaved per-duration gift-price overrides from the settings
+        // preview onto the real products, so the gift page preview reflects price
+        // edits before they're saved. (Keyed by tier id → { months: cents }.)
+        if (site.gift_prices_override && Array.isArray(site.products)) {
+            const overrides = site.gift_prices_override;
+            site.products = site.products.map(product => (
+                overrides[product.id]
+                    ? {...product, gift_prices: overrides[product.id]}
+                    : product
+            ));
+            delete site.gift_prices_override;
+        }
         return {
             member,
             offers,
             page,
-            site: {
-                ...apiSiteData,
-                ...linkSiteData,
-                ...previewSiteData,
-                ...notificationSiteData,
-                ...devSiteData,
-                plans: {
-                    ...(devSiteData || {}).plans,
-                    ...(apiSiteData || {}).plans,
-                    ...(previewSiteData || {}).plans
-                }
-            },
+            site,
             ...restDevData,
             ...restLinkData,
             ...restNotificationData,
@@ -494,6 +507,34 @@ export default class App extends React.Component {
                 data.site.portal_default_plan = value;
             } else if (key === 'transistorPortalSettings' && value) {
                 data.site.transistor_portal_settings = JSON.parse(value);
+            } else if (key === 'giftPageHeading') {
+                data.site.gift_page_heading = value || null;
+            } else if (key === 'giftPageDescription') {
+                data.site.gift_page_description = value || null;
+            } else if (key === 'giftPageImage') {
+                data.site.gift_page_image = value || null;
+            } else if (key === 'giftDurations' && value) {
+                // The members site API returns gift_durations pre-parsed as an
+                // array; preview params arrive as a JSON string, so match that.
+                try {
+                    data.site.gift_durations = JSON.parse(value);
+                } catch (e) {
+                    // ignore malformed preview durations
+                }
+            } else if (key === 'giftTiers' && value) {
+                try {
+                    data.site.gift_tiers = JSON.parse(value);
+                } catch (e) {
+                    // ignore malformed preview tiers
+                }
+            } else if (key === 'giftPrices' && value) {
+                // Unsaved per-duration price overrides ({ tierId: { months: cents } }),
+                // applied onto the real products after the site merge (see fetchData).
+                try {
+                    data.site.gift_prices_override = JSON.parse(value);
+                } catch (e) {
+                    // ignore malformed preview prices
+                }
             }
         }
         data.site.portal_plans = allowedPlans;
@@ -595,7 +636,10 @@ export default class App extends React.Component {
             const token = qParams.get('gift_token');
             const tierId = qParams.get('gift_tier');
             const cadence = qParams.get('gift_cadence');
-            clearURLParams(['stripe', 'gift_token', 'gift_tier', 'gift_cadence']);
+            const duration = Number(qParams.get('gift_duration')) || 1;
+            const delivery = qParams.get('gift_delivery');
+            const deliveryDate = qParams.get('gift_deliver_date');
+            clearURLParams(['stripe', 'gift_token', 'gift_tier', 'gift_cadence', 'gift_duration', 'gift_delivery', 'gift_deliver_date']);
             if (token) {
                 return {
                     showPopup: true,
@@ -603,7 +647,10 @@ export default class App extends React.Component {
                     pageData: {
                         token,
                         tierId,
-                        cadence
+                        cadence,
+                        duration,
+                        delivery,
+                        deliveryDate
                     }
                 };
             }
@@ -726,7 +773,7 @@ export default class App extends React.Component {
                 };
             }
 
-            if (page === 'gift' && !arePaidMembersEnabled({site})) {
+            if (page === 'gift' && !canGiftSubscriptions({site})) {
                 removePortalLinkFromUrl();
 
                 return {};

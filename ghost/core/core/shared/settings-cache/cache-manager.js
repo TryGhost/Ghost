@@ -54,6 +54,9 @@ const _ = require('lodash');
  * @property {string|null} portal_default_plan - Default portal plan
  * @property {boolean|null} portal_name - Whether to show portal names
  * @property {boolean|null} portal_button - Whether to show the portal button
+ * @property {string|null} gift_page_heading - Custom heading for the gift purchase page
+ * @property {string|null} gift_page_description - Custom description HTML for the gift purchase page
+ * @property {string|null} gift_page_image - Custom image for the gift purchase page
  * @property {boolean|null} comments_enabled - Whether comments are enabled
  * @property {boolean|null} recommendations_enabled - Whether recommendations are enabled
  * @property {boolean|null} outbound_link_tagging - Whether outbound link tagging is enabled

@@ -1,3 +1,4 @@
+import Interpolate from '@doist/react-interpolate';
 import {useContext, useEffect, useState} from 'react';
 import AppContext from '../../app-context';
 import ActionButton from '../common/action-button';
@@ -9,7 +10,6 @@ import {ValidateInputForm} from '../../utils/form';
 import {getGiftDurationLabel, getGiftRedemptionErrorMessage} from '../../utils/gift-redemption-notification';
 import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
-import {formatGiftValue} from './gift-page';
 
 export const GiftRedemptionStyles = `
 .gh-portal-gift-redemption-form {
@@ -19,23 +19,48 @@ export const GiftRedemptionStyles = `
 .gh-portal-gift-redemption-form + .gh-portal-gift-checkout-cta {
     margin-top: 16px;
 }
+
+.gh-portal-gift-redemption-message {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: var(--grey13);
+    border-radius: 8px;
+}
+
+.gh-portal-gift-redemption-message-text {
+    margin: 0;
+    font-size: 1.6rem;
+    line-height: 1.5em;
+    font-style: italic;
+    color: var(--grey1);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.gh-portal-gift-redemption-message-from {
+    margin: 8px 0 0;
+    font-size: 1.4rem;
+    color: var(--grey6);
+}
 `;
 
 const GiftRedemptionPage = () => {
     const {action, brandColor, doAction, member, pageData, site} = useContext(AppContext);
     const gift = pageData?.gift;
     const isLoggedIn = !!member;
-    const [name, setName] = useState(member?.name || '');
+    const [name, setName] = useState(member?.name || gift?.recipient_name || '');
     const [email, setEmail] = useState(member?.email || '');
     const [errors, setErrors] = useState({});
     const [showDetails, setShowDetails] = useState(false);
     const {cardRef, containerProps: cardTiltProps} = useCardTilt();
 
     useEffect(() => {
-        setName(member?.name || '');
+        // Prefill with the recipient name the buyer entered, so the gift card
+        // is personal before the recipient types anything.
+        setName(member?.name || gift?.recipient_name || '');
         setEmail(member?.email || '');
         setErrors({});
-    }, [member?.email, member?.name]);
+    }, [member?.email, member?.name, gift?.recipient_name]);
 
     useEffect(() => {
         if (gift) {
@@ -66,7 +91,9 @@ const GiftRedemptionPage = () => {
             required: false,
             errorMessage: errors.name || '',
             tabIndex: 1,
-            autoFocus: !email
+            // If the buyer already supplied the recipient's name, land the cursor
+            // on the email — the one field they still need to fill.
+            autoFocus: !name && !email
         },
         {
             type: 'email',
@@ -77,7 +104,7 @@ const GiftRedemptionPage = () => {
             required: true,
             errorMessage: errors.email || '',
             tabIndex: 2,
-            autoFocus: !!email
+            autoFocus: !!email || (!!name && !email)
         }
     ];
 
@@ -139,27 +166,52 @@ const GiftRedemptionPage = () => {
     const isRedeeming = action === 'redeemGift:running';
     const buttonLabel = isRedeeming
         ? t('Redeeming...')
-        : t('Redeem your membership');
+        : t('Redeem your gift');
     const siteIcon = site?.icon;
     const siteTitle = site?.title || '';
-    const headerText = siteTitle
-        ? t('You\'ve been gifted a membership to {siteTitle}', {siteTitle})
-        : t('You\'ve been gifted a membership');
+    const buyerName = gift.buyer_name || '';
+    // Mirror the exact "{duration} {tier} membership" the delivery email promised,
+    // so landing on this page feels continuous rather than generic.
+    const durationLabel = getGiftDurationLabel(gift);
+    const tierName = gift.tier.name;
+    // Bold the buyer + "{duration} {tier}" exactly as the delivery email does,
+    // so the landing page reads as the same gift rather than a generic screen.
+    const emphasis = {strong: <strong />};
+    let headerNode;
+    if (buyerName && siteTitle) {
+        headerNode = <Interpolate mapping={emphasis} string={t('<strong>{buyerName}</strong> has gifted you a <strong>{duration} {tierName}</strong> membership to {siteTitle}', {buyerName, duration: durationLabel, tierName, siteTitle})} />;
+    } else if (siteTitle) {
+        headerNode = <Interpolate mapping={emphasis} string={t('You\'ve been gifted a <strong>{duration} {tierName}</strong> membership to {siteTitle}', {duration: durationLabel, tierName, siteTitle})} />;
+    } else {
+        headerNode = <Interpolate mapping={emphasis} string={t('You\'ve been gifted a <strong>{duration} {tierName}</strong> membership', {duration: durationLabel, tierName})} />;
+    }
+    const expiryLabel = gift.expires_at
+        ? new Date(gift.expires_at).toLocaleDateString(undefined, {day: 'numeric', month: 'short', year: 'numeric'})
+        : '';
     const benefits = gift.tier.benefits || [];
     const tierDescription = gift.tier.description || '';
 
     return (
         <>
-            <CloseButton />
             <div className='gh-portal-content giftRedemption'>
+                <CloseButton />
                 <div className='gh-portal-gift-checkout'>
                     <div className='gh-portal-gift-checkout-left'>
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                         <div className='gh-portal-gift-checkout-inner'>
                             <header className='gh-portal-gift-checkout-header'>
                                 <h1 className='gh-portal-main-title'>{t('A gift, just for you')}</h1>
-                                <p className='gh-portal-gift-checkout-subtitle'>{headerText}</p>
+                                <p className='gh-portal-gift-checkout-subtitle'>{headerNode}</p>
                             </header>
+
+                            {gift.message && (
+                                <div className='gh-portal-gift-redemption-message' data-testid='gift-message'>
+                                    <p className='gh-portal-gift-redemption-message-text'>&ldquo;{gift.message}&rdquo;</p>
+                                    {buyerName && (
+                                        <p className='gh-portal-gift-redemption-message-from'>&mdash; {buyerName}</p>
+                                    )}
+                                </div>
+                            )}
 
                             {!isLoggedIn && (
                                 <div className='gh-portal-gift-redemption-form'>
@@ -176,6 +228,12 @@ const GiftRedemptionPage = () => {
                                 disabled={isRedeeming}
                                 isRunning={isRedeeming}
                             />
+
+                            {expiryLabel && (
+                                <p className='gh-portal-gift-checkout-cta-note'>
+                                    {t('This gift can only be redeemed once and expires on {expiryDate}.', {expiryDate: expiryLabel})}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -186,8 +244,8 @@ const GiftRedemptionPage = () => {
                                     cardRef={cardRef}
                                     duration={getGiftDurationLabel(gift)}
                                     tierName={gift.tier.name}
-                                    name={name.trim() || null}
-                                    giftValue={formatGiftValue(gift)}
+                                    toName={name.trim() || null}
+                                    fromName={buyerName || null}
                                     siteIcon={siteIcon}
                                     siteTitle={siteTitle}
                                 />

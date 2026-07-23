@@ -129,7 +129,8 @@ module.exports = class TiersAPI {
         tier.updatePricing({
             currency: data.currency || tier.currency,
             monthlyPrice: data.monthlyPrice || tier.monthlyPrice,
-            yearlyPrice: data.yearlyPrice || tier.yearlyPrice
+            yearlyPrice: data.yearlyPrice || tier.yearlyPrice,
+            giftPrices: Reflect.has(data, 'giftPrices') ? data.giftPrices : tier.giftPrices
         });
 
         await this.#repository.save(tier);
@@ -160,6 +161,7 @@ module.exports = class TiersAPI {
             welcomePageURL: data.welcomePageURL,
             monthlyPrice: data.monthlyPrice,
             yearlyPrice: data.yearlyPrice,
+            giftPrices: data.giftPrices,
             currency: data.currency,
             trialDays: data.trialDays
         });

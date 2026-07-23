@@ -428,4 +428,31 @@ describe('Settings Helpers', function () {
             assert.equal(isEnabled, true);
         });
     });
+
+    describe('areGiftSubscriptionsEnabled', function () {
+        function createHelpers({giftSetting}) {
+            const fakeSettings = createSettingsMock({setDirect: true, setConnect: false});
+            fakeSettings.get.withArgs('gift_subscriptions_enabled').returns(giftSetting);
+            return new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
+        }
+
+        it('returns true when paid members are enabled and the setting is true', function () {
+            assert.equal(createHelpers({giftSetting: true}).areGiftSubscriptionsEnabled(), true);
+        });
+
+        it('returns true when the setting is missing (defaults on)', function () {
+            assert.equal(createHelpers({giftSetting: undefined}).areGiftSubscriptionsEnabled(), true);
+        });
+
+        it('returns false when the setting is explicitly disabled', function () {
+            assert.equal(createHelpers({giftSetting: false}).areGiftSubscriptionsEnabled(), false);
+        });
+
+        it('returns false when paid members are disabled, regardless of the setting', function () {
+            const fakeSettings = createSettingsMock({setDirect: false, setConnect: false});
+            fakeSettings.get.withArgs('gift_subscriptions_enabled').returns(true);
+            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
+            assert.equal(settingsHelpers.areGiftSubscriptionsEnabled(), false);
+        });
+    });
 });

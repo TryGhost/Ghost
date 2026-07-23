@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Portal harness</title>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #15171a; }
+        .site { max-width: 640px; margin: 0 auto; padding: 40px 24px; }
+        .site h1 { margin: 0 0 8px; }
+        .site p { color: #626d79; line-height: 1.6; }
+        .persona { font-size: 14px; background: #f4f5f6; border-radius: 6px; padding: 10px 14px; }
+        .persona a { margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <div class="site">
+        <h1>Grasslands</h1>
+        <p>A fake publication page for testing Portal locally. The floating Portal trigger button should appear bottom-right.</p>
+        <p class="persona">
+            Persona:
+            <a href="?member=paid">paid</a>
+            <a href="?member=free">free</a>
+            <a href="?member=comped">comped</a>
+            <a href="?member=gift">gift recipient</a>
+            <a href="?member=none">logged out</a>
+        </p>
+        <p><a href="#/portal/account">Open account panel</a> · <a href="#/portal/gift">Open gift page directly</a></p>
+    </div>
+    <script type="module" src="./main.jsx"></script>
+</body>
+</html>
