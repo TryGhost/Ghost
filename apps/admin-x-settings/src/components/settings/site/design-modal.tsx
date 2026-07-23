@@ -4,10 +4,10 @@ import ThemePreview from './design-and-branding/theme-preview';
 import ThemeSettings from './design-and-branding/theme-settings';
 import useQueryParams from '../../../hooks/use-query-params';
 import {type CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/custom-theme-settings';
-import {DesktopChrome, MobileChrome, PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {Laptop, Smartphone} from 'lucide-react';
+import {PreviewChrome, Tabs, TabsContent, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
+import {PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {Tabs, TabsContent, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -176,9 +176,9 @@ const DesignModal: React.FC = () => {
             url={selectedTabURL}
         />;
     const previewContent = previewDevice === 'desktop' ? (
-        <DesktopChrome data-testid='preview-desktop'>{rawPreviewContent}</DesktopChrome>
+        <PreviewChrome data-testid='preview-desktop' device='desktop'>{rawPreviewContent}</PreviewChrome>
     ) : (
-        <MobileChrome data-testid='preview-mobile'>{rawPreviewContent}</MobileChrome>
+        <PreviewChrome data-testid='preview-mobile' device='mobile'>{rawPreviewContent}</PreviewChrome>
     );
     const previewTabs = latestPost ? (
         <Tabs value={selectedPreviewTab} variant='button-sm' onValueChange={onSelectURL}>
