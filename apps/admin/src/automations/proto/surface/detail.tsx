@@ -171,6 +171,11 @@ const AutomationSurface: React.FC = () => {
                                     {liveStatus === 'active' ? 'Publish changes' : 'Publish'}
                                 </Button>
                             )}
+                        </>
+                    ) : (
+                        <>
+                            {/* Automation-level actions live in view mode (left of Edit), not
+                                buried behind edit mode. */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button aria-label="More actions" size="icon" variant="ghost">
@@ -192,14 +197,8 @@ const AutomationSurface: React.FC = () => {
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                        </>
-                    ) : (
-                        <>
                             <Button variant="outline" onClick={() => setMode('edit')}>
                                 <LucideIcon.Pencil /> Edit
-                            </Button>
-                            <Button aria-label="Settings" size="icon" variant="ghost">
-                                <LucideIcon.Settings strokeWidth={2} />
                             </Button>
                         </>
                     )}
