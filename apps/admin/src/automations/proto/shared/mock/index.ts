@@ -12,6 +12,7 @@ export type {
     AutomationRunMetrics,
     AutomationScenario,
     EnrollmentPoint,
+    MetricKey,
     RunMember,
     RunStatus,
     RunStep,
@@ -19,4 +20,5 @@ export type {
 } from './types';
 
 export {AUTOMATION_DESCRIPTIONS, getAutomation, mockAutomations} from './automations';
+export {metricSeries} from './metric-series';
 export {emptyScenarioId, getScenario} from './runs';

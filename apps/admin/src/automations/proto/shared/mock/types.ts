@@ -55,6 +55,9 @@ export type AutomationRunMetrics = {
     enrollments_by_day: EnrollmentPoint[];
 };
 
+/** The four funnel counts on AutomationRunMetrics, each chartable over time. */
+export type MetricKey = 'enrollments' | 'in_progress' | 'completed' | 'exited_early';
+
 /** Everything the dashboard detail page needs for one automation. */
 export type AutomationScenario = {
     automation: AutomationDetail;
