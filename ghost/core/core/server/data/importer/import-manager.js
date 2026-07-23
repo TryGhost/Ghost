@@ -21,9 +21,11 @@ const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
 const {GhostMailer} = require('../../services/mail');
 const jobManager = require('../../services/jobs');
-const mediaStorage = require('../../adapters/storage').getStorage('media');
-const imageStorage = require('../../adapters/storage').getStorage('images');
-const fileStorage = require('../../adapters/storage').getStorage('files');
+const adapterManager = require('../../services/adapter-manager').default;
+
+const mediaStorage = adapterManager.getAdapter('storage:media');
+const imageStorage = adapterManager.getAdapter('storage:images');
+const fileStorage = adapterManager.getAdapter('storage:files');
 
 const {emailTemplate} = require('./email-template');
 const ghostMailer = new GhostMailer();

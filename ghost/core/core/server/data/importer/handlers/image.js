@@ -2,7 +2,7 @@ const _ = require('lodash');
 const path = require('path');
 const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
-const storage = require('../../../adapters/storage');
+const adapterManager = require('../../../services/adapter-manager').default;
 let ImageHandler;
 
 ImageHandler = {
@@ -12,7 +12,7 @@ ImageHandler = {
     directories: ['images', 'content'],
 
     loadFile: function (files, baseDir) {
-        const store = storage.getStorage('images');
+        const store = adapterManager.getAdapter('storage:images');
         const baseDirRegex = baseDir ? new RegExp('^' + baseDir + '/') : new RegExp('');
 
         const imageFolderRegexes = _.map(store.staticFileURLPrefix.split('/'), function (dir) {
