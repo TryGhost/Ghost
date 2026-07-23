@@ -5,7 +5,7 @@ const errors = require('@tryghost/errors');
 class EmailProviderBase {
     constructor(config) {
         Object.defineProperty(this, 'requiredFns', {
-            value: ['send'],
+            value: ['send', 'getMaximumRecipients', 'getTargetDeliveryWindow'],
             writable: false
         });
 

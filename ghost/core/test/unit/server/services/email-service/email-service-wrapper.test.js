@@ -1,7 +1,14 @@
 const assert = require('node:assert/strict');
 const EmailServiceWrapper = require('../../../../../core/server/services/email-service/email-service-wrapper');
+const EmailProviderBase = require('../../../../../core/server/adapters/email/email-provider-base');
 
 describe('UNIT: EmailServiceWrapper', function () {
+    it('requires the complete email provider contract', function () {
+        const provider = new EmailProviderBase();
+
+        assert.deepEqual(provider.requiredFns, ['send', 'getMaximumRecipients', 'getTargetDeliveryWindow']);
+    });
+
     it('uses Mailgun when no email adapter is configured', function () {
         const mailgunClient = {};
         const errorHandler = () => {};
