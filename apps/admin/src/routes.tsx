@@ -124,8 +124,11 @@ export const routes: RouteObject[] = [
                 lazy: lazyComponent(() => import("./automations/proto/dashboard/list")),
             },
             {
+                // The dashboard concept keeps the admin sidebar visible and renders
+                // its detail page within the standard content shell (page-width
+                // Container), so it reads like Analytics/Posts rather than a
+                // full-screen editor.
                 path: "/automations-proto/dashboard/:id",
-                handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
                 lazy: lazyComponent(() => import("./automations/proto/dashboard/detail")),
             },
             {
