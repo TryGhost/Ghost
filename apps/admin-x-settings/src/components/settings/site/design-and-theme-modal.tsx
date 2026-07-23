@@ -1,9 +1,9 @@
 import ChangeThemeModal from './theme-modal';
 import DesignModal from './design-modal';
+import LimitModal from '../../limit-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import ThemeCodeEditorModal from './theme/theme-code-editor-modal';
-import {LimitModal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {parseEditingThemeRoute} from './theme/theme-editor-utils';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';

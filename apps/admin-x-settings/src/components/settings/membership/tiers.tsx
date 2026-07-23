@@ -1,3 +1,4 @@
+import LimitModal from '../../limit-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import StripeButton from '../../stripe-button';
@@ -6,7 +7,6 @@ import TopLevelGroup from '../../top-level-group';
 import clsx from 'clsx';
 import {Button, Indicator, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
-import {LimitModal} from '@tryghost/admin-x-design-system';
 import {type Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {formatNumber} from '@tryghost/shade/utils';

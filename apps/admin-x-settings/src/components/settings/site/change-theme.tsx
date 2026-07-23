@@ -1,8 +1,8 @@
+import LimitModal from '../../limit-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
-import {LimitModal} from '@tryghost/admin-x-design-system';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';

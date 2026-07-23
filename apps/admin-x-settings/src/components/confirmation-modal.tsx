@@ -27,6 +27,7 @@ export interface ConfirmationModalProps {
     customFooter?: boolean | React.ReactNode;
     formSheet?: boolean;
     stickyFooter?: boolean;
+    testId?: string;
 }
 
 export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
@@ -40,7 +41,8 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     onOk,
     customFooter,
     formSheet = true,
-    stickyFooter = false
+    stickyFooter = false,
+    testId = 'confirmation-modal'
 }) => {
     const modal = useModal();
     const [taskState, setTaskState] = useState<'running' | ''>('');
@@ -95,7 +97,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
                     'z-[1100] max-h-[calc(100dvh-4rem)] w-[calc(100%-2rem)] max-w-[540px] gap-0 overflow-y-auto bg-background p-8',
                     formSheet ? 'shadow-md' : 'shadow-xl'
                 )}
-                data-testid='confirmation-modal'
+                data-testid={testId}
                 overlayClassName={cn(
                     'z-[1100] bg-foreground/20! backdrop-blur-[3px]',
                     formSheet && 'bg-foreground/10!'
