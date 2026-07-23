@@ -1,5 +1,5 @@
 import {parse as parseCSV} from '../csv';
-import {memberImportRowSchema, type MemberImportRow} from './member-import-row';
+import {memberImportRowSchema, type MemberImportRow} from './row';
 
 // The key is a member model field (or a special-purpose field like
 // complimentary_plan); the value is an allowed header name in the input CSV.

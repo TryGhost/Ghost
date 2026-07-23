@@ -1,8 +1,8 @@
 import moment from 'moment-timezone';
-import buildCompletionEmail from './members-import-email';
+import buildCompletionEmail from './completion-email';
 import type {Knex} from 'knex';
-import type {MemberImportRow, ImportErrorRow, ImportLabel, Label} from './member-import-row';
-import type {RowSpool, SpooledRows} from './members-import-spool';
+import type {MemberImportRow, ImportErrorRow, ImportLabel, Label} from './row';
+import type {RowSpool, SpooledRows} from './spool';
 
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
@@ -11,36 +11,39 @@ const logging = require('@tryghost/logging');
 
 // The members CSV importer, sliced into the concerns an import moves through:
 //
-//   process()          API adapter: read the request + its rows, run, shape response
+//   importCSV()        the service entry: read the rows, run them, return the outcome
 //   importMembers()    orchestration: decide, then run the rows now or defer them
 //   canImportInline()  routing: inline vs deferred from generic signals (size, cost)
 //   importRows()       members kernel: create or update a member from each row
 //   deferImport()      deferred work: resolve recipient, spool the rows, queue the job
 //   runImportJob()     the queued job: import the spooled rows, notify, clean up
 //
-// process configures and reads the input -- today a CSV upload, via the injected
-// readRows -- into a plain MemberImportRow array. From there orchestration is
-// source-agnostic: importMembers takes rows, decides, and either imports them now or
-// defers a job that reads the same rows back from a spool file. Both the CSV reader
-// and the spool read produce a rows array, so the kernel just takes rows and a test
-// can drive it from a literal array. The kernel yields only the result (the counts
-// and the failed rows); shaping that into an email, error report and all, belongs to
-// the email presenter (members-import-email). The rest is one collaborator per
-// concern: the members aggregate it writes; the tiers, Stripe and gifts systems a
-// member row also touches; the email it hands the result to (recipient and
-// delivery); and background jobs. knex is a first-class dependency; no Bookshelf
-// model or request frame is referenced below the boundary that owns it.
+// importCSV takes plain arguments -- where the CSV is, who to email -- and reads it via
+// the injected readRows into a plain MemberImportRow array. The endpoint adapts the
+// request frame into those arguments and shapes the returned outcome into the API
+// response, so neither the frame nor the response envelope crosses into the domain.
+// From there orchestration is source-agnostic: importMembers takes rows, decides, and
+// either imports them now or defers a job that reads the same rows back from a spool
+// file. Both the CSV reader and the spool read produce a rows array, so the kernel just
+// takes rows and a test can drive it from a literal array. The kernel yields only the
+// result (the counts and the failed rows); shaping that into an email, error report and
+// all, belongs to the email presenter (completion-email). The rest is one
+// collaborator per concern: the members aggregate it writes; the tiers, Stripe and
+// gifts systems a member row also touches; the email it hands the result to (recipient
+// and delivery); and background jobs. knex is a first-class dependency; no Bookshelf
+// model is referenced below the boundary that owns it.
 
-// The request frame this import path is handed, narrowed to what it reads.
-interface ImportFrame {
-    file: {path: string};
-    data: {
-        mapping?: Record<string, string>;
-        // The input serializer normalises labels to {name} objects before this
-        // path is reached, so they are never bare strings here.
-        labels?: Label[];
-    };
-    user?: {get(field: string): string};
+// The arguments the import service takes: where the CSV is and how to map its columns,
+// labels to add to every member, who a deferred import emails (null when the request
+// carried no user, so the deferred path falls back to the site owner), and whether to
+// run inline regardless of size. The endpoint builds this from the request frame, so no
+// frame crosses into the domain.
+export interface ImportRequest {
+    filePath: string;
+    mapping?: Record<string, string>;
+    extraLabels?: Label[];
+    requestUserEmail: string | null;
+    forceInline?: boolean;
 }
 
 interface VerificationTrigger {
@@ -146,17 +149,9 @@ interface ImportResult {
 // What the domain service returns: an import that ran inline carries its stats and
 // label for the response; a deferred one carries only the size accepted, because
 // the work -- and its email -- finishes after the request is answered.
-type ImportOutcome =
+export type ImportOutcome =
     | {deferred: false; originalImportSize: number; result: ImportResult}
     | {deferred: true; originalImportSize: number};
-
-interface ProcessResult {
-    meta: {
-        originalImportSize: number;
-        stats?: {imported: number; invalid: ImportErrorRow[]};
-        import_label?: ImportLabel | null;
-    };
-}
 
 const messages = {
     freeMemberNotAllowedImportTier: 'You cannot import a free member with a specified tier.',
@@ -194,21 +189,6 @@ function canImportInline(rowCount: number, expensive: boolean, inlineThreshold: 
     return rowCount <= inlineThreshold && !expensive;
 }
 
-// The outcome shaped into the API response: an inline import reports its stats and
-// label, a deferred one reports only how much was accepted.
-function toProcessResult(outcome: ImportOutcome): ProcessResult {
-    if (outcome.deferred) {
-        return {meta: {originalImportSize: outcome.originalImportSize}};
-    }
-    return {
-        meta: {
-            originalImportSize: outcome.originalImportSize,
-            stats: {imported: outcome.result.imported, invalid: outcome.result.errors},
-            import_label: outcome.result.importLabel ?? null
-        }
-    };
-}
-
 class MembersCSVImporter {
     private _knex: Knex;
     private _readRows: ReadRows;
@@ -236,29 +216,24 @@ class MembersCSVImporter {
         this._getInlineThreshold = getInlineThreshold;
     }
 
-    // API adapter: read the request -- the rows, the extra labels, and who a deferred
-    // import would email -- run the import, and shape the outcome into the response.
-    // Owns knowing the input is a CSV, and the only place the frame is touched.
-    async process(frame: ImportFrame, verificationTrigger: VerificationTrigger): Promise<ProcessResult> {
-        const rows = await this._readRows(frame.file.path, frame.data.mapping);
-        const extraLabels = frame.data.labels ?? [];
-        // Null when the request carried no user; the deferred path then falls back to
-        // the site owner.
-        const requestUserEmail = frame.user ? frame.user.get('email') : null;
-        const outcome = await this.importMembers(rows, {extraLabels, requestUserEmail}, verificationTrigger);
-        return toProcessResult(outcome);
+    // The service entry: read the CSV into rows and run them, returning the domain
+    // outcome. Callers build the request and shape the outcome; this owns only that the
+    // input is a CSV.
+    async importCSV(request: ImportRequest, verificationTrigger: VerificationTrigger): Promise<ImportOutcome> {
+        const rows = await this._readRows(request.filePath, request.mapping);
+        return this.importMembers(rows, request, verificationTrigger);
     }
 
     // The domain service: given the rows, decide how to run them, then import them now
     // or hand them to a background job. Agnostic to where the rows came from.
     private async importMembers(
         rows: MemberImportRow[],
-        {extraLabels, requestUserEmail}: {extraLabels: Label[]; requestUserEmail: string | null},
+        {extraLabels = [], requestUserEmail, forceInline}: ImportRequest,
         verificationTrigger: VerificationTrigger
     ): Promise<ImportOutcome> {
         const labelName = buildImportLabelName(this._getTimezone());
 
-        if (canImportInline(rows.length, hasExpensiveColumns(rows), this._getInlineThreshold())) {
+        if (forceInline || canImportInline(rows.length, hasExpensiveColumns(rows), this._getInlineThreshold())) {
             const result = await this.importRows(rows, labelName, extraLabels);
             await verificationTrigger.testImportThreshold();
             return {deferred: false, originalImportSize: rows.length, result};

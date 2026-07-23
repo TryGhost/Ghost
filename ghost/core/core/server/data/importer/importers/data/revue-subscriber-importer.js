@@ -6,7 +6,6 @@ const path = require('path');
 const fs = require('fs-extra');
 
 const config = require('../../../../../shared/config');
-const models = require('../../../../models');
 
 class RevueSubscriberImporter extends BaseImporter {
     constructor(allDataFromFile) {
@@ -38,17 +37,16 @@ class RevueSubscriberImporter extends BaseImporter {
         const outputFilePath = path.join(config.getContentPath('data'), '/', outputFileName);
         const csvData = papaparse.unparse(this.dataToImport);
 
-        const memberImporterOptions = {
-            pathToCSV: outputFilePath,
-            globalLabels: [{name: importLabel}],
-            importLabel: {name: importLabel},
-            LabelModel: models.Label,
-            forceInline: true
-        };
-
         await fs.writeFile(outputFilePath, csvData);
 
-        return membersService.processImport(memberImporterOptions);
+        return membersService.importCSV({
+            filePath: outputFilePath,
+            extraLabels: [{name: importLabel}],
+            // No request user in the data-import context; the deferred path would fall
+            // back to the site owner, but forceInline keeps this synchronous.
+            requestUserEmail: null,
+            forceInline: true
+        });
     }
 }
 

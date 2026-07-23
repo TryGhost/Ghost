@@ -6,7 +6,7 @@ const csvPath = path.join(__dirname, '/fixtures/');
 
 // parse is purely mechanical: it reads the file, renames columns per the mapping,
 // carries unmapped columns through, and emits raw string cells. Giving those columns
-// meaning and coercing them is the import schema's job (member-import-row.test.ts).
+// meaning and coercing them is the import schema's job (row.test.ts).
 describe('parse', function () {
     const DEFAULT_HEADER_MAPPING = {
         email: 'email',

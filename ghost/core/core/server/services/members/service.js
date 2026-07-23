@@ -150,11 +150,10 @@ module.exports = {
 
         const importerDeps = buildImporterDeps({stripeAPIService: stripeService.api});
         const membersCSVImporter = makeImporter(importerDeps);
-        // The importer takes the raw request frame and owns everything from there;
-        // this only supplies the verification trigger, a members-service internal.
-        module.exports.processImport = async (frame) => {
-            return await membersCSVImporter.process(frame, verificationTrigger);
-        };
+        // The importer takes plain arguments and returns the domain outcome; callers (the
+        // endpoint, the Revue subscriber import) build the request and shape the response.
+        // This only supplies the verification trigger, a members-service internal.
+        module.exports.importCSV = (request) => membersCSVImporter.importCSV(request, verificationTrigger);
 
         // Constructed here rather than required statically: the exporter needs the
         // custom fields services, which boot builds before this one.
@@ -202,7 +201,7 @@ module.exports = {
 
     stripeConnect: require('./stripe-connect'),
 
-    processImport: null,
+    importCSV: null,
 
     stats: membersStats,
     export: null

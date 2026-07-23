@@ -2,7 +2,7 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import fs from 'fs-extra';
-import type {MemberImportRow} from './member-import-row';
+import type {MemberImportRow} from './row';
 
 // A handle to rows written to a spool: the deferred job reads them back once it
 // runs, then removes the file. Removal swallows errors -- a failed cleanup must
