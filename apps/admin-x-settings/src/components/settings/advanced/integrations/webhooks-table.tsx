@@ -1,4 +1,4 @@
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../../confirmation-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import WebhookModal from './webhook-modal';
 import {Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';

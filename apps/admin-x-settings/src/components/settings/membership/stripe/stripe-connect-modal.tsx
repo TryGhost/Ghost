@@ -1,5 +1,5 @@
 import BookmarkThumb from '../../../../assets/images/stripe-thumb.jpg';
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../../confirmation-modal';
 import GhostLogo from '../../../../assets/images/orb-squircle.png';
 import GhostLogoPink from '../../../../assets/images/orb-pink.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';

@@ -1,4 +1,4 @@
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../../confirmation-modal';
 import NewslettersList from './newsletters-list';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {type ReactNode, useEffect, useState} from 'react';

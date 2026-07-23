@@ -1,4 +1,4 @@
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../../confirmation-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './tier-detail-preview';

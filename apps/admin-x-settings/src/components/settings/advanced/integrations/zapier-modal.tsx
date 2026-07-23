@@ -1,6 +1,6 @@
 import APIKeys from './api-keys';
 import BrandIcon from '../../../icons/brand-icon';
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../../confirmation-modal';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import ZapierLogo from '../../../../assets/images/zapier-logo.svg';

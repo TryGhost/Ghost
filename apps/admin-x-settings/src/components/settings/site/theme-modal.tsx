@@ -1,5 +1,5 @@
 import AdvancedThemeSettings from './theme/advanced-theme-settings';
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './theme/invalid-theme-modal';
 import NiceModal, {type NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/official-themes';

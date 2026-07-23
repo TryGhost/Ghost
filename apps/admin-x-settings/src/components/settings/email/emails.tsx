@@ -1,4 +1,4 @@
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../confirmation-modal';
 import DefaultRecipients from './default-recipients';
 import EnableNewsletters from './enable-newsletters';
 import MailGun from './mailgun';

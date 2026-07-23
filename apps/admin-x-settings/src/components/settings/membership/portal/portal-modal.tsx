@@ -1,5 +1,5 @@
 import AccountPage from './account-page';
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../../confirmation-modal';
 import LookAndFeel from './look-and-feel';
 import NiceModal from '@ebay/nice-modal-react';
 import PortalPreview from './portal-preview';

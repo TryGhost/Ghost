@@ -1,7 +1,7 @@
 import APIKeys from './api-keys';
 import BookmarkThumb from '../../../../assets/images/integrations/ghost-transistor.png';
 import BrandIcon from '../../../icons/brand-icon';
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../../confirmation-modal';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Switch} from '@tryghost/shade/components';

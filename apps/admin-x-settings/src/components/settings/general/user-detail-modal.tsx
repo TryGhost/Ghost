@@ -1,4 +1,4 @@
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../confirmation-modal';
 import EmailNotificationsTab from './users/email-notifications-tab';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ProfileTab from './users/profile-tab';

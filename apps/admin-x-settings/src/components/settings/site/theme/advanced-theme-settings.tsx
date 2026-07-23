@@ -1,4 +1,4 @@
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../../confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';

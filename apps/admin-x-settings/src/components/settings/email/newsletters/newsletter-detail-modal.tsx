@@ -1,5 +1,5 @@
 import ColorPickerField from '../../../color-picker-field';
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../../confirmation-modal';
 import HtmlField from '../../../html-field';
 import NewsletterPreview from './newsletter-preview';
 import NiceModal from '@ebay/nice-modal-react';

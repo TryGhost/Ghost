@@ -1,5 +1,5 @@
 import BrandIcon from '../../icons/brand-icon';
-import ConfirmationModal from '@src/components/confirmation-modal';
+import ConfirmationModal from '../../confirmation-modal';
 import IntegrationsSettingsImg from '../../../assets/images/integrations-settings.png';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
