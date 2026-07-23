@@ -4,6 +4,43 @@ const errors = require('@tryghost/errors');
 const commands = require('../../../../../core/server/data/schema/commands');
 
 describe('schema commands', function () {
+    describe('generated columns', function () {
+        const generatedTableSpec = {
+            to: {type: 'string', maxlength: 2000, nullable: false},
+            to_hash: {
+                type: 'string',
+                maxlength: 32,
+                nullable: true,
+                generated: {
+                    dialect: 'mysql',
+                    expression: 'MD5(`to`)',
+                    storage: 'virtual'
+                }
+            }
+        };
+
+        it('creates a virtual generated column on MySQL', async function () {
+            const Knex = require('knex');
+            const knex = Knex({client: 'mysql2'});
+
+            const sql = commands.createTable('generated_test', knex, generatedTableSpec).toSQL()[0].sql;
+
+            assert.match(sql, /`to_hash` varchar\(32\) GENERATED ALWAYS AS \(MD5\(`to`\)\) VIRTUAL/);
+            await knex.destroy();
+        });
+
+        it('creates a regular nullable column on SQLite', async function () {
+            const Knex = require('knex');
+            const knex = Knex({client: 'better-sqlite3', useNullAsDefault: true});
+
+            const sql = commands.createTable('generated_test', knex, generatedTableSpec).toSQL()[0].sql;
+
+            assert.match(sql, /`to_hash` varchar\(32\) null/);
+            assert.doesNotMatch(sql, /GENERATED ALWAYS/);
+            await knex.destroy();
+        });
+    });
+
     it('_hasForeignSQLite throws when knex is nox configured to use sqlite3', async function () {
         const Knex = require('knex');
         const knex = Knex({

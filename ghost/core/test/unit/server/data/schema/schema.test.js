@@ -34,7 +34,8 @@ const VALID_KEYS = {
         'cascadeDelete',
         'restrictDelete',
         'setNullDelete',
-        'index'
+        'index',
+        'generated'
     ],
     text: [
         'fieldtype',
@@ -69,6 +70,13 @@ describe('schema validations', function () {
                         'Column index option, if present, should be valid'
                     );
                 };
+
+                if ('generated' in column) {
+                    assert.deepEqual(Object.keys(column.generated).sort(), ['dialect', 'expression', 'storage']);
+                    assert.equal(column.generated.dialect, 'mysql');
+                    assert.equal(typeof column.generated.expression, 'string');
+                    assert(['stored', 'virtual'].includes(column.generated.storage));
+                }
             });
         });
     });
