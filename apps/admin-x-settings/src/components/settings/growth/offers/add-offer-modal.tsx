@@ -2,7 +2,7 @@ import PortalFrame from '../../membership/portal/portal-frame';
 import {Button, Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {PreviewModalContent} from '@src/components/settings/preview-modal';
+import {PreviewModalContent} from '../../preview-modal';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';

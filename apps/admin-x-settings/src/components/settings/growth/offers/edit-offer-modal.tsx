@@ -6,7 +6,7 @@ import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Inp
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
-import {PreviewModalContent} from '@src/components/settings/preview-modal';
+import {PreviewModalContent} from '../../preview-modal';
 import {createOfferRedemptionFilterUrl} from './offer-helpers';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
