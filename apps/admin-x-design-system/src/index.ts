@@ -12,8 +12,6 @@ export type {MobileChromeProps} from './global/chrome/mobile-chrome';
 
 export {default as Form} from './global/form/form';
 export type {FormProps} from './global/form/form';
-export {default as TextField} from './global/form/text-field';
-export type {TextFieldProps} from './global/form/text-field';
 
 export {default as ConfirmationModal, ConfirmationModalContent} from './global/modal/confirmation-modal';
 export type {ConfirmationModalProps} from './global/modal/confirmation-modal';

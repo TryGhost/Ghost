@@ -6,8 +6,8 @@ import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipTrigger} from '@tryghost/shade/components';
-import {ConfirmationModal, Form, LimitModal, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldContent, FieldDescription, FieldError, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipTrigger} from '@tryghost/shade/components';
+import {ConfirmationModal, Form, LimitModal, PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
@@ -80,17 +80,11 @@ const ReplyToEmailField: React.FC<{
 
     // Pro users without custom sending domains
     return (
-        <TextField
-            error={Boolean(errors.sender_reply_to)}
-            hint={errors.sender_reply_to}
-            maxLength={191}
-            placeholder={newsletterAddress || ''}
-            title="Reply-to email"
-            value={senderReplyTo}
-            onBlur={onBlur}
-            onChange={onChange}
-            onKeyDown={() => clearError('sender_reply_to')}
-        />
+        <Field data-invalid={Boolean(errors.sender_reply_to) || undefined}>
+            <FieldLabel htmlFor='newsletter-reply-to'>Reply-to email</FieldLabel>
+            <Input aria-invalid={Boolean(errors.sender_reply_to) || undefined} id='newsletter-reply-to' maxLength={191} placeholder={newsletterAddress || ''} value={senderReplyTo} onBlur={onBlur} onChange={onChange} onKeyDown={() => clearError('sender_reply_to')} />
+            {errors.sender_reply_to && <FieldError>{errors.sender_reply_to}</FieldError>}
+        </Field>
     );
 };
 
@@ -211,33 +205,24 @@ const Sidebar: React.FC<{
         // Self-hosters
         if (!isManagedEmail(config)) {
             return (
-                <TextField
-                    error={Boolean(errors.sender_email)}
-                    hint={errors.sender_email}
-                    placeholder={newsletterAddress || ''}
-                    title="Sender email address"
-                    value={newsletter.sender_email || ''}
-                    onChange={e => updateNewsletter({sender_email: e.target.value})}
-                    onKeyDown={() => clearError('sender_email')}
-                />
+                <Field data-invalid={Boolean(errors.sender_email) || undefined}>
+                    <FieldLabel htmlFor='newsletter-sender-email'>Sender email address</FieldLabel>
+                    <Input aria-invalid={Boolean(errors.sender_email) || undefined} id='newsletter-sender-email' placeholder={newsletterAddress || ''} value={newsletter.sender_email || ''} onChange={e => updateNewsletter({sender_email: e.target.value})} onKeyDown={() => clearError('sender_email')} />
+                    {errors.sender_email && <FieldError>{errors.sender_email}</FieldError>}
+                </Field>
             );
         }
 
         // Pro users with custom sending domains
         if (hasSendingDomain(config)) {
             return (
-                <TextField
-                    error={Boolean(errors.sender_email)}
-                    hint={errors.sender_email}
-                    maxLength={191}
-                    placeholder={defaultEmailAddress}
-                    title="Sender email address"
-                    value={newsletter.sender_email || ''}
-                    onChange={(e) => {
+                <Field data-invalid={Boolean(errors.sender_email) || undefined}>
+                    <FieldLabel htmlFor='newsletter-sender-email'>Sender email address</FieldLabel>
+                    <Input aria-invalid={Boolean(errors.sender_email) || undefined} id='newsletter-sender-email' maxLength={191} placeholder={defaultEmailAddress} value={newsletter.sender_email || ''} onChange={(e) => {
                         updateNewsletter({sender_email: e.target.value});
-                    }}
-                    onKeyDown={() => clearError('sender_email')}
-                />
+                    }} onKeyDown={() => clearError('sender_email')} />
+                    {errors.sender_email && <FieldError>{errors.sender_email}</FieldError>}
+                </Field>
             );
         }
 
@@ -278,24 +263,22 @@ const Sidebar: React.FC<{
             title: 'General',
             contents:
             <>
-                <Form className='mt-6' gap='sm' margins='lg' title='Name and description'>
-                    <TextField
-                        error={Boolean(errors.name)}
-                        hint={errors.name}
-                        maxLength={191}
-                        placeholder="Weekly Roundup"
-                        title="Name"
-                        value={newsletter.name || ''}
-                        onChange={e => updateNewsletter({name: e.target.value})}
-                        onKeyDown={() => clearError('name')}
-                    />
+                <Form className='mt-6 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' gap='sm' margins='lg' title='Name and description'>
+                    <Field data-invalid={Boolean(errors.name) || undefined}>
+                        <FieldLabel htmlFor='newsletter-detail-name'>Name</FieldLabel>
+                        <Input aria-invalid={Boolean(errors.name) || undefined} id='newsletter-detail-name' maxLength={191} placeholder='Weekly Roundup' value={newsletter.name || ''} onChange={e => updateNewsletter({name: e.target.value})} onKeyDown={() => clearError('name')} />
+                        {errors.name && <FieldError>{errors.name}</FieldError>}
+                    </Field>
                     <Field>
                         <FieldLabel htmlFor='newsletter-description'>Description</FieldLabel>
                         <Textarea className='border-transparent bg-muted' id='newsletter-description' maxLength={2000} rows={2} value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
                     </Field>
                 </Form>
-                <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
-                    <TextField maxLength={191} placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
+                <Form className='mt-6 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' gap='sm' margins='lg' title='Email info'>
+                    <Field>
+                        <FieldLabel htmlFor='newsletter-sender-name'>Sender name</FieldLabel>
+                        <Input id='newsletter-sender-name' maxLength={191} placeholder={siteTitle} value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
+                    </Field>
                     {renderSenderEmailField()}
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
                 </Form>

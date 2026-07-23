@@ -4,8 +4,8 @@ import React, {useEffect, useState} from 'react';
 import {AlreadyExistsError} from '@tryghost/admin-x-framework/errors';
 import {type EditOrAddRecommendation, useCheckRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Form, Modal, TextField} from '@tryghost/admin-x-design-system';
-import {LoadingIndicator} from '@tryghost/shade/components';
+import {Field, FieldDescription, FieldError, FieldLabel, Input, LoadingIndicator} from '@tryghost/shade/components';
+import {Form, Modal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {formatUrl} from '../../../../utils/format-url';
 import {toast} from 'sonner';
@@ -193,17 +193,19 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
     >
         <p className="mt-4">You can recommend <strong>any site</strong> your audience will find valuable, not just those published on Ghost.</p>
         <Form
+            className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'
             marginBottom={false}
             marginTop
         >
-            <TextField
-                autoFocus={true}
-                error={Boolean(errors.url)}
-                hint={errors.url || <>Need inspiration? <a className='text-green' href="https://www.ghost.org/explore" rel="noopener noreferrer" target='_blank'>Explore thousands of sites</a> to recommend</>}
-                maxLength={2000}
-                placeholder='https://www.example.com'
-                title='URL'
-                value={formState.url}
+            <Field data-invalid={Boolean(errors.url) || undefined}>
+                <FieldLabel htmlFor='recommendation-url'>URL</FieldLabel>
+                <Input
+                    aria-invalid={Boolean(errors.url) || undefined}
+                    id='recommendation-url'
+                    maxLength={2000}
+                    placeholder='https://www.example.com'
+                    value={formState.url}
+                    autoFocus
                 onBlur={() => {
                     const url = doFormatUrl(formState.url);
                     updateForm(state => ({...state, url: url}));
@@ -219,7 +221,9 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                         setEnterPressed(true);
                     }
                 }}
-            />
+                />
+                {errors.url ? <FieldError>{errors.url}</FieldError> : <FieldDescription>Need inspiration? <a className='text-green' href="https://www.ghost.org/explore" rel="noopener noreferrer" target='_blank'>Explore thousands of sites</a> to recommend</FieldDescription>}
+            </Field>
         </Form>
     </Modal>;
 };

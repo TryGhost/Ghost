@@ -4,8 +4,8 @@ import useFeatureFlag from '../../../hooks/use-feature-flag';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {FacebookLogo, GoogleLogo, TextField, XLogo} from '@tryghost/admin-x-design-system';
-import {Field, FieldLabel, Switch, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {FacebookLogo, GoogleLogo, XLogo} from '@tryghost/admin-x-design-system';
+import {Field, FieldDescription, FieldLabel, Input, Switch, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Pencil, Trash2} from 'lucide-react';
@@ -171,30 +171,15 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     // Tab contents
     const metadataTabContent = (
         <>
-            <SettingGroupContent className="my-6 gap-3">
+            <SettingGroupContent className="my-6 gap-3 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted">
                 {hasLlmsTxt && (
                     <Field orientation='horizontal'>
                         <FieldLabel htmlFor='llms-enabled'>Enable structured data for LLMs and AI search engines</FieldLabel>
                         <Switch checked={llmsEnabled} id='llms-enabled' onCheckedChange={handleLlmsToggleChange} />
                     </Field>
                 )}
-                <TextField
-                    hint="Recommended: 70 characters"
-                    inputRef={focusRef}
-                    maxLength={300}
-                    placeholder={siteTitle}
-                    title="Meta title"
-                    value={metaTitle}
-                    onChange={handleMetaTitleChange}
-                />
-                <TextField
-                    hint="Recommended: 156 characters"
-                    maxLength={500}
-                    placeholder={siteDescription}
-                    title="Meta description"
-                    value={metaDescription}
-                    onChange={handleMetaDescriptionChange}
-                />
+                <Field><FieldLabel htmlFor='meta-title'>Meta title</FieldLabel><Input ref={focusRef} id='meta-title' maxLength={300} placeholder={siteTitle} value={metaTitle} onChange={handleMetaTitleChange} /><FieldDescription>Recommended: 70 characters</FieldDescription></Field>
+                <Field><FieldLabel htmlFor='meta-description'>Meta description</FieldLabel><Input id='meta-description' maxLength={500} placeholder={siteDescription} value={metaDescription} onChange={handleMetaDescriptionChange} /><FieldDescription>Recommended: 156 characters</FieldDescription></Field>
             </SettingGroupContent>
             <SearchEnginePreview
                 description={metaDescription ? metaDescription : siteDescription}
@@ -241,21 +226,9 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             </ImageUploadDropzone>
                         )}
                     </ImageUpload>
-                    <div className="mt-5 flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
-                        <TextField
-                            maxLength={300}
-                            placeholder={siteTitle}
-                            title="Facebook title"
-                            value={facebookTitle}
-                            onChange={handleFacebookTitleChange}
-                        />
-                        <TextField
-                            maxLength={300}
-                            placeholder={siteDescription}
-                            title="Facebook description"
-                            value={facebookDescription}
-                            onChange={handleFacebookDescriptionChange}
-                        />
+                    <div className="mt-5 flex flex-col gap-x-6 gap-y-7 px-4 pb-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted">
+                        <Field><FieldLabel htmlFor='facebook-title'>Facebook title</FieldLabel><Input id='facebook-title' maxLength={300} placeholder={siteTitle} value={facebookTitle} onChange={handleFacebookTitleChange} /></Field>
+                        <Field><FieldLabel htmlFor='facebook-description'>Facebook description</FieldLabel><Input id='facebook-description' maxLength={300} placeholder={siteDescription} value={facebookDescription} onChange={handleFacebookDescriptionChange} /></Field>
                     </div>
                 </SettingGroupContent>
             </div>
@@ -296,21 +269,9 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             </ImageUploadDropzone>
                         )}
                     </ImageUpload>
-                    <div className="mt-6 flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
-                        <TextField
-                            maxLength={300}
-                            placeholder={siteTitle}
-                            title="X title"
-                            value={twitterTitle}
-                            onChange={handleTwitterTitleChange}
-                        />
-                        <TextField
-                            maxLength={300}
-                            placeholder={siteDescription}
-                            title="X description"
-                            value={twitterDescription}
-                            onChange={handleTwitterDescriptionChange}
-                        />
+                    <div className="mt-6 flex flex-col gap-x-6 gap-y-7 px-4 pb-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted">
+                        <Field><FieldLabel htmlFor='x-title'>X title</FieldLabel><Input id='x-title' maxLength={300} placeholder={siteTitle} value={twitterTitle} onChange={handleTwitterTitleChange} /></Field>
+                        <Field><FieldLabel htmlFor='x-description'>X description</FieldLabel><Input id='x-description' maxLength={300} placeholder={siteDescription} value={twitterDescription} onChange={handleTwitterDescriptionChange} /></Field>
                     </div>
                 </SettingGroupContent>
             </div>

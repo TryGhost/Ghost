@@ -210,7 +210,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className="w-full md:flex-1">
                         <Field className={isPrivateLocked ? 'relative z-10' : undefined} data-disabled={isPrivateLocked || undefined} data-invalid={Boolean(errors.password) || undefined}>
                             <FieldLabel className='sr-only' htmlFor='site-access-code'>Access code</FieldLabel>
-                            <InputGroup className='border-transparent bg-muted' data-disabled={isPrivateLocked || undefined} data-invalid={Boolean(errors.password) || undefined}>
+                            <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-disabled={isPrivateLocked || undefined} data-invalid={Boolean(errors.password) || undefined}>
                                 <InputGroupInput
                                     aria-invalid={Boolean(errors.password) || undefined}
                                     data-testid='site-access-code'

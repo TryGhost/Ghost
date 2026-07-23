@@ -1,8 +1,8 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
+import {Field, FieldDescription, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {SettingGroupContent, SettingGroupValue, SettingGroupValueContent, SettingGroupValueTitle} from '@tryghost/shade/patterns';
-import {TextField} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {withErrorBoundary} from '../../error-boundary';
 
@@ -66,25 +66,32 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     const inputFields = (
-        <SettingGroupContent>
-            <TextField
-                error={Boolean(errors.title)}
-                hint={errors.title || 'The name of your site'}
-                inputRef={focusRef}
-                maxLength={63}
-                placeholder="Site title"
-                title="Site title"
-                value={title}
-                onChange={handleTitleChange}
-                onKeyDown={() => clearError('title')}
-            />
-            <TextField
-                hint="A short description, used in your theme, meta data and search results"
-                maxLength={200}
-                placeholder="Site description"
-                title="Site description"
-                value={description}
-                onChange={handleDescriptionChange} />
+        <SettingGroupContent className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <Field data-invalid={Boolean(errors.title) || undefined}>
+                <FieldLabel htmlFor='site-title'>Site title</FieldLabel>
+                <Input
+                    ref={focusRef}
+                    aria-invalid={Boolean(errors.title) || undefined}
+                    id='site-title'
+                    maxLength={63}
+                    placeholder='Site title'
+                    value={title}
+                    onChange={handleTitleChange}
+                    onKeyDown={() => clearError('title')}
+                />
+                {errors.title ? <FieldError>{errors.title}</FieldError> : <FieldDescription>The name of your site</FieldDescription>}
+            </Field>
+            <Field>
+                <FieldLabel htmlFor='site-description'>Site description</FieldLabel>
+                <Input
+                    id='site-description'
+                    maxLength={200}
+                    placeholder='Site description'
+                    value={description}
+                    onChange={handleDescriptionChange}
+                />
+                <FieldDescription>A short description, used in your theme, meta data and search results</FieldDescription>
+            </Field>
         </SettingGroupContent>
     );
 

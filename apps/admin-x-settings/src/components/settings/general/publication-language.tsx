@@ -2,9 +2,8 @@ import LOCALE_DATA from '@tryghost/i18n/lib/locale-data.json';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, MultiSelectCombobox} from '@tryghost/shade/components';
+import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, MultiSelectCombobox} from '@tryghost/shade/components';
 import {SettingGroupContent} from '@tryghost/shade/patterns';
-import {TextField} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {validateLocale} from '../../../utils/locale-validation';
 import {withErrorBoundary} from '../../error-boundary';
@@ -80,15 +79,19 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const languageField = isOtherSelected || isCustomValue ? (
         <>
-            <TextField
-                data-testid="locale-select"
-                error={Boolean(errors.publicationLanguage || validationError)}
-                hint={validationError || errors.publicationLanguage || 'Enter a custom locale code.'}
-                placeholder="e.g. pt-BR, sr-Cyrl, en"
-                title="Site language"
-                value={publicationLanguage}
-                onChange={handleCustomLanguageChange}
-            />
+            <Field data-invalid={Boolean(errors.publicationLanguage || validationError) || undefined}>
+                <FieldLabel htmlFor='custom-locale'>Site language</FieldLabel>
+                <Input
+                    aria-invalid={Boolean(errors.publicationLanguage || validationError) || undefined}
+                    className='border-transparent bg-muted'
+                    data-testid='locale-select'
+                    id='custom-locale'
+                    placeholder='e.g. pt-BR, sr-Cyrl, en'
+                    value={publicationLanguage}
+                    onChange={handleCustomLanguageChange}
+                />
+                {validationError || errors.publicationLanguage ? <FieldError>{validationError || errors.publicationLanguage}</FieldError> : <FieldDescription>Enter a custom locale code.</FieldDescription>}
+            </Field>
             <Button
                 className='h-auto self-start px-0'
                 size='sm'

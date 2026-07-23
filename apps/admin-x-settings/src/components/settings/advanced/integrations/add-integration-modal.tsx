@@ -1,6 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
-import {Form, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
+import {Form, LimitModal, Modal} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useCreateIntegration} from '@tryghost/admin-x-framework/api/integrations';
@@ -56,24 +57,15 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
     >
         <div className='mt-5'>
             <Form
+                className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'
                 marginBottom={false}
                 marginTop={false}
             >
-                <TextField
-                    autoFocus={true}
-                    error={!!errors.name}
-                    hint={errors.name}
-                    maxLength={191}
-                    placeholder='Custom integration'
-                    title='Name'
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    onInput={() => {
-                        if (errors.name) {
-                            setErrors({name: ''});
-                        }
-                    }}
-                />
+                <Field data-invalid={Boolean(errors.name) || undefined}>
+                    <FieldLabel htmlFor='integration-name'>Name</FieldLabel>
+                    <Input aria-invalid={Boolean(errors.name) || undefined} id='integration-name' maxLength={191} placeholder='Custom integration' value={name} autoFocus onChange={e => setName(e.target.value)} onInput={() => errors.name && setErrors({name: ''})} />
+                    {errors.name && <FieldError>{errors.name}</FieldError>}
+                </Field>
             </Form>
         </div>
     </Modal>;

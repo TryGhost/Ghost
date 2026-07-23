@@ -1,7 +1,7 @@
 import PortalFrame from '../../membership/portal/portal-frame';
-import {Button, Field, FieldContent, FieldDescription, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
+import {Button, Field, FieldContent, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Form, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
+import {Form, PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -146,34 +146,25 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
 
     return (
         <div className='pt-7' data-testid={testId}>
-            <Form>
+            <Form className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                 <section>
                     <h2 className='mb-4 text-lg'>General</h2>
                     <div className='flex flex-col gap-6'>
-                        <TextField
-                            error={Boolean(errors.name)}
-                            hint={errors.name || <div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={`${nameLengthColor}`}>{formatNumber(nameLength)}</span> / {formatNumber(40)}</strong></div>}
-                            maxLength={40}
-                            placeholder='Black Friday'
-                            title='Offer name'
-                            onChange={(e) => {
+                        <Field data-invalid={Boolean(errors.name) || undefined}>
+                            <FieldLabel htmlFor='offer-name'>Offer name</FieldLabel>
+                            <Input aria-invalid={Boolean(errors.name) || undefined} id='offer-name' maxLength={40} placeholder='Black Friday' onChange={(e) => {
                                 handleNameInput(e);
                                 setNameLength(e.target.value.length);
-                            }}
-                            onKeyDown={() => clearError('name')}
-                        />
-                        <TextField
-                            error={Boolean(errors.displayTitle)}
-                            hint={errors.displayTitle}
-                            maxLength={MAX_DISPLAY_TEXT_LENGTH}
-                            placeholder='Black Friday Special'
-                            title='Display title'
-                            value={overrides.displayTitle.value}
-                            onChange={(e) => {
+                            }} onKeyDown={() => clearError('name')} />
+                            {errors.name ? <FieldError>{errors.name}</FieldError> : <FieldDescription><div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={nameLengthColor}>{formatNumber(nameLength)}</span> / {formatNumber(40)}</strong></div></FieldDescription>}
+                        </Field>
+                        <Field data-invalid={Boolean(errors.displayTitle) || undefined}>
+                            <FieldLabel htmlFor='offer-display-title'>Display title</FieldLabel>
+                            <Input aria-invalid={Boolean(errors.displayTitle) || undefined} id='offer-display-title' maxLength={MAX_DISPLAY_TEXT_LENGTH} placeholder='Black Friday Special' value={overrides.displayTitle.value} onChange={(e) => {
                                 handleDisplayTitleInput(e);
-                            }}
-                            onKeyDown={() => clearError('displayTitle')}
-                        />
+                            }} onKeyDown={() => clearError('displayTitle')} />
+                            {errors.displayTitle && <FieldError>{errors.displayTitle}</FieldError>}
+                        </Field>
                         <Field>
                             <FieldLabel htmlFor='offer-display-description'>Display description</FieldLabel>
                             <Textarea
@@ -229,7 +220,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             overrides.type !== 'trial' && <>
                                 <Field data-invalid={Boolean(errors.amount) || undefined}>
                                     <FieldLabel htmlFor='offer-amount'>Amount off</FieldLabel>
-                                    <InputGroup className='border-transparent bg-muted' data-invalid={Boolean(errors.amount) || undefined}>
+                                    <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.amount) || undefined}>
                                         <InputGroupInput
                                             id='offer-amount'
                                             type='number'
@@ -273,48 +264,38 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 </Field>
                                 {
                                     overrides.duration === 'repeating' && !isYearlyTier && <div className='-mt-4'>
-                                        <TextField
-                                            data-testid='duration-months-input'
-                                            error={Boolean(errors.durationInMonths)}
-                                            hint={errors.durationInMonths}
-                                            rightPlaceholder={`${overrides.durationInMonths === 1 ? 'month' : 'months'}`}
-                                            type='number'
-                                            value={overrides.durationInMonths === 0 ? '' : String(overrides.durationInMonths)}
-                                            onChange={(e) => {
+                                        <Field data-invalid={Boolean(errors.durationInMonths) || undefined}>
+                                            <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.durationInMonths) || undefined}>
+                                                <InputGroupInput aria-invalid={Boolean(errors.durationInMonths) || undefined} data-testid='duration-months-input' type='number' value={overrides.durationInMonths === 0 ? '' : String(overrides.durationInMonths)} onChange={(e) => {
                                                 handleDurationInMonthsInput(e);
-                                            }}
-                                            onKeyDown={() => clearError('durationInMonths')}
-                                        />
+                                                }} onKeyDown={() => clearError('durationInMonths')} />
+                                                <InputGroupAddon align='inline-end'><InputGroupText>{overrides.durationInMonths === 1 ? 'month' : 'months'}</InputGroupText></InputGroupAddon>
+                                            </InputGroup>
+                                            {errors.durationInMonths && <FieldError>{errors.durationInMonths}</FieldError>}
+                                        </Field>
                                     </div>
                                 }
                             </>
                         }
 
                         {
-                            overrides.type === 'trial' && <TextField
-                                error={Boolean(errors.amount)}
-                                hint={errors.amount}
-                                title='Trial duration'
-                                type='number'
-                                value={overrides.trialAmount?.toString()}
-                                onChange={(e) => {
+                            overrides.type === 'trial' && <Field data-invalid={Boolean(errors.amount) || undefined}>
+                                <FieldLabel htmlFor='trial-duration'>Trial duration</FieldLabel>
+                                <Input aria-invalid={Boolean(errors.amount) || undefined} id='trial-duration' type='number' value={overrides.trialAmount?.toString()} onChange={(e) => {
                                     handleTrialAmountInput(e);
-                                }}
-                                onKeyDown={() => clearError('amount')}/>
+                                }} onKeyDown={() => clearError('amount')} />
+                                {errors.amount && <FieldError>{errors.amount}</FieldError>}
+                            </Field>
 
                         }
 
-                        <TextField
-                            error={Boolean(errors.code)}
-                            hint={errors.code || (overrides.code.value !== '' ? <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><span></span><Button className='h-auto p-0 text-sm text-green hover:text-green' size='sm' type='button' variant='link' onClick={handleCopyClick}>{isCopied ? 'Copied' : 'Copy'}</Button></div> : null)}
-                            placeholder='black-friday'
-                            title='Offer code'
-                            value={overrides.code.value}
-                            onChange={(e) => {
+                        <Field data-invalid={Boolean(errors.code) || undefined}>
+                            <FieldLabel htmlFor='offer-code'>Offer code</FieldLabel>
+                            <Input aria-invalid={Boolean(errors.code) || undefined} id='offer-code' placeholder='black-friday' value={overrides.code.value} onChange={(e) => {
                                 handleCodeInput(e);
-                            }}
-                            onKeyDown={() => clearError('code')}
-                        />
+                            }} onKeyDown={() => clearError('code')} />
+                            {errors.code ? <FieldError>{errors.code}</FieldError> : overrides.code.value !== '' && <FieldDescription><div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><Button className='h-auto p-0 text-sm text-green hover:text-green' size='sm' type='button' variant='link' onClick={handleCopyClick}>{isCopied ? 'Copied' : 'Copy'}</Button></div></FieldDescription>}
+                        </Field>
                     </div>
                 </section>
             </Form>

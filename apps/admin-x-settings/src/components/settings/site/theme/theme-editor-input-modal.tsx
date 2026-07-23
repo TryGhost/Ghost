@@ -1,6 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldLabel, Input} from '@tryghost/shade/components';
+import {Modal} from '@tryghost/admin-x-design-system';
 
 export type ThemeEditorInputModalProps = {
     title: string;
@@ -43,14 +44,10 @@ const ThemeEditorInputModal = NiceModal.create<ThemeEditorInputModalProps>(({
         >
             <div className='flex flex-col gap-4 py-4'>
                 {prompt}
-                <TextField
-                    clearBg={false}
-                    placeholder={placeholder}
-                    title={fieldTitle}
-                    value={value}
-                    autoFocus
-                    onChange={event => setValue(event.target.value)}
-                />
+                <Field>
+                    <FieldLabel htmlFor='theme-editor-input'>{fieldTitle}</FieldLabel>
+                    <Input className='h-[var(--control-height)] border-transparent bg-muted' id='theme-editor-input' placeholder={placeholder} value={value} autoFocus onChange={event => setValue(event.target.value)} />
+                </Field>
             </div>
         </Modal>
     );
