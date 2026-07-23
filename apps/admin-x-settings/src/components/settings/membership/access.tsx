@@ -88,6 +88,10 @@ const COMMENTS_ENABLED_OPTIONS = [
     }
 ];
 
+const DEFAULT_PRELAUNCH_TITLE = 'Pre-launch mode';
+const DEFAULT_PRELAUNCH_MESSAGE = 'During your free trial, a private access code is required to browse your site. When you\'re ready to launch, pick a plan to upgrade your account and make everything public.';
+const DEFAULT_PRELAUNCH_UPGRADE_URL = '#/pro/billing/plans';
+
 const renderAccessOptions = (options: Array<{value: string; label: string; hint: string}>) => options.map(option => (
     <SelectItem key={option.value} value={option.value}>
         <span className='flex flex-col'>
@@ -101,9 +105,13 @@ const getAccessOptionLabel = (options: Array<{value: string; label: string}>, va
 
 const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [tiersOpen, setTiersOpen] = React.useState(false);
-    const {settings} = useGlobalData();
+    const {settings, config} = useGlobalData();
     const limiter = useLimiter();
     const isTrialMode = limiter?.isDisabled('publicSiteAccess');
+    const publicSiteAccessLimit = config.hostSettings?.limits?.publicSiteAccess;
+    const preLaunchTitle = publicSiteAccessLimit?.title || DEFAULT_PRELAUNCH_TITLE;
+    const preLaunchMessage = publicSiteAccessLimit?.error || DEFAULT_PRELAUNCH_MESSAGE;
+    const preLaunchUpgradeUrl = publicSiteAccessLimit?.upgradeUrl || DEFAULT_PRELAUNCH_UPGRADE_URL;
     const isPrivateLocked = isSettingReadOnly(settings, 'is_private') || isSettingReadOnly(settings, 'password');
     const {mutateAsync: regenerateAccessCode} = useRegenerateAccessCode();
     const [isRegenerating, setIsRegenerating] = React.useState(false);
@@ -180,12 +188,12 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className='-m-5 overflow-hidden p-5'>
                     <Banner className='mb-2 flex w-full cursor-default flex-col gap-4 border-0 p-6 pt-5 transition-none hover:translate-y-0 hover:scale-100 hover:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_28%),7px_6px_42px_8px_rgb(202_103_255_/_32%)] md:flex-row md:items-center md:justify-between dark:hover:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_36%),7px_6px_42px_8px_rgb(202_103_255_/_38%)]' size='lg' variant='gradient'>
                         <div>
-                            <div className='text-base font-semibold'>Pre-launch mode</div>
+                            <div className='text-base font-semibold'>{preLaunchTitle}</div>
                             <div className='mt-2 text-gray-700'>
-                                During your free trial, a private access code is required to browse your site. When you&apos;re ready to launch, pick a plan to upgrade your account and make everything public.
+                                {preLaunchMessage}
                             </div>
                         </div>
-                        <ShadeButton className='shrink-0 self-start md:self-center' asChild><a href="#/pro/billing/plans">Upgrade now</a></ShadeButton>
+                        <ShadeButton className='shrink-0 self-start md:self-center' asChild><a href={preLaunchUpgradeUrl}>Upgrade now</a></ShadeButton>
                     </Banner>
                 </div>
             )}
