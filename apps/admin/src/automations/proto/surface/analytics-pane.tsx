@@ -1,5 +1,5 @@
-import React, {useMemo, useState} from 'react';
-import {Avatar, Input, MetricValue, Navbar, NavbarActions, NavbarNavigation, PageMenu, PageMenuItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import React, {useEffect, useMemo, useState} from 'react';
+import {Avatar, BarChartLoadingIndicator, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Navbar, NavbarActions, NavbarNavigation, PageMenu, PageMenuItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Box, Inline, Stack} from '@tryghost/shade/primitives';
 import {type GhAreaChartDataItem, GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
@@ -36,6 +36,48 @@ const MetricTile: React.FC<{label: string; value: number; dot?: string}> = ({lab
     </Box>
 );
 
+// Loading placeholders — shapes mirror their real counterparts 1:1 (per the
+// Analytics page's convention) so nothing shifts size once data arrives.
+const MetricTileSkeleton: React.FC = () => (
+    <Box className="rounded-lg border border-border-default px-4 py-3">
+        <div className="flex w-full flex-col items-start gap-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-7 w-12" />
+        </div>
+    </Box>
+);
+
+const RunsChartCardSkeleton: React.FC = () => (
+    <Box className="rounded-lg border border-border-default px-4 py-3">
+        <Stack gap="sm">
+            <div className="flex w-full flex-col items-start gap-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-7 w-16" />
+            </div>
+            <div className="h-64 w-full">
+                <BarChartLoadingIndicator />
+            </div>
+        </Stack>
+    </Box>
+);
+
+const RunRowSkeleton: React.FC = () => (
+    <TableRow aria-hidden="true" className="hover:bg-transparent">
+        <TableCell className="min-w-0 px-4 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+                <Skeleton className="size-8 min-w-8 rounded-full" />
+                <div className="min-w-0 flex-1">
+                    <Skeleton className="mb-1 h-4 w-32 max-w-full" />
+                    <Skeleton className="h-3 w-24 max-w-full" />
+                </div>
+            </div>
+        </TableCell>
+        <TableCell className="px-4 py-3 text-right">
+            <Skeleton className="ml-auto h-5 w-20 rounded-full" />
+        </TableCell>
+    </TableRow>
+);
+
 const StatusPill: React.FC<{status: RunStatus}> = ({status}) => (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap uppercase ${runStatusMeta[status].pill}`}>
         {runStatusMeta[status].label}
@@ -56,6 +98,16 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
     const [filter, setFilter] = useState<FilterKey>('all');
     const [query, setQuery] = useState('');
     const [range, setRange] = useState('30');
+
+    // Simulated fetch — the mock data itself resolves instantly, so this is here
+    // purely to preview the Analytics-page-style skeleton states. Re-triggers on
+    // tab change since each tab is logically its own load.
+    const [isLoading, setIsLoading] = useState(true);
+    useEffect(() => {
+        setIsLoading(true);
+        const timeout = window.setTimeout(() => setIsLoading(false), 600);
+        return () => window.clearTimeout(timeout);
+    }, [tab]);
 
     const visible = useMemo(() => runs.filter((run) => {
         const matchesFilter = filter === 'all' || run.status === filter;
@@ -107,32 +159,46 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
             {/* Overview — total-runs chart, then the remaining run states in one row */}
             {tab === 'overview' && (
                 <div className="mt-4 flex flex-col gap-4">
-                    <Box className="rounded-lg border border-border-default px-4 py-3">
-                        <Stack gap="sm">
-                            <MetricValue
-                                label={(
-                                    <>
-                                        <LucideIcon.Zap size={16} strokeWidth={1.5} />
-                                        Total runs
-                                    </>
-                                )}
-                                value={formatNumber(metrics.enrollments)}
-                            />
-                            <GhAreaChart
-                                className="h-64 w-full"
-                                color="var(--chart-blue)"
-                                data={chartData}
-                                id={`surface-runs-${scenario.automation.id}`}
-                                range={slicedPoints.length}
-                                showYAxisValues={false}
-                                yAxisRange={[0, chartMax]}
-                            />
-                        </Stack>
-                    </Box>
+                    {isLoading ? (
+                        <RunsChartCardSkeleton />
+                    ) : (
+                        <Box className="rounded-lg border border-border-default px-4 py-3">
+                            <Stack gap="sm">
+                                <MetricValue
+                                    label={(
+                                        <>
+                                            <LucideIcon.Zap size={16} strokeWidth={1.5} />
+                                            Total runs
+                                        </>
+                                    )}
+                                    value={formatNumber(metrics.enrollments)}
+                                />
+                                <GhAreaChart
+                                    className="h-64 w-full"
+                                    color="var(--chart-blue)"
+                                    data={chartData}
+                                    id={`surface-runs-${scenario.automation.id}`}
+                                    range={slicedPoints.length}
+                                    showYAxisValues={false}
+                                    yAxisRange={[0, chartMax]}
+                                />
+                            </Stack>
+                        </Box>
+                    )}
                     <div className="grid grid-cols-3 gap-4">
-                        <MetricTile dot="bg-blue" label="In progress" value={metrics.in_progress} />
-                        <MetricTile dot="bg-green" label="Completed" value={metrics.completed} />
-                        <MetricTile dot="bg-orange" label="Exited early" value={metrics.exited_early} />
+                        {isLoading ? (
+                            <>
+                                <MetricTileSkeleton />
+                                <MetricTileSkeleton />
+                                <MetricTileSkeleton />
+                            </>
+                        ) : (
+                            <>
+                                <MetricTile dot="bg-blue" label="In progress" value={metrics.in_progress} />
+                                <MetricTile dot="bg-green" label="Completed" value={metrics.completed} />
+                                <MetricTile dot="bg-orange" label="Exited early" value={metrics.exited_early} />
+                            </>
+                        )}
                     </div>
                 </div>
             )}
@@ -141,11 +207,18 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
             {tab === 'runs' && (
                 <div className="mt-4 flex flex-col gap-4">
                     <Inline align="center" gap="sm">
-                        <div className="relative min-w-0 flex-1">
-                            <LucideIcon.Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input className="pl-9" placeholder="Search members…" value={query} onChange={e => setQuery(e.target.value)} />
-                        </div>
-                        <Select value={filter} onValueChange={value => setFilter(value as FilterKey)}>
+                        <InputGroup className="min-w-0 flex-1" data-disabled={isLoading || undefined}>
+                            <InputGroupAddon>
+                                <LucideIcon.Search />
+                            </InputGroupAddon>
+                            <InputGroupInput
+                                disabled={isLoading}
+                                placeholder="Search members…"
+                                value={query}
+                                onChange={e => setQuery(e.target.value)}
+                            />
+                        </InputGroup>
+                        <Select disabled={isLoading} value={filter} onValueChange={value => setFilter(value as FilterKey)}>
                             <SelectTrigger className="w-36 shrink-0">
                                 <SelectValue />
                             </SelectTrigger>
@@ -166,12 +239,20 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {visible.length === 0 && (
+                            {isLoading && (
+                                <>
+                                    <RunRowSkeleton />
+                                    <RunRowSkeleton />
+                                    <RunRowSkeleton />
+                                    <RunRowSkeleton />
+                                </>
+                            )}
+                            {!isLoading && visible.length === 0 && (
                                 <TableRow className="hover:bg-transparent">
                                     <TableCell className="py-6 text-center text-sm text-muted-foreground" colSpan={2}>No members match.</TableCell>
                                 </TableRow>
                             )}
-                            {visible.map((run) => {
+                            {!isLoading && visible.map((run) => {
                                 const isSelected = run.id === selectedMemberId;
                                 return (
                                     <TableRow

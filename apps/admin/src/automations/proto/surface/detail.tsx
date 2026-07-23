@@ -62,6 +62,7 @@ const AutomationSurface: React.FC = () => {
     const [publishOpen, setPublishOpen] = useState(false);
     const [turnOffOpen, setTurnOffOpen] = useState(false);
     const [draft, setDraft] = useState<AutomationDetail | null>(null);
+    const [switcherOpen, setSwitcherOpen] = useState(false);
 
     const goBack = () => navigate(toVersioned('/automations-proto/surface'));
 
@@ -125,7 +126,7 @@ const AutomationSurface: React.FC = () => {
                         // (not DropdownMenu) is used deliberately — it has native hover-intent
                         // timing and none of the menu/focus-trap semantics that made a
                         // hand-rolled hover version of DropdownMenu flicker.
-                        <HoverCard closeDelay={150} openDelay={150}>
+                        <HoverCard closeDelay={150} open={switcherOpen} openDelay={150} onOpenChange={setSwitcherOpen}>
                             <HoverCardTrigger asChild>
                                 <button
                                     className="-mx-2 -my-1 rounded-sm px-2 py-1 text-lg font-semibold transition-colors hover:bg-interactive-hover"
@@ -143,7 +144,12 @@ const AutomationSurface: React.FC = () => {
                                             a.id === automation.id && 'bg-muted-foreground/10 font-medium'
                                         )}
                                         type="button"
-                                        onClick={() => a.id !== automation.id && navigate(toVersioned(`/automations-proto/surface/${a.id}`))}
+                                        onClick={() => {
+                                            setSwitcherOpen(false);
+                                            if (a.id !== automation.id) {
+                                                navigate(toVersioned(`/automations-proto/surface/${a.id}`));
+                                            }
+                                        }}
                                     >
                                         <span className="truncate">{a.name}</span>
                                         <StatusPill status={a.status} />
