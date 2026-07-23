@@ -1,9 +1,12 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Avatar, BarChartLoadingIndicator, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Navbar, NavbarActions, NavbarNavigation, PageMenu, PageMenuItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Box, Inline, Stack} from '@tryghost/shade/primitives';
-import {type GhAreaChartDataItem, GhAreaChart} from '@tryghost/shade/patterns';
+import {GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
-import type {AutomationRun, AutomationScenario, RunStatus} from '@/automations/proto/shared/mock';
+import type {AutomationScenario, RunStatus} from '@/automations/proto/shared/mock';
+import {runProgress} from '@/automations/proto/shared/member-runs';
+import {StatusPill} from '@/automations/proto/shared/status-pill';
+import {toAreaData} from '@/automations/proto/shared/chart';
 
 // Shared so the real chart and the skeleton's reserved space can't drift.
 const CHART_HEIGHT = 'h-64';
@@ -12,23 +15,6 @@ const CHART_HEIGHT = 'h-64';
 // 0 = skeletons never show; the loading path stays wired so engineers can point
 // `isLoading` at a real query. Bump this (e.g. 600) to preview the skeletons.
 const SKELETON_DELAY_MS = 0;
-
-const runStatusMeta: Record<RunStatus, {label: string; pill: string}> = {
-    in_progress: {label: 'In progress', pill: 'bg-blue/15 text-blue'},
-    completed: {label: 'Completed', pill: 'bg-green/15 text-green'},
-    exited_early: {label: 'Exited early', pill: 'bg-muted text-muted-foreground'}
-};
-
-// e.g. "45% complete", or "25% complete - Unsubscribed" when exited early.
-const runProgress = (run: AutomationRun): string => {
-    const total = run.steps.length;
-    const done = run.steps.filter(s => s.state === 'done').length;
-    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-    if (run.status === 'exited_early' && run.exit_reason) {
-        return `${pct}% complete - ${run.exit_reason}`;
-    }
-    return `${pct}% complete`;
-};
 
 const MetricTile: React.FC<{label: string; value: number; dot?: string}> = ({label, value, dot}) => (
     <Box className="rounded-lg border border-border-default px-4 py-3">
@@ -90,12 +76,6 @@ const RunRowSkeleton: React.FC = () => (
     </TableRow>
 );
 
-const StatusPill: React.FC<{status: RunStatus}> = ({status}) => (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap uppercase ${runStatusMeta[status].pill}`}>
-        {runStatusMeta[status].label}
-    </span>
-);
-
 type FilterKey = 'all' | RunStatus;
 
 interface SurfaceAnalyticsPaneProps {
@@ -147,15 +127,9 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
         onSelectMember(tab === 'runs' ? firstVisibleIdRef.current : null);
     }, [tab, onSelectMember]);
 
-    // Daily runs-started series, mapped to the shared area-chart shape.
-    const slicedPoints = metrics.enrollments_by_day.slice(-Number(range));
-    const chartMax = Math.max(...slicedPoints.map(p => p.count), 1);
-    const chartData: GhAreaChartDataItem[] = slicedPoints.map(point => ({
-        date: point.date,
-        value: point.count,
-        formattedValue: formatNumber(point.count),
-        label: 'Runs'
-    }));
+    // Daily runs-started series, mapped via the shared area-chart helper.
+    const chartData = toAreaData(metrics.enrollments_by_day, {range: Number(range), label: 'Runs'});
+    const chartMax = Math.max(...chartData.map(point => point.value), 1);
 
     return (
         <Box className="px-6 py-4">
@@ -209,7 +183,7 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
                                     color="var(--chart-blue)"
                                     data={chartData}
                                     id={`surface-runs-${scenario.automation.id}`}
-                                    range={slicedPoints.length}
+                                    range={chartData.length}
                                     showYAxisValues={false}
                                     yAxisRange={[0, chartMax]}
                                 />
