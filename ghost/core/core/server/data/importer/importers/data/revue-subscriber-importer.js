@@ -39,13 +39,11 @@ class RevueSubscriberImporter extends BaseImporter {
 
         await fs.writeFile(outputFilePath, csvData);
 
-        return membersService.importCSV({
+        // Inline: the data import has no request to hold open and needs the result now.
+        return membersService.importInline({
             filePath: outputFilePath,
             extraLabels: [{name: importLabel}],
-            // No request user in the data-import context; the deferred path would fall
-            // back to the site owner, but forceInline keeps this synchronous.
-            requestUserEmail: null,
-            forceInline: true
+            requestUserEmail: null
         });
     }
 }
