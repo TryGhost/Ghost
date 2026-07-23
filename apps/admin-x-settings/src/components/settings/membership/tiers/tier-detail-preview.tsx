@@ -68,7 +68,7 @@ const DiscountLabel: React.FC<{discount: number}> = ({discount}) => {
         return null;
     }
     return (
-        <span className="mt-1 leading-none font-semibold text-pink">{formatNumber(discount)}% discount</span>
+        <span className="mt-1 leading-none font-semibold text-ghostaccent">{formatNumber(discount)}% discount</span>
     );
 };
 

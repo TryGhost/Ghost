@@ -99,17 +99,17 @@ const LookAndFeel: React.FC<{
                 {portalButtonStyle?.toString()?.includes('icon') &&
                     <div className='flex flex-col gap-2'>
                         <Text as='h6' className='text-base' weight='semibold'>Icon</Text>
-                        <Inline gap='xs' justify='between'>
+                        <Inline className='w-full' gap='none' justify='between'>
                             <ToggleGroup
                                 aria-label='Portal button icon'
-                                className='flex-1 justify-between border-0! bg-transparent! p-0'
+                                className='contents border-0! bg-transparent! p-0'
                                 type='single'
                                 value={currentIcon}
                                 onValueChange={value => value && updateSetting('portal_button_icon', value)}
                             >
                                 {defaultButtonIcons.map(iconConfig => (
-                                    <ToggleGroupItem key={iconConfig.value} aria-label={iconConfig.label} className='size-[46px] p-3' value={iconConfig.value}>
-                                        <BrandIcon className='size-5 opacity-70 transition-all hover:opacity-100' name={iconConfig.icon} />
+                                    <ToggleGroupItem key={iconConfig.value} aria-label={iconConfig.label} className='group size-[46px] border border-transparent p-3 hover:bg-transparent data-[state=on]:border-primary data-[state=on]:bg-transparent data-[state=on]:text-primary data-[state=on]:shadow-none' value={iconConfig.value}>
+                                        <BrandIcon className='size-[18px] opacity-70 transition-opacity group-hover:opacity-100 group-data-[state=on]:opacity-100' name={iconConfig.icon} />
                                     </ToggleGroupItem>
                                 ))}
                             </ToggleGroup>

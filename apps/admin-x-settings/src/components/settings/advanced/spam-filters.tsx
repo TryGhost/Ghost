@@ -68,7 +68,7 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <FieldLabel htmlFor='blocked-email-domains'>Blocked email domains</FieldLabel>
                     <Textarea
                         aria-invalid={Boolean(errors.blockedEmailDomains) || undefined}
-                        className='h-[86px] resize-y border-transparent bg-muted'
+                        className='h-[86px] max-w-full resize-y border-transparent bg-muted'
                         id='blocked-email-domains'
                         placeholder={`spam.xyz\njunk.com`}
                         value={blockedEmailDomains}

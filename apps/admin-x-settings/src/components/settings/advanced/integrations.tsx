@@ -215,7 +215,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                         icon={
                             integration.icon_image ?
                                 <img className='size-8 shrink-0 object-cover' role='presentation' src={integration.icon_image} /> :
-                                <LucideIcon.Blocks className='size-8 shrink-0' />
+                                <LucideIcon.Blocks className='size-6 shrink-0' />
                         }
                         title={integration.name}
                         custom

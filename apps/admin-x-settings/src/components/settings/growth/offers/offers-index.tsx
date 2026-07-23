@@ -340,7 +340,6 @@ export const OffersIndexModal: React.FC = () => {
                     updateRoute('offers/new');
                 }
             }}>
-                <LucideIcon.Plus />
                 New offer
             </Button>
         </Inline>
