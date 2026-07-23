@@ -1,8 +1,8 @@
 import NiceModal from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/portal-frame';
 import SettingsBreadcrumbs from '../../settings-breadcrumbs';
-import {Button, Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, Textarea} from '@tryghost/shade/components';
-import {ConfirmationModal, Form, PreviewModalContent} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, Textarea} from '@tryghost/shade/components';
+import {ConfirmationModal, PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
@@ -98,7 +98,7 @@ const Sidebar: React.FC<{
 
             return (
                 <div className='flex grow flex-col pt-2'>
-                    <Form className='grow [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <FieldGroup className='mb-10 grow gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                         <section>
                             <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
                                 <div className='flex flex-col gap-1.5'>
@@ -153,7 +153,7 @@ const Sidebar: React.FC<{
                                 </Field>
                             </div>
                         </section>
-                    </Form>
+                    </FieldGroup>
                     <div className='mb-2'>
                         {offer?.status === 'active' ? <Button className='h-auto p-0 text-destructive hover:text-destructive' type='button' variant='link' onClick={confirmStatusChange}>Archive offer</Button> : <Button className='h-auto p-0 text-green hover:text-green' type='button' variant='link' onClick={confirmStatusChange}>Reactivate offer</Button>}
                     </div>

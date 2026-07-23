@@ -5,8 +5,8 @@ import useCurrencyInput from '../../../../hooks/use-currency-input';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import useSortableIndexedList from '../../../../hooks/use-sortable-indexed-list';
 import useUrlInput from '../../../../hooks/use-url-input';
-import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
-import {ConfirmationModal, Form, Modal} from '@tryghost/admin-x-design-system';
+import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
+import {ConfirmationModal, Modal} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -198,7 +198,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     >
         <div className='mt-8 -mb-8 flex items-start gap-8'>
             <div className='flex grow flex-col gap-8'>
-                <Form className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' marginBottom={false} title='Basic' grouped>
+                <FieldSet className='gap-0'>
+                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Basic</FieldLegend>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                     <Field data-invalid={Boolean(errors.name) || undefined}>
                         <FieldLabel htmlFor='tier-name'>Name</FieldLabel>
                         <Input aria-invalid={Boolean(errors.name) || undefined} autoComplete='off' id='tier-name' maxLength={191} placeholder={isFreeTier ? 'Free' : 'Bronze'} value={formState.name || ''} autoFocus onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
@@ -324,10 +326,13 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         />
                         <FieldDescription>Redirect to this URL after signup{isFreeTier ? '' : ' for premium membership'}</FieldDescription>
                     </Field>
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
 
-                <Form className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' gap='none' title='Benefits' grouped>
-                    <div className='-mt-3'>
+                <FieldSet className='gap-0'>
+                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Benefits</FieldLegend>
+                    <FieldGroup className='mb-10 gap-0 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                        <div className='-mt-3'>
                         <SortableList
                             getDragHandleLabel={({item}) => `Reorder benefit${item ? `: ${item}` : ''}`}
                             items={benefits.items}
@@ -368,8 +373,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         >
                             <LucideIcon.Plus />
                         </Button>
-                    </div>
-                </Form>
+                        </div>
+                    </FieldGroup>
+                </FieldSet>
             </div>
             <div className='sticky top-[96px] hidden shrink-0 basis-[380px] min-[920px]:!visible min-[920px]:!block'>
                 <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />

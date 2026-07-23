@@ -1,9 +1,9 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
-import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, Input, Switch, Textarea} from '@tryghost/shade/components';
-import {Form, LimitModal, Modal} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
+import {LimitModal, Modal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
@@ -106,11 +106,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             }
         }}
     >
-        <Form
-            className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'
-            marginBottom={false}
-            marginTop
-        >
+        <FieldGroup className='mt-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
             <Field data-invalid={Boolean(errors.name) || undefined}>
                 <FieldLabel htmlFor='newsletter-name'>Name</FieldLabel>
                 <Input aria-invalid={Boolean(errors.name) || undefined} id='newsletter-name' maxLength={191} placeholder='Weekly roundup' value={formState.name} autoFocus onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
@@ -132,7 +128,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 </FieldContent>
                 <Switch checked={formState.optInExistingSubscribers} id='opt-in-existing-subscribers' onCheckedChange={checked => updateForm(state => ({...state, optInExistingSubscribers: checked}))} />
             </Field>
-        </Form>
+        </FieldGroup>
     </Modal>;
 };
 

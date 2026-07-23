@@ -1,8 +1,8 @@
 import BrandIcon from '../../../icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {Field, FieldContent, FieldDescription, FieldLabel, Input, Switch} from '@tryghost/shade/components';
-import {Form, Modal} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, Switch} from '@tryghost/shade/components';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -81,7 +81,9 @@ const FirstPromoterModal = NiceModal.create(() => {
                 title='FirstPromoter'
             />
             <div className='mt-7'>
-                <Form className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' marginBottom={false} title='FirstPromoter configuration' grouped>
+                <FieldSet className='gap-0'>
+                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>FirstPromoter configuration</FieldLegend>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                     <Field orientation='horizontal'>
                         <FieldContent>
                             <FieldLabel htmlFor='firstpromoter-enabled'>Enable FirstPromoter</FieldLabel>
@@ -103,7 +105,8 @@ const FirstPromoterModal = NiceModal.create(() => {
                             </></FieldDescription>
                         </Field>
                     )}
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
             </div>
         </Modal>
     );

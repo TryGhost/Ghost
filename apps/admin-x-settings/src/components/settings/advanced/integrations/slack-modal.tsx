@@ -3,8 +3,8 @@ import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, Field, FieldDescription, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
-import {Form, Modal} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input} from '@tryghost/shade/components';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {getSettingValues, useTestSlack} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -60,7 +60,9 @@ const SlackModal = NiceModal.create(() => {
                 title='Slack'
             />
             <div className='mt-7'>
-                <Form className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' marginBottom={false} title='Slack configuration' grouped>
+                <FieldSet className='gap-0'>
+                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Slack configuration</FieldLegend>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                     <Field data-invalid={Boolean(errors.slackUrl) || undefined}>
                         <FieldLabel htmlFor='slack-webhook-url'>Webhook URL</FieldLabel>
                         <Input aria-invalid={Boolean(errors.slackUrl) || undefined} id='slack-webhook-url' placeholder='https://hooks.slack.com/services/...' value={slackUrl} onBlur={validate} onChange={e => updateSetting('slack_url', e.target.value)} onKeyDown={() => clearError('slackUrl')} />
@@ -76,7 +78,8 @@ const SlackModal = NiceModal.create(() => {
                         </Field>
                         <Button type='button' variant='outline' onClick={handleTestClick}>Send test notification</Button>
                     </div>
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
             </div>
         </Modal>
     );

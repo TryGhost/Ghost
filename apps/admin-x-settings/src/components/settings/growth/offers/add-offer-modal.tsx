@@ -1,8 +1,8 @@
 import PortalFrame from '../../membership/portal/portal-frame';
-import {Button, Field, FieldContent, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
+import {Button, Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Form, PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
+import {PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
@@ -146,7 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
 
     return (
         <div className='pt-7' data-testid={testId}>
-            <Form className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <FieldGroup className='mb-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                 <section>
                     <h2 className='mb-4 text-lg'>General</h2>
                     <div className='flex flex-col gap-6'>
@@ -298,7 +298,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         </Field>
                     </div>
                 </section>
-            </Form>
+            </FieldGroup>
         </div>
     );
 };

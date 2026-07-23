@@ -5,7 +5,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, Tabs, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {DesktopChrome, Form, MobileChrome, PreviewModalContent} from '@tryghost/admin-x-design-system';
+import {DesktopChrome, MobileChrome, PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {Laptop, Smartphone} from 'lucide-react';
 import {debounce} from '../../../utils/debounce';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -66,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     ];
 
     return (
-        <Form>
+        <FieldGroup className='mb-10 gap-8'>
             <HtmlField
                 nodes='MINIMAL_NODES'
                 placeholder='Highlight breaking news, offers or updates'
@@ -113,7 +113,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     ))}
                 </FieldGroup>
             </FieldSet>
-        </Form>
+        </FieldGroup>
     );
 };
 
