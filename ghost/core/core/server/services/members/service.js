@@ -4,13 +4,12 @@ const tpl = require('@tryghost/tpl');
 const MembersSSR = require('./members-ssr');
 const db = require('../../data/db');
 const MembersConfigProvider = require('./members-config-provider');
-const makeMembersCSVImporter = require('./importer');
-const {resolveInlineThreshold} = require('./importer/config');
+const {makeImporter, makeExporter} = require('./import-export');
+const {resolveInlineThreshold} = require('./import-export/config');
 const MembersStats = require('./stats/members-stats');
 const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils');
-const labsService = require('../../../shared/labs');
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const models = require('../../models');
@@ -47,9 +46,8 @@ const membersStats = new MembersStats({
 let membersApi;
 let verificationTrigger;
 
-const initMembersCSVImporter = ({stripeAPIService}) => {
-    return makeMembersCSVImporter({
-        storagePath: config.getContentPath('data'),
+const buildImporterDeps = ({stripeAPIService}) => {
+    return {
         getTimezone: () => settingsCache.get('timezone'),
         // A getter rather than a value because the threshold is an operator
         // setting that can change between requests
@@ -79,16 +77,12 @@ const initMembersCSVImporter = ({stripeAPIService}) => {
         },
         getGiftService: () => giftService.service,
         sendEmail: ghostMailer.send.bind(ghostMailer),
-        isSet: flag => labsService.isSet(flag),
         addJob: jobsService.addJob.bind(jobsService),
         knex: db.knex,
         urlFor: urlUtils.urlFor.bind(urlUtils),
-        context: {
-            importer: true
-        },
         stripeAPIService,
         productRepository: membersApi.productRepository
-    });
+    };
 };
 
 const initVerificationTrigger = () => {
@@ -154,18 +148,21 @@ module.exports = {
         }
         module.exports.verificationTrigger = verificationTrigger;
 
-        const membersCSVImporter = initMembersCSVImporter({stripeAPIService: stripeService.api});
+        const importerDeps = buildImporterDeps({stripeAPIService: stripeService.api});
+        const membersCSVImporter = makeImporter(importerDeps);
+        // The importer takes the raw request frame and owns everything from there;
+        // this only supplies the verification trigger, a members-service internal.
+        module.exports.processImport = async (frame) => {
+            return await membersCSVImporter.process(frame, verificationTrigger);
+        };
+
         // Constructed here rather than required statically: the exporter needs the
         // custom fields services, which boot builds before this one.
         const customFields = require('../members-custom-fields');
-        module.exports.export = require('./exporter/query')({
+        module.exports.export = makeExporter({
             definitions: customFields.definitions,
             values: customFields.values
         });
-
-        module.exports.processImport = async (options) => {
-            return await membersCSVImporter.process({...options, verificationTrigger});
-        };
 
         if (!env?.startsWith('testing')) {
             const membersMigrationJobName = 'members-migrations';
@@ -208,7 +205,6 @@ module.exports = {
     processImport: null,
 
     stats: membersStats,
-
     export: null
 };
 
