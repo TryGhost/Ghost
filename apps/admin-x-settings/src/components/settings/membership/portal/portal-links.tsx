@@ -1,7 +1,7 @@
 import React, {useEffect, useId, useState} from 'react';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Field, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {Button} from '@tryghost/shade/components';
-import {ModalPage} from '@tryghost/admin-x-design-system';
+import {ModalPage} from '@tryghost/shade/page-templates';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -65,7 +65,8 @@ const PortalLinks: React.FC = () => {
     const homePageURL = getHomepageUrl(siteData!);
 
     return (
-        <ModalPage className='max-w-[920px] text-base text-foreground' heading='Links'>
+        <ModalPage className='max-w-[920px] text-base text-foreground'>
+            <ModalPage.Title>Links</ModalPage.Title>
             <p className='-mt-6 mb-16'>Use these {isDataAttributes ? 'data attributes' : 'links'} in your theme to show pages of Portal.</p>
 
             <section>

@@ -3,7 +3,6 @@ import {ReactNode} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
 import Modal, {ModalProps} from './modal';
-import ModalPage from './modal-page';
 
 const ModalContainer: React.FC<ModalProps> = ({children, ...props}) => {
     const modal = NiceModal.create<ModalProps>(() => {
@@ -176,9 +175,7 @@ export const CompletePage: Story = {
         footer: <></>,
         padding: false,
         children: <>
-            <ModalPage heading='Hey there full page'>
-                <p>This is a full page in a modal</p>
-            </ModalPage>
+            <div>Full-page modal content</div>
         </>
     }
 };

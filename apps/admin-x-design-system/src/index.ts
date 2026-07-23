@@ -12,8 +12,6 @@ export type {MobileChromeProps} from './global/chrome/mobile-chrome';
 
 export {default as Modal, topLevelBackdropClasses} from './global/modal/modal';
 export type {ModalProps} from './global/modal/modal';
-export {default as ModalPage} from './global/modal/modal-page';
-export type {ModalPageProps} from './global/modal/modal-page';
 export {default as PreviewModal, PreviewModalContent} from './global/modal/preview-modal';
 export type {PreviewModalProps} from './global/modal/preview-modal';
 
