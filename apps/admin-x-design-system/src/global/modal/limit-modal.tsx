@@ -23,8 +23,8 @@ export const LimitModalContent: React.FC<LimitModalProps> = ({
         <Modal
             backDropClick={false}
             formSheet={formSheet}
-            okColor='green'
             okLabel={okLabel}
+            okVariant='default'
             testId='limit-modal'
             title={title}
             width={540}

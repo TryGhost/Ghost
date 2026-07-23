@@ -85,8 +85,8 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         dirty={saveState === 'unsaved'}
-        okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
+        okVariant={okProps.variant}
         size='md'
         testId='custom-integration-modal'
         title={formState.name || 'Custom integration'}

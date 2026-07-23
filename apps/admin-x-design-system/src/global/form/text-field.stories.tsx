@@ -2,7 +2,6 @@ import {ReactNode} from 'react';
 import {useArgs} from 'storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react-vite';
 
-import Button from '../button';
 import TextField from './text-field';
 
 const meta = {
@@ -91,7 +90,7 @@ export const WithButton: Story = {
         value: 'https://ghost.org',
         containerClassName: 'group',
         rightPlaceholder: (
-            <Button className='invisible mt-1 rounded-md group-hover:visible' color='white' label='Copy' size='sm' />
+            <span>Copy action slot</span>
         )
     }
 };

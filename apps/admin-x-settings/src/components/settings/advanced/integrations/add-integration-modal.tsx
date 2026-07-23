@@ -34,8 +34,8 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
         afterClose={() => {
             updateRoute('integrations');
         }}
-        okColor='black'
         okLabel='Add'
+        okVariant='default'
         size='sm'
         testId='add-integration-modal'
         title='Add integration'

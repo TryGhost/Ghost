@@ -1,7 +1,7 @@
 import ColorPickerField from '../../../color-picker-field';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Button, ButtonGroup, Form} from '@tryghost/admin-x-design-system';
-import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox, StickyFooter, Textarea} from '@tryghost/shade/components';
+import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox, StickyFooter, Textarea, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
+import {Form} from '@tryghost/admin-x-design-system';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
 import {Plus} from 'lucide-react';
 import {Text} from '@tryghost/shade/primitives';
@@ -102,26 +102,10 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                 <Form gap='sm'>
                     <div className='flex w-full items-center justify-between'>
                         <div>Layout</div>
-                        <ButtonGroup 
-                            activeKey={selectedLayout} 
-                            buttons={[
-                                {
-                                    key: 'all-in-one',
-                                    label: 'Branded',
-                                    size: 'md',
-                                    className: 'w-auto px-3!',
-                                    onClick: () => handleLayoutSelect('all-in-one')
-                                },
-                                {
-                                    key: 'minimal',
-                                    label: 'Minimal',
-                                    size: 'md',
-                                    className: 'w-auto px-3!',
-                                    onClick: () => handleLayoutSelect('minimal')
-                                }
-                            ]} 
-                            clearBg={false}
-                        />
+                        <ToggleGroup type='single' value={selectedLayout} onValueChange={value => value && handleLayoutSelect(value)}>
+                            <ToggleGroupItem value='all-in-one'>Branded</ToggleGroupItem>
+                            <ToggleGroupItem value='minimal'>Minimal</ToggleGroupItem>
+                        </ToggleGroup>
                     </div>
                     {
                         selectedLayout === 'all-in-one' &&
@@ -208,8 +192,8 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
             </div>
             <StickyFooter height={74}>
                 <div className='flex w-full justify-end gap-3'>
-                    <Button className='lg:hidden' color='outline' label='Close' onClick={handleClose} />
-                    <Button color={isCopied ? 'green' : 'black'} label={isCopied ? 'Copied!' : 'Copy code'} onClick={handleCopyClick} />
+                    <Button className='font-semibold lg:hidden' type='button' variant='ghost' onClick={handleClose}>Close</Button>
+                    <Button type='button' onClick={handleCopyClick}>{isCopied ? 'Copied!' : 'Copy code'}</Button>
                 </div>
             </StickyFooter>
         </div>

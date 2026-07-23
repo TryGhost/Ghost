@@ -7,8 +7,8 @@ import StripeButton from '../../../stripe-button';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import StripeVerifiedBadge from '../../../../assets/images/stripe-verified.svg';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, ConfirmationModal, Form, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
-import {Field, FieldError, FieldLabel, Switch, Textarea} from '@tryghost/shade/components';
+import {Button, Field, FieldError, FieldLabel, Switch, Textarea} from '@tryghost/shade/components';
+import {ConfirmationModal, Form, Icon, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {Text} from '@tryghost/shade/primitives';
@@ -135,14 +135,14 @@ const Connect: React.FC = () => {
             <div className='mt-2 mb-4'>
                 Click on the <strong>“Connect with Stripe”</strong> button to generate a secure key that connects your Ghost site with Stripe.
             </div>
-            <StripeButton href={stripeConnectUrl} tag='a' target='_blank' />
+            <StripeButton href={stripeConnectUrl} target='_blank' />
             <Text as='h6' className='mt-8 mb-2 text-base' tone='secondary' weight='semibold'>Step 2 — <span className='text-foreground'>Paste secure key</span></Text>
             <Field data-invalid={Boolean(error) || undefined}>
                 <FieldLabel className='sr-only' htmlFor='stripe-secure-key'>Secure key</FieldLabel>
                 <Textarea aria-invalid={Boolean(error) || undefined} className='border-transparent bg-muted' id='stripe-secure-key' placeholder='Paste your secure key here' onChange={onTokenChange} />
                 {error && <FieldError>{error}</FieldError>}
             </Field>
-            {submitEnabled && <Button className='mt-5' color='green' label='Save Stripe settings' onClick={onSubmit} />}
+            {submitEnabled && <Button className='mt-5' type='button' onClick={onSubmit}>Save Stripe settings</Button>}
         </div>
     );
 };
@@ -184,8 +184,13 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     return (
         <section>
             <div className='flex items-center justify-between'>
-                <Button color='red' disabled={isFetchingMembers} icon='link-broken' iconColorClass='text-red' label='Disconnect' link onClick={openDisconnectStripeModal} />
-                <Button icon='close' iconColorClass='dark:text-white' label='Close' size='sm' hideLabel link onClick={onClose} />
+                <Button className='text-destructive hover:text-destructive' disabled={isFetchingMembers} type='button' variant='ghost' onClick={openDisconnectStripeModal}>
+                    <Icon name='link-broken' size='sm' />
+                    Disconnect
+                </Button>
+                <Button aria-label='Close' size='icon' type='button' variant='ghost' onClick={onClose}>
+                    <Icon name='close' size='sm' />
+                </Button>
             </div>
             <div className='my-20 flex flex-col items-center'>
                 <div className='relative h-20 w-[200px]'>
@@ -240,7 +245,7 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
             <Form marginBottom={false} marginTop>
                 <TextField title='Publishable key' value={publishableKey?.toString() ?? ''} onChange={e => updateSetting('stripe_publishable_key', e.target.value)} />
                 <TextField title='Secure key' value={secretKey?.toString() ?? ''} onChange={e => updateSetting('stripe_secret_key', e.target.value)} />
-                <Button className='mt-5' color='green' disabled={saveState === 'saving'} label='Save Stripe settings' onClick={onSubmit} />
+                <Button className='mt-5' disabled={saveState === 'saving'} type='button' onClick={onSubmit}>Save Stripe settings</Button>
             </Form>
         </div>
     );

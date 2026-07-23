@@ -1,7 +1,7 @@
 import Modal from './modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {ButtonColor} from '../button';
+import type {ButtonProps} from '@tryghost/shade/components';
 
 export interface ConfirmationModalProps {
     title?: React.ReactNode;
@@ -9,7 +9,7 @@ export interface ConfirmationModalProps {
     cancelLabel?: string;
     okLabel?: string;
     okRunningLabel?: string;
-    okColor?: ButtonColor;
+    okVariant?: ButtonProps['variant'];
     onCancel?: () => void;
     onOk?: (modal?: {
         remove: () => void;
@@ -25,7 +25,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     cancelLabel = 'Cancel',
     okLabel = 'OK',
     okRunningLabel = '...',
-    okColor = 'black',
+    okVariant = 'default',
     onCancel,
     onOk,
     customFooter,
@@ -41,8 +41,8 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
             cancelLabel={cancelLabel}
             footer={customFooter}
             formSheet={formSheet}
-            okColor={okColor}
             okLabel={taskState === 'running' ? okRunningLabel : okLabel}
+            okVariant={okVariant}
             stickyFooter={stickyFooter}
             testId='confirmation-modal'
             title={title}

@@ -80,8 +80,8 @@ const PinturaModal = NiceModal.create(() => {
             }}
             cancelLabel='Close'
             dirty={isDirty}
-            okColor={okLabel === 'Saved' ? 'green' : 'black'}
             okLabel={okLabel}
+            okVariant='default'
             testId='pintura-modal'
             title=''
             onOk={handleToggleChange}

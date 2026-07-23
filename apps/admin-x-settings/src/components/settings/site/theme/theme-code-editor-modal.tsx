@@ -375,14 +375,14 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
         prompt,
         cancelLabel,
         okLabel,
-        okColor
+        okVariant
     }: ThemeEditorConfirmModalProps) => {
         const confirmed = await NiceModal.show(ThemeEditorConfirmModal, {
             title,
             prompt,
             cancelLabel,
             okLabel,
-            okColor
+            okVariant
         }) as boolean | undefined;
 
         return Boolean(confirmed);
@@ -414,7 +414,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 title: 'Discard changes?',
                 prompt: 'You have unsaved theme changes. Close the editor and discard them?',
                 okLabel: 'Discard changes',
-                okColor: 'red'
+                okVariant: 'destructive'
             });
 
             if (!shouldDiscard) {
@@ -626,7 +626,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 title: 'Delete file',
                 prompt: <>Delete <strong>{selectedNode.path}</strong> from this theme?</>,
                 okLabel: 'Delete',
-                okColor: 'red'
+                okVariant: 'destructive'
             });
 
             if (!confirmed) {
@@ -649,7 +649,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             title: 'Delete folder',
             prompt: <>Delete {matchingPaths.length} file{matchingPaths.length === 1 ? '' : 's'} from <strong>{selectedNode.path}</strong>?</>,
             okLabel: 'Delete',
-            okColor: 'red'
+            okVariant: 'destructive'
         });
 
         if (!confirmed) {
@@ -747,7 +747,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 title: 'Overwrite theme',
                 prompt: <><strong>{nextThemeName}</strong> already exists. Do you want to overwrite it?</>,
                 okLabel: 'Overwrite',
-                okColor: 'red'
+                okVariant: 'destructive'
             });
 
             if (!confirmedOverwrite) {

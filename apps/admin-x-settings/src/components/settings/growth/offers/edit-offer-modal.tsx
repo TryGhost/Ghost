@@ -1,9 +1,9 @@
 import NiceModal from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/portal-frame';
 import SettingsBreadcrumbs from '../../settings-breadcrumbs';
-import {Button, ConfirmationModal, Form, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldLabel, Textarea} from '@tryghost/shade/components';
+import {ConfirmationModal, Form, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldLabel, Textarea} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
 import {createOfferRedemptionFilterUrl} from './offer-helpers';
@@ -63,7 +63,7 @@ const Sidebar: React.FC<{
                             <p>All members that previously redeemed <strong>{offer?.name}</strong> will remain unchanged.</p>
                         </>,
                         okLabel: 'Archive',
-                        okColor: 'red',
+                        okVariant: 'destructive',
                         onOk: async (modal) => {
                             try {
                                 await editOffer({...offer, status: 'archived'});
@@ -144,7 +144,7 @@ const Sidebar: React.FC<{
                                     error={Boolean(errors.code)}
                                     hint={errors.code || (offer?.code !== '' ? <span className='truncate text-grey-700'>{homepageUrl}<span className='font-bold text-black dark:text-white'>{offer?.code}</span></span> : null)}
                                     placeholder='black-friday'
-                                    rightPlaceholder={offer?.code !== '' ? <Button className='mt-1 mr-0.5' color='green' label={isCopied ? 'Copied!' : 'Copy link'} size='sm' onClick={handleCopyClick} /> : null}
+                                    rightPlaceholder={offer?.code !== '' ? <Button className='mt-1 mr-0.5' size='sm' type='button' variant='link' onClick={handleCopyClick}>{isCopied ? 'Copied!' : 'Copy link'}</Button> : null}
                                     title='Offer code'
                                     value={offer?.code ?? ''}
                                     onChange={e => updateOffer({code: e.target.value})}
@@ -167,7 +167,7 @@ const Sidebar: React.FC<{
                         </section>
                     </Form>
                     <div className='mb-2'>
-                        {offer?.status === 'active' ? <Button color='red' label='Archive offer' link onClick={confirmStatusChange} /> : <Button color='green' label='Reactivate offer' link onClick={confirmStatusChange} />}
+                        {offer?.status === 'active' ? <Button className='h-auto p-0 text-destructive hover:text-destructive' type='button' variant='link' onClick={confirmStatusChange}>Archive offer</Button> : <Button className='h-auto p-0 text-green hover:text-green' type='button' variant='link' onClick={confirmStatusChange}>Reactivate offer</Button>}
                     </div>
                 </div>
             );
@@ -263,8 +263,8 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         cancelLabel='Cancel'
         dirty={saveState === 'unsaved'}
         height='full'
-        okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
+        okVariant={okProps.variant}
         preview={iframe}
         previewToolbarBreadcrumbs={
             <SettingsBreadcrumbs

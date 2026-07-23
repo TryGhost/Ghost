@@ -3,8 +3,8 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import RecommendationIcon from './recommendation-icon';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {ActionList, ActionListItem, ActionListItemContent, LoadingIndicator, NoValueLabel, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
-import {Button} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemContent, Button, LoadingIndicator, NoValueLabel, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Icon} from '@tryghost/admin-x-design-system';
 import {Inline} from '@tryghost/shade/primitives';
 import {type Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {formatNumber} from '@tryghost/shade/utils';
@@ -95,22 +95,20 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
                 {recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
             </ActionList>
             <div className='border-t border-border pt-2'>
-                {showMore?.hasMore && <button className='mb-2 font-bold text-green hover:opacity-80' type='button' onClick={showMore.loadMore}>Show all</button>}
+                {showMore?.hasMore && <Button className='mb-2 h-auto p-0 text-green hover:text-green' type='button' variant='link' onClick={showMore.loadMore}>Show all</Button>}
                 <div className='text-sm text-muted-foreground'>
                     Shared with new members after signup, or anytime using <a className='text-green hover:text-green-400' href={recommendationsURL} rel='noopener noreferrer' target='_blank'>this link</a>
                     <TooltipProvider delayDuration={0}>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button
-                                    className='ml-1 align-middle leading-none'
-                                    color='clear'
-                                    hideLabel={true}
-                                    icon={copied ? 'check-circle' : 'duplicate'}
-                                    iconColorClass={copied ? 'text-green w-[14px] h-[14px]' : 'text-muted-foreground hover:opacity-80 w-[14px] h-[14px]'}
-                                    label={copied ? 'Copied' : 'Copy'}
-                                    unstyled={true}
+                                    aria-label={copied ? 'Copied' : 'Copy'}
+                                    className='ml-1 size-6 align-middle leading-none'
+                                    size='icon'
+                                    type='button'
+                                    variant='ghost'
                                     onClick={copyRecommendationsUrl}
-                                />
+                                ><Icon className={copied ? 'size-3.5! text-green' : 'size-3.5! text-muted-foreground'} name={copied ? 'check-circle' : 'duplicate'} /></Button>
                             </TooltipTrigger>
                             <TooltipContent>{copied ? 'Copied' : 'Copy link'}</TooltipContent>
                         </Tooltip>
@@ -120,9 +118,9 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
         </>;
     } else {
         return <NoValueLabel>
-            <Button color='grey' label='Add first recommendation' size='sm' onClick={() => {
+            <Button size='sm' type='button' variant='secondary' onClick={() => {
                 openAddNewRecommendationModal();
-            }}></Button>
+            }}>Add first recommendation</Button>
             <span className='mt-2 max-w-[40ch] text-center text-sm'>Need inspiration? <a className='text-green hover:text-green-400' href="https://ghost.org/explore" rel='noopener noreferrer' target='_blank'>Explore thousands of sites</a></span>
         </NoValueLabel>;
     }

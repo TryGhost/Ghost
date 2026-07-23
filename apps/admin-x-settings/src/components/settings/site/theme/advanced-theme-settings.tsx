@@ -2,9 +2,8 @@ import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
-import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent} from '@tryghost/shade/components';
-import {Button, ConfirmationModal, LimitModal, ModalPage} from '@tryghost/admin-x-design-system';
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {ConfirmationModal, Icon, LimitModal, ModalPage} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
@@ -113,7 +112,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             ),
             okLabel: 'Delete',
             okRunningLabel: 'Deleting',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
                 try {
                     await deleteTheme(theme.name);
@@ -146,11 +145,11 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             <Button
                 key='activate'
                 className='ml-2'
-                color='green'
-                label={'Activate'}
-                link={true}
+                size='sm'
+                type='button'
+                variant='ghost'
                 onClick={handleActivate}
-            />
+            >Activate</Button>
         );
     }
 
@@ -159,7 +158,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             {actions}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button icon='ellipsis' iconColorClass='text-base' label='Menu' size='sm' hideLabel />
+                    <Button aria-label='Menu' size='icon' type='button' variant='ghost'><Icon name='ellipsis' size='sm' /></Button>
                 </DropdownMenuTrigger>
                 {/* legacy ModalPage overlay is z-[1000]; keep the portalled menu above it */}
                 <DropdownMenuContent align='end' className='z-[9999]'>

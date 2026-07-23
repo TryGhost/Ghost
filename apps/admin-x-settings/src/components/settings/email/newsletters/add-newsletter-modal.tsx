@@ -93,10 +93,10 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             updateRoute(returnRoute);
         }}
         backDropClick={false}
-        okColor='black'
         okDisabled={saveState === 'saving'}
         okLabel='Create'
         okLoading={saveState === 'saving'}
+        okVariant='default'
         size='sm'
         testId='add-newsletter-modal'
         title='Create newsletter'

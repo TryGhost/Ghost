@@ -2,8 +2,8 @@ import APIKeys from './api-keys';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import ZapierLogo from '../../../../assets/images/zapier-logo.svg';
-import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent} from '@tryghost/shade/components';
-import {Button, ConfirmationModal, Icon, Modal} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button} from '@tryghost/shade/components';
+import {ConfirmationModal, Icon, Modal} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
 import {useEffect, useState} from 'react';
@@ -79,13 +79,13 @@ const ZapierModal = NiceModal.create(() => {
                         target='_blank'>
                         View more Ghost integrations powered by <span><img alt='Zapier' className='relative top-[-2px] inline-block' src={ZapierLogo} /></span>
                     </a>
-                    <Button color='black' label='Close' onClick={() => {
+                    <Button type='button' onClick={() => {
                         modal.remove();
-                    }} />
+                    }}>Close</Button>
                 </div>
             }
-            okColor='black'
             okLabel='Close'
+            okVariant='default'
             testId='zapier-modal'
             title=''
             stickyFooter
@@ -123,7 +123,7 @@ const ZapierModal = NiceModal.create(() => {
                                 <span>{template.title}</span>
                             </div>
                         </ActionListItemContent>
-                        <ActionListItemActions visibility='hover'><Button className='font-semibold whitespace-nowrap text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled /></ActionListItemActions>
+                        <ActionListItemActions visibility='hover'><Button className='h-auto p-0 font-semibold whitespace-nowrap text-[#FF4A00] hover:text-[#FF4A00]' variant='link' asChild><a href={template.url} rel='noopener noreferrer' target='_blank'>Use this Zap</a></Button></ActionListItemActions>
                     </ActionListItem>
                 ))}
             </ActionList>

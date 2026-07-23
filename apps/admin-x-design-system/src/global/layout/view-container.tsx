@@ -1,7 +1,5 @@
 import React from 'react';
 import clsx from 'clsx';
-import Button, {ButtonColor, ButtonProps} from '../button';
-import {ButtonGroupProps} from '../button-group';
 import {Text} from '@tryghost/shade/primitives';
 
 export interface View {
@@ -11,13 +9,7 @@ export interface View {
     contents: React.ReactNode;
 }
 
-export interface PrimaryActionProps {
-    title?: string;
-    icon?: string;
-    color?: ButtonColor;
-    className?: string;
-    onClick?: () => void;
-}
+export type PrimaryActionProps = React.ReactNode;
 
 interface ViewContainerProps {
     /**
@@ -76,7 +68,7 @@ interface ViewContainerProps {
     /**
      * Adds more actions by the primary action, primarily buttons and button groups.
      */
-    actions?: (React.ReactElement<ButtonProps> | React.ReactElement<ButtonGroupProps> | React.ReactNode)[];
+    actions?: React.ReactNode[];
     actionsClassName?: string;
     actionsHidden?: boolean;
     contentWrapperClassName?: string;
@@ -146,12 +138,6 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
         actionsClassName
     );
 
-    const primaryActionContents = <>
-        {(primaryAction?.title || primaryAction?.icon) && (
-            <Button className={primaryAction.className} color={primaryAction.color || 'black'} icon={primaryAction.icon} label={primaryAction.title} size={type === 'page' ? 'md' : 'sm'} onClick={primaryAction.onClick} />
-        )}
-    </>;
-
     const headingClassName = clsx(
         tabs && 'pb-3',
         type === 'page' && '-mt-2'
@@ -170,7 +156,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
                 </div>
                 <div className={actionsClassName}>
                     {actions}
-                    {primaryActionContents}
+                    {primaryAction}
                 </div>
             </div>
         </div>
@@ -190,7 +176,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     return (
         <section className={mainContainerClassName}>
-            {(title || actions || headerContent || tabs) && toolbar}
+            {(title || actions || primaryAction || headerContent || tabs) && toolbar}
             <div className={contentWrapperClassName}>
                 {mainContent}
             </div>

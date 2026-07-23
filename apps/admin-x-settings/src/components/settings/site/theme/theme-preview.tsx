@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
 import SettingsBreadcrumbs from '../../settings-breadcrumbs';
-import {Button, ButtonGroup, DesktopChrome, MobileChrome, PageHeader} from '@tryghost/admin-x-design-system';
-import {Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Button, Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {DesktopChrome, Icon, MobileChrome, PageHeader} from '@tryghost/admin-x-design-system';
+import {Inline} from '@tryghost/shade/primitives';
 import {type OfficialTheme, type ThemeVariant} from '../../../providers/settings-app-provider';
 import {type Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
 
@@ -101,34 +102,21 @@ const ThemePreview: React.FC<{
 
     const right =
         <div className='flex justify-end gap-8'>
-            <ButtonGroup
-                buttons={[
-                    {
-                        icon: 'laptop',
-                        iconColorClass: (previewMode === 'desktop' ? 'text-black dark:text-green' : 'text-grey-500 dark:text-grey-600'),
-                        link: true,
-                        size: 'sm',
-                        onClick: () => {
-                            setPreviewMode('desktop');
-                        }
-                    },
-                    {
-                        icon: 'mobile',
-                        iconColorClass: (previewMode === 'mobile' ? 'text-black dark:text-green' : 'text-grey-500 dark:text-grey-600'),
-                        link: true,
-                        size: 'sm',
-                        onClick: () => {
-                            setPreviewMode('mobile');
-                        }
-                    }
-                ]}
-            />
+            <Inline gap='sm'>
+                <Button aria-label='Desktop preview' size='icon' type='button' variant='ghost' onClick={() => setPreviewMode('desktop')}>
+                    <Icon colorClass={previewMode === 'desktop' ? 'text-foreground' : 'text-muted-foreground'} name='laptop' size='sm' />
+                </Button>
+                <Button aria-label='Mobile preview' size='icon' type='button' variant='ghost' onClick={() => setPreviewMode('mobile')}>
+                    <Icon colorClass={previewMode === 'mobile' ? 'text-foreground' : 'text-muted-foreground'} name='mobile' size='sm' />
+                </Button>
+            </Inline>
             <Button
-                color='green'
                 disabled={isInstalling}
-                label={isInstalling ? 'Installing...' : installButtonLabel}
+                type='button'
                 onClick={handleInstall}
-            />
+            >
+                {isInstalling ? 'Installing...' : installButtonLabel}
+            </Button>
         </div>;
 
     return (

@@ -4,7 +4,6 @@ import type {Meta, StoryObj} from '@storybook/react-vite';
 import * as SettingGroupContentStories from './setting-group-content.stories';
 import * as SettingGroupHeaderStories from './setting-group-header.stories';
 
-import ButtonGroup from '../global/button-group';
 import SettingGroup from './setting-group';
 import SettingGroupContent from './setting-group-content';
 import SettingGroupHeader from './setting-group-header';
@@ -24,7 +23,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const customButtons = <ButtonGroup buttons={[{label: 'My action', color: 'green'}]} link={true} />;
+const customButtons = <span>Custom action slot</span>;
 const customHeader = <SettingGroupHeader {...SettingGroupHeaderStories.CustomHeader.args} />;
 const singleColContent = <SettingGroupContent {...SettingGroupContentStories.SingleColumn.args} />;
 const twoColView = <SettingGroupContent {...SettingGroupContentStories.TwoColumns.args} />;

@@ -1,6 +1,6 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
@@ -29,7 +29,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button className='mt-[-5px]' color='clear' disabled={!checkStripeEnabled(settings, config)} label='Manage offers' size='sm' onClick={openOfferListModal}/>}
+            customButtons={<Button className='mt-[-5px]' disabled={!checkStripeEnabled(settings, config)} size='sm' type='button' variant='ghost' onClick={openOfferListModal}>Manage offers</Button>}
             description={<>Create discounts & coupons to boost new subscriptions and retain existing members.<span>{' '}</span><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">Learn more</a></>}
             keywords={keywords}
             navid='offers'
@@ -40,7 +40,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 (<div>
                     <span>You must have an active tier to create an offer.</span>
                     {` `}
-                    <Button className='font-normal' color='green' label='Manage tiers' link linkWithPadding onClick={openTiers} />
+                    <Button className='h-auto p-1 font-normal' type='button' variant='link' onClick={openTiers}>Manage tiers</Button>
                 </div>
                 ) : ''
             }

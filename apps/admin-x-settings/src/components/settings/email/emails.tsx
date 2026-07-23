@@ -9,8 +9,8 @@ import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailCustomizeModal from '../membership/member-emails/welcome-email-customize-modal';
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {Button, ConfirmationModal, Icon} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {ConfirmationModal, Icon} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -49,7 +49,7 @@ const TransactionalTabContent: React.FC = () => {
                     </span>
                 </button>
                 </ActionListItemContent>
-                <ActionListItemActions><button className='font-semibold text-green hover:opacity-80' type='button' onClick={openCustomizeModal}>Edit</button></ActionListItemActions>
+                <ActionListItemActions><Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' type='button' variant='link' onClick={openCustomizeModal}>Edit</Button></ActionListItemActions>
             </ActionListItem>
         </ActionList>
     );
@@ -135,7 +135,7 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
     };
 
     const customButtons = newslettersEnabled && selectedTab === 'newsletters' ? (
-        <Button className='mt-[-5px]' color='clear' label='Add newsletter' size='sm' onClick={openNewNewsletter} />
+        <Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={openNewNewsletter}>Add newsletter</Button>
     ) : undefined;
 
     return (

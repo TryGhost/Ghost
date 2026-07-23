@@ -1,9 +1,9 @@
 import InfiniteScrollListener from '../../infinite-scroll-listener';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
-import {ActionList, ActionListItem, ActionListItemContent, Avatar, Field, FieldLabel, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, Switch, inputSurface} from '@tryghost/shade/components';
-import {Button, Icon, Modal} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemContent, Avatar, Button, Field, FieldLabel, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, Switch, inputSurface} from '@tryghost/shade/components';
 import {ChevronDown, History, X} from 'lucide-react';
+import {Icon, Modal} from '@tryghost/admin-x-design-system';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type User} from '@tryghost/admin-x-framework/api/users';
@@ -153,7 +153,7 @@ const HistoryFilter: React.FC<{
         <Inline align='center' gap='md'>
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button color='outline' label='Filter' />
+                    <Button type='button' variant='outline'>Filter</Button>
                 </PopoverTrigger>
                 <PopoverContent align='end' className='z-[9999] w-[220px]' data-testid='history-filters'>
                     <Stack gap='2xl'>

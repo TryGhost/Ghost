@@ -23,8 +23,8 @@ const InvalidThemeModal: React.FC<{
 
     return <ConfirmationModalContent
         cancelLabel='Close'
-        okColor='black'
         okLabel={'Retry'}
+        okVariant='default'
         prompt={<>
             <div className='space-y-5'>
                 <div className='text-sm text-foreground'>{promptText}</div>

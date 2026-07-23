@@ -2,14 +2,13 @@ import type {Meta, StoryContext, StoryObj} from '@storybook/react-vite';
 import {ReactNode} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
-import Button from '../button';
 import LimitModal, {LimitModalProps} from './limit-modal';
 
 const LimitModalContainer: React.FC<LimitModalProps> = ({...props}) => {
     return (
-        <Button color='black' label='Open limit modal' onClick={() => {
+        <button type='button' onClick={() => {
             NiceModal.show(LimitModal, {...props});
-        }} />
+        }}>Open limit modal</button>
     );
 };
 

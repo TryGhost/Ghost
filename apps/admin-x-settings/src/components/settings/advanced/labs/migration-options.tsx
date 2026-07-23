@@ -1,8 +1,8 @@
 import LabItem from './lab-item';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {ActionList, Dropzone} from '@tryghost/shade/components';
-import {Button, ConfirmationModal} from '@tryghost/admin-x-design-system';
+import {ActionList, Button, Dropzone} from '@tryghost/shade/components';
+import {ConfirmationModal} from '@tryghost/admin-x-design-system';
 import {downloadAllContent, useDeleteAllContent, useImportContent} from '@tryghost/admin-x-framework/api/db';
 import {toast} from 'sonner';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -61,7 +61,7 @@ const MigrationOptions: React.FC = () => {
         NiceModal.show(ConfirmationModal, {
             title: 'Would you really like to delete all content from your blog?',
             prompt: 'This is permanent! No backups, no restores, no magic undo button. We warned you, k?',
-            okColor: 'red',
+            okVariant: 'destructive',
             okLabel: 'Delete',
             onOk: async (modal) => {
                 try {
@@ -79,15 +79,15 @@ const MigrationOptions: React.FC = () => {
     return (
         <ActionList>
             <LabItem
-                action={<Button color='grey' label='Open importer' size='sm' onClick={handleImportContent} />}
+                action={<Button size='sm' type='button' variant='secondary' onClick={handleImportContent}>Open importer</Button>}
                 detail='Import posts from a JSON or zip file'
                 title='Import content' />
             <LabItem
-                action={<Button color='grey' label='Export' size='sm' onClick={() => downloadAllContent()} />}
+                action={<Button size='sm' type='button' variant='secondary' onClick={() => downloadAllContent()}>Export</Button>}
                 detail='Download all of your posts and settings in a single, glorious JSON file'
                 title='Export your content' />
             <LabItem
-                action={<Button color='red' label='Delete' size='sm' onClick={handleDeleteAllContent} />}
+                action={<Button size='sm' type='button' variant='destructive' onClick={handleDeleteAllContent}>Delete</Button>}
                 detail='Permanently delete all posts and tags from the database, a hard reset'
                 title='Delete all content' />
         </ActionList>

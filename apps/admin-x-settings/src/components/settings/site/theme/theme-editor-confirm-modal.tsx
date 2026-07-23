@@ -1,13 +1,14 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import {Modal} from '@tryghost/admin-x-design-system';
+import type {ButtonProps} from '@tryghost/shade/components';
 
 export type ThemeEditorConfirmModalProps = {
     title: string;
     prompt: React.ReactNode;
     cancelLabel?: string;
     okLabel?: string;
-    okColor?: 'black' | 'red' | 'green' | 'outline';
+    okVariant?: ButtonProps['variant'];
 };
 
 const ThemeEditorConfirmModal = NiceModal.create<ThemeEditorConfirmModalProps>(({
@@ -15,7 +16,7 @@ const ThemeEditorConfirmModal = NiceModal.create<ThemeEditorConfirmModalProps>((
     prompt,
     cancelLabel = 'Cancel',
     okLabel = 'OK',
-    okColor = 'black'
+    okVariant = 'default'
 }) => {
     const modal = useModal();
 
@@ -28,8 +29,8 @@ const ThemeEditorConfirmModal = NiceModal.create<ThemeEditorConfirmModalProps>((
         <Modal
             backDropClick={false}
             cancelLabel={cancelLabel}
-            okColor={okColor}
             okLabel={okLabel}
+            okVariant={okVariant}
             testId='theme-editor-confirm-modal'
             title={title}
             width={540}

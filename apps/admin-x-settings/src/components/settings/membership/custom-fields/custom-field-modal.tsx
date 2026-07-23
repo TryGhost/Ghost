@@ -1,7 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import {Button, ConfirmationModal, Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {ConfirmationModal, Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {ValidationError, getErrorMessage} from '@tryghost/admin-x-framework/errors';
 import {memberCustomFieldUserTypes, useCreateMemberCustomField, useDeleteMemberCustomField, useEditMemberCustomField, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {toast} from 'sonner';
@@ -79,12 +79,8 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
     // The modal's third action mirrors the field's state: an active field can
     // be archived, an archived one reactivated. Both confirm first (the
     // newsletters pattern) — they change what every collection surface shows.
-    const archiveButtonProps = {
-        label: 'Archive',
-        link: true,
-        color: 'red' as const,
-        size: 'sm' as const,
-        onClick: () => {
+    const archiveButton = (
+        <Button className='text-destructive hover:text-destructive' size='sm' type='button' variant='ghost' onClick={() => {
             modal.remove();
             NiceModal.show(ConfirmationModal, {
                 title: 'Archive custom field',
@@ -93,7 +89,7 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                     <div>Values already collected for this field will remain unchanged.</div>
                 </>,
                 okLabel: 'Archive',
-                okColor: 'red',
+                okVariant: 'destructive',
                 onOk: async (archiveModal) => {
                     try {
                         // Archiving is a status change over the same PUT a rename
@@ -108,15 +104,11 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                     }
                 }
             });
-        }
-    };
+        }}>Archive</Button>
+    );
 
-    const reactivateButtonProps = {
-        label: 'Reactivate',
-        link: true,
-        color: 'green' as const,
-        size: 'sm' as const,
-        onClick: () => {
+    const reactivateButton = (
+        <Button className='text-green hover:text-green' size='sm' type='button' variant='ghost' onClick={() => {
             modal.remove();
             NiceModal.show(ConfirmationModal, {
                 title: 'Reactivate custom field',
@@ -136,12 +128,12 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                     }
                 }
             });
-        }
-    };
+        }}>Reactivate</Button>
+    );
 
-    let leftButtonProps;
+    let leftButton;
     if (isEdit) {
-        leftButtonProps = isArchived ? reactivateButtonProps : archiveButtonProps;
+        leftButton = isArchived ? reactivateButton : archiveButton;
     }
 
     // Permanent deletion hides behind the header menu — one deliberate click
@@ -154,7 +146,7 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
             title: 'Delete custom field',
             prompt: <><strong>{field!.name}</strong> and every value collected from your members will be permanently deleted from the database. This can&rsquo;t be undone.</>,
             okLabel: 'Delete',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (deleteModal) => {
                 try {
                     await deleteField(field!.key);
@@ -171,7 +163,9 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
     const archivedFieldMenu = (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button icon='ellipsis' label='Menu' hideLabel />
+                <Button aria-label='Menu' size='icon' type='button' variant='ghost'>
+                    <Icon name='ellipsis' size='sm' />
+                </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end' className='z-[9999]'>
                 <DropdownMenuItem className='text-destructive focus:text-destructive' onSelect={confirmDeleteField}>
@@ -186,9 +180,9 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
         <Modal
             buttonsDisabled={okProps.disabled}
             cancelLabel={isEdit ? 'Close' : 'Cancel'}
-            leftButtonProps={leftButtonProps}
-            okColor={okProps.color}
+            leftButton={leftButton}
             okLabel={okProps.label || 'Save'}
+            okVariant={okProps.variant}
             size='sm'
             testId='custom-field-modal'
             title={isEdit ? 'Edit custom field' : 'Add custom field'}

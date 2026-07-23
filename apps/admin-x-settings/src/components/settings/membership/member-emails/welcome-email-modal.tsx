@@ -6,7 +6,7 @@ import MemberEmailEditor from './member-email-editor';
 import WelcomeEmailPreviewFrame from './welcome-email-preview-frame';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {FieldError} from '@tryghost/shade/components';
-import {Button as LegacyButton, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
 import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
@@ -234,9 +234,10 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 className='dark:bg-[#151719]'
                 headerActions={
                     <>
-                        <Button variant="outline" onClick={handleClose}>Close</Button>
+                        <Button className='font-semibold' type='button' variant='ghost' onClick={handleClose}>Close</Button>
                         <Button
                             disabled={okProps.disabled}
+                            type='button'
                             onClick={async () => await handleSave({fakeWhenUnchanged: true})}
                         >
                             {saveButtonLabel}
@@ -260,12 +261,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                     </div>
                                     <Popover open={showTestDropdown} onOpenChange={setShowTestDropdown}>
                                         <PopoverTrigger asChild>
-                                            <LegacyButton
-                                                className='border border-control-border font-semibold hover:bg-button-hover!'
-                                                color="clear"
-                                                icon='send'
-                                                label="Test"
-                                            />
+                                            <Button type='button' variant='outline'><Icon name='send' size='sm' />Test</Button>
                                         </PopoverTrigger>
                                         {showTestDropdown && (
                                             <TestEmailDropdown automatedEmailId={automatedEmail.id} lexical={formState.lexical} subject={formState.subject} validateForm={validate} />

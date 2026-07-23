@@ -1,6 +1,6 @@
 import React from 'react';
-import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, DragIndicator, LoadingIndicator, NoValueLabel, NoValueLabelIcon, type SortableItemContainerProps, SortableList} from '@tryghost/shade/components';
-import {Button} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DragIndicator, LoadingIndicator, NoValueLabel, NoValueLabelIcon, type SortableItemContainerProps, SortableList} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
 import {MailX} from 'lucide-react';
 import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {formatNumber} from '@tryghost/shade/utils';
@@ -33,14 +33,14 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
     const container = (
         <ActionListItem ref={setRef} className={isDragging ? 'opacity-75' : ''} style={style}>
             <ActionListItemContent className='flex'>
-                {(props.dragHandleAttributes || isDragging) && <div className='w-10 shrink-0'>
+                {(props.dragHandleAttributes || isDragging) && <Inline align='center' className='w-10 shrink-0'>
                     <DragIndicator className='h-10' isDragging={isDragging || false} {...props} />
-                </div>}
+                </Inline>}
                 <button className='flex min-w-0 grow text-left' type='button' onClick={showDetails}>
                     {children}
                 </button>
             </ActionListItemContent>
-            <ActionListItemActions><Button color='green' data-testid="edit-newsletter-button" label='Edit' link onClick={showDetails} /></ActionListItemActions>
+            <ActionListItemActions><Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' data-testid='edit-newsletter-button' size='sm' type='button' variant='link' onClick={showDetails}>Edit</Button></ActionListItemActions>
         </ActionListItem>
     );
 

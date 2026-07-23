@@ -212,8 +212,8 @@ const InviteUserModal = NiceModal.create(() => {
                 updateRoute('staff');
             }}
             cancelLabel=''
-            okColor={saveState === 'error' || !!errors.email ? 'red' : 'black'}
             okLabel={okLabel}
+            okVariant={saveState === 'error' || !!errors.email ? 'destructive' : 'default'}
             testId='invite-user-modal'
             title='Invite a new staff user'
             width={540}

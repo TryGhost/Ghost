@@ -5,8 +5,8 @@ import useCurrencyInput from '../../../../hooks/use-currency-input';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import useSortableIndexedList from '../../../../hooks/use-sortable-indexed-list';
 import useUrlInput from '../../../../hooks/use-url-input';
-import {Button, type ButtonProps, ConfirmationModal, Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
-import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
+import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
+import {ConfirmationModal, Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Text} from '@tryghost/shade/primitives';
@@ -158,7 +158,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                 prompt: prompt,
                 okLabel: okLabel,
                 cancelLabel: 'Cancel',
-                okColor: tier.active ? 'red' : 'black',
+                okVariant: tier.active ? 'destructive' : 'default',
                 onOk: (confirmModal) => {
                     updateTier({...tier, active: !tier.active});
                     confirmModal?.remove();
@@ -168,22 +168,12 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         }
     };
 
-    let leftButtonProps: ButtonProps = {};
+    let leftButton: React.ReactNode;
     if (tier) {
         if (tier.active && tier.type !== 'free') {
-            leftButtonProps = {
-                label: 'Archive tier',
-                color: 'red',
-                link: true,
-                onClick: confirmTierStatusChange
-            };
+            leftButton = <Button className='text-destructive hover:text-destructive' type='button' variant='ghost' onClick={confirmTierStatusChange}>Archive tier</Button>;
         } else if (!tier.active) {
-            leftButtonProps = {
-                label: 'Reactivate tier',
-                color: 'green',
-                link: true,
-                onClick: confirmTierStatusChange
-            };
+            leftButton = <Button className='text-green hover:text-green' type='button' variant='ghost' onClick={confirmTierStatusChange}>Reactivate tier</Button>;
         }
     }
 
@@ -194,9 +184,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         dirty={saveState === 'unsaved'}
-        leftButtonProps={leftButtonProps}
-        okColor={okProps.color}
+        leftButton={leftButton}
         okLabel={okProps.label || 'Save'}
+        okVariant={okProps.variant}
         size='lg'
         testId='tier-detail-modal'
         title={(tier ? (tier.active ? 'Edit tier' : 'Edit archived tier') : 'New tier')}
@@ -363,7 +353,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     value={item}
                                     onChange={e => benefits.updateItem(id, e.target.value)}
                                 />
-                                <Button className='absolute top-1/2 right-1 z-10 size-5! -translate-y-1/2 p-0! opacity-0 group-hover:opacity-100' color='grey' icon='trash' size='sm' onClick={() => benefits.removeItem(id)} />
+                                <Button aria-label='Delete benefit' className='absolute top-1/2 right-1 z-10 size-5! -translate-y-1/2 p-0! opacity-0 group-hover:opacity-100' size='icon' type='button' variant='secondary' onClick={() => benefits.removeItem(id)}>
+                                    <Icon name='trash' size='sm' />
+                                </Button>
                             </div>}
                             onMove={benefits.moveItem}
                         />
@@ -386,15 +378,14 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             }}
                         />
                         <Button
+                            aria-label='Add benefit'
                             className='absolute top-1/2 right-1 z-10 size-[22px]! -translate-y-1/2 p-0!'
-                            color='green'
-                            icon='add'
-                            iconColorClass='text-white'
-                            label='Add'
-                            size='sm'
-                            hideLabel
+                            size='icon'
+                            type='button'
                             onClick={() => benefits.addItem()}
-                        />
+                        >
+                            <Icon name='add' size='sm' />
+                        </Button>
                     </div>
                 </Form>
             </div>

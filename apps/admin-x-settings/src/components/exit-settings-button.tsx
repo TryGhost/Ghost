@@ -1,6 +1,7 @@
 import React from 'react';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
+import {Icon} from '@tryghost/admin-x-design-system';
 import {useGlobalDirtyState} from '@tryghost/shade/utils';
 
 const ExitSettingsButton: React.FC = () => {
@@ -13,7 +14,9 @@ const ExitSettingsButton: React.FC = () => {
 
     return (
         <>
-            <Button className='text-grey-700 hover:text-grey-900!' data-testid="exit-settings" icon='close' id="done-button" label='' link={true} title='Close (ESC)' onClick={() => confirm(isDirty, navigateAway)} />
+            <Button aria-label='Close settings' className='text-muted-foreground hover:text-foreground' data-testid='exit-settings' id='done-button' size='icon' title='Close (ESC)' type='button' variant='ghost' onClick={() => confirm(isDirty, navigateAway)}>
+                <Icon name='close' size='sm' />
+            </Button>
             <DirtyConfirmDialog {...dialogProps} />
         </>
     );

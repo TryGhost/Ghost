@@ -183,9 +183,9 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         }}
         animate={animate ?? true}
         backDropClick={false}
-        okColor='black'
         okLabel={'Next'}
         okLoading={saveState === 'saving'}
+        okVariant='default'
         size='sm'
         testId='add-recommendation-modal'
         title='Add recommendation'

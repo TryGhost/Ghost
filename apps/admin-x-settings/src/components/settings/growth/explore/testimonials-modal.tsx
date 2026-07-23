@@ -4,7 +4,8 @@ import JoelWarner from '../../../../assets/images/joel-warner.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import {Avatar, Field, FieldError, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
-import {Button, Form, Modal} from '@tryghost/admin-x-design-system';
+import {Button, LoadingIndicator} from '@tryghost/shade/components';
+import {Form, Modal} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -219,14 +220,15 @@ const TestimonialsModal = NiceModal.create(() => {
                                 </div>
                                 <Button
                                     className='h-[38px]! rounded-lg'
-                                    color="black"
                                     disabled={saveState === 'saving'}
-                                    label="Send testimonial"
-                                    loading={saveState === 'saving'}
+                                    type='button'
                                     onClick={async () => {
                                         await handleSave();
                                     }}
-                                />
+                                >
+                                    {saveState === 'saving' && <LoadingIndicator size='sm' />}
+                                    Send testimonial
+                                </Button>
                             </div>
                         </div>
                     </div>

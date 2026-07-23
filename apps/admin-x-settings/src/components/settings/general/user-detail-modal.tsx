@@ -193,7 +193,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
             ),
             okLabel: _user.status === 'inactive' ? 'Un-suspend' : 'Suspend',
             okRunningLabel: _user.status === 'inactive' ? 'Un-suspending...' : 'Suspending...',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
                 const updatedUserData = {
                     ..._user,
@@ -221,7 +221,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                 </>
             ),
             okLabel: 'Delete user',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
                 onDeletingUserChange(true);
                 try {
@@ -244,7 +244,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
             title: 'Transfer Ownership',
             prompt: 'Are you sure you want to transfer the ownership of this blog? You will not be able to undo this action.',
             okLabel: 'Yep — I\'m sure',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
                 try {
                     await makeOwner(user.id);
@@ -328,8 +328,8 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
             cancelLabel='Close'
             dirty={saveState === 'unsaved'}
             hideXOnMobile={true}
-            okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
+            okVariant={okProps.variant}
             size={canAccessSettings(currentUser) ? 'md' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
@@ -369,11 +369,11 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                                 <div className='flex flex-nowrap items-start gap-3'>
                                     {formState.cover_image ? <div className='flex flex-nowrap items-end justify-end gap-4'>
                                         <img alt='' className='hidden' data-testid='cover-image-preview' src={formState.cover_image} />
-                                        {editor.isEnabled && <Button className={coverButtonClasses} onClick={() => editor.openEditor({
+                                        {editor.isEnabled && <Button className={coverButtonClasses} type='button' onClick={() => editor.openEditor({
                                             image: formState.cover_image || '',
                                             handleSave: async (file: File) => handleImageUpload('cover_image', file)
                                         })}>Edit cover image</Button>}
-                                        <Button className={coverButtonClasses} onClick={() => handleImageDelete('cover_image')}>Delete cover image</Button>
+                                        <Button className={coverButtonClasses} type='button' onClick={() => handleImageDelete('cover_image')}>Delete cover image</Button>
                                     </div> : <Dropzone className='h-8' inputId='cover-image' inputTestId='cover-image-upload' variant='button' onDropAccepted={files => handleImageUpload('cover_image', files[0])}>Upload cover image</Dropzone>}
                                     {showMenu && <div className="z-10">
                                         <DropdownMenu>

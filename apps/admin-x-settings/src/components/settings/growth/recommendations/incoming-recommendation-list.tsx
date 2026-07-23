@@ -1,7 +1,7 @@
 import React, {useMemo} from 'react';
 import RecommendationIcon from './recommendation-icon';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, LoadingIndicator, NoValueLabel} from '@tryghost/shade/components';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {type IncomingRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {Inline} from '@tryghost/shade/primitives';
 import {type ReferrerHistoryItem} from '@tryghost/admin-x-framework/api/referrers';
@@ -79,8 +79,7 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
             {!incomingRecommendation.recommending_back && (
                 <ActionListItemActions visibility='hover'>
                 <div className="flex items-center justify-end">
-                    <Button color='green' label='Recommend back' size='sm' link onClick={recommendBack}
-                    />
+                    <Button size='sm' type='button' variant='ghost' onClick={recommendBack}>Recommend back</Button>
                 </div>
                 </ActionListItemActions>
             )}
@@ -98,7 +97,7 @@ const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({
             <ActionList>
                 {incomingRecommendations.map(rec => <IncomingRecommendationItem key={rec.id} incomingRecommendation={rec} stats={stats} />)}
             </ActionList>
-            {showMore?.hasMore && <div className='border-t border-border pt-2'><button className='font-bold text-green hover:opacity-80' type='button' onClick={showMore.loadMore}>Show all</button></div>}
+            {showMore?.hasMore && <div className='border-t border-border pt-2'><Button className='h-auto p-0 text-green hover:text-green' type='button' variant='link' onClick={showMore.loadMore}>Show all</Button></div>}
         </>;
     } else {
         return <NoValueLabel>

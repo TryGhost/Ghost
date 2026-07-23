@@ -1,6 +1,4 @@
-import {Badge, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
-import {Button, type ButtonProps} from '@tryghost/admin-x-design-system';
-import {ButtonGroup} from '@tryghost/admin-x-design-system';
+import {Badge, Button, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
@@ -76,7 +74,9 @@ const OffersFilterMenu: React.FC<{
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button aria-label='Filter options' className='p-1 text-muted-foreground hover:text-foreground' label={<LucideIcon.ListFilter size={16} strokeWidth={1.5} />} unstyled={true} />
+                <Button aria-label='Filter options' className='text-muted-foreground hover:text-foreground' size='icon' type='button' variant='ghost'>
+                    <LucideIcon.ListFilter size={16} strokeWidth={1.5} />
+                </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end' className='z-[9999] min-w-[200px] normal-case'>
                 <DropdownMenuLabel className='text-xs tracking-wide text-muted-foreground uppercase'>Sort by</DropdownMenuLabel>
@@ -328,29 +328,24 @@ export const OffersIndexModal: React.FC = () => {
         return offer.status === 'archived' || offerTier?.active === false;
     };
 
-    const buttons: ButtonProps[] = [
-        {
-            key: 'cancel-modal',
-            label: 'Close',
-            onClick: () => {
+    const actions = (
+        <Inline gap='md'>
+            <Button className='font-semibold' type='button' variant='ghost' onClick={() => {
                 modal.remove();
                 updateRoute('offers');
-            }
-        },
-        {
-            key: 'new-offer',
-            icon: 'add',
-            label: 'New offer',
-            color: 'green' as const,
-            onClick: () => {
+            }}>Close</Button>
+            <Button type='button' onClick={() => {
                 if (paidActiveTiers.length === 0) {
                     toast.info('You must have an active tier to create an offer.');
                 } else {
                     updateRoute('offers/new');
                 }
-            }
-        }
-    ];
+            }}>
+                <LucideIcon.Plus />
+                New offer
+            </Button>
+        </Inline>
+    );
 
     const listLayoutOutput = <div className='overflow-x-auto'>
         <Table className='m-0 min-w-[900px]'>
@@ -429,7 +424,7 @@ export const OffersIndexModal: React.FC = () => {
         size='lg'
         testId='offers-modal'
         title='Offers'
-        topRightContent={<ButtonGroup buttons={buttons} />}
+        topRightContent={actions}
         width={1140}
     >
         <Stack className='h-full pt-8'>

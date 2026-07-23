@@ -2,7 +2,6 @@ import type {Meta, StoryContext, StoryObj} from '@storybook/react-vite';
 import {ReactNode} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
-import Button from '../button';
 import Modal, {ModalProps} from './modal';
 import ModalPage from './modal-page';
 
@@ -18,9 +17,9 @@ const ModalContainer: React.FC<ModalProps> = ({children, ...props}) => {
     });
     return (
         <div>
-            <Button color='black' label='Open modal' onClick={() => {
+            <button type='button' onClick={() => {
                 NiceModal.show(modal);
-            }} />
+            }}>Open modal</button>
         </div>
     );
 };
@@ -186,12 +185,7 @@ export const CompletePage: Story = {
 
 export const CustomButtons: Story = {
     args: {
-        leftButtonProps: {
-            label: 'Left button',
-            onClick: () => {
-                alert('Left button click');
-            }
-        },
+        leftButton: <span>Left action slot</span>,
         cancelLabel: 'Nope',
         okLabel: 'Yep',
         onOk: () => {

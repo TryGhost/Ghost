@@ -1,4 +1,5 @@
-import {Button, TextField} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
+import {TextField} from '@tryghost/admin-x-design-system';
 import {type User, useUpdatePassword} from '@tryghost/admin-x-framework/api/users';
 import {ValidationError} from '@tryghost/admin-x-framework/errors';
 import {toast} from 'sonner';
@@ -205,8 +206,8 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
             />
             <div className='mt-1 flex items-center justify-end gap-3'>
                 <Button
-                    color='outline'
-                    label='Cancel'
+                    type='button'
+                    variant='outline'
                     onClick={() => {
                         setEditPassword(false);
                         setOldPassword('');
@@ -214,11 +215,10 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
                         setConfirmNewPassword('');
                         setErrors({});
                     }}
-                />
+                >Cancel</Button>
                 <Button
-                    color='green'
                     data-testid='save-password-button'
-                    label={buttonLabel}
+                    type='button'
                     onClick={async () => {
                         setSaveState('saving');
                         const validationErrors = validate({password: newPassword, confirmPassword: confirmNewPassword});
@@ -241,7 +241,7 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
                             handleError(e, {withToast: false});
                         }
                     }}
-                />
+                >{buttonLabel}</Button>
             </div>
         </>
     );
@@ -249,7 +249,7 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
     const initialView = (
         <div className='relative flex flex-col'>
             <TextField containerClassName='grow' disabled={true} title='Password' type='password' value='••••••••••••' />
-            <Button className='absolute top-0 right-0' color='green' data-testid='change-password-button' label='Change' link={true} onClick={showPasswordInputs} />
+            <Button className='absolute top-0 right-0' data-testid='change-password-button' size='sm' type='button' variant='ghost' onClick={showPasswordInputs}>Change</Button>
         </div>
     );
 

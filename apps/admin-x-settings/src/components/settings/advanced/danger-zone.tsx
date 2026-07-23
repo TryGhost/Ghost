@@ -3,8 +3,8 @@ import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import trackEvent from '../../../utils/analytics';
 import useStaffUsers from '../../../hooks/use-staff-users';
-import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent} from '@tryghost/shade/components';
-import {Button, ConfirmationModal, SettingGroupHeader} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button} from '@tryghost/shade/components';
+import {ConfirmationModal, SettingGroupHeader} from '@tryghost/admin-x-design-system';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
@@ -37,7 +37,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
         NiceModal.show(ConfirmationModal, {
             title: 'Would you really like to delete all content from your blog?',
             prompt: 'This is permanent! No backups, no restores, no magic undo button. We warned you, k?',
-            okColor: 'red',
+            okVariant: 'destructive',
             okLabel: 'Delete',
             onOk: async (modal) => {
                 try {
@@ -67,7 +67,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             ),
             okLabel: 'Reset all authentication',
             okRunningLabel: 'Resetting...',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
                 try {
                     const response = await resetAuth(null);
@@ -90,7 +90,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             prompt: 'This immediately invalidates every active gift link across your site. Anyone holding one will lose access. New gift links can still be created afterwards.',
             okLabel: 'Reset all gift links',
             okRunningLabel: 'Resetting...',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
                 try {
                     const response = await removeAllGiftLinks(null);
@@ -120,7 +120,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <div>Delete all content</div>
                         <div className='text-sm text-muted-foreground'>Permanently delete all posts and tags from the database.</div>
                     </ActionListItemContent>
-                    <ActionListItemActions><Button aria-label='Delete all content' color='red' label='Delete' onClick={handleDeleteAllContent} /></ActionListItemActions>
+                    <ActionListItemActions><Button aria-label='Delete all content' size='sm' type='button' variant='destructive' onClick={handleDeleteAllContent}>Delete</Button></ActionListItemActions>
                 </ActionListItem>
                 {resetAuthEnabled && (
                     <ActionListItem data-testid='reset-all-authentication' hover={false}>
@@ -128,7 +128,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             <div>Reset all authentication</div>
                             <div className='text-sm text-muted-foreground'>Rotate every API key, sign out every staff user, and require a password reset. Use after a suspected credential compromise.</div>
                         </ActionListItemContent>
-                        <ActionListItemActions><Button aria-label='Reset all authentication' color='red' label='Reset' onClick={handleResetAuth} /></ActionListItemActions>
+                        <ActionListItemActions><Button aria-label='Reset all authentication' size='sm' type='button' variant='destructive' onClick={handleResetAuth}>Reset</Button></ActionListItemActions>
                     </ActionListItem>
                 )}
                 <ActionListItem data-testid='reset-all-gift-links' hover={false}>
@@ -136,7 +136,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <div>Reset all gift links</div>
                         <div className='text-sm text-muted-foreground'>Invalidate every active gift link across your site. Anyone holding one will lose access.</div>
                     </ActionListItemContent>
-                    <ActionListItemActions><Button aria-label='Reset all gift links' color='red' label='Reset' onClick={handleRemoveAllGiftLinks} /></ActionListItemActions>
+                    <ActionListItemActions><Button aria-label='Reset all gift links' size='sm' type='button' variant='destructive' onClick={handleRemoveAllGiftLinks}>Reset</Button></ActionListItemActions>
                 </ActionListItem>
             </ActionList>
         </TopLevelGroup>

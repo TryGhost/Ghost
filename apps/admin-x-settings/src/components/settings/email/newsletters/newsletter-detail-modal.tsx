@@ -6,9 +6,9 @@ import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, ButtonGroup, ConfirmationModal, Form, Icon, LimitModal, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipTrigger} from '@tryghost/shade/components';
+import {ConfirmationModal, Form, Icon, LimitModal, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
@@ -23,6 +23,33 @@ import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newslette
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {toast} from 'sonner';
 import {useGlobalData} from '../../../providers/global-data-provider';
+
+interface IconToggleOption {
+    value: string;
+    label: string;
+    icon: string;
+    disabled?: boolean;
+}
+
+const IconToggleGroup: React.FC<{
+    label: string;
+    value: string;
+    options: IconToggleOption[];
+    onValueChange: (value: string) => void;
+}> = ({label, value, options, onValueChange}) => (
+    <ToggleGroup aria-label={label} type='single' value={value} onValueChange={nextValue => nextValue && onValueChange(nextValue)}>
+        {options.map(option => (
+            <Tooltip key={option.value}>
+                <TooltipTrigger asChild>
+                    <ToggleGroupItem aria-label={option.label} disabled={option.disabled} value={option.value}>
+                        <Icon name={option.icon} size='sm' />
+                    </ToggleGroupItem>
+                </TooltipTrigger>
+                <TooltipContent>{option.label}</TooltipContent>
+            </Tooltip>
+        ))}
+    </ToggleGroup>
+);
 
 const ReplyToEmailField: React.FC<{
     newsletter: Newsletter;
@@ -139,7 +166,7 @@ const Sidebar: React.FC<{
                     <div>Existing posts previously sent as this newsletter will remain unchanged.</div>
                 </>,
                 okLabel: 'Archive',
-                okColor: 'red',
+                okVariant: 'destructive',
                 onOk: async (modal) => {
                     try {
                         await editNewsletter({...newsletter, status: 'archived'});
@@ -279,7 +306,7 @@ const Sidebar: React.FC<{
                     </Field>
                 </Form>
                 <div className='mt-10 mb-5'>
-                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' disabled={activeNewsletters.length === 1} label='Archive newsletter' link onClick={confirmStatusChange}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
+                    {newsletter.status === 'active' ? (!onlyOne && <Button className='text-destructive hover:text-destructive' disabled={activeNewsletters.length === 1} type='button' variant='ghost' onClick={confirmStatusChange}>Archive newsletter</Button>) : <Button className='text-green hover:text-green' type='button' variant='ghost' onClick={confirmStatusChange}>Reactivate newsletter</Button>}
                 </div>
             </>
         },
@@ -501,32 +528,15 @@ const Sidebar: React.FC<{
                     </div>
                     <div className='flex w-full justify-between'>
                         <div>Title alignment</div>
-                        <ButtonGroup activeKey={newsletter.title_alignment} buttons={[
-                            {
-                                key: 'left',
-                                icon: 'align-left',
-                                iconSize: 14,
-                                label: 'Align left',
-                                tooltip: 'Left',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({title_alignment: 'left'}),
-                                disabled: !newsletter.show_post_title_section
-                            },
-                            {
-                                key: 'center',
-                                icon: 'align-center',
-                                iconSize: 14,
-                                label: 'Align center',
-                                tooltip: 'Center',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({title_alignment: 'center'}),
-                                disabled: !newsletter.show_post_title_section
-                            }
-                        ]} clearBg={false} />
+                        <IconToggleGroup
+                            label='Title alignment'
+                            options={[
+                                {value: 'left', label: 'Left', icon: 'align-left', disabled: !newsletter.show_post_title_section},
+                                {value: 'center', label: 'Center', icon: 'align-center', disabled: !newsletter.show_post_title_section}
+                            ]}
+                            value={newsletter.title_alignment}
+                            onValueChange={titleAlignment => updateNewsletter({title_alignment: titleAlignment})}
+                        />
                     </div>
                 </Form>
 
@@ -575,68 +585,28 @@ const Sidebar: React.FC<{
                     </div>
                     <div className='flex w-full justify-between'>
                         <div>Button style</div>
-                        <ButtonGroup activeKey={newsletter.button_style || 'fill'} buttons={[
-                            {
-                                key: 'fill',
-                                icon: 'squircle-fill',
-                                iconSize: 14,
-                                label: 'Fill',
-                                tooltip: 'Fill',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({button_style: 'fill'})
-                            },
-                            {
-                                key: 'outline',
-                                icon: 'squircle',
-                                iconSize: 14,
-                                label: 'Outline',
-                                tooltip: 'Outline',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({button_style: 'outline'})
-                            }
-                        ]} clearBg={false} />
+                        <IconToggleGroup
+                            label='Button style'
+                            options={[
+                                {value: 'fill', label: 'Fill', icon: 'squircle-fill'},
+                                {value: 'outline', label: 'Outline', icon: 'squircle'}
+                            ]}
+                            value={newsletter.button_style || 'fill'}
+                            onValueChange={buttonStyle => updateNewsletter({button_style: buttonStyle})}
+                        />
                     </div>
                     <div className='flex w-full justify-between'>
                         <div>Button corners</div>
-                        <ButtonGroup activeKey={newsletter.button_corners || 'rounded'} buttons={[
-                            {
-                                key: 'square',
-                                icon: 'square',
-                                iconSize: 14,
-                                label: 'Square',
-                                tooltip: 'Squared',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({button_corners: 'square'})
-                            },
-                            {
-                                key: 'rounded',
-                                icon: 'squircle',
-                                iconSize: 14,
-                                label: 'Rounded',
-                                tooltip: 'Rounded',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({button_corners: 'rounded'})
-                            },
-                            {
-                                key: 'pill',
-                                icon: 'circle',
-                                iconSize: 14,
-                                label: 'Pill',
-                                tooltip: 'Pill',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({button_corners: 'pill'})
-                            }
-                        ]} clearBg={false} />
+                        <IconToggleGroup
+                            label='Button corners'
+                            options={[
+                                {value: 'square', label: 'Squared', icon: 'square'},
+                                {value: 'rounded', label: 'Rounded', icon: 'squircle'},
+                                {value: 'pill', label: 'Pill', icon: 'circle'}
+                            ]}
+                            value={newsletter.button_corners || 'rounded'}
+                            onValueChange={buttonCorners => updateNewsletter({button_corners: buttonCorners})}
+                        />
                     </div>
                     <div className='mb-1'>
                         <ColorPickerField
@@ -661,68 +631,28 @@ const Sidebar: React.FC<{
                     </div>
                     <div className='flex w-full justify-between'>
                         <div>Link style</div>
-                        <ButtonGroup activeKey={newsletter.link_style || 'underline'} buttons={[
-                            {
-                                key: 'underline',
-                                icon: 'text-underline',
-                                iconSize: 14,
-                                label: 'Underline',
-                                tooltip: 'Underline',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({link_style: 'underline'})
-                            },
-                            {
-                                key: 'regular',
-                                icon: 'text-regular',
-                                iconSize: 14,
-                                label: 'Regular',
-                                tooltip: 'Regular',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({link_style: 'regular'})
-                            },
-                            {
-                                key: 'bold',
-                                icon: 'text-bold',
-                                iconSize: 14,
-                                label: 'Bold',
-                                tooltip: 'Bold',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({link_style: 'bold'})
-                            }
-                        ]} clearBg={false} />
+                        <IconToggleGroup
+                            label='Link style'
+                            options={[
+                                {value: 'underline', label: 'Underline', icon: 'text-underline'},
+                                {value: 'regular', label: 'Regular', icon: 'text-regular'},
+                                {value: 'bold', label: 'Bold', icon: 'text-bold'}
+                            ]}
+                            value={newsletter.link_style || 'underline'}
+                            onValueChange={linkStyle => updateNewsletter({link_style: linkStyle})}
+                        />
                     </div>
                     <div className='flex w-full justify-between'>
                         <div>Image corners</div>
-                        <ButtonGroup activeKey={newsletter.image_corners || 'square'} buttons={[
-                            {
-                                key: 'square',
-                                icon: 'square',
-                                iconSize: 14,
-                                label: 'Square',
-                                tooltip: 'Squared',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({image_corners: 'square'})
-                            },
-                            {
-                                key: 'rounded',
-                                icon: 'squircle',
-                                iconSize: 14,
-                                label: 'Rounded',
-                                tooltip: 'Rounded',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({image_corners: 'rounded'})
-                            }
-                        ]} clearBg={false} />
+                        <IconToggleGroup
+                            label='Image corners'
+                            options={[
+                                {value: 'square', label: 'Squared', icon: 'square'},
+                                {value: 'rounded', label: 'Rounded', icon: 'squircle'}
+                            ]}
+                            value={newsletter.image_corners || 'square'}
+                            onValueChange={imageCorners => updateNewsletter({image_corners: imageCorners})}
+                        />
                     </div>
                     <div className='mb-1'>
                         <ColorPickerField
@@ -831,8 +761,8 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         dirty={saveState === 'unsaved'}
-        okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
+        okVariant={okProps.variant}
         preview={preview}
         previewBgColor={'grey'}
         previewToolbar={false}

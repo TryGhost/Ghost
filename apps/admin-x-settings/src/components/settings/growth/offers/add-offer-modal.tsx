@@ -1,7 +1,6 @@
 import PortalFrame from '../../membership/portal/portal-frame';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldContent, FieldDescription, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea} from '@tryghost/shade/components';
 import {Form, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {formatNumber} from '@tryghost/shade/utils';
@@ -307,7 +306,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
 
                         <TextField
                             error={Boolean(errors.code)}
-                            hint={errors.code || (overrides.code.value !== '' ? <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><span></span><Button className='text-sm' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div> : null)}
+                            hint={errors.code || (overrides.code.value !== '' ? <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><span></span><Button className='h-auto p-0 text-sm text-green hover:text-green' size='sm' type='button' variant='link' onClick={handleCopyClick}>{isCopied ? 'Copied' : 'Copy'}</Button></div> : null)}
                             placeholder='black-friday'
                             title='Offer code'
                             value={overrides.code.value}
@@ -671,8 +670,8 @@ const AddOfferModal = () => {
         cancelLabel='Cancel'
         dirty={saveState === 'unsaved'}
         height='full'
-        okColor={okProps.color}
         okLabel='Publish'
+        okVariant={okProps.variant}
         preview={iframe}
         previewToolbar={false}
         sidebar={sidebar}

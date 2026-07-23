@@ -2,14 +2,13 @@ import type {Meta, StoryContext, StoryObj} from '@storybook/react-vite';
 import {ReactNode} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
-import Button from '../button';
 import ConfirmationModal, {ConfirmationModalProps} from './confirmation-modal';
 
 const ConfirmationModalContainer: React.FC<ConfirmationModalProps> = ({...props}) => {
     return (
-        <Button color='black' label='Open confirmation modal' onClick={() => {
+        <button type='button' onClick={() => {
             NiceModal.show(ConfirmationModal, {...props});
-        }} />
+        }}>Open confirmation modal</button>
     );
 };
 
@@ -40,6 +39,6 @@ export const CustomButtons: Story = {
         title: 'You want to delete?',
         cancelLabel: 'Meh',
         okLabel: 'Alrite',
-        okColor: 'red'
+        okVariant: 'destructive'
     }
 };

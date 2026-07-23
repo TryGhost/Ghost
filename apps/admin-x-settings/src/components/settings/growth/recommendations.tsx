@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import RecommendationList from './recommendations/recommendation-list';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade/components';
 import {formatNumber} from '@tryghost/shade/utils';
 import {keepPreviousData} from '@tanstack/react-query';
@@ -101,9 +101,9 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const buttons = (
-        <Button className='mt-[-5px] hidden md:!visible md:!block' color='clear' label='Add recommendation' size='sm' onClick={() => {
+        <Button className='mt-[-5px] hidden md:!visible md:!block' size='sm' type='button' variant='ghost' onClick={() => {
             openAddNewRecommendationModal();
-        }} />
+        }}>Add recommendation</Button>
     );
 
     return (
@@ -119,9 +119,9 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
-                <Button color='light-grey' label='Add recommendation' link onClick={() => {
+                <Button type='button' variant='ghost' onClick={() => {
                     openAddNewRecommendationModal();
-                }} />
+                }}>Add recommendation</Button>
             </div>
             <Tabs value={selectedTab} variant='underline' onValueChange={setSelectedTab}>
                 <TabsList>

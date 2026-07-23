@@ -2,15 +2,14 @@ import type {Meta, StoryContext, StoryObj} from '@storybook/react-vite';
 import {ReactNode} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
-import Button from '../button';
 import PreviewModal, {PreviewModalProps} from './preview-modal';
 import {Text} from '@tryghost/shade/primitives';
 
 const PreviewModalContainer: React.FC<PreviewModalProps> = ({...props}) => {
     return (
-        <Button color='black' label='Open preview modal' onClick={() => {
+        <button type='button' onClick={() => {
             NiceModal.show(PreviewModal, {...props});
-        }} />
+        }}>Open preview modal</button>
     );
 };
 
@@ -64,7 +63,7 @@ export const CustomButtons: Story = {
         ...Default.args,
         cancelLabel: 'Meh',
         okLabel: 'Alrite',
-        okColor: 'green'
+        okVariant: 'default'
     }
 };
 
