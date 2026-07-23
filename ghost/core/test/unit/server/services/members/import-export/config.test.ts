@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {resolveInlineThreshold} from '../../../../../../core/server/services/members/importer/config';
+import {resolveInlineThreshold} from '../../../../../../core/server/services/members/import-export/config';
 
 // The value shipped in defaults.json. Read rather than restated so this suite
 // follows the shipped threshold if it is ever changed.

@@ -1,11 +1,11 @@
 import {pipeline} from 'node:stream';
 import papaparse from 'papaparse';
 import fs from 'fs-extra';
-import type {Label, MemberCsvRow} from './types';
+import type {Label, CsvRow, ParsedCsvRow} from './types';
 
 type CsvValue = string | boolean | null | Label[];
 
-const transformValue = (header: string, value: string): CsvValue => {
+export const transformValue = (header: string, value: string): CsvValue => {
     if (header === 'labels') {
         if (value && typeof value === 'string') {
             return value.split(',').map(name => ({name}));
@@ -50,14 +50,14 @@ export default function parse(
     path: string,
     headerMapping?: Record<string, string>,
     defaultLabels: Label[] = []
-): Promise<MemberCsvRow[]> {
+): Promise<ParsedCsvRow[]> {
     return new Promise(function (resolve, reject) {
         const csvFileStream = fs.createReadStream(path);
         const csvParserStream = papaparse.parse(papaparse.NODE_STREAM_INPUT, {
             header: true
         });
 
-        const rows: MemberCsvRow[] = [];
+        const rows: ParsedCsvRow[] = [];
         const parsedCSVStream = pipeline(csvFileStream, csvParserStream, (err) => {
             if (err) {
                 return reject(err);
@@ -69,7 +69,7 @@ export default function parse(
             // a throw here escapes as an uncaught exception and leaves this
             // promise forever unsettled, so it has to become a rejection
             try {
-                const row: MemberCsvRow = {};
+                const row: CsvRow = {};
 
                 for (const [header, value] of Object.entries(parsedRow)) {
                     // papaparse gathers the overflow from a row carrying more
@@ -82,12 +82,18 @@ export default function parse(
                     // hasOwn, not `in`: a column named after an Object.prototype
                     // member would otherwise pass as mapped and take a function
                     // as its mapped name
-                    if (!headerMapping || !Object.hasOwn(headerMapping, header)) {
-                        continue;
+                    if (headerMapping && Object.hasOwn(headerMapping, header)) {
+                        const mappedHeader = headerMapping[header];
+                        row[mappedHeader] = transformValue(mappedHeader, value);
+                    } else if (!(header in Object.prototype)) {
+                        // Carry any unmapped column through untouched, so the import is
+                        // not constrained to a known vocabulary: a custom_fields.* column
+                        // survives parsing even though nothing consumes it yet. A column
+                        // named after an Object.prototype member (toString, __proto__, ...)
+                        // is dropped, so a carried row can never shadow a prototype method
+                        // or reach the prototype.
+                        row[header] = value;
                     }
-
-                    const mappedHeader = headerMapping[header];
-                    row[mappedHeader] = transformValue(mappedHeader, value);
                 }
 
                 // skip rows with no data
@@ -95,14 +101,17 @@ export default function parse(
                     return;
                 }
 
-                // labels is absent when the column is unmapped, and an array otherwise
-                const parsedLabels = row.labels;
-                row.labels = [
-                    ...(Array.isArray(parsedLabels) ? parsedLabels : []),
-                    ...defaultLabels
-                ];
-
-                rows.push(row);
+                // labels is absent when the column is unmapped, and an array otherwise.
+                // Normalise to Label objects so the parsed row's labels are always
+                // Label[], the guarantee ParsedCsvRow makes to its consumers.
+                const parsedLabels = Array.isArray(row.labels) ? row.labels : [];
+                rows.push({
+                    ...row,
+                    labels: [
+                        ...parsedLabels.map(label => (typeof label === 'string' ? {name: label} : label)),
+                        ...defaultLabels
+                    ]
+                });
             } catch (err) {
                 reject(err);
             }

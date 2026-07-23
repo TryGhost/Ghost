@@ -1,10 +1,9 @@
 //@ts-check
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
-const {unparse} = require('../../../../../services/members/csv');
+const {serialize: serializeCSV} = require('../../../../../services/members/import-export/csv');
 const mappers = require('./mappers');
 const {Transform} = require('stream');
-const papaparse = require('papaparse');
 const {createCSVStreamResponse} = require('./stream-csv-response');
 module.exports = {
     browse: createSerializer('browse', paginatedMembers),
@@ -431,25 +430,11 @@ function createCSVTransform() {
                 // For first chunk, include the headers
                 if (fields === null) {
                     fields = Object.keys(formattedMember);
-                    const csv = papaparse.unparse({
-                        fields,
-                        data: [formattedMember]
-                    }, {
-                        header: true,
-                        escapeFormulae: true,
-                        newline: '\r\n' // Explicitly set Windows-style line endings for compatibility
-                    });
+                    const csv = serializeCSV([formattedMember], {columns: fields, header: true});
                     callback(null, csv);
                 } else {
                     // For subsequent chunks, don't include headers, just the data
-                    const csv = papaparse.unparse({
-                        fields,
-                        data: [formattedMember]
-                    }, {
-                        header: false,
-                        escapeFormulae: true,
-                        newline: '\r\n' // Explicitly set Windows-style line endings for compatibility
-                    });
+                    const csv = serializeCSV([formattedMember], {columns: fields, header: false});
 
                     // Make sure each row starts with a newline to ensure separation between rows
                     // Ensure consistent line endings by using explicit CR+LF sequence
@@ -465,28 +450,21 @@ function createCSVTransform() {
 /**
  * @template PageMeta
  *
- * @param {{data: any[]|Object, filename?: string}} data
+ * @param {{data: NodeJS.ReadableStream, filename?: string}} data
  *
- * @returns {string|Function} - A CSV string or response handler function
+ * @returns {Function} - A response handler that streams the CSV
  */
 function exportCSV(data) {
     debug('exportCSV');
 
-    // Check if data.data is a stream (has the pipe method)
-    if (data.data && typeof data.data.pipe === 'function') {
-        debug('CSV stream response');
+    // The export endpoint always yields a stream (response.stream: true), so there is
+    // only ever a stream to pipe. Fall back to the legacy filename if none was given.
+    const datetime = (new Date()).toJSON().substring(0, 10);
+    const filename = data.filename || `members.${datetime}.csv`;
 
-        // Fall back to the legacy filename if the endpoint didn't provide one
-        const datetime = (new Date()).toJSON().substring(0, 10);
-        const filename = data.filename || `members.${datetime}.csv`;
-
-        return createCSVStreamResponse({
-            source: data.data,
-            transform: createCSVTransform(),
-            filename
-        });
-    }
-
-    // Otherwise use the unparse function for array data
-    return unparse(data.data);
+    return createCSVStreamResponse({
+        source: data.data,
+        transform: createCSVTransform(),
+        filename
+    });
 }

@@ -3,10 +3,8 @@
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const models = require('../../models');
 const membersService = require('../../services/members');
 
-const settingsCache = require('../../../shared/settings-cache');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 const {getCSVExportFileName} = require('./utils/csv-export-filename');
@@ -417,34 +415,11 @@ const controller = {
         permissions: {
             method: 'add'
         },
-        async query(frame) {
-            const siteTimezone = settingsCache.get('timezone');
-
-            const importLabel = {
-                name: `Import ${moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm')}`
-            };
-
-            const globalLabels = [importLabel].concat(frame.data.labels);
-            const pathToCSV = frame.file.path;
-            const headerMapping = frame.data.mapping;
-
-            let email;
-            if (frame.user) {
-                email = frame.user.get('email');
-            } else {
-                email = (await models.User.getOwnerUser()).get('email');
-            }
-
-            return membersService.processImport({
-                pathToCSV,
-                headerMapping,
-                globalLabels,
-                importLabel,
-                LabelModel: models.Label,
-                user: {
-                    email: email
-                }
-            });
+        query(frame) {
+            // The import service takes the raw request frame and owns everything from
+            // there: reading the CSV, deciding inline vs deferred, and shaping the
+            // response.
+            return membersService.processImport(frame);
         }
     },
 

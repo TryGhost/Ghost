@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const MembersCSVImporterStripeUtils = require('../../../../../../core/server/services/members/importer/members-csv-importer-stripe-utils');
+const MembersCSVImporterStripeUtils = require('../../../../../../../core/server/services/members/import-export/import/members-csv-importer-stripe-utils');
 
 describe('MembersCSVImporterStripeUtils', function () {
     const CUSTOMER_ID = 'abc123';

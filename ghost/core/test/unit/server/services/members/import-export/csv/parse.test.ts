@@ -1,7 +1,7 @@
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {vi} from 'vitest';
-import {parse} from '../../../../../../core/server/services/members/csv';
+import {parse} from '../../../../../../../core/server/services/members/import-export/csv';
 const csvPath = path.join(__dirname, '/fixtures/');
 
 describe('parse', function () {
@@ -28,12 +28,14 @@ describe('parse', function () {
         assert.equal(result[1].email, 'test@example.com');
     });
 
-    it('one column without header mapping returns empty result', async function () {
+    it('carries the column through untouched when no header mapping is passed', async function () {
         const filePath = csvPath + 'single-column-with-header.csv';
         const result = await parse(filePath);
 
         assert.ok(result);
-        assert.equal(result.length, 0);
+        assert.equal(result.length, 2);
+        assert.equal(result[0].email, 'jbloggs@example.com');
+        assert.equal(result[1].email, 'test@example.com');
     });
 
     it('one column with bom', async function () {
@@ -46,12 +48,14 @@ describe('parse', function () {
         assert.equal(result[1].email, 'test@example.com');
     });
 
-    it('one column with bom and without header mapping returns empty result', async function () {
+    it('carries the column through untouched (with bom) when no header mapping is passed', async function () {
         const filePath = csvPath + 'single-column-with-header-bom.csv';
         const result = await parse(filePath);
 
         assert.ok(result);
-        assert.equal(result.length, 0);
+        assert.equal(result.length, 2);
+        assert.equal(result[0].email, 'jbloggs@example.com');
+        assert.equal(result[1].email, 'test@example.com');
     });
 
     it('two columns, 1 filter', async function () {
@@ -117,7 +121,7 @@ describe('parse', function () {
         assert.equal(result[1].id, '2');
     });
 
-    it('drops every unmapped column when several are unmapped', async function () {
+    it('carries every unmapped column through as a raw cell', async function () {
         const filePath = csvPath + 'two-columns-mapping-header.csv';
         const mapping = {
             correo_electronico: 'email'
@@ -125,10 +129,13 @@ describe('parse', function () {
         const result = await parse(filePath, mapping);
 
         assert.equal(result.length, 2);
-        assert.deepEqual(Object.keys(result[0]), ['email', 'labels']);
+        assert.deepEqual(Object.keys(result[0]), ['id', 'email', 'nombre', 'labels']);
         assert.equal(result[0].email, 'jbloggs@example.com');
-        assert.deepEqual(Object.keys(result[1]), ['email', 'labels']);
+        assert.equal(result[0].id, '1');
+        assert.equal(result[0].nombre, 'joe');
         assert.equal(result[1].email, 'test@example.com');
+        assert.equal(result[1].id, '2');
+        assert.equal(result[1].nombre, 'test');
     });
 
     it('ignores the overflow from a row with more fields than headers', async function () {
@@ -142,7 +149,9 @@ describe('parse', function () {
         const filePath = csvPath + 'long-row.csv';
         const result = await parse(filePath, {email: 'email', __parsed_extra: 'note'});
 
-        assert.deepEqual(result, [{email: 'a@b.com', labels: []}]);
+        // name is unmapped, so it carries through; the __parsed_extra overflow is an
+        // array, not a string, and is skipped either way.
+        assert.deepEqual(result, [{email: 'a@b.com', name: 'Al', labels: []}]);
     });
 
     it('drops a column named after an Object.prototype member', async function () {
@@ -198,17 +207,19 @@ describe('parse', function () {
         assert.equal(result[1].subscribed, false);
     });
 
-    it('does not transform "subscribed_to_emails" column to "subscribed" property without the mapping', async function () {
+    it('does not transform "subscribed_to_emails" to the "subscribed" property without the mapping', async function () {
         const filePath = csvPath + 'subscribed-to-emails-header.csv';
         const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
 
         assert.ok(result);
         assert.equal(result.length, 2);
         assert.equal(result[0].email, 'jbloggs@example.com');
-        assert.equal(result[0].subscribed_to_emails, undefined, 'property not present in the mapping should not be defined');
-
-        assert.equal(result[1].email, 'test@example.com');
-        assert.equal(result[1].subscribed_to_emails, undefined, 'property not present in the mapping should not be defined');
+        // Without the mapping it is not transformed into the `subscribed` boolean...
+        assert.equal(result[0].subscribed, undefined, 'not transformed into the subscribed property without the mapping');
+        assert.equal(result[1].subscribed, undefined, 'not transformed into the subscribed property without the mapping');
+        // ...but the raw column still carries through untouched.
+        assert.equal(result[0].subscribed_to_emails, 'true');
+        assert.equal(result[1].subscribed_to_emails, 'false');
     });
 
     it('transforms labels column into array of label objects', async function () {
