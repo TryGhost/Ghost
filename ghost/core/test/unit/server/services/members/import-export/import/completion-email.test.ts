@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import buildCompletionEmail from '../../../../../../../core/server/services/members/import-export/import/members-import-email';
-import type {ImportErrorRow} from '../../../../../../../core/server/services/members/import-export/import/member-import-row';
+import buildCompletionEmail from '../../../../../../../core/server/services/members/import-export/import/completion-email';
+import type {ImportErrorRow} from '../../../../../../../core/server/services/members/import-export/import/row';
 
 // The completion email is exercised end-to-end by the deferred parity test; this pins
 // what is only presentation and awkward to read off an email at the API boundary: the

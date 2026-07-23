@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {memberImportRowSchema} from '../../../../../../../core/server/services/members/import-export/import/member-import-row';
+import {memberImportRowSchema} from '../../../../../../../core/server/services/members/import-export/import/row';
 
 // The schema is where the raw string cells the CSV reader emits become typed member
 // fields. It keeps the import's long-standing lenient coercion rules exactly, so the

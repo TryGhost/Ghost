@@ -9,6 +9,21 @@ const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 const {getCSVExportFileName} = require('./utils/csv-export-filename');
 
+// Shape the import service's outcome into the API response envelope: an inline import
+// reports its stats and label, a deferred one only how much it accepted.
+function importCSVResponse(outcome) {
+    if (outcome.deferred) {
+        return {meta: {originalImportSize: outcome.originalImportSize}};
+    }
+    return {
+        meta: {
+            originalImportSize: outcome.originalImportSize,
+            stats: {imported: outcome.result.imported, invalid: outcome.result.errors},
+            import_label: outcome.result.importLabel || null
+        }
+    };
+}
+
 const messages = {
     memberNotFound: 'Member not found.',
     notSendingWelcomeEmail: 'Email verification required, welcome email is disabled',
@@ -415,11 +430,18 @@ const controller = {
         permissions: {
             method: 'add'
         },
-        query(frame) {
-            // The import service takes the raw request frame and owns everything from
-            // there: reading the CSV, deciding inline vs deferred, and shaping the
-            // response.
-            return membersService.processImport(frame);
+        async query(frame) {
+            // The endpoint adapts the request frame into the import service's arguments
+            // and shapes its outcome into the response envelope, so neither the frame nor
+            // the meta shape crosses into the domain. The recipient is the request user;
+            // the service falls back to the site owner when there is none.
+            const outcome = await membersService.importCSV({
+                filePath: frame.file.path,
+                mapping: frame.data.mapping,
+                extraLabels: frame.data.labels || [],
+                requestUserEmail: frame.user ? frame.user.get('email') : null
+            });
+            return importCSVResponse(outcome);
         }
     },
 

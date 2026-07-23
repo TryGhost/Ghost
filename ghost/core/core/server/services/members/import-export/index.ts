@@ -1,10 +1,10 @@
 import type {Knex} from 'knex';
-import MembersCSVImporter, {type MembersRepository, type GiftService, type EmailNotifications, type Tier} from './import/members-csv-importer';
-import readMemberRows from './import/members-csv-reader';
-import {createRowSpool} from './import/members-import-spool';
-import MembersCSVExporter, {type ExportOptions, type CustomFieldDefinition} from './export/members-csv-exporter';
+import MembersCSVImporter, {type MembersRepository, type GiftService, type EmailNotifications, type Tier} from './import/importer';
+import readMemberRows from './import/reader';
+import {createRowSpool} from './import/spool';
+import MembersCSVExporter, {type ExportOptions, type CustomFieldDefinition} from './export/exporter';
 
-const MembersCSVImporterStripeUtils = require('./import/members-csv-importer-stripe-utils');
+const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
 const db = require('../../../data/db');
 const models = require('../../../models');
 const labs = require('../../../../shared/labs');

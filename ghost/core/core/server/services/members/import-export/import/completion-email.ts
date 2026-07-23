@@ -1,5 +1,5 @@
 import {serialize} from '../csv';
-import type {ImportErrorRow, ImportLabel, Label} from './member-import-row';
+import type {ImportErrorRow, ImportLabel, Label} from './row';
 
 const emailTemplate = require('./email-template');
 
