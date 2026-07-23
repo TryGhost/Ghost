@@ -1,9 +1,17 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Avatar, BarChartLoadingIndicator, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Navbar, NavbarActions, NavbarNavigation, PageMenu, PageMenuItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Box, Inline, Stack} from '@tryghost/shade/primitives';
 import {type GhAreaChartDataItem, GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import type {AutomationRun, AutomationScenario, RunStatus} from '@/automations/proto/shared/mock';
+
+// Shared so the real chart and the skeleton's reserved space can't drift.
+const CHART_HEIGHT = 'h-64';
+
+// Simulated fetch delay purely to preview the Analytics-page-style skeletons.
+// 0 = skeletons never show; the loading path stays wired so engineers can point
+// `isLoading` at a real query. Bump this (e.g. 600) to preview the skeletons.
+const SKELETON_DELAY_MS = 0;
 
 const runStatusMeta: Record<RunStatus, {label: string; pill: string}> = {
     in_progress: {label: 'In progress', pill: 'bg-blue/15 text-blue'},
@@ -48,13 +56,17 @@ const MetricTileSkeleton: React.FC = () => (
 );
 
 const RunsChartCardSkeleton: React.FC = () => (
-    <Box className="rounded-lg border border-border-default px-4 py-3">
-        <Stack gap="sm">
-            <div className="flex w-full flex-col items-start gap-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-7 w-16" />
-            </div>
-            <div className="h-64 w-full">
+    <Box aria-hidden="true" className="rounded-lg border border-border-default px-4 py-3">
+        {/*
+            Invisible real content (MetricValue header + chart-height spacer) reserves the
+            loaded card's exact height, so nothing resizes on load — no magic numbers, it
+            stays correct if MetricValue or the chart height change. Only the centred
+            three-bar indicator shows, matching the Analytics page's chart-loading state.
+        */}
+        <Stack className="relative" gap="sm">
+            <MetricValue className="invisible" label="Total runs" value="0" />
+            <div className={`${CHART_HEIGHT} invisible`} />
+            <div className="absolute inset-0">
                 <BarChartLoadingIndicator />
             </div>
         </Stack>
@@ -89,7 +101,10 @@ type FilterKey = 'all' | RunStatus;
 interface SurfaceAnalyticsPaneProps {
     scenario: AutomationScenario;
     selectedMemberId: string | null;
-    onSelectMember: (runId: string) => void;
+    // Direct setter (null = clear). Must be referentially stable — the tab-sync
+    // effect below depends on it, so an unstable callback would re-fire the
+    // effect every render and stomp on member clicks.
+    onSelectMember: (runId: string | null) => void;
 }
 
 export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scenario, selectedMemberId, onSelectMember}) => {
@@ -99,13 +114,15 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
     const [query, setQuery] = useState('');
     const [range, setRange] = useState('30');
 
-    // Simulated fetch — the mock data itself resolves instantly, so this is here
-    // purely to preview the Analytics-page-style skeleton states. Re-triggers on
-    // tab change since each tab is logically its own load.
-    const [isLoading, setIsLoading] = useState(true);
+    // Re-triggers on tab change since each tab is logically its own load. With a
+    // 0ms delay this stays false (no skeleton flash); see SKELETON_DELAY_MS.
+    const [isLoading, setIsLoading] = useState(SKELETON_DELAY_MS > 0);
     useEffect(() => {
-        setIsLoading(true);
-        const timeout = window.setTimeout(() => setIsLoading(false), 600);
+        setIsLoading(SKELETON_DELAY_MS > 0);
+        if (SKELETON_DELAY_MS <= 0) {
+            return;
+        }
+        const timeout = window.setTimeout(() => setIsLoading(false), SKELETON_DELAY_MS);
         return () => window.clearTimeout(timeout);
     }, [tab]);
 
@@ -115,6 +132,20 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
         const matchesQuery = run.member.name.toLowerCase().includes(q) || run.member.email.toLowerCase().includes(q);
         return matchesFilter && matchesQuery;
     }), [runs, filter, query]);
+
+    // Latest first-visible id — read (not depended on) by the tab-sync effect, so
+    // entering Runs selects the first member without the effect re-firing on every
+    // filter/search change.
+    const firstVisibleIdRef = useRef<string | null>(null);
+    firstVisibleIdRef.current = visible[0]?.id ?? null;
+
+    // Canvas focus tracks the tab: Overview shows the generic preview (no member
+    // focused), Runs focuses a member (the first on entry). This is what lets you
+    // leave Runs for Overview and get the preview back, rather than staying stuck
+    // on the last-selected member.
+    useEffect(() => {
+        onSelectMember(tab === 'runs' ? firstVisibleIdRef.current : null);
+    }, [tab, onSelectMember]);
 
     // Daily runs-started series, mapped to the shared area-chart shape.
     const slicedPoints = metrics.enrollments_by_day.slice(-Number(range));
@@ -174,7 +205,7 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
                                     value={formatNumber(metrics.enrollments)}
                                 />
                                 <GhAreaChart
-                                    className="h-64 w-full"
+                                    className={`${CHART_HEIGHT} w-full`}
                                     color="var(--chart-blue)"
                                     data={chartData}
                                     id={`surface-runs-${scenario.automation.id}`}

@@ -214,7 +214,7 @@ const AutomationSurface: React.FC = () => {
                         <SurfaceAnalyticsPane
                             scenario={scenario}
                             selectedMemberId={selectedMemberId}
-                            onSelectMember={runId => setSelectedMemberId(cur => (cur === runId ? null : runId))}
+                            onSelectMember={setSelectedMemberId}
                         />
                     </div>
                 </aside>
