@@ -8,12 +8,12 @@ import {Text} from '@/components/primitives/text';
 import {cn} from '@/lib/utils';
 
 const settingGroupVariants = cva(
-    'group/setting-group relative flex flex-col gap-6 rounded-xl bg-card text-card-foreground transition-all',
+    'group/setting-group relative flex flex-col gap-6 rounded-xl text-card-foreground transition-all',
     {
         variants: {
             variant: {
-                outline: 'border border-border-default p-5 hover:shadow-sm md:p-7',
-                plain: ''
+                outline: 'border border-border-default bg-card p-5 hover:shadow-sm md:p-7',
+                plain: 'bg-transparent'
             },
             highlighted: {
                 true: 'shadow-sm',
