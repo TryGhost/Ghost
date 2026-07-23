@@ -1,5 +1,6 @@
 import {SOCIAL_PLATFORM_CONFIGS, normalizeSocialInput} from '../../../../utils/social-urls/index';
-import {SettingGroup, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
+import {SettingGroup, SettingGroupContent} from '@tryghost/shade/patterns';
+import {TextField} from '@tryghost/admin-x-design-system';
 import {type UserDetailProps} from '../user-detail-modal';
 import {useState} from 'react';
 import type {SocialPlatformKey} from '../../../../utils/social-urls/index';
@@ -54,7 +55,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
 
 const SocialLinksTab: React.FC<UserDetailProps> = (props) => {
     return (
-        <SettingGroup border={false}>
+        <SettingGroup variant='plain'>
             <DetailsInputs {...props} />
         </SettingGroup>
     );
