@@ -1,6 +1,27 @@
 import card from '../../src/cards/toggle.js';
 import {Document as SimpleDomDocument, HTMLSerializer, voidMap} from 'simple-dom';
+import {JSDOM} from 'jsdom';
 const serializer = new HTMLSerializer(voidMap);
+
+function assertCollapsedToggleIsAccessible(renderedHtml: string) {
+    const {document} = new JSDOM(renderedHtml).window;
+    const toggle = document.querySelector('.kg-toggle-card');
+    const details = toggle?.matches('details') ? toggle : toggle?.querySelector('details');
+
+    if (details) {
+        expect(details.hasAttribute('open')).toBe(false);
+        expect(details.querySelector('summary')).not.toBeNull();
+        return;
+    }
+
+    const button = toggle?.querySelector('button');
+    const content = toggle?.querySelector('.kg-toggle-content');
+
+    expect(button?.getAttribute('aria-expanded')).toBe('false');
+    expect(
+        content?.hasAttribute('hidden') || content?.getAttribute('aria-hidden') === 'true'
+    ).toBe(true);
+}
 
 describe('Toggle card', function () {
     describe('front-end render', function () {
@@ -13,7 +34,35 @@ describe('Toggle card', function () {
                 }
             };
 
-            expect(serializer.serialize(card.render(opts))).toBe('<div class="kg-card kg-toggle-card" data-kg-toggle-state="close"><div class="kg-toggle-heading"><h4 class="kg-toggle-heading-text">This is toggle heading</h4><button class="kg-toggle-card-icon"><svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"/></svg></button></div><div class="kg-toggle-content">This is toggle content</div></div>');
+            expect(serializer.serialize(card.render(opts))).toBe('<div class="kg-card kg-toggle-card" data-kg-toggle-state="close"><div class="kg-toggle-heading"><h4 class="kg-toggle-heading-text">This is toggle heading</h4><button class="kg-toggle-card-icon" type="button" aria-expanded="false"><svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"/></svg></button></div><div class="kg-toggle-content" aria-hidden="true" hidden>This is toggle content</div></div>');
+        });
+
+        it('renders a collapsed toggle that exposes state and hides content from assistive technology', function () {
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
+                payload: {
+                    heading: 'Spoilers below',
+                    content: 'Hidden spoiler content'
+                }
+            };
+
+            assertCollapsedToggleIsAccessible(serializer.serialize(card.render(opts)));
+        });
+
+        it('keeps heading links outside the toggle button', function () {
+            const opts = {
+                env: {dom: new SimpleDomDocument()},
+                payload: {
+                    heading: '<a href="https://example.com">Linked heading</a>',
+                    content: 'Hidden spoiler content'
+                }
+            };
+
+            const renderedHtml = serializer.serialize(card.render(opts));
+            const {document} = new JSDOM(renderedHtml).window;
+
+            expect(document.querySelector('.kg-toggle-heading-text a')?.textContent).toBe('Linked heading');
+            expect(!!document.querySelector('button .kg-toggle-heading-text a')).toBe(false);
         });
     });
 
