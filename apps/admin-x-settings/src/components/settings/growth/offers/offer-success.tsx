@@ -94,7 +94,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
             <p className='mt-3 max-w-[510px] text-[1.6rem]'>You can share the link anywhere. In your newsletter, social media, a podcast, or in-person. It all just works.</p>
             <div className='mt-8 flex w-full max-w-md flex-col gap-8'>
                 <div className='flex flex-col-reverse gap-2'>
-                    <Input className='border-transparent bg-muted' name='offer-url' type='url' value={offerLink} disabled />
+                    <Input className='h-[var(--control-height)] border-transparent bg-muted' name='offer-url' type='url' value={offerLink} disabled />
                     <Button className='w-full' type='button' onClick={handleCopyClick}>{isCopied ? 'Copied!' : 'Copy link'}</Button>
                 </div>
                 <div className='flex items-center gap-4 text-sm font-medium before:h-px before:grow before:bg-grey-300 before:content-[""] after:h-px after:grow after:bg-grey-300 after:content-[""] dark:before:bg-grey-800 dark:after:bg-grey-800'>OR</div>

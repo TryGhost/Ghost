@@ -46,7 +46,7 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({setting, setSetting}) => {
         return (
             <Field>
                 <FieldLabel htmlFor={`theme-setting-${setting.key}`}>{humanizeSettingKey(setting.key)}</FieldLabel>
-                <Input className='border-transparent bg-muted' id={`theme-setting-${setting.key}`} value={fieldValues[setting.key] || ''} onBlur={() => handleBlur(setting.key)} onChange={event => handleChange(setting.key, event.target.value)} />
+                <Input className='h-[var(--control-height)] border-transparent bg-muted' id={`theme-setting-${setting.key}`} value={fieldValues[setting.key] || ''} onBlur={() => handleBlur(setting.key)} onChange={event => handleChange(setting.key, event.target.value)} />
                 {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
             </Field>
         );

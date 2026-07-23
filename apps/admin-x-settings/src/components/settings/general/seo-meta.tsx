@@ -171,7 +171,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     // Tab contents
     const metadataTabContent = (
         <>
-            <SettingGroupContent className="my-6 gap-3 [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted">
+            <SettingGroupContent className="my-6 gap-3 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted">
                 {hasLlmsTxt && (
                     <Field orientation='horizontal'>
                         <FieldLabel htmlFor='llms-enabled'>Enable structured data for LLMs and AI search engines</FieldLabel>
@@ -226,7 +226,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             </ImageUploadDropzone>
                         )}
                     </ImageUpload>
-                    <div className="mt-5 flex flex-col gap-x-6 gap-y-7 px-4 pb-7 [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted">
+                    <div className="mt-5 flex flex-col gap-x-6 gap-y-7 px-4 pb-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted">
                         <Field><FieldLabel htmlFor='facebook-title'>Facebook title</FieldLabel><Input id='facebook-title' maxLength={300} placeholder={siteTitle} value={facebookTitle} onChange={handleFacebookTitleChange} /></Field>
                         <Field><FieldLabel htmlFor='facebook-description'>Facebook description</FieldLabel><Input id='facebook-description' maxLength={300} placeholder={siteDescription} value={facebookDescription} onChange={handleFacebookDescriptionChange} /></Field>
                     </div>
@@ -269,7 +269,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             </ImageUploadDropzone>
                         )}
                     </ImageUpload>
-                    <div className="mt-6 flex flex-col gap-x-6 gap-y-7 px-4 pb-7 [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted">
+                    <div className="mt-6 flex flex-col gap-x-6 gap-y-7 px-4 pb-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted">
                         <Field><FieldLabel htmlFor='x-title'>X title</FieldLabel><Input id='x-title' maxLength={300} placeholder={siteTitle} value={twitterTitle} onChange={handleTwitterTitleChange} /></Field>
                         <Field><FieldLabel htmlFor='x-description'>X description</FieldLabel><Input id='x-description' maxLength={300} placeholder={siteDescription} value={twitterDescription} onChange={handleTwitterDescriptionChange} /></Field>
                     </div>

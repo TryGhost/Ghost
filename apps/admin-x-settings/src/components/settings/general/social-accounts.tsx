@@ -137,7 +137,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onEditingChange={handleEditingChange}
             onSave={handleSaveClick}
         >
-            <SettingGroupContent className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <SettingGroupContent className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                 {visiblePlatforms.map(config => (
                     <Field key={config.key} data-invalid={Boolean(errors[config.key]) || undefined}>
                         <FieldLabel htmlFor={`publication-${config.key}`}>{config.publicationTitle}</FieldLabel>

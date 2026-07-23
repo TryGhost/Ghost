@@ -40,7 +40,7 @@ const AccountPage: React.FC<{
         setValue(calculatedSupportAddress);
     }, [calculatedSupportAddress]);
 
-    return <div className='mt-7'><Form className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+    return <div className='mt-7'><Form className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
         <Field data-invalid={Boolean(errors.members_support_address) || undefined}>
             <FieldLabel htmlFor='members-support-address'>Support email address</FieldLabel>
             <Input aria-invalid={Boolean(errors.members_support_address) || undefined} id='members-support-address' value={value} onBlur={updateSupportAddress} onChange={e => setValue(e.target.value)} />

@@ -81,7 +81,7 @@ const FirstPromoterModal = NiceModal.create(() => {
                 title='FirstPromoter'
             />
             <div className='mt-7'>
-                <Form className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' marginBottom={false} title='FirstPromoter configuration' grouped>
+                <Form className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' marginBottom={false} title='FirstPromoter configuration' grouped>
                     <Field orientation='horizontal'>
                         <FieldContent>
                             <FieldLabel htmlFor='firstpromoter-enabled'>Enable FirstPromoter</FieldLabel>

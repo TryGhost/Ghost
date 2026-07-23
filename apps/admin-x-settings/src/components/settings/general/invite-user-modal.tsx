@@ -219,7 +219,7 @@ const InviteUserModal = NiceModal.create(() => {
             width={540}
             onOk={handleSendInvitation}
         >
-            <div className='flex flex-col gap-6 py-4 [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <div className='flex flex-col gap-6 py-4 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                 <p>
                     Send an invitation for a new person to create a staff account on your site, and select a role that matches what you’d like them to be able to do.
                 </p>

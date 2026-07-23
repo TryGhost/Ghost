@@ -46,7 +46,7 @@ const ThemeEditorInputModal = NiceModal.create<ThemeEditorInputModalProps>(({
                 {prompt}
                 <Field>
                     <FieldLabel htmlFor='theme-editor-input'>{fieldTitle}</FieldLabel>
-                    <Input className='border-transparent bg-muted' id='theme-editor-input' placeholder={placeholder} value={value} autoFocus onChange={event => setValue(event.target.value)} />
+                    <Input className='h-[var(--control-height)] border-transparent bg-muted' id='theme-editor-input' placeholder={placeholder} value={value} autoFocus onChange={event => setValue(event.target.value)} />
                 </Field>
             </div>
         </Modal>

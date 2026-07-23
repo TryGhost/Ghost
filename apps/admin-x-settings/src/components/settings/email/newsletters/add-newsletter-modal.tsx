@@ -107,7 +107,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         }}
     >
         <Form
-            className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'
+            className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'
             marginBottom={false}
             marginTop
         >

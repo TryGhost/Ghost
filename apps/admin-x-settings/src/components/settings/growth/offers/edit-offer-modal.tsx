@@ -98,7 +98,7 @@ const Sidebar: React.FC<{
 
             return (
                 <div className='flex grow flex-col pt-2'>
-                    <Form className='grow [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <Form className='grow [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                         <section>
                             <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
                                 <div className='flex flex-col gap-1.5'>
@@ -136,7 +136,7 @@ const Sidebar: React.FC<{
                                 </Field>
                                 <Field className='group' data-invalid={Boolean(errors.code) || undefined}>
                                     <FieldLabel htmlFor='offer-code'>Offer code</FieldLabel>
-                                    <InputGroup className='border-transparent bg-muted' data-invalid={Boolean(errors.code) || undefined}>
+                                    <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.code) || undefined}>
                                         <InputGroupInput aria-invalid={Boolean(errors.code) || undefined} id='offer-code' placeholder='black-friday' value={offer?.code ?? ''} onChange={e => updateOffer({code: e.target.value})} onKeyDown={() => clearError('code')} />
                                         {offer?.code !== '' && <InputGroupAddon align='inline-end'><InputGroupButton onClick={handleCopyClick}>{isCopied ? 'Copied!' : 'Copy link'}</InputGroupButton></InputGroupAddon>}
                                     </InputGroup>

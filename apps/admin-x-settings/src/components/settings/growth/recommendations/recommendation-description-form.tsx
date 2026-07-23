@@ -64,7 +64,7 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
     }, [formState, setErrors]);
 
     return <Form
-        className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'
+        className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'
         marginBottom={false}
         marginTop
     >
@@ -92,7 +92,7 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
         {showURL && (
             <Field data-disabled='true'>
                 <FieldLabel htmlFor='recommendation-url'>URL</FieldLabel>
-                <Input className='border-transparent bg-muted' id='recommendation-url' value={formState.url} disabled />
+                <Input className='h-[var(--control-height)] border-transparent bg-muted' id='recommendation-url' value={formState.url} disabled />
             </Field>
         )}
 

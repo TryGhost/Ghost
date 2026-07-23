@@ -36,7 +36,7 @@ const TransistorSettings: React.FC<{
     const urlTemplate = transistorPortalUrlTemplate as string;
 
     return (
-        <Box className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+        <Box className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
             <Separator />
             <Text as='h5' className='md:text-lg' leading='supertight' weight='bold'>Transistor</Text>
             <Field orientation='horizontal'>

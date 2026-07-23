@@ -198,7 +198,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     >
         <div className='mt-8 -mb-8 flex items-start gap-8'>
             <div className='flex grow flex-col gap-8'>
-                <Form className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' marginBottom={false} title='Basic' grouped>
+                <Form className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' marginBottom={false} title='Basic' grouped>
                     <Field data-invalid={Boolean(errors.name) || undefined}>
                         <FieldLabel htmlFor='tier-name'>Name</FieldLabel>
                         <Input aria-invalid={Boolean(errors.name) || undefined} autoComplete='off' id='tier-name' maxLength={191} placeholder={isFreeTier ? 'Free' : 'Bronze'} value={formState.name || ''} autoFocus onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
@@ -245,7 +245,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 <div className='flex flex-col gap-2'>
                                     <Field data-invalid={Boolean(errors.monthly_price) || undefined}>
                                         <FieldLabel className='sr-only' htmlFor='tier-monthly-price'>Monthly price</FieldLabel>
-                                        <InputGroup className='border-transparent bg-muted' data-invalid={Boolean(errors.monthly_price) || undefined}>
+                                        <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.monthly_price) || undefined}>
                                             <InputGroupInput
                                                 aria-invalid={Boolean(errors.monthly_price) || undefined}
                                                 id='tier-monthly-price'
@@ -267,7 +267,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     </Field>
                                     <Field data-invalid={Boolean(errors.yearly_price) || undefined}>
                                         <FieldLabel className='sr-only' htmlFor='tier-yearly-price'>Yearly price</FieldLabel>
-                                        <InputGroup className='border-transparent bg-muted' data-invalid={Boolean(errors.yearly_price) || undefined}>
+                                        <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.yearly_price) || undefined}>
                                             <InputGroupInput
                                                 aria-invalid={Boolean(errors.yearly_price) || undefined}
                                                 id='tier-yearly-price'
@@ -298,7 +298,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 </div>
                                 <Field data-disabled={!hasFreeTrial || undefined}>
                                     <FieldLabel className='sr-only' htmlFor='tier-trial-days'>Trial days</FieldLabel>
-                                    <InputGroup className='border-transparent bg-muted'>
+                                    <InputGroup className='h-[var(--control-height)] border-transparent bg-muted'>
                                         <InputGroupInput disabled={!hasFreeTrial} id='tier-trial-days' placeholder='0' value={formState.trial_days} onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/[^\d]/, '')}))} />
                                         <InputGroupAddon align='inline-end'><InputGroupText>days</InputGroupText></InputGroupAddon>
                                     </InputGroup>
@@ -326,7 +326,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     </Field>
                 </Form>
 
-                <Form className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' gap='none' title='Benefits' grouped>
+                <Form className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' gap='none' title='Benefits' grouped>
                     <div className='-mt-3'>
                         <SortableList
                             getDragHandleLabel={({item}) => `Reorder benefit${item ? `: ${item}` : ''}`}

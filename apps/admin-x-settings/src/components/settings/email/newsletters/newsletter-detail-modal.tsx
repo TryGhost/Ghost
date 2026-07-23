@@ -263,7 +263,7 @@ const Sidebar: React.FC<{
             title: 'General',
             contents:
             <>
-                <Form className='mt-6 [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' gap='sm' margins='lg' title='Name and description'>
+                <Form className='mt-6 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' gap='sm' margins='lg' title='Name and description'>
                     <Field data-invalid={Boolean(errors.name) || undefined}>
                         <FieldLabel htmlFor='newsletter-detail-name'>Name</FieldLabel>
                         <Input aria-invalid={Boolean(errors.name) || undefined} id='newsletter-detail-name' maxLength={191} placeholder='Weekly Roundup' value={newsletter.name || ''} onChange={e => updateNewsletter({name: e.target.value})} onKeyDown={() => clearError('name')} />
@@ -274,7 +274,7 @@ const Sidebar: React.FC<{
                         <Textarea className='border-transparent bg-muted' id='newsletter-description' maxLength={2000} rows={2} value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
                     </Field>
                 </Form>
-                <Form className='mt-6 [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' gap='sm' margins='lg' title='Email info'>
+                <Form className='mt-6 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' gap='sm' margins='lg' title='Email info'>
                     <Field>
                         <FieldLabel htmlFor='newsletter-sender-name'>Sender name</FieldLabel>
                         <Input id='newsletter-sender-name' maxLength={191} placeholder={siteTitle} value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />

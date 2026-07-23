@@ -243,7 +243,7 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
     return (
         <div>
             <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>Connect Stripe</Text>
-            <Form className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' marginBottom={false} marginTop>
+            <Form className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' marginBottom={false} marginTop>
                 <Field><FieldLabel htmlFor='stripe-publishable-key'>Publishable key</FieldLabel><Input id='stripe-publishable-key' value={publishableKey?.toString() ?? ''} onChange={e => updateSetting('stripe_publishable_key', e.target.value)} /></Field>
                 <Field><FieldLabel htmlFor='stripe-secure-key'>Secure key</FieldLabel><Input id='stripe-secure-key' value={secretKey?.toString() ?? ''} onChange={e => updateSetting('stripe_secret_key', e.target.value)} /></Field>
                 <Button className='mt-5' disabled={saveState === 'saving'} type='button' onClick={onSubmit}>Save Stripe settings</Button>

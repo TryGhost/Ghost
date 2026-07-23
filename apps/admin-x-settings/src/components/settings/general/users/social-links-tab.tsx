@@ -14,7 +14,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
     });
 
     return (
-        <SettingGroupContent className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+        <SettingGroupContent className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
             <Field data-invalid={Boolean(errors?.website) || undefined}>
                 <FieldLabel htmlFor='staff-website'>Website</FieldLabel>
                 <Input

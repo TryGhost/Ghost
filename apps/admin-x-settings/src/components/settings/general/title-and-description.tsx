@@ -66,7 +66,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     const inputFields = (
-        <SettingGroupContent className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+        <SettingGroupContent className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
             <Field data-invalid={Boolean(errors.title) || undefined}>
                 <FieldLabel htmlFor='site-title'>Site title</FieldLabel>
                 <Input
