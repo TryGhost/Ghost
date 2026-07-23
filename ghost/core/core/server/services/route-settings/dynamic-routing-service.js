@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const fs = require('fs-extra');
 const debug = require('@tryghost/debug')('services:route-settings:service');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -27,26 +26,21 @@ class DynamicRoutingService {
     constructor() {
         /** @type {RouteSettingsStore} */
         this.store = null;
-        this.settingsLoader = null;
         this.routerManager = null;
         this.urlService = null;
     }
 
     /**
-     * Wire the storage-layer dependencies so the API surface (upload, download,
+     * Wire the storage-layer dependency so the API surface (upload, download,
      * getCurrentHash) works immediately after boot — even when the frontend is
      * disabled and `start()` is never called.
      *
      * @param {object} deps
      * @param {RouteSettingsStore} deps.store - adapter-manager provided store
-     * @param {object} [deps.settingsLoader]  - legacy SettingsLoader used as a
-     *        read-path fallback when the stricter store parser rejects a file
-     *        (see loadRouteSettings)
      */
-    configure({store, settingsLoader}) {
+    configure({store}) {
         debug('configure');
         this.store = store;
-        this.settingsLoader = settingsLoader;
     }
 
     /**
@@ -72,17 +66,20 @@ class DynamicRoutingService {
         try {
             return expandRouteSettings(await this.store.get());
         } catch (err) {
-            if (!this.settingsLoader || err.errorType !== 'ValidationError') {
-                throw err;
+            // A validation failure means the site's routes.yaml is invalid.
+            // Log a targeted error so the failure is easy to spot in the logs,
+            // then rethrow so the caller (boot, or the routes-hash sync) surfaces
+            // the genuine error rather than silently degrading.
+            if (err.errorType === 'ValidationError') {
+                logging.error(new errors.InternalServerError({
+                    message: 'Route settings failed validation and could not be loaded. Please fix the routes.yaml file.',
+                    code: 'ROUTE_SETTINGS_VALIDATION_ERROR',
+                    err,
+                    errorDetails: {reason: err.message}
+                }));
             }
-            logging.error(new errors.InternalServerError({
-                message: 'Route settings failed the stricter validation and were loaded with the legacy validator instead. Please review the routes.yaml file.',
-                code: 'ROUTE_SETTINGS_VALIDATION_FALLBACK',
-                err,
-                errorDetails: {reason: err.message}
-            }));
 
-            return this.settingsLoader.loadSettings();
+            throw err;
         }
     }
 
@@ -99,17 +96,9 @@ class DynamicRoutingService {
     }
 
     async download() {
-        try {
-            const settings = await this.store.get();
+        const settings = await this.store.get();
 
-            return settings.yamlSource;
-        } catch (err) {
-            if (!this.settingsLoader || !isStoredContentError(err)) {
-                throw err;
-            }
-
-            return fs.readFile(this.settingsLoader.settingFilePath, 'utf8');
-        }
+        return settings.yamlSource;
     }
 
     async upload(yamlContent) {
