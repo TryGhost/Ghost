@@ -1,5 +1,6 @@
 import ConfirmationModal from '../../confirmation-modal';
 import EmailNotificationsTab from './users/email-notifications-tab';
+import LimitModal from '../../limit-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ProfileTab from './users/profile-tab';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
@@ -13,8 +14,8 @@ import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMen
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
-import {LimitModal, Modal} from '@tryghost/admin-x-design-system';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {Pencil, Trash2} from 'lucide-react';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '../../../utils/social-urls/index';

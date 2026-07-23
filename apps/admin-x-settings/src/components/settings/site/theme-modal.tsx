@@ -1,6 +1,7 @@
 import AdvancedThemeSettings from './theme/advanced-theme-settings';
 import ConfirmationModal from '../../confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './theme/invalid-theme-modal';
+import LimitModal from '../../limit-modal';
 import NiceModal, {type NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/official-themes';
 import React, {useEffect, useState} from 'react';
@@ -9,7 +10,7 @@ import ThemePreview from './theme/theme-preview';
 import {Button, Dropzone, LoadingIndicator, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {LimitModal, Modal, PageHeader} from '@tryghost/admin-x-design-system';
+import {Modal, PageHeader} from '@tryghost/admin-x-design-system';
 import {type OfficialTheme} from '../../providers/settings-app-provider';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';

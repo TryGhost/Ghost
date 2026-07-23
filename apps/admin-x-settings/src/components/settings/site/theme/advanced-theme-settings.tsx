@@ -1,12 +1,13 @@
 import ConfirmationModal from '../../../confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
+import LimitModal from '../../../limit-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {LimitModal, ModalPage} from '@tryghost/admin-x-design-system';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {ModalPage} from '@tryghost/admin-x-design-system';
 import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';

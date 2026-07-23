@@ -1,6 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
-import Modal from './modal';
+
+import {ConfirmationModalContent} from './confirmation-modal';
 
 export interface LimitModalProps {
     title?: string;
@@ -19,25 +20,19 @@ export const LimitModalContent: React.FC<LimitModalProps> = ({
     formSheet = false,
     onOk
 }) => {
+    const promptContent = typeof prompt === 'string' && prompt.includes('<') ? (
+        <div dangerouslySetInnerHTML={{__html: prompt}} />
+    ) : prompt;
+
     return (
-        <Modal
-            backDropClick={false}
+        <ConfirmationModalContent
             formSheet={formSheet}
             okLabel={okLabel}
-            okVariant='default'
+            prompt={<div className='w-full'>{promptContent}</div>}
             testId='limit-modal'
             title={title}
-            width={540}
             onOk={onOk}
-        >
-            <div className='py-4 leading-9 text-pretty'>
-                {typeof prompt === 'string' && prompt.includes('<') ? (
-                    <div dangerouslySetInnerHTML={{__html: prompt}} />
-                ) : (
-                    prompt
-                )}
-            </div>
-        </Modal>
+        />
     );
 };
 

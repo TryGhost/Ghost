@@ -1,8 +1,9 @@
+import LimitModal from '../../../limit-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import {Field, FieldError, FieldGroup, FieldLabel, Input} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
-import {LimitModal, Modal} from '@tryghost/admin-x-design-system';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useCreateIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';

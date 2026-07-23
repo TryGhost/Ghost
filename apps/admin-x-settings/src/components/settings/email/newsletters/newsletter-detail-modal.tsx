@@ -1,6 +1,7 @@
 import ColorPickerField from '../../../color-picker-field';
 import ConfirmationModal from '../../../confirmation-modal';
 import HtmlField from '../../../html-field';
+import LimitModal from '../../../limit-modal';
 import NewsletterPreview from './newsletter-preview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
@@ -11,9 +12,9 @@ import {Button, Field, FieldContent, FieldDescription, FieldError, FieldGroup, F
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
-import {LimitModal, PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Stack, Text} from '@tryghost/shade/primitives';
 import {Trash2} from 'lucide-react';
