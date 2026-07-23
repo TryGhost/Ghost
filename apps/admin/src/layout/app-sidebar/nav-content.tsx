@@ -81,7 +81,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const automationsEnabled = useFeatureFlag('automations');
     const isMembersRouteActive = useIsActiveLink({path: 'members', activeOnSubpath: true});
     // Highlight the proto item for any concept under /automations-proto/*, even
-    // though the link itself points at the default concept (canvas).
+    // though the link itself points at the default concept (surface).
     const isProtoRouteActive = useIsActiveLink({path: 'automations-proto', activeOnSubpath: true});
 
     const showTags = currentUser && canManageTags(currentUser);
@@ -227,7 +227,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     {showAutomations && automationsEnabled && (
                         <NavMenuItem>
                             <NavMenuItem.Link
-                                to="automations-proto/canvas"
+                                to="automations-proto/surface"
                                 isActive={isProtoRouteActive}
                             >
                                 <LucideIcon.FlaskConical />
