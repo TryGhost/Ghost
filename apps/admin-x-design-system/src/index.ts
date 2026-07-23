@@ -10,8 +10,6 @@ export type {DesktopChromeHeaderProps} from './global/chrome/desktop-chrome-head
 export {default as MobileChrome} from './global/chrome/mobile-chrome';
 export type {MobileChromeProps} from './global/chrome/mobile-chrome';
 
-export {default as ConfirmationModal, ConfirmationModalContent} from './global/modal/confirmation-modal';
-export type {ConfirmationModalProps} from './global/modal/confirmation-modal';
 export {default as LimitModal, LimitModalContent} from './global/modal/limit-modal';
 export type {LimitModalProps} from './global/modal/limit-modal';
 export {default as Modal, topLevelBackdropClasses} from './global/modal/modal';

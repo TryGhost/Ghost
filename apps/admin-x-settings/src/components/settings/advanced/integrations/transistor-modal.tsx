@@ -1,10 +1,11 @@
 import APIKeys from './api-keys';
 import BookmarkThumb from '../../../../assets/images/integrations/ghost-transistor.png';
 import BrandIcon from '../../../icons/brand-icon';
+import ConfirmationModal from '../../../confirmation-modal';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {ConfirmationModal, Modal} from '@tryghost/admin-x-design-system';
 import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Switch} from '@tryghost/shade/components';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
