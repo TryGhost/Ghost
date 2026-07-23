@@ -169,7 +169,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
     };
 
     let modalClasses = clsx(
-        'relative z-50 flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden bg-white dark:bg-black',
+        'relative z-50 flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden bg-background text-foreground',
         align === 'center' && 'mx-auto',
         align === 'left' && 'mr-auto',
         align === 'right' && 'ml-auto',
@@ -194,7 +194,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
     if (stickyHeader) {
         headerClasses = clsx(
             headerClasses,
-            'sticky top-0 z-[300] -mb-4 bg-white pb-4! dark:bg-black'
+            'sticky -top-px z-[300] -mb-4 bg-background pb-4!'
         );
     }
 
