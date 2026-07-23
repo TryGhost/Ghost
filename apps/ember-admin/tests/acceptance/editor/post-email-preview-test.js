@@ -83,6 +83,15 @@ describe('Acceptance: Post email preview', function () {
     });
 
     it('opens the free-member email preview from the public preview card', async function () {
+        this.server.get('/email_previews/posts/:id', function () {
+            return {
+                email_previews: [{
+                    html: '<!DOCTYPE html><html><head><style></style></head><body><div style="height: 2000px;"></div><div class="kg-paywall">Paywall</div></body></html>',
+                    subject: 'Public preview'
+                }]
+            };
+        });
+
         const post = this.server.create('post', {
             lexical: LEXICAL_WITH_PUBLIC_PREVIEW,
             status: 'draft',
@@ -104,6 +113,11 @@ describe('Acceptance: Post email preview', function () {
 
         expect(find('[data-test-button="email-preview"]')).to.have.attribute('data-test-selected');
         expect(find('[data-test-select="preview-segment"]')).to.contain.text('Free member');
+
+        const iframe = find('.gh-pe-iframe');
+        await waitUntil(() => iframe.contentDocument?.querySelector('.kg-paywall'));
+        await waitUntil(() => iframe.contentWindow.scrollY > 0);
+        expect(iframe.contentWindow.scrollY).to.be.greaterThan(0);
     });
 
     it('should hide newsletters list when only 1 newsletter exists', async function () {

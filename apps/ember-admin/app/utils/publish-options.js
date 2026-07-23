@@ -57,16 +57,6 @@ function getSimpleTierSlug(filter) {
     return slug && !slug.startsWith('-') ? slug : null;
 }
 
-function getRecipientFilters(filter) {
-    return (filter || '').split(',').map(item => item.trim()).filter(Boolean);
-}
-
-function recipientFilterHasIndeterminateSegments(filter) {
-    return getRecipientFilters(filter).some((item) => {
-        return !['status:free', 'status:-free'].includes(item) && !getSimpleTierSlug(item);
-    });
-}
-
 function recipientFilterGuaranteesPaidAccess(filter) {
     const filters = (filter || '').split(',').map(item => item.trim()).filter(Boolean);
 
@@ -168,7 +158,8 @@ export default class PublishOptions {
     }
 
     get shouldShowEmailPreviewNotice() {
-        return this.hasPublicPreview
+        return this.user.canManageMembers
+            && this.hasPublicPreview
             && this.hasPaidAccess
             && this.willEmail
             && !!this.newsletter;
@@ -222,55 +213,6 @@ export default class PublishOptions {
         }
 
         return `${this.newsletter.recipientFilter}+(${this.emailPreviewNoAccessFilter})`;
-    }
-
-    get emailPreviewNoticeStateWithoutCounts() {
-        if (!this.shouldShowEmailPreviewNotice) {
-            return null;
-        }
-
-        const filters = getRecipientFilters(this.recipientFilter);
-        const includesAllFree = filters.includes('status:free');
-        const includesAllPaid = filters.includes('status:-free');
-        const hasIndeterminateSegments = recipientFilterHasIndeterminateSegments(this.recipientFilter);
-
-        if (this.post.visibility === 'paid') {
-            if (!this.newsletterAcceptsFreeMembers) {
-                return null;
-            }
-
-            if (includesAllFree) {
-                return 'paid-positive';
-            }
-
-            if (hasIndeterminateSegments) {
-                return 'paid-unknown';
-            }
-
-            return 'paid-none';
-        }
-
-        if (this.post.visibility === 'tiers') {
-            if (!this.newsletterAcceptsFreeMembers && includesAllFree && !includesAllPaid && filters.length === 1) {
-                return null;
-            }
-
-            if (this.newsletterAcceptsFreeMembers && includesAllFree) {
-                return 'tiers-positive';
-            }
-
-            if (hasIndeterminateSegments) {
-                return 'tiers-unknown';
-            }
-
-            if (recipientFilterGuaranteesTierAccess(this.recipientFilter, this.post.tiers)) {
-                return 'tiers-none';
-            }
-
-            return 'tiers-positive';
-        }
-
-        return null;
     }
 
     get shouldWarnRecipientsReceiveFullEmail() {

@@ -135,6 +135,7 @@ export function PaywallNodeComponent({
             <InputSetting
                 dataTestId="paywall-email-body"
                 label="Body"
+                rows={3}
                 value={emailBody || defaultEmailBody}
                 onChange={handleEmailSettingChange('emailBody')}
             />

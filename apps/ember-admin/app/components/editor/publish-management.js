@@ -117,7 +117,7 @@ export default class PublishManagement extends Component {
     }
 
     @action
-    async openPreview(event, {skipAnimation} = {}) {
+    async openPreview(event, {skipAnimation, scrollToPaywall} = {}) {
         event?.preventDefault();
 
         const isValid = await this._validatePost();
@@ -141,7 +141,8 @@ export default class PublishManagement extends Component {
                 initialPreviewTierSlug: this.previewTierSlug,
                 changePreviewTier: this.changePreviewTier,
                 tiers: this.tiers,
-                skipAnimation
+                skipAnimation,
+                scrollToPaywall
             });
         }
     }
@@ -152,7 +153,7 @@ export default class PublishManagement extends Component {
         this.previewAsSegment = 'free';
         this.previewTierSlug = undefined;
 
-        return this.openPreview(event);
+        return this.openPreview(event, {scrollToPaywall: true});
     }
 
     // tiers are loaded once per editor session so the preview modal can render

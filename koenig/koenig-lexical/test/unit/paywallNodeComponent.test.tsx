@@ -99,6 +99,7 @@ describe('PaywallNodeComponent', () => {
         expect(screen.getByTestId('tab-content')).toHaveTextContent('Email paywall');
         expect(screen.getByTestId('paywall-email-title')).toHaveValue('Upgrade to continue reading.');
         expect(screen.getByTestId('paywall-email-body')).toHaveValue('Become a paid member of Test Blog to get access to all premium content.');
+        expect(screen.getByTestId('paywall-email-body')).toHaveAttribute('rows', '3');
         expect(screen.getByTestId('paywall-email-button-text')).toHaveValue('Upgrade');
         expect(screen.getByTestId('paywall-email-button-url')).toHaveValue('#/portal/signup');
 

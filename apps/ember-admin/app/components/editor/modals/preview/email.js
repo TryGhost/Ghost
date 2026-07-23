@@ -78,10 +78,31 @@ export default class ModalPostPreviewEmailComponent extends Component {
         await timeout(100);
 
         if (iframe) {
+            const shouldScrollToPaywall = this.args.scrollToPaywall && !this._paywallScrollScheduled;
+
+            if (shouldScrollToPaywall) {
+                this._paywallScrollScheduled = true;
+                iframe.addEventListener('load', () => {
+                    this._scrollPaywallIntoView(iframe);
+                }, {once: true});
+            }
+
             iframe.contentWindow.document.open();
             iframe.contentWindow.document.write(this.html);
             iframe.contentWindow.document.close();
+
+            if (shouldScrollToPaywall) {
+                iframe.contentWindow.requestAnimationFrame(() => {
+                    this._scrollPaywallIntoView(iframe);
+                });
+            }
         }
+    }
+
+    _scrollPaywallIntoView(iframe) {
+        iframe.contentDocument?.querySelector('.kg-paywall')?.scrollIntoView({
+            block: 'center'
+        });
     }
 
     @action

@@ -1,8 +1,9 @@
 import React from 'react';
 
 export const INPUT_CLASSES = 'h-9 rounded-lg border border-grey-100 bg-grey-100 dark:bg-grey-900 dark:border-transparent dark:focus:border-green dark:hover:bg-grey-925 dark:focus:bg-grey-925 transition-colors px-3 py-1.5 font-sans text-sm font-normal text-grey-900 focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,.25)] focus-visible:outline-none dark:text-white dark:selection:bg-grey-800 placeholder:text-grey-500 md:h-[38px] md:py-2 dark:placeholder:text-grey-700';
+export const TEXTAREA_CLASSES = 'min-h-9 resize-none rounded-lg border border-grey-100 bg-grey-100 dark:bg-grey-900 dark:border-transparent dark:focus:border-green dark:hover:bg-grey-925 dark:focus:bg-grey-925 transition-colors px-3 py-1.5 font-sans text-sm font-normal text-grey-900 focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,.25)] focus-visible:outline-none dark:text-white dark:selection:bg-grey-800 placeholder:text-grey-500 md:min-h-[38px] md:py-2 dark:placeholder:text-grey-700';
 
-export function Input({autoFocus, className, dataTestId, value, onChange, ...props}) {
+export function Input({autoFocus, className, dataTestId, rows, value, onChange, ...props}) {
     const inputRef = React.useRef(null);
     const shouldFocusOnUpdate = React.useRef(autoFocus);
     const [localValue, setLocalValue] = React.useState(value);
@@ -33,14 +34,17 @@ export function Input({autoFocus, className, dataTestId, value, onChange, ...pro
         }
     }, [value]);
 
+    const Element = rows ? 'textarea' : 'input';
+
     return (
         <>
             <div className="relative">
-                <input
+                <Element
                     ref={inputRef}
                     autoFocus={autoFocus}
-                    className={`relative w-full ${className || INPUT_CLASSES}`}
+                    className={`relative w-full ${className || (rows ? TEXTAREA_CLASSES : INPUT_CLASSES)}`}
                     data-testid={dataTestId}
+                    rows={rows}
                     value={localValue}
                     onChange={onChangeWrapper}
                     {...props}
