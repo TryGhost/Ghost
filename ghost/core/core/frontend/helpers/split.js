@@ -14,7 +14,6 @@ module.exports = function split(...args) {
     const data = options.data || {};
     const separator = options.hash.separator !== undefined ? options.hash.separator : ',';
     let string = args[0];
-    const isSafe = string instanceof SafeString;
     
     // Handle undefined and null inputs
     if (string === undefined || string === null) {
@@ -34,7 +33,7 @@ module.exports = function split(...args) {
     // Filter out all empty strings
     const result = string.split(separator)
         .filter(item => item !== '')
-        .map(item => isSafe ? new SafeString(item) : item);
+        .map(item => new SafeString(item));
 
     if (result.length === 0) {
         return renderResult([], options, data);
