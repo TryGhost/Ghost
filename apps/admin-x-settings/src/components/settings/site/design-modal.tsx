@@ -6,7 +6,7 @@ import useQueryParams from '../../../hooks/use-query-params';
 import {type CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import {Laptop, Smartphone} from 'lucide-react';
 import {PreviewChrome, Tabs, TabsContent, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {PreviewModalContent} from '@tryghost/admin-x-design-system';
+import {PreviewModalContent} from '../preview-modal';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';

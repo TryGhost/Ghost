@@ -6,9 +6,6 @@ export {default as XLogo} from './assets/images/x-logo.svg?react';
 export {default as DesktopChromeHeader} from './global/chrome/desktop-chrome-header';
 export type {DesktopChromeHeaderProps} from './global/chrome/desktop-chrome-header';
 
-export {default as PreviewModal, PreviewModalContent} from './global/modal/preview-modal';
-export type {PreviewModalProps} from './global/modal/preview-modal';
-
 export {default as Banner} from './global/banner';
 export type {BannerProps} from './global/banner';
 export {default as ErrorBoundary} from './global/error-boundary';

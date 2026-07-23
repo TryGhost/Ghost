@@ -1,15 +1,15 @@
 {
   "snapshot": {
-    "generatedAt": "2026-07-23T21:16:04.661Z",
-    "sha": "526cf1eae7992ea02ea8e7c0e1fa93867f7ea7e2",
-    "branch": "codex/admin-settings-shade-modal"
+    "generatedAt": "2026-07-23T23:01:47.383Z",
+    "sha": "4cb987e33fe40fad85492202d0b5e96f0d131509",
+    "branch": "codex/admin-settings-shade-preview-modal"
   },
   "summary": {
-    "adminReactFilesTotal": 706,
-    "adminReactFilesUsingShade": 376,
+    "adminReactFilesTotal": 707,
+    "adminReactFilesUsingShade": 377,
     "shadeAdoptionPct": 53.3,
-    "uniqueShadeComponentsUsed": 299,
-    "adminXDsComponentsStillUsed": 13
+    "uniqueShadeComponentsUsed": 303,
+    "adminXDsComponentsStillUsed": 12
   },
   "apps": [
     {
@@ -1200,13 +1200,13 @@
     },
     {
       "name": "admin-x-settings",
-      "files": 253,
-      "shadeFiles": 149,
-      "adminXDsFiles": 15,
+      "files": 254,
+      "shadeFiles": 150,
+      "adminXDsFiles": 8,
       "shadeComponents": [
         {
           "name": "Button",
-          "count": 70
+          "count": 71
         },
         {
           "name": "FieldLabel",
@@ -1225,12 +1225,12 @@
           "count": 36
         },
         {
-          "name": "Input",
+          "name": "SettingsModal",
           "count": 35
         },
         {
-          "name": "SettingsModal",
-          "count": 34
+          "name": "Input",
+          "count": 35
         },
         {
           "name": "FieldError",
@@ -1286,15 +1286,15 @@
         },
         {
           "name": "Text",
+          "count": 18
+        },
+        {
+          "name": "Inline",
           "count": 17
         },
         {
           "name": "TabsContent",
           "count": 17
-        },
-        {
-          "name": "Inline",
-          "count": 16
         },
         {
           "name": "ActionList",
@@ -1339,6 +1339,10 @@
         {
           "name": "ToggleGroupItem",
           "count": 9
+        },
+        {
+          "name": "cn",
+          "count": 8
         },
         {
           "name": "ImageUpload",
@@ -1389,12 +1393,16 @@
           "count": 7
         },
         {
-          "name": "cn",
+          "name": "Stack",
           "count": 7
         },
         {
-          "name": "Stack",
-          "count": 7
+          "name": "DirtyConfirmDialog",
+          "count": 6
+        },
+        {
+          "name": "useDirtyConfirmation",
+          "count": 6
         },
         {
           "name": "Dropzone",
@@ -1421,14 +1429,6 @@
           "count": 6
         },
         {
-          "name": "DirtyConfirmDialog",
-          "count": 5
-        },
-        {
-          "name": "useDirtyConfirmation",
-          "count": 5
-        },
-        {
           "name": "DropdownMenu",
           "count": 5
         },
@@ -1445,7 +1445,15 @@
           "count": 5
         },
         {
+          "name": "useGlobalDirtyState",
+          "count": 4
+        },
+        {
           "name": "SettingGroup",
+          "count": 4
+        },
+        {
+          "name": "ButtonProps",
           "count": 4
         },
         {
@@ -1467,14 +1475,6 @@
         {
           "name": "PopoverTrigger",
           "count": 4
-        },
-        {
-          "name": "useGlobalDirtyState",
-          "count": 3
-        },
-        {
-          "name": "ButtonProps",
-          "count": 3
         },
         {
           "name": "Badge",
@@ -1550,6 +1550,10 @@
         },
         {
           "name": "ColorSwatchRow",
+          "count": 2
+        },
+        {
+          "name": "Box",
           "count": 2
         },
         {
@@ -1697,11 +1701,23 @@
           "count": 1
         },
         {
-          "name": "Indicator",
+          "name": "TextElement",
           "count": 1
         },
         {
-          "name": "Box",
+          "name": "TextLeading",
+          "count": 1
+        },
+        {
+          "name": "TextSize",
+          "count": 1
+        },
+        {
+          "name": "SettingsModalSize",
+          "count": 1
+        },
+        {
+          "name": "Indicator",
           "count": 1
         },
         {
@@ -1771,10 +1787,6 @@
       ],
       "adminXDsComponents": [
         {
-          "name": "PreviewModalContent",
-          "count": 7
-        },
-        {
           "name": "useDesignSystem",
           "count": 2
         },
@@ -1828,7 +1840,7 @@
   "topShadeComponents": [
     {
       "name": "Button",
-      "count": 185
+      "count": 186
     },
     {
       "name": "LucideIcon",
@@ -1856,18 +1868,18 @@
     },
     {
       "name": "cn",
-      "count": 45
+      "count": 46
     },
     {
       "name": "FieldDescription",
       "count": 37
     },
     {
-      "name": "FieldError",
-      "count": 34
+      "name": "SettingsModal",
+      "count": 35
     },
     {
-      "name": "SettingsModal",
+      "name": "FieldError",
       "count": 34
     },
     {
@@ -1908,10 +1920,6 @@
     }
   ],
   "adminXDsComponentsAggregate": [
-    {
-      "name": "PreviewModalContent",
-      "count": 7
-    },
     {
       "name": "useDesignSystem",
       "count": 2

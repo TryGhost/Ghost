@@ -29,6 +29,9 @@
     --surface-overlay-foreground: var(--color-black);
     --modal-backdrop: rgb(98 109 121 / 0.2);
     --form-sheet-backdrop: rgb(98 109 121 / 0.08);
+    --preview-canvas: var(--color-gray-50);
+    --preview-gradient-start: var(--color-white);
+    --preview-gradient-end: var(--color-gray-50);
     --surface-inverse: var(--color-black);
     --surface-inverse-foreground: var(--color-white);
     --text-primary: var(--color-black);
@@ -148,6 +151,9 @@
     --surface-elevated-2: oklch(0.235 0.004 260);
     --surface-overlay: var(--color-black);
     --surface-overlay-foreground: var(--color-gray-400);
+    --preview-canvas: var(--color-black);
+    --preview-gradient-start: var(--color-gray-950);
+    --preview-gradient-end: var(--color-black);
     --surface-inverse: var(--color-white);
     --surface-inverse-foreground: var(--color-black);
     --text-primary: var(--color-gray-200);

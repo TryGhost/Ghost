@@ -1,11 +1,11 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import clsx from 'clsx';
 import React, {useEffect} from 'react';
-import {SettingsModal, type SettingsModalSize} from '@tryghost/shade/patterns';
+import {ExternalLink} from 'lucide-react';
+import {useModal} from '@ebay/nice-modal-react';
+
+import {Box, Inline, Text, type TextElement, type TextLeading, type TextSize} from '@tryghost/shade/primitives';
 import {Button, type ButtonProps} from '@tryghost/shade/components';
-import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
-import {Inline, Text, type TextElement, type TextLeading, type TextSize} from '@tryghost/shade/primitives';
-import {LucideIcon, useGlobalDirtyState} from '@tryghost/shade/utils';
+import {DirtyConfirmDialog, SettingsModal, type SettingsModalSize, useDirtyConfirmation} from '@tryghost/shade/patterns';
+import {cn, useGlobalDirtyState} from '@tryghost/shade/utils';
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -36,6 +36,10 @@ const headingLeading: Record<HeadingLevel, TextLeading> = {
     6: 'body'
 };
 
+/**
+ * Compatibility shell for settings preview modals while the legacy NiceModal
+ * flows are migrated to consumer-controlled Shade compositions.
+ */
 export interface PreviewModalProps {
     testId?: string;
     title?: string;
@@ -45,11 +49,11 @@ export interface PreviewModalProps {
     height?: 'full' | number;
     sidebar?: boolean | React.ReactNode;
     preview?: React.ReactNode;
-    dirty?: boolean
+    dirty?: boolean;
     cancelLabel?: string;
     okLabel?: string;
     okVariant?: ButtonProps['variant'];
-    buttonsDisabled?: boolean
+    buttonsDisabled?: boolean;
     previewToolbar?: boolean;
     leftToolbar?: boolean;
     rightToolbar?: boolean;
@@ -142,12 +146,12 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
         let previewBgClass = '';
         if (previewBgColor === 'grey') {
-            previewBgClass = 'bg-grey-50 dark:bg-black';
+            previewBgClass = 'bg-preview-canvas';
         } else if (previewBgColor === 'greygradient') {
-            previewBgClass = 'bg-gradient-to-tr from-white to-[#f9f9fa] dark:from-grey-950 dark:to-black';
+            previewBgClass = 'bg-gradient-to-tr from-preview-gradient-start to-preview-gradient-end';
         }
 
-        const containerClasses = clsx(
+        const containerClasses = cn(
             'absolute inset-y-0 right-[400px] left-0 flex w-full min-w-100 grow flex-col overflow-y-auto',
             previewBgClass
         );
@@ -155,27 +159,27 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         let viewSiteButton;
         if (siteLink) {
             viewSiteButton = (
-                <div className='ml-3 border-l border-grey-400 dark:border-grey-800'>
-                    <a className='ml-3 flex items-center gap-1' href={siteLink} rel="noopener noreferrer" target="_blank">View site <LucideIcon.ExternalLink className='size-3' /></a>
-                </div>
+                <Box className='ml-3 border-l border-border-strong'>
+                    <a className='ml-3 flex items-center gap-1' href={siteLink} rel='noopener noreferrer' target='_blank'>View site <ExternalLink className='size-3' /></a>
+                </Box>
             );
         }
 
         preview = (
-            <div className={containerClasses}>
-                {previewToolbar && <header className="relative flex h-[80px] shrink-0 items-center justify-center px-8 py-5" data-testid="design-toolbar">
-                    {leftToolbar && <div className='absolute left-8 flex h-full items-center'>
+            <Box className={containerClasses}>
+                {previewToolbar && <Inline as='header' className='relative h-[80px] shrink-0 px-8 py-5' data-testid='design-toolbar' justify='center'>
+                    {leftToolbar && <Inline align='center' className='absolute left-8 h-full'>
                         {toolbarLeft}
-                    </div>}
-                    {rightToolbar && <div className='absolute right-8 flex h-full items-center'>
+                    </Inline>}
+                    {rightToolbar && <Inline align='center' className='absolute right-8 h-full'>
                         {deviceSelector}
                         {viewSiteButton}
-                    </div>}
-                </header>}
-                <div className='flex grow items-center justify-center text-grey-400'>
+                    </Inline>}
+                </Inline>}
+                <Inline align='center' className='grow text-muted-foreground' justify='center'>
                     {preview}
-                </div>
-            </div>
+                </Inline>
+            </Box>
         );
     }
 
@@ -201,14 +205,17 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             width={width}
             hideXOnMobile
         >
-            <div className='flex h-full grow'>
-                <div className={`relative hidden grow flex-col [@media(min-width:801px)]:!visible [@media(min-width:801px)]:!flex ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white dark:bg-black'}`}>
+            <Inline align='stretch' className='h-full grow' gap='none'>
+                <Box className={cn(
+                    'relative hidden grow flex-col [@media(min-width:801px)]:!visible [@media(min-width:801px)]:!flex',
+                    previewBgColor === 'grey' ? 'bg-preview-canvas' : 'bg-surface-panel'
+                )}>
                     {preview}
-                </div>
+                </Box>
                 {sidebar &&
-                    <div className='relative flex size-full flex-col border-l border-border-default bg-surface-elevated-2 [@media(min-width:801px)]:w-auto [@media(min-width:801px)]:basis-[400px]'>
+                    <Box className='relative flex size-full flex-col border-l border-border-default bg-surface-elevated-2 [@media(min-width:801px)]:w-auto [@media(min-width:801px)]:basis-[400px]'>
                         {sidebarHeader ? sidebarHeader : (
-                            <div className='flex max-h-[82px] items-center justify-between gap-3 px-7 py-6'>
+                            <Inline align='center' className='max-h-[82px] px-7 py-6' gap='md' justify='between'>
                                 <Text
                                     as={`h${titleHeadingLevel}` as TextElement}
                                     className={headingClasses[titleHeadingLevel]}
@@ -225,17 +232,20 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                                         <Button disabled={buttonsDisabled} type='button' variant={okVariant} onClick={onOk}>{okLabel}</Button>
                                     </Inline>
                                 )}
-                            </div>
+                            </Inline>
                         )}
-                        <div className={`${!sidebarHeader ? 'absolute inset-x-0 top-[80px] bottom-0 grow' : ''} ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto ${sidebarContentClasses && sidebarContentClasses}`}>
+                        <Box className={cn(
+                            'flex flex-col justify-between overflow-y-auto',
+                            !sidebarHeader && 'absolute inset-x-0 top-[80px] bottom-0 grow',
+                            sidebarPadding && 'p-7 pt-0',
+                            sidebarContentClasses
+                        )}>
                             {sidebar}
-                        </div>
-                    </div>
+                        </Box>
+                    </Box>
                 }
-            </div>
+            </Inline>
             <DirtyConfirmDialog {...dialogProps} />
         </SettingsModal>
     );
 };
-
-export default NiceModal.create(PreviewModalContent);
