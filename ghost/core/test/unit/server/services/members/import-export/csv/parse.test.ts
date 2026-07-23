@@ -4,6 +4,9 @@ import {vi} from 'vitest';
 import {parse} from '../../../../../../../core/server/services/members/import-export/csv';
 const csvPath = path.join(__dirname, '/fixtures/');
 
+// parse is purely mechanical: it reads the file, renames columns per the mapping,
+// carries unmapped columns through, and emits raw string cells. Giving those columns
+// meaning and coercing them is the import schema's job (member-import-row.test.ts).
 describe('parse', function () {
     const DEFAULT_HEADER_MAPPING = {
         email: 'email',
@@ -11,72 +14,50 @@ describe('parse', function () {
     };
 
     it('empty file', async function () {
-        const filePath = csvPath + 'empty.csv';
-        const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
+        const result = await parse(csvPath + 'empty.csv', DEFAULT_HEADER_MAPPING);
 
         assert.ok(result);
         assert.equal(result.length, 0);
     });
 
     it('one column', async function () {
-        const filePath = csvPath + 'single-column-with-header.csv';
-        const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
+        const result = await parse(csvPath + 'single-column-with-header.csv', DEFAULT_HEADER_MAPPING);
 
-        assert.ok(result);
         assert.equal(result.length, 2);
         assert.equal(result[0].email, 'jbloggs@example.com');
         assert.equal(result[1].email, 'test@example.com');
     });
 
     it('carries the column through untouched when no header mapping is passed', async function () {
-        const filePath = csvPath + 'single-column-with-header.csv';
-        const result = await parse(filePath);
+        const result = await parse(csvPath + 'single-column-with-header.csv');
 
-        assert.ok(result);
         assert.equal(result.length, 2);
         assert.equal(result[0].email, 'jbloggs@example.com');
         assert.equal(result[1].email, 'test@example.com');
     });
 
     it('one column with bom', async function () {
-        const filePath = csvPath + 'single-column-with-header-bom.csv';
-        const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
+        const result = await parse(csvPath + 'single-column-with-header-bom.csv', DEFAULT_HEADER_MAPPING);
 
-        assert.ok(result);
         assert.equal(result.length, 2);
         assert.equal(result[0].email, 'jbloggs@example.com');
         assert.equal(result[1].email, 'test@example.com');
     });
 
     it('carries the column through untouched (with bom) when no header mapping is passed', async function () {
-        const filePath = csvPath + 'single-column-with-header-bom.csv';
-        const result = await parse(filePath);
+        const result = await parse(csvPath + 'single-column-with-header-bom.csv');
 
-        assert.ok(result);
         assert.equal(result.length, 2);
         assert.equal(result[0].email, 'jbloggs@example.com');
         assert.equal(result[1].email, 'test@example.com');
     });
 
-    it('two columns, 1 filter', async function () {
-        const filePath = csvPath + 'two-columns-with-header.csv';
-        const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
-
-        assert.ok(result);
-        assert.equal(result.length, 2);
-        assert.equal(result[0].email, 'jbloggs@example.com');
-        assert.equal(result[1].email, 'test@example.com');
-    });
-
-    it('two columns, 2 filters', async function () {
-        const filePath = csvPath + 'two-columns-obscure-header.csv';
-        const mapping = {
+    it('renames a column per the mapping', async function () {
+        const result = await parse(csvPath + 'two-columns-obscure-header.csv', {
             id: 'id',
             'Email Address': 'email'
-        };
-        const result = await parse(filePath, mapping);
+        });
 
-        assert.ok(result);
         assert.equal(result.length, 2);
         assert.equal(result[0].email, 'jbloggs@example.com');
         assert.equal(result[0].id, '1');
@@ -84,90 +65,64 @@ describe('parse', function () {
         assert.equal(result[1].id, '2');
     });
 
-    it('two columns with mapping', async function () {
-        const filePath = csvPath + 'two-columns-mapping-header.csv';
-        const mapping = {
+    it('renames multiple columns per the mapping', async function () {
+        const result = await parse(csvPath + 'two-columns-mapping-header.csv', {
             id: 'id',
             correo_electronico: 'email',
             nombre: 'name'
-        };
-        const result = await parse(filePath, mapping);
+        });
 
-        assert.ok(result);
         assert.equal(result.length, 2);
-        assert.equal(result[0].email, 'jbloggs@example.com');
-        assert.equal(result[0].name, 'joe');
-        assert.equal(result[0].id, '1');
-
-        assert.equal(result[1].email, 'test@example.com');
-        assert.equal(result[1].name, 'test');
-        assert.equal(result[1].id, '2');
-    });
-
-    it('two columns with partial mapping', async function () {
-        const filePath = csvPath + 'two-columns-mapping-header.csv';
-        const mapping = {
-            id: 'id',
-            correo_electronico: 'email'
-        };
-        const result = await parse(filePath, mapping);
-
-        assert.ok(result);
-        assert.equal(result.length, 2);
-        assert.equal(result[0].email, 'jbloggs@example.com');
-        assert.equal(result[0].id, '1');
-
-        assert.equal(result[1].email, 'test@example.com');
-        assert.equal(result[1].id, '2');
+        assert.deepEqual(result[0], {id: '1', email: 'jbloggs@example.com', name: 'joe'});
+        assert.deepEqual(result[1], {id: '2', email: 'test@example.com', name: 'test'});
     });
 
     it('carries every unmapped column through as a raw cell', async function () {
-        const filePath = csvPath + 'two-columns-mapping-header.csv';
-        const mapping = {
+        const result = await parse(csvPath + 'two-columns-mapping-header.csv', {
             correo_electronico: 'email'
-        };
-        const result = await parse(filePath, mapping);
+        });
 
         assert.equal(result.length, 2);
-        assert.deepEqual(Object.keys(result[0]), ['id', 'email', 'nombre', 'labels']);
-        assert.equal(result[0].email, 'jbloggs@example.com');
-        assert.equal(result[0].id, '1');
-        assert.equal(result[0].nombre, 'joe');
-        assert.equal(result[1].email, 'test@example.com');
-        assert.equal(result[1].id, '2');
-        assert.equal(result[1].nombre, 'test');
+        assert.deepEqual(result[0], {id: '1', email: 'jbloggs@example.com', nombre: 'joe'});
+        assert.deepEqual(result[1], {id: '2', email: 'test@example.com', nombre: 'test'});
+    });
+
+    it('leaves cell values as raw strings -- coercion is the schema\'s job', async function () {
+        const result = await parse(csvPath + 'subscribed-to-emails-header.csv', {
+            email: 'email',
+            subscribed_to_emails: 'subscribed'
+        });
+
+        assert.equal(result[0].subscribed, 'true');
+        assert.equal(result[1].subscribed, 'false');
     });
 
     it('ignores the overflow from a row with more fields than headers', async function () {
-        const filePath = csvPath + 'long-row.csv';
-        const result = await parse(filePath, {email: 'email', name: 'name'});
+        const result = await parse(csvPath + 'long-row.csv', {email: 'email', name: 'name'});
 
-        assert.deepEqual(result, [{email: 'a@b.com', name: 'Al', labels: []}]);
+        assert.deepEqual(result, [{email: 'a@b.com', name: 'Al'}]);
     });
 
     it('does not hang when the overflow column is mapped', async function () {
-        const filePath = csvPath + 'long-row.csv';
-        const result = await parse(filePath, {email: 'email', __parsed_extra: 'note'});
-
         // name is unmapped, so it carries through; the __parsed_extra overflow is an
         // array, not a string, and is skipped either way.
-        assert.deepEqual(result, [{email: 'a@b.com', name: 'Al', labels: []}]);
+        const result = await parse(csvPath + 'long-row.csv', {email: 'email', __parsed_extra: 'note'});
+
+        assert.deepEqual(result, [{email: 'a@b.com', name: 'Al'}]);
     });
 
     it('drops a column named after an Object.prototype member', async function () {
-        const filePath = csvPath + 'prototype-named-column.csv';
-        const result = await parse(filePath, {email: 'email'});
+        const result = await parse(csvPath + 'prototype-named-column.csv', {email: 'email'});
 
         assert.equal(result.length, 1);
-        assert.deepEqual(Object.keys(result[0]), ['email', 'labels']);
+        assert.deepEqual(Object.keys(result[0]), ['email']);
     });
 
     it('keeps the first of two identically named columns', async function () {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
         try {
-            const filePath = csvPath + 'duplicate-headers.csv';
-            const result = await parse(filePath, {email: 'email'});
+            const result = await parse(csvPath + 'duplicate-headers.csv', {email: 'email'});
 
             assert.equal(result.length, 1);
             assert.equal(result[0].email, 'jbloggs@example.com');
@@ -177,137 +132,9 @@ describe('parse', function () {
         }
     });
 
-    it('transforms empty values to nulls', async function () {
-        const filePath = csvPath + 'multiple-records-with-empty-values.csv';
-        const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
-
-        assert.ok(result);
-        assert.equal(result.length, 2);
-        assert.equal(result[0].email, 'jbloggs@example.com');
-        assert.equal(result[0].name, 'Bob');
-
-        assert.equal(result[1].email, 'test@example.com');
-        assert.equal(result[1].name, null);
-    });
-
-    it('transforms "subscribed_to_emails" column to "subscribed" property when the mapping is passed in', async function () {
-        const filePath = csvPath + 'subscribed-to-emails-header.csv';
-        const mapping = {
-            email: 'email',
-            subscribed_to_emails: 'subscribed'
-        };
-        const result = await parse(filePath, mapping);
-
-        assert.ok(result);
-        assert.equal(result.length, 2);
-        assert.equal(result[0].email, 'jbloggs@example.com');
-        assert.ok(result[0].subscribed);
-
-        assert.equal(result[1].email, 'test@example.com');
-        assert.equal(result[1].subscribed, false);
-    });
-
-    it('does not transform "subscribed_to_emails" to the "subscribed" property without the mapping', async function () {
-        const filePath = csvPath + 'subscribed-to-emails-header.csv';
-        const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
-
-        assert.ok(result);
-        assert.equal(result.length, 2);
-        assert.equal(result[0].email, 'jbloggs@example.com');
-        // Without the mapping it is not transformed into the `subscribed` boolean...
-        assert.equal(result[0].subscribed, undefined, 'not transformed into the subscribed property without the mapping');
-        assert.equal(result[1].subscribed, undefined, 'not transformed into the subscribed property without the mapping');
-        // ...but the raw column still carries through untouched.
-        assert.equal(result[0].subscribed_to_emails, 'true');
-        assert.equal(result[1].subscribed_to_emails, 'false');
-    });
-
-    it('transforms labels column into array of label objects', async function () {
-        const filePath = csvPath + 'members-with-labels.csv';
-        const mapping = {
-            email: 'email',
-            labels: 'labels'
-        };
-        const result = await parse(filePath, mapping);
-
-        assert.ok(result);
-        assert.equal(result.length, 2);
-        assert.deepEqual(result[0].labels, [{name: 'vip'}, {name: 'premium'}]);
-        assert.deepEqual(result[1].labels, [{name: 'basic'}]);
-    });
-
-    it('concatenates defaultLabels with row labels when both exist', async function () {
-        const filePath = csvPath + 'members-with-labels.csv';
-        const mapping = {
-            email: 'email',
-            labels: 'labels'
-        };
-        const defaultLabels = [{name: 'imported'}];
-        const result = await parse(filePath, mapping, defaultLabels);
-
-        assert.ok(result);
-        assert.equal(result.length, 2);
-        assert.deepEqual(result[0].labels, [{name: 'vip'}, {name: 'premium'}, {name: 'imported'}]);
-        assert.deepEqual(result[1].labels, [{name: 'basic'}, {name: 'imported'}]);
-    });
-
-    it('falls back to defaultLabels when the labels column is empty', async function () {
-        const filePath = csvPath + 'members-with-empty-labels.csv';
-        const mapping = {
-            email: 'email',
-            labels: 'labels'
-        };
-        const defaultLabels = [{name: 'imported'}];
-        const result = await parse(filePath, mapping, defaultLabels);
-
-        assert.equal(result.length, 2);
-        assert.deepEqual(result[0].labels, [{name: 'imported'}]);
-        assert.deepEqual(result[1].labels, [{name: 'basic'}, {name: 'imported'}]);
-    });
-
-    it('gives each row its own labels array', async function () {
-        const filePath = csvPath + 'members-with-empty-labels.csv';
-        const mapping = {
-            email: 'email',
-            labels: 'labels'
-        };
-        const defaultLabels = [{name: 'imported'}];
-        const result = await parse(filePath, mapping, defaultLabels);
-
-        assert.notEqual(result[0].labels, defaultLabels, 'must not alias the caller\'s array');
-        assert.notEqual(result[0].labels, result[1].labels);
-    });
-
-    it('transforms complimentary_plan column to boolean', async function () {
-        const filePath = csvPath + 'members-with-complimentary-plan.csv';
-        const mapping = {
-            email: 'email',
-            complimentary_plan: 'complimentary_plan'
-        };
-        const result = await parse(filePath, mapping);
-
-        assert.ok(result);
-        assert.equal(result.length, 2);
-        assert.equal(result[0].complimentary_plan, true);
-        assert.equal(result[1].complimentary_plan, false);
-    });
-
-    it('transforms literal "undefined" string values to null', async function () {
-        const filePath = csvPath + 'members-with-undefined-values.csv';
-        const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
-
-        assert.ok(result);
-        assert.equal(result.length, 2);
-        assert.equal(result[0].email, 'jbloggs@example.com');
-        assert.equal(result[0].name, null);
-        assert.equal(result[1].email, 'test@example.com');
-        assert.equal(result[1].name, 'Bob');
-    });
-
     it('rejects with error for non-existent file path', async function () {
-        const filePath = csvPath + 'does-not-exist.csv';
         await assert.rejects(
-            () => parse(filePath, DEFAULT_HEADER_MAPPING),
+            () => parse(csvPath + 'does-not-exist.csv', DEFAULT_HEADER_MAPPING),
             (err: NodeJS.ErrnoException) => {
                 assert.ok(err);
                 assert.equal(err.code, 'ENOENT');
