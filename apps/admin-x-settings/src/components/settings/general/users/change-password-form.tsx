@@ -1,5 +1,4 @@
-import {Button} from '@tryghost/shade/components';
-import {TextField} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {type User, useUpdatePassword} from '@tryghost/admin-x-framework/api/users';
 import {ValidationError} from '@tryghost/admin-x-framework/errors';
 import {toast} from 'sonner';
@@ -168,42 +167,21 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
 
     const form = (
         <>
-            {isCurrentUser && <TextField
-                data-testid="old-password"
-                error={!!errors.oldPassword}
-                hint={errors.oldPassword}
-                inputRef={oldPasswordRef}
-                title="Old password"
-                type="password"
-                value={oldPassword}
-                onChange={(e) => {
-                    setOldPassword(e.target.value);
-                }}
-            />}
-            <TextField
-                data-testid="new-password"
-                error={!!errors.newPassword}
-                hint={errors.newPassword}
-                inputRef={newPasswordRef}
-                title="New password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => {
-                    setNewPassword(e.target.value);
-                }}
-            />
-            <TextField
-                data-testid="confirm-password"
-                error={!!errors.confirmNewPassword}
-                hint={errors.confirmNewPassword}
-                inputRef={confirmNewPasswordRef}
-                title="Confirm new password"
-                type="password"
-                value={confirmNewPassword}
-                onChange={(e) => {
-                    setConfirmNewPassword(e.target.value);
-                }}
-            />
+            {isCurrentUser && <Field data-invalid={Boolean(errors.oldPassword) || undefined}>
+                <FieldLabel htmlFor='old-password'>Old password</FieldLabel>
+                <Input ref={oldPasswordRef} aria-invalid={Boolean(errors.oldPassword) || undefined} data-testid='old-password' id='old-password' type='password' value={oldPassword} onChange={e => setOldPassword(e.target.value)} />
+                {errors.oldPassword && <FieldError>{errors.oldPassword}</FieldError>}
+            </Field>}
+            <Field data-invalid={Boolean(errors.newPassword) || undefined}>
+                <FieldLabel htmlFor='new-password'>New password</FieldLabel>
+                <Input ref={newPasswordRef} aria-invalid={Boolean(errors.newPassword) || undefined} data-testid='new-password' id='new-password' type='password' value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                {errors.newPassword && <FieldError>{errors.newPassword}</FieldError>}
+            </Field>
+            <Field data-invalid={Boolean(errors.confirmNewPassword) || undefined}>
+                <FieldLabel htmlFor='confirm-password'>Confirm new password</FieldLabel>
+                <Input ref={confirmNewPasswordRef} aria-invalid={Boolean(errors.confirmNewPassword) || undefined} data-testid='confirm-password' id='confirm-password' type='password' value={confirmNewPassword} onChange={e => setConfirmNewPassword(e.target.value)} />
+                {errors.confirmNewPassword && <FieldError>{errors.confirmNewPassword}</FieldError>}
+            </Field>
             <div className='mt-1 flex items-center justify-end gap-3'>
                 <Button
                     type='button'
@@ -248,7 +226,10 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
 
     const initialView = (
         <div className='relative flex flex-col'>
-            <TextField containerClassName='grow' disabled={true} title='Password' type='password' value='••••••••••••' />
+            <Field className='grow' data-disabled={true}>
+                <FieldLabel htmlFor='current-password'>Password</FieldLabel>
+                <Input id='current-password' type='password' value='••••••••••••' disabled />
+            </Field>
             <Button className='absolute top-0 right-0 h-auto p-0 hover:bg-transparent' data-testid='change-password-button' size='sm' type='button' variant='ghost' onClick={showPasswordInputs}>Change</Button>
         </div>
     );

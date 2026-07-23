@@ -2,8 +2,8 @@ import React from 'react';
 import RecommendationIcon from './recommendation-icon';
 import {type EditOrAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type ErrorMessages} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldDescription, FieldLabel, Input, Textarea} from '@tryghost/shade/components';
-import {Form, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldDescription, FieldError, FieldLabel, Input, Textarea} from '@tryghost/shade/components';
+import {Form} from '@tryghost/admin-x-design-system';
 import {Text} from '@tryghost/shade/primitives';
 import {formatNumber} from '@tryghost/shade/utils';
 
@@ -64,6 +64,7 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
     }, [formState, setErrors]);
 
     return <Form
+        className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'
         marginBottom={false}
         marginTop
     >
@@ -95,18 +96,14 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
             </Field>
         )}
 
-        <TextField
-            autoFocus={true}
-            error={Boolean(errors.title)}
-            hint={errors.title}
-            maxLength={2000}
-            title="Title"
-            value={formState.title ?? ''}
-            onChange={(e) => {
+        <Field data-invalid={Boolean(errors.title) || undefined}>
+            <FieldLabel htmlFor='recommendation-title'>Title</FieldLabel>
+            <Input aria-invalid={Boolean(errors.title) || undefined} id='recommendation-title' maxLength={2000} value={formState.title ?? ''} autoFocus onChange={(e) => {
                 clearError?.('title');
                 updateForm(state => ({...state, title: e.target.value}));
-            }}
-        />
+            }} />
+            {errors.title && <FieldError>{errors.title}</FieldError>}
+        </Field>
         <Field data-invalid={Boolean(errors.description) || undefined}>
             <FieldLabel htmlFor='recommendation-description'>Short description</FieldLabel>
             <Textarea

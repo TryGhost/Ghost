@@ -1,8 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 
-import * as TextFieldStories from './text-field.stories';
 import Form from './form';
-import TextField from './text-field';
 
 const meta = {
     title: 'Global / Form / Form (group)',
@@ -14,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof Form>;
 
 const formElements = <>
-    <TextField {...TextFieldStories.WithHeading.args} />
+    <div>Form content</div>
 </>;
 
 export const Default: Story = {

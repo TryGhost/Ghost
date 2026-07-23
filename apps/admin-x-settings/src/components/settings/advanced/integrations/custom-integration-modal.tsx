@@ -4,7 +4,8 @@ import React, {useEffect, useState} from 'react';
 import WebhooksTable from './webhooks-table';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {type APIKey, useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
-import {ConfirmationModal, Form, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, Modal} from '@tryghost/admin-x-design-system';
+import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {type Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -126,17 +127,16 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                 </ImageUpload>
             </div>
             <div className='flex min-w-0 grow flex-col'>
-                <Form>
-                    <TextField
-                        error={Boolean(errors.name)}
-                        hint={errors.name}
-                        maxLength={191}
-                        title='Title'
-                        value={formState.name}
-                        onChange={e => updateForm(state => ({...state, name: e.target.value}))}
-                        onKeyDown={() => clearError('name')}
-                    />
-                    <TextField maxLength={2000} title='Description' value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
+                <Form className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <Field data-invalid={Boolean(errors.name) || undefined}>
+                        <FieldLabel htmlFor='integration-title'>Title</FieldLabel>
+                        <Input aria-invalid={Boolean(errors.name) || undefined} id='integration-title' maxLength={191} value={formState.name} onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
+                        {errors.name && <FieldError>{errors.name}</FieldError>}
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor='integration-description'>Description</FieldLabel>
+                        <Input id='integration-description' maxLength={2000} value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
+                    </Field>
                     <APIKeys keys={[
                         {
                             id: 'content-api-key',

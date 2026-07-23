@@ -1,9 +1,9 @@
 import NiceModal from '@ebay/nice-modal-react';
 import validator from 'validator';
 import {APIError, ValidationError} from '@tryghost/admin-x-framework/errors';
-import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSeparator, FieldSet, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
+import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSeparator, FieldSet, Input, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
-import {Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {toast} from 'sonner';
 import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
@@ -219,22 +219,23 @@ const InviteUserModal = NiceModal.create(() => {
             width={540}
             onOk={handleSendInvitation}
         >
-            <div className='flex flex-col gap-6 py-4'>
+            <div className='flex flex-col gap-6 py-4 [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                 <p>
                     Send an invitation for a new person to create a staff account on your site, and select a role that matches what you’d like them to be able to do.
                 </p>
-                <TextField
-                    error={!!errors.email}
-                    hint={errors.email}
-                    inputRef={focusRef}
-                    placeholder='jamie@example.com'
-                    title='Email address'
-                    value={email}
-                    onChange={(event) => {
-                        setEmail(event.target.value);
-                    }}
-                    onKeyDown={() => setErrors(e => ({...e, email: undefined}))}
-                />
+                <Field data-invalid={Boolean(errors.email) || undefined}>
+                    <FieldLabel htmlFor='invite-email'>Email address</FieldLabel>
+                    <Input
+                        ref={focusRef}
+                        aria-invalid={Boolean(errors.email) || undefined}
+                        id='invite-email'
+                        placeholder='jamie@example.com'
+                        value={email}
+                        onChange={event => setEmail(event.target.value)}
+                        onKeyDown={() => setErrors(e => ({...e, email: undefined}))}
+                    />
+                    {errors.email && <FieldError>{errors.email}</FieldError>}
+                </Field>
                 <FieldSet>
                     <FieldLegend id='invite-role-legend' variant='label'>Role</FieldLegend>
                     <RadioGroup

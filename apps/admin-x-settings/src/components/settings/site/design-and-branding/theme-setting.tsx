@@ -1,9 +1,8 @@
 import ColorPickerField from '../../../color-picker-field';
 import React, {useEffect, useState} from 'react';
 import {type CustomThemeSetting} from '@tryghost/admin-x-framework/api/custom-theme-settings';
-import {Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
+import {Field, FieldContent, FieldDescription, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
-import {TextField} from '@tryghost/admin-x-design-system';
 import {Trash2} from 'lucide-react';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {humanizeSettingKey} from '@tryghost/admin-x-framework/api/settings';
@@ -45,13 +44,11 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({setting, setSetting}) => {
     switch (setting.type) {
     case 'text':
         return (
-            <TextField
-                hint={setting.description}
-                title={humanizeSettingKey(setting.key)}
-                value={fieldValues[setting.key] || ''}
-                onBlur={() => handleBlur(setting.key)}
-                onChange={event => handleChange(setting.key, event.target.value)}
-            />
+            <Field>
+                <FieldLabel htmlFor={`theme-setting-${setting.key}`}>{humanizeSettingKey(setting.key)}</FieldLabel>
+                <Input className='border-transparent bg-muted' id={`theme-setting-${setting.key}`} value={fieldValues[setting.key] || ''} onBlur={() => handleBlur(setting.key)} onChange={event => handleChange(setting.key, event.target.value)} />
+                {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
+            </Field>
         );
     case 'boolean':
         return (

@@ -1,8 +1,8 @@
 import CustomFieldIcon from './custom-field-icon';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {ConfirmationModal, Form, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Field, FieldDescription, FieldError, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {ConfirmationModal, Form, Modal} from '@tryghost/admin-x-design-system';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {ValidationError, getErrorMessage} from '@tryghost/admin-x-framework/errors';
 import {memberCustomFieldUserTypes, useCreateMemberCustomField, useDeleteMemberCustomField, useEditMemberCustomField, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -200,18 +200,12 @@ const CustomFieldModal = NiceModal.create<{field?: MemberCustomField}>(({field})
                 }
             }}
         >
-            <Form marginBottom={false} marginTop>
-                <TextField
-                    autoComplete='off'
-                    error={Boolean(errors.name)}
-                    hint={errors.name}
-                    placeholder='Enter custom field name'
-                    title='Name'
-                    value={formState.name}
-                    autoFocus
-                    onChange={e => updateForm(state => ({...state, name: e.target.value}))}
-                    onKeyDown={() => clearError('name')}
-                />
+            <Form className='[&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' marginBottom={false} marginTop>
+                <Field data-invalid={Boolean(errors.name) || undefined}>
+                    <FieldLabel htmlFor='custom-field-name'>Name</FieldLabel>
+                    <Input aria-invalid={Boolean(errors.name) || undefined} autoComplete='off' id='custom-field-name' placeholder='Enter custom field name' value={formState.name} autoFocus onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
+                    {errors.name && <FieldError>{errors.name}</FieldError>}
+                </Field>
                 <Field data-disabled={isEdit || undefined}>
                     <FieldLabel>Type</FieldLabel>
                     <Select disabled={isEdit} value={formState.userTypeId} onValueChange={(value) => {
