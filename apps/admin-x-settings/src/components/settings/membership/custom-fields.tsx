@@ -1,10 +1,10 @@
+import CustomFieldIcon from './custom-fields/custom-field-icon';
 import CustomFieldModal from './custom-fields/custom-field-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useFeatureFlag from '../../../hooks/use-feature-flag';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {Icon} from '@tryghost/admin-x-design-system';
 import {TextCursorInput} from 'lucide-react';
 import {useBrowseMemberCustomFieldsIncludingArchived, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {withErrorBoundary} from '../../error-boundary';
@@ -47,7 +47,7 @@ const FieldList: React.FC<{
                             <ActionListItemContent asChild>
                                 <button className='flex w-full items-center gap-3 py-3 text-left' type='button' onClick={() => openModal(field)}>
                                     <span className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted'>
-                                    <Icon name={userType.icon} size={18} />
+                                        <CustomFieldIcon className='size-[18px]' type={userType.id} />
                                     </span>
                                     <span className='min-w-0 grow'>
                                         <span className='block font-semibold'>{field.name}</span>

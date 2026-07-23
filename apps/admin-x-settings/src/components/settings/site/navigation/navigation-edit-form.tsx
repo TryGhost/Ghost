@@ -1,8 +1,8 @@
 import NavigationItemEditor from './navigation-item-editor';
 import React from 'react';
 import {Button, SortableList} from '@tryghost/shade/components';
-import {Icon} from '@tryghost/admin-x-design-system';
 import {Inline} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {type NavigationEditor} from '../../../../hooks/site/use-navigation-editor';
 
 const NavigationEditForm: React.FC<{
@@ -17,7 +17,7 @@ const NavigationEditForm: React.FC<{
             itemSeparator={false}
             renderItem={item => (
                 <NavigationItemEditor
-                    action={<Button aria-label='Delete navigation item' size='icon' type='button' variant='ghost' onClick={() => navigation.removeItem(item.id)}><Icon name='trash' size='sm' /></Button>}
+                    action={<Button aria-label='Delete navigation item' size='icon' type='button' variant='ghost' onClick={() => navigation.removeItem(item.id)}><LucideIcon.Trash2 /></Button>}
                     baseUrl={baseUrl}
                     clearError={key => navigation.clearError(item.id, key)}
                     item={item}
@@ -28,10 +28,10 @@ const NavigationEditForm: React.FC<{
         />
         <Inline align='start' gap='md'>
             <Inline align='center' className='h-[calc(var(--control-height)+0.5rem)] shrink-0 translate-y-0.5 pt-2'>
-                <Icon colorClass='text-grey-300 dark:text-grey-900' name='add' size='sm' />
+                <LucideIcon.Plus className='size-4 text-muted-foreground' />
             </Inline>
             <NavigationItemEditor
-                action={<Button aria-label='Add navigation item' className='mx-2' data-testid="add-button" size='icon' type='button' variant='ghost' onClick={navigation.addItem}><Icon name='add' size='sm' /></Button>}
+                action={<Button aria-label='Add navigation item' className='mx-2' data-testid="add-button" size='icon' type='button' variant='ghost' onClick={navigation.addItem}><LucideIcon.Plus /></Button>}
                 addItem={navigation.addItem}
                 baseUrl={baseUrl}
                 className="mt-1"

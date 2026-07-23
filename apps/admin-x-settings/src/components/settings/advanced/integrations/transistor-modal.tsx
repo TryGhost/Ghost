@@ -1,8 +1,9 @@
 import APIKeys from './api-keys';
 import BookmarkThumb from '../../../../assets/images/integrations/ghost-transistor.png';
+import BrandIcon from '../../../icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {ConfirmationModal, Form, Icon, Modal} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, Modal} from '@tryghost/admin-x-design-system';
 import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
@@ -102,7 +103,7 @@ const TransistorModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='Give your members access to private podcasts'
-                icon={<Icon name='transistor' size={56} />}
+                icon={<BrandIcon name='transistor' size={56} />}
                 title='Transistor.fm'
             />
             <div className='mt-7'>

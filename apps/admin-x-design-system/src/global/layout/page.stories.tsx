@@ -5,6 +5,7 @@ import ViewContainer from './view-container';
 
 import {exampleActions as exampleActionButtons} from './view-container.stories';
 import {Text} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 const meta = {
     title: 'Global / Layout / Page',
@@ -22,7 +23,8 @@ const dummyContent = <div className='w-full bg-grey-100 p-5 text-center'>Placeho
 
 const customGlobalActions: CustomGlobalAction[] = [
     {
-        iconName: 'heart',
+        key: 'heart',
+        icon: <LucideIcon.Heart />,
         ariaLabel: 'Favorite',
         onClick: () => {
             alert('Clicked on custom action');

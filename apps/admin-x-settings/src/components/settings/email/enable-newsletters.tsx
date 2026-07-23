@@ -1,9 +1,10 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import {Banner, Switch} from '@tryghost/shade/components';
-import {Icon, SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {Inline} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -61,13 +62,13 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     key: 'private',
                     value: (newslettersEnabled !== 'disabled' && !isDisabled) ? (<div className='w-full'>
                         <Inline align='center' gap='sm'>
-                            <Icon colorClass='text-state-success' name='check' size='sm' />
+                            <LucideIcon.Check className='size-4 text-state-success' />
                             <span>Enabled</span>
                         </Inline>
                     </div>) :
                         <div className='w-full'>
                             <Inline align='center' className='text-foreground' gap='sm'>
-                                <Icon colorClass='text-muted-foreground' name='mail-block' size='sm' />
+                                <LucideIcon.MailX className='size-4 text-muted-foreground' />
                                 <span>Disabled</span>
                             </Inline>
                             {isDisabled &&

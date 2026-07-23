@@ -9,10 +9,11 @@ import useStaffUsers from '../../../hooks/use-staff-users';
 import validator from 'validator';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Dropzone, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {ConfirmationModal, Icon, LimitModal, Modal} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, LimitModal, Modal} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {Pencil, Trash2} from 'lucide-react';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '../../../utils/social-urls/index';
@@ -361,7 +362,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                                             </ImageUploadPreview>
                                         ) : (
                                             <ImageUploadDropzone className='rounded-full bg-surface-inverse text-surface-inverse-foreground opacity-80 hover:opacity-100' inputId='avatar' inputTestId='profile-image-upload' onDropAccepted={files => handleImageUpload('profile_image', files[0])}>
-                                                <Icon colorClass='text-surface-inverse-foreground' name='user-add' size='lg' />
+                                                <LucideIcon.UserPlus className='size-8 text-surface-inverse-foreground' />
                                             </ImageUploadDropzone>
                                         )}
                                     </ImageUpload>
@@ -388,11 +389,7 @@ const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDel
                                                     type='button'
                                                 >
                                                     <span className='sr-only'>Actions</span>
-                                                    <Icon
-                                                        colorClass={formState.cover_image ? 'text-white' : undefined}
-                                                        name='ellipsis'
-                                                        size='md'
-                                                    />
+                                                    <LucideIcon.Ellipsis className={clsx('size-5', formState.cover_image && 'text-white')} />
                                                 </button>
                                             </DropdownMenuTrigger>
                                             {/* legacy Modal overlay is z-[1000]; keep the portalled menu above it */}

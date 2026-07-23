@@ -4,10 +4,9 @@ import React, {useState} from 'react';
 import RecommendationIcon from './recommendation-icon';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import {ActionList, ActionListItem, ActionListItemContent, Button, LoadingIndicator, NoValueLabel, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
-import {Icon} from '@tryghost/admin-x-design-system';
 import {Inline} from '@tryghost/shade/primitives';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
-import {formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface RecommendationListProps {
@@ -108,7 +107,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
                                     type='button'
                                     variant='ghost'
                                     onClick={copyRecommendationsUrl}
-                                ><Icon className={copied ? 'size-3.5! text-green' : 'size-3.5! text-muted-foreground'} name={copied ? 'check-circle' : 'duplicate'} /></Button>
+                                >{copied ? <LucideIcon.CircleCheck className='size-3.5! text-green' /> : <LucideIcon.Copy className='size-3.5! text-muted-foreground' />}</Button>
                             </TooltipTrigger>
                             <TooltipContent>{copied ? 'Copied' : 'Copy link'}</TooltipContent>
                         </Tooltip>

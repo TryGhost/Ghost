@@ -5,7 +5,8 @@ import RecommendationDescriptionForm, {validateDescriptionForm} from './recommen
 import trackEvent from '../../../../utils/analytics';
 import {Button} from '@tryghost/shade/components';
 import {type EditOrAddRecommendation, useAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
-import {Icon, Modal} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -67,7 +68,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
                 }
             });
         }}>
-            <Icon name='arrow-left' size='sm' />
+            <LucideIcon.ArrowLeft />
             Back
         </Button>
     );

@@ -5,9 +5,9 @@ import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Button} from '@tryghost/shade/components';
 import {Field, FieldContent, FieldDescription, FieldLabel, Separator, Switch} from '@tryghost/shade/components';
-import {Icon, SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {LucideIcon, abbreviateNumber} from '@tryghost/shade/utils';
 import {type Setting, getSettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {abbreviateNumber} from '@tryghost/shade/utils';
+import {SettingGroupContent} from '@tryghost/admin-x-design-system';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -115,7 +115,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 </span>
                                 :
                                 <span className='flex size-5 items-center justify-center rounded-full border border-black text-black group-hover:bg-black group-hover:text-white'>
-                                    <Icon name='arrow-right' size={10} />
+                                    <LucideIcon.ArrowRight className='size-2.5' />
                                 </span>
                             }
                         </a>
@@ -129,7 +129,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <Button className='border border-purple bg-transparent text-purple hover:bg-purple/5 hover:text-purple' type='button' variant='outline' onClick={() => {
                         updateRoute('explore/testimonial');
                     }}>
-                        <Icon name='send' size='sm' />
+                        <LucideIcon.Send />
                         Send testimonial
                     </Button>
                 </div>

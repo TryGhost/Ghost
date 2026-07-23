@@ -30,8 +30,6 @@ export {default as Banner} from './global/banner';
 export type {BannerProps} from './global/banner';
 export {default as ErrorBoundary} from './global/error-boundary';
 export type {ErrorBoundaryProps} from './global/error-boundary';
-export {default as Icon} from './global/icon';
-export type {IconProps} from './global/icon';
 export {LoadingIndicator} from './global/loading-indicator';
 export type {LoadingIndicatorProps} from './global/loading-indicator';
 export {default as Separator} from './global/separator';

@@ -1,10 +1,10 @@
 import React from 'react';
-import Icon from '../icon';
 import {Button} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 const GlobalActions: React.FC = () => {
     return (
-        <Button aria-label='Search' size='icon' type='button' variant='ghost' onClick={() => {}}><Icon name='magnifying-glass' size='sm' /></Button>
+        <Button aria-label='Search' size='icon' type='button' variant='ghost' onClick={() => {}}><LucideIcon.Search /></Button>
     );
 };
 

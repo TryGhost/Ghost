@@ -4,9 +4,10 @@ import useFeatureFlag from '../../../hooks/use-feature-flag';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {FacebookLogo, GoogleLogo, Icon, SettingGroupContent, TextField, XLogo} from '@tryghost/admin-x-design-system';
+import {FacebookLogo, GoogleLogo, SettingGroupContent, TextField, XLogo} from '@tryghost/admin-x-design-system';
 import {Field, FieldLabel, Switch, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {Pencil, Trash2} from 'lucide-react';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -40,7 +41,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
                         </div>
                         <div className='grow'>
                             <div className='flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-grey-900'>
-                                <Icon className='stroke-[2px] text-blue-600' name='magnifying-glass' size='sm' />
+                                <LucideIcon.Search className='size-4 stroke-2 text-blue-600' />
                             </div>
                         </div>
                     </div>

@@ -6,8 +6,9 @@ import useSettingGroup from '../../../../hooks/use-setting-group';
 import useSortableIndexedList from '../../../../hooks/use-sortable-indexed-list';
 import useUrlInput from '../../../../hooks/use-url-input';
 import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
-import {ConfirmationModal, Form, Icon, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Text} from '@tryghost/shade/primitives';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
@@ -346,7 +347,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             items={benefits.items}
                             itemSeparator={false}
                             renderItem={({id, item}) => <div className='relative flex w-full items-center gap-5'>
-                                <div className='absolute top-1/2 left-[-32px] flex size-6 -translate-y-1/2 items-center justify-center bg-background group-hover:hidden'><Icon name='check' size='sm' /></div>
+                                <div className='absolute top-1/2 left-[-32px] flex size-6 -translate-y-1/2 items-center justify-center bg-background group-hover:hidden'><LucideIcon.Check className='size-4' /></div>
                                 <TextField
                                     // className='grow border-b border-grey-500 py-2 focus:border-grey-800 group-hover:border-grey-600'
                                     maxLength={191}
@@ -354,14 +355,14 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     onChange={e => benefits.updateItem(id, e.target.value)}
                                 />
                                 <Button aria-label='Delete benefit' className='absolute top-1/2 right-1 z-10 size-5! -translate-y-1/2 p-0! opacity-0 group-hover:opacity-100' size='icon' type='button' variant='secondary' onClick={() => benefits.removeItem(id)}>
-                                    <Icon name='trash' size='sm' />
+                                    <LucideIcon.Trash2 />
                                 </Button>
                             </div>}
                             onMove={benefits.moveItem}
                         />
                     </div>
                     <div className="relative mt-1 flex items-center gap-3">
-                        <Icon name='check' size='sm' />
+                        <LucideIcon.Check className='size-4' />
                         <TextField
                             className='grow'
                             containerClassName='w-100'
@@ -384,7 +385,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             type='button'
                             onClick={() => benefits.addItem()}
                         >
-                            <Icon name='add' size='sm' />
+                            <LucideIcon.Plus />
                         </Button>
                     </div>
                 </Form>

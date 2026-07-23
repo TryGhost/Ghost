@@ -2,7 +2,8 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
-import {Icon, LimitModal, SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {LimitModal, SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {Text} from '@tryghost/shade/primitives';
 import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
@@ -81,7 +82,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className='-mr-3'>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button aria-label='Menu' disabled={!activeTheme} size='icon' type='button' variant='ghost'><Icon name='ellipsis' size='sm' /></Button>
+                                <Button aria-label='Menu' disabled={!activeTheme} size='icon' type='button' variant='ghost'><LucideIcon.Ellipsis /></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align='end'>
                                 <DropdownMenuItem onSelect={openThemeEditor}>Edit code</DropdownMenuItem>

@@ -1,8 +1,9 @@
 import React, {useState} from 'react';
 import SettingsBreadcrumbs from '../../settings-breadcrumbs';
 import {Button, Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {DesktopChrome, Icon, MobileChrome, PageHeader} from '@tryghost/admin-x-design-system';
+import {DesktopChrome, MobileChrome, PageHeader} from '@tryghost/admin-x-design-system';
 import {Inline} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {type OfficialTheme, type ThemeVariant} from '../../../providers/settings-app-provider';
 import {type Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
 
@@ -104,10 +105,10 @@ const ThemePreview: React.FC<{
         <div className='flex justify-end gap-8'>
             <Inline gap='sm'>
                 <Button aria-label='Desktop preview' size='icon' type='button' variant='ghost' onClick={() => setPreviewMode('desktop')}>
-                    <Icon colorClass={previewMode === 'desktop' ? 'text-foreground' : 'text-muted-foreground'} name='laptop' size='sm' />
+                    <LucideIcon.Laptop className={previewMode === 'desktop' ? 'text-foreground' : 'text-muted-foreground'} />
                 </Button>
                 <Button aria-label='Mobile preview' size='icon' type='button' variant='ghost' onClick={() => setPreviewMode('mobile')}>
-                    <Icon colorClass={previewMode === 'mobile' ? 'text-foreground' : 'text-muted-foreground'} name='mobile' size='sm' />
+                    <LucideIcon.Smartphone className={previewMode === 'mobile' ? 'text-foreground' : 'text-muted-foreground'} />
                 </Button>
             </Inline>
             <Button

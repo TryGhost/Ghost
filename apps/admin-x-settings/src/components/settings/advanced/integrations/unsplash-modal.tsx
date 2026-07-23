@@ -1,7 +1,8 @@
+import BrandIcon from '../../../icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
-import {Form, Icon, Modal} from '@tryghost/admin-x-design-system';
+import {Form, Modal} from '@tryghost/admin-x-design-system';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -58,7 +59,7 @@ const UnsplashModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='Beautiful, free photos'
-                icon={<Icon name='unsplash' size={48} />}
+                icon={<BrandIcon name='unsplash' size={48} />}
                 title='Unsplash'
             />
             <div className='mt-7'>
