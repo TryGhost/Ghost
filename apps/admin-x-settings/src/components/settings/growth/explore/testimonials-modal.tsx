@@ -219,7 +219,6 @@ const TestimonialsModal = NiceModal.create(() => {
                                     </Field>
                                 </div>
                                 <Button
-                                    className='h-[38px]! rounded-lg'
                                     disabled={saveState === 'saving'}
                                     type='button'
                                     onClick={async () => {

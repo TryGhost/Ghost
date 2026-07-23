@@ -31,7 +31,7 @@ const NavigationEditForm: React.FC<{
                 <LucideIcon.Plus className='size-4 text-muted-foreground' />
             </Inline>
             <NavigationItemEditor
-                action={<Button aria-label='Add navigation item' className='mx-2' data-testid="add-button" size='icon' type='button' variant='ghost' onClick={navigation.addItem}><LucideIcon.Plus /></Button>}
+                action={<Button aria-label='Add navigation item' data-testid="add-button" size='icon' type='button' variant='ghost' onClick={navigation.addItem}><LucideIcon.Plus /></Button>}
                 addItem={navigation.addItem}
                 baseUrl={baseUrl}
                 className="mt-1"

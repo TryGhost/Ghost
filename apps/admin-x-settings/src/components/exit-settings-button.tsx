@@ -14,7 +14,7 @@ const ExitSettingsButton: React.FC = () => {
     return (
         <>
             <Button aria-label='Close settings' className='text-muted-foreground hover:text-foreground' data-testid='exit-settings' id='done-button' size='icon' title='Close (ESC)' type='button' variant='ghost' onClick={() => confirm(isDirty, navigateAway)}>
-                <LucideIcon.X />
+                <LucideIcon.X className='size-6!' />
             </Button>
             <DirtyConfirmDialog {...dialogProps} />
         </>

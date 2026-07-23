@@ -108,7 +108,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                             </ImageUploadActions>
                         </ImageUploadPreview>
                     ) : (
-                        <ImageUploadDropzone inputId='custom-integration-icon' onDropAccepted={async ([file]) => {
+                        <ImageUploadDropzone className='text-center' inputId='custom-integration-icon' onDropAccepted={async ([file]) => {
                             try {
                                 const imageUrl = getImageUrl(await uploadImage({file}));
                                 updateForm(state => ({...state, icon_image: imageUrl}));
