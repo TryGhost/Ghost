@@ -40,7 +40,7 @@ const Sidebar: React.FC<{
             <div className='grow p-7 pt-0' data-testid="design-setting-tabs">
                 {themeSettingSections.length > 0 ?
                     <Tabs value={selectedTab} variant='underline' onValueChange={handleTabChange}>
-                        <TabsList className='sticky top-0 z-50 bg-background'>
+                        <TabsList className='sticky top-0 z-50 bg-surface-elevated-2'>
                             <TabsTrigger value='global'>Brand</TabsTrigger>
                             <TabsTrigger value='theme-settings'>Theme</TabsTrigger>
                         </TabsList>
