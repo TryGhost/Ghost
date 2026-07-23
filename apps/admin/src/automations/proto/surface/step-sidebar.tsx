@@ -3,6 +3,7 @@ import type {AutomationAction} from '@tryghost/admin-x-framework/api/automations
 import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {Stack} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {EmailPerformance} from './email-analytics';
 
 interface StepSidebarProps {
     action: AutomationAction;
@@ -51,6 +52,7 @@ export const StepSidebar: React.FC<StepSidebarProps> = ({action, onSubjectChange
                         <Button className="w-full" variant="outline" onClick={() => setEmailInfoOpen(true)}>
                             <LucideIcon.Pencil /> Edit email content
                         </Button>
+                        {action.stats && <EmailPerformance stats={action.stats} />}
                     </Stack>
                 ) : (
                     <Stack gap="sm">

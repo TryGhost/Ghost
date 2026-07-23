@@ -1,12 +1,13 @@
 import '@xyflow/react/dist/style.css';
 import React, {useMemo, useState} from 'react';
 import {Background, BaseEdge, type Edge, type EdgeProps, Handle, type Node, type NodeProps, Position, ReactFlow, getSmoothStepPath} from '@xyflow/react';
-import type {AutomationDetail, InsertActionAnchor} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationDetail, AutomationEmailStats, InsertActionAnchor} from '@tryghost/admin-x-framework/api/automations';
 import {insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {NODE_GAP, type StepKind, formatWait, orderActions, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {StepNodeHeader} from './flow-node-shell';
+import {EmailStatsFooter} from './email-analytics';
 import {StepSidebar} from './step-sidebar';
 
 const AddStepMenu: React.FC<{children: React.ReactNode; onPick: (kind: 'email' | 'wait') => void}> = ({children, onPick}) => (
@@ -23,7 +24,7 @@ const AddStepMenu: React.FC<{children: React.ReactNode; onPick: (kind: 'email' |
     </DropdownMenu>
 );
 
-type StepNodeData = {kind: StepKind; title: string; subtitle: string; selected: boolean};
+type StepNodeData = {kind: StepKind; title: string; subtitle: string; selected: boolean; stats?: AutomationEmailStats};
 
 const StepNode: React.FC<NodeProps> = ({data}) => {
     const d = data as StepNodeData;
@@ -32,6 +33,7 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
         <div className={cn('w-80 rounded-xl border bg-background p-4 shadow-sm transition-colors', clickable && 'cursor-pointer', d.selected ? 'border-blue ring-1 ring-blue' : 'border-border-default', clickable && !d.selected && 'hover:border-blue/50')}>
             <Handle position={Position.Top} style={{opacity: 0}} type="target" />
             <StepNodeHeader icon={stepKindIcon[d.kind]} subtitle={d.subtitle} title={d.title} />
+            {d.stats && <EmailStatsFooter stats={d.stats} />}
             <Handle position={Position.Bottom} style={{opacity: 0}} type="source" />
         </div>
     );
@@ -131,7 +133,8 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                     kind: isEmail ? 'email' : 'wait',
                     title: isEmail ? 'Send email' : 'Wait',
                     subtitle: isEmail ? (action.data.email_subject || 'Untitled') : formatWait(action.data.wait_hours),
-                    selected: action.id === selectedId
+                    selected: action.id === selectedId,
+                    stats: action.type === 'send_email' ? action.stats : undefined
                 },
                 draggable: false,
                 connectable: false,

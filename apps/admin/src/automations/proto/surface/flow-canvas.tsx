@@ -1,11 +1,12 @@
 import '@xyflow/react/dist/style.css';
 import React, {useMemo} from 'react';
 import {Background, type Edge, Handle, type Node, type NodeProps, Position, ReactFlow} from '@xyflow/react';
-import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
-import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
+import type {AutomationDetail, AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 import type {AutomationRun, RunStepState} from '@/automations/proto/shared/mock';
 import {NODE_GAP, type StepKind, formatWait, orderActions, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {StepNodeHeader} from './flow-node-shell';
+import {EmailStatsFooter} from './email-analytics';
 
 const fmtDateTime = (iso: string): string => new Date(iso).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'});
 
@@ -18,7 +19,7 @@ type FlowNodeData = {
     focused: boolean;
     state?: RunStepState | 'done';
     stateDetail?: string | null;
-    stats?: {sent: number; opened: number; clicked: number};
+    stats?: AutomationEmailStats;
 };
 
 const FlowStepNode: React.FC<NodeProps> = ({data}) => {
@@ -50,22 +51,7 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
             {d.focused ? (
                 d.stateDetail && <div className="mt-3 border-t border-border-default pt-2 text-xs text-muted-foreground">{d.stateDetail}</div>
             ) : (
-                d.stats && (
-                    <div className="mt-3 grid grid-cols-3 gap-2 border-t border-border-default pt-2 text-xs">
-                        <div className="flex flex-col">
-                            <span className="text-muted-foreground">Sent</span>
-                            <span className="font-medium">{formatNumber(d.stats.sent)}</span>
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-muted-foreground">Opened</span>
-                            <span className="font-medium">{d.stats.opened}%</span>
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-muted-foreground">Clicked</span>
-                            <span className="font-medium">{d.stats.clicked}%</span>
-                        </div>
-                    </div>
-                )
+                d.stats && <EmailStatsFooter stats={d.stats} />
             )}
             <Handle position={Position.Bottom} style={{opacity: 0}} type="source" />
         </div>
@@ -113,9 +99,7 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
         ordered.forEach((action, i) => {
             const step = stepByAction.get(action.id);
             const isEmail = action.type === 'send_email';
-            const stats = isEmail && action.stats
-                ? {sent: action.stats.email_sent_count, opened: action.stats.opened_rate ?? 0, clicked: action.stats.clicked_rate ?? 0}
-                : undefined;
+            const stats = action.type === 'send_email' ? action.stats : undefined;
             let stateDetail: string | null = null;
             if (focused) {
                 if (step?.occurred_at) {
