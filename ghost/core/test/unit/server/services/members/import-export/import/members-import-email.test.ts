@@ -38,9 +38,9 @@ describe('members import completion email', function () {
 
     it('rewrites raw ORM validation errors into human copy', function () {
         const email = build([
-            {email: '', labels: [], error: 'Value in [members.email] cannot be blank.'},
-            {email: 'bad', labels: [], error: 'Validation (isEmail) failed for email'},
-            {email: 'x', labels: [], error: 'No such customer: cus_123'}
+            {email: '', subscribed: true, complimentary_plan: false, labels: [], error: 'Value in [members.email] cannot be blank.'},
+            {email: 'bad', subscribed: true, complimentary_plan: false, labels: [], error: 'Validation (isEmail) failed for email'},
+            {email: 'x', subscribed: true, complimentary_plan: false, labels: [], error: 'No such customer: cus_123'}
         ]);
         const report = email.attachments[0].content;
 
@@ -67,7 +67,7 @@ describe('members import completion email', function () {
     });
 
     it('escapes CSV-injection characters so a spreadsheet cannot run them', function () {
-        const report = build([{email: 'x@example.com', name: '=1+2', labels: [], error: 'nope'}]).attachments[0].content;
+        const report = build([{email: 'x@example.com', name: '=1+2', subscribed: true, complimentary_plan: false, labels: [], error: 'nope'}]).attachments[0].content;
         const row = report.split('\r\n')[1];
         assert.ok(row.includes(`"'=1+2"`), 'formula-leading value is quoted and apostrophe-escaped');
     });

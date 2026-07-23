@@ -347,16 +347,8 @@ class MembersCSVImporter {
             const trx = await this._knex.transaction(undefined, {doNotRejectOnRollback: false});
             const options = {transacting: trx, context: IMPORT_CONTEXT};
             try {
-                // The kernel operates on string columns; narrow the loose CSV values
-                // once. A non-string cell (a header like email carrying 'true' coerces
-                // to a boolean) reads as absent -- it cannot key a lookup and would fail
-                // validation anyway.
-                const email = typeof row.email === 'string' ? row.email : undefined;
-                const importTier = typeof row.import_tier === 'string' ? row.import_tier : undefined;
-                const giftId = typeof row.gift_id === 'string' ? row.gift_id : undefined;
-
-                if (giftId) {
-                    if (importTier) {
+                if (row.gift_id) {
+                    if (row.import_tier) {
                         throw wrapGiftError(new errors.DataImportError({message: tpl(messages.giftCannotCombineWithImportTier)}));
                     }
                     if (row.complimentary_plan) {
@@ -364,8 +356,7 @@ class MembersCSVImporter {
                     }
                 }
 
-                const createdAtCell = typeof row.created_at === 'string' ? row.created_at : undefined;
-                const createdAt = (createdAtCell && moment(createdAtCell).isAfter(moment())) ? moment().toDate() : row.created_at;
+                const createdAt = (row.created_at && moment(row.created_at).isAfter(moment())) ? moment().toDate() : row.created_at;
                 const memberValues: MemberImportValues = {
                     email: row.email,
                     name: row.name,
@@ -374,8 +365,8 @@ class MembersCSVImporter {
                     created_at: createdAt,
                     labels: [...row.labels, ...cloneGlobalLabels()]
                 };
-                const existingMember = email !== undefined
-                    ? await this._members.get({email}, {...options, withRelated: ['labels', 'newsletters']})
+                const existingMember = row.email
+                    ? await this._members.get({email: row.email}, {...options, withRelated: ['labels', 'newsletters']})
                     : null;
                 let member;
                 if (existingMember) {
@@ -402,21 +393,21 @@ class MembersCSVImporter {
                 }
 
                 let importTierId;
-                if (importTier) {
-                    if (!tierIdCache.has(importTier)) {
-                        const tier = await this._tiers.getByName(importTier);
-                        tierIdCache.set(importTier, tier ? tier.id.toString() : null);
+                if (row.import_tier) {
+                    if (!tierIdCache.has(row.import_tier)) {
+                        const tier = await this._tiers.getByName(row.import_tier);
+                        tierIdCache.set(row.import_tier, tier ? tier.id.toString() : null);
                     }
-                    importTierId = tierIdCache.get(importTier);
+                    importTierId = tierIdCache.get(row.import_tier);
                     if (!importTierId) {
-                        throw new errors.DataImportError({message: tpl(messages.invalidImportTier, {tier: importTier})});
+                        throw new errors.DataImportError({message: tpl(messages.invalidImportTier, {tier: row.import_tier})});
                     }
                 }
 
-                if (row.stripe_customer_id && typeof row.stripe_customer_id === 'string') {
+                if (row.stripe_customer_id) {
                     let stripeCustomerId;
                     if (row.stripe_customer_id.toLowerCase() === 'auto') {
-                        stripeCustomerId = email !== undefined ? await this._members.getCustomerIdByEmail(email) : undefined;
+                        stripeCustomerId = row.email ? await this._members.getCustomerIdByEmail(row.email) : undefined;
                     } else {
                         stripeCustomerId = row.stripe_customer_id;
                     }
@@ -440,13 +431,13 @@ class MembersCSVImporter {
                         products.push({id: defaultTier.id.toString()});
                     }
                     await this._members.update({products}, {...options, id: member.id});
-                } else if (importTier) {
+                } else if (row.import_tier) {
                     throw new errors.DataImportError({message: tpl(messages.freeMemberNotAllowedImportTier)});
                 }
 
-                if (giftId) {
+                if (row.gift_id) {
                     try {
-                        await this._gifts.reassignRedeemer(giftId, member.id, {transacting: trx});
+                        await this._gifts.reassignRedeemer(row.gift_id, member.id, {transacting: trx});
                     } catch (giftError) {
                         throw wrapGiftError(giftError);
                     }
