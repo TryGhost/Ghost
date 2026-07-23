@@ -6,7 +6,7 @@ import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, PreviewChrome, Tabs, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
 import {Laptop, Smartphone} from 'lucide-react';
-import {PreviewModalContent} from '@tryghost/admin-x-design-system';
+import {PreviewModalContent} from '@src/components/settings/preview-modal';
 import {debounce} from '../../../utils/debounce';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';

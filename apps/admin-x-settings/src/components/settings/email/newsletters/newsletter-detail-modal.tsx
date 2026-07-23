@@ -14,7 +14,7 @@ import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
-import {PreviewModalContent} from '@tryghost/admin-x-design-system';
+import {PreviewModalContent} from '@src/components/settings/preview-modal';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Stack, Text} from '@tryghost/shade/primitives';
 import {Trash2} from 'lucide-react';

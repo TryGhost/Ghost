@@ -7,7 +7,7 @@ import React, {useEffect, useState} from 'react';
 import SignupOptions from './signup-options';
 import useQueryParams from '../../../../hooks/use-query-params';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {PreviewModalContent} from '@tryghost/admin-x-design-system';
+import {PreviewModalContent} from '@src/components/settings/preview-modal';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
