@@ -18,12 +18,21 @@ const messages = {
  * @param {import('knex').knex.TableBuilder} tableBuilder
  * @param {string} columnName
  * @param {object} [columnSpec]
+ * @param {import('knex').Knex} [transaction]
  */
-function addTableColumn(tableName, tableBuilder, columnName, columnSpec = schema[tableName][columnName]) {
+function addTableColumn(tableName, tableBuilder, columnName, columnSpec = schema[tableName][columnName], transaction = db.knex) {
     let column;
+    const isMySQLGeneratedColumn = columnSpec.generated?.dialect === 'mysql' && DatabaseInfo.isMySQL(transaction);
 
     // creation distinguishes between text with fieldtype, string with maxlength and all others
-    if (columnSpec.type === 'text' && Object.prototype.hasOwnProperty.call(columnSpec, 'fieldtype')) {
+    if (isMySQLGeneratedColumn) {
+        const maxlength = columnSpec.maxlength || 191;
+        const storage = columnSpec.generated.storage.toUpperCase();
+        column = tableBuilder.specificType(
+            columnName,
+            `varchar(${maxlength}) GENERATED ALWAYS AS (${columnSpec.generated.expression}) ${storage}`
+        );
+    } else if (columnSpec.type === 'text' && Object.prototype.hasOwnProperty.call(columnSpec, 'fieldtype')) {
         column = tableBuilder[columnSpec.type](columnName, columnSpec.fieldtype);
     } else if (columnSpec.type === 'string') {
         if (Object.prototype.hasOwnProperty.call(columnSpec, 'maxlength')) {
@@ -35,10 +44,12 @@ function addTableColumn(tableName, tableBuilder, columnName, columnSpec = schema
         column = tableBuilder[columnSpec.type](columnName);
     }
 
-    if (Object.prototype.hasOwnProperty.call(columnSpec, 'nullable') && columnSpec.nullable === true) {
-        column.nullable();
-    } else {
-        column.nullable(false);
+    if (!isMySQLGeneratedColumn) {
+        if (Object.prototype.hasOwnProperty.call(columnSpec, 'nullable') && columnSpec.nullable === true) {
+            column.nullable();
+        } else {
+            column.nullable(false);
+        }
     }
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'primary') && columnSpec.primary === true) {
         column.primary();
@@ -104,7 +115,7 @@ function dropNullable(tableName, column, transaction = db.knex) {
  */
 async function addColumn(tableName, column, transaction = db.knex, columnSpec, options = {}) {
     const addColumnBuilder = transaction.schema.table(tableName, function (table) {
-        addTableColumn(tableName, table, column, columnSpec);
+        addTableColumn(tableName, table, column, columnSpec, transaction);
     });
 
     // Use the default flow for SQLite because .toSQL() is tricky with SQLite when
@@ -517,7 +528,7 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
     return transaction.schema.createTable(table, function (t) {
         Object.keys(tableSpec)
             .filter(column => !(column.startsWith('@@')))
-            .forEach(column => addTableColumn(table, t, column, tableSpec[column]));
+            .forEach(column => addTableColumn(table, t, column, tableSpec[column], transaction));
 
         if (tableSpec['@@INDEXES@@']) {
             tableSpec['@@INDEXES@@'].forEach((index) => {

@@ -1263,8 +1263,21 @@ module.exports = {
         to: {type: 'string', maxlength: 2000, nullable: false},
         post_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'posts.id', setNullDelete: true},
         automation_action_revision_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_action_revisions.id', setNullDelete: true},
+        to_hash: {
+            type: 'string',
+            maxlength: 32,
+            nullable: true,
+            generated: {
+                dialect: 'mysql',
+                expression: 'MD5(`to`)',
+                storage: 'virtual'
+            }
+        },
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['automation_action_revision_id', 'to_hash']
+        ]
     },
     members_click_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
