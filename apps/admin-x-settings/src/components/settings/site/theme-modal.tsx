@@ -11,8 +11,7 @@ import {Button, Dropzone, LoadingIndicator, Tabs, TabsList, TabsTrigger} from '@
 import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type OfficialTheme} from '../../providers/settings-app-provider';
-import {PageHeader} from '@tryghost/admin-x-design-system';
-import {SettingsModal} from '@tryghost/shade/patterns';
+import {PageHeader, SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -259,7 +258,14 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         </div>;
 
     return (<>
-        <PageHeader containerClassName='sticky -top-px bg-background' left={left} right={right} sticky={false} />
+        <PageHeader blurredBackground={false} className='sticky -top-px z-50 h-22 min-h-[92px] bg-background p-8' sticky={false}>
+            <PageHeader.Left className='flex-auto'>
+                {left}
+            </PageHeader.Left>
+            <PageHeader.Actions className='flex-auto justify-end'>
+                {right}
+            </PageHeader.Actions>
+        </PageHeader>
         <div className='px-[8vmin] md:hidden'>
             <Tabs value={currentTab} variant='button-sm' onValueChange={setCurrentTab}>
                 <TabsList>

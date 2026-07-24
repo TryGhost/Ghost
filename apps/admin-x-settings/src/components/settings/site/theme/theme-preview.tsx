@@ -4,7 +4,7 @@ import {Button, Field, FieldLabel, PreviewChrome, Select, SelectContent, SelectI
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type OfficialTheme, type ThemeVariant} from '../../../providers/settings-app-provider';
-import {PageHeader} from '@tryghost/admin-x-design-system';
+import {PageHeader} from '@tryghost/shade/patterns';
 import {type Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
 
 const hasVariants = (theme: OfficialTheme) => theme.variants && theme.variants.length > 0;
@@ -122,8 +122,15 @@ const ThemePreview: React.FC<{
 
     return (
         <div className='absolute inset-0 z-[100]'>
-            <PageHeader containerClassName='bg-grey-50 dark:bg-black z-[100]' left={left} right={right} sticky={false} />
-            <div className='flex h-[calc(100%-92px)] grow flex-col items-center justify-center bg-grey-50 dark:bg-black'>
+            <PageHeader blurredBackground={false} className='z-[100] h-22 min-h-[92px] bg-background p-8' sticky={false}>
+                <PageHeader.Left className='flex-auto'>
+                    {left}
+                </PageHeader.Left>
+                <PageHeader.Actions className='flex-auto justify-end'>
+                    {right}
+                </PageHeader.Actions>
+            </PageHeader>
+            <div className='flex h-[calc(100%-92px)] grow flex-col items-center justify-center bg-background'>
                 {previewMode === 'desktop' ?
                     <PreviewChrome device='desktop'>
                         <iframe
