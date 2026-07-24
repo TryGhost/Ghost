@@ -47,7 +47,7 @@
         "@tryghost/i18n": "workspace:*",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
-        "autoprefixer": "10.5.2",
+        "autoprefixer": "10.5.4",
         "eslint": "catalog:",
         "eslint-plugin-tailwindcss": "catalog:tailwind3",
         "postcss": "catalog:",
