@@ -1,10 +1,10 @@
-const assert = require('assert/strict');
-const path = require('path');
-const http = require('http');
-const express = require('express');
-const sinon = require('sinon');
-const fs = require('fs-extra');
-const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
+import assert from 'assert/strict';
+import path from 'path';
+import http from 'http';
+import express from 'express';
+import sinon from 'sinon';
+import fs from 'fs-extra';
+import LocalStorageBase from '../../../../../core/server/adapters/storage/LocalStorageBase';
 
 describe('Local Storage Base', function () {
     describe('serve', function () {
@@ -15,7 +15,7 @@ describe('Local Storage Base', function () {
                 siteUrl: 'http://example.com/blog/'
             });
 
-            const req = new http.IncomingMessage();
+            const req = new http.IncomingMessage(null as never);
             const res = new http.ServerResponse(req);
 
             Object.setPrototypeOf(req, express.request);
@@ -27,8 +27,12 @@ describe('Local Storage Base', function () {
                 range: 'bytes=1000-999'
             };
 
-            const err = await new Promise((resolve) => {
-                localStorageBase.serve()(req, res, resolve);
+            const err = await new Promise<{errorType: string}>((resolve) => {
+                localStorageBase.serve()(
+                    req as express.Request,
+                    res as express.Response,
+                    resolve as express.NextFunction
+                );
             });
 
             assert.equal(err.errorType, 'RangeNotSatisfiableError');
@@ -166,7 +170,7 @@ describe('Local Storage Base', function () {
         it('exists rejects when targetDir resolves outside storage root via traversal', async function () {
             // Stub fs.stat to always succeed so we can detect traversal
             // rather than having it masked by file-not-found
-            const statStub = sinon.stub(fs, 'stat').resolves({});
+            const statStub = sinon.stub(fs, 'stat').resolves({} as never);
 
             try {
                 const localStorageBase = new LocalStorageBase({
@@ -184,7 +188,7 @@ describe('Local Storage Base', function () {
         });
 
         it('exists rejects when targetDir prefix-matches but is not inside storage root', async function () {
-            const statStub = sinon.stub(fs, 'stat').resolves({});
+            const statStub = sinon.stub(fs, 'stat').resolves({} as never);
 
             try {
                 const localStorageBase = new LocalStorageBase({

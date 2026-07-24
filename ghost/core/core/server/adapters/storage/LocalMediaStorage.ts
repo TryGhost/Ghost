@@ -1,8 +1,8 @@
 // # Local File System Media Storage module
 // The (default) module for storing media, using the local file system
-const config = require('../../../shared/config');
-const urlUtils = require('../../../shared/url-utils').default;
-const LocalStorageBase = require('./LocalStorageBase');
+import config from '../../../shared/config';
+import urlUtils from '../../../shared/url-utils';
+import LocalStorageBase from './LocalStorageBase';
 
 const messages = {
     notFound: 'Media file not found',
@@ -21,4 +21,4 @@ class LocalMediaStorage extends LocalStorageBase {
     }
 }
 
-module.exports = LocalMediaStorage;
+export default LocalMediaStorage;

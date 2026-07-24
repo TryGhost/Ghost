@@ -1,14 +1,22 @@
-const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../utils/assertions');
-const fs = require('fs-extra');
+import assert from 'node:assert/strict';
+import fs from 'fs-extra';
+import type LocalStorageBaseClass from '../../../../../core/server/adapters/storage/LocalStorageBase';
+import type adapterManagerInstance from '../../../../../core/server/services/adapter-manager';
+
+// Vitest resolves `import` through Vite's SSR module runner and `require`
+// through Node's CJS cache, so the same first-party module loaded both ways
+// yields two instances. The adapter manager loads adapters with `require`, so
+// the base classes it compares them against have to come from that same graph —
+// an imported StorageBase/LocalStorageBase would fail every `instanceof` check.
 const {StorageBase} = require('ghost-storage-base');
+const adapterManager: typeof adapterManagerInstance = require('../../../../../core/server/services/adapter-manager').default;
+const LocalStorageBase: typeof LocalStorageBaseClass = require('../../../../../core/server/adapters/storage/LocalStorageBase').default;
 const configUtils = require('../../../../utils/config-utils');
-const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
-const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
+const {assertExists} = require('../../../../utils/assertions');
 
 const storagePath = configUtils.config.getContentPath('adapters') + 'storage/';
 describe('storage: index_spec', function () {
-    const scope = {adapter: null};
+    const scope: {adapter: string | null} = {adapter: null};
 
     beforeAll(function () {
         if (!fs.existsSync(storagePath)) {
@@ -90,7 +98,7 @@ describe('storage: index_spec', function () {
             adapterManager.getAdapter('storage:images');
         } catch (err) {
             assertExists(err);
-            assert.equal(err.errorType, 'IncorrectUsageError');
+            assert.equal((err as {errorType?: string}).errorType, 'IncorrectUsageError');
         }
     });
 });
