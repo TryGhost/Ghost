@@ -20,10 +20,6 @@ export {default as ViewContainer} from './global/layout/view-container';
 export type {View} from './global/layout/view-container';
 export type {PrimaryActionProps} from './global/layout/view-container';
 
-export {default as SettingNavItem} from './settings/setting-nav-item';
-export type {SettingNavItemProps} from './settings/setting-nav-item';
-export {default as SettingNavSection} from './settings/setting-nav-section';
-export type {SettingNavSectionProps} from './settings/setting-nav-section';
 export {debounce} from './utils/debounce';
 export {formatUrl} from './utils/format-url';
 
