@@ -47,6 +47,8 @@ export type ObjectProperties = {
     repostCount: number;
     authored: boolean;
     metadata?: ObjectMetadata;
+    sensitive?: boolean;
+    contentWarning?: string | null;
 }
 
 export type ActorProperties = {

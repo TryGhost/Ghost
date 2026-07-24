@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 
@@ -12,14 +12,14 @@ import NotificationIcon from './components/notification-icon';
 import NotificationItem from './components/notification-item';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
 import Separator from '@components/global/separator';
+import {ContentWarningOverlay, SensitiveMediaOverlay, renderFeedAttachment} from '@components/feed/feed-item';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/empty-view-indicator';
 import {Notification, isApiError} from '@src/api/activitypub';
 import {handleProfileClick} from '@utils/handle-profile-click';
-import {renderFeedAttachment} from '@components/feed/feed-item';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {sanitizeHtml, stripHtml} from '@src/utils/content-formatters';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
-import {useNotificationsForUser} from '@hooks/use-activity-pub-queries';
+import {useNotificationsForUser, usePreferencesForUser} from '@hooks/use-activity-pub-queries';
 
 interface NotificationGroup {
     id: string;
@@ -202,6 +202,90 @@ const ProfileLinkedContent: React.FC<{
     );
 };
 
+interface NotificationPostPreviewProps {
+    post: Notification['post'];
+    showSensitiveMediaByDefault: boolean;
+    variant: 'inline' | 'quoted';
+}
+
+const NotificationPostPreview: React.FC<NotificationPostPreviewProps> = ({
+    post,
+    showSensitiveMediaByDefault,
+    variant
+}) => {
+    const [isSensitiveMediaRevealed, setIsSensitiveMediaRevealed] = React.useState(false);
+    const [isContentWarningRevealed, setIsContentWarningRevealed] = React.useState(false);
+
+    if (!post) {
+        return null;
+    }
+
+    const contentWarning = post.contentWarning?.trim() || null;
+    const attachments = post.attachments ?? [];
+    const hasAttachments = attachments.length > 0;
+    const hasContentWarning = contentWarning !== null;
+    const shouldHideContentWarning = contentWarning !== null && !isContentWarningRevealed;
+    const shouldHideSensitiveMedia = post.sensitive === true && hasAttachments && !hasContentWarning && !showSensitiveMediaByDefault && !isSensitiveMediaRevealed;
+
+    if (shouldHideContentWarning && contentWarning) {
+        if (variant === 'inline') {
+            return (
+                <button
+                    className='mt-0.5 block max-w-full truncate text-left text-sm text-gray-700 hover:text-black dark:text-gray-600 dark:hover:text-white'
+                    type='button'
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        setIsContentWarningRevealed(true);
+                    }}
+                >
+                    <span className='font-semibold'>Content warning:</span> {contentWarning} <span className='font-semibold'>Show</span>
+                </button>
+            );
+        }
+
+        return (
+            <ContentWarningOverlay
+                label={contentWarning}
+                onReveal={(event) => {
+                    event.stopPropagation();
+                    setIsContentWarningRevealed(true);
+                }}
+            />
+        );
+    }
+
+    if (variant === 'inline') {
+        return (
+            <div className='ap-note-content mt-0.5 line-clamp-1 text-sm text-pretty text-gray-700 dark:text-gray-600'>
+                {post.type === 'article' && post.title && <>{post.title} &mdash; </>}
+                <span dangerouslySetInnerHTML={{__html: sanitizeHtml(stripHtml(post.content || ''))}} />
+            </div>
+        );
+    }
+
+    return (
+        <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-950/30 group-hover:dark:bg-black/40'>
+            <ProfileLinkedContent
+                className='ap-note-content text-pretty'
+                content={post.content || ''}
+                stripTags={['a']}
+            />
+            {hasAttachments && (
+                <div className='notification-attachments mb-1 [&_.attachment-gallery]:flex [&_.attachment-gallery]:flex-wrap [&_img]:aspect-square [&_img]:max-w-[calc(20%-6.4px)]'>
+                    {shouldHideSensitiveMedia ? (
+                        <SensitiveMediaOverlay
+                            onReveal={(event) => {
+                                event.stopPropagation();
+                                setIsSensitiveMediaRevealed(true);
+                            }}
+                        />
+                    ) : renderFeedAttachment({...post, type: 'Note', attachment: attachments} as unknown as ObjectProperties)}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const Notifications: React.FC = () => {
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
     const navigate = useNavigateWithBasePath();
@@ -221,6 +305,8 @@ const Notifications: React.FC = () => {
     const maxAvatars = 5;
 
     const {data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useNotificationsForUser('index');
+    const {data: preferences} = usePreferencesForUser();
+    const showSensitiveMediaByDefault = preferences?.showSensitiveMedia ?? false;
 
     const notificationGroups = (
         data?.pages.flatMap((page) => {
@@ -438,28 +524,11 @@ const Notifications: React.FC = () => {
                                                     (group.type === 'like' && !group.post?.name && group.post?.content) ||
                                                     (group.type === 'repost' && !group.post?.name && group.post?.content)
                                                 ) && (
-                                                    (group.type !== 'reply' && group.type !== 'mention' ?
-                                                        <div className='ap-note-content mt-0.5 line-clamp-1 text-sm text-pretty text-gray-700 dark:text-gray-600'>
-                                                            {group.post?.type === 'article' && group.post?.title && <>{group.post.title} &mdash; </>}
-                                                            <span dangerouslySetInnerHTML={{__html: sanitizeHtml(stripHtml(group.post?.content || ''))}} />
-                                                        </div> :
-                                                        <>
-                                                            <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-950/30 group-hover:dark:bg-black/40'>
-                                                                <ProfileLinkedContent
-                                                                    className='ap-note-content text-pretty'
-                                                                    content={group.post?.content || ''}
-                                                                    stripTags={['a']}
-                                                                />
-                                                                {group.post && group.post.attachments && group.post.attachments.length > 0 && (
-                                                                    <div className='notification-attachments mb-1 [&_.attachment-gallery]:flex [&_.attachment-gallery]:flex-wrap [&_img]:aspect-square [&_img]:max-w-[calc(20%-6.4px)]'>
-                                                                        {renderFeedAttachment(
-                                                                            {...group.post, type: 'Note', attachment: group.post.attachments}
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </>
-                                                    )
+                                                    <NotificationPostPreview
+                                                        post={group.post}
+                                                        showSensitiveMediaByDefault={showSensitiveMediaByDefault}
+                                                        variant={group.type !== 'reply' && group.type !== 'mention' ? 'inline' : 'quoted'}
+                                                    />
                                                 )}
                                                 {((group.type === 'reply' && group.post) || group.type === 'mention') && (
                                                     <div className="mt-1.5">
