@@ -2,9 +2,9 @@ import BrandIcon from '../../../icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import pinturaScreenshot from '../../../../assets/images/pintura-screenshot.png';
-import {Dropzone, Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
-import {Form, Modal} from '@tryghost/admin-x-design-system';
+import {Dropzone, Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -75,7 +75,7 @@ const PinturaModal = NiceModal.create(() => {
     const isDirty = !(enabled === pinturaEnabled);
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('integrations');
             }}
@@ -105,7 +105,9 @@ const PinturaModal = NiceModal.create(() => {
                     </div>
                 </div>}
 
-                <Form marginBottom={false} title='Pintura configuration' grouped>
+                <FieldSet className='gap-0'>
+                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Pintura configuration</FieldLegend>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7'>
                     <Field orientation='horizontal'>
                         <FieldContent>
                             <FieldLabel htmlFor='pintura-enabled'>Enable Pintura</FieldLabel>
@@ -135,9 +137,10 @@ const PinturaModal = NiceModal.create(() => {
                             </div>
                         </>
                     )}
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

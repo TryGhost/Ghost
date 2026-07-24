@@ -9,7 +9,7 @@ const {t} = require('../../i18n');
 const expressSession = require('./express-session');
 
 const models = require('../../../models');
-const urlUtils = require('../../../../shared/url-utils');
+const urlUtils = require('../../../../shared/url-utils').default;
 const config = require('../../../../shared/config');
 const {blogIcon} = require('../../../lib/image');
 const url = require('url');

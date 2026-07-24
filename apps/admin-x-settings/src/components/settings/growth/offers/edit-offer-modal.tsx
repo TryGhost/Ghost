@@ -1,11 +1,12 @@
+import ConfirmationModal from '../../../confirmation-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/portal-frame';
 import SettingsBreadcrumbs from '../../settings-breadcrumbs';
-import {Button, Field, FieldLabel, Textarea} from '@tryghost/shade/components';
-import {ConfirmationModal, Form, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, Textarea} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
+import {PreviewModalContent} from '../../preview-modal';
 import {createOfferRedemptionFilterUrl} from './offer-helpers';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -98,7 +99,7 @@ const Sidebar: React.FC<{
 
             return (
                 <div className='flex grow flex-col pt-2'>
-                    <Form className=' grow'>
+                    <FieldGroup className='mb-10 grow gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                         <section>
                             <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
                                 <div className='flex flex-col gap-1.5'>
@@ -126,46 +127,34 @@ const Sidebar: React.FC<{
                         <section className='mt-2'>
                             <h2 className='mb-4 text-lg'>General</h2>
                             <div className='flex flex-col gap-6'>
-                                <TextField
-                                    error={Boolean(errors.name)}
-                                    hint={errors.name || <div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={`${nameLengthColor}`}>{formatNumber(nameLength)}</span> / {formatNumber(40)}</strong></div>}
-                                    maxLength={40}
-                                    placeholder='Black Friday'
-                                    title='Offer name'
-                                    value={offer?.name ?? ''}
-                                    onChange={(e) => {
+                                <Field data-invalid={Boolean(errors.name) || undefined}>
+                                    <FieldLabel htmlFor='offer-name'>Offer name</FieldLabel>
+                                    <Input aria-invalid={Boolean(errors.name) || undefined} id='offer-name' maxLength={40} placeholder='Black Friday' value={offer?.name ?? ''} onChange={(e) => {
                                         setNameLength(e.target.value.length);
                                         updateOffer({name: e.target.value});
-                                    }}
-                                    onKeyDown={() => clearError('name')}
-                                />
-                                <TextField
-                                    containerClassName='group'
-                                    error={Boolean(errors.code)}
-                                    hint={errors.code || (offer?.code !== '' ? <span className='truncate text-grey-700'>{homepageUrl}<span className='font-bold text-black dark:text-white'>{offer?.code}</span></span> : null)}
-                                    placeholder='black-friday'
-                                    rightPlaceholder={offer?.code !== '' ? <Button className='mt-1 mr-0.5' size='sm' type='button' variant='link' onClick={handleCopyClick}>{isCopied ? 'Copied!' : 'Copy link'}</Button> : null}
-                                    title='Offer code'
-                                    value={offer?.code ?? ''}
-                                    onChange={e => updateOffer({code: e.target.value})}
-                                    onKeyDown={() => clearError('code')}
-                                />
-                                <TextField
-                                    error={Boolean(errors.displayTitle)}
-                                    hint={errors.displayTitle}
-                                    placeholder='Black Friday Special'
-                                    title='Display title'
-                                    value={offer?.display_title ?? ''}
-                                    onChange={e => updateOffer({display_title: e.target.value})}
-                                    onKeyDown={() => clearError('displayTitle')}
-                                />
+                                    }} onKeyDown={() => clearError('name')} />
+                                    {errors.name ? <FieldError>{errors.name}</FieldError> : <FieldDescription><div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={nameLengthColor}>{formatNumber(nameLength)}</span> / {formatNumber(40)}</strong></div></FieldDescription>}
+                                </Field>
+                                <Field className='group' data-invalid={Boolean(errors.code) || undefined}>
+                                    <FieldLabel htmlFor='offer-code'>Offer code</FieldLabel>
+                                    <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.code) || undefined}>
+                                        <InputGroupInput aria-invalid={Boolean(errors.code) || undefined} id='offer-code' placeholder='black-friday' value={offer?.code ?? ''} onChange={e => updateOffer({code: e.target.value})} onKeyDown={() => clearError('code')} />
+                                        {offer?.code !== '' && <InputGroupAddon align='inline-end'><InputGroupButton onClick={handleCopyClick}>{isCopied ? 'Copied!' : 'Copy link'}</InputGroupButton></InputGroupAddon>}
+                                    </InputGroup>
+                                    {errors.code ? <FieldError>{errors.code}</FieldError> : offer?.code !== '' && <FieldDescription className='truncate'>{homepageUrl}<span className='font-bold text-foreground'>{offer?.code}</span></FieldDescription>}
+                                </Field>
+                                <Field data-invalid={Boolean(errors.displayTitle) || undefined}>
+                                    <FieldLabel htmlFor='offer-display-title'>Display title</FieldLabel>
+                                    <Input aria-invalid={Boolean(errors.displayTitle) || undefined} id='offer-display-title' placeholder='Black Friday Special' value={offer?.display_title ?? ''} onChange={e => updateOffer({display_title: e.target.value})} onKeyDown={() => clearError('displayTitle')} />
+                                    {errors.displayTitle && <FieldError>{errors.displayTitle}</FieldError>}
+                                </Field>
                                 <Field>
                                     <FieldLabel htmlFor='offer-display-description'>Display description</FieldLabel>
                                     <Textarea className='border-transparent bg-muted' id='offer-display-description' placeholder='Take advantage of this limited-time offer.' value={offer?.display_description ?? ''} onChange={e => updateOffer({display_description: e.target.value})} />
                                 </Field>
                             </div>
                         </section>
-                    </Form>
+                    </FieldGroup>
                     <div className='mb-2'>
                         {offer?.status === 'active' ? <Button className='h-auto p-0 text-destructive hover:text-destructive' type='button' variant='link' onClick={confirmStatusChange}>Archive offer</Button> : <Button className='h-auto p-0 text-green hover:text-green' type='button' variant='link' onClick={confirmStatusChange}>Reactivate offer</Button>}
                     </div>

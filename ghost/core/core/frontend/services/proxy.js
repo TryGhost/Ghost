@@ -101,5 +101,5 @@ module.exports = {
     labs: require('../../shared/labs'),
     // URGH... Yuk (unhelpful comment :D)
     urlService: require('../../server/services/url'),
-    urlUtils: require('../../shared/url-utils')
+    urlUtils: require('../../shared/url-utils').default
 };

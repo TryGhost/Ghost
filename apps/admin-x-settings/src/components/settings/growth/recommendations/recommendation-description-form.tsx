@@ -2,8 +2,7 @@ import React from 'react';
 import RecommendationIcon from './recommendation-icon';
 import {type EditOrAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type ErrorMessages} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldDescription, FieldLabel, Input, Textarea} from '@tryghost/shade/components';
-import {Form, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Textarea} from '@tryghost/shade/components';
 import {Text} from '@tryghost/shade/primitives';
 import {formatNumber} from '@tryghost/shade/utils';
 
@@ -63,10 +62,7 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
         setErrors(validateDescriptionForm(formState));
     }, [formState, setErrors]);
 
-    return <Form
-        marginBottom={false}
-        marginTop
-    >
+    return <FieldGroup className='mt-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
         <div>
             <Text as='h6' className='mb-2 block tracking-wider uppercase' leading='normal' size='xs' tone='secondary' weight='semibold'>Preview</Text>
             <div className="-mx-8 flex items-center justify-center overflow-hidden border-y border-grey-100 bg-grey-50 px-7 py-4 dark:border-grey-950 dark:bg-black">
@@ -91,22 +87,18 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
         {showURL && (
             <Field data-disabled='true'>
                 <FieldLabel htmlFor='recommendation-url'>URL</FieldLabel>
-                <Input className='border-transparent bg-muted' id='recommendation-url' value={formState.url} disabled />
+                <Input className='h-[var(--control-height)] border-transparent bg-muted' id='recommendation-url' value={formState.url} disabled />
             </Field>
         )}
 
-        <TextField
-            autoFocus={true}
-            error={Boolean(errors.title)}
-            hint={errors.title}
-            maxLength={2000}
-            title="Title"
-            value={formState.title ?? ''}
-            onChange={(e) => {
+        <Field data-invalid={Boolean(errors.title) || undefined}>
+            <FieldLabel htmlFor='recommendation-title'>Title</FieldLabel>
+            <Input aria-invalid={Boolean(errors.title) || undefined} id='recommendation-title' maxLength={2000} value={formState.title ?? ''} autoFocus onChange={(e) => {
                 clearError?.('title');
                 updateForm(state => ({...state, title: e.target.value}));
-            }}
-        />
+            }} />
+            {errors.title && <FieldError>{errors.title}</FieldError>}
+        </Field>
         <Field data-invalid={Boolean(errors.description) || undefined}>
             <FieldLabel htmlFor='recommendation-description'>Short description</FieldLabel>
             <Textarea
@@ -123,7 +115,7 @@ function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showU
             />
             <FieldDescription>Max: <strong>{formatNumber(200)}</strong> characters. You&#8217;ve used <strong className={descriptionLengthColor}>{formatNumber(descriptionLength)}</strong></FieldDescription>
         </Field>
-    </Form>;
+    </FieldGroup>;
 }
 
 export default RecommendationDescriptionForm;

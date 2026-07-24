@@ -1,15 +1,17 @@
 import AdvancedThemeSettings from './theme/advanced-theme-settings';
+import ConfirmationModal from '../../confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './theme/invalid-theme-modal';
+import LimitModal from '../../limit-modal';
 import NiceModal, {type NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/official-themes';
 import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/theme-installed-modal';
 import ThemePreview from './theme/theme-preview';
 import {Button, Dropzone, LoadingIndicator, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {ConfirmationModal, LimitModal, Modal, PageHeader} from '@tryghost/admin-x-design-system';
 import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type OfficialTheme} from '../../providers/settings-app-provider';
+import {PageHeader, SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -256,7 +258,14 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         </div>;
 
     return (<>
-        <PageHeader containerClassName='bg-white dark:bg-black' left={left} right={right} />
+        <PageHeader blurredBackground={false} className='sticky -top-px z-50 h-22 min-h-[92px] bg-background p-8' sticky={false}>
+            <PageHeader.Left className='flex-auto'>
+                {left}
+            </PageHeader.Left>
+            <PageHeader.Actions className='flex-auto justify-end'>
+                {right}
+            </PageHeader.Actions>
+        </PageHeader>
         <div className='px-[8vmin] md:hidden'>
             <Tabs value={currentTab} variant='button-sm' onValueChange={setCurrentTab}>
                 <TabsList>
@@ -500,7 +509,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     }
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('');
             }}
@@ -551,7 +560,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     }
                 </div>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 };
 

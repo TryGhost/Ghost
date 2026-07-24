@@ -3,7 +3,7 @@ import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import {Button} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -17,7 +17,7 @@ const ContentApiModal = NiceModal.create(() => {
     const contentApiKey = integration?.api_keys?.find(key => key.type === 'content');
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('integrations');
             }}
@@ -51,7 +51,7 @@ const ContentApiModal = NiceModal.create(() => {
                     {id: 'api-url', label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                 ]} />
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

@@ -2,7 +2,7 @@ const _ = require('lodash');
 const path = require('path');
 const {NoContentError} = require('@tryghost/errors');
 const imageTransform = require('@tryghost/image-transform');
-const storage = require('../../../server/adapters/storage');
+const adapterManager = require('../../../server/services/adapter-manager').default;
 const activeTheme = require('../../services/theme-engine/active');
 const config = require('../../../shared/config');
 const {imageSize} = require('../../../server/lib/image');
@@ -104,7 +104,7 @@ module.exports = function handleImageSizes(req, res, next) {
         return redirectToOriginal();
     }
 
-    const storageInstance = storage.getStorage('images');
+    const storageInstance = adapterManager.getAdapter('storage:images');
     // CASE: unsupported storage adapter
     if (typeof storageInstance.saveRaw !== 'function') {
         return redirectToOriginal();

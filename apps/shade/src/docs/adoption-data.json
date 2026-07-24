@@ -1,15 +1,15 @@
 {
   "snapshot": {
-    "generatedAt": "2026-07-22T23:23:28.078Z",
-    "sha": "0c8323b77b84da688b7db1f3d9b15b5635434c10",
-    "branch": "codex/admin-settings-shade-buttons"
+    "generatedAt": "2026-07-23T23:01:47.383Z",
+    "sha": "4cb987e33fe40fad85492202d0b5e96f0d131509",
+    "branch": "codex/admin-settings-shade-preview-modal"
   },
   "summary": {
-    "adminReactFilesTotal": 702,
-    "adminReactFilesUsingShade": 364,
-    "shadeAdoptionPct": 51.9,
-    "uniqueShadeComponentsUsed": 285,
-    "adminXDsComponentsStillUsed": 28
+    "adminReactFilesTotal": 707,
+    "adminReactFilesUsingShade": 377,
+    "shadeAdoptionPct": 53.3,
+    "uniqueShadeComponentsUsed": 303,
+    "adminXDsComponentsStillUsed": 12
   },
   "apps": [
     {
@@ -1200,25 +1200,45 @@
     },
     {
       "name": "admin-x-settings",
-      "files": 249,
-      "shadeFiles": 137,
-      "adminXDsFiles": 108,
+      "files": 254,
+      "shadeFiles": 150,
+      "adminXDsFiles": 8,
       "shadeComponents": [
         {
           "name": "Button",
-          "count": 68
+          "count": 71
         },
         {
           "name": "FieldLabel",
-          "count": 43
+          "count": 53
         },
         {
           "name": "Field",
-          "count": 41
+          "count": 51
+        },
+        {
+          "name": "LucideIcon",
+          "count": 37
         },
         {
           "name": "FieldDescription",
+          "count": 36
+        },
+        {
+          "name": "SettingsModal",
+          "count": 35
+        },
+        {
+          "name": "Input",
+          "count": 35
+        },
+        {
+          "name": "FieldError",
           "count": 31
+        },
+        {
+          "name": "FieldGroup",
+          "count": 26
         },
         {
           "name": "formatNumber",
@@ -1261,7 +1281,15 @@
           "count": 20
         },
         {
+          "name": "SettingGroupContent",
+          "count": 19
+        },
+        {
           "name": "Text",
+          "count": 18
+        },
+        {
+          "name": "Inline",
           "count": 17
         },
         {
@@ -1271,14 +1299,6 @@
         {
           "name": "ActionList",
           "count": 16
-        },
-        {
-          "name": "FieldError",
-          "count": 16
-        },
-        {
-          "name": "Inline",
-          "count": 14
         },
         {
           "name": "ActionListItem",
@@ -1305,12 +1325,24 @@
           "count": 12
         },
         {
+          "name": "FieldLegend",
+          "count": 11
+        },
+        {
+          "name": "FieldSet",
+          "count": 11
+        },
+        {
           "name": "ToggleGroup",
           "count": 9
         },
         {
           "name": "ToggleGroupItem",
           "count": 9
+        },
+        {
+          "name": "cn",
+          "count": 8
         },
         {
           "name": "ImageUpload",
@@ -1349,7 +1381,27 @@
           "count": 8
         },
         {
+          "name": "InputGroup",
+          "count": 7
+        },
+        {
+          "name": "InputGroupAddon",
+          "count": 7
+        },
+        {
+          "name": "InputGroupInput",
+          "count": 7
+        },
+        {
           "name": "Stack",
+          "count": 7
+        },
+        {
+          "name": "DirtyConfirmDialog",
+          "count": 6
+        },
+        {
+          "name": "useDirtyConfirmation",
           "count": 6
         },
         {
@@ -1377,30 +1429,6 @@
           "count": 6
         },
         {
-          "name": "cn",
-          "count": 6
-        },
-        {
-          "name": "DirtyConfirmDialog",
-          "count": 5
-        },
-        {
-          "name": "useDirtyConfirmation",
-          "count": 5
-        },
-        {
-          "name": "InputGroup",
-          "count": 5
-        },
-        {
-          "name": "InputGroupAddon",
-          "count": 5
-        },
-        {
-          "name": "InputGroupInput",
-          "count": 5
-        },
-        {
           "name": "DropdownMenu",
           "count": 5
         },
@@ -1417,11 +1445,19 @@
           "count": 5
         },
         {
-          "name": "Input",
-          "count": 5
+          "name": "useGlobalDirtyState",
+          "count": 4
         },
         {
-          "name": "LucideIcon",
+          "name": "SettingGroup",
+          "count": 4
+        },
+        {
+          "name": "ButtonProps",
+          "count": 4
+        },
+        {
+          "name": "InputGroupButton",
           "count": 4
         },
         {
@@ -1441,15 +1477,7 @@
           "count": 4
         },
         {
-          "name": "useGlobalDirtyState",
-          "count": 3
-        },
-        {
           "name": "Badge",
-          "count": 3
-        },
-        {
-          "name": "InputGroupButton",
           "count": 3
         },
         {
@@ -1457,11 +1485,11 @@
           "count": 3
         },
         {
-          "name": "FieldLegend",
+          "name": "PreviewChrome",
           "count": 3
         },
         {
-          "name": "FieldSet",
+          "name": "ModalPage",
           "count": 3
         },
         {
@@ -1493,6 +1521,10 @@
           "count": 3
         },
         {
+          "name": "InputGroupText",
+          "count": 3
+        },
+        {
           "name": "RadioGroup",
           "count": 3
         },
@@ -1505,11 +1537,11 @@
           "count": 3
         },
         {
-          "name": "ButtonProps",
+          "name": "inputSurface",
           "count": 2
         },
         {
-          "name": "inputSurface",
+          "name": "StickyFooter",
           "count": 2
         },
         {
@@ -1521,11 +1553,11 @@
           "count": 2
         },
         {
-          "name": "Checkbox",
+          "name": "Box",
           "count": 2
         },
         {
-          "name": "FieldGroup",
+          "name": "Checkbox",
           "count": 2
         },
         {
@@ -1569,11 +1601,71 @@
           "count": 2
         },
         {
+          "name": "SettingGroupValue",
+          "count": 2
+        },
+        {
+          "name": "SettingGroupValueContent",
+          "count": 2
+        },
+        {
+          "name": "SettingGroupValueTitle",
+          "count": 2
+        },
+        {
           "name": "GhostOrb",
           "count": 2
         },
         {
+          "name": "topLevelBackdropClasses",
+          "count": 1
+        },
+        {
+          "name": "SettingGroupActions",
+          "count": 1
+        },
+        {
+          "name": "SettingGroupDescription",
+          "count": 1
+        },
+        {
+          "name": "SettingGroupDetails",
+          "count": 1
+        },
+        {
+          "name": "SettingGroupHeader",
+          "count": 1
+        },
+        {
+          "name": "SettingGroupTitle",
+          "count": 1
+        },
+        {
           "name": "Kbd",
+          "count": 1
+        },
+        {
+          "name": "AlertDialog",
+          "count": 1
+        },
+        {
+          "name": "AlertDialogContent",
+          "count": 1
+        },
+        {
+          "name": "AlertDialogDescription",
+          "count": 1
+        },
+        {
+          "name": "AlertDialogFooter",
+          "count": 1
+        },
+        {
+          "name": "AlertDialogHeader",
+          "count": 1
+        },
+        {
+          "name": "AlertDialogTitle",
           "count": 1
         },
         {
@@ -1609,11 +1701,23 @@
           "count": 1
         },
         {
-          "name": "Indicator",
+          "name": "TextElement",
           "count": 1
         },
         {
-          "name": "InputGroupText",
+          "name": "TextLeading",
+          "count": 1
+        },
+        {
+          "name": "TextSize",
+          "count": 1
+        },
+        {
+          "name": "SettingsModalSize",
+          "count": 1
+        },
+        {
+          "name": "Indicator",
           "count": 1
         },
         {
@@ -1642,10 +1746,6 @@
         },
         {
           "name": "DropdownMenuSeparator",
-          "count": 1
-        },
-        {
-          "name": "StickyFooter",
           "count": 1
         },
         {
@@ -1687,58 +1787,6 @@
       ],
       "adminXDsComponents": [
         {
-          "name": "Icon",
-          "count": 39
-        },
-        {
-          "name": "Modal",
-          "count": 34
-        },
-        {
-          "name": "TextField",
-          "count": 33
-        },
-        {
-          "name": "Form",
-          "count": 26
-        },
-        {
-          "name": "ConfirmationModal",
-          "count": 23
-        },
-        {
-          "name": "SettingGroupContent",
-          "count": 19
-        },
-        {
-          "name": "LimitModal",
-          "count": 10
-        },
-        {
-          "name": "PreviewModalContent",
-          "count": 7
-        },
-        {
-          "name": "SettingGroupHeader",
-          "count": 5
-        },
-        {
-          "name": "SettingGroup",
-          "count": 4
-        },
-        {
-          "name": "DesktopChrome",
-          "count": 3
-        },
-        {
-          "name": "MobileChrome",
-          "count": 3
-        },
-        {
-          "name": "ModalPage",
-          "count": 3
-        },
-        {
           "name": "useDesignSystem",
           "count": 2
         },
@@ -1747,23 +1795,11 @@
           "count": 2
         },
         {
-          "name": "ConfirmationModalContent",
-          "count": 2
-        },
-        {
-          "name": "topLevelBackdropClasses",
-          "count": 1
-        },
-        {
           "name": "DesignSystemApp",
           "count": 1
         },
         {
           "name": "DesignSystemAppProps",
-          "count": 1
-        },
-        {
-          "name": "SettingGroupProps",
           "count": 1
         },
         {
@@ -1804,35 +1840,47 @@
   "topShadeComponents": [
     {
       "name": "Button",
-      "count": 183
+      "count": 186
     },
     {
       "name": "LucideIcon",
-      "count": 139
+      "count": 172
     },
     {
       "name": "formatNumber",
       "count": 74
     },
     {
+      "name": "FieldLabel",
+      "count": 56
+    },
+    {
+      "name": "Field",
+      "count": 54
+    },
+    {
       "name": "LoadingIndicator",
       "count": 52
     },
     {
-      "name": "FieldLabel",
-      "count": 46
+      "name": "Input",
+      "count": 49
     },
     {
       "name": "cn",
-      "count": 44
-    },
-    {
-      "name": "Field",
-      "count": 44
+      "count": 46
     },
     {
       "name": "FieldDescription",
-      "count": 32
+      "count": 37
+    },
+    {
+      "name": "SettingsModal",
+      "count": 35
+    },
+    {
+      "name": "FieldError",
+      "count": 34
     },
     {
       "name": "Tabs",
@@ -1869,73 +1917,9 @@
     {
       "name": "Skeleton",
       "count": 26
-    },
-    {
-      "name": "Select",
-      "count": 26
-    },
-    {
-      "name": "SelectContent",
-      "count": 26
-    },
-    {
-      "name": "SelectItem",
-      "count": 26
     }
   ],
   "adminXDsComponentsAggregate": [
-    {
-      "name": "Icon",
-      "count": 39
-    },
-    {
-      "name": "Modal",
-      "count": 34
-    },
-    {
-      "name": "TextField",
-      "count": 33
-    },
-    {
-      "name": "Form",
-      "count": 26
-    },
-    {
-      "name": "ConfirmationModal",
-      "count": 23
-    },
-    {
-      "name": "SettingGroupContent",
-      "count": 19
-    },
-    {
-      "name": "LimitModal",
-      "count": 10
-    },
-    {
-      "name": "PreviewModalContent",
-      "count": 7
-    },
-    {
-      "name": "SettingGroupHeader",
-      "count": 5
-    },
-    {
-      "name": "SettingGroup",
-      "count": 4
-    },
-    {
-      "name": "DesktopChrome",
-      "count": 3
-    },
-    {
-      "name": "MobileChrome",
-      "count": 3
-    },
-    {
-      "name": "ModalPage",
-      "count": 3
-    },
     {
       "name": "useDesignSystem",
       "count": 2
@@ -1945,23 +1929,11 @@
       "count": 2
     },
     {
-      "name": "ConfirmationModalContent",
-      "count": 2
-    },
-    {
-      "name": "topLevelBackdropClasses",
-      "count": 1
-    },
-    {
       "name": "DesignSystemApp",
       "count": 1
     },
     {
       "name": "DesignSystemAppProps",
-      "count": 1
-    },
-    {
-      "name": "SettingGroupProps",
       "count": 1
     },
     {

@@ -4,7 +4,7 @@ const {agentProvider, fixtureManager, configUtils} = require('../../utils/e2e-fr
 const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
-const urlUtils = require('../../../core/shared/url-utils');
+const urlUtils = require('../../../core/shared/url-utils').default;
 
 describe('Member Attribution Service', function () {
     beforeAll(async function () {

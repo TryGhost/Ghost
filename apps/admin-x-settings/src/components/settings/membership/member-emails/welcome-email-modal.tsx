@@ -5,8 +5,8 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import MemberEmailEditor from './member-email-editor';
 import WelcomeEmailPreviewFrame from './welcome-email-preview-frame';
 import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
-import {FieldError} from '@tryghost/shade/components';
-import {Modal, TextField} from '@tryghost/admin-x-design-system';
+import {FieldError, Input} from '@tryghost/shade/components';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
 import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
@@ -203,7 +203,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     }, [setFormState, updateForm]);
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('memberemails');
             }}
@@ -279,8 +279,8 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 <div className='flex items-center'>
                                     <div className='w-20 shrink-0 font-semibold'>Subject:</div>
                                     <div className='grow'>
-                                        <TextField
-                                            className='w-full'
+                                        <Input
+                                            className='w-full border-transparent bg-muted'
                                             data-testid='welcome-email-preview-subject'
                                             value={previewSubjectOverride ?? formState.subject}
                                             onChange={(e) => {
@@ -330,7 +330,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 </div>
             </EmailPreviewModalContent>
             <DirtyConfirmDialog {...dialogProps} />
-        </Modal>
+        </SettingsModal>
     );
 });
 

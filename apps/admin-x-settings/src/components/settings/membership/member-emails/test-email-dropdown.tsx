@@ -1,8 +1,6 @@
 import validator from 'validator';
-import {Button} from '@tryghost/shade/components';
-import {FieldError, PopoverContent} from '@tryghost/shade/components';
+import {Button, FieldError, Input, PopoverContent} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {TextField} from '@tryghost/admin-x-design-system';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useEffect, useRef, useState} from 'react';
 import {useSendTestWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
@@ -86,8 +84,8 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
         <PopoverContent align='end' className='z-[9999] w-[260px] p-4' data-testid='test-email-dropdown' sideOffset={8}>
             <div className='mb-3'>
                 <label className='mb-2 block font-semibold' htmlFor='test-email-input'>Send test email</label>
-                <TextField
-                    className='h-[36px]!'
+                <Input
+                    className='h-[36px]! border-transparent bg-muted'
                     id='test-email-input'
                     placeholder='you@yoursite.com'
                     value={testEmail}

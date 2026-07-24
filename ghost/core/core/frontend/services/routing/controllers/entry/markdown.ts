@@ -3,7 +3,7 @@ import type {Entry, EntryResponse} from '../entry';
 import buildCanonicalUrl from './canonical-url';
 
 const config = require('../../../../../shared/config');
-const urlUtils = require('../../../../../shared/url-utils');
+const urlUtils = require('../../../../../shared/url-utils').default;
 const {getAcceptedMarkdownContentType, getMarkdownPath, renderEntryMarkdown} = require('../../../llms/markdown');
 
 const MEMBERS_ONLY_MARKDOWN = '# Members-only content\n\nThis post requires a subscription and is not available for public access.\n';

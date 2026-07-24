@@ -1,3 +1,4 @@
+import ConfirmationModal from '../../../confirmation-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './tier-detail-preview';
@@ -5,11 +6,11 @@ import useCurrencyInput from '../../../../hooks/use-currency-input';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import useSortableIndexedList from '../../../../hooks/use-sortable-indexed-list';
 import useUrlInput from '../../../../hooks/use-url-input';
-import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
-import {ConfirmationModal, Form, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {Text} from '@tryghost/shade/primitives';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
@@ -178,7 +179,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         }
     }
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             updateRoute('tiers');
         }}
@@ -198,28 +199,18 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     >
         <div className='mt-8 -mb-8 flex items-start gap-8'>
             <div className='flex grow flex-col gap-8'>
-                <Form marginBottom={false} title='Basic' grouped>
-                    <TextField
-                        autoComplete='off'
-                        error={Boolean(errors.name)}
-                        hint={errors.name}
-                        maxLength={191}
-                        placeholder={isFreeTier ? 'Free' : 'Bronze'}
-                        title='Name'
-                        value={formState.name || ''}
-                        autoFocus
-                        onChange={e => updateForm(state => ({...state, name: e.target.value}))}
-                        onKeyDown={() => clearError('name')}
-                    />
-                    <TextField
-                        autoComplete='off'
-                        autoFocus={isFreeTier}
-                        maxLength={191}
-                        placeholder={isFreeTier ? `Free preview` : 'Full access to premium content'}
-                        title='Description'
-                        value={formState.description || ''}
-                        onChange={e => updateForm(state => ({...state, description: e.target.value}))}
-                    />
+                <FieldSet className='gap-0'>
+                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Basic</FieldLegend>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <Field data-invalid={Boolean(errors.name) || undefined}>
+                        <FieldLabel htmlFor='tier-name'>Name</FieldLabel>
+                        <Input aria-invalid={Boolean(errors.name) || undefined} autoComplete='off' id='tier-name' maxLength={191} placeholder={isFreeTier ? 'Free' : 'Bronze'} value={formState.name || ''} autoFocus onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
+                        {errors.name && <FieldError>{errors.name}</FieldError>}
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor='tier-description'>Description</FieldLabel>
+                        <Input autoComplete='off' autoFocus={isFreeTier} id='tier-description' maxLength={191} placeholder={isFreeTier ? 'Free preview' : 'Full access to premium content'} value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
+                    </Field>
                     {!isFreeTier &&
                     (<>
                         <div className='flex flex-col gap-10 md:flex-row'>
@@ -257,7 +248,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 <div className='flex flex-col gap-2'>
                                     <Field data-invalid={Boolean(errors.monthly_price) || undefined}>
                                         <FieldLabel className='sr-only' htmlFor='tier-monthly-price'>Monthly price</FieldLabel>
-                                        <InputGroup className='border-transparent bg-muted' data-invalid={Boolean(errors.monthly_price) || undefined}>
+                                        <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.monthly_price) || undefined}>
                                             <InputGroupInput
                                                 aria-invalid={Boolean(errors.monthly_price) || undefined}
                                                 id='tier-monthly-price'
@@ -279,7 +270,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     </Field>
                                     <Field data-invalid={Boolean(errors.yearly_price) || undefined}>
                                         <FieldLabel className='sr-only' htmlFor='tier-yearly-price'>Yearly price</FieldLabel>
-                                        <InputGroup className='border-transparent bg-muted' data-invalid={Boolean(errors.yearly_price) || undefined}>
+                                        <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.yearly_price) || undefined}>
                                             <InputGroupInput
                                                 aria-invalid={Boolean(errors.yearly_price) || undefined}
                                                 id='tier-yearly-price'
@@ -308,18 +299,16 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                         <Switch checked={hasFreeTrial} id='tier-free-trial' onCheckedChange={toggleFreeTrial} />
                                     </Field>
                                 </div>
-                                <TextField
-                                    disabled={!hasFreeTrial}
-                                    hint={<span className='mt-1'>
+                                <Field data-disabled={!hasFreeTrial || undefined}>
+                                    <FieldLabel className='sr-only' htmlFor='tier-trial-days'>Trial days</FieldLabel>
+                                    <InputGroup className='h-[var(--control-height)] border-transparent bg-muted'>
+                                        <InputGroupInput disabled={!hasFreeTrial} id='tier-trial-days' placeholder='0' value={formState.trial_days} onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/[^\d]/, '')}))} />
+                                        <InputGroupAddon align='inline-end'><InputGroupText>days</InputGroupText></InputGroupAddon>
+                                    </InputGroup>
+                                    <FieldDescription><span className='mt-1'>
                                     Members will be subscribed at full price once the trial ends. <a className='text-green' href="https://ghost.org/help/free-trials/" rel="noreferrer" target="_blank">Learn more</a>
-                                    </span>}
-                                    placeholder='0'
-                                    rightPlaceholder='days'
-                                    title='Trial days'
-                                    value={formState.trial_days}
-                                    hideTitle
-                                    onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/[^\d]/, '')}))}
-                                />
+                                    </span></FieldDescription>
+                                </Field>
                             </div>
                         </div>
                     </>)}
@@ -338,22 +327,20 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         />
                         <FieldDescription>Redirect to this URL after signup{isFreeTier ? '' : ' for premium membership'}</FieldDescription>
                     </Field>
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
 
-                <Form gap='none' title='Benefits' grouped>
-                    <div className='-mt-3'>
+                <FieldSet className='gap-0'>
+                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Benefits</FieldLegend>
+                    <FieldGroup className='mb-10 gap-0 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                        <div className='-mt-3'>
                         <SortableList
                             getDragHandleLabel={({item}) => `Reorder benefit${item ? `: ${item}` : ''}`}
                             items={benefits.items}
                             itemSeparator={false}
                             renderItem={({id, item}) => <div className='relative flex w-full items-center gap-5'>
                                 <div className='absolute top-1/2 left-[-32px] flex size-6 -translate-y-1/2 items-center justify-center bg-background group-hover:hidden'><LucideIcon.Check className='size-4' /></div>
-                                <TextField
-                                    // className='grow border-b border-grey-500 py-2 focus:border-grey-800 group-hover:border-grey-600'
-                                    maxLength={191}
-                                    value={item}
-                                    onChange={e => benefits.updateItem(id, e.target.value)}
-                                />
+                                <Input aria-label='Benefit' className='grow' maxLength={191} value={item} onChange={e => benefits.updateItem(id, e.target.value)} />
                                 <Button aria-label='Delete benefit' className='absolute top-1/2 right-1 z-10 size-5! -translate-y-1/2 p-0! opacity-0 group-hover:opacity-100' size='icon' type='button' variant='secondary' onClick={() => benefits.removeItem(id)}>
                                     <LucideIcon.Trash2 />
                                 </Button>
@@ -363,21 +350,21 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     </div>
                     <div className="relative mt-1 flex items-center gap-3">
                         <LucideIcon.Check className='size-4' />
-                        <TextField
+                        <Field className='w-100'>
+                            <FieldLabel className='sr-only' htmlFor='new-tier-benefit'>New benefit</FieldLabel>
+                            <Input
                             className='grow'
-                            containerClassName='w-100'
+                            id='new-tier-benefit'
                             maxLength={191}
                             placeholder='Expert analysis'
-                            title='New benefit'
                             value={benefits.newItem}
-                            hideTitle
                             onChange={e => benefits.setNewItem(e.target.value)}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     benefits.addItem();
                                 }
-                            }}
-                        />
+                            }} />
+                        </Field>
                         <Button
                             aria-label='Add benefit'
                             className='absolute top-1/2 right-1 z-10 size-[22px]! -translate-y-1/2 p-0!'
@@ -387,14 +374,15 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         >
                             <LucideIcon.Plus />
                         </Button>
-                    </div>
-                </Form>
+                        </div>
+                    </FieldGroup>
+                </FieldSet>
             </div>
             <div className='sticky top-[96px] hidden shrink-0 basis-[380px] min-[920px]:!visible min-[920px]:!block'>
                 <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />
             </div>
         </div>
-    </Modal>;
+    </SettingsModal>;
 };
 
 const TierDetailModal: React.FC<RoutingModalProps> = ({params}) => {

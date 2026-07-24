@@ -1,7 +1,7 @@
 const debug = require('@tryghost/debug')('services:routing:controllers:preview');
 const config = require('../../../../shared/config');
 const {routerManager} = require('../');
-const urlUtils = require('../../../../shared/url-utils');
+const urlUtils = require('../../../../shared/url-utils').default;
 const renderer = require('../../rendering');
 
 /**

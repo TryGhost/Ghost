@@ -1,5 +1,6 @@
+import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {SOCIAL_PLATFORM_CONFIGS, normalizeSocialInput} from '../../../../utils/social-urls/index';
-import {SettingGroup, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
+import {SettingGroup, SettingGroupContent} from '@tryghost/shade/patterns';
 import {type UserDetailProps} from '../user-detail-modal';
 import {useState} from 'react';
 import type {SocialPlatformKey} from '../../../../utils/social-urls/index';
@@ -13,40 +14,47 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
     });
 
     return (
-        <SettingGroupContent>
-            <TextField
-                data-testid="website-input"
-                error={!!errors?.website}
-                hint={errors?.website}
-                maxLength={2000}
-                placeholder='https://example.com'
-                title="Website"
-                value={user.website || ''}
-                onChange={(event) => {
-                    setUserData({...user, website: event.target.value});
-                }}
-                onKeyDown={() => clearError('website')} />
-            {SOCIAL_PLATFORM_CONFIGS.map(config => (
-                <TextField
-                    key={config.key}
-                    data-testid={config.testId}
-                    error={!!errors?.[config.key]}
-                    hint={errors?.[config.key]}
+        <SettingGroupContent className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <Field data-invalid={Boolean(errors?.website) || undefined}>
+                <FieldLabel htmlFor='staff-website'>Website</FieldLabel>
+                <Input
+                    aria-invalid={Boolean(errors?.website) || undefined}
+                    data-testid='website-input'
+                    id='staff-website'
                     maxLength={2000}
-                    placeholder={config.placeholder}
-                    title={config.staffTitle}
-                    value={urls[config.key]}
-                    onBlur={(event) => {
-                        if (validateField(config.key, event.target.value)) {
-                            const {displayValue, storedValue} = normalizeSocialInput(config.key, event.target.value);
-                            setUrls(current => ({...current, [config.key]: displayValue}));
-                            setUserData({...user, [config.key]: storedValue});
-                        }
-                    }}
+                    placeholder='https://example.com'
+                    value={user.website || ''}
                     onChange={(event) => {
-                        setUrls(current => ({...current, [config.key]: event.target.value}));
+                        setUserData({...user, website: event.target.value});
                     }}
-                    onKeyDown={() => clearError(config.key)} />
+                    onKeyDown={() => clearError('website')}
+                />
+                {errors?.website && <FieldError>{errors.website}</FieldError>}
+            </Field>
+            {SOCIAL_PLATFORM_CONFIGS.map(config => (
+                <Field key={config.key} data-invalid={Boolean(errors?.[config.key]) || undefined}>
+                    <FieldLabel htmlFor={`staff-${config.key}`}>{config.staffTitle}</FieldLabel>
+                    <Input
+                        aria-invalid={Boolean(errors?.[config.key]) || undefined}
+                        data-testid={config.testId}
+                        id={`staff-${config.key}`}
+                        maxLength={2000}
+                        placeholder={config.placeholder}
+                        value={urls[config.key]}
+                        onBlur={(event) => {
+                            if (validateField(config.key, event.target.value)) {
+                                const {displayValue, storedValue} = normalizeSocialInput(config.key, event.target.value);
+                                setUrls(current => ({...current, [config.key]: displayValue}));
+                                setUserData({...user, [config.key]: storedValue});
+                            }
+                        }}
+                        onChange={(event) => {
+                            setUrls(current => ({...current, [config.key]: event.target.value}));
+                        }}
+                        onKeyDown={() => clearError(config.key)}
+                    />
+                    {errors?.[config.key] && <FieldError>{errors[config.key]}</FieldError>}
+                </Field>
             ))}
         </SettingGroupContent>
     );
@@ -54,7 +62,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
 
 const SocialLinksTab: React.FC<UserDetailProps> = (props) => {
     return (
-        <SettingGroup border={false}>
+        <SettingGroup variant='plain'>
             <DetailsInputs {...props} />
         </SettingGroup>
     );

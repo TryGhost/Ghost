@@ -1,5 +1,5 @@
 const config = require('../../../shared/config');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 /**
  * @TODO: move `events.js` to here - e.g. storageUtils.getStorage
  */

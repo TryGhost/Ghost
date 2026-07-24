@@ -7,7 +7,7 @@ const controllers = require('../../../../../../core/frontend/services/routing/co
 const {routerManager} = require('../../../../../../core/frontend/services/routing');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const urlService = require('../../../../../../core/server/services/url');
-const urlUtils = require('../../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../../core/shared/url-utils').default;
 
 describe('Unit - services/routing/controllers/previews', function () {
     let renderStub;

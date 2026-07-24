@@ -1,6 +1,5 @@
 import React from 'react';
 import clsx from 'clsx';
-import {BadgeDollarSign} from 'lucide-react';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
@@ -64,7 +63,7 @@ const TiersList: React.FC<TiersListProps> = ({
     if (!tiers.length) {
         return (
             <NoValueLabel>
-                <NoValueLabelIcon><BadgeDollarSign /></NoValueLabelIcon>
+                <NoValueLabelIcon><LucideIcon.Banknote /></NoValueLabelIcon>
                 No {tab === 'active-tiers' ? 'active' : 'archived'} tiers found.
             </NoValueLabel>
         );

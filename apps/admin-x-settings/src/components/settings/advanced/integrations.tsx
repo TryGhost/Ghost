@@ -1,11 +1,11 @@
 import BrandIcon from '../../icons/brand-icon';
+import ConfirmationModal from '../../confirmation-modal';
 import IntegrationsSettingsImg from '../../../assets/images/integrations-settings.png';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, NoValueLabel, NoValueLabelIcon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {ConfirmationModal, SettingGroupHeader} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Plug} from 'lucide-react';
@@ -215,7 +215,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                         icon={
                             integration.icon_image ?
                                 <img className='size-8 shrink-0 object-cover' role='presentation' src={integration.icon_image} /> :
-                                <LucideIcon.Blocks className='size-8 shrink-0' />
+                                <LucideIcon.Blocks className='size-6 shrink-0' />
                         }
                         title={integration.name}
                         custom
@@ -269,25 +269,16 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={buttons}
-            customHeader={
-                <div className='sm:-mt-5 md:-mt-7'>
-                    <div className='-mx-5 overflow-hidden rounded-t-xl border-b border-grey-200 md:-mx-7 dark:border-grey-800'>
-                        <img className='size-full' src={IntegrationsSettingsImg} />
-                    </div>
-                    <div className=' z-10 mt-6 flex items-start justify-between'>
-                        <SettingGroupHeader description='Make Ghost work with apps and tools.' title='Integrations' />
-                        {
-                            <Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={() => {
-                                updateRoute('integrations/new');
-                                setSelectedTab('custom');
-                            }}>Add custom integration</Button>
-                        }
-                    </div>
+            description='Make Ghost work with apps and tools.'
+            headerMedia={
+                <div className='-mx-5 overflow-hidden rounded-t-xl border-b border-border-default sm:-mt-5 md:-mx-7 md:-mt-7'>
+                    <img className='size-full' src={IntegrationsSettingsImg} />
                 </div>
             }
             keywords={keywords}
             navid='integrations'
             testId='integrations'
+            title='Integrations'
         >
             <Tabs value={selectedTab} variant='underline' onValueChange={value => setSelectedTab(value as typeof selectedTab)}>
                 <TabsList>

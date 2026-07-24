@@ -1,10 +1,11 @@
+import LimitModal from '../../../limit-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
-import {Field, FieldContent, FieldDescription, FieldLabel, Switch, Textarea} from '@tryghost/shade/components';
-import {Form, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
@@ -88,7 +89,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         return null;
     }
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             updateRoute(returnRoute);
         }}
@@ -106,21 +107,12 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             }
         }}
     >
-        <Form
-            marginBottom={false}
-            marginTop
-        >
-            <TextField
-                autoFocus={true}
-                error={Boolean(errors.name)}
-                hint={errors.name}
-                maxLength={191}
-                placeholder='Weekly roundup'
-                title='Name'
-                value={formState.name}
-                onChange={e => updateForm(state => ({...state, name: e.target.value}))}
-                onKeyDown={() => clearError('name')}
-            />
+        <FieldGroup className='mt-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <Field data-invalid={Boolean(errors.name) || undefined}>
+                <FieldLabel htmlFor='newsletter-name'>Name</FieldLabel>
+                <Input aria-invalid={Boolean(errors.name) || undefined} id='newsletter-name' maxLength={191} placeholder='Weekly roundup' value={formState.name} autoFocus onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
+                {errors.name && <FieldError>{errors.name}</FieldError>}
+            </Field>
             <Field>
                 <FieldLabel htmlFor='newsletter-description'>Description</FieldLabel>
                 <Textarea className='border-transparent bg-muted' id='newsletter-description' maxLength={2000} value={formState.description} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
@@ -137,8 +129,8 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 </FieldContent>
                 <Switch checked={formState.optInExistingSubscribers} id='opt-in-existing-subscribers' onCheckedChange={checked => updateForm(state => ({...state, optInExistingSubscribers: checked}))} />
             </Field>
-        </Form>
-    </Modal>;
+        </FieldGroup>
+    </SettingsModal>;
 };
 
 export default NiceModal.create(AddNewsletterModal);

@@ -1,10 +1,11 @@
+import ConfirmationModal from '../../../confirmation-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './recommendation-description-form';
 import {Button} from '@tryghost/shade/components';
-import {ConfirmationModal, Modal} from '@tryghost/admin-x-design-system';
 import {type Recommendation, useDeleteRecommendation, useEditRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -59,7 +60,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         }}>Delete</Button>
     );
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             // Closed without saving: reset route
             updateRoute('recommendations');
@@ -85,7 +86,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         }}
     >
         <RecommendationDescriptionForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={true} updateForm={updateForm}/>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(EditRecommendationModal);

@@ -3,7 +3,7 @@ const session = require('express-session');
 const config = require('../../../../shared/config');
 const settingsCache = require('../../../../shared/settings-cache');
 const models = require('../../../models');
-const urlUtils = require('../../../../shared/url-utils');
+const urlUtils = require('../../../../shared/url-utils').default;
 
 const SessionStore = require('./session-store');
 const sessionStore = new SessionStore(models.Session);
