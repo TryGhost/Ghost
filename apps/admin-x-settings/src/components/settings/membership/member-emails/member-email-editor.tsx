@@ -6,7 +6,7 @@ import {cn} from '@tryghost/shade/utils';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
-import {useDesignSystem} from '@tryghost/admin-x-design-system';
+import {useFocusContext} from '@tryghost/shade/app';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useWelcomeEmailLinkSuggestions} from '../../../../hooks/use-welcome-email-link-suggestions';
 
@@ -119,8 +119,13 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     const {fetchAutocompleteLinks, searchLinks} = useWelcomeEmailLinkSuggestions();
     const fetchEmbed = useKoenigFetchEmbed();
     const klipyConfig = config.klipy?.apiKey ? config.klipy : null;
-    const {fetchKoenigLexical, darkMode} = useDesignSystem();
-    const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
+    const {fetchKoenigLexical, darkMode} = useFocusContext();
+    const editorResource = useMemo(() => {
+        if (!fetchKoenigLexical) {
+            throw new Error('Koenig Lexical loader is not available');
+        }
+        return loadKoenig(fetchKoenigLexical);
+    }, [fetchKoenigLexical]);
     const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
 
     const cardConfig = useMemo(() => ({
