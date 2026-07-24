@@ -99,6 +99,8 @@ describe('ActivityPubService', function () {
     afterEach(function () {
         // Restore any spies (isolate:false shares the module registry per worker).
         vi.restoreAllMocks();
+        // Clear any pending nock interceptors so they don't leak into the next test.
+        nock.cleanAll();
     });
 
     it('Can initialise the webhooks', async function () {
@@ -312,8 +314,119 @@ describe('ActivityPubService', function () {
         await knexInstance.destroy();
     });
 
-    it('Can handle errors getting the webhook secret without erroring', async function () {
+    it('Silently degrades when the sibling ActivityPub service is unreachable (FetchError)', async function () {
         const knexInstance = await getKnexInstance();
+        await addOwnerUser(knexInstance);
+        await addActivityPubIntegration(knexInstance);
+
+        const siteUrl = new URL('http://fake-site-url');
+
+        // Block any outbound network so the fetch fails with a FetchError,
+        // modelling the "sibling container not running" case.
+        nock.disableNetConnect();
+
+        try {
+            const identityTokenService = {
+                getTokenForUser(email: string, role: string) {
+                    return `token:${email}:${role}`;
+                }
+            };
+            const service = new ActivityPubService(
+                knexInstance,
+                siteUrl,
+                logging,
+                identityTokenService as unknown as IdentityTokenService
+            );
+
+            const secret = await service.getWebhookSecret();
+
+            assert.equal(secret, null, 'Expected getWebhookSecret to return null');
+            assert.equal(logging.error.mock.calls.length, 0, 'Expected no error to be logged');
+            assert(
+                logging.info.mock.calls.some(([message]) => typeof message === 'string' && message.includes('Sibling service unreachable')),
+                'Expected an info-level message about the sibling being unreachable'
+            );
+        } finally {
+            nock.enableNetConnect();
+        }
+
+        await knexInstance.destroy();
+    });
+
+    it('Silently degrades when the sibling response is HTML (SyntaxError)', async function () {
+        const knexInstance = await getKnexInstance();
+        await addOwnerUser(knexInstance);
+        await addActivityPubIntegration(knexInstance);
+
+        const siteUrl = new URL('http://fake-site-url');
+        // Models the Caddy fallthrough case: ACTIVITYPUB_PROXY_TARGET unset, so
+        // /.ghost/activitypub/* falls through to Ghost's frontend which serves
+        // an HTML 404 with status 200. res.json() then throws SyntaxError.
+        const scope = nock(siteUrl)
+            .get('/.ghost/activitypub/v1/site/')
+            .reply(200, '<!DOCTYPE html><html><body>Not Found</body></html>', {
+                'content-type': 'text/html'
+            });
+
+        const identityTokenService = {
+            getTokenForUser(email: string, role: string) {
+                return `token:${email}:${role}`;
+            }
+        };
+        const service = new ActivityPubService(
+            knexInstance,
+            siteUrl,
+            logging,
+            identityTokenService as unknown as IdentityTokenService
+        );
+
+        const secret = await service.getWebhookSecret();
+
+        assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
+        assert.equal(secret, null, 'Expected getWebhookSecret to return null');
+        assert.equal(logging.error.mock.calls.length, 0, 'Expected no error to be logged');
+        assert(
+            logging.info.mock.calls.some(([message]) => typeof message === 'string' && message.includes('Sibling service unreachable')),
+            'Expected an info-level message about the sibling being unreachable'
+        );
+
+        await knexInstance.destroy();
+    });
+
+    it('Re-throws unexpected errors so production failures still surface', async function () {
+        const knexInstance = await getKnexInstance();
+        await addOwnerUser(knexInstance);
+        await addActivityPubIntegration(knexInstance);
+
+        const siteUrl = new URL('http://fake-site-url');
+
+        // Stub the token lookup so it throws something that is neither FetchError
+        // nor SyntaxError — getWebhookSecret should not swallow this.
+        const unexpected = new Error('database is on fire');
+        const identityTokenService = {
+            getTokenForUser() {
+                throw unexpected;
+            }
+        };
+        const service = new ActivityPubService(
+            knexInstance,
+            siteUrl,
+            logging,
+            identityTokenService as unknown as IdentityTokenService
+        );
+
+        await assert.rejects(
+            () => service.getWebhookSecret(),
+            (err: unknown) => err === unexpected,
+            'Expected getWebhookSecret to re-throw unexpected errors'
+        );
+
+        await knexInstance.destroy();
+    });
+
+    it('initialiseWebhooks does not re-log when the secret is missing', async function () {
+        const knexInstance = await getKnexInstance();
+        await addOwnerUser(knexInstance);
         await addActivityPubIntegration(knexInstance);
 
         const siteUrl = new URL('http://fake-site-url');
@@ -335,11 +448,13 @@ describe('ActivityPubService', function () {
         const webhooks = await knexInstance.select('*').from('webhooks');
 
         assert.equal(webhooks.length, 0, 'There should be no webhooks');
-
-        assert(
-            logging.error.mock.calls.some(([message]) => typeof message === 'string' && message.startsWith('Could not get webhook secret for ActivityPub')),
-            'Expected an error to be logged when the webhook secret could not be retrieved'
+        assert.equal(logging.error.mock.calls.length, 0, 'Expected no error to be logged');
+        // getWebhookSecret logs once; the !secret branch in initialiseWebhooks
+        // must not log a second time.
+        const siblingMessages = logging.info.mock.calls.filter(
+            ([message]) => typeof message === 'string' && message.includes('Sibling service unreachable')
         );
+        assert.equal(siblingMessages.length, 1, 'Expected the sibling-unreachable message to be logged exactly once');
 
         await knexInstance.destroy();
     });
