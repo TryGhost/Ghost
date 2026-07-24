@@ -86,6 +86,9 @@ jobs:
         env:
           PUBLISH_PACKAGE: ${{ inputs.package }}
           PUBLISH_DRY_RUN: ${{ inputs.dry_run }}
+          # Read-only, for the compare API call that asserts GITHUB_SHA is on
+          # main — the replacement for pnpm's own (unusable here) branch check.
+          GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/publish-packages.js
 
   # Alert on-call if a publish fails. This publish used to be a job inside
