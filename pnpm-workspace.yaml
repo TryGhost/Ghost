@@ -197,7 +197,7 @@ overrides:
   # Ghost's migrations build queries with the 2.4.2 query builder and knex-migrator
   # executes them, so its knex must match Ghost's major or the 3.x runner throws on
   # the 2.x builder. Pin it back to 2.4.2 until ghost/core itself moves to knex 3.x.
-  'knex-migrator>knex': 2.4.2
+  'knex-migrator>knex': 2.5.1
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
   jackspeak: 4.2.3
