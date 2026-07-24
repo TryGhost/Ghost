@@ -1,5 +1,6 @@
 import type {Knex} from 'knex';
-import MembersCSVImporter, {type MembersRepository, type GiftService, type EmailNotifications, type Tier} from './import/importer';
+import type {CsvField} from '@tryghost/custom-field-types/csv';
+import MembersCSVImporter, {type MembersRepository, type GiftService, type EmailNotifications, type Tier, type CustomFieldsImport} from './import/importer';
 import readMemberRows from './import/reader';
 import {createRowSpool} from './import/spool';
 import MembersCSVExporter, {type ExportOptions, type CustomFieldDefinition} from './export/exporter';
@@ -25,6 +26,16 @@ interface ImporterServices {
     getInlineThreshold(): number;
     stripeAPIService: unknown;
     productRepository: unknown;
+    // The custom fields services the members service hands the import composition root:
+    // the definitions to read the active field set, and the values service to validate
+    // and persist what a row's custom_fields.* columns carry.
+    customFields: {
+        definitions: {browse(): Promise<CsvField[]>};
+        values: {
+            planWrite(values: Record<string, unknown>, executor: Knex): Promise<unknown[]>;
+            applyWrite(memberId: string, plan: unknown[], executor: Knex): Promise<void>;
+        };
+    };
 }
 
 // The custom fields services the members service hands the export composition root.
@@ -66,6 +77,16 @@ export function makeImporter(deps: ImporterServices) {
         reassignRedeemer: (giftId, memberId, options) => deps.getGiftService().reassignRedeemer(giftId, memberId, options)
     };
 
+    // Custom field values ride each row behind the same labs flag the export uses, so
+    // the two halves round-trip or stay silent together. The flag alone decides whether
+    // a column is routed: with it off, activeFields resolves empty and every carried
+    // custom_fields.* column is dropped, exactly as before this landed.
+    const customFields: CustomFieldsImport = {
+        activeFields: async () => (labs.isSet('membersCustomFields') ? deps.customFields.definitions.browse() : []),
+        planWrite: (values, executor) => deps.customFields.values.planWrite(values, executor),
+        applyWrite: (memberId, plan, executor) => deps.customFields.values.applyWrite(memberId, plan, executor)
+    };
+
     return new MembersCSVImporter({
         knex: deps.knex,
         readRows: readMemberRows,
@@ -80,6 +101,7 @@ export function makeImporter(deps: ImporterServices) {
             productRepository: deps.productRepository
         }),
         gifts,
+        customFields,
         email,
         addJob: deps.addJob,
         getTimezone: deps.getTimezone,

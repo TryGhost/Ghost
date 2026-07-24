@@ -1,4 +1,5 @@
 import {FIELD_TYPE_IDS, type FieldType} from '@tryghost/custom-field-types';
+import {csvColumnsForField} from '@tryghost/custom-field-types/csv';
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 
 // Re-exported so admin apps can type address values and validate against the
@@ -55,6 +56,36 @@ export const memberCustomFieldUserTypes: MemberCustomFieldUserType[] =
 // first entry so an unknown future type degrades to a rendered row, not a crash.
 export const userTypeForField = (field: MemberCustomField): MemberCustomFieldUserType => {
     return memberCustomFieldUserTypes.find(userType => userType.id === field.type) || memberCustomFieldUserTypes[0];
+};
+
+// A custom field CSV column offered as an import mapping target: the column name the
+// backend reads (`value`) and a human label for the picker.
+export type MemberCustomFieldCsvColumn = {label: string; value: string};
+
+// A sub-field segment ('line1', 'postal_code') as a label ('Line 1', 'Postal code').
+const humanizeSubField = (sub: string): string => {
+    const spaced = sub.replace(/_/g, ' ').replace(/([a-z])(\d)/g, '$1 $2');
+    return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+};
+
+/**
+ * The CSV import mapping targets for a set of custom fields: one per column the export
+ * writes, labelled for the field (and its sub-field, for a composite like address). The
+ * column names come from the shared custom-field-types codec — the same source the
+ * exporter writes and the importer reads — so a target offered in the mapping step is
+ * exactly a column the round trip round-trips, agreed by construction rather than by hand.
+ */
+export const memberCustomFieldCsvColumns = (fields: MemberCustomField[]): MemberCustomFieldCsvColumn[] => {
+    return fields.flatMap((field) => {
+        const columns = csvColumnsForField({key: field.key, type: field.type});
+        return columns.map((column) => {
+            if (columns.length === 1) {
+                return {label: field.name, value: column};
+            }
+            const sub = column.slice(column.lastIndexOf('.') + 1);
+            return {label: `${field.name} (${humanizeSubField(sub)})`, value: column};
+        });
+    });
 };
 
 export interface MemberCustomFieldsResponseType {
