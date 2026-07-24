@@ -24,10 +24,6 @@ export {default as SettingNavItem} from './settings/setting-nav-item';
 export type {SettingNavItemProps} from './settings/setting-nav-item';
 export {default as SettingNavSection} from './settings/setting-nav-section';
 export type {SettingNavSectionProps} from './settings/setting-nav-section';
-export {default as SettingSection} from './settings/setting-section';
-export type {SettingSectionProps} from './settings/setting-section';
-export {default as SettingSectionHeader} from './settings/setting-section-header';
-export type {SettingSectionHeaderProps} from './settings/setting-section-header';
 export {debounce} from './utils/debounce';
 export {formatUrl} from './utils/format-url';
 
