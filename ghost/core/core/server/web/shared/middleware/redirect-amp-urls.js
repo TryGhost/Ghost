@@ -1,4 +1,4 @@
-const urlUtils = require('../../../../shared/url-utils');
+const urlUtils = require('../../../../shared/url-utils').default;
 const localUtils = require('../utils');
 
 /**

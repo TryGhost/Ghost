@@ -1,11 +1,11 @@
-const UrlUtils = require('@tryghost/url-utils');
-const config = require('./config');
+import UrlUtils from '@tryghost/url-utils';
+import config from './config';
 
 const BASE_API_PATH = '/ghost/api';
 const urlUtils = new UrlUtils({
     getSubdir: config.getSubdir,
     getSiteUrl: config.getSiteUrl,
-    getAdminUrl: config.getAdminUrl,
+    getAdminUrl: config.getAdminUrl as () => string,
     assetBaseUrls: {
         media: config.get('urls:media'),
         files: config.get('urls:files'),
@@ -16,5 +16,5 @@ const urlUtils = new UrlUtils({
     baseApiPath: BASE_API_PATH
 });
 
-module.exports = urlUtils;
-module.exports.BASE_API_PATH = BASE_API_PATH;
+export default urlUtils;
+export {BASE_API_PATH};

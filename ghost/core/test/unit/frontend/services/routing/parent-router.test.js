@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
-const urlUtils = require('../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const ParentRouter = require('../../../../../core/frontend/services/routing/parent-router');
 
 describe('UNIT - services/routing/ParentRouter', function () {

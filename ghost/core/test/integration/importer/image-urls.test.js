@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const importer = require('../../../core/server/data/importer');
 const db = require('../../../core/server/data/db');
-const urlUtils = require('../../../core/shared/url-utils');
+const urlUtils = require('../../../core/shared/url-utils').default;
 const testUtils = require('../../utils');
 const {exportedBodyV5} = require('../../utils/fixtures/export/body-generator');
 

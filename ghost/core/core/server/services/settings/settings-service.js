@@ -14,7 +14,7 @@ const {generatePrivateSiteAccessCode} = require('./private-site-access-code');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 const mail = require('../mail');
 const SingleUseTokenProvider = require('../members/single-use-token-provider');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 const ObjectId = require('bson-objectid').default;
 const settingsHelpers = require('../settings-helpers');

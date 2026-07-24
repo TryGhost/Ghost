@@ -1,6 +1,6 @@
 const path = require('path');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 const config = require('../../shared/config');
 const labs = require('../../shared/labs');
 const settingsCache = require('../../shared/settings-cache');

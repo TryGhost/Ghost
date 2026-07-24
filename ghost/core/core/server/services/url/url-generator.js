@@ -1,6 +1,6 @@
 const nql = require('@tryghost/nql');
 const debug = require('@tryghost/debug')('services:url:generator');
-const localUtils = require('../../../shared/url-utils');
+const localUtils = require('../../../shared/url-utils').default;
 
 // @TODO: merge with filter plugin
 const EXPANSIONS = [{
