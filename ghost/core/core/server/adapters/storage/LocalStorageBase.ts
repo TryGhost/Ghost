@@ -1,13 +1,16 @@
 // # Local File Base Storage module
 // The (default) module for storing files using the local file system
-const serveStatic = require('../../../shared/express').static;
+import fs from 'fs-extra';
+import path from 'path';
+import type {NextFunction, Request, RequestHandler, Response} from 'express';
+import type express from 'express';
+import tpl from '@tryghost/tpl';
+import errors from '@tryghost/errors';
+import {StorageBase, type ReadOptions, type StorageFile} from 'ghost-storage-base';
+import urlUtils from '../../../shared/url-utils';
+import {errify} from '../../../shared/errify';
 
-const fs = require('fs-extra');
-const path = require('path');
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils').default;
-const {StorageBase} = require('ghost-storage-base');
+const serveStatic: typeof express.static = require('../../../shared/express').static;
 
 const messages = {
     notFound: 'File not found',
@@ -17,19 +20,38 @@ const messages = {
     invalidPathParameter: 'The path "{path}" is not valid for this storage.'
 };
 
+export interface LocalStorageBaseErrorMessages {
+    notFound: string;
+    notFoundWithRef: string;
+    cannotRead: string;
+}
+
+export interface LocalStorageBaseOptions {
+    storagePath: string;
+    siteUrl?: string;
+    staticFileURLPrefix?: string;
+    errorMessages?: LocalStorageBaseErrorMessages;
+}
+
+/**
+ * Errors thrown by `serve-static` carry an HTTP status alongside the standard
+ * Error fields.
+ */
+interface ServeStaticError extends Error {
+    statusCode?: number;
+    path?: string;
+}
+
 class LocalStorageBase extends StorageBase {
-    /**
-     *
-     * @param {Object} options
-     * @param {string} options.storagePath
-     * @param {string} options.siteUrl
-     * @param {string} [options.staticFileURLPrefix]
-     * @param {Object} [options.errorMessages]
-     * @param {string} [options.errorMessages.notFound]
-     * @param {string} [options.errorMessages.notFoundWithRef]
-     * @param {string} [options.errorMessages.cannotRead]
-     */
-    constructor({storagePath, staticFileURLPrefix, siteUrl, errorMessages}) {
+    readonly staticFileURLPrefix: string | undefined;
+
+    readonly siteUrl: string | undefined;
+
+    readonly staticFileUrl: string;
+
+    readonly errorMessages: LocalStorageBaseErrorMessages;
+
+    constructor({storagePath, staticFileURLPrefix, siteUrl, errorMessages}: LocalStorageBaseOptions) {
         super();
 
         this.storagePath = storagePath;
@@ -41,11 +63,8 @@ class LocalStorageBase extends StorageBase {
 
     /**
      * Normalizes a relative storage path and rejects traversal outside the storage root.
-     *
-     * @param {string} filePath
-     * @returns {string}
      */
-    _normalizeStorageRelativePath(filePath) {
+    _normalizeStorageRelativePath(filePath?: string): string {
         const normalized = path.posix.normalize(String(filePath || '')
             .replaceAll('\\', '/')
             .replace(/^\/+/, '')
@@ -67,11 +86,11 @@ class LocalStorageBase extends StorageBase {
      * Supports relative paths (preferred) and absolute paths (legacy).
      * TODO: remove absolute path support once all callers pass relative paths
      *
-     * @param {string} [targetDir] absolute or relative directory
-     * @param {string} [fileName] file name to normalize and append
-     * @returns {string} resolved absolute path inside storagePath
+     * @param targetDir absolute or relative directory
+     * @param fileName file name to normalize and append
+     * @returns resolved absolute path inside storagePath
      */
-    _resolveAndValidateStoragePath(targetDir, fileName) {
+    _resolveAndValidateStoragePath(targetDir?: string, fileName?: string): string {
         const resolvedRoot = path.resolve(this.storagePath);
 
         // Resolve targetDir: if already inside storage root use as-is, otherwise treat as relative
@@ -111,12 +130,8 @@ class LocalStorageBase extends StorageBase {
     /**
      * Saves the file to storage (the file system)
      * - returns a promise which ultimately returns the full url to the uploaded file
-     *
-     * @param {import('ghost-storage-base').StorageFile} file
-     * @param {string} targetDir
-     * @returns {Promise<String>}
      */
-    async save(file, targetDir) {
+    async save(file: StorageFile, targetDir?: string): Promise<string> {
         let targetFilename;
 
         targetDir = targetDir
@@ -131,8 +146,8 @@ class LocalStorageBase extends StorageBase {
         try {
             await fs.copy(file.path, targetFilename);
         } catch (err) {
-            if (err.code === 'ENAMETOOLONG') {
-                throw new errors.BadRequestError({err});
+            if ((err as NodeJS.ErrnoException).code === 'ENAMETOOLONG') {
+                throw new errors.BadRequestError({err: errify(err)});
             }
 
             throw err;
@@ -143,7 +158,7 @@ class LocalStorageBase extends StorageBase {
         const fullUrl = (
             urlUtils.urlJoin('/',
                 urlUtils.getSubdir(),
-                this.staticFileURLPrefix,
+                this.staticFileURLPrefix as string,
                 path.relative(this.storagePath, targetFilename))
         ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
 
@@ -152,11 +167,12 @@ class LocalStorageBase extends StorageBase {
 
     /**
      * Saves a buffer in the targetPath
-     * @param {Buffer} buffer is an instance of Buffer
-     * @param {string} targetPath relative path NOT including storage path to which the buffer should be written
-     * @returns {Promise<String>} a URL to retrieve the data
+     *
+     * @param buffer is an instance of Buffer
+     * @param targetPath relative path NOT including storage path to which the buffer should be written
+     * @returns a URL to retrieve the data
      */
-    async saveRaw(buffer, targetPath) {
+    async saveRaw(buffer: Buffer, targetPath: string): Promise<string> {
         const storagePath = path.join(this.storagePath, this._normalizeStorageRelativePath(targetPath));
         const targetDir = path.dirname(storagePath);
 
@@ -166,7 +182,7 @@ class LocalStorageBase extends StorageBase {
         // For local file system storage can use relative path so add a slash
         const fullUrl = (
             urlUtils.urlJoin('/', urlUtils.getSubdir(),
-                this.staticFileURLPrefix,
+                this.staticFileURLPrefix as string,
                 targetPath)
         ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
 
@@ -174,15 +190,15 @@ class LocalStorageBase extends StorageBase {
     }
 
     /**
-     * @param {string} url full url under which the stored content is served, result of save method
-     * @returns {string} relative path under which the content is stored
+     * @param url full url under which the stored content is served, result of save method
+     * @returns relative path under which the content is stored
      */
-    urlToPath(url) {
+    urlToPath(url: string): string {
         let relativePath;
 
         const prefix = urlUtils.urlJoin('/',
             urlUtils.getSubdir(),
-            this.staticFileURLPrefix
+            this.staticFileURLPrefix as string
         );
 
         if (url.startsWith(this.staticFileUrl)) {
@@ -206,7 +222,7 @@ class LocalStorageBase extends StorageBase {
         }
     }
 
-    async exists(fileName, targetDir) {
+    async exists(fileName: string, targetDir?: string): Promise<boolean> {
         let filePath;
 
         try {
@@ -231,20 +247,18 @@ class LocalStorageBase extends StorageBase {
      * For some reason send divides the max age number by 1000
      * Fallthrough: false ensures that if an image isn't found, it automatically 404s
      * Wrap server static errors
-     *
-     * @returns {serveStaticContent}
      */
-    serve() {
+    serve(): RequestHandler {
         const {storagePath, errorMessages} = this;
 
-        return function serveStaticContent(req, res, next) {
+        return function serveStaticContent(req: Request, res: Response, next: NextFunction) {
             return serveStatic(
                 storagePath,
                 {
                     maxAge: (365 * 24 * 60 * 60 * 1000), // 1 year in ms
                     fallthrough: false
                 }
-            )(req, res, (err) => {
+            )(req, res, (err?: ServeStaticError) => {
                 if (err) {
                     if (err.statusCode === 404) {
                         return next(new errors.NotFoundError({
@@ -274,11 +288,7 @@ class LocalStorageBase extends StorageBase {
         };
     }
 
-    /**
-     * @param {string} filePath
-     * @returns {Promise.<*>}
-     */
-    async delete(fileName, targetDir) {
+    async delete(fileName: string, targetDir?: string): Promise<void> {
         const filePath = this._resolveAndValidateStoragePath(targetDir, fileName);
         return await fs.remove(filePath);
     }
@@ -286,10 +296,8 @@ class LocalStorageBase extends StorageBase {
     /**
      * Reads bytes from disk for a target file
      * - path of target file (without content path!)
-     *
-     * @param options
      */
-    async read(options) {
+    async read(options?: Partial<ReadOptions>): Promise<Buffer> {
         options = options || {};
 
         const normalizedPath = this._normalizeStorageRelativePath(options.path);
@@ -297,19 +305,22 @@ class LocalStorageBase extends StorageBase {
 
         try {
             return await fs.readFile(targetPath);
-        } catch (err) {
-            if (err.code === 'ENOENT' || err.code === 'ENOTDIR') {
+        } catch (rawError) {
+            const err = errify(rawError);
+            const code = (rawError as NodeJS.ErrnoException).code;
+
+            if (code === 'ENOENT' || code === 'ENOTDIR') {
                 throw new errors.NotFoundError({
                     err: err,
                     message: tpl(this.errorMessages.notFoundWithRef, {file: options.path})
                 });
             }
 
-            if (err.code === 'ENAMETOOLONG') {
+            if (code === 'ENAMETOOLONG') {
                 throw new errors.BadRequestError({err: err});
             }
 
-            if (err.code === 'EACCES') {
+            if (code === 'EACCES') {
                 throw new errors.NoPermissionError({err: err});
             }
 
@@ -321,4 +332,4 @@ class LocalStorageBase extends StorageBase {
     }
 }
 
-module.exports = LocalStorageBase;
+export default LocalStorageBase;

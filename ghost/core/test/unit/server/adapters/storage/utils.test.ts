@@ -1,15 +1,24 @@
-const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../utils/assertions');
-const sinon = require('sinon');
-const urlUtils = require('../../../../../core/shared/url-utils').default;
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import type urlUtilsInstance from '../../../../../core/shared/url-utils';
+import type * as storageUtilsModule from '../../../../../core/server/adapters/storage/utils';
+
+// Vitest resolves `import` through Vite's SSR module runner and `require`
+// through Node's CJS cache, so the same first-party module loaded both ways
+// yields two instances with independent state. config-utils is untyped JS and
+// has to be required, so the config singleton it mutates — and therefore the
+// storage utils reading it, plus the urlUtils instance being stubbed — must all
+// come from the same `require` graph.
+const urlUtils: typeof urlUtilsInstance = require('../../../../../core/shared/url-utils').default;
 const configUtils = require('../../../../utils/config-utils');
+const {assertExists} = require('../../../../utils/assertions');
 
 // Stuff we are testing
-const storageUtils = require('../../../../../core/server/adapters/storage/utils');
+const storageUtils: typeof storageUtilsModule = require('../../../../../core/server/adapters/storage/utils');
 
 describe('storage utils', function () {
-    let urlForStub;
-    let urlGetSubdirStub;
+    let urlForStub: sinon.SinonStub;
+    let urlGetSubdirStub: sinon.SinonStub;
 
     beforeEach(function () {
         urlForStub = sinon.stub();
