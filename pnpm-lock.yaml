@@ -1836,8 +1836,8 @@ importers:
         specifier: 5.4.0
         version: 5.4.0(react-hook-form@7.80.0(react@18.3.1))
       '@number-flow/react':
-        specifier: 0.6.1
-        version: 0.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 0.6.2
+        version: 0.6.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-accordion':
         specifier: 1.2.15
         version: 1.2.15(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -6680,8 +6680,8 @@ packages:
     engines: {node: '>=10'}
     deprecated: This functionality has been moved to @npmcli/fs
 
-  '@number-flow/react@0.6.1':
-    resolution: {integrity: sha512-JsvB8FrmtRmn251jbJnFD7Tr6Sv/eQMLUAlbshGo4CfAPk0qgNYTio9HuFoETqtuflcJHQezeGsSTPbUn1oplw==}
+  '@number-flow/react@0.6.2':
+    resolution: {integrity: sha512-WjZuV4aA+vhRCgCF+adGLgFVVAJ8vdvq6EchRT2FiBIgElTXtDOA3YgkcMr9UHpvpS9v4H70AB5wZv0D9jc3QA==}
     peerDependencies:
       react: ^18 || ^19
       react-dom: ^18 || ^19
@@ -18306,8 +18306,8 @@ packages:
   num2fraction@1.2.2:
     resolution: {integrity: sha512-Y1wZESM7VUThYY+4W+X4ySH2maqcA+p7UR+w8VWNWVAd6lwuXXWz/w/Cz43J/dI2I+PS6wD5N+bJUF+gjWvIqg==}
 
-  number-flow@0.6.1:
-    resolution: {integrity: sha512-5NUCwZA6J/kZeEzqApOyq7KOf1Wu/oxjpp/95HB0NBNBFlpK/Pp7i4jH8h0LIXyRDKSTewDAUaYHL7IBrk19Ew==}
+  number-flow@0.6.2:
+    resolution: {integrity: sha512-MCnImG4Q5vPwhSXnov56nOuyyKn6LC+Qd7II1UiKc+ACRtug5iAtn0+CwXNxM38AC5lSowEY+oYEtZX2qMnUyw==}
 
   number-is-nan@1.0.1:
     resolution: {integrity: sha512-4jbtZXNAsfZbAHiiqjLPBiCl16dES1zI4Hpzzxw61Tk+loF+sBDBKx1ICKKKwIqQ7M0mFn1TmkN7euSncWgHiQ==}
@@ -26023,10 +26023,10 @@ snapshots:
       rimraf: 3.0.2
     optional: true
 
-  '@number-flow/react@0.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@number-flow/react@0.6.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       esm-env: 1.2.2
-      number-flow: 0.6.1
+      number-flow: 0.6.2
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
@@ -41578,7 +41578,7 @@ snapshots:
 
   num2fraction@1.2.2: {}
 
-  number-flow@0.6.1:
+  number-flow@0.6.2:
     dependencies:
       esm-env: 1.2.2
 
