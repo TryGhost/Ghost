@@ -15,10 +15,12 @@ import { useCustomSidebarViews } from "./use-custom-sidebar-views";
 import { useIsActiveLink } from "./use-is-active-link";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
+import { useAdminTranslation } from "@/i18n/admin-i18n";
 
 const LEGACY_MEMBERS_ACTIVE_ROUTES = ['member', 'member.new', 'members-activity'];
 
 function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
+    const {t} = useAdminTranslation();
     return (
         <>
             <NavMenuItem.Link
@@ -26,10 +28,10 @@ function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
                 isActive={isActive}
             >
                 <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" />
-                <NavMenuItem.Label>Posts</NavMenuItem.Label>
+                <NavMenuItem.Label>{t('posts')}</NavMenuItem.Label>
             </NavMenuItem.Link>
             <a href="#/editor/post"
-                aria-label="Create new post"
+                aria-label={t('createNewPost')}
                 className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 dark:text-gray-800 dark:hover:text-white"
             >
                 <LucideIcon.Plus
@@ -52,6 +54,7 @@ function MembersNavItemContent({
     isActive: boolean;
     to: string;
 }) {
+    const {t} = useAdminTranslation();
     return (
         <>
             <NavMenuItem.Link
@@ -59,7 +62,7 @@ function MembersNavItemContent({
                 isActive={isActive}
             >
                 <LucideIcon.Users className={collapsible ? "pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" : ""} />
-                <NavMenuItem.Label>Members</NavMenuItem.Label>
+                <NavMenuItem.Label>{t('members')}</NavMenuItem.Label>
             </NavMenuItem.Link>
             {count !== null && count !== undefined && (
                 <SidebarMenuBadge>{formatNumber(count)}</SidebarMenuBadge>
@@ -69,6 +72,7 @@ function MembersNavItemContent({
 }
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
+    const {t} = useAdminTranslation();
     const { data: currentUser } = useCurrentUser();
     const {data: settingsData} = useBrowseSettings();
     const [savedPostsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
@@ -108,7 +112,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         id="posts-submenu"
                         onExpandedChange={setPostsExpanded}
                     >
-                        <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
+                        <NavMenuItem.CollapsibleItem ariaLabel={t('togglePostViews')}>
                             <PostsNavItemContent
                                 isActive={postsNavActive}
                                 to={postsRoute}
@@ -120,21 +124,21 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 to="posts?type=draft"
                                 isActive={isDraftPostsRouteActive}
                             >
-                                <NavMenuItem.Label>Drafts</NavMenuItem.Label>
+                                <NavMenuItem.Label>{t('drafts')}</NavMenuItem.Label>
                             </NavMenuItem.SubmenuItem>
 
                             <NavMenuItem.SubmenuItem
                                 to="posts?type=scheduled"
                                 isActive={isScheduledPostsRouteActive}
                             >
-                                <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
+                                <NavMenuItem.Label>{t('scheduled')}</NavMenuItem.Label>
                             </NavMenuItem.SubmenuItem>
 
                             <NavMenuItem.SubmenuItem
                                 to="posts?type=published"
                                 isActive={isPublishedPostsRouteActive}
                             >
-                                <NavMenuItem.Label>Published</NavMenuItem.Label>
+                                <NavMenuItem.Label>{t('published')}</NavMenuItem.Label>
                             </NavMenuItem.SubmenuItem>
 
                             <NavCustomViews />
@@ -147,7 +151,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             isActive={routing.isRouteActive('pages')}
                         >
                             <LucideIcon.File />
-                            <NavMenuItem.Label>Pages</NavMenuItem.Label>
+                            <NavMenuItem.Label>{t('pages')}</NavMenuItem.Label>
                         </NavMenuItem.Link>
                     </NavMenuItem>
 
@@ -158,7 +162,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 activeOnSubpath
                             >
                                 <LucideIcon.Tag />
-                                <NavMenuItem.Label>Tags</NavMenuItem.Label>
+                                <NavMenuItem.Label>{t('tags')}</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     )}
@@ -171,7 +175,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                     id="members-submenu"
                                     onExpandedChange={setMembersExpanded}
                                 >
-                                    <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
+                                    <NavMenuItem.CollapsibleItem ariaLabel={t('toggleMemberViews')}>
                                         <MembersNavItemContent
                                             collapsible={true}
                                             count={memberCount}
@@ -204,7 +208,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 activeOnSubpath
                             >
                                 <LucideIcon.MessagesSquare />
-                                <NavMenuItem.Label>Comments</NavMenuItem.Label>
+                                <NavMenuItem.Label>{t('comments')}</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     )}
@@ -216,7 +220,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                 activeOnSubpath
                             >
                                 <LucideIcon.Zap />
-                                <NavMenuItem.Label>Automations</NavMenuItem.Label>
+                                <NavMenuItem.Label>{t('automations')}</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     )}

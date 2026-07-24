@@ -5,10 +5,12 @@ import {LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { canAccessSettings } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";
+import { useAdminTranslation } from "@/i18n/admin-i18n";
 
 function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const showSettings = currentUser && canAccessSettings(currentUser);
+    const {t} = useAdminTranslation();
 
     return (
         <SidebarGroup {...props}>
@@ -18,7 +20,7 @@ function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         <NavMenuItem>
                             <NavMenuItem.Link to="settings">
                                 <LucideIcon.Settings />
-                                <NavMenuItem.Label>Settings</NavMenuItem.Label>
+                                <NavMenuItem.Label>{t('settings')}</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     )}
@@ -30,7 +32,7 @@ function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             rel="noopener noreferrer"
                         >
                             <LucideIcon.HelpCircle />
-                            <NavMenuItem.Label>Help</NavMenuItem.Label>
+                            <NavMenuItem.Label>{t('help')}</NavMenuItem.Label>
                         </NavMenuItem.Link>
                     </NavMenuItem>
                 </SidebarMenu>

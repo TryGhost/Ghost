@@ -5,6 +5,7 @@ import { ShadeApp } from "@tryghost/shade/app";
 import App from "./app.tsx";
 import { routes } from "./routes.tsx";
 import { AppProvider } from "./providers/app-provider";
+import { AdminI18nProvider } from "./i18n/admin-i18n";
 
 /**
  * The full admin provider pyramid, shared verbatim by the production entry
@@ -16,19 +17,21 @@ import { AppProvider } from "./providers/app-provider";
 export function AdminAppRoot({ framework }: { framework: TopLevelFrameworkProps }) {
     return (
         <StrictMode>
-            <FrameworkProvider {...framework}>
-                <RouterProvider prefix={"/"} routes={routes}>
-                    <AppProvider>
-                        <ShadeApp
-                            className="shade-admin"
-                            darkMode={false}
-                            fetchKoenigLexical={null}
-                        >
-                            <App />
-                        </ShadeApp>
-                    </AppProvider>
-                </RouterProvider>
-            </FrameworkProvider>
+            <AdminI18nProvider>
+                <FrameworkProvider {...framework}>
+                    <RouterProvider prefix={"/"} routes={routes}>
+                        <AppProvider>
+                            <ShadeApp
+                                className="shade-admin"
+                                darkMode={false}
+                                fetchKoenigLexical={null}
+                            >
+                                <App />
+                            </ShadeApp>
+                        </AppProvider>
+                    </RouterProvider>
+                </FrameworkProvider>
+            </AdminI18nProvider>
         </StrictMode>
     );
 }

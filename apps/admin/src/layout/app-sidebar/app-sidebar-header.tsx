@@ -5,6 +5,7 @@ import {getSettingValue, useBrowseSettings} from "@tryghost/admin-x-framework/ap
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { isContributorUser } from "@tryghost/admin-x-framework/api/users";
+import { useAdminTranslation } from "@/i18n/admin-i18n";
 
 const ctrlOrCmd = navigator.userAgent.indexOf('Mac') !== -1 ? 'command' : 'ctrl';
 const searchShortcut = ctrlOrCmd === 'command' ? '⌘K' : 'Ctrl+K';
@@ -29,6 +30,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
     const siteIcon = site.data?.site.icon ?? "https://static.ghost.org/v4.0.0/images/ghost-orb-1.png";
     const isPrivate = getSettingValue<boolean>(settings.data?.settings, "is_private") ?? false;
     const showSearch = currentUser && !isContributorUser(currentUser);
+    const {t} = useAdminTranslation();
 
     return (
         <SidebarHeader {...props}>
@@ -38,7 +40,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                         <div className="h-8 w-8 flex-shrink-0 rounded-md border-0 bg-transparent">
                             <img
                                 src={siteIcon}
-                                alt="Site icon"
+                                alt={t('siteIcon')}
                                 className="h-full w-full rounded-md object-cover"
                                 />
                         </div>
@@ -47,10 +49,10 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                                 {title}
                             </div>
                             {isPrivate && (
-                                <a aria-label="Open access settings" className="shrink-0" href="#/settings/members">
+                                <a aria-label={t('openAccessSettings')} className="shrink-0" href="#/settings/members">
                                     <Badge className="gap-1 border-transparent bg-orange-100 px-1.5 py-0 text-[11px] leading-5 font-semibold text-orange-700 transition-colors hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:hover:bg-orange-500/30" variant="secondary">
                                         <LucideIcon.Lock className="size-3" strokeWidth={2.25} />
-                                        Private
+                                        {t('private')}
                                     </Badge>
                                 </a>
                             )}
@@ -65,7 +67,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                     >
                         <div className="flex items-center gap-2">
                             <LucideIcon.Search className="text-muted-foreground" />
-                            Search site
+                            {t('searchSite')}
                         </div>
                         <Kbd className="bg-transparent text-gray-500 shadow-none dark:text-gray-800" style={{textShadow: 'none'}}>{searchShortcut}</Kbd>
                     </Button>
