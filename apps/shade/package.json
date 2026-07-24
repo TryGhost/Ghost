@@ -113,7 +113,7 @@
         "@dnd-kit/sortable": "catalog:",
         "@dnd-kit/utilities": "catalog:",
         "@hookform/resolvers": "5.4.0",
-        "@number-flow/react": "0.6.1",
+        "@number-flow/react": "0.6.2",
         "@radix-ui/react-accordion": "1.2.15",
         "@radix-ui/react-alert-dialog": "1.1.18",
         "@radix-ui/react-avatar": "catalog:",
