@@ -1,11 +1,13 @@
 import {describe, expect, it} from "vitest";
 
-import {currentRoute, fakeAdminEndpoint, renderAdminApp, settingsResponse} from "@test-utils/acceptance";
+import {currentRoute, enableShadeSettingsMode, fakeAdminEndpoint, renderAdminApp, settingsResponse, shadeSettingsBootLabs} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
 import {fakeStaffWorld, user} from "./staff.test-helpers";
 
+enableShadeSettingsMode();
+
 function stripeSettings() {
-    return settingsResponse({settings: {
+    return settingsResponse({labs: shadeSettingsBootLabs(), settings: {
         stripe_connect_publishable_key: "pk_test_123",
         stripe_connect_secret_key: "sk_test_123",
         stripe_connect_display_name: "Test account",

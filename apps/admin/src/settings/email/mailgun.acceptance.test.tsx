@@ -1,7 +1,9 @@
 import {describe, expect, it} from "vitest";
 
-import {fakeEditSettings, fakeSettingsScreens, renderAdminApp} from "@test-utils/acceptance";
+import {enableShadeSettingsMode, fakeEditSettings, fakeSettingsScreens, renderAdminApp} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 describe("Mailgun settings", () => {
     it("saves the default region with the domain and private API key", async () => {

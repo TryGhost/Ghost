@@ -1,9 +1,11 @@
 import {describe, expect, it} from "vitest";
 import {userEvent} from "vitest/browser";
 
-import {configResponse, fakeAdminEndpoint, fakeInvites, renderAdminApp} from "@test-utils/acceptance";
+import {configResponse, enableShadeSettingsMode, fakeAdminEndpoint, fakeInvites, renderAdminApp, shadeSettingsBootLabs} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
 import {fakeStaffWorld, invite, role, user} from "./staff.test-helpers";
+
+enableShadeSettingsMode();
 
 async function openInviteModal() {
     await settingsScreen.users().getByRole("button", {name: "Invite people"}).click();
@@ -128,7 +130,7 @@ describe("Staff invitations", () => {
 
     it("applies staff limits to paid roles but still permits Contributors", async () => {
         const {boot} = fakeStaffWorld();
-        const config = configResponse();
+        const config = configResponse({labs: shadeSettingsBootLabs()});
         config.config.hostSettings = {
             limits: {staff: {max: 1, error: "Your plan does not support more staff"}},
         };

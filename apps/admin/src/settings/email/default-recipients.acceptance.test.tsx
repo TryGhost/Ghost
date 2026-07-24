@@ -2,6 +2,7 @@ import {describe, expect, it} from "vitest";
 import {page} from "vitest/browser";
 
 import {
+    enableShadeSettingsMode,
     fakeEditSettings,
     fakeAdminEndpoint,
     fakeLabels,
@@ -12,9 +13,12 @@ import {
     offer,
     renderAdminApp,
     settingsResponse,
+    shadeSettingsBootLabs,
     tier,
 } from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 async function selectDefaultRecipients(name: string) {
     await settingsScreen.defaultRecipientsSelect().click();
@@ -81,7 +85,7 @@ describe("Default recipient settings", () => {
         fakeTiers([supporter]);
         fakeLabels([firstLabel]);
         fakeOffers([firstOffer]);
-        const settings = settingsResponse({settings: {
+        const settings = settingsResponse({labs: shadeSettingsBootLabs(), settings: {
             editor_default_email_recipients: "filter",
             editor_default_email_recipients_filter: `${supporter.id},label:${firstLabel.slug},offer_redemptions:${firstOffer.id}`,
         }});
@@ -101,7 +105,7 @@ describe("Default recipient settings", () => {
         fakeTiers([savedTier, addedTier]);
         fakeLabels([]);
         fakeOffers([]);
-        const settings = settingsResponse({settings: {
+        const settings = settingsResponse({labs: shadeSettingsBootLabs(), settings: {
             editor_default_email_recipients: "filter",
             editor_default_email_recipients_filter: savedTier.id,
         }});
@@ -132,7 +136,7 @@ describe("Default recipient settings", () => {
             {status: 400},
         );
         const settingsApi = fakeEditSettings();
-        const settings = settingsResponse({settings: {
+        const settings = settingsResponse({labs: shadeSettingsBootLabs(), settings: {
             editor_default_email_recipients: "filter",
             editor_default_email_recipients_filter: savedTier.id,
         }});

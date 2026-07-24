@@ -623,6 +623,39 @@ importers:
 
   apps/admin:
     dependencies:
+      '@codemirror/lang-css':
+        specifier: 'catalog:'
+        version: 6.3.1
+      '@codemirror/lang-html':
+        specifier: 'catalog:'
+        version: 6.4.11
+      '@codemirror/lang-javascript':
+        specifier: 'catalog:'
+        version: 6.2.5
+      '@codemirror/lang-json':
+        specifier: 'catalog:'
+        version: 6.0.2
+      '@codemirror/lang-markdown':
+        specifier: 'catalog:'
+        version: 6.5.0
+      '@codemirror/lang-yaml':
+        specifier: 'catalog:'
+        version: 6.1.3
+      '@codemirror/search':
+        specifier: 'catalog:'
+        version: 6.7.1
+      '@codemirror/theme-one-dark':
+        specifier: 'catalog:'
+        version: 6.1.3
+      '@dnd-kit/core':
+        specifier: 6.3.1
+        version: 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@dnd-kit/sortable':
+        specifier: 7.0.2
+        version: 7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      '@dnd-kit/utilities':
+        specifier: 3.2.2
+        version: 3.2.2(react@18.3.1)
       '@svg-maps/world':
         specifier: 2.0.0
         version: 2.0.0
@@ -638,18 +671,36 @@ importers:
       '@tryghost/admin-x-settings':
         specifier: workspace:*
         version: link:../admin-x-settings
+      '@tryghost/color-utils':
+        specifier: 'catalog:'
+        version: 0.2.19
+      '@tryghost/custom-fonts':
+        specifier: 'catalog:'
+        version: 1.0.11
+      '@tryghost/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@tryghost/kg-unsplash-selector':
         specifier: workspace:*
         version: link:../../koenig/kg-unsplash-selector
       '@tryghost/koenig-lexical':
         specifier: workspace:*
         version: link:../../koenig/koenig-lexical
+      '@tryghost/limit-service':
+        specifier: 'catalog:'
+        version: 1.5.6
       '@tryghost/nql-lang':
         specifier: 'catalog:'
         version: 0.6.6
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
+      '@tryghost/timezone-data':
+        specifier: 'catalog:'
+        version: 1.0.0
+      '@uiw/react-codemirror':
+        specifier: 'catalog:'
+        version: 4.25.11(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.6)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@xyflow/react':
         specifier: 12.11.1
         version: 12.11.1(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -674,6 +725,9 @@ importers:
       react:
         specifier: 'catalog:'
         version: 18.3.1
+      react-colorful:
+        specifier: 5.7.0
+        version: 5.7.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-dom:
         specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)

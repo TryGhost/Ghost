@@ -4,6 +4,7 @@ export type { RenderAdminAppOptions } from "./render-admin-app";
 export { defineResource, fakeActions, fakeAutomations, fakeComments, fakeEditSettings, fakeIntegrations, fakeInvites, fakeLabels, fakeMembers, fakeNewsletters, fakeOffers, fakeRoles, fakeSettingsScreens, fakeTags, fakeThemes, fakeTiers, fakeUsers } from "./resources";
 export type { BrowseQuery, EditSettingsCapture, FakeMembersOptions, ResourceCapture, ResourceOptions, ResourceSemantics, RespondWith } from "./resources";
 export { allowUnhandledRequests, fakeAdminEndpoint, fakeEndpoint, fakeSitePreview } from "./worker";
+export { enableShadeSettingsMode, isShadeSettingsRun, shadeSettingsBootLabs } from "./settings-mode";
 export type { CapturedEndpointRequest, EndpointCapture, FakeAdminEndpointResponse, FakeEndpointOptions, SitePreviewCapture, SitePreviewRequest } from "./worker";
 
 // Test-data re-exports, so a spec needs a single import surface.

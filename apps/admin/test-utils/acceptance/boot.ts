@@ -9,6 +9,7 @@ import {
 } from "@tryghost/test-data";
 
 import { registerAdminApiHandler, registerRoute } from "./worker";
+import { shadeSettingsBootLabs } from "./settings-mode";
 
 /**
  * The requests the admin shell fires on boot regardless of route, handled by
@@ -26,18 +27,19 @@ export interface BootRequestConfig {
 }
 
 // A function so every lookup serves freshly-minted responses — mutations
-// can't leak between tests.
+// can't leak between tests. Settings/config fold in the dual-mode labs
+// overrides (empty outside SHADE_SETTINGS=1 runs; see settings-mode.ts).
 export function defaultBootRequests() {
     return {
         browseSettings: {
             method: "GET",
             path: /^\/settings\/\?group=/,
-            response: settingsResponse(),
+            response: settingsResponse({ labs: shadeSettingsBootLabs() }),
         },
         browseConfig: {
             method: "GET",
             path: "/config/",
-            response: configResponse(),
+            response: configResponse({ labs: shadeSettingsBootLabs() }),
         },
         browseSite: {
             method: "GET",

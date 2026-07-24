@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {page} from "vitest/browser";
 
-import {configResponse, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp, settingsResponse} from "@test-utils/acceptance";
+import {configResponse, enableShadeSettingsMode, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp, settingsResponse, shadeSettingsBootLabs} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
 
 const companyField = {
@@ -22,8 +22,10 @@ const archivedField = {
     updated_at: "2026-07-13T00:00:00.000Z",
 };
 
+enableShadeSettingsMode();
+
 function customFieldsBoot() {
-    const labs = {membersCustomFields: true};
+    const labs = {membersCustomFields: true, ...shadeSettingsBootLabs()};
     return {
         browseConfig: {response: configResponse({labs})},
         browseSettings: {response: settingsResponse({labs})},

@@ -1,0 +1,157 @@
+import { useEffect, useMemo, useState } from "react";
+import { getSettingValues } from "@tryghost/admin-x-framework/api/settings";
+import type { Setting } from "@tryghost/admin-x-framework/api/settings";
+import { SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError, normalizeSocialInput } from "@tryghost/admin-x-settings/src/utils/social-urls";
+import type { SocialPlatformKey } from "@tryghost/admin-x-settings/src/utils/social-urls";
+
+import { SettingGroup, SettingGroupContent } from "@/settings/app/shared/setting-group";
+import { TextField } from "@/settings/app/shared/text-field";
+import { useSettingGroup } from "@/settings/app/shared/use-setting-group";
+
+const LEGACY_PLATFORM_KEYS: SocialPlatformKey[] = ["facebook", "twitter"];
+const NEW_PLATFORM_KEYS: SocialPlatformKey[] = SOCIAL_PLATFORM_KEYS.filter(
+    (key) => !LEGACY_PLATFORM_KEYS.includes(key),
+);
+
+const getSocialUrls = (localSettings: Setting[] | null) => {
+    const socialHandles = getSettingValues<string | null>(localSettings, [...SOCIAL_PLATFORM_KEYS]);
+
+    return Object.fromEntries(SOCIAL_PLATFORM_CONFIGS.map((config, index) => {
+        const value = socialHandles[index];
+        return [config.key, config.toDisplayValue(value)];
+    })) as Record<SocialPlatformKey, string>;
+};
+
+export function SocialAccounts({ keywords }: { keywords: string[] }) {
+    const {
+        localSettings,
+        isEditing,
+        saveState,
+        handleSave,
+        handleCancel,
+        updateSetting,
+        handleEditingChange,
+    } = useSettingGroup();
+
+    const [errors, setErrors] = useState<Partial<Record<SocialPlatformKey, string>>>({});
+    const [urls, setUrls] = useState<Record<SocialPlatformKey, string>>(() => getSocialUrls(localSettings));
+    const [focusedKey, setFocusedKey] = useState<SocialPlatformKey | null>(null);
+    // tracks which fields the user has attempted to change this session,
+    // independent of the settings' own `dirty` flag: `dirty` is only set on a
+    // *successful* normalise+commit, so a field whose first edit is invalid
+    // never becomes dirty even though the user is actively trying to change
+    // it. Falling back to `dirty` for the save-time validation gate would
+    // silently skip that invalid, in-progress edit instead of blocking save.
+    const [touchedKeys, setTouchedKeys] = useState<Partial<Record<SocialPlatformKey, boolean>>>({});
+
+    useEffect(() => {
+        if (!isEditing) {
+            setTouchedKeys({});
+        }
+    }, [isEditing]);
+
+    const handles = getSettingValues<string | null>(localSettings, [...SOCIAL_PLATFORM_KEYS]);
+    const backendSupportsNewPlatforms = NEW_PLATFORM_KEYS.some((key) => localSettings?.some((s) => s.key === key));
+
+    const visiblePlatforms = useMemo(() => {
+        return backendSupportsNewPlatforms
+            ? SOCIAL_PLATFORM_CONFIGS
+            : SOCIAL_PLATFORM_CONFIGS.filter((config) => LEGACY_PLATFORM_KEYS.includes(config.key));
+    }, [backendSupportsNewPlatforms]);
+
+    // Depend on stored values, not the localSettings reference (which churns on every updateSetting).
+    useEffect(() => {
+        if (focusedKey) {
+            return;
+        }
+        setUrls(getSocialUrls(localSettings));
+         
+    }, [handles.map((value) => value ?? "").join("|")]);
+
+    const handleSocialChange = (key: SocialPlatformKey, value: string) => {
+        setUrls((current) => ({ ...current, [key]: value }));
+        setTouchedKeys((current) => ({ ...current, [key]: true }));
+
+        if (!isEditing) {
+            handleEditingChange(true);
+        }
+
+        try {
+            const { storedValue } = normalizeSocialInput(key, value);
+            updateSetting(key, storedValue);
+
+            if (errors[key]) {
+                setErrors((current) => ({ ...current, [key]: "" }));
+            }
+        } catch {
+            setErrors((current) => ({ ...current, [key]: getSocialValidationError(key, value) }));
+        }
+    };
+
+    const handleSocialBlur = (key: SocialPlatformKey) => {
+        setFocusedKey((current) => (current === key ? null : current));
+
+        if (getSocialValidationError(key, urls[key])) {
+            return;
+        }
+
+        const { displayValue } = normalizeSocialInput(key, urls[key]);
+        setUrls((current) => ({ ...current, [key]: displayValue }));
+    };
+
+    const handleSaveClick = () => {
+        const formErrors = visiblePlatforms.reduce<Partial<Record<SocialPlatformKey, string>>>((current, config) => {
+            // a stored handle that predates a validation-rule tightening must
+            // not block saving the rest of the form — only re-validate a
+            // platform the user actually attempted to change this session
+            if (!touchedKeys[config.key]) {
+                return current;
+            }
+
+            const error = getSocialValidationError(config.key, urls[config.key]);
+            if (error) {
+                current[config.key] = error;
+            }
+            return current;
+        }, {});
+
+        setErrors(formErrors);
+
+        if (Object.keys(formErrors).length === 0) {
+            void handleSave();
+        }
+    };
+
+    return (
+        <SettingGroup
+            description="Link your social accounts for full structured data and rich card support"
+            isEditing={isEditing}
+            keywords={keywords}
+            navid="social-accounts"
+            saveState={saveState}
+            testId="social-accounts"
+            title="Social accounts"
+            hideEditButton
+            onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
+            onSave={handleSaveClick}
+        >
+            <SettingGroupContent>
+                {visiblePlatforms.map((config) => (
+                    <TextField
+                        key={config.key}
+                        error={!!errors[config.key]}
+                        hint={errors[config.key]}
+                        placeholder={config.placeholder}
+                        testId={config.testId}
+                        title={config.publicationTitle}
+                        value={urls[config.key]}
+                        onBlur={() => handleSocialBlur(config.key)}
+                        onChange={(event) => handleSocialChange(config.key, event.target.value)}
+                        onFocus={() => setFocusedKey(config.key)}
+                    />
+                ))}
+            </SettingGroupContent>
+        </SettingGroup>
+    );
+}

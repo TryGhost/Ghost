@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { fakeAdminEndpoint, fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse } from "@test-utils/acceptance";
+import { enableShadeSettingsMode, fakeAdminEndpoint, fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse, shadeSettingsBootLabs } from "@test-utils/acceptance";
 import { settingsScreen } from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 function imageFile(): File {
     return new File([new Uint8Array([137, 80, 78, 71])], "image.png", { type: "image/png" });
@@ -34,7 +36,7 @@ describe("SEO meta settings", () => {
         const settingsApi = fakeEditSettings();
         await renderAdminApp("/settings", {
             labs: { llmsTxt: true },
-            boot: { browseSettings: { response: settingsResponse({ labs: { llmsTxt: true }, settings: { llms_enabled: false } }) } },
+            boot: { browseSettings: { response: settingsResponse({ labs: { llmsTxt: true, ...shadeSettingsBootLabs() }, settings: { llms_enabled: false } }) } },
         });
 
         const section = settingsScreen.seoMeta();
@@ -196,7 +198,7 @@ describe("SEO meta settings", () => {
         fakeSettingsScreens();
         const settingsApi = fakeEditSettings();
         await renderAdminApp("/settings", {
-            boot: { browseSettings: { response: settingsResponse({ settings: { og_image: "http://example.com/original.png" } }) } },
+            boot: { browseSettings: { response: settingsResponse({ labs: shadeSettingsBootLabs(), settings: { og_image: "http://example.com/original.png" } }) } },
         });
 
         const section = settingsScreen.seoMeta();

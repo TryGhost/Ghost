@@ -2,18 +2,22 @@ import {describe, expect, it} from "vitest";
 
 import {
     configResponse,
+    enableShadeSettingsMode,
     fakeAdminEndpoint,
     fakeEditSettings,
     fakeSettingsScreens,
     fakeTiers,
     renderAdminApp,
     settingsResponse,
+    shadeSettingsBootLabs,
     tier,
 } from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
 
+enableShadeSettingsMode();
+
 function configWithPublicSiteAccessLimit() {
-    const config = configResponse();
+    const config = configResponse({labs: shadeSettingsBootLabs()});
     config.config.hostSettings = {
         limits: {
             publicSiteAccess: {
@@ -83,7 +87,7 @@ describe("Access settings", () => {
 
     it("regenerates a locked private-site access code server-side", async () => {
         fakeSettingsScreens();
-        const settings = settingsResponse({settings: {is_private: true, password: "fake-123"}});
+        const settings = settingsResponse({labs: shadeSettingsBootLabs(), settings: {is_private: true, password: "fake-123"}});
         for (const key of ["is_private", "password"]) {
             Object.assign(settings.settings.find(setting => setting.key === key)!, {is_read_only: true});
         }

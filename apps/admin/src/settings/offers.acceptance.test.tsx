@@ -3,6 +3,7 @@ import { userEvent } from "vitest/browser";
 
 import {
     currentRoute,
+    enableShadeSettingsMode,
     fakeAdminEndpoint,
     fakeOffers,
     fakeSettingsScreens,
@@ -11,12 +12,15 @@ import {
     renderAdminApp,
     retentionOffer,
     settingsResponse,
+    shadeSettingsBootLabs,
     tier,
     type Offer,
     type RenderAdminAppOptions,
     type Tier,
 } from "@test-utils/acceptance";
 import { offersScreen } from "./offers.screen";
+
+enableShadeSettingsMode();
 
 // Offers only exist with Stripe connected; the Growth section's button is
 // disabled otherwise.
@@ -31,6 +35,7 @@ function withStripe(): RenderAdminAppOptions {
                         stripe_connect_display_name: "Dummy",
                         stripe_connect_account_id: "acct_123",
                     },
+                    labs: shadeSettingsBootLabs(),
                 }),
             },
         },

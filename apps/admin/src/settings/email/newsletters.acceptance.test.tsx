@@ -3,14 +3,18 @@ import {describe, expect, it} from "vitest";
 import {
     browseResponse,
     configResponse,
+    enableShadeSettingsMode,
     fakeAdminEndpoint,
     fakeNewsletters,
     fakeSettingsScreens,
     newsletter,
     renderAdminApp,
+    shadeSettingsBootLabs,
     type Newsletter,
 } from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 const activeNewsletter = newsletter({
     id: "645453f4d254799990dd0e21",
@@ -30,7 +34,7 @@ function fakeNewsletterWorld(newsletters: Newsletter[] = [activeNewsletter, arch
 }
 
 function configWithManagedEmail(sendingDomain?: string) {
-    const config = configResponse();
+    const config = configResponse({labs: shadeSettingsBootLabs()});
     config.config.hostSettings = {
         managedEmail: {
             enabled: true,
@@ -235,7 +239,7 @@ describe("Newsletter settings", () => {
     });
 
     it("enforces the newsletter limit when adding and reactivating", async () => {
-        const config = configResponse();
+        const config = configResponse({labs: shadeSettingsBootLabs()});
         config.config.hostSettings = {
             limits: {
                 newsletters: {

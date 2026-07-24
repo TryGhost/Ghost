@@ -2,15 +2,19 @@ import {describe, expect, it} from "vitest";
 
 import {
     configResponse,
+    enableShadeSettingsMode,
     fakeAdminEndpoint,
     fakeEditSettings,
     fakeSettingsScreens,
     fakeTiers,
     renderAdminApp,
     settingsResponse,
+    shadeSettingsBootLabs,
     tier,
 } from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 const freeTier = tier({id: "645453f4d254799990dd0e21", name: "Free", slug: "free", type: "free"});
 const supporterTier = tier({
@@ -21,7 +25,7 @@ const supporterTier = tier({
 });
 
 function stripeSettings() {
-    return settingsResponse({settings: {
+    return settingsResponse({labs: shadeSettingsBootLabs(), settings: {
         stripe_connect_display_name: "Dummy",
         stripe_connect_livemode: false,
         stripe_connect_account_id: "acct_123",
@@ -31,7 +35,7 @@ function stripeSettings() {
 }
 
 function stripeLimitConfig() {
-    const config = configResponse();
+    const config = configResponse({labs: shadeSettingsBootLabs()});
     config.config.hostSettings = {
         limits: {
             limitStripeConnect: {

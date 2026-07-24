@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { currentRoute, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
+import { currentRoute, enableShadeSettingsMode, fakeSettingsScreens, renderAdminApp } from "@test-utils/acceptance";
 import { settingsScreen } from "./settings.screen";
+
+enableShadeSettingsMode();
 
 describe("Settings routing", () => {
     it("opens a modal from a direct route", async () => {

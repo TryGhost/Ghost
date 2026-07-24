@@ -5,16 +5,20 @@ import {
     configResponse,
     currentRoute,
     defaultThemesResponse,
+    enableShadeSettingsMode,
     fakeAdminEndpoint,
     fakeEditSettings,
     fakeSettingsScreens,
     fakeThemes,
     renderAdminApp,
+    shadeSettingsBootLabs,
     theme,
     type Theme,
 } from "@test-utils/acceptance";
 import * as sel from "@tryghost/test-data/selectors/settings";
 import { settingsScreen } from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 function themes(): Theme[] {
     return defaultThemesResponse().themes;
@@ -28,7 +32,7 @@ function fakeThemeWorld(): Theme[] {
 }
 
 function themeLimits(allowlist: string[], error: string) {
-    const config = configResponse();
+    const config = configResponse({ labs: shadeSettingsBootLabs() });
     config.config.hostSettings = {
         limits: { customThemes: { allowlist, error } },
     };

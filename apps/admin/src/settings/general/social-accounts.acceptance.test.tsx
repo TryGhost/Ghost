@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 
-import { fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse, type SettingsResponse } from "@test-utils/acceptance";
+import { enableShadeSettingsMode, fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse, shadeSettingsBootLabs, type SettingsResponse } from "@test-utils/acceptance";
 import { settingsScreen } from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 const newPlatformKeys = ["threads", "bluesky", "mastodon", "tiktok", "youtube", "instagram", "linkedin"];
 const platformLabels = ["Facebook", "X", "LinkedIn", "Bluesky", "Threads", "Mastodon", "TikTok", "YouTube", "Instagram"];
@@ -20,7 +22,7 @@ const editedSocialSettings = [
 ] as const;
 
 function withoutSettings(keys: string[]): SettingsResponse {
-    const response = settingsResponse();
+    const response = settingsResponse({ labs: shadeSettingsBootLabs() });
     response.settings = response.settings.filter(({ key }) => !keys.includes(key));
     return response;
 }
@@ -176,7 +178,7 @@ describe("Social account settings", () => {
         fakeSettingsScreens();
         const settingsApi = fakeEditSettings();
         await renderAdminApp("/settings", {
-            boot: { browseSettings: { response: settingsResponse({ settings: { threads: "@ghost.tld." } }) } },
+            boot: { browseSettings: { response: settingsResponse({ labs: shadeSettingsBootLabs(), settings: { threads: "@ghost.tld." } }) } },
         });
 
         const section = settingsScreen.socialAccounts();

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+    enableShadeSettingsMode,
     fakeAdminEndpoint,
     fakeEditSettings,
     fakeSettingsScreens,
@@ -11,6 +12,8 @@ import {
 } from "@test-utils/acceptance";
 import * as sel from "@tryghost/test-data/selectors/settings";
 import { settingsScreen } from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 const previewHtml = "<html><head><style></style></head><body>preview</body></html>";
 

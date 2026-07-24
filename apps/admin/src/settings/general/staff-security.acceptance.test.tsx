@@ -1,8 +1,10 @@
 import {describe, expect, it} from "vitest";
 
-import {configResponse, fakeEditSettings, renderAdminApp, settingsResponse} from "@test-utils/acceptance";
+import {configResponse, enableShadeSettingsMode, fakeEditSettings, renderAdminApp, settingsResponse, shadeSettingsBootLabs} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
 import {fakeStaffWorld, user} from "./staff.test-helpers";
+
+enableShadeSettingsMode();
 
 describe("Staff security settings", () => {
     it.each(["Owner", "Administrator"] as const)("shows email 2FA controls to %ss", async (roleName) => {
@@ -30,8 +32,8 @@ describe("Staff security settings", () => {
         await renderAdminApp("/settings/staff", {
             boot: {
                 ...boot,
-                browseConfig: {response: configResponse()},
-                browseSettings: {response: settingsResponse({settings: {require_email_mfa: false}})},
+                browseConfig: {response: configResponse({labs: shadeSettingsBootLabs()})},
+                browseSettings: {response: settingsResponse({labs: shadeSettingsBootLabs(), settings: {require_email_mfa: false}})},
             },
         });
 

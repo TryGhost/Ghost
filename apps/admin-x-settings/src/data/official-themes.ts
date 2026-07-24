@@ -1,4 +1,8 @@
-import {type OfficialTheme} from '../components/providers/settings-app-provider';
+// `import type` (not an inline type specifier) so no runtime import of the
+// provider survives — the provider value-imports this module back, and the
+// side-effect import verbatimModuleSyntax would keep here turns that into a
+// TDZ crash for any consumer that loads this module first.
+import type {OfficialTheme} from '../components/providers/settings-app-provider';
 
 // Theme images
 import AltoImage from '../assets/images/themes/Alto.png';

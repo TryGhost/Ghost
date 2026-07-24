@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse } from "@test-utils/acceptance";
+import { enableShadeSettingsMode, fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse, shadeSettingsBootLabs } from "@test-utils/acceptance";
 import { settingsScreen } from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 describe("Publication language settings", () => {
     it("selects a language from the dropdown", async () => {
@@ -73,7 +75,7 @@ describe("Publication language settings", () => {
     it("displays a stored custom locale", async () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings", {
-            boot: { browseSettings: { response: settingsResponse({ settings: { locale: "cy" } }) } },
+            boot: { browseSettings: { response: settingsResponse({ labs: shadeSettingsBootLabs(), settings: { locale: "cy" } }) } },
         });
 
         await expect.element(settingsScreen.publicationLanguage().getByLabelText("Site language")).toHaveValue("cy");
@@ -82,7 +84,7 @@ describe("Publication language settings", () => {
     it("clears validation when cancelling changes to a stored custom locale", async () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings", {
-            boot: { browseSettings: { response: settingsResponse({ settings: { locale: "cy" } }) } },
+            boot: { browseSettings: { response: settingsResponse({ labs: shadeSettingsBootLabs(), settings: { locale: "cy" } }) } },
         });
 
         const section = settingsScreen.publicationLanguage();

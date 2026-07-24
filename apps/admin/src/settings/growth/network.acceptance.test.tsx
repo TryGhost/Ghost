@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { configResponse, fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse } from "@test-utils/acceptance";
+import { configResponse, enableShadeSettingsMode, fakeEditSettings, fakeSettingsScreens, renderAdminApp, settingsResponse, shadeSettingsBootLabs } from "@test-utils/acceptance";
 import { settingsScreen } from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 describe("Network settings", () => {
     it("disables the toggle when the feature is disabled by config", async () => {
-        const config = configResponse();
+        const config = configResponse({ labs: shadeSettingsBootLabs() });
         config.config.hostSettings = { limits: { limitSocialWeb: { disabled: true } } };
         fakeSettingsScreens();
         await renderAdminApp("/settings", { boot: { browseConfig: { response: config } } });
@@ -20,7 +22,7 @@ describe("Network settings", () => {
     it("disables the toggle when the site is private", async () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings", {
-            boot: { browseSettings: { response: settingsResponse({ settings: { social_web: true, is_private: true } }) } },
+            boot: { browseSettings: { response: settingsResponse({ settings: { social_web: true, is_private: true }, labs: shadeSettingsBootLabs() }) } },
         });
 
         const section = settingsScreen.network();
@@ -35,7 +37,7 @@ describe("Network settings", () => {
         fakeSettingsScreens();
         const settingsApi = fakeEditSettings();
         await renderAdminApp("/settings", {
-            boot: { browseSettings: { response: settingsResponse({ settings: { social_web: true } }) } },
+            boot: { browseSettings: { response: settingsResponse({ settings: { social_web: true }, labs: shadeSettingsBootLabs() }) } },
         });
 
         const section = settingsScreen.network();
@@ -52,7 +54,7 @@ describe("Network settings", () => {
         fakeSettingsScreens();
         const settingsApi = fakeEditSettings();
         await renderAdminApp("/settings", {
-            boot: { browseSettings: { response: settingsResponse({ settings: { social_web: false } }) } },
+            boot: { browseSettings: { response: settingsResponse({ settings: { social_web: false }, labs: shadeSettingsBootLabs() }) } },
         });
 
         const section = settingsScreen.network();

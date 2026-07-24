@@ -1,8 +1,10 @@
 import {describe, expect, it} from "vitest";
 
-import {fakeAdminEndpoint, renderAdminApp} from "@test-utils/acceptance";
+import {enableShadeSettingsMode, fakeAdminEndpoint, renderAdminApp} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
 import {fakeStaffWorld, role, user} from "./staff.test-helpers";
+
+enableShadeSettingsMode();
 
 describe("Staff roles", () => {
     it("groups staff under role tabs with accurate counts", async () => {

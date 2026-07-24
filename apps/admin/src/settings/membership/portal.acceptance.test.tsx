@@ -1,15 +1,19 @@
 import {describe, expect, it} from "vitest";
 
 import {
+    enableShadeSettingsMode,
     fakeAdminEndpoint,
     fakeEditSettings,
     fakeSettingsScreens,
     fakeTiers,
     renderAdminApp,
     settingsResponse,
+    shadeSettingsBootLabs,
     tier,
 } from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
+
+enableShadeSettingsMode();
 
 const freeTier = tier({
     id: "645453f4d254799990dd0e21",
@@ -64,7 +68,7 @@ describe("Portal settings", () => {
     it("hides the free-tier option for paid-only signup", async () => {
         fakeSettingsScreens();
         fakeTiers([freeTier]);
-        const settings = settingsResponse({settings: {members_signup_access: "paid"}});
+        const settings = settingsResponse({labs: shadeSettingsBootLabs(), settings: {members_signup_access: "paid"}});
         await renderAdminApp("/settings", {boot: {browseSettings: {response: settings}}});
 
         const modal = await openPortal();

@@ -40,7 +40,9 @@ const ToasterPortal = () => {
 
     return mounted
         ? createPortal(
-            <div className={SHADE_APP_NAMESPACES} style={{width: 'unset', height: 'unset'}}>
+            // pointerEvents auto keeps toasts dismissable while a Radix modal
+            // dialog is open (Radix disables pointer events on the body).
+            <div className={SHADE_APP_NAMESPACES} style={{width: 'unset', height: 'unset', pointerEvents: 'auto'}}>
                 <Toaster
                     duration={5000}
                     icons={{

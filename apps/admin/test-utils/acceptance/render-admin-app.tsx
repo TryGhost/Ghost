@@ -7,6 +7,7 @@ import "@/index.css";
 import { AdminAppRoot } from "@/app-root";
 
 import { installBootOverrides, type BootOverrides } from "./boot";
+import { shadeSettingsBootLabs } from "./settings-mode";
 
 export interface RenderAdminAppOptions {
     /**
@@ -35,10 +36,14 @@ export function currentRoute(): string {
 export async function renderAdminApp(route: string = "/", { labs, boot }: RenderAdminAppOptions = {}): Promise<
     Awaited<ReturnType<typeof render>>
 > {
+    // Dual-mode runs (SHADE_SETTINGS=1 + an opted-in file) keep the
+    // shadeSettings flag underneath any per-test labs, so suites that pass
+    // their own labs still mount the UI the run targets.
+    const mergedLabs = labs ? { ...shadeSettingsBootLabs(), ...labs } : undefined;
     const overrides: BootOverrides = {
-        ...(labs && {
-            browseSettings: { response: settingsResponse({ labs }) },
-            browseConfig: { response: configResponse({ labs }) },
+        ...(mergedLabs && {
+            browseSettings: { response: settingsResponse({ labs: mergedLabs }) },
+            browseConfig: { response: configResponse({ labs: mergedLabs }) },
         }),
         ...boot,
     };
