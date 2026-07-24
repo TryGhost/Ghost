@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 const settingsCache = require('../../../../../core/shared/settings-cache');
+const urlUtils = require('../../../../../core/shared/url-utils');
 const adminToolbar = require('../../../../../core/frontend/web/middleware/admin-toolbar');
 
 describe('admin toolbar middleware', function () {
@@ -146,6 +147,26 @@ describe('admin toolbar middleware', function () {
         };
 
         assert.equal(adminToolbar._private.getCleanRedirectUrl(req), '/welcome/?ref=test');
+    });
+
+    it('keeps the configured subdirectory when a proxy strips it from the request URL', function () {
+        sandbox.stub(urlUtils, 'getSiteUrl').returns('https://example.com/changelog/');
+        sandbox.stub(urlUtils, 'getSubdir').returns('/changelog');
+
+        assert.equal(adminToolbar._private.getCleanRedirectUrl({
+            originalUrl: '/?admin=1',
+            url: '/?admin=1'
+        }), '/changelog/');
+
+        assert.equal(adminToolbar._private.getCleanRedirectUrl({
+            originalUrl: '/?admin=1&ref=test',
+            url: '/?admin=1&ref=test'
+        }), '/changelog/?ref=test');
+
+        assert.equal(adminToolbar._private.getCleanRedirectUrl({
+            originalUrl: '/changelog/?admin=1',
+            url: '/changelog/?admin=1'
+        }), '/changelog/');
     });
 
     it('marks the request when the frontend marker cookie is valid', function () {
