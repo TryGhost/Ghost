@@ -43,6 +43,18 @@ function toCell(value: unknown): string {
     return value === undefined || value === null ? '' : String(value);
 }
 
+// Shares csvCellsForFields' column derivation, so a field is written, read, and offered
+// as a mapping target under one set of column names.
+export function csvColumnsForField(field: CsvField): string[] {
+    const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
+    const subFields = subFieldsOf(field.type);
+    return subFields ? subFields.map(sub => `${column}${SEPARATOR}${sub}`) : [column];
+}
+
+export function isCustomFieldColumn(column: string): boolean {
+    return column === NAMESPACE || column.startsWith(`${NAMESPACE}${SEPARATOR}`);
+}
+
 /**
  * The CSV cells for one member's custom field values, keyed by column name.
  *
@@ -70,4 +82,66 @@ export function csvCellsForFields(fields: readonly CsvField[], values: Record<st
     }
 
     return cells;
+}
+
+/**
+ * The inverse of `csvCellsForFields`: read a row's custom field cells into the values a
+ * member write takes. Only the passed fields are read, so a column naming no active field
+ * is dropped rather than erroring.
+ *
+ * `decodeCell` turns a raw cell into its value; it defaults to identity. The caller owns
+ * any de-serialization the specific file needs — the members importer passes one that
+ * strips the export's formula guard — so this stays pure vocabulary and holds no knowledge
+ * of how any particular CSV escapes its cells.
+ *
+ * A field is written only from a non-blank cell; a blank or absent cell leaves the
+ * existing value untouched, not cleared — matching how the importer keeps a blank name or
+ * note, so re-importing a partly-filled export can't wipe values a publisher didn't
+ * touch. A composite whose every cell is blank is omitted too, because the export writes
+ * "no address" and an all-blank address identically; one with any filled cell is read
+ * from its non-blank cells and validated whole (a missing required sub-field fails).
+ */
+export function fieldValuesFromCsvRow(
+    fields: readonly CsvField[],
+    row: Record<string, unknown>,
+    decodeCell: (cell: string) => string = cell => cell
+): Record<string, unknown> {
+    const values: Record<string, unknown> = {};
+
+    // The parser only ever sets a string cell for these columns, so a non-string is an
+    // absent column, read as untouched.
+    for (const field of fields) {
+        const column = `${NAMESPACE}${SEPARATOR}${field.key}`;
+        const subFields = subFieldsOf(field.type);
+
+        if (!subFields) {
+            const cell = row[column];
+            if (typeof cell === 'string') {
+                const decoded = decodeCell(cell);
+                if (decoded !== '') {
+                    values[field.key] = decoded;
+                }
+            }
+            continue;
+        }
+
+        let anyColumnPresent = false;
+        const composite: Record<string, string> = {};
+        for (const sub of subFields) {
+            const cell = row[`${column}${SEPARATOR}${sub}`];
+            if (typeof cell === 'string') {
+                anyColumnPresent = true;
+                const decoded = decodeCell(cell);
+                if (decoded !== '') {
+                    composite[sub] = decoded;
+                }
+            }
+        }
+
+        if (anyColumnPresent && Object.keys(composite).length > 0) {
+            values[field.key] = composite;
+        }
+    }
+
+    return values;
 }

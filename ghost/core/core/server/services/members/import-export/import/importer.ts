@@ -1,5 +1,7 @@
 import moment from 'moment-timezone';
 import buildCompletionEmail from './completion-email';
+import {stripFormulaGuard} from '../csv';
+import {fieldValuesFromCsvRow, type CsvField} from '@tryghost/custom-field-types/csv';
 import type {Knex} from 'knex';
 import type {MemberImportRow, ImportErrorRow, ImportLabel, Label} from './row';
 import type {RowSpool, SpooledRows} from './spool';
@@ -91,6 +93,19 @@ export interface EmailNotifications {
     urlFor(type: string, data: unknown, absolute: boolean): string;
 }
 
+// Opaque to the import: planWrite produces it, applyWrite consumes it.
+type CustomFieldPlan = unknown;
+
+// The custom fields collaborator as the import needs it. activeFields is the field set a
+// custom_fields.* column is read against, empty when the feature is off; planWrite
+// validates a row's values (throwing so the row fails whole) and applyWrite persists
+// them, both on the row's transaction.
+export interface CustomFieldsImport {
+    activeFields(): Promise<CsvField[]>;
+    planWrite(values: Record<string, unknown>): Promise<CustomFieldPlan[]>;
+    applyWrite(memberId: string, plan: CustomFieldPlan[], executor: Knex): Promise<void>;
+}
+
 // The collaborators the import depends on, one per concern.
 interface ImporterDeps {
     knex: Knex;
@@ -100,6 +115,7 @@ interface ImporterDeps {
     tiers: TiersRepository;
     stripe: StripeSubscriptions;
     gifts: GiftService;
+    customFields: CustomFieldsImport;
     email: EmailNotifications;
     addJob: (job: {job: () => Promise<void>; offloaded: boolean; name: string}) => void;
     getTimezone: () => string;
@@ -183,12 +199,13 @@ class MembersCSVImporter {
     private _tiers: TiersRepository;
     private _stripe: StripeSubscriptions;
     private _gifts: GiftService;
+    private _customFields: CustomFieldsImport;
     private _email: EmailNotifications;
     private _addJob: (job: {job: () => Promise<void>; offloaded: boolean; name: string}) => void;
     private _getTimezone: () => string;
     private _getInlineThreshold: () => number;
 
-    constructor({knex, readRows, spool, members, tiers, stripe, gifts, email, addJob, getTimezone, getInlineThreshold}: ImporterDeps) {
+    constructor({knex, readRows, spool, members, tiers, stripe, gifts, customFields, email, addJob, getTimezone, getInlineThreshold}: ImporterDeps) {
         this._knex = knex;
         this._readRows = readRows;
         this._spool = spool;
@@ -196,6 +213,7 @@ class MembersCSVImporter {
         this._tiers = tiers;
         this._stripe = stripe;
         this._gifts = gifts;
+        this._customFields = customFields;
         this._email = email;
         this._addJob = addJob;
         this._getTimezone = getTimezone;
@@ -283,6 +301,9 @@ class MembersCSVImporter {
         const globalLabels: Label[] = [importLabel, ...extraLabels];
         const performStart = Date.now();
         const defaultTier = await this._tiers.getDefault();
+        // The field set a custom_fields.* column is read against; empty when the feature
+        // is off, so a carried-through column is dropped and the write boundary stays shut.
+        const activeCustomFields = await this._customFields.activeFields();
         const tierIdCache = new Map();
         const archivableStripePriceIds: string[] = [];
         // Copied per row: the member model stamps ids and trims names onto these in
@@ -295,8 +316,7 @@ class MembersCSVImporter {
         let imported = 0;
         const importErrors: ImportErrorRow[] = [];
         for (const row of rows) {
-            const trx = await this._knex.transaction(undefined, {doNotRejectOnRollback: false});
-            const options = {transacting: trx, context: IMPORT_CONTEXT};
+            let trx: Knex.Transaction | undefined;
             try {
                 if (row.gift_id) {
                     if (row.import_tier) {
@@ -306,6 +326,17 @@ class MembersCSVImporter {
                         throw wrapGiftError(new errors.DataImportError({message: tpl(messages.giftCannotCombineWithComplimentary)}));
                     }
                 }
+
+                // Validate the row's custom field values before the transaction opens.
+                // planWrite only reads, and it throws on an invalid value to fail the row
+                // before any member write -- so there is no reason to hold a transaction
+                // across it, and doing so would deadlock the single-connection SQLite pool.
+                const customFieldPlan = activeCustomFields.length > 0
+                    ? await this._customFields.planWrite(fieldValuesFromCsvRow(activeCustomFields, row, stripFormulaGuard))
+                    : [];
+
+                trx = await this._knex.transaction(undefined, {doNotRejectOnRollback: false});
+                const options = {transacting: trx, context: IMPORT_CONTEXT};
 
                 const createdAt = (row.created_at && moment(row.created_at).isAfter(moment())) ? moment().toDate() : row.created_at;
                 const memberValues: MemberImportValues = {
@@ -394,6 +425,9 @@ class MembersCSVImporter {
                     }
                 }
 
+                // On the row's transaction, so the values commit or roll back with the member.
+                await this._customFields.applyWrite(member.id, customFieldPlan, trx);
+
                 await trx.commit();
                 imported += 1;
             } catch (error) {
@@ -401,7 +435,11 @@ class MembersCSVImporter {
                 const errorMessage = errorList
                     .map(e => (typeof e === 'object' && e !== null && 'message' in e ? e.message : undefined))
                     .join(', ');
-                await trx.rollback();
+                // trx is unset if the row failed before the transaction opened (a bad
+                // custom field value or gift combination).
+                if (trx) {
+                    await trx.rollback();
+                }
                 importErrors.push({...row, error: errorMessage});
             }
         }
