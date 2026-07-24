@@ -22,7 +22,7 @@ services:
       start_period: 10s
 
   redis:
-    image: redis:7.0@sha256:352c1fdadc91926edda08f45aeb3f27f37194c2f14101229c0523a11195c96e3
+    image: redis:7.4@sha256:a8f08480e1f88f2647fed492d1178c06abb0d0c1fbf02c682a61e2f483fb3954
     container_name: ghost-dev-redis
     command: ["redis-server", "--loglevel", "warning"]
     ports:
