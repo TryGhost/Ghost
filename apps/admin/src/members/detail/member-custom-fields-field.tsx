@@ -5,7 +5,7 @@ import {dequal} from 'dequal';
 import {ADDRESS_SUBFIELD_KEYS, buildCustomFieldSavePayload, getCustomFieldValidationErrors, getEditableCustomFieldValues, parseCustomFieldServerErrors} from './member-detail-edit';
 import {formatAddressValue} from './member-detail-format';
 import {toast} from 'sonner';
-import {useBrowseMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {useBrowseMemberCustomFields, userTypeForField, userTypeForFieldType} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {useEditMember} from '@tryghost/admin-x-framework/api/members';
 import type {EditableAddressValue, EditableCustomFieldValue} from './member-detail-edit';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -19,14 +19,8 @@ interface MemberCustomFieldsFieldProps {
     disabled?: boolean;
 }
 
-const ADDRESS_SUBFIELD_LABELS: Record<typeof ADDRESS_SUBFIELD_KEYS[number], string> = {
-    line1: 'Address line 1',
-    line2: 'Address line 2',
-    city: 'City',
-    state: 'State',
-    postal_code: 'Postal code',
-    country: 'Country'
-};
+// Shared with the CSV import mapping so a sub-field reads the same on every surface.
+const ADDRESS_SUBFIELD_LABELS = userTypeForFieldType('address').subFields ?? {};
 
 // role='alert': after a save-attempt these render while focus stays on the Save
 // button, so an assertive live region is the only way a screen reader hears the
@@ -54,7 +48,7 @@ const AddressInput: React.FC<{
                 const error = errors?.[subfield];
                 return (
                     <div key={subfield} className='flex flex-col gap-1.5'>
-                        <Label htmlFor={subfieldId}>{ADDRESS_SUBFIELD_LABELS[subfield]}</Label>
+                        <Label htmlFor={subfieldId}>{ADDRESS_SUBFIELD_LABELS[subfield] ?? subfield}</Label>
                         <Input
                             aria-invalid={error ? true : undefined}
                             disabled={disabled}
