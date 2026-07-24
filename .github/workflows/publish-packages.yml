@@ -80,10 +80,6 @@ jobs:
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
 
-      # TODO: Check we can remove this once we update Node to v24
-      - name: Install v11 of NPM # We need this to install packages via OIDC.
-        run: npm install -g npm@11
-
       - name: Publish packages
         # Read as env by publish-packages.js — no shell interpolation of the
         # dispatch inputs (untrusted even on a manual workflow).

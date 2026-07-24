@@ -81,8 +81,15 @@ if (!dryRun) {
 // aren't necessarily publishable). pnpm skips versions already on npm, rewrites
 // `workspace:` ranges to the committed versions, and publishes in graph order.
 // No --no-git-checks: this runs from a clean tag checkout in CI.
+// --provenance is explicit, not left to pnpm's auto-detection: on a trusted
+// publish pnpm only turns provenance on if it can confirm both the repo and the
+// package are public, and any hiccup there (visibility fetch fails, an id token
+// it can't read) degrades to a warning and a publish with no attestation.
+// Passing the flag makes it a hard requirement instead — it also short-circuits
+// the visibility lookup. Needs `id-token: write` and a CI provider sigstore
+// recognises, so a local non-dry-run publish will fail here by design.
 const publishFilters = names.flatMap(name => ['--filter', name]);
-const publishArgs = ['publish', ...publishFilters, '--access', 'public'];
+const publishArgs = ['publish', ...publishFilters, '--access', 'public', '--provenance'];
 if (dryRun) {
     publishArgs.push('--dry-run');
 }
