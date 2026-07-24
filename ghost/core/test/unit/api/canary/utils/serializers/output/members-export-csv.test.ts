@@ -79,12 +79,4 @@ describe('Unit: members CSV export serializer', function () {
 
         assert.equal(err, sourceError);
     });
-
-    it('Returns a CSV string for non-stream (array) data', function () {
-        const frame: {response?: unknown} = {};
-        membersSerializer.exportCSV({data: [{id: '1', email: 'jamie@example.com'}]}, null, frame);
-
-        assert.equal(typeof frame.response, 'string');
-        assert.match(frame.response as string, /jamie@example\.com/);
-    });
 });

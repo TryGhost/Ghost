@@ -1,0 +1,4 @@
+email,subscribed_to_emails
+member+nl_a@example.com,false
+member+nl_b@example.com,true
+member+nl_c@example.com,true
