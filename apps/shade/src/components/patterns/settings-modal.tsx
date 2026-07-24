@@ -56,7 +56,7 @@ export interface SettingsModalProps {
     allowBackgroundInteraction?: boolean;
 }
 
-export const topLevelBackdropClasses = 'bg-modal-backdrop backdrop-blur-[3px]';
+const MODAL_BACKDROP_CLASSES = 'bg-modal-backdrop backdrop-blur-[3px]';
 
 const settingsModalVariants = cva(
     'relative z-50 flex max-h-full w-full flex-col justify-between overflow-x-hidden bg-background text-foreground',
@@ -326,7 +326,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
             <Box className={backdropClasses} id='modal-backdrop' onMouseDown={handleBackdropClick}>
                 <Box className={cn(
                     'pointer-events-none fixed inset-0 z-0',
-                    backDrop && !formSheet && topLevelBackdropClasses,
+                    backDrop && !formSheet && MODAL_BACKDROP_CLASSES,
                     formSheet && 'bg-form-sheet-backdrop'
                 )} />
                 <section

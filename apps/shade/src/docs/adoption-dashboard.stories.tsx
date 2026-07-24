@@ -13,6 +13,13 @@ const ADMINX_COLOR = 'var(--chart-yellow)';
 const NEITHER_COLOR = 'var(--chart-gray)';
 
 type AppRow = (typeof data.apps)[number];
+type ComponentCount = {name: string; count: number};
+type EmberReport = {
+    hbsFiles: number;
+    spiritUtilityFiles: number;
+    patternFiles: number;
+    componentCssFiles: number;
+};
 
 const formatPct = (value: number, total: number) => {
     if (total === 0) {
@@ -22,7 +29,9 @@ const formatPct = (value: number, total: number) => {
 };
 
 const Dashboard = () => {
-    const {snapshot, summary, apps, topShadeComponents, adminXDsComponentsAggregate, ember, publicApps} = data;
+    const {snapshot, summary, apps, topShadeComponents, publicApps} = data;
+    const adminXDsComponentsAggregate = data.adminXDsComponentsAggregate as ComponentCount[];
+    const ember = data.ember as EmberReport | null;
 
     const generatedAt = new Date(snapshot.generatedAt);
     const generatedLabel = generatedAt.toLocaleDateString(undefined, {
@@ -248,7 +257,7 @@ const Dashboard = () => {
                     <CardHeader>
                         <CardTitle>Ember legacy admin</CardTitle>
                         <CardDescription>
-                            <code>ghost/admin</code> is the original Ember client. It doesn&apos;t use Shade or any
+                            <code>apps/ember-admin</code> is the original Ember client. It doesn&apos;t use Shade or any
                             React design system — it&apos;s being migrated to React surface by surface. Measured by
                             file counts since there are no components to import.
                         </CardDescription>
