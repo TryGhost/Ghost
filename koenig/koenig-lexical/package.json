@@ -99,7 +99,7 @@
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "4.1.9",
-    "autoprefixer": "10.5.2",
+    "autoprefixer": "10.5.4",
     "clsx": "catalog:",
     "concurrently": "catalog:",
     "dompurify": "catalog:",

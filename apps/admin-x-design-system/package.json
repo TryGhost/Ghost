@@ -37,7 +37,7 @@
         "@types/validator": "catalog:",
         "@typescript/native": "catalog:",
         "@vitejs/plugin-react": "catalog:",
-        "autoprefixer": "10.5.2",
+        "autoprefixer": "10.5.4",
         "chai": "catalog:",
         "eslint": "catalog:",
         "glob": "catalog:",
