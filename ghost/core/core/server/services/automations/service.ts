@@ -6,6 +6,7 @@ import type DomainEvents from '@tryghost/domain-events';
 import {oneAtATime} from '../../../shared/one-at-a-time';
 import {poll} from './poll';
 import * as automationsApi from './automations-api';
+import {getSchedulerIdempotencyKey} from './get-scheduler-idempotency-key';
 import {setImmediate as flushEventLoop} from 'node:timers/promises';
 import {SoonestTimer} from '../../lib/soonest-timer';
 // @ts-expect-error This module currently lacks type definitions.
@@ -73,7 +74,14 @@ export class AutomationsService {
                 const signedAdminToken = getSignedAdminToken({publishedAt: date.toISOString(), apiUrl, key});
                 const url = new URL(urlUtils.urlJoin(apiUrl, 'automations', 'poll'));
                 url.searchParams.set('token', signedAdminToken);
-                schedulerAdapter.schedule({time: date.getTime(), url: url.toString(), extra: {httpMethod: 'PUT'}});
+                schedulerAdapter.schedule({
+                    time: date.getTime(),
+                    url: url.toString(),
+                    extra: {
+                        httpMethod: 'PUT',
+                        idempotencyKey: getSchedulerIdempotencyKey(date, url)
+                    }
+                });
             } catch (err) {
                 logging.error({event: {name: 'automations.enqueue-poll.error'}, err, at: date.toISOString()}, 'Failed to enqueue automations poll');
             }
