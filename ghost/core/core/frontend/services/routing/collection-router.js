@@ -1,5 +1,6 @@
 const debug = require('@tryghost/debug')('routing:collection-router');
 const urlUtils = require('../../../shared/url-utils');
+const getPageParam = require('./page-param-config');
 const ParentRouter = require('./parent-router');
 
 const controllers = require('./controllers');
@@ -70,8 +71,9 @@ class CollectionRouter extends ParentRouter {
         this.mountRoute(this.route.value, controllers.collection);
 
         // REGISTER: enable pagination by default
-        this.router().param('page', middleware.pageParam);
-        this.mountRoute(urlUtils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers.collection);
+        const pageParam = getPageParam();
+        this.router().param(pageParam, middleware.pageParam);
+        this.mountRoute(urlUtils.urlJoin(this.route.value, pageParam, `:${pageParam}(\\d+)`), controllers.collection);
 
         // REGISTER: is rss enabled?
         if (this.rss) {

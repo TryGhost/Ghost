@@ -4,6 +4,10 @@ const errors = require('@tryghost/errors');
 const _private = {};
 let RESOURCE_CONFIG;
 
+// Keep in sync with frontend/services/routing/page-param-config.js
+const PAGINATION_INVALID_CHARACTERS = /[/?#:\s]/;
+const PAGINATION_RESERVED_SEGMENTS = ['tag', 'author', 'rss', 'amp', 'private', 'edit', 'unsubscribe'];
+
 const messages = {
     validationError: 'The following definition "{at}" is invalid: {reason}',
     invalidResourceError: 'Resource key not supported. {resourceKey}',
@@ -407,6 +411,40 @@ _private.validateTaxonomies = function validateTaxonomies(taxonomies) {
     return taxonomies;
 };
 
+_private.validatePagination = function validatePagination(pagination) {
+    if (typeof pagination !== 'string' || pagination.trim().length === 0) {
+        throw new errors.ValidationError({
+            message: tpl(messages.validationError, {
+                at: pagination,
+                reason: '`pagination` must be a non-empty string.'
+            }),
+            help: 'e.g. pagination: seite'
+        });
+    }
+
+    const trimmed = pagination.trim();
+
+    if (PAGINATION_INVALID_CHARACTERS.test(trimmed)) {
+        throw new errors.ValidationError({
+            message: tpl(messages.validationError, {
+                at: trimmed,
+                reason: '`pagination` must not contain / ? # : or whitespace.'
+            })
+        });
+    }
+
+    if (PAGINATION_RESERVED_SEGMENTS.includes(trimmed.toLowerCase())) {
+        throw new errors.ValidationError({
+            message: tpl(messages.validationError, {
+                at: trimmed,
+                reason: `\`pagination\` must not be a reserved segment (${PAGINATION_RESERVED_SEGMENTS.join(', ')}).`
+            })
+        });
+    }
+
+    return trimmed;
+};
+
 /**
  * Validate and sanitize the routing object.
  * NOTE: mutates the object even if it's a valid configuration
@@ -435,6 +473,11 @@ module.exports = function validate(object) {
     object.routes = _private.validateRoutes(object.routes);
     object.collections = _private.validateCollections(object.collections);
     object.taxonomies = _private.validateTaxonomies(object.taxonomies);
+
+    // CASE: optional top-level pagination segment. Absent => routers default to "page".
+    if (Object.prototype.hasOwnProperty.call(object, 'pagination')) {
+        object.pagination = _private.validatePagination(object.pagination);
+    }
 
     return object;
 };

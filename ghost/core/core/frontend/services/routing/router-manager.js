@@ -8,6 +8,7 @@ const PreviewRouter = require('./preview-router');
 const ParentRouter = require('./parent-router');
 const EmailRouter = require('./email-router');
 const UnsubscribeRouter = require('./unsubscribe-router');
+const {setPageParam} = require('./page-param-config');
 
 // Frontend-internal routing events (router.created / routers.reset)
 const routingEvents = require('./events');
@@ -96,6 +97,10 @@ class RouterManager {
     start(routerSettings) {
         debug('routing start', routerSettings);
         const RESOURCE_CONFIG = require(`./config`);
+
+        // Resolve the pagination URL segment from routes.yaml before any router
+        // is built — routers read it at construction via getPageParam().
+        setPageParam(routerSettings.pagination);
 
         const unsubscribeRouter = new UnsubscribeRouter();
         this.siteRouter.mountRouter(unsubscribeRouter.router());
