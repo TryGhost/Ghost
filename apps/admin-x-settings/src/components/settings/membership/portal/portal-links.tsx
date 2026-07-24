@@ -1,7 +1,7 @@
 import React, {useEffect, useId, useState} from 'react';
-import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Field, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Field, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {Button} from '@tryghost/shade/components';
-import {ModalPage, TextField} from '@tryghost/admin-x-design-system';
+import {ModalPage} from '@tryghost/shade/page-templates';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -19,7 +19,7 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
         <ActionListItem>
             <ActionListItemContent className='flex w-full grow flex-col py-3 lg:flex-row lg:items-center lg:gap-5'>
                 <label className='inline-block whitespace-nowrap lg:w-[180px] lg:min-w-[180px]' htmlFor={id}>{name}:</label>
-                <TextField className='grow border-b-border bg-transparent py-1 text-muted-foreground lg:p-1' id={id} value={value} disabled unstyled />
+                <Input className='grow border-0 border-b border-border bg-transparent py-1 text-muted-foreground shadow-none lg:p-1' id={id} value={value} disabled />
             </ActionListItemContent>
             <ActionListItemActions><Button size='sm' type='button' variant='ghost' onClick={async (e) => {
                 const button = e.currentTarget;
@@ -65,7 +65,8 @@ const PortalLinks: React.FC = () => {
     const homePageURL = getHomepageUrl(siteData!);
 
     return (
-        <ModalPage className='max-w-[920px] text-base text-foreground' heading='Links'>
+        <ModalPage className='max-w-[920px] text-base text-foreground'>
+            <ModalPage.Title>Links</ModalPage.Title>
             <p className='-mt-6 mb-16'>Use these {isDataAttributes ? 'data attributes' : 'links'} in your theme to show pages of Portal.</p>
 
             <section>

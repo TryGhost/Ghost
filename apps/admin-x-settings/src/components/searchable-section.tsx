@@ -1,11 +1,29 @@
-import {SettingSection, type SettingSectionProps} from '@tryghost/admin-x-design-system';
+import {Box, Stack, Text} from '@tryghost/shade/primitives';
 import {useSearch} from './providers/settings-app-provider';
 
-const SearchableSection: React.FC<Omit<SettingSectionProps, 'isVisible'> & {keywords: string[]}> = ({keywords, ...props}) => {
+interface SearchableSectionProps {
+    children?: React.ReactNode;
+    keywords: string[];
+    title?: string;
+}
+
+const SearchableSection: React.FC<SearchableSectionProps> = ({children, keywords, title}) => {
     const {checkVisible, noResult} = useSearch();
+    const isVisible = checkVisible(keywords) || noResult;
 
     return (
-        <SettingSection isVisible={checkVisible(keywords) || noResult} {...props} />
+        <Box className={isVisible ? 'mb-[10vh]' : 'hidden'}>
+            {title && (
+                <Text as='h2' className='z-20 mt-[-5px] mb-px pb-10 tracking-tight' leading='heading' size='2xl' weight='semibold'>
+                    {title}
+                </Text>
+            )}
+            {children && (
+                <Stack className='mb-10 gap-12' gap='none'>
+                    {children}
+                </Stack>
+            )}
+        </Box>
     );
 };
 

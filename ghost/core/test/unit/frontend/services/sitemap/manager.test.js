@@ -7,7 +7,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const {URLResourceUpdatedEvent} = require('../../../../../core/shared/events');
 
 const routingEvents = require('../../../../../core/frontend/services/routing/events');
-const urlUtils = require('../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 
 const SiteMapManager = require('../../../../../core/frontend/services/sitemap/site-map-manager');
 const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-map-generator');

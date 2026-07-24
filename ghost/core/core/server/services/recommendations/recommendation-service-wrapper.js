@@ -49,7 +49,7 @@ class RecommendationServiceWrapper {
             return;
         }
 
-        const urlUtils = require('../../../shared/url-utils');
+        const urlUtils = require('../../../shared/url-utils').default;
         const models = require('../../models');
         const sentry = require('../../../shared/sentry');
         const settings = require('../settings');

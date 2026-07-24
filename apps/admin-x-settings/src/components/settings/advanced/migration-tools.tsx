@@ -2,7 +2,6 @@ import MigrationToolsExport from './migration-tools/migration-tools-export';
 import MigrationToolsImport from './migration-tools/migration-tools-import';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {SettingGroupHeader} from '@tryghost/admin-x-design-system';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {withErrorBoundary} from '../../error-boundary';
 
@@ -13,12 +12,11 @@ const MigrationTools: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customHeader={
-                <SettingGroupHeader description='Import content, members and subscriptions from other platforms or export your Ghost data.' title='Migration tools' />
-            }
+            description='Import content, members and subscriptions from other platforms or export your Ghost data.'
             keywords={keywords}
             navid='migration'
             testId='migrationtools'
+            title='Migration tools'
         >
             <Tabs value={selectedTab} variant='underline' onValueChange={value => setSelectedTab(value as MigrationTab)}>
                 <TabsList>

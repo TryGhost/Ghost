@@ -1,4 +1,4 @@
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const models = require('../../models');
 const {getCSVExportFileName} = require('./utils/csv-export-filename');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');

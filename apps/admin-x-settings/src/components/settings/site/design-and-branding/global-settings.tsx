@@ -5,8 +5,7 @@ import clsx from 'clsx';
 import usePinturaEditor from '../../../../hooks/use-pintura-editor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
-import {Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {Form} from '@tryghost/admin-x-design-system';
+import {Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {Images, Pencil, Trash2} from 'lucide-react';
 import {type SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -161,7 +160,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
 
     return (
         <>
-            <Form className='mt-6' gap='sm' margins='lg' title=''>
+            <FieldGroup className='mt-6 mb-12 gap-6'>
                 <ColorPickerField
                     debounceMs={200}
                     direction='rtl'
@@ -290,8 +289,10 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         )
                     }
                 </div>
-            </Form>
-            <Form className='-mt-4' gap='sm' margins='lg' title='Typography'>
+            </FieldGroup>
+            <FieldSet className='-mt-4 gap-0'>
+                <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Typography</FieldLegend>
+                <FieldGroup className='mb-12 gap-6'>
                 <Field>
                     <FieldLabel>Heading font</FieldLabel>
                     <Select value={selectedHeadingFont.value} onValueChange={(value) => {
@@ -330,7 +331,8 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         </SelectContent>
                     </Select>
                 </Field>
-            </Form>
+                </FieldGroup>
+            </FieldSet>
         </>
     );
 };

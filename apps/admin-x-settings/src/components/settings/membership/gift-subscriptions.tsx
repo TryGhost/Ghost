@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import {Button, CopyField, CopyFieldActions, CopyFieldContent, CopyFieldCopyButton, CopyFieldLabel, CopyFieldValue} from '@tryghost/shade/components';
-import {SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {withErrorBoundary} from '../../error-boundary';
 

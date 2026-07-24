@@ -43,7 +43,7 @@
     "devDependencies": {
         "@typescript/native": "catalog:",
         "typescript": "catalog:",
-        "@doist/react-interpolate": "2.2.3",
+        "@doist/react-interpolate": "2.2.4",
         "@internal/cfg-eslint-react": "workspace:*",
         "@internal/cfg-vite-public-app": "workspace:*",
         "@sentry/react": "catalog:",

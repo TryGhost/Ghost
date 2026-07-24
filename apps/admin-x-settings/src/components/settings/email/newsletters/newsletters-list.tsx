@@ -1,9 +1,8 @@
 import React from 'react';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DragIndicator, LoadingIndicator, NoValueLabel, NoValueLabelIcon, type SortableItemContainerProps, SortableList} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
-import {MailX} from 'lucide-react';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
-import {formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface NewslettersListProps {
@@ -98,7 +97,7 @@ const NewslettersList: React.FC<NewslettersListProps> = ({newsletters, isLoading
         </ActionList>;
     } else {
         return <NoValueLabel>
-            <NoValueLabelIcon><MailX /></NoValueLabelIcon>
+            <NoValueLabelIcon><LucideIcon.Mail /></NoValueLabelIcon>
             No newsletters found.
         </NoValueLabel>;
     }

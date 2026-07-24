@@ -1,5 +1,5 @@
 const imageTransform = require('@tryghost/image-transform');
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 const {isInternalImage} = require('../services/proxy');
 
 module.exports.detectInternalImage = function detectInternalImage(requestedImageUrl) {

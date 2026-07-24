@@ -1,7 +1,7 @@
 const ghostVersion = require('@tryghost/version');
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 module.exports = function getSiteProperties() {
     const siteProperties = {

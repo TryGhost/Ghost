@@ -13,6 +13,7 @@ describe('Email Service', function () {
     let sendingService;
     let scheduleRecurringNewslettersJob;
     let domainWarmingService;
+    let getMembersCount;
 
     beforeEach(function () {
         memberCount = 123;
@@ -72,12 +73,11 @@ describe('Email Service', function () {
             isEnabled: sinon.stub().returns(false),
             getWarmupLimit: sinon.stub()
         };
+        getMembersCount = sinon.stub().callsFake(() => Promise.resolve(memberCount));
 
         service = new EmailService({
             emailSegmenter: {
-                getMembersCount: () => {
-                    return Promise.resolve(memberCount);
-                }
+                getMembersCount
             },
             limitService: {
                 isLimited: (type) => {
@@ -253,6 +253,20 @@ describe('Email Service', function () {
             });
             await assert.doesNotReject(service.checkCanSendEmail(newsletter, 'all'));
         });
+
+        it('Revalidates limits without recounting when an email count is supplied', async function () {
+            limited.emails = true;
+            const newsletter = createModel({
+                status: 'active'
+            });
+
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all', {emailCount: 42}),
+                /Would go over limit/
+            );
+
+            sinon.assert.notCalled(getMembersCount);
+        });
     });
 
     describe('createEmail', function () {
@@ -294,6 +308,78 @@ describe('Email Service', function () {
             assert.equal(email.get('source'), post.get('mobiledoc'));
             assert.equal(email.get('source_type'), 'mobiledoc');
             sinon.assert.calledOnce(scheduleRecurringNewslettersJob);
+        });
+
+        it('Reuses the recipient count when preflight data matches the saved post', async function () {
+            const newsletter = createModel({
+                id: 'newsletter-123',
+                status: 'active',
+                feedback_enabled: true
+            });
+            const post = createModel({
+                id: 'post-123',
+                newsletter,
+                email_recipient_filter: 'status:paid',
+                mobiledoc: 'Mobiledoc'
+            });
+
+            const email = await service.createEmail(post, {
+                preflight: {
+                    newsletter,
+                    emailRecipientFilter: 'status:paid',
+                    emailCount: 42
+                }
+            });
+
+            sinon.assert.notCalled(getMembersCount);
+            assert.equal(email.get('email_count'), 42);
+        });
+
+        it('Recounts recipients when preflight data does not match the saved post', async function () {
+            const newsletter = createModel({
+                id: 'newsletter-123',
+                status: 'active',
+                feedback_enabled: true
+            });
+            const post = createModel({
+                id: 'post-123',
+                newsletter,
+                email_recipient_filter: 'status:paid',
+                mobiledoc: 'Mobiledoc'
+            });
+
+            const email = await service.createEmail(post, {
+                preflight: {
+                    newsletter,
+                    emailRecipientFilter: 'status:free',
+                    emailCount: 42
+                }
+            });
+
+            sinon.assert.calledOnceWithExactly(getMembersCount, newsletter, 'status:paid');
+            assert.equal(email.get('email_count'), memberCount);
+        });
+
+        it('Revalidates newsletter status without recounting when preflight data matches', async function () {
+            const newsletter = createModel({
+                id: 'newsletter-123',
+                status: 'archived'
+            });
+            const post = createModel({
+                id: 'post-123',
+                newsletter,
+                email_recipient_filter: 'all'
+            });
+
+            await assert.rejects(service.createEmail(post, {
+                preflight: {
+                    newsletter,
+                    emailRecipientFilter: 'all',
+                    emailCount: 42
+                }
+            }), /Cannot send email to archived newsletters/);
+
+            sinon.assert.notCalled(getMembersCount);
         });
 
         describe('Domain warming', function () {

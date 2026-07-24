@@ -1,3 +1,4 @@
+import ConfirmationModal from '../../confirmation-modal';
 import DefaultRecipients from './default-recipients';
 import EnableNewsletters from './enable-newsletters';
 import MailGun from './mailgun';
@@ -10,7 +11,6 @@ import WelcomeEmailCustomizeModal from '../membership/member-emails/welcome-emai
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {ConfirmationModal} from '@tryghost/admin-x-design-system';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';

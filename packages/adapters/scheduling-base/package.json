@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/adapter-base-scheduling",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The adapter-base-scheduling package for Ghost.",
   "type": "module",
   "repository": {
@@ -37,10 +37,10 @@
     "@internal/cfg-vitest": "workspace:",
     "@types/node": "catalog:",
     "@types/sinon": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "sinon": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

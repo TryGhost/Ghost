@@ -4,9 +4,9 @@ import HtmlField from '../../html-field';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, Tabs, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {DesktopChrome, Form, MobileChrome, PreviewModalContent} from '@tryghost/admin-x-design-system';
+import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, PreviewChrome, Tabs, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
 import {Laptop, Smartphone} from 'lucide-react';
+import {PreviewModalContent} from '../preview-modal';
 import {debounce} from '../../../utils/debounce';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -66,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     ];
 
     return (
-        <Form>
+        <FieldGroup className='mb-10 gap-8'>
             <HtmlField
                 nodes='MINIMAL_NODES'
                 placeholder='Highlight breaking news, offers or updates'
@@ -113,7 +113,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     ))}
                 </FieldGroup>
             </FieldSet>
-        </Form>
+        </FieldGroup>
     );
 };
 
@@ -196,9 +196,9 @@ const AnnouncementBarModal: React.FC = () => {
         visibility={visibilitySettings}
     />;
     const preview = previewDevice === 'desktop' ? (
-        <DesktopChrome data-testid='preview-desktop'>{rawPreview}</DesktopChrome>
+        <PreviewChrome data-testid='preview-desktop' device='desktop'>{rawPreview}</PreviewChrome>
     ) : (
-        <MobileChrome data-testid='preview-mobile'>{rawPreview}</MobileChrome>
+        <PreviewChrome data-testid='preview-mobile' device='mobile'>{rawPreview}</PreviewChrome>
     );
     const previewTabs = latestPost ? (
         <Tabs value={selectedPreviewTab} variant='button-sm' onValueChange={onSelectURL}>

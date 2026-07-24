@@ -8,10 +8,11 @@ export interface StripeButtonProps extends Omit<ButtonProps, 'asChild' | 'childr
     target?: React.HTMLAttributeAnchorTarget;
 }
 
-const StripeButton: React.FC<StripeButtonProps> = ({label, className, href, target, ...props}) => {
+const StripeButton: React.FC<StripeButtonProps> = ({label, className, href, target, variant, ...props}) => {
     const classNames = clsx(
-        'inline-block cursor-pointer rounded-md bg-[#625BF6] font-semibold text-white transition-all hover:opacity-90',
+        'cursor-pointer rounded-md bg-[#625BF6] font-semibold text-white transition-all hover:opacity-90',
         label ? 'px-5 py-2' : 'px-6 py-[9px]',
+        !label && '[&_svg]:h-4! [&_svg]:w-[132px]!',
         className
     );
 
@@ -24,13 +25,13 @@ const StripeButton: React.FC<StripeButtonProps> = ({label, className, href, targ
 
     if (href) {
         return (
-            <Button className={classNames} asChild {...props}>
+            <Button className={classNames} variant={variant ?? null} asChild {...props}>
                 <a href={href} rel='noopener noreferrer' target={target}>{label}</a>
             </Button>
         );
     }
 
-    return <Button className={classNames} type='button' {...props}>{label}</Button>;
+    return <Button className={classNames} type='button' variant={variant ?? null} {...props}>{label}</Button>;
 };
 
 export default StripeButton;

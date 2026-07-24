@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const sentry = require('../../../shared/sentry');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 const LLMS_LOG_KEY = '[llms]';
 

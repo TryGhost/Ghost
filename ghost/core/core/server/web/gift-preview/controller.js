@@ -40,7 +40,7 @@ function escapeHtml(str) {
 async function giftPreview(req, res) {
     const giftService = require('../../services/gifts').service;
     const tiersService = require('../../services/tiers');
-    const urlUtils = require('../../../shared/url-utils');
+    const urlUtils = require('../../../shared/url-utils').default;
     const settingsCache = require('../../../shared/settings-cache');
 
     const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');

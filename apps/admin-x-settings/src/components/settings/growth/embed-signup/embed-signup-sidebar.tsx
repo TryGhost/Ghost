@@ -1,7 +1,6 @@
 import ColorPickerField from '../../../color-picker-field';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox, StickyFooter, Textarea, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {Form} from '@tryghost/admin-x-design-system';
+import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldGroup, FieldLabel, MultiSelectCombobox, StickyFooter, Textarea, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
 import {Plus} from 'lucide-react';
 import {Text} from '@tryghost/shade/primitives';
@@ -99,7 +98,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
         <div className='flex h-[calc(100vh-16vmin)] max-h-[645px] flex-col justify-between overflow-y-scroll border-grey-200 p-6 pb-0 max-lg:border-t lg:border-l dark:border-grey-900'>
             <div>
                 <Text as='h4' className='mb-8 md:text-xl' leading='heading' size='lg' weight='bold'>Embed signup form</Text>
-                <Form gap='sm'>
+                <FieldGroup className='mb-10 gap-6'>
                     <div className='flex w-full items-center justify-between'>
                         <div>Layout</div>
                         <ToggleGroup type='single' value={selectedLayout} onValueChange={value => value && handleLayoutSelect(value)}>
@@ -188,7 +187,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                         <Textarea className='resize-none border-transparent bg-muted font-mono' id='embed-signup-code' value={`${embedScript}`} readOnly />
                         <FieldDescription>Paste this code onto any website where you&apos;d like your signup to appear.</FieldDescription>
                     </Field>
-                </Form>
+                </FieldGroup>
             </div>
             <StickyFooter height={74}>
                 <div className='flex w-full justify-end gap-3'>

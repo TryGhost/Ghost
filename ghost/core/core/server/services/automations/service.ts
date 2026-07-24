@@ -11,7 +11,7 @@ import {SoonestTimer} from '../../lib/soonest-timer';
 // @ts-expect-error This module currently lacks type definitions.
 import emailAnalyticsJobs from '../email-analytics/jobs';
 
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const logging = require('@tryghost/logging');
 const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');

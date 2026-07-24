@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/adapter-base-cache",
-  "version": "0.1.27",
+  "version": "0.2.0",
   "description": "Base class for Ghost cache adapters.",
   "type": "module",
   "repository": {
@@ -36,9 +36,9 @@
     "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
     "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

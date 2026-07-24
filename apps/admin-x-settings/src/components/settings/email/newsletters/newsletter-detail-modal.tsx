@@ -1,18 +1,20 @@
 import ColorPickerField from '../../../color-picker-field';
+import ConfirmationModal from '../../../confirmation-modal';
 import HtmlField from '../../../html-field';
+import LimitModal from '../../../limit-modal';
 import NewsletterPreview from './newsletter-preview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, Field, FieldContent, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipTrigger} from '@tryghost/shade/components';
-import {ConfirmationModal, Form, LimitModal, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipTrigger} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {PreviewModalContent} from '../../preview-modal';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Stack, Text} from '@tryghost/shade/primitives';
 import {Trash2} from 'lucide-react';
@@ -80,17 +82,11 @@ const ReplyToEmailField: React.FC<{
 
     // Pro users without custom sending domains
     return (
-        <TextField
-            error={Boolean(errors.sender_reply_to)}
-            hint={errors.sender_reply_to}
-            maxLength={191}
-            placeholder={newsletterAddress || ''}
-            title="Reply-to email"
-            value={senderReplyTo}
-            onBlur={onBlur}
-            onChange={onChange}
-            onKeyDown={() => clearError('sender_reply_to')}
-        />
+        <Field data-invalid={Boolean(errors.sender_reply_to) || undefined}>
+            <FieldLabel htmlFor='newsletter-reply-to'>Reply-to email</FieldLabel>
+            <Input aria-invalid={Boolean(errors.sender_reply_to) || undefined} id='newsletter-reply-to' maxLength={191} placeholder={newsletterAddress || ''} value={senderReplyTo} onBlur={onBlur} onChange={onChange} onKeyDown={() => clearError('sender_reply_to')} />
+            {errors.sender_reply_to && <FieldError>{errors.sender_reply_to}</FieldError>}
+        </Field>
     );
 };
 
@@ -211,33 +207,24 @@ const Sidebar: React.FC<{
         // Self-hosters
         if (!isManagedEmail(config)) {
             return (
-                <TextField
-                    error={Boolean(errors.sender_email)}
-                    hint={errors.sender_email}
-                    placeholder={newsletterAddress || ''}
-                    title="Sender email address"
-                    value={newsletter.sender_email || ''}
-                    onChange={e => updateNewsletter({sender_email: e.target.value})}
-                    onKeyDown={() => clearError('sender_email')}
-                />
+                <Field data-invalid={Boolean(errors.sender_email) || undefined}>
+                    <FieldLabel htmlFor='newsletter-sender-email'>Sender email address</FieldLabel>
+                    <Input aria-invalid={Boolean(errors.sender_email) || undefined} id='newsletter-sender-email' placeholder={newsletterAddress || ''} value={newsletter.sender_email || ''} onChange={e => updateNewsletter({sender_email: e.target.value})} onKeyDown={() => clearError('sender_email')} />
+                    {errors.sender_email && <FieldError>{errors.sender_email}</FieldError>}
+                </Field>
             );
         }
 
         // Pro users with custom sending domains
         if (hasSendingDomain(config)) {
             return (
-                <TextField
-                    error={Boolean(errors.sender_email)}
-                    hint={errors.sender_email}
-                    maxLength={191}
-                    placeholder={defaultEmailAddress}
-                    title="Sender email address"
-                    value={newsletter.sender_email || ''}
-                    onChange={(e) => {
+                <Field data-invalid={Boolean(errors.sender_email) || undefined}>
+                    <FieldLabel htmlFor='newsletter-sender-email'>Sender email address</FieldLabel>
+                    <Input aria-invalid={Boolean(errors.sender_email) || undefined} id='newsletter-sender-email' maxLength={191} placeholder={defaultEmailAddress} value={newsletter.sender_email || ''} onChange={(e) => {
                         updateNewsletter({sender_email: e.target.value});
-                    }}
-                    onKeyDown={() => clearError('sender_email')}
-                />
+                    }} onKeyDown={() => clearError('sender_email')} />
+                    {errors.sender_email && <FieldError>{errors.sender_email}</FieldError>}
+                </Field>
             );
         }
 
@@ -278,33 +265,40 @@ const Sidebar: React.FC<{
             title: 'General',
             contents:
             <>
-                <Form className='mt-6' gap='sm' margins='lg' title='Name and description'>
-                    <TextField
-                        error={Boolean(errors.name)}
-                        hint={errors.name}
-                        maxLength={191}
-                        placeholder="Weekly Roundup"
-                        title="Name"
-                        value={newsletter.name || ''}
-                        onChange={e => updateNewsletter({name: e.target.value})}
-                        onKeyDown={() => clearError('name')}
-                    />
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Name and description</FieldLegend>
+                    <FieldGroup className='mb-12 gap-6 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <Field data-invalid={Boolean(errors.name) || undefined}>
+                        <FieldLabel htmlFor='newsletter-detail-name'>Name</FieldLabel>
+                        <Input aria-invalid={Boolean(errors.name) || undefined} id='newsletter-detail-name' maxLength={191} placeholder='Weekly Roundup' value={newsletter.name || ''} onChange={e => updateNewsletter({name: e.target.value})} onKeyDown={() => clearError('name')} />
+                        {errors.name && <FieldError>{errors.name}</FieldError>}
+                    </Field>
                     <Field>
                         <FieldLabel htmlFor='newsletter-description'>Description</FieldLabel>
                         <Textarea className='border-transparent bg-muted' id='newsletter-description' maxLength={2000} rows={2} value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
                     </Field>
-                </Form>
-                <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
-                    <TextField maxLength={191} placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
+                    </FieldGroup>
+                </FieldSet>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Email info</FieldLegend>
+                    <FieldGroup className='mb-12 gap-6 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <Field>
+                        <FieldLabel htmlFor='newsletter-sender-name'>Sender name</FieldLabel>
+                        <Input id='newsletter-sender-name' maxLength={191} placeholder={siteTitle} value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
+                    </Field>
                     {renderSenderEmailField()}
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
-                </Form>
-                <Form className='mt-6' gap='sm' margins='lg' title='Member settings'>
+                    </FieldGroup>
+                </FieldSet>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Member settings</FieldLegend>
+                    <FieldGroup className='mb-12 gap-6'>
                     <Field orientation='horizontal'>
                         <FieldLabel htmlFor='newsletter-subscribe-on-signup'>Subscribe new members on signup</FieldLabel>
                         <Switch checked={Boolean(newsletter.subscribe_on_signup)} id='newsletter-subscribe-on-signup' onCheckedChange={checked => updateNewsletter({subscribe_on_signup: checked})} />
                     </Field>
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
                 <div className='mt-10 mb-5'>
                     {newsletter.status === 'active' ? (!onlyOne && <Button className='text-destructive hover:text-destructive' disabled={activeNewsletters.length === 1} type='button' variant='ghost' onClick={confirmStatusChange}>Archive newsletter</Button>) : <Button className='text-green hover:text-green' type='button' variant='ghost' onClick={confirmStatusChange}>Reactivate newsletter</Button>}
                 </div>
@@ -315,7 +309,9 @@ const Sidebar: React.FC<{
             title: 'Content',
             contents:
             <>
-                <Form className='mt-6' gap='sm' margins='lg' title='Header'>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Header</FieldLegend>
+                    <FieldGroup className='mb-12 gap-6'>
                     <div>
                         <div>
                             <Text as='h6' className="mb-2 text-base" weight='semibold'>Header image</Text>
@@ -361,9 +357,12 @@ const Sidebar: React.FC<{
                             <Switch checked={Boolean(newsletter.show_header_name)} id='newsletter-show-header-name' onCheckedChange={checked => updateNewsletter({show_header_name: checked})} />
                         </Field>
                     </Stack>
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
 
-                <Form className='mt-6' gap='xs' margins='lg' title='Title section'>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Title section</FieldLegend>
+                    <FieldGroup className='mb-12 gap-4'>
                     <Field orientation='horizontal'>
                         <FieldLabel htmlFor='newsletter-show-post-title'>Post title</FieldLabel>
                         <Switch checked={Boolean(newsletter.show_post_title_section)} id='newsletter-show-post-title' onCheckedChange={checked => updateNewsletter({show_post_title_section: checked})} />
@@ -378,9 +377,12 @@ const Sidebar: React.FC<{
                         <FieldLabel htmlFor='newsletter-show-feature-image'>Feature image</FieldLabel>
                         <Switch checked={Boolean(newsletter.show_feature_image)} id='newsletter-show-feature-image' onCheckedChange={checked => updateNewsletter({show_feature_image: checked})} />
                     </Field>
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
 
-                <Form className='mt-6' gap='sm' margins='lg' title='Footer'>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Footer</FieldLegend>
+                    <FieldGroup className='mb-12 gap-6'>
                     <Stack gap='lg'>
                         <Field orientation='horizontal'>
                             <FieldLabel htmlFor='newsletter-feedback-enabled'>Ask your readers for feedback</FieldLabel>
@@ -411,13 +413,14 @@ const Sidebar: React.FC<{
                         value={newsletter.footer_content || ''}
                         onChange={html => updateNewsletter({footer_content: html})}
                     />
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
                 <Separator />
                 <div className='my-5 flex w-full items-start'>
                     <span>
                         <LucideIcon.Heart className='mt-[-1px] mr-2 size-5 text-red'/>
                     </span>
-                    <Form marginBottom={false}>
+                    <FieldGroup className='gap-8'>
                         <Field orientation='horizontal'>
                             <FieldContent>
                                 <FieldLabel htmlFor='newsletter-show-badge'>Promote independent publishing</FieldLabel>
@@ -425,7 +428,7 @@ const Sidebar: React.FC<{
                             </FieldContent>
                             <Switch checked={Boolean(newsletter.show_badge)} id='newsletter-show-badge' onCheckedChange={checked => updateNewsletter({show_badge: checked})} />
                         </Field>
-                    </Form>
+                    </FieldGroup>
                 </div>
             </>
         },
@@ -434,7 +437,9 @@ const Sidebar: React.FC<{
             title: 'Design',
             contents:
             <>
-                <Form className='mt-6' gap='xs' margins='lg' title='Global'>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Global</FieldLegend>
+                    <FieldGroup className='mb-12 gap-4'>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
@@ -487,8 +492,11 @@ const Sidebar: React.FC<{
                             </Select>
                         </Field>
                     </div>
-                </Form>
-                <Form className='mt-6' gap='xs' margins='lg' title='Header'>
+                    </FieldGroup>
+                </FieldSet>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Header</FieldLegend>
+                    <FieldGroup className='mb-12 gap-4'>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
@@ -538,9 +546,12 @@ const Sidebar: React.FC<{
                             onValueChange={titleAlignment => updateNewsletter({title_alignment: titleAlignment})}
                         />
                     </div>
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
 
-                <Form className='mt-6' gap='xs' margins='lg' title='Body'>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Body</FieldLegend>
+                    <FieldGroup className='mb-12 gap-4'>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
@@ -675,7 +686,8 @@ const Sidebar: React.FC<{
                             onChange={color => updateNewsletter({divider_color: color})}
                         />
                     </div>
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
             </>
         }
     ];
@@ -688,7 +700,7 @@ const Sidebar: React.FC<{
         <div className='flex flex-col'>
             <div className='px-7 pt-0 pb-7'>
                 <Tabs value={selectedTab} variant='underline' onValueChange={handleTabChange}>
-                    <TabsList className='sticky top-0 z-50 bg-background'>
+                    <TabsList className='sticky top-0 z-50 bg-surface-elevated-2'>
                         {tabs.map(tab => <TabsTrigger key={tab.id} value={tab.id}>{tab.title}</TabsTrigger>)}
                     </TabsList>
                     {tabs.map(tab => <TabsContent key={tab.id} value={tab.id}>{tab.contents}</TabsContent>)}

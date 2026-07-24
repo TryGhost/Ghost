@@ -1,5 +1,5 @@
 const debug = require('@tryghost/debug')('routing:collection-router');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const ParentRouter = require('./parent-router');
 
 const controllers = require('./controllers');

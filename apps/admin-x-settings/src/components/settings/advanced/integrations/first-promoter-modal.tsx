@@ -1,9 +1,9 @@
 import BrandIcon from '../../../icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
-import {Form, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -57,7 +57,7 @@ const FirstPromoterModal = NiceModal.create(() => {
     };
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('integrations');
             }}
@@ -81,7 +81,9 @@ const FirstPromoterModal = NiceModal.create(() => {
                 title='FirstPromoter'
             />
             <div className='mt-7'>
-                <Form marginBottom={false} title='FirstPromoter configuration' grouped>
+                <FieldSet className='gap-0'>
+                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>FirstPromoter configuration</FieldLegend>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                     <Field orientation='horizontal'>
                         <FieldContent>
                             <FieldLabel htmlFor='firstpromoter-enabled'>Enable FirstPromoter</FieldLabel>
@@ -90,21 +92,23 @@ const FirstPromoterModal = NiceModal.create(() => {
                         <Switch checked={enabled} id='firstpromoter-enabled' onCheckedChange={setEnabled} />
                     </Field>
                     {enabled && (
-                        <TextField
-                            hint={<>
+                        <Field>
+                            <FieldLabel htmlFor='firstpromoter-account-id'>FirstPromoter account ID</FieldLabel>
+                            <Input
+                                id='firstpromoter-account-id'
+                                placeholder='XXXXXXXX'
+                                value={accountId || ''}
+                                onChange={e => setAccountId(e.target.value)}
+                            />
+                            <FieldDescription><>
                                 Affiliate and referral tracking, find your ID  <a className='text-green' href="https://ghost.org/help/firstpromoter-id/" rel="noopener noreferrer" target="_blank">here</a>
-                            </>}
-                            placeholder='XXXXXXXX'
-                            title='FirstPromoter account ID'
-                            value={accountId || ''}
-                            onChange={(e) => {
-                                setAccountId(e.target.value);
-                            }}
-                        />
+                            </></FieldDescription>
+                        </Field>
                     )}
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

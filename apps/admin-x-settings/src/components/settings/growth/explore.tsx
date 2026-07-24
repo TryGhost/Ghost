@@ -7,7 +7,7 @@ import {Button} from '@tryghost/shade/components';
 import {Field, FieldContent, FieldDescription, FieldLabel, Separator, Switch} from '@tryghost/shade/components';
 import {LucideIcon, abbreviateNumber} from '@tryghost/shade/utils';
 import {type Setting, getSettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';

@@ -2,7 +2,7 @@ import EmbedSignupPreview from './embed-signup-preview';
 import EmbedSignupSidebar, {type SelectedLabelTypes} from './embed-signup-sidebar';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {generateCode} from '../../../../utils/generate-embed-code';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
@@ -93,7 +93,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     };
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('embed-signup-form');
             }}
@@ -127,7 +127,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
                     setCustomColor={setCustomColor}
                 />
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

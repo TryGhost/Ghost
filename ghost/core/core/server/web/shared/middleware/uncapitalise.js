@@ -13,7 +13,7 @@
 //  req.path =  /ghost/signin/
 
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../../shared/url-utils');
+const {default: urlUtils, BASE_API_PATH} = require('../../../../shared/url-utils');
 const tpl = require('@tryghost/tpl');
 const localUtils = require('../utils');
 
@@ -27,7 +27,7 @@ const uncapitalise = function uncapitalise(req, res, next) {
     let decodedURI;
 
     const isSignupOrReset = pathToTest.match(/^(.*\/ghost\/(signup|reset)\/)/i);
-    const isAPIRegExp = new RegExp(`^(.*${urlUtils.BASE_API_PATH}(/(v[\\d.]+|canary))?/.*?/)`, 'i');
+    const isAPIRegExp = new RegExp(`^(.*${BASE_API_PATH}(/(v[\\d.]+|canary))?/.*?/)`, 'i');
     const isAPI = pathToTest.match(isAPIRegExp);
 
     if (isSignupOrReset) {

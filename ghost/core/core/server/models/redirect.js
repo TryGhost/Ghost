@@ -1,5 +1,5 @@
 const ghostBookshelf = require('./base');
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 
 const Redirect = ghostBookshelf.Model.extend({
     tableName: 'redirects',

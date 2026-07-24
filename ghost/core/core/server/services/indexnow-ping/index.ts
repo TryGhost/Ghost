@@ -14,7 +14,7 @@ class IndexNowPingServiceWrapper {
         const config = require('../../../shared/config');
         const labs = require('../../../shared/labs');
         const urlService = require('../url');
-        const urlUtils = require('../../../shared/url-utils');
+        const urlUtils = require('../../../shared/url-utils').default;
         const request = require('@tryghost/request');
         const logging = require('@tryghost/logging');
         const events = require('../../lib/common/events');

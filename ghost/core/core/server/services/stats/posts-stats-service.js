@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 // Import source normalization from ReferrersStatsService
 const {normalizeSource} = require('./referrers-stats-service');

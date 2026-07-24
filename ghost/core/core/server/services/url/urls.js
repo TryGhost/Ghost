@@ -1,5 +1,5 @@
 const debug = require('@tryghost/debug')('services:url:urls');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 

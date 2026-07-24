@@ -1,9 +1,9 @@
 import {Badge, Button, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
-import {Modal} from '@tryghost/admin-x-design-system';
 import {type Offer, useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {type RetentionOffer, getRetentionOffers} from './offers-retention';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {type Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {createOfferRedemptionFilterUrl, createOfferRedemptionsFilterUrl} from './offer-helpers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
@@ -340,7 +340,6 @@ export const OffersIndexModal: React.FC = () => {
                     updateRoute('offers/new');
                 }
             }}>
-                <LucideIcon.Plus />
                 New offer
             </Button>
         </Inline>
@@ -411,7 +410,7 @@ export const OffersIndexModal: React.FC = () => {
         </Table>
     </div>;
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             updateRoute('offers');
         }}
@@ -429,5 +428,5 @@ export const OffersIndexModal: React.FC = () => {
         <Stack className='h-full pt-8'>
             {listLayoutOutput}
         </Stack>
-    </Modal>;
+    </SettingsModal>;
 };

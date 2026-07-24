@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const urlUtils = require('../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const configUtils = require('../../../../utils/config-utils');
 
 // Stuff we are testing

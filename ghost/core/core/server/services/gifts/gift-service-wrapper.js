@@ -41,7 +41,7 @@ class GiftServiceWrapper {
 
         const {GhostMailer} = require('../mail');
         const settingsCache = require('../../../shared/settings-cache');
-        const urlUtils = require('../../../shared/url-utils');
+        const urlUtils = require('../../../shared/url-utils').default;
         const settingsHelpers = require('../settings-helpers');
         const EmailAddressParser = require('../email-address/email-address-parser');
         const {blogIcon} = require('../../../server/lib/image');

@@ -1,10 +1,10 @@
 import PortalFrame from '../../membership/portal/portal-frame';
 import SettingsBreadcrumbs from '../../settings-breadcrumbs';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Field, FieldContent, FieldDescription, FieldLabel, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea} from '@tryghost/shade/components';
-import {Form, PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, RadioGroup, RadioGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useAddOffer, useBrowseOffers, useEditOffer, useInvalidateOffers} from '@tryghost/admin-x-framework/api/offers';
+import {PreviewModalContent} from '../../preview-modal';
 import {createOfferRedemptionsFilterUrl, formatOfferTimestamp, generateRetentionOfferName} from './offer-helpers';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
@@ -205,7 +205,7 @@ const RetentionOfferSidebar: React.FC<{
 
     return (
         <div className='flex grow flex-col pt-2'>
-            <Form className='grow'>
+            <FieldGroup className='mb-10 grow gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                 <section>
                     <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
                         <div className='flex flex-col gap-1.5'>
@@ -246,15 +246,12 @@ const RetentionOfferSidebar: React.FC<{
                         <section className='mt-2'>
                             <h2 className='mb-4 text-lg'>General</h2>
                             <div className='flex flex-col gap-6'>
-                                <TextField
-                                    maxLength={MAX_DISPLAY_TEXT_LENGTH}
-                                    placeholder='Before you go'
-                                    title='Display title'
-                                    value={formState.displayTitle}
-                                    onChange={(e) => {
+                                <Field>
+                                    <FieldLabel htmlFor='retention-display-title'>Display title</FieldLabel>
+                                    <Input id='retention-display-title' maxLength={MAX_DISPLAY_TEXT_LENGTH} placeholder='Before you go' value={formState.displayTitle} onChange={(e) => {
                                         updateForm(state => ({...state, displayTitle: e.target.value}));
-                                    }}
-                                />
+                                    }} />
+                                </Field>
                                 <Field>
                                     <FieldLabel htmlFor='retention-display-description'>Display description</FieldLabel>
                                     <Textarea
@@ -300,20 +297,18 @@ const RetentionOfferSidebar: React.FC<{
                                 )}
                                 {formState.type === 'percent' && (
                                     <>
-                                        <TextField
-                                            error={Boolean(errors.amount)}
-                                            hint={errors.amount}
-                                            rightPlaceholder='%'
-                                            title='Amount off'
-                                            type='number'
-                                            value={formState.percentAmount === 0 ? '' : String(formState.percentAmount)}
-                                            onChange={(e) => {
+                                        <Field data-invalid={Boolean(errors.amount) || undefined}>
+                                            <FieldLabel htmlFor='retention-amount'>Amount off</FieldLabel>
+                                            <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.amount) || undefined}>
+                                                <InputGroupInput aria-invalid={Boolean(errors.amount) || undefined} id='retention-amount' type='number' value={formState.percentAmount === 0 ? '' : String(formState.percentAmount)} onChange={(e) => {
                                                 const nextValue = Number(e.target.value);
                                                 const safeValue = Number.isNaN(nextValue) ? 0 : nextValue;
                                                 updateForm(state => ({...state, percentAmount: safeValue}));
-                                            }}
-                                            onKeyDown={() => clearError('amount')}
-                                        />
+                                                }} onKeyDown={() => clearError('amount')} />
+                                                <InputGroupAddon align='inline-end'><InputGroupText>%</InputGroupText></InputGroupAddon>
+                                            </InputGroup>
+                                            {errors.amount && <FieldError>{errors.amount}</FieldError>}
+                                        </Field>
                                         <Field>
                                             <FieldLabel>Duration</FieldLabel>
                                             <Select value={formState.duration} onValueChange={(value) => {
@@ -328,43 +323,38 @@ const RetentionOfferSidebar: React.FC<{
                                         </Field>
                                         {formState.duration === 'repeating' && (
                                             <div className='-mt-4'>
-                                                <TextField
-                                                    data-testid='duration-months-input'
-                                                    error={Boolean(errors.durationInMonths)}
-                                                    hint={errors.durationInMonths}
-                                                    rightPlaceholder={`${formState.durationInMonths === 1 ? 'month' : 'months'}`}
-                                                    type='number'
-                                                    value={formState.durationInMonths === 0 ? '' : String(formState.durationInMonths)}
-                                                    onChange={(e) => {
+                                                <Field data-invalid={Boolean(errors.durationInMonths) || undefined}>
+                                                    <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.durationInMonths) || undefined}>
+                                                        <InputGroupInput aria-invalid={Boolean(errors.durationInMonths) || undefined} data-testid='duration-months-input' type='number' value={formState.durationInMonths === 0 ? '' : String(formState.durationInMonths)} onChange={(e) => {
                                                         const nextValue = Number(e.target.value);
                                                         updateForm(state => ({...state, durationInMonths: Number.isNaN(nextValue) ? 0 : nextValue}));
-                                                    }}
-                                                    onKeyDown={() => clearError('durationInMonths')}
-                                                />
+                                                        }} onKeyDown={() => clearError('durationInMonths')} />
+                                                        <InputGroupAddon align='inline-end'><InputGroupText>{formState.durationInMonths === 1 ? 'month' : 'months'}</InputGroupText></InputGroupAddon>
+                                                    </InputGroup>
+                                                    {errors.durationInMonths && <FieldError>{errors.durationInMonths}</FieldError>}
+                                                </Field>
                                             </div>
                                         )}
                                     </>
                                 )}
                                 {formState.type === 'free_months' && (
-                                    <TextField
-                                        error={Boolean(errors.amount)}
-                                        hint={errors.amount}
-                                        rightPlaceholder={`${formState.freeMonths === 1 ? 'month' : 'months'}`}
-                                        title='Free months'
-                                        type='number'
-                                        value={formState.freeMonths === 0 ? '' : String(formState.freeMonths)}
-                                        onChange={(e) => {
+                                    <Field data-invalid={Boolean(errors.amount) || undefined}>
+                                        <FieldLabel htmlFor='retention-free-months'>Free months</FieldLabel>
+                                        <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.amount) || undefined}>
+                                            <InputGroupInput aria-invalid={Boolean(errors.amount) || undefined} id='retention-free-months' type='number' value={formState.freeMonths === 0 ? '' : String(formState.freeMonths)} onChange={(e) => {
                                             const nextValue = Number(e.target.value);
                                             updateForm(state => ({...state, freeMonths: Number.isNaN(nextValue) ? 0 : nextValue}));
-                                        }}
-                                        onKeyDown={() => clearError('amount')}
-                                    />
+                                            }} onKeyDown={() => clearError('amount')} />
+                                            <InputGroupAddon align='inline-end'><InputGroupText>{formState.freeMonths === 1 ? 'month' : 'months'}</InputGroupText></InputGroupAddon>
+                                        </InputGroup>
+                                        {errors.amount && <FieldError>{errors.amount}</FieldError>}
+                                    </Field>
                                 )}
                             </div>
                         </section>
                     </>
                 )}
-            </Form>
+            </FieldGroup>
         </div>
     );
 };

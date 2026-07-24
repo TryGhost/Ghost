@@ -3,8 +3,8 @@ import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button} from '@tryghost/shade/components';
-import {Form, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input} from '@tryghost/shade/components';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getSettingValues, useTestSlack} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -39,7 +39,7 @@ const SlackModal = NiceModal.create(() => {
     const isDirty = localSettings.some(setting => setting.dirty);
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('integrations');
             }}
@@ -60,32 +60,28 @@ const SlackModal = NiceModal.create(() => {
                 title='Slack'
             />
             <div className='mt-7'>
-                <Form marginBottom={false} title='Slack configuration' grouped>
-                    <TextField
-                        error={Boolean(errors.slackUrl)}
-                        hint={errors.slackUrl || <>
+                <FieldSet className='gap-0'>
+                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Slack configuration</FieldLegend>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <Field data-invalid={Boolean(errors.slackUrl) || undefined}>
+                        <FieldLabel htmlFor='slack-webhook-url'>Webhook URL</FieldLabel>
+                        <Input aria-invalid={Boolean(errors.slackUrl) || undefined} id='slack-webhook-url' placeholder='https://hooks.slack.com/services/...' value={slackUrl} onBlur={validate} onChange={e => updateSetting('slack_url', e.target.value)} onKeyDown={() => clearError('slackUrl')} />
+                        {errors.slackUrl ? <FieldError>{errors.slackUrl}</FieldError> : <FieldDescription><>
                             Automatically send newly published posts to a channel in Slack or any Slack-compatible service like Discord or Mattermost. Set up a new incoming webhook <a href='https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks'>here</a>, and grab the URL.
-                        </>}
-                        placeholder='https://hooks.slack.com/services/...'
-                        title='Webhook URL'
-                        value={slackUrl}
-                        onBlur={validate}
-                        onChange={e => updateSetting('slack_url', e.target.value)}
-                        onKeyDown={() => clearError('slackUrl')}
-                    />
+                        </></FieldDescription>}
+                    </Field>
                     <div className='flex w-full flex-col gap-2 md:flex-row md:items-center'>
-                        <TextField
-                            containerClassName='grow'
-                            hint='The username to display messages from'
-                            title='Username'
-                            value={slackUsername}
-                            onChange={e => updateSetting('slack_username', e.target.value)}
-                        />
+                        <Field className='grow'>
+                            <FieldLabel htmlFor='slack-username'>Username</FieldLabel>
+                            <Input id='slack-username' value={slackUsername} onChange={e => updateSetting('slack_username', e.target.value)} />
+                            <FieldDescription>The username to display messages from</FieldDescription>
+                        </Field>
                         <Button type='button' variant='outline' onClick={handleTestClick}>Send test notification</Button>
                     </div>
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

@@ -1,10 +1,10 @@
+import ConfirmationModal from '../../confirmation-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import trackEvent from '../../../utils/analytics';
 import useStaffUsers from '../../../hooks/use-staff-users';
 import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button} from '@tryghost/shade/components';
-import {ConfirmationModal, SettingGroupHeader} from '@tryghost/admin-x-design-system';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
@@ -107,12 +107,11 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customHeader={
-                <SettingGroupHeader description='Destructive actions that affect your entire site.' title='Danger zone' />
-            }
+            description='Destructive actions that affect your entire site.'
             keywords={keywords}
             navid='dangerzone'
             testId='dangerzone'
+            title='Danger zone'
         >
             <ActionList>
                 <ActionListItem data-testid='delete-all-content' hover={false}>

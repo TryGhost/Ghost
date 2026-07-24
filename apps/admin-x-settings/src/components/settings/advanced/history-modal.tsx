@@ -4,8 +4,8 @@ import {type Action, getActionTitle, getContextResource, getLinkTarget, isBulkAc
 import {ActionList, ActionListItem, ActionListItemContent, Avatar, Button, Field, FieldLabel, LoadingIndicator, MultiSelectCombobox, NoValueLabel, NoValueLabelIcon, Popover, PopoverContent, PopoverTrigger, Switch, inputSurface} from '@tryghost/shade/components';
 import {ChevronDown, History, Pen, Plus, Trash2, X} from 'lucide-react';
 import {Inline, Stack} from '@tryghost/shade/primitives';
-import {Modal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {type User} from '@tryghost/admin-x-framework/api/users';
 import {formatNumber} from '@tryghost/shade/utils';
 import {keepPreviousData} from '@tanstack/react-query';
@@ -311,7 +311,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
     const hasActiveFilters = excludedEvents.length > 0 || excludedResources.length > 0 || params?.user;
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('history');
             }}
@@ -387,7 +387,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                     {data?.isEnd && data.actions.length > 0 && <div className='border-t border-border pt-2 text-sm text-muted-foreground'>End of history log</div>}
                 </ActionList>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

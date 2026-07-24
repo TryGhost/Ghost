@@ -1926,14 +1926,12 @@ jobs:
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
 
-      # TODO: Check we can remove this once we update Node to v24
-      - name: Install v11 of NPM # We need this to install packages via OIDC.
-        run: npm install -g npm@11
-
+      # --provenance is explicit rather than relying on pnpm's auto-detection,
+      # which degrades to a warning if it can't confirm visibility.
       - name: Publish to npm
         working-directory: ${{ matrix.package_path }}
         run: |
-          pnpm publish --access public --no-git-checks
+          pnpm publish --access public --provenance --no-git-checks
 
       - name: Replace version placeholders in cdn-paths
         id: cdn_paths
@@ -2038,8 +2036,12 @@ jobs:
       - name: Verify tarball contents
         run: tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null
 
+      # --provenance is explicit so a publish without an attestation fails the
+      # job instead of warning. Safe with no repo checkout: the SLSA statement
+      # is built from the GITHUB_* env vars plus the tarball digest, and the
+      # subject comes from the packed manifest — nothing reads a working tree.
       - name: Publish to npm
-        run: npm publish ghost-*.tgz --access public
+        run: npm publish ghost-*.tgz --access public --provenance
 
   # NOTE: Publishing the other workspace packages (koenig/*, packages/*, ...) is
   # NOT a job here. The release tag triggers publish-packages.yml directly, in

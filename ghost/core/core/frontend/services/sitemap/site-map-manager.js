@@ -1,6 +1,6 @@
 const DomainEvents = require('@tryghost/domain-events');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const {URLResourceUpdatedEvent} = require('../../../shared/events');
 const IndexMapGenerator = require('./site-map-index-generator');
 const PagesMapGenerator = require('./page-map-generator');

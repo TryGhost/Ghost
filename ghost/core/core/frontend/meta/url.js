@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 const {urlService} = require('../services/proxy');
 const {checks} = require('../services/data');
 

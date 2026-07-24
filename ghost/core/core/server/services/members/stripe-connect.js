@@ -4,7 +4,7 @@ const {Buffer} = require('buffer');
 const {randomBytes} = require('crypto');
 
 const config = require('../../../shared/config');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 const messages = {
     incorrectState: 'State did not match.'

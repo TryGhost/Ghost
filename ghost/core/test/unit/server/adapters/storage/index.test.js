@@ -3,7 +3,7 @@ const {assertExists} = require('../../../../utils/assertions');
 const fs = require('fs-extra');
 const {StorageBase} = require('ghost-storage-base');
 const configUtils = require('../../../../utils/config-utils');
-const storage = require('../../../../../core/server/adapters/storage');
+const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
 
 const storagePath = configUtils.config.getContentPath('adapters') + 'storage/';
@@ -23,10 +23,11 @@ describe('storage: index_spec', function () {
         }
 
         await configUtils.restore();
+        adapterManager.clearCache();
     });
 
     it('default image storage is local file storage', function () {
-        const chosenStorage = storage.getStorage();
+        const chosenStorage = adapterManager.getAdapter('storage:images');
         assert.equal((chosenStorage instanceof StorageBase), true);
         assert.equal((chosenStorage instanceof LocalStorageBase), true);
     });
@@ -57,7 +58,7 @@ describe('storage: index_spec', function () {
         fs.writeFileSync(scope.adapter, jsFile);
 
         assert.equal(configUtils.config.get('storage:active'), 'custom-adapter');
-        chosenStorage = storage.getStorage();
+        chosenStorage = adapterManager.getAdapter('storage:images');
         assert.equal((chosenStorage instanceof LocalStorageBase), false);
         assert.equal((chosenStorage instanceof StorageBase), true);
     });
@@ -86,7 +87,7 @@ describe('storage: index_spec', function () {
         fs.writeFileSync(scope.adapter, jsFile);
 
         try {
-            storage.getStorage();
+            adapterManager.getAdapter('storage:images');
         } catch (err) {
             assertExists(err);
             assert.equal(err.errorType, 'IncorrectUsageError');

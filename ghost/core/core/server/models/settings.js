@@ -6,7 +6,7 @@ const ghostBookshelf = require('./base');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 const {WRITABLE_KEYS_ALLOWLIST} = require('../../shared/labs');
 const {getOrGenerateSiteUuid} = require('../services/settings/settings-utils');
 

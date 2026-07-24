@@ -344,7 +344,9 @@ describe('Posts Service', function () {
             const model = {
                 toJSON: sinon.stub().returns({id: 'post-123'})
             };
+            const preflight = {emailCount: 42};
             mockModels.Post.edit.resolves(model);
+            postEmailHandlerStub.validateBeforeSave.resolves(preflight);
 
             const frame = {
                 data: {posts: [{status: 'published'}]},
@@ -353,7 +355,7 @@ describe('Posts Service', function () {
 
             await postsService.editPost(frame);
 
-            sinon.assert.calledOnceWithExactly(postEmailHandlerStub.createOrRetryEmail, model);
+            sinon.assert.calledOnceWithExactly(postEmailHandlerStub.createOrRetryEmail, model, {preflight});
         });
 
         it('returns post JSON and calls eventHandler', async function () {

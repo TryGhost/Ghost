@@ -1,7 +1,6 @@
 import HtmlField from '../../../html-field';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
-import {Form} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {type Tier, getPaidActiveTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -125,7 +124,7 @@ const SignupOptions: React.FC<{
 
     const arePaidTiersVisible = isStripeEnabled && paidActiveTiers.length > 0 && paidActiveTiers.some(tier => tier.visibility === 'public');
 
-    return <div className='mt-7'><Form>
+    return <div className='mt-7'><FieldGroup className='mb-10 gap-8'>
         <Field data-disabled={!isSignupAllowed || undefined} orientation='horizontal'>
             <FieldLabel htmlFor='portal-display-name'>Display name in signup form</FieldLabel>
             <Switch checked={Boolean(portalName)} disabled={!isSignupAllowed} id='portal-display-name' onCheckedChange={checked => updateSetting('portal_name', checked)} />
@@ -195,7 +194,7 @@ const SignupOptions: React.FC<{
             <FieldLabel htmlFor='portal-require-agreement'>Require agreement</FieldLabel>
             <Switch checked={Boolean(portalSignupCheckboxRequired)} disabled={!isSignupAllowed} id='portal-require-agreement' onCheckedChange={checked => updateSetting('portal_signup_checkbox_required', checked)} />
         </Field>}
-    </Form></div>;
+    </FieldGroup></div>;
 };
 
 export default SignupOptions;

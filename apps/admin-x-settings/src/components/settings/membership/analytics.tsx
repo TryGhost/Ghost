@@ -3,7 +3,7 @@ import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Field, FieldContent, FieldDescription, FieldLabel, Separator, Switch} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
-import {SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getSettingValues, isSettingReadOnly} from '@tryghost/admin-x-framework/api/settings';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {withErrorBoundary} from '../../error-boundary';

@@ -45,7 +45,7 @@ class SlackNotificationsServiceWrapper {
         }
 
         const hostSettings = config.get('hostSettings');
-        const urlUtils = require('../../../shared/url-utils');
+        const urlUtils = require('../../../shared/url-utils').default;
         const siteUrl = urlUtils.getSiteUrl();
         const isEnabled = !!(hostSettings?.milestones?.enabled && hostSettings?.milestones?.url);
         const webhookUrl = hostSettings?.milestones?.url;

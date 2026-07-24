@@ -628,10 +628,9 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        throw new Error('storage should not be used');
-                    }
+                imageStore: {
+                    getSanitizedFileName: sinon.stub().throws(new Error('getSanitizedFileName should not be called')),
+                    saveRaw: sinon.stub().throws(new Error('saveRaw should not be called'))
                 },
                 externalRequest
             });
@@ -653,13 +652,9 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        return {
-                            getSanitizedFileName,
-                            saveRaw
-                        };
-                    }
+                imageStore: {
+                    getSanitizedFileName,
+                    saveRaw
                 },
                 externalRequest() {
                     return {
@@ -690,13 +685,9 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        return {
-                            getSanitizedFileName,
-                            saveRaw
-                        };
-                    }
+                imageStore: {
+                    getSanitizedFileName,
+                    saveRaw
                 },
                 externalRequest() {
                     return {
@@ -726,14 +717,10 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        return {
-                            getSanitizedFileName,
-                            saveRaw,
-                            exists
-                        };
-                    }
+                imageStore: {
+                    getSanitizedFileName,
+                    saveRaw,
+                    exists
                 },
                 externalRequest() {
                     return {
@@ -759,14 +746,10 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        return {
-                            getSanitizedFileName,
-                            generateUnique,
-                            saveRaw
-                        };
-                    }
+                imageStore: {
+                    getSanitizedFileName,
+                    generateUnique,
+                    saveRaw
                 },
                 externalRequest() {
                     return {
@@ -787,12 +770,8 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        return {
-                            getSanitizedFileName: sinon.stub().returns('sample')
-                        };
-                    }
+                imageStore: {
+                    getSanitizedFileName: sinon.stub().returns('sample')
                 },
                 externalRequest() {
                     return {
@@ -814,13 +793,9 @@ describe('oembed-service', function () {
                         return '/tmp/content/images';
                     }
                 },
-                storage: {
-                    getStorage() {
-                        return {
-                            getSanitizedFileName: sinon.stub().returns('sample'),
-                            saveRaw: sinon.stub().resolves('/stored')
-                        };
-                    }
+                imageStore: {
+                    getSanitizedFileName: sinon.stub().returns('sample'),
+                    saveRaw: sinon.stub().resolves('/stored')
                 },
                 externalRequest() {
                     throw new Error('Network error');
@@ -868,12 +843,10 @@ describe('oembed-service', function () {
                     getContentPath: sinon.stub().returns('/tmp/content/images')
                 },
                 externalRequest,
-                storage: {
-                    getStorage: sinon.stub().returns({
-                        getSanitizedFileName: sinon.stub().returns('favicon'),
-                        generateUnique: sinon.stub().resolves('/tmp/content/images/icon/favicon.png'),
-                        saveRaw: sinon.stub().resolves('/content/images/icon/favicon.png')
-                    })
+                imageStore: {
+                    getSanitizedFileName: sinon.stub().returns('favicon'),
+                    generateUnique: sinon.stub().resolves('/tmp/content/images/icon/favicon.png'),
+                    saveRaw: sinon.stub().resolves('/content/images/icon/favicon.png')
                 }
             });
 

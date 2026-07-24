@@ -1,6 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../../shared/url-utils');
+const urlUtils = require('../../../../shared/url-utils').default;
 
 const messages = {
     pageNotFound: 'Page not found.'

@@ -4,7 +4,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {APIError, JSONError} from '@tryghost/admin-x-framework/errors';
 import {Button} from '@tryghost/shade/components';
 import {Inline, Text} from '@tryghost/shade/primitives';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'sonner';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -142,7 +142,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
     const canSave = !isLoading && !loadError && !isSaving;
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={afterClose}
             backDropClick={false}
             cancelLabel='Close'
@@ -180,7 +180,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
                     )}
                 </div>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 };
 

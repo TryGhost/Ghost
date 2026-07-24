@@ -1,6 +1,6 @@
 {
   "name": "ghost-storage-base",
-  "version": "2.1.5",
+  "version": "3.0.0",
   "description": "Base class for Ghost storage adapters.",
   "type": "module",
   "repository": {
@@ -45,9 +45,9 @@
     "@internal/cfg-vitest": "workspace:*",
     "@types/express": "catalog:",
     "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

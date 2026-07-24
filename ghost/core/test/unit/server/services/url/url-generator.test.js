@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const urlUtils = require('../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const UrlGenerator = require('../../../../../core/server/services/url/url-generator');
 
 describe('Unit: services/url/UrlGenerator', function () {

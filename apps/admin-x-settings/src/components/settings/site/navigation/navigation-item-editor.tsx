@@ -4,7 +4,6 @@ import useUrlInput from '../../../../hooks/use-url-input';
 import {type EditableItem, type NavigationItem, type NavigationItemErrors} from '../../../../hooks/site/use-navigation-editor';
 import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
-import {TextField} from '@tryghost/admin-x-design-system';
 import {formatUrl} from '../../../../utils/format-url';
 
 export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -30,16 +29,14 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
     return (
         <div className={clsx('flex w-full items-start gap-3', className)} data-testid='navigation-item-editor' {...props}>
             <div className="flex flex-1 pt-1">
-                <TextField
-                    className={textFieldClasses}
-                    containerClassName="grow"
-                    error={!!item.errors.label}
-                    hint={item.errors.label}
-                    placeholder={labelPlaceholder}
-                    title='Label'
-                    unstyled={unstyled}
-                    value={item.label}
-                    hideTitle
+                <Field className='grow' data-invalid={Boolean(item.errors.label) || undefined}>
+                    <FieldLabel className='sr-only' htmlFor={`navigation-label-${item.id}`}>Label</FieldLabel>
+                    <Input
+                        aria-invalid={Boolean(item.errors.label) || undefined}
+                        className={clsx(!unstyled && 'h-[var(--control-height)] rounded-lg border-transparent bg-muted py-2 focus-visible:border-green focus-visible:bg-surface-elevated focus-visible:ring-green/25', unstyled && 'border-0 bg-transparent shadow-none focus-visible:ring-0', textFieldClasses)}
+                        id={`navigation-label-${item.id}`}
+                        placeholder={labelPlaceholder}
+                        value={item.label}
                     onChange={e => updateItem?.({label: e.target.value})}
                     onKeyDown={(e) => {
                         updateItem?.({label: (e.target as HTMLInputElement).value});
@@ -49,8 +46,9 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                         }
                         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                         !!item.errors.label && clearError?.('label');
-                    }}
-                />
+                    }} />
+                    {item.errors.label && <FieldError>{item.errors.label}</FieldError>}
+                </Field>
             </div>
             <Field className='flex-1 pt-1' data-invalid={Boolean(item.errors.url) || undefined}>
                 <FieldLabel className='sr-only' htmlFor={`navigation-url-${item.id}`}>URL</FieldLabel>

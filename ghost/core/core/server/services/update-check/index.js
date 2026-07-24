@@ -1,7 +1,7 @@
 
 const api = require('../../api').endpoints;
 const config = require('../../../shared/config');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const jobsService = require('../jobs');
 
 const request = require('@tryghost/request');

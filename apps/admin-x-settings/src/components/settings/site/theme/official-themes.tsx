@@ -1,7 +1,7 @@
 import MarketplaceBgImage from '../../../../assets/images/footer-marketplace-bg.png';
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
-import {ModalPage} from '@tryghost/admin-x-design-system';
+import {ModalPage} from '@tryghost/shade/page-templates';
 import {type OfficialTheme, type ThemeVariant, useOfficialThemes} from '../../../providers/settings-app-provider';
 import {Text} from '@tryghost/shade/primitives';
 
@@ -53,7 +53,8 @@ const OfficialThemes: React.FC<{
     }, [variantLoopTheme, visibleVariantIdx]);
 
     return (
-        <ModalPage heading='Themes'>
+        <ModalPage>
+            <ModalPage.Title>Themes</ModalPage.Title>
             <div className='mt-[6vmin] grid grid-cols-1 gap-[6vmin] sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'>
                 {officialThemes.map((theme) => {
                     const showVariants = hasVariants(theme);

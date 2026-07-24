@@ -6,7 +6,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const {StorageBase} = require('ghost-storage-base');
 
 const messages = {

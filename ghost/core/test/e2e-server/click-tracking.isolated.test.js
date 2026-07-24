@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fetch = require('node-fetch').default;
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
-const urlUtils = require('../../core/shared/url-utils');
+const urlUtils = require('../../core/shared/url-utils').default;
 const jobService = require('../../core/server/services/jobs/job-service');
 const {anyGhostAgent, anyContentVersion, anyContentLength, anyISODateTime, anyObjectId} = matchers;
 const membersEventsService = require('../../core/server/services/members-events');

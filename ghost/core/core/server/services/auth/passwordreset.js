@@ -5,7 +5,7 @@ const tpl = require('@tryghost/tpl');
 const moment = require('moment');
 
 const models = require('../../models');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const mail = require('../mail');
 
 const messages = {

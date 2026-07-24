@@ -108,6 +108,7 @@
         "vitest": "catalog:"
     },
     "dependencies": {
+        "@ebay/nice-modal-react": "catalog:",
         "@dnd-kit/core": "catalog:",
         "@dnd-kit/sortable": "catalog:",
         "@dnd-kit/utilities": "catalog:",

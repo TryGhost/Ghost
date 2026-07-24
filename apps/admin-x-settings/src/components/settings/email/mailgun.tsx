@@ -4,7 +4,7 @@ import useSettingGroup from '../../../hooks/use-setting-group';
 import {Field, FieldDescription, FieldLabel, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {SettingGroupContent, SettingGroupValue, SettingGroupValueContent, SettingGroupValueTitle} from '@tryghost/shade/patterns';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {withErrorBoundary} from '../../error-boundary';
@@ -33,29 +33,20 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const isMailgunSetup = mailgunDomain && mailgunApiKey;
 
-    const data = isMailgunSetup ? [
-        {
-            key: 'status',
-            value: (
-                <Inline align='center' gap='sm'>
-                    <LucideIcon.Check className='size-4 text-state-success' />
-                    Mailgun is set up
-                </Inline>
-            )
-        }
-    ] : [
-        {
-            heading: 'Status',
-            key: 'status',
-            value: 'Mailgun is not set up'
-        }
-    ];
-
     const values = (
-        <SettingGroupContent
-            columns={1}
-            values={data}
-        />
+        <SettingGroupContent>
+            <SettingGroupValue>
+                {!isMailgunSetup && <SettingGroupValueTitle>Status</SettingGroupValueTitle>}
+                <SettingGroupValueContent className={!isMailgunSetup ? 'mt-1' : undefined}>
+                    {isMailgunSetup ? (
+                        <Inline align='center' gap='sm'>
+                            <LucideIcon.Check className='size-4 text-state-success' />
+                            Mailgun is set up
+                        </Inline>
+                    ) : 'Mailgun is not set up'}
+                </SettingGroupValueContent>
+            </SettingGroupValue>
+        </SettingGroupContent>
     );
 
     const apiKeysHint = (

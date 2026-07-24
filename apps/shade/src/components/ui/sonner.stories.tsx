@@ -23,28 +23,72 @@ export const Default: Story = {
     args: {},
     render: () => (
         <Button onClick={() => toast('Toast title')}>Toast!</Button>
-    )
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Use a default toast for brief neutral feedback.'
+            }
+        }
+    }
 };
 
 export const Error: Story = {
     args: {},
     render: () => (
         <Button onClick={() => toast.error('Hello world!', {description: 'Error description', duration: Infinity})}>Toast!</Button>
-    )
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Use an error toast when an action fails and the user may need to respond.'
+            }
+        }
+    }
 };
 
 export const Success: Story = {
     args: {},
     render: () => (
         <Button onClick={() => toast.success('Hello world!', {description: 'Error description', duration: Infinity})}>Toast!</Button>
-    )
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Use a success toast to confirm that an action completed.'
+            }
+        }
+    }
 };
 
 export const Info: Story = {
     args: {},
     render: () => (
         <Button onClick={() => toast.info('Hello world!', {description: 'Error description', duration: Infinity})}>Toast!</Button>
-    )
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Use an informational toast for contextual feedback without success or error semantics.'
+            }
+        }
+    }
+};
+
+export const WithCloseButton: Story = {
+    args: {
+        closeButton: true
+    },
+    render: () => (
+        <Button onClick={() => toast.success('Newsletter reactivated', {duration: Infinity})}>Toast with close button</Button>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Close buttons retain visible default, hover, and focus states in both light and dark themes.'
+            }
+        }
+    }
 };
 
 export const WithAction: Story = {

@@ -181,19 +181,74 @@ describe('Content Formatters', function () {
             expect(iframe.hasAttribute('allowfullscreen')).toBe(true);
         });
 
-        it('removes unsafe iframe attributes and protocols', function () {
+        it('forces a restrictive sandbox on iframes, overriding any supplied value', function () {
+            const sandbox = 'allow-scripts allow-same-origin allow-popups allow-presentation allow-forms';
+
             const result = sanitizeArticleContent(`
-                <iframe src="javascript:alert(1)"></iframe>
-                <iframe srcdoc="<script>window.__xss=true</script>" onload="window.__xss=true"></iframe>
+                <iframe src="https://codepen.io/x/embed/abc"></iframe>
+                <iframe src="https://evil.example/phish" sandbox="allow-top-navigation allow-modals allow-same-origin"></iframe>
             `);
 
             const iframes = renderHtml(result).querySelectorAll('iframe');
 
+            expect(iframes).toHaveLength(2);
             iframes.forEach((iframe) => {
-                expect(iframe.getAttribute('src')).toBeNull();
-                expect(iframe.hasAttribute('srcdoc')).toBe(false);
-                expect(iframe.hasAttribute('onload')).toBe(false);
+                // Overridden to our fixed set (attacker's allow-top-navigation is gone)
+                expect(iframe.getAttribute('sandbox')).toBe(sandbox);
             });
+            // Arbitrary embed hosts are kept (not host-filtered), just sandboxed
+            expect(iframes[0].getAttribute('src')).toBe('https://codepen.io/x/embed/abc');
+            expect(iframes[1].getAttribute('src')).toBe('https://evil.example/phish');
+        });
+
+        it('does not preserve author-supplied referrerpolicy on non-iframe elements', function () {
+            const result = sanitizeArticleContent(
+                '<img src="https://example.com/image.png" referrerpolicy="unsafe-url">'
+            );
+
+            const img = renderHtml(result).querySelector('img') as HTMLImageElement;
+
+            expect(img).not.toBeNull();
+            expect(img.hasAttribute('referrerpolicy')).toBe(false);
+        });
+
+        it('removes iframes with unsafe or non-http(s) sources', function () {
+            const result = sanitizeArticleContent(`
+                <iframe src="javascript:alert(1)"></iframe>
+                <iframe src="data:text/html,<script>window.__xss=true</script>"></iframe>
+                <iframe srcdoc="<script>window.__xss=true</script>" onload="window.__xss=true"></iframe>
+            `);
+
+            // None are absolute cross-origin http(s) embeds, so all are dropped
+            expect(renderHtml(result).querySelectorAll('iframe')).toHaveLength(0);
+        });
+
+        it('strips event handlers and srcdoc from surviving cross-origin iframes', function () {
+            const result = sanitizeArticleContent(
+                '<iframe src="https://player.vimeo.com/video/1" srcdoc="<script>window.__xss=true</script>" onload="window.__xss=true"></iframe>'
+            );
+
+            const iframe = renderHtml(result).querySelector('iframe') as HTMLIFrameElement;
+
+            expect(iframe).not.toBeNull();
+            expect(iframe.hasAttribute('srcdoc')).toBe(false);
+            expect(iframe.hasAttribute('onload')).toBe(false);
+        });
+
+        it('removes relative and same-origin iframes, keeping cross-origin embeds', function () {
+            // A same-origin frame would run same-origin with Ghost Admin, where
+            // allow-scripts + allow-same-origin can defeat the sandbox
+            const result = sanitizeArticleContent(`
+                <iframe src="/ghost/#/dashboard"></iframe>
+                <iframe src="${window.location.origin}/ghost/"></iframe>
+                <iframe src="foo.html"></iframe>
+                <iframe src="https://player.vimeo.com/video/123"></iframe>
+            `);
+
+            const iframes = renderHtml(result).querySelectorAll('iframe');
+
+            expect(iframes).toHaveLength(1);
+            expect(iframes[0].getAttribute('src')).toBe('https://player.vimeo.com/video/123');
         });
 
         it('keeps Twitter embed scripts from allowed hostnames', function () {

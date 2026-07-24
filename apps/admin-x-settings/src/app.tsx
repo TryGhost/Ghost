@@ -18,7 +18,7 @@ export function App({designSystem, upgradeStatus}: AppProps) {
                 this point */}
             <NiceModal.Provider>
                 <RoutingProvider basePath='settings' modals={{paths: modalPaths, load: loadModals}}>
-                    <DesignSystemApp className='admin-x-settings' {...designSystem}>
+                    <DesignSystemApp className='admin-x-settings [--color-focus-ring:var(--color-green-500)] [--focus-ring:var(--color-green-500)]' {...designSystem}>
                         <SettingsRouter />
                         <MainContent />
                     </DesignSystemApp>

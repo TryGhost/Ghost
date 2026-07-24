@@ -70,7 +70,11 @@ export type Config = {
             },
             publicSiteAccess?: {
                 disabled: boolean,
-                error?: string
+                // Copy shown in the pre-launch banner when public site access is disabled.
+                // Managed hosting providers can override these; each falls back to Ghost's default.
+                error?: string, // Banner message
+                title?: string, // Banner heading
+                upgradeUrl?: string // Destination for the banner's upgrade button
             }
         }
         billing?: {

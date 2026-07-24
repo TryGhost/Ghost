@@ -1,6 +1,6 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import type {ButtonProps} from '@tryghost/shade/components';
 
 export type ThemeEditorConfirmModalProps = {
@@ -26,7 +26,7 @@ const ThemeEditorConfirmModal = NiceModal.create<ThemeEditorConfirmModalProps>((
     };
 
     return (
-        <Modal
+        <SettingsModal
             backDropClick={false}
             cancelLabel={cancelLabel}
             okLabel={okLabel}
@@ -40,7 +40,7 @@ const ThemeEditorConfirmModal = NiceModal.create<ThemeEditorConfirmModalProps>((
             <div className='py-4'>
                 {prompt}
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

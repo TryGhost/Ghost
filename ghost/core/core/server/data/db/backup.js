@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const config = require('../../../shared/config');
 const logging = require('@tryghost/logging');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const exporter = require('../exporter');
 
 /**

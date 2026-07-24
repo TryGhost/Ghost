@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const urlUtils = require('../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const giftServiceWrapper = require('../../../../../core/server/services/gifts');
 const tiersService = require('../../../../../core/server/services/tiers');

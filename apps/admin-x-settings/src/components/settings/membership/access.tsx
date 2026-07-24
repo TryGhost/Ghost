@@ -3,7 +3,7 @@ import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Banner, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, MultiSelectCombobox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Button as ShadeButton} from '@tryghost/shade/components';
 import {RefreshCw} from 'lucide-react';
-import {SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getSettingValues, isSettingReadOnly, useRegenerateAccessCode} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -88,6 +88,10 @@ const COMMENTS_ENABLED_OPTIONS = [
     }
 ];
 
+const DEFAULT_PRELAUNCH_TITLE = 'Pre-launch mode';
+const DEFAULT_PRELAUNCH_MESSAGE = 'During your free trial, a private access code is required to browse your site. When you\'re ready to launch, pick a plan to upgrade your account and make everything public.';
+const DEFAULT_PRELAUNCH_UPGRADE_URL = '#/pro/billing/plans';
+
 const renderAccessOptions = (options: Array<{value: string; label: string; hint: string}>) => options.map(option => (
     <SelectItem key={option.value} value={option.value}>
         <span className='flex flex-col'>
@@ -101,9 +105,13 @@ const getAccessOptionLabel = (options: Array<{value: string; label: string}>, va
 
 const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [tiersOpen, setTiersOpen] = React.useState(false);
-    const {settings} = useGlobalData();
+    const {settings, config} = useGlobalData();
     const limiter = useLimiter();
     const isTrialMode = limiter?.isDisabled('publicSiteAccess');
+    const publicSiteAccessLimit = config.hostSettings?.limits?.publicSiteAccess;
+    const preLaunchTitle = publicSiteAccessLimit?.title || DEFAULT_PRELAUNCH_TITLE;
+    const preLaunchMessage = publicSiteAccessLimit?.error || DEFAULT_PRELAUNCH_MESSAGE;
+    const preLaunchUpgradeUrl = publicSiteAccessLimit?.upgradeUrl || DEFAULT_PRELAUNCH_UPGRADE_URL;
     const isPrivateLocked = isSettingReadOnly(settings, 'is_private') || isSettingReadOnly(settings, 'password');
     const {mutateAsync: regenerateAccessCode} = useRegenerateAccessCode();
     const [isRegenerating, setIsRegenerating] = React.useState(false);
@@ -180,12 +188,12 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className='-m-5 overflow-hidden p-5'>
                     <Banner className='mb-2 flex w-full cursor-default flex-col gap-4 border-0 p-6 pt-5 transition-none hover:translate-y-0 hover:scale-100 hover:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_28%),7px_6px_42px_8px_rgb(202_103_255_/_32%)] md:flex-row md:items-center md:justify-between dark:hover:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_36%),7px_6px_42px_8px_rgb(202_103_255_/_38%)]' size='lg' variant='gradient'>
                         <div>
-                            <div className='text-base font-semibold'>Pre-launch mode</div>
+                            <div className='text-base font-semibold'>{preLaunchTitle}</div>
                             <div className='mt-2 text-gray-700'>
-                                During your free trial, a private access code is required to browse your site. When you&apos;re ready to launch, pick a plan to upgrade your account and make everything public.
+                                {preLaunchMessage}
                             </div>
                         </div>
-                        <ShadeButton className='shrink-0 self-start md:self-center' asChild><a href="#/pro/billing/plans">Upgrade now</a></ShadeButton>
+                        <ShadeButton className='shrink-0 self-start md:self-center' asChild><a href={preLaunchUpgradeUrl}>Upgrade now</a></ShadeButton>
                     </Banner>
                 </div>
             )}
@@ -210,7 +218,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className="w-full md:flex-1">
                         <Field className={isPrivateLocked ? 'relative z-10' : undefined} data-disabled={isPrivateLocked || undefined} data-invalid={Boolean(errors.password) || undefined}>
                             <FieldLabel className='sr-only' htmlFor='site-access-code'>Access code</FieldLabel>
-                            <InputGroup className='border-transparent bg-muted' data-disabled={isPrivateLocked || undefined} data-invalid={Boolean(errors.password) || undefined}>
+                            <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-disabled={isPrivateLocked || undefined} data-invalid={Boolean(errors.password) || undefined}>
                                 <InputGroupInput
                                     aria-invalid={Boolean(errors.password) || undefined}
                                     data-testid='site-access-code'

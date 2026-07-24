@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('routing:static-routes-router');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const RSSRouter = require('./rss-router');
 const controllers = require('./controllers');
 const middleware = require('./middleware');

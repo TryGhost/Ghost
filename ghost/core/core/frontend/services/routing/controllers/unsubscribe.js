@@ -2,7 +2,7 @@ const debug = require('@tryghost/debug')('services:routing:controllers:unsubscri
 const url = require('url');
 const proxy = require('../../proxy');
 const {settingsHelpers} = proxy;
-const urlUtils = require('../../../../shared/url-utils');
+const urlUtils = require('../../../../shared/url-utils').default;
 const logging = require('@tryghost/logging');
 const crypto = require('crypto');
 

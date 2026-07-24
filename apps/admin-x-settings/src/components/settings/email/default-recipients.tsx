@@ -3,7 +3,7 @@ import TopLevelGroup from '../../top-level-group';
 import useDefaultRecipientsOptions, {type SegmentOption, type SegmentOptions} from './use-default-recipients-options';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldLabel, MultiSelectCombobox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {withErrorBoundary} from '../../error-boundary';
 

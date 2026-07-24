@@ -241,9 +241,8 @@ export function createDatabaseAutomationsRepository({
                     member_name: options.memberName,
                     automation_action_revision_id: options.automationActionRevisionId,
                     ...(options.mailgunMessageId ? {mailgun_message_id: options.mailgunMessageId} : {}),
+                    track_clicks: options.trackClicks,
                     track_opens: options.trackOpens,
-                    // TODO(NY-1491) Snapshot the email_track_clicks setting when creating recipients.
-                    track_clicks: false,
                     created_at: now,
                     updated_at: now
                 });

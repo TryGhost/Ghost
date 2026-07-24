@@ -6,7 +6,7 @@ import trackEvent from '../../../../utils/analytics';
 import {Button} from '@tryghost/shade/components';
 import {type EditOrAddRecommendation, useAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -73,7 +73,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         </Button>
     );
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             // Closed without saving: reset route
             updateRoute('recommendations');
@@ -113,7 +113,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         }}
     >
         <RecommendationDescriptionForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={false} updateForm={updateForm}/>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(AddRecommendationModalConfirm);

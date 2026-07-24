@@ -1,6 +1,6 @@
 const downsize = require('downsize-cjs');
 const RSS = require('rss');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const {routerManager} = require('../routing');
 
 const generateTags = function generateTags(data) {

@@ -1,0 +1,20 @@
+"@tryghost/adapter-base-cache@0.2.0":
+  dir: packages/adapters/cache-base
+  intents:
+    - major-areas-fail
+    - upset-dogs-sort
+"@tryghost/adapter-base-scheduling@0.1.1":
+  dir: packages/adapters/scheduling-base
+  intents:
+    - major-areas-fail
+    - plain-singers-cheat
+"@tryghost/adapter-base-sso@0.1.1":
+  dir: packages/adapters/sso-base
+  intents:
+    - major-areas-fail
+    - plain-singers-cheat
+ghost-storage-base@3.0.0:
+  dir: packages/adapters/storage-base
+  intents:
+    - major-areas-fail
+    - storage-base-into-monorepo

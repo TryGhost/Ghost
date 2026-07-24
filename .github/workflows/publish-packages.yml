@@ -80,16 +80,15 @@ jobs:
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
 
-      # TODO: Check we can remove this once we update Node to v24
-      - name: Install v11 of NPM # We need this to install packages via OIDC.
-        run: npm install -g npm@11
-
       - name: Publish packages
         # Read as env by publish-packages.js — no shell interpolation of the
         # dispatch inputs (untrusted even on a manual workflow).
         env:
           PUBLISH_PACKAGE: ${{ inputs.package }}
           PUBLISH_DRY_RUN: ${{ inputs.dry_run }}
+          # Read-only, for the compare API call that asserts GITHUB_SHA is on
+          # main — the replacement for pnpm's own (unusable here) branch check.
+          GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/publish-packages.js
 
   # Alert on-call if a publish fails. This publish used to be a job inside

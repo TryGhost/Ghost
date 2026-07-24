@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const getContextObject = require('./context-object.js');
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 const settingsCache = require('../../shared/settings-cache');
 
 function getOgImage(data) {

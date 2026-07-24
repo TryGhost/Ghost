@@ -17,7 +17,7 @@ function createImageSize(overrides = {}) {
     const {
         config = {},
         tpl = {},
-        storage = {},
+        imageStore = {},
         storageUtils = {isLocalImage: () => false},
         validator = {isURL: () => true},
         urlUtils = {},
@@ -31,7 +31,7 @@ function createImageSize(overrides = {}) {
             ...config
         },
         tpl,
-        storage,
+        imageStore,
         storageUtils,
         validator,
         urlUtils,
@@ -53,9 +53,7 @@ function createLocalUrlUtils(imageUrl, subdir = '') {
 
 function createFixtureStorage() {
     return {
-        getStorage: () => ({
-            read: obj => fs.promises.readFile(obj.path)
-        })
+        read: obj => fs.promises.readFile(obj.path)
     };
 }
 
@@ -296,10 +294,8 @@ describe('lib/image: image size', function () {
                 });
 
             const imageSize = createImageSize({
-                storage: {
-                    getStorage: () => ({
-                        read: obj => fs.promises.readFile(obj.path)
-                    })
+                imageStore: {
+                    read: obj => fs.promises.readFile(obj.path)
                 },
                 storageUtils: {
                     isLocalImage: () => true,
@@ -337,10 +333,8 @@ describe('lib/image: image size', function () {
             });
 
             const imageSize = createImageSize({
-                storage: {
-                    getStorage: () => ({
-                        read: storageReadSpy
-                    })
+                imageStore: {
+                    read: storageReadSpy
                 },
                 storageUtils: {
                     isLocalImage: imagePath => imagePath === localImageUrl,
@@ -559,7 +553,7 @@ describe('lib/image: image size', function () {
             };
 
             const imageSize = createImageSize({
-                storage: createFixtureStorage(),
+                imageStore: createFixtureStorage(),
                 storageUtils: createFixtureStorageUtils(),
                 urlUtils: createLocalUrlUtils(expectedImageObject.url),
                 request: () => Promise.reject(new Error('request should not be used'))
@@ -578,7 +572,7 @@ describe('lib/image: image size', function () {
             };
 
             const imageSize = createImageSize({
-                storage: createFixtureStorage(),
+                imageStore: createFixtureStorage(),
                 storageUtils: createFixtureStorageUtils(),
                 urlUtils: createLocalUrlUtils(expectedImageObject.url, '/blog'),
                 request: () => Promise.reject(new Error('request should not be used'))
@@ -597,7 +591,7 @@ describe('lib/image: image size', function () {
             };
 
             const imageSize = createImageSize({
-                storage: createFixtureStorage(),
+                imageStore: createFixtureStorage(),
                 storageUtils: createFixtureStorageUtils(),
                 urlUtils: createLocalUrlUtils(expectedImageObject.url),
                 request: () => Promise.reject(new Error('request should not be used'))
@@ -616,7 +610,7 @@ describe('lib/image: image size', function () {
             };
 
             const imageSize = createImageSize({
-                storage: createFixtureStorage(),
+                imageStore: createFixtureStorage(),
                 storageUtils: createFixtureStorageUtils(),
                 urlUtils: createLocalUrlUtils(expectedImageObject.url),
                 request: () => Promise.reject(new Error('request should not be used'))
@@ -629,12 +623,10 @@ describe('lib/image: image size', function () {
         it('[failure] returns error if storage adapter errors', async function () {
             const url = '/content/images/not-existing-image.png';
 
-            const imageSize = createImageSize({storage: {
-                getStorage: () => ({
-                    read: () => {
-                        return Promise.reject(new errors.NotFoundError());
-                    }
-                })
+            const imageSize = createImageSize({imageStore: {
+                read: () => {
+                    return Promise.reject(new errors.NotFoundError());
+                }
             }, storageUtils: createFixtureStorageUtils(), urlUtils: createLocalUrlUtils('http://myblog.com/content/images/not-existing-image.png'), request: () => Promise.reject(new Error('request should not be used'))});
 
             await assert.rejects(async () => {
@@ -650,9 +642,8 @@ describe('lib/image: image size', function () {
                 siteUrl: 'http://myblog.com/'
             });
 
-            const imageSize = createImageSize({storage: {
-                getStorage: () => imageStorage
-            }, storageUtils: {
+            const imageSize = createImageSize({imageStore: imageStorage
+            , storageUtils: {
                 isLocalImage: () => true,
                 getLocalImagesStoragePath: imageUrl => imageUrl.replace('http://myblog.com/content/images', '')
             }, validator: {}, urlUtils: {
@@ -671,12 +662,10 @@ describe('lib/image: image size', function () {
         it('[failure] returns error if `image-size` module throws error', async function () {
             const url = '/content/images/malformed.svg';
 
-            const imageSize = createImageSize({storage: {
-                getStorage: () => ({
-                    read: () => {
-                        return Promise.resolve(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg viewBox="0 0 100 100>/svg>'));
-                    }
-                })
+            const imageSize = createImageSize({imageStore: {
+                read: () => {
+                    return Promise.resolve(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg viewBox="0 0 100 100>/svg>'));
+                }
             }, storageUtils: {
                 isLocalImage: () => true,
                 getLocalImagesStoragePath: () => ''

@@ -1,5 +1,5 @@
 import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
-import {SettingGroup, SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {SettingGroup, SettingGroupContent} from '@tryghost/shade/patterns';
 import {type User, hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -93,7 +93,7 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
 
 const EmailNotificationsTab: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     return (
-        <SettingGroup border={false}>
+        <SettingGroup variant='plain'>
             <EmailNotificationsInputs setUserData={setUserData} user={user} />
         </SettingGroup>
     );

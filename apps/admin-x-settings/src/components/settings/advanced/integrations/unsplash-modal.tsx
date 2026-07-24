@@ -1,9 +1,9 @@
 import BrandIcon from '../../../icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {Field, FieldContent, FieldDescription, FieldLabel, Switch} from '@tryghost/shade/components';
-import {Form, Modal} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -45,7 +45,7 @@ const UnsplashModal = NiceModal.create(() => {
     const isDirty = !(enabled === unsplashEnabled);
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('integrations');
             }}
@@ -63,7 +63,7 @@ const UnsplashModal = NiceModal.create(() => {
                 title='Unsplash'
             />
             <div className='mt-7'>
-                <Form marginBottom={false} grouped>
+                <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7'>
                     <Field orientation='horizontal'>
                         <FieldContent>
                             <FieldLabel htmlFor='unsplash-enabled'>Enable Unsplash</FieldLabel>
@@ -71,9 +71,9 @@ const UnsplashModal = NiceModal.create(() => {
                         </FieldContent>
                         <Switch checked={enabled} id='unsplash-enabled' onCheckedChange={setEnabled} />
                     </Field>
-                </Form>
+                </FieldGroup>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

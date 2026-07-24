@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../../utils');
 const urlService = require('../../../../../../../../core/server/services/url');
-const urlUtils = require('../../../../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../../../../core/shared/url-utils').default;
 const urlUtil = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/url');
 
 describe('Unit: endpoints/utils/serializers/output/utils/url', function () {

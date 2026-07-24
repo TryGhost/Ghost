@@ -2,7 +2,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import trackEvent from '../../../../utils/analytics';
 import {type ConfigResponseType, configDataType} from '@tryghost/admin-x-framework/api/config';
-import {Modal} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {Switch} from '@tryghost/shade/components';
 import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -55,7 +55,7 @@ const FeatureToggleConfirmationModal = NiceModal.create<FeatureToggleConfirmatio
     };
 
     return (
-        <Modal
+        <SettingsModal
             backDropClick={false}
             buttonsDisabled={isRunning}
             cancelLabel='Cancel'
@@ -67,7 +67,7 @@ const FeatureToggleConfirmationModal = NiceModal.create<FeatureToggleConfirmatio
             onOk={handleConfirm}
         >
             <div className='py-4'>{prompt}</div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

@@ -1,5 +1,5 @@
 const urlService = require('../../../../../../services/url');
-const urlUtils = require('../../../../../../../shared/url-utils');
+const urlUtils = require('../../../../../../../shared/url-utils').default;
 const localUtils = require('../../../index');
 
 const forPost = (id, attrs, frame, type = 'posts') => {
