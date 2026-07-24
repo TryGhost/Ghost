@@ -79,9 +79,8 @@ const findUrlWithProvider = (url) => {
  */
 
 /**
- * @typedef {Object} IStorage
- * @prop {(feature: string) => Object} getStorage
- */
+ * @typedef {import('ghost-storage-base').StorageBase} IImageStore
+ *
 
 /**
  * @typedef {import('got').GotRequestFunction} IExternalRequest
@@ -98,12 +97,12 @@ class OEmbedService {
      *
      * @param {Object} dependencies
      * @param {IConfig} dependencies.config
-     * @param {IStorage} dependencies.storage
+     * @param {IImageStore} dependencies.imageStore
      * @param {IExternalRequest} dependencies.externalRequest
      */
-    constructor({config, externalRequest, storage}) {
+    constructor({config, externalRequest, imageStore}) {
         this.config = config;
-        this.storage = storage;
+        this.imageStore = imageStore;
 
         /** @type {IExternalRequest} */
         this.externalRequest = externalRequest;
@@ -177,18 +176,17 @@ class OEmbedService {
 
         // Fetch image buffer from the URL
         const imageBuffer = await this.fetchImageBuffer(imageUrl);
-        const store = this.storage.getStorage('images');
 
         // Extract file name from URL
         const fileName = path.basename(new URL(imageUrl).pathname);
         const ext = path.extname(fileName);
         const baseName = ext ? path.basename(fileName, ext) : fileName;
-        const name = store.getSanitizedFileName(baseName);
+        const name = this.imageStore.getSanitizedFileName(baseName);
 
         const uniqueFileName = `${name}-${crypto.randomUUID()}${ext}`;
         const targetPath = path.join(imageType, uniqueFileName);
 
-        return store.saveRaw(imageBuffer, targetPath);
+        return this.imageStore.saveRaw(imageBuffer, targetPath);
     }
 
     /**

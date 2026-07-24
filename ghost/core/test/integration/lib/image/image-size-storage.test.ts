@@ -51,8 +51,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: im
             ...overrides
         });
         // ImageSize asks the storage manager for the 'images' adapter.
-        const storage = {getStorage: () => s3};
-        return new ImageSize({config, storage, storageUtils, validator, urlUtils, request, probe});
+        return new ImageSize({config, imageStore: s3, storageUtils, validator, urlUtils, request, probe});
     };
 
     beforeAll(async function () {

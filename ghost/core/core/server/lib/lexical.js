@@ -4,7 +4,7 @@ const urlUtils = require('../../shared/url-utils');
 const config = require('../../shared/config');
 const labs = require('../../shared/labs');
 const settingsCache = require('../../shared/settings-cache');
-const storage = require('../adapters/storage');
+const adapterManager = require('../services/adapter-manager').default;
 
 let nodes;
 let lexicalHtmlRenderer;
@@ -50,7 +50,7 @@ function buildRenderOptions(userOptions) {
             // NOTE: the "saveRaw" check is smelly
             return imageTransform.canTransformFiles()
                 && imageTransform.shouldResizeFileExtension(ext)
-                && typeof storage.getStorage('images').saveRaw === 'function';
+                && typeof adapterManager.getAdapter('storage:images').saveRaw === 'function';
         },
         canTransformImageToFormat(format) {
             const imageTransform = require('@tryghost/image-transform');

@@ -10,11 +10,11 @@ const urlUtils = require('../../../core/shared/url-utils');
 const imageTransform = require('@tryghost/image-transform');
 const sinon = require('sinon');
 const {mockSystemTime} = require('../../utils/clock-utils');
-const storage = require('../../../core/server/adapters/storage');
 const {anyErrorId} = matchers;
 const {imageSize} = require('../../../core/server/lib/image');
 const configUtils = require('../../utils/config-utils');
 const logging = require('@tryghost/logging');
+const adapterManager = require('../../../core/server/services/adapter-manager').default;
 
 const images = [];
 let agent, frontendAgent, ghostServer;
@@ -344,7 +344,7 @@ describe('Images API', function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
 
         // Delay the first original file upload by 400ms to force race condition
-        const store = storage.getStorage('images');
+        const store = adapterManager.getAdapter('storage:images');
         const saveStub = sinon.stub(store, 'save');
         let calls = 0;
         saveStub.callsFake(async function (file) {
@@ -441,7 +441,7 @@ describe('Images API', function () {
     });
 
     it('Passes the content type to the storage adapter when uploading a GIF', async function () {
-        const store = storage.getStorage('images');
+        const store = adapterManager.getAdapter('storage:images');
         const saveSpy = sinon.spy(store, 'save');
 
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/loadingcat.gif');

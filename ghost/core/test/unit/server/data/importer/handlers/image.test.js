@@ -3,11 +3,11 @@ const sinon = require('sinon');
 const _ = require('lodash');
 
 const ImageHandler = require('../../../../../../core/server/data/importer/handlers/image');
-const storage = require('../../../../../../core/server/adapters/storage');
+const adapterManager = require('../../../../../../core/server/services/adapter-manager').default;
 const configUtils = require('../../../../../utils/config-utils');
 
 describe('ImageHandler', function () {
-    const store = storage.getStorage('images');
+    const store = adapterManager.getAdapter('storage:images');
 
     afterEach(async function () {
         sinon.restore();
@@ -47,10 +47,8 @@ describe('ImageHandler', function () {
         }];
 
         const storeSpy = sinon.spy(store, 'getUniqueFileName');
-        const storageSpy = sinon.spy(storage, 'getStorage');
 
         await ImageHandler.loadFile(_.clone(file));
-        sinon.assert.calledOnce(storageSpy);
         sinon.assert.calledOnce(storeSpy);
         assert.equal(storeSpy.firstCall.args[0].originalPath, 'test-image.jpeg');
         assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
@@ -66,10 +64,8 @@ describe('ImageHandler', function () {
         }];
 
         const storeSpy = sinon.spy(store, 'getUniqueFileName');
-        const storageSpy = sinon.spy(storage, 'getStorage');
 
         await ImageHandler.loadFile(_.clone(file));
-        sinon.assert.calledOnce(storageSpy);
         sinon.assert.calledOnce(storeSpy);
         assert.equal(storeSpy.firstCall.args[0].originalPath, 'photos/my-cat.jpeg');
         assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)photos$/);
@@ -85,10 +81,8 @@ describe('ImageHandler', function () {
         }];
 
         const storeSpy = sinon.spy(store, 'getUniqueFileName');
-        const storageSpy = sinon.spy(storage, 'getStorage');
 
         await ImageHandler.loadFile(_.clone(file));
-        sinon.assert.calledOnce(storageSpy);
         sinon.assert.calledOnce(storeSpy);
         assert.equal(storeSpy.firstCall.args[0].originalPath, 'content/images/my-cat.jpeg');
         assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
@@ -106,10 +100,8 @@ describe('ImageHandler', function () {
         }];
 
         const storeSpy = sinon.spy(store, 'getUniqueFileName');
-        const storageSpy = sinon.spy(storage, 'getStorage');
 
         await ImageHandler.loadFile(_.clone(file));
-        sinon.assert.calledOnce(storageSpy);
         sinon.assert.calledOnce(storeSpy);
         assert.equal(storeSpy.firstCall.args[0].originalPath, 'test-image.jpeg');
         assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
@@ -135,10 +127,8 @@ describe('ImageHandler', function () {
         }];
 
         const storeSpy = sinon.spy(store, 'getUniqueFileName');
-        const storageSpy = sinon.spy(storage, 'getStorage');
 
         await ImageHandler.loadFile(_.clone(files));
-        sinon.assert.calledOnce(storageSpy);
         sinon.assert.callCount(storeSpy, 4);
         assert.equal(storeSpy.firstCall.args[0].originalPath, 'testing.png');
         assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
