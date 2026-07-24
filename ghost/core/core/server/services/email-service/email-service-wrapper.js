@@ -4,6 +4,17 @@ const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
 
 class EmailServiceWrapper {
+    getEmailProvider({config, adapterManager, MailgunEmailProvider, mailgunClient, errorHandler}) {
+        if (config.get('adapters:email')) {
+            return adapterManager.getAdapter('email');
+        }
+
+        return new MailgunEmailProvider({
+            mailgunClient,
+            errorHandler
+        });
+    }
+
     getPostUrl(post) {
         const jsonModel = post.toJSON();
         url.forPost(post.id, jsonModel, {options: {}});
@@ -22,6 +33,7 @@ class EmailServiceWrapper {
         const BatchSendingService = require('./batch-sending-service');
         const EmailSegmenter = require('./email-segmenter');
         const MailgunEmailProvider = require('./mailgun-email-provider');
+        const adapterManager = require('../adapter-manager').default;
         const {DomainWarmingService} = require('./domain-warming-service');
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
@@ -68,7 +80,10 @@ class EmailServiceWrapper {
             i18n.changeLanguage(model.get('value'));
         });
 
-        const mailgunEmailProvider = new MailgunEmailProvider({
+        const emailProvider = this.getEmailProvider({
+            config: configService,
+            adapterManager,
+            MailgunEmailProvider,
             mailgunClient,
             errorHandler
         });
@@ -97,7 +112,7 @@ class EmailServiceWrapper {
         });
 
         const sendingService = new SendingService({
-            emailProvider: mailgunEmailProvider,
+            emailProvider,
             emailRenderer,
             emailAddressService: emailAddressService.service
         });
