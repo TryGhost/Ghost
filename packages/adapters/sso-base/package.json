@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/adapter-base-sso",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The adapter-base-sso package for Ghost.",
   "type": "module",
   "repository": {
@@ -37,9 +37,9 @@
     "@internal/cfg-vitest": "workspace:*",
     "@types/express": "catalog:",
     "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
