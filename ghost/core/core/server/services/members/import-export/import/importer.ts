@@ -1,5 +1,6 @@
 import moment from 'moment-timezone';
 import buildCompletionEmail from './completion-email';
+import {fieldValuesFromCsvRow, type CsvField} from '@tryghost/custom-field-types/csv';
 import type {Knex} from 'knex';
 import type {MemberImportRow, ImportErrorRow, ImportLabel, Label} from './row';
 import type {RowSpool, SpooledRows} from './spool';
@@ -109,6 +110,22 @@ export interface EmailNotifications {
     urlFor(type: string, data: unknown, absolute: boolean): string;
 }
 
+// A resolved, validated custom field write, opaque to the import: it is produced by
+// planWrite and handed straight back to applyWrite, so the import never inspects it.
+type CustomFieldPlan = unknown;
+
+// The custom field values a member row carries. `activeFields` are the definitions a
+// custom_fields.* column is read against -- empty when the feature is off, so no
+// column is ever routed. `planWrite` resolves and validates the values a row holds,
+// throwing on an invalid one so the row fails as a whole; `applyWrite` persists the
+// plan, taking the row's transaction so a value that fails to write rolls the member
+// back with it rather than committing onto a member that never landed.
+export interface CustomFieldsImport {
+    activeFields(): Promise<CsvField[]>;
+    planWrite(values: Record<string, unknown>, executor: Knex): Promise<CustomFieldPlan[]>;
+    applyWrite(memberId: string, plan: CustomFieldPlan[], executor: Knex): Promise<void>;
+}
+
 // The collaborators the import depends on, one per concern.
 interface ImporterDeps {
     knex: Knex;
@@ -118,6 +135,7 @@ interface ImporterDeps {
     tiers: TiersRepository;
     stripe: StripeSubscriptions;
     gifts: GiftService;
+    customFields: CustomFieldsImport;
     email: EmailNotifications;
     addJob: (job: {job: () => Promise<void>; offloaded: boolean; name: string}) => void;
     getTimezone: () => string;
@@ -196,12 +214,13 @@ class MembersCSVImporter {
     private _tiers: TiersRepository;
     private _stripe: StripeSubscriptions;
     private _gifts: GiftService;
+    private _customFields: CustomFieldsImport;
     private _email: EmailNotifications;
     private _addJob: (job: {job: () => Promise<void>; offloaded: boolean; name: string}) => void;
     private _getTimezone: () => string;
     private _getInlineThreshold: () => number;
 
-    constructor({knex, readRows, spool, members, tiers, stripe, gifts, email, addJob, getTimezone, getInlineThreshold}: ImporterDeps) {
+    constructor({knex, readRows, spool, members, tiers, stripe, gifts, customFields, email, addJob, getTimezone, getInlineThreshold}: ImporterDeps) {
         this._knex = knex;
         this._readRows = readRows;
         this._spool = spool;
@@ -209,6 +228,7 @@ class MembersCSVImporter {
         this._tiers = tiers;
         this._stripe = stripe;
         this._gifts = gifts;
+        this._customFields = customFields;
         this._email = email;
         this._addJob = addJob;
         this._getTimezone = getTimezone;
@@ -307,6 +327,11 @@ class MembersCSVImporter {
         const globalLabels: Label[] = [importLabel, ...extraLabels];
         const performStart = Date.now();
         const defaultTier = await this._tiers.getDefault();
+        // The active custom fields a custom_fields.* column is read against, resolved
+        // once for the whole import. Empty when the feature is off, so a carried-through
+        // column is routed nowhere and dropped -- the write boundary stays closed to
+        // everything but a column naming an active field.
+        const activeCustomFields = await this._customFields.activeFields();
         const tierIdCache = new Map();
         const archivableStripePriceIds: string[] = [];
         // Copied per row: the member model stamps ids and trims names onto these in
@@ -330,6 +355,14 @@ class MembersCSVImporter {
                         throw wrapGiftError(new errors.DataImportError({message: tpl(messages.giftCannotCombineWithComplimentary)}));
                     }
                 }
+
+                // Resolve and validate this row's custom field values before the member
+                // is touched, so an invalid value fails the whole row here rather than
+                // after the member has been written. The plan is applied on this row's
+                // transaction below, once the member exists to attach it to.
+                const customFieldPlan = activeCustomFields.length > 0
+                    ? await this._customFields.planWrite(fieldValuesFromCsvRow(activeCustomFields, row), trx)
+                    : [];
 
                 const createdAt = (row.created_at && moment(row.created_at).isAfter(moment())) ? moment().toDate() : row.created_at;
                 const memberValues: MemberImportValues = {
@@ -417,6 +450,11 @@ class MembersCSVImporter {
                         throw wrapGiftError(giftError);
                     }
                 }
+
+                // Persist the validated custom field values on this row's transaction,
+                // so they commit with the member and roll back with it. A no-op when the
+                // row named no values, or the feature is off.
+                await this._customFields.applyWrite(member.id, customFieldPlan, trx);
 
                 await trx.commit();
                 imported += 1;

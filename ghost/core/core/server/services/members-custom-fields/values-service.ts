@@ -67,12 +67,17 @@ export class CustomFieldValuesService {
      * The active fields for a set of keys, keyed by key, for resolving a write.
      * Scoped to the keys the caller is actually writing rather than every active
      * field, since a publisher may have defined many and an edit touches few.
+     *
+     * Reads on `executor` when the caller owns a transaction, so a planWrite nested
+     * inside an outer transaction uses that connection rather than checking out a
+     * second one -- which the single-connection SQLite pool cannot grant, deadlocking
+     * the import that opened the transaction.
      */
-    private async activeFieldsByKey(keys: string[]): Promise<Map<string, ActiveField>> {
+    private async activeFieldsByKey(keys: string[], executor: Knex): Promise<Map<string, ActiveField>> {
         if (keys.length === 0) {
             return new Map();
         }
-        const fields = await activeFields(this.knex)
+        const fields = await activeFields(executor)
             .whereIn('key', keys)
             .select('id', 'key', 'name', 'type');
         return new Map(fields.map(field => [field.key, field]));
@@ -166,8 +171,13 @@ export class CustomFieldValuesService {
      * writing nothing. Returned so a caller can validate before it commits to a
      * change it would have to unwind (the member edit validates up front), then
      * apply the same plan without re-resolving or re-validating.
+     *
+     * `executor` scopes the definition lookup to a transaction the caller already
+     * owns; the member importer plans each row inside its per-member transaction, so
+     * the read must run on that connection (see activeFieldsByKey). Omitted, the plan
+     * reads on the base connection, which is what the member edit does.
      */
-    async planWrite(input: unknown): Promise<PlannedWrite[]> {
+    async planWrite(input: unknown, executor: Knex = this.knex): Promise<PlannedWrite[]> {
         const values = this.parseValues(input);
         const keys = Object.keys(values);
 
@@ -183,7 +193,7 @@ export class CustomFieldValuesService {
             });
         }
 
-        const byKey = await this.activeFieldsByKey(keys);
+        const byKey = await this.activeFieldsByKey(keys, executor);
         const writes: PlannedWrite[] = [];
 
         for (const [key, raw] of Object.entries(values)) {
@@ -225,15 +235,22 @@ export class CustomFieldValuesService {
      * Apply a plan from `planWrite`.
      *
      * Merge, not replace: only the fields in the plan are touched, so a caller
-     * that doesn't know about a field can't erase it. The whole plan is applied in
-     * one transaction, so a mid-batch failure rolls the batch back.
+     * that doesn't know about a field can't erase it.
+     *
+     * `executor` lets a caller enlist the write in a transaction it already owns —
+     * the member importer runs each member and its custom field values in one
+     * per-member transaction, so a value that fails to write rolls the member back
+     * with it rather than committing a value onto a member that never landed. Passed
+     * a transaction, the plan runs on it and the caller decides when to commit;
+     * passed nothing, the write opens and commits its own transaction so a mid-batch
+     * failure still rolls this member's batch back.
      */
-    async applyWrite(memberId: string, writes: PlannedWrite[]): Promise<void> {
+    async applyWrite(memberId: string, writes: PlannedWrite[], executor?: Knex): Promise<void> {
         if (writes.length === 0) {
             return;
         }
 
-        await this.knex.transaction(async (trx) => {
+        const apply = async (trx: Knex) => {
             for (const {field, value} of writes) {
                 const target = {member_id: memberId, custom_field_id: field.id};
 
@@ -250,6 +267,12 @@ export class CustomFieldValuesService {
                     .onConflict(['member_id', 'custom_field_id'])
                     .merge({...valueColumns, updated_at: new Date()});
             }
-        });
+        };
+
+        if (executor) {
+            await apply(executor);
+        } else {
+            await this.knex.transaction(apply);
+        }
     }
 }

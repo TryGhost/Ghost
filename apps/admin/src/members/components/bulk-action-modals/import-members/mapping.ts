@@ -1,5 +1,11 @@
+type CustomFieldColumn = {label: string; value: string};
+
 type FieldMappingOptions = {
     importMemberTier?: boolean;
+    // The custom field CSV columns to offer as mapping targets, derived from the defined
+    // fields (see memberCustomFieldCsvColumns in admin-x-framework). Empty when the
+    // feature is off, so nothing custom-field-shaped appears.
+    customFieldColumns?: CustomFieldColumn[];
 };
 
 export const FIELD_MAPPINGS = [
@@ -28,17 +34,19 @@ const SUPPORTED_TYPES = [
     'gift_id'
 ];
 
-function getSupportedTypes({importMemberTier = false}: FieldMappingOptions = {}): string[] {
+function getSupportedTypes({importMemberTier = false, customFieldColumns = []}: FieldMappingOptions = {}): string[] {
     return [
         ...SUPPORTED_TYPES,
-        ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING.value] : [])
+        ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING.value] : []),
+        ...customFieldColumns.map(column => column.value)
     ];
 }
 
-export function getFieldMappings({importMemberTier = false}: FieldMappingOptions = {}) {
+export function getFieldMappings({importMemberTier = false, customFieldColumns = []}: FieldMappingOptions = {}) {
     return [
         ...FIELD_MAPPINGS,
-        ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING] : [])
+        ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING] : []),
+        ...customFieldColumns
     ];
 }
 
@@ -150,7 +158,14 @@ export function detectFieldTypes(data: Record<string, string>[], options: FieldM
     // we only checked sampled entries.
     if (data.length > 0) {
         for (const key of Object.keys(data[0])) {
-            if (!mapping.name && /name/i.test(key)) {
+            // A custom field column is a supported target and auto-maps to itself through
+            // the branch below. Hold it apart from the core-field heuristics so a column
+            // like custom_fields.shipping_address.first_name is never claimed as the
+            // member name -- true for any namespaced column, including one whose field
+            // has since been archived and so is not in the offered target list.
+            const isCustomFieldColumn = key.startsWith('custom_fields.');
+
+            if (!mapping.name && /name/i.test(key) && !isCustomFieldColumn) {
                 mapping.name = key;
                 continue;
             }
@@ -161,7 +176,9 @@ export function detectFieldTypes(data: Record<string, string>[], options: FieldM
         }
     }
 
-    // Detect value-based types (email) from sampled data
+    // Detect value-based types (email) from sampled data. A namespaced custom field
+    // column is skipped so an email-typed field (custom_fields.contact_email) is not
+    // bound to the member's email address and dropped.
     let i = 0;
     while (i <= sampledData.length - 1) {
         if (mapping.email) {
@@ -170,7 +187,7 @@ export function detectFieldTypes(data: Record<string, string>[], options: FieldM
 
         const entry = sampledData[i];
         for (const [key, value] of Object.entries(entry)) {
-            if (!mapping.email && value && EMAIL_REGEX.test(value)) {
+            if (!mapping.email && value && EMAIL_REGEX.test(value) && !key.startsWith('custom_fields.')) {
                 mapping.email = key;
             }
         }

@@ -88,4 +88,57 @@ describe('mapping helpers', () => {
 
         expect(mapping.gift_id).toBe('gift_id');
     });
+
+    const customFieldColumns = [
+        {label: 'Nickname', value: 'custom_fields.nickname'},
+        {label: 'Shipping Address (Line 1)', value: 'custom_fields.shipping_address.line1'},
+        {label: 'Shipping Address (First name)', value: 'custom_fields.shipping_address.first_name'}
+    ];
+
+    it('offers the custom field columns as mapping targets', () => {
+        const mappings = getFieldMappings({customFieldColumns});
+
+        expect(mappings).toContainEqual({label: 'Nickname', value: 'custom_fields.nickname'});
+        expect(mappings).toContainEqual({label: 'Shipping Address (Line 1)', value: 'custom_fields.shipping_address.line1'});
+    });
+
+    it('auto-detects a custom field column by its namespaced header', () => {
+        const mapping = detectFieldTypes([
+            {email: 'user@example.com', 'custom_fields.nickname': 'Bex'}
+        ], {customFieldColumns});
+
+        expect(mapping['custom_fields.nickname']).toBe('custom_fields.nickname');
+    });
+
+    // The /name/i heuristic must not claim a custom field sub-column that contains
+    // "name" as the member name -- it is auto-mapped to its own field instead.
+    it('does not map a name-like custom field column to the member name', () => {
+        const mapping = detectFieldTypes([
+            {email: 'user@example.com', 'custom_fields.shipping_address.first_name': 'Bex'}
+        ], {customFieldColumns});
+
+        expect(mapping.name).toBeUndefined();
+        expect(mapping['custom_fields.shipping_address.first_name']).toBe('custom_fields.shipping_address.first_name');
+    });
+
+    // Even a namespaced column with no offered target (its field archived after export,
+    // or a hand-built file) must not be claimed as the member name.
+    it('does not map a name-like namespaced column that has no offered target', () => {
+        const mapping = detectFieldTypes([
+            {email: 'user@example.com', 'custom_fields.former_field.last_name': 'Bex'}
+        ]);
+
+        expect(mapping.name).toBeUndefined();
+    });
+
+    // An email-typed custom field must not be bound to the member email (and thereby
+    // dropped) just because its values look like email addresses.
+    it('does not bind an email-valued custom field column to the member email', () => {
+        const mapping = detectFieldTypes([
+            {'custom_fields.contact_email': 'contact@example.com', email: 'member@example.com'}
+        ], {customFieldColumns: [{label: 'Contact email', value: 'custom_fields.contact_email'}]});
+
+        expect(mapping.email).toBe('email');
+        expect(mapping['custom_fields.contact_email']).toBe('custom_fields.contact_email');
+    });
 });

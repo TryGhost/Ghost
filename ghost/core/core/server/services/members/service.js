@@ -47,6 +47,10 @@ let membersApi;
 let verificationTrigger;
 
 const buildImporterDeps = ({stripeAPIService}) => {
+    // Required here rather than statically: the importer needs the custom fields
+    // services, which boot builds before this one -- the same reason the exporter
+    // reaches for them below.
+    const customFields = require('../members-custom-fields');
     return {
         getTimezone: () => settingsCache.get('timezone'),
         // A getter rather than a value because the threshold is an operator
@@ -81,7 +85,11 @@ const buildImporterDeps = ({stripeAPIService}) => {
         knex: db.knex,
         urlFor: urlUtils.urlFor.bind(urlUtils),
         stripeAPIService,
-        productRepository: membersApi.productRepository
+        productRepository: membersApi.productRepository,
+        customFields: {
+            definitions: customFields.definitions,
+            values: customFields.values
+        }
     };
 };
 

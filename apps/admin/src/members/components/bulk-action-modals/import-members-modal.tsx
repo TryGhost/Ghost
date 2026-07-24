@@ -7,9 +7,11 @@ import {buildImportResponse} from './import-members/upload';
 import {cn} from '@tryghost/shade/utils';
 import {createInitialImportState, importReducer} from './import-members/reducer';
 import {isImportMembersCompleteResponse, useImportMembers} from '@tryghost/admin-x-framework/api/members';
+import {memberCustomFieldCsvColumns, useBrowseMemberCustomFields} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {parseCSV} from './import-members/csv';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useCallback, useEffect, useMemo, useReducer, useRef} from 'react';
+import {useFeatureFlag} from '@/hooks/use-feature-flag';
 import {useLabelPicker} from '@/members/hooks/use-label-picker';
 
 interface ImportMembersModalProps {
@@ -30,7 +32,20 @@ export function ImportMembersModal({
     const {data: configData} = useBrowseConfig();
     const {mutateAsync: importMembers} = useImportMembers();
     const importMemberTier = configData?.config?.labs?.importMemberTier === true;
-    const fieldMappings = useMemo(() => getFieldMappings({importMemberTier}), [importMemberTier]);
+
+    // Defined custom fields become mapping targets so their columns can be pointed at
+    // the fields they belong to. Fetched only when the feature is on; the browse hides
+    // archived fields, so only active fields (which the importer writes to) are offered.
+    const customFieldsEnabled = useFeatureFlag('membersCustomFields');
+    const {data: customFieldsData} = useBrowseMemberCustomFields({enabled: customFieldsEnabled});
+    const customFieldColumns = useMemo(
+        () => memberCustomFieldCsvColumns(customFieldsData?.members_custom_fields ?? []),
+        [customFieldsData]
+    );
+    const fieldMappings = useMemo(
+        () => getFieldMappings({importMemberTier, customFieldColumns}),
+        [importMemberTier, customFieldColumns]
+    );
 
     const labelPicker = useLabelPicker({
         selectedSlugs: state.selectedLabelSlugs,
@@ -85,7 +100,7 @@ export function ImportMembersModal({
                 const data = parseCSV(text);
 
                 if (data.length > 0) {
-                    const detectedMapping = detectFieldTypes(data, {importMemberTier});
+                    const detectedMapping = detectFieldTypes(data, {importMemberTier, customFieldColumns});
                     const fieldMapping = new MembersFieldMapping(detectedMapping);
 
                     dispatch({
@@ -137,7 +152,7 @@ export function ImportMembersModal({
                 reader.abort();
             }
         };
-    }, [importMemberTier, state.file]);
+    }, [importMemberTier, customFieldColumns, state.file]);
 
     const validateFile = useCallback((file: File): boolean => {
         const match = /(?:\.([^.]+))?$/.exec(file.name);
