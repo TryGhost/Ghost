@@ -17,7 +17,7 @@ import {
 // storageUtils namespace (isLocalImage calls this.getLocalImagesStoragePath).
 const ImageSize = require('../../../../core/server/lib/image/image-size');
 const storageUtils = require('../../../../core/server/adapters/storage/utils');
-const urlUtils = require('../../../../core/shared/url-utils');
+const urlUtils = require('../../../../core/shared/url-utils').default;
 const config = require('../../../../core/shared/config');
 const validator = require('@tryghost/validator');
 const request = require('@tryghost/request');

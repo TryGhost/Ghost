@@ -1,5 +1,5 @@
 const request = require('@tryghost/request');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const storageUtils = require('../../adapters/storage/utils');
 const validator = require('@tryghost/validator');
 const config = require('../../../shared/config');

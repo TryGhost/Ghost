@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('services:url:lazy');
 const errors = require('@tryghost/errors');
-const localUtils = require('../../../shared/url-utils');
+const localUtils = require('../../../shared/url-utils').default;
 const {matchPermalink, toLookupParams} = require('./permalink-matcher');
 const {buildFilter, filterMatches, routerTypeOf} = require('./router-filter');
 const urlConfig = require('./config');

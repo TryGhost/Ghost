@@ -1,6 +1,6 @@
 const mime = require('mime-types');
 const request = require('../../lib/request-external');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const string = require('@tryghost/string');

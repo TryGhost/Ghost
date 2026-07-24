@@ -365,7 +365,7 @@ async function initServices({ghostServer} = {}) {
     const adapterManager = require('./server/services/adapter-manager').default;
     const {withErrorCapture} = require('./server/adapters/scheduling/error-capture');
 
-    const urlUtils = require('./shared/url-utils');
+    const urlUtils = require('./shared/url-utils').default;
     const internalKeys = require('./server/services/internal-keys').default;
 
     // Initialize things that other services depend on first.

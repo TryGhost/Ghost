@@ -1,7 +1,7 @@
 const cors = require('cors');
 const url = require('url');
 const os = require('os');
-const urlUtils = require('../../../../shared/url-utils');
+const urlUtils = require('../../../../shared/url-utils').default;
 const config = require('../../../../shared/config');
 
 let allowlist = [];

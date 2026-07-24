@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const path = require('path');
 const config = require('../../../../shared/config');
-const urlUtils = require('../../../../shared/url-utils');
+const urlUtils = require('../../../../shared/url-utils').default;
 const adapterManager = require('../../../services/adapter-manager').default;
 let ImageHandler;
 

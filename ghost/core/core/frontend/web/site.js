@@ -7,7 +7,7 @@ const {MemberPageViewEvent} = require('../../shared/events');
 // App requires
 const config = require('../../shared/config');
 const adapterManager = require('../../server/services/adapter-manager').default;
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 const sitemapHandler = require('../services/sitemap/handler');
 const serveFavicon = require('./routers/serve-favicon');
 const servePublicFiles = require('./routers/serve-public-file');
