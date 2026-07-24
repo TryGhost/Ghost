@@ -3,6 +3,7 @@ import {Button, SidebarTrigger, useSidebar} from "@tryghost/shade/components";
 import {LucideIcon} from "@tryghost/shade/utils";
 import { useIsActiveLink } from "./use-is-active-link";
 import { useAdminSidebarVisibility } from "@/layout/sidebar-visibility";
+import { useAdminTranslation } from "@/i18n/admin-i18n";
 
 const ICON_STROKE_WIDTH = 1.5;
 
@@ -33,6 +34,7 @@ function MobileNavBarButton({ to, activeOnSubpath = false, children, ...props }:
 }
 
 export function MobileNavBar() {
+    const {t} = useAdminTranslation();
     const { isMobile } = useSidebar();
     const sidebarVisible = useAdminSidebarVisibility();
 
@@ -49,25 +51,25 @@ export function MobileNavBar() {
                     to="analytics"
                 >
                     <LucideIcon.TrendingUp strokeWidth={ICON_STROKE_WIDTH} />
-                    <span className="sr-only">Analytics</span>
+                    <span className="sr-only">{t('analytics')}</span>
                 </MobileNavBarButton>
                 <MobileNavBarButton
                     activeOnSubpath
                     to="posts"
                 >
                     <LucideIcon.PenLine strokeWidth={ICON_STROKE_WIDTH} />
-                    <span className="sr-only">Posts</span>
+                    <span className="sr-only">{t('posts')}</span>
                 </MobileNavBarButton>
                 <MobileNavBarButton
                     activeOnSubpath
                     to="members"
                 >
                     <LucideIcon.Users strokeWidth={ICON_STROKE_WIDTH} />
-                    <span className="sr-only">Members</span>
+                    <span className="sr-only">{t('members')}</span>
                 </MobileNavBarButton>
                 <SidebarTrigger className="h-9 rounded-full px-8 hover:bg-transparent">
                     <LucideIcon.Ellipsis strokeWidth={ICON_STROKE_WIDTH} />
-                    <span className="sr-only">Toggle Sidebar</span>
+                    <span className="sr-only">{t('toggleSidebar')}</span>
                 </SidebarTrigger>
             </div>
         </div>
