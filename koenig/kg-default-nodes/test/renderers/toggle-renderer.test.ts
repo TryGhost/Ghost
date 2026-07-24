@@ -1,5 +1,27 @@
 import assert from 'node:assert/strict';
+import {JSDOM} from 'jsdom';
 import {assertPrettifiesTo, callRenderer, html} from '../test-utils/index.js';
+
+function assertCollapsedToggleIsAccessible(renderedHtml: string) {
+    const {document} = new JSDOM(renderedHtml).window;
+    const toggle = document.querySelector('.kg-toggle-card');
+    const details = toggle?.matches('details') ? toggle : toggle?.querySelector('details');
+
+    if (details) {
+        assert.equal(details.hasAttribute('open'), false);
+        assert.ok(details.querySelector('summary'));
+        return;
+    }
+
+    const button = toggle?.querySelector('button');
+    const content = toggle?.querySelector('.kg-toggle-content');
+
+    assert.equal(button?.getAttribute('aria-expanded'), 'false');
+    assert.equal(
+        content?.hasAttribute('hidden') || content?.getAttribute('aria-hidden') === 'true',
+        true
+    );
+}
 
 describe('renderers/toggle-renderer', function () {
     function getTestData(overrides = {}) {
@@ -28,9 +50,7 @@ describe('renderers/toggle-renderer', function () {
                 <div class="kg-card kg-toggle-card" data-kg-toggle-state="close">
                     <div class="kg-toggle-heading">
                         <h4 class="kg-toggle-heading-text">Toggle Heading</h4>
-                        <button
-                            class="kg-toggle-card-icon"
-                            aria-label="Expand toggle to read content">
+                        <button class="kg-toggle-card-icon" type="button" aria-expanded="false">
                             <svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                 <path
                                     class="cls-1"
@@ -38,9 +58,19 @@ describe('renderers/toggle-renderer', function () {
                             </svg>
                         </button>
                     </div>
-                    <div class="kg-toggle-content">Collapsible content</div>
+                    <div class="kg-toggle-content" aria-hidden="true" hidden="">Collapsible content</div>
                 </div>
             `);
+        });
+
+        it('renders a collapsed toggle that exposes state and hides content from assistive technology', function () {
+            const result = renderForWeb({
+                heading: 'Spoilers below',
+                content: 'Hidden spoiler content'
+            });
+
+            assert.ok(result.html);
+            assertCollapsedToggleIsAccessible(result.html);
         });
     });
 

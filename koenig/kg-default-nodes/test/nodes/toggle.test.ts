@@ -174,15 +174,28 @@ describe('ToggleNode', function () {
             <div class="kg-card kg-toggle-card" data-kg-toggle-state="close">
                 <div class="kg-toggle-heading">
                     <h4 class="kg-toggle-heading-text">Heading</h4>
-                    <button class="kg-toggle-card-icon" aria-label="Expand toggle to read content">
+                    <button class="kg-toggle-card-icon" type="button" aria-expanded="false">
                         <svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                             <path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path>
                         </svg>
                     </button>
                 </div>
-                <div class="kg-toggle-content">Content</div>
+                <div class="kg-toggle-content" aria-hidden="true" hidden="">Content</div>
             </div>
             `);
+        }));
+
+        it('keeps heading links outside the toggle button', editorTest(function () {
+            const payload = {
+                heading: '<a href="https://example.com">Linked heading</a>',
+                content: 'Content'
+            };
+            const toggleNode = $createToggleNode(payload);
+            const result = toggleNode.exportDOM(editor, exportOptions);
+            const element = result.element as HTMLElement;
+
+            expect(element.querySelector('.kg-toggle-heading-text a')?.textContent).toBe('Linked heading');
+            expect(!!element.querySelector('button .kg-toggle-heading-text a')).toBe(false);
         }));
 
         it('renders for email target', editorTest(function () {
