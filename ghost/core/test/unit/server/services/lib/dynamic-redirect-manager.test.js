@@ -216,6 +216,151 @@ describe('DynamicRedirectManager', function () {
                 assert.equal(status, 302);
                 assert.equal(location, '/?something=good');
             });
+
+            it('Substitutes a capture into a query parameter', function (){
+                const from = '^/profile/([^/]+)/?$';
+                const to = '/profile/?user=$1';
+
+                manager.addRedirect(from, to, {permanent: true});
+
+                req.url = '/profile/alice/';
+
+                manager.handleRequest(req, res, function next() {
+                    assert.fail('next should NOT have been called');
+                });
+
+                assert.equal(headers['Cache-Control'], 'public, max-age=100');
+                assert.equal(status, 301);
+                assert.equal(location, '/profile/?user=alice');
+            });
+
+            it('Substitutes a capture into a query parameter with a locale prefix', function (){
+                const from = '^/es/profile/([^/]+)/?$';
+                const to = '/es/profile/?user=$1';
+
+                manager.addRedirect(from, to, {permanent: true});
+
+                req.url = '/es/profile/alice/';
+
+                manager.handleRequest(req, res, function next() {
+                    assert.fail('next should NOT have been called');
+                });
+
+                assert.equal(status, 301);
+                assert.equal(location, '/es/profile/?user=alice');
+            });
+
+            it('Substitutes a capture from a nested path into a query parameter', function (){
+                const from = '^/festival/([^/]+)/attendees/?$';
+                const to = '/festival-attendees/?festival=$1';
+
+                manager.addRedirect(from, to, {permanent: true});
+
+                req.url = '/festival/my-festival/attendees/';
+
+                manager.handleRequest(req, res, function next() {
+                    assert.fail('next should NOT have been called');
+                });
+
+                assert.equal(status, 301);
+                assert.equal(location, '/festival-attendees/?festival=my-festival');
+            });
+
+            it('Merges incoming query params when substituting a capture into the query', function (){
+                const from = '^/profile/([^/]+)/?$';
+                const to = '/profile/?user=$1';
+
+                manager.addRedirect(from, to, {permanent: true});
+
+                req.url = '/profile/alice/?ref=xyz';
+
+                manager.handleRequest(req, res, function next() {
+                    assert.fail('next should NOT have been called');
+                });
+
+                assert.equal(status, 301);
+                assert.equal(location, '/profile/?ref=xyz&user=alice');
+            });
+
+            it('Encodes a "+" in a captured value so it stays a literal plus', function (){
+                const from = '^/profile/([^/]+)/?$';
+                const to = '/profile/?user=$1';
+
+                manager.addRedirect(from, to, {permanent: true});
+
+                req.url = '/profile/alice+admin/';
+
+                manager.handleRequest(req, res, function next() {
+                    assert.fail('next should NOT have been called');
+                });
+
+                assert.equal(status, 301);
+                assert.equal(location, '/profile/?user=alice%2Badmin');
+            });
+
+            it('Encodes an "&" in a captured value so it does not inject a parameter', function (){
+                const from = '^/profile/([^/]+)/?$';
+                const to = '/profile/?user=$1';
+
+                manager.addRedirect(from, to, {permanent: true});
+
+                req.url = '/profile/alice&admin=true/';
+
+                manager.handleRequest(req, res, function next() {
+                    assert.fail('next should NOT have been called');
+                });
+
+                assert.equal(status, 301);
+                assert.equal(location, '/profile/?user=alice%26admin%3Dtrue');
+            });
+
+            it('Does not double-encode a "%20" already present in the captured value', function (){
+                const from = '^/profile/([^/]+)/?$';
+                const to = '/profile/?user=$1';
+
+                manager.addRedirect(from, to, {permanent: true});
+
+                req.url = '/profile/alice%20smith/';
+
+                manager.handleRequest(req, res, function next() {
+                    assert.fail('next should NOT have been called');
+                });
+
+                assert.equal(status, 301);
+                assert.equal(location, '/profile/?user=alice%20smith');
+            });
+
+            it('Does not double-encode a "%2B" already present in the captured value', function (){
+                const from = '^/profile/([^/]+)/?$';
+                const to = '/profile/?user=$1';
+
+                manager.addRedirect(from, to, {permanent: true});
+
+                req.url = '/profile/alice%2Bsmith/';
+
+                manager.handleRequest(req, res, function next() {
+                    assert.fail('next should NOT have been called');
+                });
+
+                assert.equal(status, 301);
+                assert.equal(location, '/profile/?user=alice%2Bsmith');
+            });
+
+            it('Does not double-encode a "%26" already present in the captured value', function (){
+                const from = '^/profile/([^/]+)/?$';
+                const to = '/profile/?user=$1';
+
+                manager.addRedirect(from, to, {permanent: true});
+
+                req.url = '/profile/alice%26smith/';
+
+                manager.handleRequest(req, res, function next() {
+                    assert.fail('next should NOT have been called');
+                });
+
+                assert.equal(status, 301);
+                assert.equal(location, '/profile/?user=alice%26smith');
+            });
         });
 
         describe('Case sensitivity', function () {
