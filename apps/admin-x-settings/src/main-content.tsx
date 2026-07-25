@@ -2,7 +2,7 @@ import ExitSettingsButton from './components/exit-settings-button';
 import Settings from './components/settings';
 import Sidebar from './components/sidebar';
 import Users from './components/settings/general/users';
-import {DirtyConfirmDialog, topLevelBackdropClasses, useDirtyConfirmation} from '@tryghost/shade/patterns';
+import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {type ReactNode, useEffect} from 'react';
 import {Text} from '@tryghost/shade/primitives';
 import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/users';
@@ -35,12 +35,10 @@ const MainContent: React.FC = () => {
         window.location.hash = escLocation;
     };
     const hasOpenModal = () => {
-        // Legacy admin-x-design-system modals render a dedicated backdrop element.
         if (document.getElementById('modal-backdrop')) {
             return true;
         }
 
-        // Newer Shade/Radix dialogs expose their open state via dialog roles.
         return Boolean(document.querySelector(OPEN_SHADE_MODAL_SELECTOR));
     };
 
@@ -94,7 +92,7 @@ const MainContent: React.FC = () => {
 
     return (
         <Page>
-            {loadingModal && <div className={`fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] tablet:h-[100vh] ${topLevelBackdropClasses}`} />}
+            {loadingModal && <div className='fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] bg-modal-backdrop backdrop-blur-[3px] tablet:h-[100vh]' />}
             <div className="fixed inset-x-0 top-0 z-[35] max-w-[calc(100%-16px)] flex-1 basis-[320px] overscroll-y-contain bg-white p-8 tablet:relative tablet:inset-x-auto tablet:top-auto tablet:h-full tablet:overflow-y-scroll tablet:bg-grey-50 tablet:py-0 dark:bg-grey-950 dark:tablet:bg-[#101114]" id="admin-x-settings-sidebar-scroller">
                 <div className="relative w-full">
                     <Sidebar />

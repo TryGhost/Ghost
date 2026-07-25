@@ -836,124 +836,6 @@ importers:
         specifier: 'catalog:'
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.9)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(typescript@7.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
 
-  apps/admin-x-design-system:
-    dependencies:
-      '@ebay/nice-modal-react':
-        specifier: 'catalog:'
-        version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@radix-ui/react-form':
-        specifier: 'catalog:'
-        version: 0.1.11(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@radix-ui/react-separator':
-        specifier: 'catalog:'
-        version: 1.1.11(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@radix-ui/react-tabs':
-        specifier: 'catalog:'
-        version: 1.1.16(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@radix-ui/react-tooltip':
-        specifier: 'catalog:'
-        version: 1.2.11(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@sentry/react':
-        specifier: 'catalog:'
-        version: 7.120.4(react@18.3.1)
-      '@tryghost/shade':
-        specifier: workspace:*
-        version: link:../shade
-      clsx:
-        specifier: 'catalog:'
-        version: 2.1.1
-    devDependencies:
-      '@internal/cfg-eslint-react':
-        specifier: workspace:*
-        version: link:../../configs/eslint-react
-      '@storybook/addon-docs':
-        specifier: 'catalog:'
-        version: 10.4.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@18.3.31)(prettier@3.9.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(clean-css@4.2.4)(cssnano@7.1.9(postcss@8.5.16))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.16)(uglify-js@3.19.3))
-      '@storybook/addon-links':
-        specifier: 'catalog:'
-        version: 10.4.6(@types/react@18.3.31)(react@18.3.1)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@18.3.31)(prettier@3.9.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
-      '@storybook/react-vite':
-        specifier: 'catalog:'
-        version: 10.4.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(esbuild@0.28.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@18.3.31)(prettier@3.9.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(clean-css@4.2.4)(cssnano@7.1.9(postcss@8.5.16))(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.16)(uglify-js@3.19.3))
-      '@tailwindcss/postcss':
-        specifier: 'catalog:'
-        version: 4.2.2
-      '@testing-library/react-hooks':
-        specifier: 8.0.1
-        version: 8.0.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/lodash-es':
-        specifier: 4.17.12
-        version: 4.17.12
-      '@types/react':
-        specifier: 'catalog:'
-        version: 18.3.31
-      '@types/react-dom':
-        specifier: 'catalog:'
-        version: 18.3.7(@types/react@18.3.31)
-      '@types/validator':
-        specifier: 'catalog:'
-        version: 13.15.10
-      '@typescript/native':
-        specifier: 'catalog:'
-        version: typescript@7.0.2
-      '@vitejs/plugin-react':
-        specifier: 'catalog:'
-        version: 6.0.3(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
-      autoprefixer:
-        specifier: 10.5.2
-        version: 10.5.2(postcss@8.5.16)
-      chai:
-        specifier: 'catalog:'
-        version: 4.5.0
-      eslint:
-        specifier: 'catalog:'
-        version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
-      glob:
-        specifier: 'catalog:'
-        version: 13.0.6
-      jsdom:
-        specifier: 'catalog:'
-        version: 29.1.1(@noble/hashes@1.8.0)
-      lodash-es:
-        specifier: 4.18.1
-        version: 4.18.1
-      postcss:
-        specifier: 'catalog:'
-        version: 8.5.16
-      postcss-import:
-        specifier: 16.1.1
-        version: 16.1.1(postcss@8.5.16)
-      react:
-        specifier: 'catalog:'
-        version: 18.3.1
-      react-dom:
-        specifier: 'catalog:'
-        version: 18.3.1(react@18.3.1)
-      sinon:
-        specifier: 'catalog:'
-        version: 22.0.0
-      storybook:
-        specifier: 'catalog:'
-        version: 10.4.6(@testing-library/dom@10.4.1)(@types/react@18.3.31)(prettier@3.9.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      tailwindcss:
-        specifier: 'catalog:'
-        version: 4.2.2
-      typescript:
-        specifier: 'catalog:'
-        version: '@typescript/typescript6@6.0.2'
-      validator:
-        specifier: 'catalog:'
-        version: 13.12.0
-      vite:
-        specifier: 'catalog:'
-        version: 8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)
-      vite-plugin-svgr:
-        specifier: 'catalog:'
-        version: 4.5.0(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
-      vitest:
-        specifier: 'catalog:'
-        version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.9)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
-
   apps/admin-x-framework:
     dependencies:
       '@ebay/nice-modal-react':
@@ -1147,9 +1029,6 @@ importers:
       '@testing-library/react':
         specifier: 'catalog:'
         version: 14.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@tryghost/admin-x-design-system':
-        specifier: workspace:*
-        version: link:../admin-x-design-system
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
@@ -8921,22 +8800,6 @@ packages:
   '@testing-library/jest-dom@6.9.1':
     resolution: {integrity: sha512-zIcONa+hVtVSSep9UT3jZ5rizo2BsxgyDYU7WFD5eICBE7no3881HGeb/QkGfsJs6JTkY1aQhT7rIPC7e+0nnA==}
     engines: {node: '>=14', npm: '>=6', yarn: '>=1'}
-
-  '@testing-library/react-hooks@8.0.1':
-    resolution: {integrity: sha512-Aqhl2IVmLt8IovEVarNDFuJDVWVvhnr9/GCU6UUnrYXwgDFF9h2L2o2P9KBni1AST5sT6riAyoukFLyjQUgD/g==}
-    engines: {node: '>=12'}
-    peerDependencies:
-      '@types/react': ^16.9.0 || ^17.0.0
-      react: ^16.9.0 || ^17.0.0
-      react-dom: ^16.9.0 || ^17.0.0
-      react-test-renderer: ^16.9.0 || ^17.0.0
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-      react-dom:
-        optional: true
-      react-test-renderer:
-        optional: true
 
   '@testing-library/react@12.1.5':
     resolution: {integrity: sha512-OfTXCJUFgjd/digLUuPxa0+/3ZxsQmE7ub9kcbW/wi96Bh3o/p5vrETcBGfP17NWPGqeYYl5LTRpwyGoMC4ysg==}
@@ -28206,15 +28069,6 @@ snapshots:
       dom-accessibility-api: 0.6.3
       picocolors: 1.1.1
       redent: 3.0.0
-
-  '@testing-library/react-hooks@8.0.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      '@babel/runtime': 7.29.7
-      react: 18.3.1
-      react-error-boundary: 3.1.4(react@18.3.1)
-    optionalDependencies:
-      '@types/react': 18.3.31
-      react-dom: 18.3.1(react@18.3.1)
 
   '@testing-library/react@12.1.5(@types/react@17.0.93)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:

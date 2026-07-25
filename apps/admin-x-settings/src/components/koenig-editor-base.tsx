@@ -1,11 +1,9 @@
 import * as Sentry from '@sentry/react';
 import ErrorBoundary from './error-boundary';
 import React, {Suspense, useCallback, useMemo} from 'react';
-import {useDesignSystem} from '@tryghost/admin-x-design-system';
-import {useFocusContext} from '@tryghost/shade/app';
+import {type FetchKoenigLexical, useFocusContext} from '@tryghost/shade/app';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FetchKoenigLexical = () => Promise<any>
+export type {FetchKoenigLexical};
 
 export type NodeType = 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES' | 'EMAIL_NODES' | 'EMAIL_EDITOR_NODES';
 
@@ -192,8 +190,13 @@ const KoenigEditorBase: React.FC<KoenigEditorBaseInternalProps> = ({
     loadingFallback,
     ...props
 }) => {
-    const {fetchKoenigLexical, darkMode} = useDesignSystem();
-    const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
+    const {fetchKoenigLexical, darkMode} = useFocusContext();
+    const editorResource = useMemo(() => {
+        if (!fetchKoenigLexical) {
+            throw new Error('Koenig Lexical loader is not available');
+        }
+        return loadKoenig(fetchKoenigLexical);
+    }, [fetchKoenigLexical]);
     const inheritClasses = inheritFontStyles ? '[&_*]:font-inherit! [&_*]:[font-size:inherit]!' : '';
 
     return (

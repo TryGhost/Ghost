@@ -1,15 +1,15 @@
 {
   "snapshot": {
-    "generatedAt": "2026-07-23T23:01:47.383Z",
-    "sha": "4cb987e33fe40fad85492202d0b5e96f0d131509",
-    "branch": "codex/admin-settings-shade-preview-modal"
+    "generatedAt": "2026-07-24T22:31:06.513Z",
+    "sha": "666691006b211b93ae7eb8b92fd3060173491c8a",
+    "branch": "codex/admin-settings-design-system-teardown"
   },
   "summary": {
     "adminReactFilesTotal": 707,
-    "adminReactFilesUsingShade": 377,
-    "shadeAdoptionPct": 53.3,
-    "uniqueShadeComponentsUsed": 303,
-    "adminXDsComponentsStillUsed": 12
+    "adminReactFilesUsingShade": 378,
+    "shadeAdoptionPct": 53.5,
+    "uniqueShadeComponentsUsed": 306,
+    "adminXDsComponentsStillUsed": 0
   },
   "apps": [
     {
@@ -1201,8 +1201,8 @@
     {
       "name": "admin-x-settings",
       "files": 254,
-      "shadeFiles": 150,
-      "adminXDsFiles": 8,
+      "shadeFiles": 151,
+      "adminXDsFiles": 0,
       "shadeComponents": [
         {
           "name": "Button",
@@ -1249,6 +1249,10 @@
           "count": 25
         },
         {
+          "name": "Text",
+          "count": 20
+        },
+        {
           "name": "Tabs",
           "count": 20
         },
@@ -1283,10 +1287,6 @@
         {
           "name": "SettingGroupContent",
           "count": 19
-        },
-        {
-          "name": "Text",
-          "count": 18
         },
         {
           "name": "Inline",
@@ -1333,12 +1333,20 @@
           "count": 11
         },
         {
+          "name": "Separator",
+          "count": 9
+        },
+        {
           "name": "ToggleGroup",
           "count": 9
         },
         {
           "name": "ToggleGroupItem",
           "count": 9
+        },
+        {
+          "name": "Stack",
+          "count": 8
         },
         {
           "name": "cn",
@@ -1373,10 +1381,6 @@
           "count": 8
         },
         {
-          "name": "Separator",
-          "count": 8
-        },
-        {
           "name": "MultiSelectCombobox",
           "count": 8
         },
@@ -1390,10 +1394,6 @@
         },
         {
           "name": "InputGroupInput",
-          "count": 7
-        },
-        {
-          "name": "Stack",
           "count": 7
         },
         {
@@ -1461,6 +1461,10 @@
           "count": 4
         },
         {
+          "name": "useFocusContext",
+          "count": 4
+        },
+        {
           "name": "Banner",
           "count": 4
         },
@@ -1481,7 +1485,7 @@
           "count": 3
         },
         {
-          "name": "useFocusContext",
+          "name": "Box",
           "count": 3
         },
         {
@@ -1553,7 +1557,7 @@
           "count": 2
         },
         {
-          "name": "Box",
+          "name": "PageHeader",
           "count": 2
         },
         {
@@ -1617,10 +1621,6 @@
           "count": 2
         },
         {
-          "name": "topLevelBackdropClasses",
-          "count": 1
-        },
-        {
           "name": "SettingGroupActions",
           "count": 1
         },
@@ -1642,6 +1642,14 @@
         },
         {
           "name": "Kbd",
+          "count": 1
+        },
+        {
+          "name": "SidebarMenu",
+          "count": 1
+        },
+        {
+          "name": "FetchKoenigLexical",
           "count": 1
         },
         {
@@ -1749,6 +1757,18 @@
           "count": 1
         },
         {
+          "name": "FacebookLogo",
+          "count": 1
+        },
+        {
+          "name": "GoogleLogo",
+          "count": 1
+        },
+        {
+          "name": "XLogo",
+          "count": 1
+        },
+        {
           "name": "FieldSeparator",
           "count": 1
         },
@@ -1785,56 +1805,7 @@
           "count": 1
         }
       ],
-      "adminXDsComponents": [
-        {
-          "name": "useDesignSystem",
-          "count": 2
-        },
-        {
-          "name": "PageHeader",
-          "count": 2
-        },
-        {
-          "name": "DesignSystemApp",
-          "count": 1
-        },
-        {
-          "name": "DesignSystemAppProps",
-          "count": 1
-        },
-        {
-          "name": "SettingNavItem",
-          "count": 1
-        },
-        {
-          "name": "SettingNavItemProps",
-          "count": 1
-        },
-        {
-          "name": "SettingNavSection",
-          "count": 1
-        },
-        {
-          "name": "SettingSection",
-          "count": 1
-        },
-        {
-          "name": "SettingSectionProps",
-          "count": 1
-        },
-        {
-          "name": "FacebookLogo",
-          "count": 1
-        },
-        {
-          "name": "GoogleLogo",
-          "count": 1
-        },
-        {
-          "name": "XLogo",
-          "count": 1
-        }
-      ]
+      "adminXDsComponents": []
     }
   ],
   "topShadeComponents": [
@@ -1903,6 +1874,10 @@
       "count": 27
     },
     {
+      "name": "Separator",
+      "count": 27
+    },
+    {
       "name": "TabsTrigger",
       "count": 27
     },
@@ -1911,64 +1886,11 @@
       "count": 26
     },
     {
-      "name": "Separator",
-      "count": 26
-    },
-    {
       "name": "Skeleton",
       "count": 26
     }
   ],
-  "adminXDsComponentsAggregate": [
-    {
-      "name": "useDesignSystem",
-      "count": 2
-    },
-    {
-      "name": "PageHeader",
-      "count": 2
-    },
-    {
-      "name": "DesignSystemApp",
-      "count": 1
-    },
-    {
-      "name": "DesignSystemAppProps",
-      "count": 1
-    },
-    {
-      "name": "SettingNavItem",
-      "count": 1
-    },
-    {
-      "name": "SettingNavItemProps",
-      "count": 1
-    },
-    {
-      "name": "SettingNavSection",
-      "count": 1
-    },
-    {
-      "name": "SettingSection",
-      "count": 1
-    },
-    {
-      "name": "SettingSectionProps",
-      "count": 1
-    },
-    {
-      "name": "FacebookLogo",
-      "count": 1
-    },
-    {
-      "name": "GoogleLogo",
-      "count": 1
-    },
-    {
-      "name": "XLogo",
-      "count": 1
-    }
-  ],
+  "adminXDsComponentsAggregate": [],
   "ember": {
     "hbsFiles": 193,
     "spiritUtilityFiles": 69,

@@ -2,8 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {TopLevelFrameworkProps} from '../providers/framework-provider';
 
-// Structurally matches admin-x-design-system's DesignSystemAppProps so apps can
-// type their designSystem prop against either package.
+// Shared standalone app props for design-system context.
 interface DesignSystemProps {
     darkMode: boolean;
     fetchKoenigLexical: () => Promise<unknown>;

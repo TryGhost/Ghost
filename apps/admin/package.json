@@ -98,7 +98,6 @@
                     "ghost-monorepo:docker:up",
                     "ghost-admin:dev",
                     "@tryghost/admin-x-framework:dev",
-                    "@tryghost/admin-x-design-system:dev",
                     "@tryghost/shade:dev"
                 ]
             },
@@ -132,7 +131,6 @@
                     "build",
                     {
                         "projects": [
-                            "@tryghost/admin-x-design-system",
                             "ghost-admin"
                         ],
                         "target": "build"
@@ -144,7 +142,6 @@
                     {
                         "projects": [
                             "@tryghost/admin-x-framework",
-                            "@tryghost/admin-x-design-system",
                             "@tryghost/shade"
                         ],
                         "target": "build"

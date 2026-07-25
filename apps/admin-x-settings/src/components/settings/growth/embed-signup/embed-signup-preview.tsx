@@ -2,11 +2,12 @@ import IframeBuffering from '../../../../utils/iframe-buffering';
 import React from 'react';
 
 type EmbedSignupPreviewProps = {
+    backgroundColor: string;
     html: string;
     style: string;
 };
 
-const EmbedSignupPreview: React.FC<EmbedSignupPreviewProps> = ({html, style}) => {
+const EmbedSignupPreview: React.FC<EmbedSignupPreviewProps> = ({backgroundColor, html, style}) => {
     const generateContentForEmbed = (iframe: HTMLIFrameElement) => {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
         if (!iframeDoc) {
@@ -16,7 +17,7 @@ const EmbedSignupPreview: React.FC<EmbedSignupPreviewProps> = ({html, style}) =>
         const docString = `
             <html>
                 <head>
-                    <style>body, html {padding: 0; margin: 0; overflow: hidden;}</style>
+                    <style>body, html {height: 100%; padding: 0; margin: 0; overflow: hidden; background: ${backgroundColor};}</style>
                     <style>${style}</style>
                 </head>
                 <body>${html}</body>

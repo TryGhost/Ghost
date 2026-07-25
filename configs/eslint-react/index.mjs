@@ -45,15 +45,11 @@ import {
  *   Vite-HMR rule that's meaningless without Vite's HMR runtime.
  * @property {boolean} [i18next=false]
  *   When true: apply eslint-plugin-i18next's flat/recommended preset.
- * @property {'plugin' | 'storiesBlock' | null} [storybook=null]
+ * @property {'plugin' | null} [storybook=null]
  *   - `'plugin'`: applies eslint-plugin-storybook's full flat/recommended
  *     ruleset (story-exports check, prefer-pascal-case, hierarchy-separator,
  *     no-redundant-story-name, etc.) — this is what you want for any workspace
  *     with a proper Storybook setup. Used by shade.
- *   - `'storiesBlock'`: a minimal escape hatch — adds just one rule override
- *     (`react-hooks/rules-of-hooks: 'off'`) scoped to `**\/*.stories.*` files,
- *     for workspaces that have Storybook stories but don't want the full
- *     storybook ruleset. Used by admin-x-design-system.
  *   - `null` (default): skip Storybook handling entirely.
  * @property {string} [tailwindCssPath]
  *   Absolute path to a Tailwind v4 CSS config. Omit to skip Tailwind. Setting
@@ -393,11 +389,6 @@ export function reactAppConfig(options = {}) {
                 'storybook/no-redundant-story-name': 'error',
                 'storybook/prefer-pascal-case': 'error'
             }
-        });
-    } else if (storybook === 'storiesBlock') {
-        storybookBlocks.push({
-            files: ['**/*.stories.{ts,tsx,js,jsx}'],
-            rules: {'react-hooks/rules-of-hooks': 'off'}
         });
     }
 
