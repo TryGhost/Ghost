@@ -168,7 +168,19 @@
         // knex 3.x, gated on publishing a knex-3 knex-migrator
         // (TryGhost/knex-migrator#86, unreleased), bumped in lockstep with core.
         // Ignore until we do that coordinated upgrade.
-        "knex"
+        "knex",
+        // Same PLA-78 pin, but Renovate treats the pnpm override key
+        // `knex-migrator>knex` as its own dependency name, so the plain "knex"
+        // ignore above doesn't match it (see #29092).
+        "knex-migrator>knex",
+
+        // https://github.com/TryGhost/Ghost/pull/29099
+        // The pnpm override `path-to-regexp@<0.1.13` exists only to force
+        // Express 4's transitive path-to-regexp to the ReDoS-patched 0.1.13.
+        // Express 4 pins path-to-regexp 0.1.x; 0.2.x+ changes routing
+        // semantics and breaks route matching, so this override must never
+        // leave the 0.1 line.
+        "path-to-regexp"
     ],
     "ignorePaths": [
         "test",
