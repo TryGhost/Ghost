@@ -32,6 +32,7 @@ const DEFAULT_CSV_HEADER_MAPPING = {
     name: 'name',
     note: 'note',
     subscribed_to_emails: 'subscribed',
+    email_disabled: 'email_disabled',
     created_at: 'created_at',
     complimentary_plan: 'complimentary_plan',
     stripe_customer_id: 'stripe_customer_id',
@@ -202,6 +203,11 @@ module.exports = class MembersCSVImporter {
                     // prepared file's comma-separated labels column and split in two.
                     labels: [...row.labels, ...cloneGlobalLabels()]
                 };
+                // Only apply when the CSV carried an explicit boolean — older exports
+                // omit the column, and we must not wipe an existing suppression.
+                if (typeof row.email_disabled === 'boolean') {
+                    memberValues.email_disabled = row.email_disabled;
+                }
                 const existingMember = await membersRepository.get({email: memberValues.email}, {
                     ...options,
                     withRelated: ['labels', 'newsletters']

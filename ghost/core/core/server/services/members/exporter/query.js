@@ -200,7 +200,7 @@ async function createExportStream(options, {definitions, values}) {
 
     // Create a query stream for members
     const membersQuery = knex('members')
-        .select('id', 'email', 'name', 'note', 'status', 'created_at');
+        .select('id', 'email', 'name', 'note', 'status', 'created_at', 'email_disabled');
     
     if (hasFilter) {
         membersQuery.whereIn('id', ids);

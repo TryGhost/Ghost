@@ -2975,7 +2975,7 @@ describe('Members API', function () {
                 'content-disposition': anyString
             });
 
-        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
+        assert.match(res.text, /id,email,name,note,subscribed_to_emails,email_disabled,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
 
         const csv = Papa.parse(res.text, {header: true});
         assertExists(csv.data.find(row => row.name === 'Mr Egg'));
@@ -2996,7 +2996,7 @@ describe('Members API', function () {
                 'content-disposition': anyString
             });
 
-        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
+        assert.match(res.text, /id,email,name,note,subscribed_to_emails,email_disabled,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
 
         const csv = Papa.parse(res.text, {header: true});
         assertExists(csv.data.find(row => row.name === 'Mr Egg'));

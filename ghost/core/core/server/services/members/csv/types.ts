@@ -24,6 +24,7 @@ export interface MemberCsvRow {
     note?: ParsedValue;
     subscribed?: boolean;
     subscribed_to_emails?: boolean;
+    email_disabled?: boolean;
     comped?: boolean;
     complimentary_plan?: boolean;
     stripe_customer_id?: ParsedValue;

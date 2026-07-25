@@ -10,6 +10,7 @@ const CORE_COLUMNS = [
     'name',
     'note',
     'subscribed_to_emails',
+    'email_disabled',
     'complimentary_plan',
     'stripe_customer_id',
     'created_at',

@@ -13,7 +13,7 @@ describe('unparse', function () {
 
         assert.ok(result);
 
-        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id\r\n,email@example.com,Sam Memberino,Early supporter,,,,,,,,`;
+        const expected = `id,email,name,note,subscribed_to_emails,email_disabled,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id\r\n,email@example.com,Sam Memberino,Early supporter,,,,,,,,,`;
         assert.equal(result, expected);
     });
 
@@ -75,6 +75,17 @@ describe('unparse', function () {
         const expected = `email,subscribed_to_emails\r\ndo-not-email-me@email.com,false`;
 
         assert.equal(result, expected);
+    });
+
+    it('includes email_disabled in default output', function () {
+        const json = [{
+            email: 'suppressed@example.com',
+            email_disabled: true
+        }];
+
+        const result = unparse(json, ['email', 'email_disabled']);
+
+        assert.equal(result, 'email,email_disabled\r\nsuppressed@example.com,true');
     });
 
     it('adds an error column to serialized CSV when present in columns and as a property', function () {
@@ -157,7 +168,7 @@ third-member-email@email.com,"banana, avocado"`;
         const result = unparse(json);
         assert.ok(result);
 
-        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id\r\n,email@example.com,"'=1+2",Early supporter,,,,,,,,`;
+        const expected = `id,email,name,note,subscribed_to_emails,email_disabled,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id\r\n,email@example.com,"'=1+2",Early supporter,,,,,,,,,`;
         assert.equal(result, expected);
     });
 
@@ -170,7 +181,7 @@ third-member-email@email.com,"banana, avocado"`;
 
         const result = unparse(json, undefined, {escapeFormulae: false});
 
-        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id\r\n,email@example.com,=1+2,-5,,,,,,,,`;
+        const expected = `id,email,name,note,subscribed_to_emails,email_disabled,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id\r\n,email@example.com,=1+2,-5,,,,,,,,,`;
         assert.equal(result, expected);
     });
 
@@ -184,7 +195,7 @@ third-member-email@email.com,"banana, avocado"`;
         const result = unparse(json);
         assert.ok(result);
 
-        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id\r\n,email@example.com,"'=1+2'"" ",Early supporter,,,,,,,,`;
+        const expected = `id,email,name,note,subscribed_to_emails,email_disabled,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id\r\n,email@example.com,"'=1+2'"" ",Early supporter,,,,,,,,,`;
         assert.equal(result, expected);
     });
 
@@ -195,7 +206,7 @@ third-member-email@email.com,"banana, avocado"`;
         }];
 
         const result = unparse(json);
-        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id\r\n,gift@example.com,,,,,,,,,,gift123`;
+        const expected = `id,email,name,note,subscribed_to_emails,email_disabled,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id\r\n,gift@example.com,,,,,,,,,,,gift123`;
         assert.equal(result, expected);
     });
 

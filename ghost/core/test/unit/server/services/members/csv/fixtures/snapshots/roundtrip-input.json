@@ -9,8 +9,20 @@
     "stripe_customer_id": "cus_abc123",
     "created_at": "2023-01-15T10:00:00.000Z",
     "deleted_at": null,
-    "labels": [{"name": "vip"}, {"name": "early-adopter"}],
-    "tiers": [{"name": "Gold"}]
+    "labels": [
+      {
+        "name": "vip"
+      },
+      {
+        "name": "early-adopter"
+      }
+    ],
+    "tiers": [
+      {
+        "name": "Gold"
+      }
+    ],
+    "email_disabled": false
   },
   {
     "id": "id-2",
@@ -23,7 +35,8 @@
     "created_at": "2023-06-20T14:30:00.000Z",
     "deleted_at": null,
     "labels": [],
-    "tiers": []
+    "tiers": [],
+    "email_disabled": false
   },
   {
     "id": "id-3",
@@ -35,7 +48,19 @@
     "stripe_customer_id": null,
     "created_at": "2024-01-01T00:00:00.000Z",
     "deleted_at": "2024-06-01T00:00:00.000Z",
-    "labels": [{"name": "churned"}],
-    "tiers": [{"name": "Silver"}, {"name": "Bronze"}]
+    "labels": [
+      {
+        "name": "churned"
+      }
+    ],
+    "tiers": [
+      {
+        "name": "Silver"
+      },
+      {
+        "name": "Bronze"
+      }
+    ],
+    "email_disabled": false
   }
 ]

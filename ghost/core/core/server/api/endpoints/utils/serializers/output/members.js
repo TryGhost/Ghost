@@ -55,6 +55,7 @@ function formatMemberForCSV(member) {
 
     // Convert subscribed boolean to string representation
     const subscribedToEmails = member.subscribed === true ? 'true' : 'false';
+    const emailDisabled = member.email_disabled === true ? 'true' : 'false';
 
     return {
         id: member.id,
@@ -62,6 +63,7 @@ function formatMemberForCSV(member) {
         name: member.name,
         note: member.note,
         subscribed_to_emails: subscribedToEmails,
+        email_disabled: emailDisabled,
         complimentary_plan: complimentaryPlan,
         stripe_customer_id: member.stripe_customer_id,
         created_at: member.created_at,

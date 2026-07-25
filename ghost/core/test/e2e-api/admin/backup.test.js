@@ -85,7 +85,7 @@ describe('Backup Integration', function () {
                         'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.members\.\d{4}-\d{2}-\d{2}\.csv"$/)
                     })
                     .expect(({text}) => {
-                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
+                        assert.match(text, /id,email,name,note,subscribed_to_emails,email_disabled,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
                     });
             });
         });
@@ -136,7 +136,7 @@ describe('Backup Integration', function () {
                         'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.members\.\d{4}-\d{2}-\d{2}\.csv"$/)
                     })
                     .expect(({text}) => {
-                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
+                        assert.match(text, /id,email,name,note,subscribed_to_emails,email_disabled,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
                     });
             });
         });
@@ -181,7 +181,7 @@ describe('Backup Integration', function () {
                         'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.members\.\d{4}-\d{2}-\d{2}\.csv"$/)
                     })
                     .expect(({text}) => {
-                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
+                        assert.match(text, /id,email,name,note,subscribed_to_emails,email_disabled,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
                     });
             });
         });
@@ -226,7 +226,7 @@ describe('Backup Integration', function () {
                         'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.members\.\d{4}-\d{2}-\d{2}\.csv"$/)
                     })
                     .expect(({text}) => {
-                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
+                        assert.match(text, /id,email,name,note,subscribed_to_emails,email_disabled,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
                     });
             });
         });
