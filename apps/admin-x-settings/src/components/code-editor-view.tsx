@@ -48,7 +48,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     const id = useId();
     const sizeRef = useRef<HTMLDivElement>(null);
     const [width, setWidth] = useState(100);
-    const [resolvedExtensions, setResolvedExtensions] = React.useState<Extension[] | null>(null);
+    const [resolvedExtensions, setResolvedExtensions] = React.useState<Extension[]>([]);
     const [basicSetup, setBasicSetup] = useState<BasicSetupOptions>({
         crosshairCursor: false
     });
@@ -65,8 +65,22 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     };
 
     useEffect(() => {
-        Promise.all(extensions).then(setResolvedExtensions);
+        let cancelled = false;
+
+        Promise.all(extensions).then((nextExtensions) => {
+            if (!cancelled) {
+                setResolvedExtensions(nextExtensions);
+            }
+        }, () => {
+            if (!cancelled) {
+                setResolvedExtensions([]);
+            }
+        });
         setBasicSetup(setup => ({setup, searchKeymap: false}));
+
+        return () => {
+            cancelled = true;
+        };
     }, [extensions]);
 
     useEffect(() => {
@@ -91,7 +105,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
 
     return <>
         <div ref={sizeRef} />
-        {resolvedExtensions && <div className={height === 'full' ? 'h-full' : ''} style={{width}}>
+        <div className={height === 'full' ? 'h-full' : ''} style={{width}}>
             <CodeMirror
                 ref={ref}
                 basicSetup={basicSetup}
@@ -107,7 +121,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
             />
             {title && <FieldLabel className='order-1' htmlFor={id}>{title}</FieldLabel>}
             {hint && <FieldDescription className={clsx('order-3 mt-1', error && 'text-destructive')}>{hint}</FieldDescription>}
-        </div>}
+        </div>
     </>;
 });
 
