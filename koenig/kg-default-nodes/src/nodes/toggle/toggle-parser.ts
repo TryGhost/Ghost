@@ -4,10 +4,10 @@ function conversionForToggleCard(ToggleNode: new (data: Record<string, unknown>)
     return {
         conversion(domNode: HTMLElement) {
             const headingNode = domNode.querySelector('.kg-toggle-heading-text');
-            const heading = headingNode?.textContent ?? '';
+            const heading = headingNode?.innerHTML ?? '';
 
             const contentNode = domNode.querySelector('.kg-toggle-content');
-            const content = contentNode?.textContent ?? '';
+            const content = contentNode?.innerHTML ?? '';
 
             const payload: Record<string, unknown> = {
                 heading,
