@@ -12,6 +12,7 @@ import NetworkIcon from "./icons/network-icon";
 import { NavMenuItem } from "./nav-menu-item";
 import { useIsActiveLink } from "./use-is-active-link";
 import { getAdminToolbarUrl } from "@/utils/admin-toolbar-url";
+import { useAdminTranslation } from "@/i18n/admin-i18n";
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
@@ -19,6 +20,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const networkEnabled = getSettingValue<boolean>(settings?.settings, 'social_web_enabled') ?? false;
     const site = useBrowseSite();
     const url = getAdminToolbarUrl(site.data?.site.url);
+    const {t} = useAdminTranslation();
 
 
     // The network app has its own notification state, so we don't want to show
@@ -39,14 +41,14 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     <NavMenuItem>
                         <NavMenuItem.Link to="analytics" activeOnSubpath>
                             <LucideIcon.TrendingUp />
-                            <NavMenuItem.Label>Analytics</NavMenuItem.Label>
+                            <NavMenuItem.Label>{t('analytics')}</NavMenuItem.Label>
                         </NavMenuItem.Link>
                     </NavMenuItem>
                     {networkEnabled && (
                         <NavMenuItem>
                             <NavMenuItem.Link to="network" isActive={isNetworkRouteActive || isActivitypubRouteActive}>
                                 <NetworkIcon />
-                                <NavMenuItem.Label>Network</NavMenuItem.Label>
+                                <NavMenuItem.Label>{t('network')}</NavMenuItem.Label>
                             </NavMenuItem.Link>
                             {showNetworkBadge && (
                                 <SidebarMenuBadge data-testid="network-notification-badge">{networkNotificationCount}</SidebarMenuBadge>
@@ -56,12 +58,12 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     <NavMenuItem className="group/viewsite relative">
                         <NavMenuItem.Link to="site">
                             <LucideIcon.AppWindow />
-                            <NavMenuItem.Label>View site</NavMenuItem.Label>
+                            <NavMenuItem.Label>{t('viewSite')}</NavMenuItem.Label>
                         </NavMenuItem.Link>
                         <a
                             href={url}
                             target="_blank"
-                            aria-label="View site in new tab"
+                            aria-label={t('viewSiteNewTab')}
                             rel="noopener noreferrer"
                             className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 ring-sidebar-ring outline-hidden transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:opacity-100 focus-visible:ring-2">
                                 <LucideIcon.ExternalLink size={16} />

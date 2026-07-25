@@ -13,32 +13,33 @@ import { UserMenuAvatar } from "./user-menu-avatar";
 import { UserMenuHeader } from "./user-menu-header";
 import { Link } from "@tryghost/admin-x-framework";
 import { getAdminToolbarUrl } from "@/utils/admin-toolbar-url";
+import { ADMIN_LOCALES, type AdminLocale, useAdminTranslation } from "@/i18n/admin-i18n";
 
 function UserMenuProfile() {
     const currentUser = useCurrentUser();
+    const {t} = useAdminTranslation();
 
     return (
         <UserMenuItem>
             <Link to={`/settings/staff/${currentUser.data?.slug}`}>
                 <LucideIcon.User />
-                <UserMenuItem.Label>Your profile</UserMenuItem.Label>
+                <UserMenuItem.Label>{t('yourProfile')}</UserMenuItem.Label>
             </Link>
         </UserMenuItem>
     );
 }
 
-const THEME_OPTIONS: Array<{value: ThemeMode; label: string; Icon: typeof LucideIcon.Moon}> = [
-    {value: 'dark', label: 'Dark', Icon: LucideIcon.Moon},
-    {value: 'light', label: 'Light', Icon: LucideIcon.Sun},
-    {value: 'system', label: 'System', Icon: LucideIcon.Monitor},
-];
-
-const THEME_LABELS = Object.fromEntries(
-    THEME_OPTIONS.map(({value, label}) => [value, label])
-) as Record<ThemeMode, string>;
-
 function UserMenuAppearance() {
     const {theme, setTheme, isSettingTheme} = useTheme();
+    const {t} = useAdminTranslation();
+    const themeOptions: Array<{value: ThemeMode; label: string; Icon: typeof LucideIcon.Moon}> = [
+        {value: 'dark', label: t('dark'), Icon: LucideIcon.Moon},
+        {value: 'light', label: t('light'), Icon: LucideIcon.Sun},
+        {value: 'system', label: t('system'), Icon: LucideIcon.Monitor},
+    ];
+    const themeLabels = Object.fromEntries(
+        themeOptions.map(({value, label}) => [value, label])
+    ) as Record<ThemeMode, string>;
 
     return (
         <DropdownMenuSub>
@@ -47,15 +48,15 @@ function UserMenuAppearance() {
                 data-test-nav="appearance"
             >
                 <LucideIcon.Palette />
-                <UserMenuItem.Label>Appearance</UserMenuItem.Label>
-                <span className="text-sm text-muted-foreground">{THEME_LABELS[theme]}</span>
+                <UserMenuItem.Label>{t('appearance')}</UserMenuItem.Label>
+                <span className="text-sm text-muted-foreground">{themeLabels[theme]}</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent alignOffset={-4} className="min-w-36">
-                {THEME_OPTIONS.map(({value, label, Icon}) => (
+                {themeOptions.map(({value, label, Icon}) => (
                     <DropdownMenuItem
                         key={value}
                         disabled={isSettingTheme}
-                        aria-label={`${label} appearance`}
+                        aria-label={`${label} ${t('appearance').toLowerCase()}`}
                         data-test-theme-option={value}
                         onSelect={() => {
                             void setTheme(value);
@@ -76,7 +77,39 @@ function UserMenuAppearance() {
     );
 }
 
+const LOCALE_LABELS: Record<AdminLocale, 'languageEnglish' | 'languageSwedish'> = {
+    en: 'languageEnglish',
+    sv: 'languageSwedish'
+};
+
+function UserMenuLanguage() {
+    const {locale, setLocale, t} = useAdminTranslation();
+
+    return (
+        <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="cursor-pointer gap-2 text-base [&>svg:last-child]:-ml-1.5 [&>svg:last-child]:size-3.5 [&>svg:last-child]:text-muted-foreground">
+                <LucideIcon.Languages />
+                <UserMenuItem.Label>{t('language')}</UserMenuItem.Label>
+                <span className="text-sm text-muted-foreground">{t(LOCALE_LABELS[locale])}</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent alignOffset={-4} className="min-w-36">
+                {ADMIN_LOCALES.map(option => (
+                    <DropdownMenuItem
+                        key={option}
+                        aria-label={t(LOCALE_LABELS[option])}
+                        onSelect={() => setLocale(option)}
+                    >
+                        <span className="flex-1">{t(LOCALE_LABELS[option])}</span>
+                        {locale === option && <LucideIcon.Check aria-hidden="true" className="text-muted-foreground" />}
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuSubContent>
+        </DropdownMenuSub>
+    );
+}
+
 function UserMenuSignOut() {
+    const {t} = useAdminTranslation();
     const handleSignOut = () => {
         const {apiRoot, adminRoot} = getGhostPaths();
         fetch(`${apiRoot}/session`, {
@@ -95,7 +128,7 @@ function UserMenuSignOut() {
             onSelect={handleSignOut}
         >
             <LucideIcon.LogOut />
-            <UserMenuItem.Label>Sign out</UserMenuItem.Label>
+            <UserMenuItem.Label>{t('signOut')}</UserMenuItem.Label>
         </UserMenuItem>
     );
 }
@@ -107,6 +140,7 @@ function UserMenu(props: UserMenuProps) {
     const currentUser = useCurrentUser();
     const { data: whatsNewData } = useWhatsNew();
     const { showUpgradeBanner } = useUpgradeStatus();
+    const {t} = useAdminTranslation();
 
     return (
         <DropdownMenu {...props}>
@@ -114,7 +148,7 @@ function UserMenu(props: UserMenuProps) {
                 <SidebarMenuButton
                     size="lg"
                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                    aria-label="User menu"
+                    aria-label={t('userMenu')}
                 >
                     <div className="relative">
                         <UserMenuAvatar />
@@ -123,7 +157,7 @@ function UserMenu(props: UserMenuProps) {
                                 <Indicator
                                     variant="success"
                                     size="sm"
-                                    label="New updates available"
+                                    label={t('whatsNew')}
                                     data-testid="whats-new-avatar-badge"
                                 />
                             </span>
@@ -158,13 +192,13 @@ function UserMenu(props: UserMenuProps) {
                     }}
                 >
                     <LucideIcon.Sparkles />
-                    <UserMenuItem.Label>What’s new?</UserMenuItem.Label>
+                    <UserMenuItem.Label>{t('whatsNew')}</UserMenuItem.Label>
                     {whatsNewData?.hasNew && (
                         <div className="flex flex-1 justify-end">
                             <Indicator
                                 variant="success"
                                 size="sm"
-                                label="New updates available"
+                                label={t('whatsNew')}
                                 data-testid="whats-new-menu-badge"
                                 />
                         </div>
@@ -179,10 +213,11 @@ function UserMenu(props: UserMenuProps) {
                         rel="noopener noreferrer"
                     >
                         <LucideIcon.Book />
-                        <UserMenuItem.Label>Resources & guides</UserMenuItem.Label>
+                        <UserMenuItem.Label>{t('resourcesAndGuides')}</UserMenuItem.Label>
                     </a>
                 </UserMenuItem>
                 <UserMenuAppearance />
+                <UserMenuLanguage />
                 <DropdownMenuSeparator />
                 <UserMenuSignOut />
             </DropdownMenuContent>
@@ -210,13 +245,14 @@ function ContributorUserMenu() {
     const currentUser = useCurrentUser();
     const site = useBrowseSite();
     const siteUrl = getAdminToolbarUrl(site.data?.site.url ?? "");
+    const {t} = useAdminTranslation();
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <button
                     className="flex items-center justify-center rounded-full border border-border bg-background p-0.5 shadow-lg transition-shadow hover:shadow-xl focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-muted"
-                    aria-label="Open user menu"
+                    aria-label={t('userMenu')}
                 >
                     <UserMenuAvatar className="h-11 w-11" />
                 </button>
@@ -237,18 +273,19 @@ function ContributorUserMenu() {
                 <UserMenuItem>
                     <Link to="/posts">
                         <LucideIcon.FileText />
-                        <UserMenuItem.Label>Posts</UserMenuItem.Label>
+                        <UserMenuItem.Label>{t('posts')}</UserMenuItem.Label>
                     </Link>
                 </UserMenuItem>
                 <UserMenuItem>
                     <a href={siteUrl} target="_blank" rel="noopener noreferrer">
                         <LucideIcon.ExternalLink />
-                        <UserMenuItem.Label>View site</UserMenuItem.Label>
+                        <UserMenuItem.Label>{t('viewSite')}</UserMenuItem.Label>
                     </a>
                 </UserMenuItem>
                 <DropdownMenuSeparator />
                 <UserMenuProfile />
                 <UserMenuAppearance />
+                <UserMenuLanguage />
                 <DropdownMenuSeparator />
                 <UserMenuSignOut />
             </DropdownMenuContent>
