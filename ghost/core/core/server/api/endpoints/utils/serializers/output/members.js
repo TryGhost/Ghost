@@ -55,7 +55,8 @@ function formatMemberForCSV(member) {
 
     // Convert subscribed boolean to string representation
     const subscribedToEmails = member.subscribed === true ? 'true' : 'false';
-    const emailDisabled = member.email_disabled === true ? 'true' : 'false';
+    // Raw Knex rows can return MySQL TINYINT as 0/1; treat any truthy value as suppressed.
+    const emailDisabled = member.email_disabled ? 'true' : 'false';
 
     return {
         id: member.id,

@@ -36,7 +36,7 @@
     "deleted_at": null,
     "labels": [],
     "tiers": [],
-    "email_disabled": false
+    "email_disabled": true
   },
   {
     "id": "id-3",
