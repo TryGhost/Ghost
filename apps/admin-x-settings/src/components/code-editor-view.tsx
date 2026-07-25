@@ -52,7 +52,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     const [basicSetup, setBasicSetup] = useState<BasicSetupOptions>({
         crosshairCursor: false
     });
-    const {setFocusState} = useFocusContext();
+    const {darkMode, setFocusState} = useFocusContext();
 
     const handleFocus: FocusEventHandler<HTMLDivElement> = (e) => {
         onFocus?.(e);
@@ -98,6 +98,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 className={styles}
                 extensions={resolvedExtensions}
                 height={height === 'full' ? '100%' : height}
+                theme={darkMode ? 'dark' : 'light'}
                 value={value}
                 onBlur={handleBlur}
                 onChange={onChange}
