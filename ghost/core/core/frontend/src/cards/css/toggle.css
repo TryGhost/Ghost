@@ -10,7 +10,17 @@
     padding: 1.2em;
 }
 
-.kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content{
+/* Native <details> cards (current renderer) — browser hides content when closed. */
+.kg-toggle-card summary.kg-toggle-heading {
+    list-style: none;
+}
+
+.kg-toggle-card summary.kg-toggle-heading::-webkit-details-marker {
+    display: none;
+}
+
+/* Legacy div-based cards still toggled via data-kg-toggle-state + toggle.js */
+.kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content {
     height: 0;
     overflow: hidden;
     transition: opacity .5s ease, top .35s ease;
@@ -25,10 +35,6 @@
     transition: opacity 1s ease, top .35s ease;
     top: 0;
     position: relative;
-}
-
-.kg-toggle-card[data-kg-toggle-state="close"] svg {
-    transform: unset;
 }
 
 .kg-toggle-heading {
@@ -74,6 +80,7 @@
     background: none;
     border: 0;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 .kg-toggle-heading svg {
@@ -90,6 +97,12 @@
     stroke-linejoin: round;
     stroke-width: 1.5;
     fill-rule: evenodd;
+}
+
+/* Closed chevron: native details without [open], or legacy data-kg-toggle-state=close */
+.kg-toggle-card:not([open]):not([data-kg-toggle-state]) .kg-toggle-heading svg,
+.kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-heading svg {
+    transform: unset;
 }
 
 .kg-toggle-card + .kg-toggle-card {
