@@ -173,9 +173,15 @@ export const routes: RouteObject[] = [
                 children: activityPubRoutes,
             },
             {
+                // Settings is a full-screen surface — hide the outer admin
+                // sidebar so Editors/Authors don't see a visible-but-dead nav
+                // (and so sidebar hooks like member-count don't keep firing).
                 path: `settings/*`,
                 lazy: lazyComponent(() => import("./settings/settings")),
-                handle: { allowInForceUpgrade: true } satisfies RouteHandle,
+                handle: {
+                    allowInForceUpgrade: true,
+                    hideAdminSidebar: true
+                } satisfies AdminRouteHandle,
             },
             {path: "/posts", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
             {path: "/pages", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
