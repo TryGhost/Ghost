@@ -55,7 +55,7 @@ const EmailPreviewModalContent = React.forwardRef<
                 {headerActions}
             </div>
         </div>
-        <div className="flex h-[clamp(0px,calc(100dvh-320px),82vh)] min-h-0 grow flex-col overflow-y-auto [scrollbar-gutter:stable]">
+        <div className="flex h-[clamp(0px,calc(100dvh-320px),82vh)] min-h-0 grow [scrollbar-gutter:stable] flex-col overflow-y-auto">
             {children}
         </div>
     </div>

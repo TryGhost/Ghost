@@ -67,8 +67,8 @@ catalog:
   '@storybook/addon-docs': 10.4.6
   '@storybook/addon-links': 10.4.6
   '@storybook/react-vite': 10.4.6
-  '@tailwindcss/postcss': 4.2.2
-  '@tailwindcss/vite': 4.2.2
+  '@tailwindcss/postcss': 4.3.3
+  '@tailwindcss/vite': 4.3.3
   '@tanstack/react-query': 5.101.2
   '@tanstack/react-virtual': 3.14.6
   '@testing-library/jest-dom': 6.9.1
@@ -154,7 +154,7 @@ catalog:
   sonner: 2.0.7
   storybook: 10.4.6
   supertest: 7.2.2
-  tailwindcss: 4.2.2
+  tailwindcss: 4.3.3
   temporal-polyfill: 0.3.2
   tldts: ^7.4.4
   tsx: 4.23.0
