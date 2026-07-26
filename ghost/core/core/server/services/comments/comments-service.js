@@ -381,9 +381,32 @@ class CommentsService {
         if (comment.get('parent_id')) {
             await this.emails.notifyParentCommentAuthor(comment, {type: 'parent'});
         }
-        if (comment.get('in_reply_to_id')) {
+        if (comment.get('in_reply_to_id') && !(await this.#isDuplicateReplyNotification(comment))) {
             await this.emails.notifyParentCommentAuthor(comment, {type: 'in_reply_to'});
         }
+    }
+
+    /**
+     * @private
+     * The same member can author both the thread's parent comment and the comment being
+     * replied to — the parent notification above already emails them about this reply, so
+     * the in_reply_to notification would be a second, identical email. Only a published
+     * parent comment counts, because the parent notification is not sent otherwise.
+     * https://github.com/TryGhost/Ghost/issues/29501
+     */
+    async #isDuplicateReplyNotification(comment) {
+        if (!comment.get('parent_id')) {
+            return false;
+        }
+
+        const [parentComment, inReplyToComment] = await Promise.all([
+            this.models.Comment.findOne({id: comment.get('parent_id')}),
+            this.models.Comment.findOne({id: comment.get('in_reply_to_id')})
+        ]);
+
+        return !!parentComment && !!inReplyToComment &&
+            parentComment.get('status') === 'published' &&
+            parentComment.get('member_id') === inReplyToComment.get('member_id');
     }
 
     async likeComment(commentId, member, options = {}) {
