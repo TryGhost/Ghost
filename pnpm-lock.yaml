@@ -330,6 +330,9 @@ catalogs:
     oxfmt:
       specifier: 0.60.0
       version: 0.60.0
+    picomatch:
+      specifier: 4.0.5
+      version: 4.0.5
     postcss:
       specifier: 8.5.16
       version: 8.5.16
@@ -526,6 +529,9 @@ importers:
       oxfmt:
         specifier: 'catalog:'
         version: 0.60.0
+      picomatch:
+        specifier: 'catalog:'
+        version: 4.0.5
       rimraf:
         specifier: 6.1.3
         version: 6.1.3
@@ -4087,7 +4093,7 @@ importers:
         specifier: 'catalog:'
         version: 4.3.0
       picomatch:
-        specifier: 4.0.5
+        specifier: 'catalog:'
         version: 4.0.5
       semver:
         specifier: 'catalog:'

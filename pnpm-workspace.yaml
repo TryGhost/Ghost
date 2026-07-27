@@ -145,6 +145,7 @@ catalog:
   msw: 2.14.6
   node-html-markdown: 2.0.0
   oxfmt: 0.60.0
+  picomatch: 4.0.5
   postcss: 8.5.16
   preact: ^10.29.2
   react: 18.3.1
