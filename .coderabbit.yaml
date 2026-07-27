@@ -85,8 +85,15 @@ reviews:
         database migrations (ghost/core/core/server/data/migrations/), anything in
         apps/ember-admin/, tool/config files, files under scripts/ or docker/, or
         generated/vendored code.
-        Do NOT ask authors to convert pre-existing JavaScript files that this PR merely
-        touches; incremental conversion of touched files is explicitly not required.
+        For pre-existing JavaScript files this PR modifies, conversion is NOT required
+        and must never be requested as a change. However, if the PR makes substantial
+        changes to such a file (rewriting logic, adding significant new functions —
+        not renames, small fixes, or mechanical edits), you may leave ONE gentle,
+        clearly-optional note for the whole PR observing that the file(s) being
+        reworked are good candidates for a TypeScript conversion in a follow-up.
+        Phrase it as a take-it-or-leave-it observation, never as a review finding or
+        blocker, and skip it entirely if the changes are minor or the file is in an
+        exempt area (migrations, apps/ember-admin/, scripts/, docker/, configs).
         If the change introduces or modifies a runtime boundary (parsing HTTP input,
         JSON, configuration, or external responses), suggest validating that data at the
         boundary, and note that new boundary code is a good candidate for TypeScript +
