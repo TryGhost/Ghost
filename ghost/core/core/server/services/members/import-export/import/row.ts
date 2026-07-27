@@ -15,8 +15,9 @@ const optionalCell = z.string()
     .transform(cell => (cell === '' || cell === 'undefined' ? undefined : cell))
     .optional();
 
-// Subscription and comp status are lenient in opposite directions: a member is
-// subscribed unless a cell explicitly reads 'false', but comped only when it reads 'true'.
+// Present cells are lenient in opposite directions: subscribed unless the cell reads
+// 'false', comped only when it reads 'true'. An absent column stays undefined (optional,
+// not defaulted), so a CSV lacking these columns leaves the member's state untouched.
 const isSubscribed = (cell: string): boolean => cell.toLowerCase() !== 'false';
 const isComplimentary = (cell: string): boolean => cell.toLowerCase() === 'true';
 
@@ -28,8 +29,8 @@ export const memberImportRowSchema = z.object({
     email: optionalCell,
     name: optionalCell,
     note: optionalCell,
-    subscribed: z.string().default('').transform(isSubscribed),
-    complimentary_plan: z.string().default('').transform(isComplimentary),
+    subscribed: z.string().transform(isSubscribed).optional(),
+    complimentary_plan: z.string().transform(isComplimentary).optional(),
     stripe_customer_id: optionalCell,
     created_at: optionalCell,
     import_tier: optionalCell,

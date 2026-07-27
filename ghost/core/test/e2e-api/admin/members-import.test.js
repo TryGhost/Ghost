@@ -100,17 +100,17 @@ describe('Members import', function () {
         assert.ok(labels.includes('label'), `expected 'label' in ${JSON.stringify(labels)}`);
     });
 
-    // A row that omits a trailing column parses to a missing cell. The value reported
-    // for that cell must match how a present-but-empty cell coerces: subscribed reads
-    // as true. Here the ragged row also fails (bad email), so the coerced value
-    // surfaces in the invalid list.
-    it('reports a missing subscribed cell on a ragged row as the coerced default', async function () {
+    // A ragged row that omits a trailing column parses to a missing cell, which is not
+    // the same as a present-but-empty cell: an absent subscribed stays untouched
+    // (undefined), not coerced to a default. Here the ragged row also fails (bad email),
+    // so that untouched value surfaces in the invalid list.
+    it('leaves an omitted subscribed cell on a ragged row untouched', async function () {
         const res = await upload('members-ragged-subscribed.csv');
 
         assert.equal(res.status, 201);
         assert.equal(res.body.meta.stats.imported, 1);
         assert.equal(res.body.meta.stats.invalid.length, 1);
-        assert.equal(res.body.meta.stats.invalid[0].subscribed, true);
+        assert.equal(res.body.meta.stats.invalid[0].subscribed, undefined);
     });
 
     // When two CSV columns map to the same member field, the last column in the row

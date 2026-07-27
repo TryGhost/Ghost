@@ -5,21 +5,27 @@ import {memberImportRowSchema} from '../../../../../../../core/server/services/m
 // fields. It keeps the import's long-standing lenient coercion rules exactly, so the
 // kernel reads precise types without casting.
 describe('member import row schema', function () {
-    it('coerces subscribed leniently: true unless the cell is literally false', function () {
+    it('coerces a present subscribed cell leniently: true unless it is literally false', function () {
         assert.equal(memberImportRowSchema.parse({subscribed: 'true'}).subscribed, true);
         assert.equal(memberImportRowSchema.parse({subscribed: 'false'}).subscribed, false);
         assert.equal(memberImportRowSchema.parse({subscribed: 'FALSE'}).subscribed, false);
-        assert.equal(memberImportRowSchema.parse({subscribed: ''}).subscribed, true);
         assert.equal(memberImportRowSchema.parse({subscribed: 'yes'}).subscribed, true);
-        assert.equal(memberImportRowSchema.parse({}).subscribed, true, 'an omitted subscribed defaults to true');
+        assert.equal(memberImportRowSchema.parse({subscribed: ''}).subscribed, true, 'an empty cell in a present column coerces to true');
     });
 
-    it('coerces complimentary_plan: false unless the cell is literally true', function () {
+    it('leaves subscribed undefined when the column is absent, so import does not touch subscription state', function () {
+        assert.equal(memberImportRowSchema.parse({}).subscribed, undefined);
+    });
+
+    it('coerces a present complimentary_plan cell: false unless it is literally true', function () {
         assert.equal(memberImportRowSchema.parse({complimentary_plan: 'true'}).complimentary_plan, true);
         assert.equal(memberImportRowSchema.parse({complimentary_plan: 'false'}).complimentary_plan, false);
         assert.equal(memberImportRowSchema.parse({complimentary_plan: 'yes'}).complimentary_plan, false);
-        assert.equal(memberImportRowSchema.parse({complimentary_plan: ''}).complimentary_plan, false);
-        assert.equal(memberImportRowSchema.parse({}).complimentary_plan, false, 'an omitted complimentary_plan defaults to false');
+        assert.equal(memberImportRowSchema.parse({complimentary_plan: ''}).complimentary_plan, false, 'an empty cell in a present column coerces to false');
+    });
+
+    it('leaves complimentary_plan undefined when the column is absent', function () {
+        assert.equal(memberImportRowSchema.parse({}).complimentary_plan, undefined);
     });
 
     it('splits the labels cell into label objects', function () {
