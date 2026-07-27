@@ -3562,6 +3562,9 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.31)
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
       '@uiw/codemirror-extensions-basic-setup':
         specifier: 'catalog:'
         version: 4.25.11(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.10.4)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/state@6.7.1)(@codemirror/view@6.43.6)
