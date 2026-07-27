@@ -1,3 +1,4 @@
+import {Fragment} from "react";
 import {Banner, Button} from "@tryghost/shade/components"
 import {useBrowseConfig} from "@tryghost/admin-x-framework/api/config";
 
@@ -15,10 +16,7 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
     const { data: config } = useBrowseConfig();
     const bannerConfig = config?.config.hostSettings?.billing?.upgradeBanner;
 
-    const message = bannerConfig?.message || DEFAULT_MESSAGE;
-    const daysIndex = message.indexOf(DAYS_PLACEHOLDER);
-    const messageBeforeDays = daysIndex === -1 ? message : message.slice(0, daysIndex);
-    const messageAfterDays = daysIndex === -1 ? "" : message.slice(daysIndex + DAYS_PLACEHOLDER.length);
+    const messageParts = (bannerConfig?.message || DEFAULT_MESSAGE).split(DAYS_PLACEHOLDER);
 
     const logo = bannerConfig?.logo || ghostProLogo;
     const logoDark = bannerConfig?.logoDark || bannerConfig?.logo || ghostProLogoDark;
@@ -33,9 +31,12 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
             </div>
             <div className="mt-3 text-base font-semibold">{bannerConfig?.title || DEFAULT_TITLE}</div>
             <div className="mt-2 mb-4 text-sm text-gray-700">
-                {messageBeforeDays}
-                {daysIndex !== -1 && <span className="font-semibold text-foreground">{trialDaysRemaining} days</span>}
-                {messageAfterDays}
+                {messageParts.map((part, index) => (
+                    <Fragment key={index}>
+                        {index > 0 && <span className="font-semibold text-foreground">{trialDaysRemaining} days</span>}
+                        {part}
+                    </Fragment>
+                ))}
             </div>
             <Button asChild><a href={bannerConfig?.upgradeUrl || DEFAULT_UPGRADE_URL}>Upgrade now</a></Button>
         </Banner>

@@ -47,6 +47,17 @@ describe("UpgradeBanner", () => {
         expect(screen.queryByText("Unlock every feature")).not.toBeInTheDocument();
     });
 
+    test("replaces every days placeholder in a configured message", () => {
+        mockUseBrowseConfig.mockReturnValue(withUpgradeBanner({
+            message: "{{days}} left — upgrade before those {{days}} are up."
+        }));
+
+        render(<UpgradeBanner trialDaysRemaining={3} />);
+
+        expect(screen.getByText(/left — upgrade before/))
+            .toHaveTextContent("3 days left — upgrade before those 3 days are up.");
+    });
+
     test("renders a configured message without the days placeholder unchanged", () => {
         mockUseBrowseConfig.mockReturnValue(withUpgradeBanner({message: "Pick a plan to unlock everything."}));
 
