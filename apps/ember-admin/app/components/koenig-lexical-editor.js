@@ -385,7 +385,7 @@ export default class KoenigLexicalEditor extends Component {
             } catch (e) {
                 // Do not throw cancellation errors
                 if (didCancel(e)) {
-                    return;
+                    return [];
                 }
 
                 throw e;

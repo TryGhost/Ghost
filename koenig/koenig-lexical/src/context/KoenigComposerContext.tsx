@@ -84,7 +84,7 @@ export interface CardConfig {
     siteUrl?: string;
     klipy?: {apiKey: string; contentFilter?: string} | null;
     unsplash?: unknown;
-    pinturaConfig?: PinturaConfig;
+    pinturaConfig?: PinturaConfig | null;
     renderLabels?: boolean;
     image?: {allowedWidths?: string[]};
     feature?: CardConfigFeature;
@@ -95,7 +95,8 @@ export interface CardConfig {
 
 export interface KoenigComposerContextType {
     fileUploader: FileUploader;
-    editorContainerRef: React.RefObject<HTMLElement | null>;
+    // mutable: KoenigComposableEditor and WordCountPlugin assign to `.current`
+    editorContainerRef: React.MutableRefObject<HTMLElement | null>;
     cardConfig: CardConfig;
     darkMode: boolean;
     enableMultiplayer: boolean;
@@ -104,7 +105,7 @@ export interface KoenigComposerContextType {
     multiplayerDocId?: string;
     multiplayerUsername?: string;
     createWebsocketProvider: (id: string, yjsDocMap: Map<string, Doc>) => unknown;
-    onWordCountChangeRef: React.RefObject<((counts: unknown) => void) | null>;
+    onWordCountChangeRef: React.MutableRefObject<((counts: unknown) => void) | null>;
     onError?: (error: Error) => void;
     dragDropHandler?: unknown;
     [key: string]: unknown;
@@ -130,14 +131,14 @@ export const defaultFileUploader: FileUploader = {
 // e.g. value={{...defaultKoenigComposerContext, cardConfig}}
 export const defaultKoenigComposerContext: KoenigComposerContextType = {
     fileUploader: defaultFileUploader,
-    editorContainerRef: React.createRef<HTMLElement>(),
+    editorContainerRef: {current: null},
     cardConfig: {},
     darkMode: false,
     enableMultiplayer: false,
     createWebsocketProvider() {
         throw new Error('KoenigComposerContext createWebsocketProvider was called outside KoenigComposer');
     },
-    onWordCountChangeRef: React.createRef<((counts: unknown) => void) | null>()
+    onWordCountChangeRef: {current: null}
 };
 
 const KoenigComposerContext = React.createContext<KoenigComposerContextType>(defaultKoenigComposerContext);
