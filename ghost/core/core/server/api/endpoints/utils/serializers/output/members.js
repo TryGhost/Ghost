@@ -2,6 +2,9 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
 const {serialize: serializeCSV} = require('../../../../../services/members/import-export/csv');
+// The export CSV row shape and its encode live in the domain (typed against the export
+// row) rather than here, so a change to the export row is caught by the compiler.
+const {toExportCsvRow} = require('../../../../../services/members/import-export/export/exporter');
 const mappers = require('./mappers');
 const {Transform} = require('stream');
 const {createCSVStreamResponse} = require('./stream-csv-response');
@@ -23,56 +26,6 @@ module.exports = {
     mrrStats: createSerializer('mrrStats', passthrough),
     activityFeed: createSerializer('activityFeed', activityFeed)
 };
-
-/**
- * Formats a single member for CSV export
- * @param {Object} member - Member object
- * @returns {Object} Formatted member
- */
-function formatMemberForCSV(member) {
-    let labels = '';
-    if (Array.isArray(member.labels)) {
-        labels = member.labels.map((l) => {
-            return typeof l === 'string' ? l : l.name;
-        }).join(',');
-    }
-
-    let tiers = '';
-    if (Array.isArray(member.tiers)) {
-        tiers = member.tiers.map((tier) => {
-            return tier.name;
-        }).join(',');
-    }
-
-    // Convert boolean 'false' to empty string for tests to pass
-    // Only comped = true should result in 'true', otherwise empty string
-    const complimentaryPlan = member.comped === true ? 'true' : '';
-
-    // Gift members carry the gift id so an exported CSV can be re-imported and reassigned
-    // back to a (possibly new) member record via the gifts table
-    const giftId = member.gift_id || '';
-
-    // Convert subscribed boolean to string representation
-    const subscribedToEmails = member.subscribed === true ? 'true' : 'false';
-
-    return {
-        id: member.id,
-        email: member.email,
-        name: member.name,
-        note: member.note,
-        subscribed_to_emails: subscribedToEmails,
-        complimentary_plan: complimentaryPlan,
-        stripe_customer_id: member.stripe_customer_id,
-        created_at: member.created_at,
-        deleted_at: member.deleted_at || null,
-        labels: labels,
-        tiers: tiers,
-        gift_id: giftId,
-        // The exporter flattens custom field values into their CSV columns, since
-        // which columns exist is a per-site question only the database can answer.
-        ...member.custom_field_cells
-    };
-}
 
 /**
  * @template PageMeta
@@ -425,7 +378,7 @@ function createCSVTransform() {
         transform(member, encoding, callback) {
             try {
                 // Format the member data for CSV
-                const formattedMember = formatMemberForCSV(member);
+                const formattedMember = toExportCsvRow(member);
 
                 // For first chunk, include the headers
                 if (fields === null) {
@@ -458,7 +411,7 @@ function exportCSV(data) {
     debug('exportCSV');
 
     // The export endpoint always yields a stream (response.stream: true), so there is
-    // only ever a stream to pipe. Fall back to the legacy filename if none was given.
+    // only ever a stream to pipe.
     const datetime = (new Date()).toJSON().substring(0, 10);
     const filename = data.filename || `members.${datetime}.csv`;
 

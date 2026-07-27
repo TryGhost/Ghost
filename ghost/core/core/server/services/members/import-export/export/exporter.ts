@@ -39,7 +39,6 @@ export interface ExporterDeps {
     customFields: CustomFieldsService;
 }
 
-// The related data for one batch of members, keyed by member id.
 interface BatchRelatedData {
     tiersMap: Map<string, string>;
     labelsMap: Map<string, string>;
@@ -56,7 +55,11 @@ interface ReferenceData {
     activeCustomFields: CustomFieldDefinition[];
 }
 
-// A member row as the export query selects it -- the shape the stream emits.
+// A member row as the export query selects it -- the shape the stream emits, and the
+// contract flattenBatch is total over. Its value types are declared here (knex streams
+// rows untyped); a change to the members table that this export should carry is made by
+// changing this type, which then ripples into flattenBatch until every field is handled.
+// The end-to-end e2e export test is what catches the table drifting from this shape.
 interface MemberDbRow {
     id: string;
     email: string;
@@ -66,8 +69,12 @@ interface MemberDbRow {
     created_at: Date | string;
 }
 
-// A flattened export row: the db row with its related data resolved onto it, as the
-// output serializer reads it. custom_field_cells spreads into per-field columns.
+// The columns the export reads off the members table, checked against MemberDbRow so the
+// query cannot select a column the row type does not declare.
+const MEMBER_COLUMNS = ['id', 'email', 'name', 'note', 'status', 'created_at'] satisfies Array<keyof MemberDbRow>;
+
+// The db row with its related data resolved onto it. custom_field_cells later spreads
+// into one column per active custom field.
 interface MemberExportRow extends MemberDbRow {
     created_at: string;
     tiers: Array<{name: string}>;
@@ -80,13 +87,56 @@ interface MemberExportRow extends MemberDbRow {
     custom_field_cells: Record<string, unknown>;
 }
 
+// One row of the members export CSV: a flattened export row encoded into cells. This
+// type is the export's column contract -- the output serializer takes the columns from
+// these keys. The fixed member columns are typed; custom_field_cells spreads in whatever
+// per-site columns the database holds, so the row also carries an open string index.
+type ExportCsvRow = {
+    id: string;
+    email: string;
+    name: string | null;
+    note: string | null;
+    subscribed_to_emails: string;
+    complimentary_plan: string;
+    stripe_customer_id: string | null;
+    created_at: string;
+    deleted_at: null;
+    labels: string;
+    tiers: string;
+    gift_id: string;
+} & Record<string, unknown>;
+
+function namesToCsv(items: Array<{name: string}>): string {
+    return items.map(item => item.name).join(',');
+}
+
+// Encode a flattened export row into its CSV cells, type-checked against MemberExportRow:
+// a change to that row must be handled here or this stops compiling. deleted_at is always
+// null -- the export reads live members -- and complimentary_plan is written from comped.
+export function toExportCsvRow(row: MemberExportRow): ExportCsvRow {
+    return {
+        id: row.id,
+        email: row.email,
+        name: row.name,
+        note: row.note,
+        subscribed_to_emails: row.subscribed === true ? 'true' : 'false',
+        complimentary_plan: row.comped === true ? 'true' : '',
+        stripe_customer_id: row.stripe_customer_id,
+        created_at: row.created_at,
+        deleted_at: null,
+        labels: namesToCsv(row.labels),
+        tiers: namesToCsv(row.tiers),
+        gift_id: row.gift_id || '',
+        ...row.custom_field_cells
+    };
+}
+
 const BATCH_SIZE = 1000;
 
-// Streams the members matching the options as flat rows, each carrying its related
-// data (tiers, labels, subscription state, gift, Stripe customer, custom fields). The
-// output serializer turns each row into a CSV line. knex is a first-class dependency;
-// the members aggregate and the custom fields service are reached only through the
-// ports above, so nothing Bookshelf- or flag-shaped leaks into the export itself.
+// Streams the matching members as flat rows, each carrying its related data (tiers,
+// labels, subscription, gift, Stripe customer, custom fields) for the output serializer
+// to turn into CSV lines. The members aggregate and custom fields are reached only
+// through the ports above, so nothing Bookshelf- or flag-shaped leaks into the export.
 export default class MembersCSVExporter {
     private _knex: Knex;
     private _members: MembersRepository;
@@ -108,7 +158,7 @@ export default class MembersCSVExporter {
 
         const reference = await this.fetchReferenceData();
 
-        const membersQuery = this._knex('members').select('id', 'email', 'name', 'note', 'status', 'created_at');
+        const membersQuery = this._knex('members').select(...MEMBER_COLUMNS);
         if (ids) {
             membersQuery.whereIn('id', ids);
         }
@@ -157,7 +207,6 @@ export default class MembersCSVExporter {
 
         return new Transform({
             objectMode: true,
-            // The stream emits rows shaped by the export query's select above.
             transform(member: MemberDbRow, encoding, callback) {
                 currentBatch.push(member);
 
@@ -177,8 +226,7 @@ export default class MembersCSVExporter {
         });
     }
 
-    // For each batch, read its related data and flatten it onto the member rows,
-    // pushing each row individually to keep large arrays out of memory.
+    // Each flattened row is pushed individually so a batch's rows do not pile up in memory.
     private createProcessingTransform(reference: ReferenceData): Transform {
         const assembleRelatedData = (memberIds: string[]) => this.assembleRelatedData(memberIds, reference.activeCustomFields);
         const flattenBatch = (members: MemberDbRow[], related: BatchRelatedData) => this.flattenBatch(members, related, reference);
@@ -200,8 +248,8 @@ export default class MembersCSVExporter {
         });
     }
 
-    // One query per related table for the whole batch, reduced to lookup maps keyed by
-    // member id. Custom field values are read only when there are columns to fill.
+    // One query per related table for the whole batch, not one per member. Custom field
+    // values are read only when there are columns to fill.
     private async assembleRelatedData(memberIds: string[], activeCustomFields: CustomFieldDefinition[]): Promise<BatchRelatedData> {
         const knex = this._knex;
 
@@ -245,8 +293,6 @@ export default class MembersCSVExporter {
         };
     }
 
-    // Resolve each member's related ids to their names and fold the batch's data onto
-    // the row the serializer reads.
     private flattenBatch(members: MemberDbRow[], related: BatchRelatedData, reference: ReferenceData): MemberExportRow[] {
         const {tiersMap, labelsMap, stripeCustomerMap, subscribedSet, giftIdMap, customFieldValuesMap} = related;
         const {allProducts, allLabels, activeCustomFields} = reference;

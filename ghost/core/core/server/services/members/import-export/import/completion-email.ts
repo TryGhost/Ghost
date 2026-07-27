@@ -1,5 +1,5 @@
 import {serialize} from '../csv';
-import type {ImportErrorRow, ImportLabel, Label} from './row';
+import type {MemberImportRow, ImportErrorRow, ImportLabel, Label} from './row';
 
 const emailTemplate = require('./email-template');
 
@@ -43,19 +43,31 @@ function humaniseError(message: string): string {
         .replace(/No such customer:[^,]*/, 'Could not find Stripe customer');
 }
 
-// The columns of the attached error report. Import-shaped by design: a member manager
-// reads it to fix the failed rows and re-upload them, so it echoes the fields an import
-// carries, not the ones the export writes. The error column is always present -- it is
-// the report's reason for being.
-const ERROR_REPORT_COLUMNS = ['id', 'email', 'name', 'note', 'subscribed_to_emails', 'complimentary_plan', 'stripe_customer_id', 'created_at', 'deleted_at', 'labels', 'tiers', 'gift_id', 'error'];
+// One row of the attached error report, in emit order. papaparse takes the columns from
+// these keys, so the report cannot drift from the shaper -- a new column must be added
+// here or the shaper stops compiling. tiers and deleted_at are export-vocabulary columns
+// an import never fills; kept always-empty so the report matches the members export CSV.
+type ErrorReportRow = {
+    id: MemberImportRow['id'];
+    email: MemberImportRow['email'];
+    name: MemberImportRow['name'];
+    note: MemberImportRow['note'];
+    subscribed_to_emails: MemberImportRow['subscribed'];
+    complimentary_plan: MemberImportRow['complimentary_plan'];
+    stripe_customer_id: MemberImportRow['stripe_customer_id'];
+    created_at: MemberImportRow['created_at'];
+    deleted_at: undefined;
+    labels: string;
+    tiers: '';
+    gift_id: string | null;
+    error: string;
+};
 
 function stringifyLabels(labels: Array<string | Label>): string {
     return labels.map(label => (typeof label === 'string' ? label : label.name)).join(',');
 }
 
-// Shape a failed import row into its error-report cells: the row as submitted, with the
-// raw ORM message rewritten into copy the member manager can act on.
-function toErrorReportRow(row: ImportErrorRow) {
+function toErrorReportRow(row: ImportErrorRow): ErrorReportRow {
     return {
         id: row.id,
         email: row.email,
@@ -65,19 +77,18 @@ function toErrorReportRow(row: ImportErrorRow) {
         complimentary_plan: row.complimentary_plan,
         stripe_customer_id: row.stripe_customer_id,
         created_at: row.created_at,
-        deleted_at: row.deleted_at,
+        deleted_at: undefined,
         labels: stringifyLabels(row.labels),
+        tiers: '',
         gift_id: row.gift_id || null,
         error: humaniseError(row.error)
     };
 }
 
-// The error report attached to the completion email: each failed row shaped into cells
-// and serialised to CSV. It shares the CSV serialiser with the export but not the
-// shaping -- the export writes database members, this echoes the rows a member
-// submitted, so the two shapers are deliberately separate.
+// The error report attached to the completion email: the failed rows as CSV. No column
+// list is passed -- the typed ErrorReportRow defines the columns.
 function buildErrorReport(errors: ImportErrorRow[]): string {
-    return serialize(errors.map(toErrorReportRow), {columns: ERROR_REPORT_COLUMNS});
+    return serialize(errors.map(toErrorReportRow));
 }
 
 // Compose the completion email for a finished import: the summary and its links,

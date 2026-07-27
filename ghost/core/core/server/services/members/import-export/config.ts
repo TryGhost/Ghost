@@ -1,14 +1,9 @@
 import {z} from 'zod';
 
-/**
- * Resolving Ghost's config into the values the importer runs on.
- *
- * Config arrives untyped: defaults.json supplies the shipped value, and any
- * higher layer — an operator's config file, an environment variable, argv — can
- * replace it with anything at all. Turning that into something usable is a
- * config concern, so it happens here, at the boundary. The importer is handed an
- * answer and never learns where it came from.
- */
+// Config arrives untyped: defaults.json ships a value, and any higher layer -- an
+// operator's config file, an environment variable, argv -- can replace it with anything.
+// Validating it into a usable number is a config concern, so it happens here at the
+// boundary; the importer is handed a resolved value.
 
 // The row count at or below which an import is performed while the request is
 // still open. Zero is allowed and means every import is deferred. A numeric

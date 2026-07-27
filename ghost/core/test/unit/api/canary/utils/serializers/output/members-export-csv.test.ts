@@ -19,7 +19,7 @@ function makeResponse(headers: Record<string, string>, chunks: Buffer[] = []) {
 
 describe('Unit: members CSV export serializer', function () {
     it('Streams CSV response using the filename provided by the endpoint', async function () {
-        const source = Readable.from([{id: '1', email: 'jamie@example.com'}], {objectMode: true});
+        const source = Readable.from([{id: '1', email: 'jamie@example.com', labels: [], tiers: []}], {objectMode: true});
         const frame: {response?: Function} = {};
         const headers: Record<string, string> = {};
         const chunks: Buffer[] = [];
@@ -43,7 +43,7 @@ describe('Unit: members CSV export serializer', function () {
     });
 
     it('Falls back to the legacy filename when the endpoint does not provide one', async function () {
-        const source = Readable.from([{id: '1', email: 'jamie@example.com'}], {objectMode: true});
+        const source = Readable.from([{id: '1', email: 'jamie@example.com', labels: [], tiers: []}], {objectMode: true});
         const frame: {response?: Function} = {};
         const headers: Record<string, string> = {};
 
@@ -59,7 +59,7 @@ describe('Unit: members CSV export serializer', function () {
 
     it('Passes response stream errors to next', async function () {
         const sourceError = new Error('response failed');
-        const source = Readable.from([{id: '1', email: 'jamie@example.com'}], {objectMode: true});
+        const source = Readable.from([{id: '1', email: 'jamie@example.com', labels: [], tiers: []}], {objectMode: true});
         const frame: {response?: Function} = {};
 
         membersSerializer.exportCSV({data: source, filename: 'my-site.ghost.members.2026-06-02.csv'}, null, frame);

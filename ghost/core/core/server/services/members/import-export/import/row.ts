@@ -1,7 +1,6 @@
 import {z} from 'zod';
 
-// A label to tag imported members with. Labels reach the import as a comma-separated
-// cell and are split into objects here, in the domain, where we know what a label is.
+// Labels reach the import as a comma-separated cell and are split into objects here.
 export interface Label {
     name: string;
 }
@@ -10,27 +9,27 @@ function splitLabels(cell: string): Label[] {
     return cell ? cell.split(',').map(name => ({name})) : [];
 }
 
-// A string cell that reads as absent when empty (or the literal 'undefined'),
-// preserving the import's long-standing "an empty cell is nothing" rule -- so an empty
-// created_at is a missing date, not the invalid empty string.
+// An empty cell (or the literal 'undefined') reads as absent, not as a value -- so an
+// empty created_at is a missing date, not the invalid empty string.
 const optionalCell = z.string()
     .transform(cell => (cell === '' || cell === 'undefined' ? undefined : cell))
     .optional();
 
-// The member import vocabulary as a schema -- the single source of truth. It coerces
-// the raw string Row the CSV reader emits into typed member fields, keeping the exact
-// lenient rules the import has always used: subscribed is true unless the cell is
-// literally 'false'; complimentary_plan is false unless it is literally 'true'. Unknown
-// columns (custom_fields.*, and anything else a source preserves) pass through so a
-// failed row can be reported back in full. MemberImportRow is this schema's inferred
-// type, so the kernel reads precisely-typed fields with no casts.
+// Subscription and comp status are lenient in opposite directions: a member is
+// subscribed unless a cell explicitly reads 'false', but comped only when it reads 'true'.
+const isSubscribed = (cell: string): boolean => cell.toLowerCase() !== 'false';
+const isComplimentary = (cell: string): boolean => cell.toLowerCase() === 'true';
+
+// The member import vocabulary as a schema: the single source of truth that coerces the
+// raw string Row into typed member fields. Unknown columns (custom_fields.*, and anything
+// else a source carries) pass through via .loose() so nothing is lost before the kernel.
 export const memberImportRowSchema = z.object({
     id: optionalCell,
     email: optionalCell,
     name: optionalCell,
     note: optionalCell,
-    subscribed: z.string().default('').transform(cell => cell.toLowerCase() !== 'false'),
-    complimentary_plan: z.string().default('').transform(cell => cell.toLowerCase() === 'true'),
+    subscribed: z.string().default('').transform(isSubscribed),
+    complimentary_plan: z.string().default('').transform(isComplimentary),
     stripe_customer_id: optionalCell,
     created_at: optionalCell,
     import_tier: optionalCell,

@@ -9,35 +9,17 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 
-// The members CSV importer, sliced into the concerns an import moves through:
-//
-//   importCSV()        request entry: read, then import now or defer by load
-//   importInline()     inline entry: read and import now, for callers that need it
-//   canImportInline()  routing: inline vs deferred from generic signals (size, cost)
-//   importRows()       members kernel: create or update a member from each row
-//   deferImport()      deferred work: resolve recipient, spool the rows, queue the job
-//   runImportJob()     the queued job: import the spooled rows, notify, clean up
-//
-// Both entries take plain arguments -- where the CSV is, who to email -- and read it via
-// the injected readRows into a plain MemberImportRow array. importCSV decides inline vs
-// deferred by load, since a large import must not hold a request open; importInline is
-// for callers with no request to protect (the Revue data import), so it always runs now.
-// The endpoint adapts the request frame into those arguments and shapes importCSV's
-// outcome into the API response, so neither the frame nor the response envelope crosses
-// into the domain. A deferred import reads the same rows back from a spool file; both the
-// CSV reader and the spool read produce a rows array, so the kernel just takes rows and a
-// test can drive it from a literal array. The kernel yields only the
-// result (the counts and the failed rows); shaping that into an email, error report and
-// all, belongs to the email presenter (completion-email). The rest is one
-// collaborator per concern: the members aggregate it writes; the tiers, Stripe and
-// gifts systems a member row also touches; the email it hands the result to (recipient
-// and delivery); and background jobs. knex is a first-class dependency; no Bookshelf
-// model is referenced below the boundary that owns it.
+// The members CSV importer, sliced into one concern per method. Two entry points by
+// design: importCSV decides inline-vs-deferred by load, since a large import must not
+// hold a request open; importInline always runs now, for callers with no request to
+// protect (the Revue data import). The kernel takes a plain MemberImportRow array -- the
+// CSV reader and the deferred spool both produce one -- so a test can drive it from a
+// literal array. Collaborators are injected one per concern; knex is first-class, and no
+// Bookshelf model is referenced below the boundary that owns it.
 
-// The arguments the import service takes: where the CSV is and how to map its columns,
-// labels to add to every member, and who a deferred import emails (null when the request
-// carried no user, so the deferred path falls back to the site owner). The endpoint
-// builds this from the request frame, so no frame crosses into the domain.
+// The import service's arguments, built by the endpoint from the request frame.
+// requestUserEmail is null when the request carried no user, so the deferred path falls
+// back to the site owner.
 export interface ImportRequest {
     filePath: string;
     mapping?: Record<string, string>;
@@ -124,13 +106,18 @@ interface ImporterDeps {
     getInlineThreshold: () => number;
 }
 
-// The values built for one row and handed to the members repository.
+// The values built for one row and handed to the members repository. Indexed off
+// MemberImportRow so a change to the import schema surfaces here: rename or retype a
+// field the kernel writes and this stops compiling until the mapping is updated. name
+// and note may be replaced with the existing member's values (both strings, already in
+// range); created_at may be clamped to now when the row dates a member in the future;
+// newsletters is opaque ORM relation JSON, an honest unknown at the model boundary.
 interface MemberImportValues {
-    email: unknown;
-    name: unknown;
-    note: unknown;
-    subscribed: unknown;
-    created_at: unknown;
+    email: MemberImportRow['email'];
+    name: MemberImportRow['name'];
+    note: MemberImportRow['note'];
+    subscribed: MemberImportRow['subscribed'];
+    created_at: MemberImportRow['created_at'] | Date;
     labels: Label[];
     newsletters?: unknown;
 }
@@ -215,9 +202,6 @@ class MembersCSVImporter {
         this._getInlineThreshold = getInlineThreshold;
     }
 
-    // The request entry: read the CSV and either import it now or defer it to a job,
-    // deciding by load so a large import does not hold the request open. The endpoint
-    // uses this and shapes the returned outcome into the response.
     async importCSV(request: ImportRequest, verificationTrigger: VerificationTrigger): Promise<ImportOutcome> {
         const rows = await this._readRows(request.filePath, request.mapping);
         const labelName = buildImportLabelName(this._getTimezone());
@@ -233,9 +217,6 @@ class MembersCSVImporter {
         return {deferred: true, originalImportSize: rows.length};
     }
 
-    // The inline entry: read the CSV and import it now, returning the result. Callers
-    // that need the import to finish synchronously (the Revue data import) use this --
-    // there is no request to hold open, so it never defers.
     async importInline(request: ImportRequest, verificationTrigger: VerificationTrigger): Promise<ImportResult> {
         const rows = await this._readRows(request.filePath, request.mapping);
         const result = await this.importRows(rows, buildImportLabelName(this._getTimezone()), request.extraLabels ?? []);
@@ -243,8 +224,6 @@ class MembersCSVImporter {
         return result;
     }
 
-    // Deferred work: resolve the recipient, spool the rows, and queue the import job.
-    // Returns as soon as the job is enqueued; runImportJob does the work later.
     private async deferImport(
         rows: MemberImportRow[],
         {labelName, extraLabels, requestUserEmail}: {labelName: string; extraLabels: Label[]; requestUserEmail: string | null},
@@ -262,10 +241,8 @@ class MembersCSVImporter {
         });
     }
 
-    // The queued job: read the spooled rows, import them, email the result, and clean
-    // up. A self-contained unit -- the shape a queued job handler would take -- so the
-    // enqueue above stays a one-liner. Swallows its own errors: a failed import or
-    // email must not leave the job rejected, and the verification trigger still runs.
+    // Swallows its own errors: a failed import or email must not leave the queued job
+    // rejected, and the verification trigger must still run afterwards either way.
     private async runImportJob(
         spooled: SpooledRows,
         {labelName, extraLabels, emailRecipient}: {labelName: string; extraLabels: Label[]; emailRecipient: string},
@@ -297,11 +274,10 @@ class MembersCSVImporter {
         }
     }
 
-    // ========================================================================
-    // The members import kernel: create or update a member from each row in its
-    // own transaction, collect the failures, and archive any Stripe prices an
-    // import tier created. Shared by the inline and deferred branches.
-    // ========================================================================
+    // The members import kernel, shared by the inline and deferred paths. Each row is
+    // created or updated in its own transaction, so one row's failure rolls back only
+    // itself; failures are collected, and any Stripe prices an import tier created are
+    // archived at the end.
     private async importRows(rows: MemberImportRow[], labelName: string, extraLabels: Label[]): Promise<ImportResult> {
         const importLabel: Label = {name: labelName};
         const globalLabels: Label[] = [importLabel, ...extraLabels];

@@ -10,7 +10,6 @@ const MembersStats = require('./stats/members-stats');
 const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils').default;
-const labsService = require('../../../shared/labs');
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const models = require('../../models');
