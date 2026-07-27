@@ -1,0 +1,69 @@
+rss {
+  width: 90vw;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+rss::before {
+  content: "This file is a special XML file intended to be used by an RSS reader for automatic subscription of new articles. What's shown below is just a part of what the RSS reader can see.";
+  margin: 2em 0;
+  display: block;
+}
+channel > title {
+  background: green;
+  padding: 0.6em;
+  font-weight: bold;
+  font-size: 2.5em;
+  color: white;
+  display: block;
+  margin: 1em auto 0 auto;
+}
+channel > description {
+  background: green;
+  margin: 0 auto 0 auto;
+  color: white;
+  padding: 0 1.5em;
+  display: block;
+}
+channel > lastBuildDate {
+  color: white;
+  background: green;
+  display: block;
+  padding: 1em 1.5em;
+  margin: 0;
+}
+channel > lastBuildDate::before {
+  content: "Most recently updated: ";
+}
+channel > link, generator, ttl, image {
+  display: none;
+}
+item {
+  display: block;
+  padding: 1.5em 0;
+  border-top: 1px solid green;
+}
+item title {
+  display: block;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+item link::before {
+  content: "URL: ";
+}
+item category::before {
+  content: "Category: ";
+}
+item creator::before {
+  content: "Author: ";
+}
+item pubDate::before {
+  content: "Published: ";
+}
+item description, link, category, creator, pubDate, encoded {
+  display: block;
+  margin-bottom: 0.5em;
+}
+item guid, content {
+  display: none;
+}

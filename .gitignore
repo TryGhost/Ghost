@@ -127,6 +127,8 @@ test/functional/*.png
 /ghost/core/package
 /ghost/core/core/built
 /ghost/core/core/frontend/public/ghost.min.css
+/ghost/core/core/frontend/public/rss.min.css
+/ghost/core/core/frontend/public/sitemap.min.css
 /ghost/core/core/frontend/public/comment-counts.min.js
 /ghost/core/core/frontend/public/member-attribution.min.js
 /ghost/core/core/frontend/public/ghost-stats.min.js

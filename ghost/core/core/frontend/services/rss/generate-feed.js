@@ -122,7 +122,11 @@ const generateFeed = function generateFeed(baseUrl, data) {
         feed.item(item);
     }
 
-    return feed.xml();
+    const style_url = urlUtils.urlFor('home', true) + 'public/rss.min.css';
+
+    return feed.xml()
+        /* The rss package currently doesn't seem to support custom styles, so it's injected afterwards. If this changes in the future, this could be simplified. */
+        .replace(/(<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>?)/, `$1<?xml-stylesheet type="text/css" href="${style_url}"?>`);
 };
 
 module.exports = generateFeed;

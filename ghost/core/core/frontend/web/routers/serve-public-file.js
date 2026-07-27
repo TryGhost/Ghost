@@ -120,6 +120,12 @@ function servePublicFiles(siteApp) {
     // Serve sitemap.xsl
     siteApp.get('/sitemap.xsl', createPublicFileMiddleware('static', 'sitemap.xsl', 'text/xsl', config.get('caching:sitemapXSL:maxAge')));
 
+    // Serve stylesheets for xml files
+    siteApp.get('/public/sitemap.css', createPublicFileMiddleware('static', 'public/sitemap.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.get('/public/sitemap.min.css', createPublicFileMiddleware('static', 'public/sitemap.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.get('/public/rss.css', createPublicFileMiddleware('static', 'public/rss.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.get('/public/rss.min.css', createPublicFileMiddleware('static', 'public/rss.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+
     // Serve stylesheets for default templates
     siteApp.get('/public/ghost.css', createPublicFileMiddleware('static', 'public/ghost.css', 'text/css', config.get('caching:publicAssets:maxAge')));
     siteApp.get('/public/ghost.min.css', createPublicFileMiddleware('static', 'public/ghost.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));

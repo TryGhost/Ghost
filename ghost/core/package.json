@@ -49,7 +49,7 @@
         "build:assets:js": "node scripts/minify-assets.mjs",
         "generate-golden-email": "node bin/generate-golden-email.js",
         "migrate:create": "node bin/create-migration.js",
-        "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
+        "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css && postcss core/frontend/public/sitemap.css --no-map --use cssnano -o core/frontend/public/sitemap.min.css && postcss core/frontend/public/rss.css --no-map --use cssnano -o core/frontend/public/rss.min.css",
         "build:tsc": "tsc",
         "pretest": "pnpm build:assets",
         "test": "pnpm test:unit",
