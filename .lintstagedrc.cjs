@@ -1,8 +1,10 @@
 const path = require('path');
 const fs = require('fs');
 const {quote: shellQuote} = require('shell-quote');
+const pm = require('picomatch');
 
 const ROOT = process.cwd();
+const ESLINT_FILES = new Set(['.js', '.ts', '.tsx', '.jsx', '.cjs']);
 
 function normalize(p) {
     return p.split(path.sep).join('/');
@@ -97,21 +99,50 @@ function buildEmberTemplateLintCommand(files) {
     return `pnpm --dir ${shellQuote(workspace)} exec ember-template-lint ${relativeFiles}`;
 }
 
-module.exports = {
-    '*.{js,ts,tsx,jsx,cjs}': files => {
-        const groups = new Map();
-        for (const file of files) {
+/**
+ * @param {string[]} files
+ * @returns {string[]}
+ */
+module.exports = files => {
+    /** @type {Map<null | string, Set<string>>} */ const workspaceFiles = new Map();
+    /** @type {Set<string>} */ const boundaries = new Set();
+    /** @type {Set<string>} */ const emberAdminTemplates = new Set();
+
+    for (const file of files) {
+        const extension = path.extname(file);
+        if (ESLINT_FILES.has(extension)) {
             const workspace = findWorkspace(file);
-            const key = workspace ?? '';
-            if (!groups.has(key)) {
-                groups.set(key, []);
-            }
-            groups.get(key).push(file);
+            const filesForWorkspace = workspaceFiles.get(workspace) ?? new Set();
+            filesForWorkspace.add(file);
+            workspaceFiles.set(workspace, filesForWorkspace);
         }
-        return [...groups.entries()].map(([workspace, wsFiles]) => buildEslintCommand(workspace || null, wsFiles));
-    },
-    'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': files => buildBoundaryCommand(files),
-    'apps/ember-admin/**/*.hbs': files => buildEmberTemplateLintCommand(files),
-    'apps/{shade,admin-x-framework,activitypub,admin-x-settings,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}':
-        files => buildBoundaryCommand(files)
+        const isBoundary = pm.isMatch(file, [
+            'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}',
+            'apps/{shade,admin-x-framework,activitypub,admin-x-settings,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}'
+        ]);
+        if (isBoundary) {
+            boundaries.add(file);
+        }
+
+        const isEmberAdminTemplate = pm.isMatch(file, 'apps/ember-admin/**/*.hbs');
+        if (isEmberAdminTemplate) {
+            emberAdminTemplates.add(file);
+        }
+    }
+
+    /** @type {string[]} */ const result = [];
+
+    for (const [workspace, filesForWorkspace] of workspaceFiles.entries()) {
+        result.push(buildEslintCommand(workspace, Array.from(filesForWorkspace)));
+    }
+
+    if (boundaries.size > 0) {
+        result.push(buildBoundaryCommand(Array.from(boundaries)));
+    }
+
+    if (emberAdminTemplates.size > 0) {
+        result.push(buildEmberTemplateLintCommand(Array.from(emberAdminTemplates)));
+    }
+
+    return result;
 };
