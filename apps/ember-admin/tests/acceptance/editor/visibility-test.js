@@ -1,13 +1,28 @@
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../../helpers/mock-analytics-apps';
-import {click, fillIn, find} from '@ember/test-helpers';
+import {click, fillIn, find, waitFor, waitUntil} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
+import {enableLabsFlag} from '../../helpers/labs-flag';
 import {enableMembers} from '../../helpers/members';
 import {enableStripe} from '../../helpers/stripe';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
+
+const PAYWALL_LEXICAL = JSON.stringify({
+    root: {
+        children: [{
+            type: 'paywall',
+            version: 1
+        }],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1
+    }
+});
 
 describe('Acceptance: Editor / Visibility', function () {
     let hooks = setupApplicationTest();
@@ -86,5 +101,46 @@ describe('Acceptance: Editor / Visibility', function () {
         let lastPut = putRequests[putRequests.length - 1];
         let requestBody = JSON.parse(lastPut.requestBody);
         expect(requestBody.posts[0].visibility, 'visibility in PUT request').to.equal('paid');
+    });
+
+    it('reflects post access and updates when access changes', async function () {
+        enableLabsFlag(this.server, 'paywallImprovements');
+
+        const post = this.server.create('post', {
+            authors: [author],
+            lexical: PAYWALL_LEXICAL,
+            status: 'draft',
+            visibility: 'public'
+        });
+
+        await visit(`/editor/post/${post.id}`);
+        await waitFor('[data-kg-card="paywall"]');
+
+        const paywallCard = () => find('[data-kg-card="paywall"]');
+        const waitForPaywallLabel = label => waitUntil(() => paywallCard().textContent.includes(label));
+
+        expect(paywallCard()).to.contain.text('Public preview · No effect while post is public');
+
+        await click('[data-test-psm-trigger]');
+
+        await fillIn('[data-test-select="post-visibility"]', 'members');
+        await waitForPaywallLabel('Members only');
+
+        await fillIn('[data-test-select="post-visibility"]', 'paid');
+        await waitForPaywallLabel('Paid members only');
+
+        const tier = this.server.create('tier', {name: 'Premium'});
+        const tierPost = this.server.create('post', {
+            authors: [author],
+            lexical: PAYWALL_LEXICAL,
+            status: 'draft',
+            tiers: [tier],
+            visibility: 'tiers'
+        });
+
+        await visit(`/editor/post/${tierPost.id}`);
+        await waitFor('[data-kg-card="paywall"]');
+
+        expect(find('[data-kg-card="paywall"]')).to.contain.text('Selected tiers only');
     });
 });
