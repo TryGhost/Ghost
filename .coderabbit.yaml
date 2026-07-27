@@ -32,6 +32,25 @@ reviews:
           Do NOT fail this check for: pre-existing JavaScript files that were only
           touched incidentally; ordinary internal function or module calls (they do not
           need runtime validation); test code, scripts, or config files.
+      - name: "New files are TypeScript"
+        mode: "error"
+        instructions: |
+          Fail this check if the PR ADDS a new JavaScript source file
+          (.js/.jsx/.cjs/.mjs) that should be TypeScript. New source code in Ghost is
+          written in TypeScript; JavaScript is only accepted where the runtime or
+          tooling genuinely requires it.
+
+          Exempt (pass without comment) new JS files that are:
+          - Database migrations under ghost/core/core/server/data/migrations/
+            (executed by plain node in production, no TS loader).
+          - Anything under apps/ember-admin/ (legacy Ember app being migrated away
+            from; its build does not support TypeScript).
+          - Tool/config files (eslint.config.*, vitest.config.*, *.config.js/cjs/mjs,
+            .lintstagedrc.cjs, and similar) and files under scripts/ or docker/.
+          - Generated or vendored code.
+
+          Modifications to pre-existing JavaScript files never fail this check —
+          converting touched files is explicitly not required.
   path_instructions:
     - path: "**/*.{ts,tsx,mts,cts}"
       instructions: |
@@ -61,9 +80,11 @@ reviews:
           comment unless it hides a real defect in the code under test.
     - path: "**/*.{js,jsx,cjs,mjs}"
       instructions: |
-        New product code should be written in TypeScript wherever possible. If this PR
-        adds a NEW JavaScript source file (not a test, config, script, or generated
-        file), suggest writing it in TypeScript instead — once, briefly.
+        New source files must be TypeScript. If this PR adds a NEW JavaScript file,
+        flag it as a required change unless it falls under a genuine exemption:
+        database migrations (ghost/core/core/server/data/migrations/), anything in
+        apps/ember-admin/, tool/config files, files under scripts/ or docker/, or
+        generated/vendored code.
         Do NOT ask authors to convert pre-existing JavaScript files that this PR merely
         touches; incremental conversion of touched files is explicitly not required.
         If the change introduces or modifies a runtime boundary (parsing HTTP input,
