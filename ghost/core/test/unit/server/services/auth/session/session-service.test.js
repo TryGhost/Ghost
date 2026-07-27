@@ -4,6 +4,21 @@ const sinon = require('sinon');
 const express = require('express');
 const SessionService = require('../../../../../../core/server/services/auth/session/session-service');
 
+// Mimics express-session, where regenerate swaps in a brand new session object
+function createGetSession(initialProps = {}) {
+    return async function getSession(req) {
+        if (!req.session) {
+            const destroy = sinon.spy(cb => cb());
+            const regenerate = sinon.spy((cb) => {
+                req.session = {destroy, regenerate};
+                cb();
+            });
+            req.session = {destroy, regenerate, ...initialProps};
+        }
+        return req.session;
+    };
+}
+
 describe('SessionService', function () {
     let getSettingsCache;
     let urlUtils;
@@ -21,15 +36,7 @@ describe('SessionService', function () {
     });
 
     it('Returns the user for the id stored on the session', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                destroy: sinon.spy(cb => cb())
-            };
-            return req.session;
-        };
+        const getSession = createGetSession();
 
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
@@ -161,15 +168,7 @@ describe('SessionService', function () {
     });
 
     it('Can verify a user session', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                destroy: sinon.spy(cb => cb())
-            };
-            return req.session;
-        };
+        const getSession = createGetSession();
 
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
@@ -217,16 +216,91 @@ describe('SessionService', function () {
         assert.equal(req.session.verified, true);
     });
 
-    it('#createSessionForUser verifies session when valid token is provided on request', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
+    it('#createSessionForUser regenerates the session even when no user was assigned to it', async function () {
+        const getSession = createGetSession();
+
+        const findUserById = sinon.spy(async ({id}) => ({id}));
+        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getOriginOfRequest,
+            getSettingsCache,
+            isStaffDeviceVerificationDisabled,
+            urlUtils
+        });
+
+        const req = Object.create(express.request, {
+            ip: {
+                value: '0.0.0.0'
+            },
+            headers: {
+                value: {
+                    cookie: 'thing'
+                }
+            },
+            get: {
+                value: () => 'https://admin.example.com'
             }
-            req.session = {
-                destroy: sinon.spy(cb => cb())
-            };
-            return req.session;
-        };
+        });
+        const res = Object.create(express.response);
+        const user = {id: 'egg'};
+
+        const previousSession = await getSession(req);
+        await sessionService.createSessionForUser(req, res, user);
+
+        sinon.assert.calledOnce(previousSession.regenerate);
+        assert.notEqual(req.session, previousSession);
+        assert.equal(req.session.user_id, 'egg');
+    });
+
+    it('#createSessionForUser does not carry verification over to a different user', async function () {
+        const getSession = createGetSession();
+
+        const findUserById = sinon.spy(async ({id}) => ({id}));
+        const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getOriginOfRequest,
+            getSettingsCache,
+            isStaffDeviceVerificationDisabled,
+            urlUtils
+        });
+
+        const req = Object.create(express.request, {
+            ip: {
+                value: '0.0.0.0'
+            },
+            headers: {
+                value: {
+                    cookie: 'thing'
+                }
+            },
+            get: {
+                value: () => 'https://admin.example.com'
+            }
+        });
+        const res = Object.create(express.response);
+
+        await sessionService.createSessionForUser(req, res, {id: 'egg'});
+        await sessionService.verifySession(req, res);
+        assert.equal(req.session.verified, true);
+
+        // Signing in as another user without logging out first
+        await sessionService.createSessionForUser(req, res, {id: 'bacon'});
+        assert.equal(req.session.user_id, 'bacon');
+        assert.equal(req.session.verified, undefined);
+    });
+
+    it('#createSessionForUser verifies session when valid token is provided on request', async function () {
+        const getSession = createGetSession();
 
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
@@ -259,7 +333,8 @@ describe('SessionService', function () {
         const user = {id: 'egg'};
 
         // Generate a valid token for the same session challenge
-        req.session = {user_id: 'egg'};
+        const previousSession = await getSession(req);
+        previousSession.user_id = 'egg';
         const validToken = await sessionService.generateAuthCodeForUser(req, res);
 
         // Now create session with token on request body
@@ -271,15 +346,7 @@ describe('SessionService', function () {
     });
 
     it('#createSessionForUser does not verify session when invalid token is provided on request', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                destroy: sinon.spy(cb => cb())
-            };
-            return req.session;
-        };
+        const getSession = createGetSession();
 
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
@@ -320,15 +387,7 @@ describe('SessionService', function () {
     });
 
     it('#createSessionForUser does not verify session when token belongs to a different session challenge', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                destroy: sinon.spy(cb => cb())
-            };
-            return req.session;
-        };
+        const getSession = createGetSession();
 
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
@@ -665,15 +724,7 @@ describe('SessionService', function () {
     });
 
     it('Can create a verified session for SSO', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                destroy: sinon.spy(cb => cb())
-            };
-            return req.session;
-        };
+        const getSession = createGetSession();
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
 
@@ -765,15 +816,7 @@ describe('SessionService', function () {
     });
 
     it('Can remove verified session', async function () {
-        const getSession = async (req) => {
-            if (req.session) {
-                return req.session;
-            }
-            req.session = {
-                destroy: sinon.spy(cb => cb())
-            };
-            return req.session;
-        };
+        const getSession = createGetSession();
 
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
