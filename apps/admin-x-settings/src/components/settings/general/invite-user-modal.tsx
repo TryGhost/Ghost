@@ -1,14 +1,15 @@
 import NiceModal from '@ebay/nice-modal-react';
 import validator from 'validator';
 import {APIError, ValidationError} from '@tryghost/admin-x-framework/errors';
-import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSeparator, FieldSet, Input, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
+import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSet, Input, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {SettingsModal} from '@tryghost/shade/patterns';
+import {Stack} from '@tryghost/shade/primitives';
 import {toast} from 'sonner';
 import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -29,7 +30,6 @@ const InviteUserModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
     const {config} = useGlobalData();
     const editorBeta = config.labs.superEditors;
-    const focusRef = useRef<HTMLInputElement>(null);
     const [email, setEmail] = useState<string>('');
     const [saveState, setSaveState] = useState<'saving' | 'saved' | 'error' | ''>('');
     const [role, setRole] = useState<RoleType>('contributor');
@@ -42,12 +42,6 @@ const InviteUserModal = NiceModal.create(() => {
     const {data: {invites} = {}} = useBrowseInvites();
     const {mutateAsync: addInvite} = useAddInvite();
     const handleError = useHandleError();
-
-    useEffect(() => {
-        if (focusRef.current) {
-            focusRef.current.focus();
-        }
-    }, []);
 
     useEffect(() => {
         if (saveState === 'saved') {
@@ -211,7 +205,7 @@ const InviteUserModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('staff');
             }}
-            cancelLabel=''
+            cancelLabel='Close'
             okLabel={okLabel}
             okVariant={saveState === 'error' || !!errors.email ? 'destructive' : 'default'}
             testId='invite-user-modal'
@@ -219,18 +213,20 @@ const InviteUserModal = NiceModal.create(() => {
             width={540}
             onOk={handleSendInvitation}
         >
-            <div className='flex flex-col gap-6 py-4 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <Stack className='py-4' gap='xl'>
                 <p>
                     Send an invitation for a new person to create a staff account on your site, and select a role that matches what you’d like them to be able to do.
                 </p>
                 <Field data-invalid={Boolean(errors.email) || undefined}>
                     <FieldLabel htmlFor='invite-email'>Email address</FieldLabel>
                     <Input
-                        ref={focusRef}
                         aria-invalid={Boolean(errors.email) || undefined}
+                        autoComplete='off'
+                        className='h-[var(--control-height)] border-transparent bg-muted'
                         id='invite-email'
                         placeholder='jamie@example.com'
                         value={email}
+                        data-1p-ignore
                         onChange={event => setEmail(event.target.value)}
                         onKeyDown={() => setErrors(e => ({...e, email: undefined}))}
                     />
@@ -260,9 +256,8 @@ const InviteUserModal = NiceModal.create(() => {
                         })}
                     </RadioGroup>
                     <FieldError id='invite-role-error'>{errors.role}</FieldError>
-                    <FieldSeparator />
                 </FieldSet>
-            </div>
+            </Stack>
         </SettingsModal>
     );
 });
