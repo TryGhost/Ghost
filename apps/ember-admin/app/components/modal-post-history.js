@@ -40,7 +40,9 @@ export default class ModalPostHistory extends Component {
         const revision = this.revisionList[this.selectedRevisionIndex];
         revision.feature_image_caption = DOMPurify.sanitize(revision.feature_image_caption, {
             ALLOWED_TAGS: ['a', 'b', 'i', 'span'],
-            ALLOWED_ATTR: ['href', 'style']
+            ALLOWED_ATTR: ['href', 'style'],
+            ALLOW_DATA_ATTR: false,
+            ALLOW_ARIA_ATTR: false
         });
         return revision;
     }

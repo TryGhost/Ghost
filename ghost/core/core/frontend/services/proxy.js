@@ -50,7 +50,9 @@ module.exports = {
             if (resource.feature_image_caption) {
                 const sanitizedCaption = DOMPurify.sanitize(resource.feature_image_caption, {
                     ALLOWED_TAGS: ['a', 'b', 'i', 'span'],
-                    ALLOWED_ATTR: ['href', 'style']
+                    ALLOWED_ATTR: ['href', 'style'],
+                    ALLOW_DATA_ATTR: false,
+                    ALLOW_ARIA_ATTR: false
                 });
                 resource.feature_image_caption = new SafeString(sanitizedCaption);
             }
