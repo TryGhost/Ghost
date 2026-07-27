@@ -108,8 +108,8 @@ export const routes: RouteObject[] = [
             // subtree under /automations-proto/<concept>, so concepts can diverge
             // freely in layout and architecture. Reached directly by URL — there's
             // no index; the sidebar item points at the default concept (surface).
-            // Canvas and dashboard remain URL-only. Adding a concept = a new folder
-            // + a route block here (no nav edits).
+            // Canvas, dashboard, and float remain URL-only. Adding a concept = a
+            // new folder + a route block here (no nav edits).
             {
                 path: "/automations-proto/canvas",
                 lazy: lazyComponent(() => import("./automations/proto/canvas/list")),
@@ -139,6 +139,18 @@ export const routes: RouteObject[] = [
                 path: "/automations-proto/surface/:id",
                 handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
                 lazy: lazyComponent(() => import("./automations/proto/surface/detail")),
+            },
+            {
+                path: "/automations-proto/float",
+                lazy: lazyComponent(() => import("./automations/proto/float/list")),
+            },
+            {
+                // Float builds on the surface concept (same view/edit model, same
+                // canvases) but replaces its docked left pane with a floating icon
+                // rail + flyout panels, so the canvas is always full-screen.
+                path: "/automations-proto/float/:id",
+                handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
+                lazy: lazyComponent(() => import("./automations/proto/float/detail")),
             },
             {
                 // The tag detail route delegates to Ember. It must be declared
