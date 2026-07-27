@@ -84,6 +84,7 @@ describe('RSS: Generate Feed', function () {
 
             // xml & rss tags
             assert.match(xmlData, /^<\?xml version="1.0" encoding="UTF-8"\?>/);
+            assert.match(xmlData, /<\?xml-stylesheet type="text\/css" href="http:\/\/my-ghost-blog.com\/public\/rss.min.css"\?>/);
             assert.match(xmlData, /<rss/);
             assert.match(xmlData, /xmlns:dc="http:\/\/purl.org\/dc\/elements\/1.1\/"/);
             assert.match(xmlData, /xmlns:content="http:\/\/purl.org\/rss\/1.0\/modules\/content\/"/);

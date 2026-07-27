@@ -2,6 +2,7 @@ rss {
   width: 90vw;
   margin: 0 auto;
   font-family: sans-serif;
+  display: block;
 }
 rss::before {
   content: "This file is a special XML file intended to be used by an RSS reader for automatic subscription of new articles. What's shown below is just a part of what the RSS reader can see.";
