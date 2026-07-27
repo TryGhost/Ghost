@@ -387,9 +387,10 @@ describe('Acceptance: Publish flow', function () {
 
             expect(find('[data-test-modal="paid-post-preview-warning"]')).to.exist;
             expect(find('[data-test-modal="paid-post-preview-warning"] h1')).to.have.trimmed.rendered
-                .text('Send without a public preview?');
-            expect(find('[data-test-modal="paid-post-preview-warning"] .modal-body')).to.have.trimmed.rendered
-                .text('Without a public preview, any recipients who don’t have access will receive the full email.');
+                .text('Send the full post to all selected email recipients?');
+            expect(find('[data-test-modal="paid-post-preview-warning"] .modal-body p')).to.have.trimmed.rendered
+                .text('Your post is for paid subscribers, but you’re about to email it in full to 3 free subscribers too. To send them a teaser instead, add a public preview to your post.');
+            expect(find('[data-test-link="public-preview-help"]')).to.exist;
 
             await click('[data-test-button="continue-without-preview"]');
 
@@ -466,8 +467,24 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-button="continue"]');
 
             expect(find('[data-test-modal="paid-post-preview-warning"]')).to.exist;
-            expect(find('[data-test-modal="paid-post-preview-warning"] .modal-body')).to.have.trimmed.rendered
-                .text('Without a public preview, any recipients who don’t have access will receive the full email.');
+            expect(find('[data-test-modal="paid-post-preview-warning"] .modal-body p')).to.have.trimmed.rendered
+                .text('Your post is for the Gold tier, but you’re about to email it in full to 4 subscribers outside that tier. To send them a teaser instead, add a public preview to your post.');
+        });
+
+        it('does not warn when no selected recipients lack access', async function () {
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {
+                status: 'draft',
+                visibility: 'paid'
+            });
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            // default audience excludes free members, so nobody lacks access
+            await click('[data-test-button="continue"]');
+
+            expect(find('[data-test-modal="paid-post-preview-warning"]')).to.not.exist;
+            expect(find('[data-test-publish-flow="confirm"]')).to.exist;
         });
 
         it('returns to the editor to add a public preview from the warning', async function () {
@@ -486,6 +503,14 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-button="add-public-preview"]');
 
             expect(find('[data-test-modal="publish-flow"]')).to.not.exist;
+
+            // a confirmation is left in the editor and sticks around
+            expect(find('[data-test-text="notification-content"]')).to.exist;
+
+            // ...but it's only meaningful while looking at the post, so it goes
+            // when attention moves elsewhere
+            await click('[data-test-button="publish-flow"]');
+            expect(find('[data-test-text="notification-content"]')).to.not.exist;
         });
 
         it('can publish+send with single newsletter', async function () {

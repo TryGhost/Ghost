@@ -143,7 +143,9 @@ export default class NotificationsService extends Service {
             icon: options.icon,
             type: options.type,
             key: options.key,
-            actions: options.actions
+            actions: options.actions,
+            // opt out of the 5s auto-fade when there's something to read
+            sticky: options.sticky
         }, options.delayed);
     }
 
@@ -245,8 +247,14 @@ export default class NotificationsService extends Service {
         this._removeItems('alert', key);
     }
 
-    clearAll() {
-        this.content = new TrackedArray([]);
+    // `keepSticky` preserves notifications that are waiting on the user (they
+    // carry an action, or something they need to read). Used by the editor,
+    // which clears notifications after every save — including autosaves — and
+    // would otherwise wipe them a few seconds after they appear.
+    clearAll({keepSticky = false} = {}) {
+        this.content = keepSticky
+            ? new TrackedArray(this.content.filter(notification => notification.sticky))
+            : new TrackedArray([]);
     }
 
     _removeItems(status, key) {

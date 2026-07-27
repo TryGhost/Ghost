@@ -215,8 +215,65 @@ export default class PublishOptions {
         return `${this.newsletter.recipientFilter}+(${this.emailPreviewNoAccessFilter})`;
     }
 
-    get shouldWarnRecipientsReceiveFullEmail() {
-        return !this.hasPublicPreview && this.hasPaidAccess && !this.recipientsAreGuaranteedPostAccess;
+    // Selected recipients who don't meet the post's access restriction — i.e.
+    // the people who would receive the full restricted post by email.
+    get noAccessRecipientFilter() {
+        if (!this.willEmail || !this.emailPreviewNoAccessFilter) {
+            return null;
+        }
+
+        return `${this.fullRecipientFilter}+(${this.emailPreviewNoAccessFilter})`;
+    }
+
+    // Cheap pre-check. Only owners/admins can count members, so only they get
+    // this warning — which means we can be exact rather than guessing, and
+    // never fire a false alarm. When the filter already guarantees everyone has
+    // access we skip the count entirely.
+    get mightWarnRecipientsReceiveFullEmail() {
+        return this.user.canManageMembers
+            && !this.hasPublicPreview
+            && this.hasPaidAccess
+            && this.willEmail
+            && !this.recipientsAreGuaranteedPostAccess;
+    }
+
+    // Exact number of selected recipients without access. 0 means no warning.
+    async countNoAccessRecipients() {
+        if (!this.mightWarnRecipientsReceiveFullEmail || !this.noAccessRecipientFilter) {
+            return 0;
+        }
+
+        return await this.membersCountCache.count(this.noAccessRecipientFilter);
+    }
+
+    // Everyone this email is going to. Used to tell whether the recipients
+    // without access are the whole audience or only part of it — the warning
+    // says they'll get the post "too" only when others are getting it legitimately.
+    async countAllRecipients() {
+        if (!this.fullRecipientFilter) {
+            return 0;
+        }
+
+        return await this.membersCountCache.count(this.fullRecipientFilter);
+    }
+
+    // "Gold" / "Gold and Silver" / "Gold, Silver, and Bronze"
+    get postTierNames() {
+        const names = (this.post.tiers || []).map(tier => tier.name).filter(Boolean);
+
+        if (names.length <= 1) {
+            return names[0] || '';
+        }
+
+        if (names.length === 2) {
+            return `${names[0]} and ${names[1]}`;
+        }
+
+        return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+    }
+
+    get postTierCount() {
+        return (this.post.tiers || []).length;
     }
 
     // publish date ------------------------------------------------------------

@@ -1359,6 +1359,19 @@ figure {
     white-space: nowrap;
 }
 
+.gh-paid-post-preview-warning-help {
+    margin-top: 12px;
+}
+
+.gh-paid-post-preview-warning-help a {
+    color: var(--midgrey);
+    text-decoration: underline;
+}
+
+.gh-paid-post-preview-warning .modal-footer .gh-btn span {
+    white-space: nowrap;
+}
+
 /* Labs
 /* ---------------------------------------------------------- */
 

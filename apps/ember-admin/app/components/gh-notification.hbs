@@ -1,4 +1,4 @@
-<article class="gh-notification gh-notification-passive {{this.typeClass}}" {{on "animationend" this.closeOnFadeOut}} ...attributes>
+<article class="gh-notification {{if @message.sticky "gh-notification-sticky" "gh-notification-passive"}} {{this.typeClass}}" {{on "animationend" this.closeOnFadeOut}} ...attributes>
     <div class="gh-notification-content" data-test-text="notification-content">
         <div class="gh-notification-header">
             <div class="gh-notification-icon">

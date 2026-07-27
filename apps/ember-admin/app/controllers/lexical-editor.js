@@ -502,6 +502,14 @@ export default class LexicalEditorController extends Controller {
         this.secondaryEditorAPI = API;
     }
 
+    // Inserts a paywall after the opening of the post so "add a public preview"
+    // from the publish flow is a single action rather than a trip to the editor
+    // with nothing placed. Returns whether one was added.
+    @action
+    addPublicPreview() {
+        return this.editorAPI?.insertPaywall?.() ?? false;
+    }
+
     @action
     clearFeatureImage() {
         this.post.set('featureImage', null);
@@ -677,8 +685,9 @@ export default class LexicalEditorController extends Controller {
         try {
             let post = yield this._savePostTask.perform({...options, adapterOptions});
 
-            // Clear any error notification (if any)
-            this.notifications.clearAll();
+            // Clear any error notification (if any). Autosaves run through here
+            // too, so keep notifications that are still waiting on the user.
+            this.notifications.clearAll({keepSticky: true});
 
             if (!options.silent) {
                 this._showSaveNotification(prevStatus, post.get('status'), isNew ? true : false);

@@ -152,6 +152,14 @@
     animation: notification-fade-in-spring;
 }
 
+/* stays until dismissed — for notifications the user needs time to read */
+.gh-notification-sticky {
+    animation: notification-fade-in-spring;
+    animation-duration: 0.8s;
+    animation-iteration-count: 1;
+    animation-timing-function: cubic-bezier(0.445, 0.050, 0.550, 0.950);
+}
+
 @keyframes notification-fade-in-spring {
     0.00% {
         transform: translateY(100%);

@@ -15,6 +15,7 @@ import {tracked} from '@glimmer/tracking';
 import {use} from 'ember-could-get-used-to-this';
 
 const SHOW_SAVE_STATUS_DURATION = 3000;
+const PUBLIC_PREVIEW_NOTIFICATION_KEY = 'paywall.public-preview-added';
 export const CONFIRM_EMAIL_POLL_LENGTH = 1000;
 export const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 
@@ -44,11 +45,22 @@ export default class PublishManagement extends Component {
     willDestroy() {
         super.willDestroy(...arguments);
         this.publishFlowModal?.close();
+        // leaving the editor entirely — the preview confirmation is only
+        // meaningful while you're looking at the post
+        this.dismissPublicPreviewNotification();
+    }
+
+    // The "public preview added" notification is sticky so it survives the
+    // editor's autosave. That means we have to retire it ourselves once the
+    // author's attention moves elsewhere.
+    dismissPublicPreviewNotification() {
+        this.notifications.closeNotifications(PUBLIC_PREVIEW_NOTIFICATION_KEY);
     }
 
     @action
-    async openPublishFlow(event, {skipAnimation} = {}) {
+    async openPublishFlow(event, {skipAnimation, openSection} = {}) {
         event?.preventDefault();
+        this.dismissPublicPreviewNotification();
 
         this.updateFlowModal?.close();
 
@@ -81,6 +93,8 @@ export default class PublishManagement extends Component {
                 publishOptions: this.publishOptions,
                 saveTask: this.publishTask,
                 togglePreviewPublish: this.togglePreviewPublish,
+                addPublicPreview: this.addPublicPreview,
+                openSection,
                 skipAnimation
             });
 
@@ -91,6 +105,29 @@ export default class PublishManagement extends Component {
                 this[result.afterTask].perform();
             }
         }
+    }
+
+    // Called when the author chooses "Add public preview" from the paid-post
+    // warning. Places the paywall for them and leaves a way back into the
+    // publish flow — previously this dropped them in the editor with nothing
+    // inserted, no confirmation their publish settings survived, and no route
+    // back to the audience they still need to confirm.
+    @action
+    addPublicPreview() {
+        const didInsert = this.args.addPublicPreview?.();
+
+        this.notifications.showNotification(
+            didInsert
+                ? 'Public preview added. Drag it to change where the free part ends.'
+                : 'Add a public preview where you want the free part to end.',
+            {
+                type: 'success',
+                key: PUBLIC_PREVIEW_NOTIFICATION_KEY,
+                // keep it up long enough to read — the editor's autosave would
+                // otherwise clear it moments later
+                sticky: true
+            }
+        );
     }
 
     @action
@@ -119,6 +156,7 @@ export default class PublishManagement extends Component {
     @action
     async openPreview(event, {skipAnimation, scrollToPaywall} = {}) {
         event?.preventDefault();
+        this.dismissPublicPreviewNotification();
 
         const isValid = await this._validatePost();
         await this._ensureTiersLoaded();

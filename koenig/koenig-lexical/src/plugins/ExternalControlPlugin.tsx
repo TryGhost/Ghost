@@ -1,6 +1,7 @@
 import React from 'react';
 import {$canShowPlaceholder} from '@lexical/text';
 import {$createParagraphNode, $getRoot, $isDecoratorNode} from 'lexical';
+import {$createPaywallNode} from '../nodes/PaywallNode';
 import {$selectDecoratorNode} from '../utils/$selectDecoratorNode';
 import {DRAG_DROP_PASTE} from '@lexical/rich-text';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -95,6 +96,69 @@ export const ExternalControlPlugin = ({registerAPI}) => {
             },
             insertFiles(files) {
                 editor.dispatchCommand(DRAG_DROP_PASTE, files);
+            },
+            // Places a paywall after the opening of the post so the consuming
+            // app can offer "add a public preview" as a single action. The
+            // author still chooses the final position by dragging it — this
+            // just gives them something to adjust rather than a blank start.
+            insertPaywall({afterBlocks = 3} = {}) {
+                let didInsert = false;
+                let paywallKey = null;
+
+                editor.update(() => {
+                    const root = $getRoot();
+                    const children = root.getChildren();
+
+                    // a post can only have one paywall
+                    if (children.some(child => child.getType() === 'paywall')) {
+                        return;
+                    }
+
+                    // Only count blocks the reader actually gets to read.
+                    // Headings, dividers and empty paragraphs are structure, not
+                    // content — counting them cuts the preview far too early and
+                    // can strand a heading directly above the paywall.
+                    // NB: Koenig's headings are `extended-heading`, not `heading`.
+                    const STRUCTURAL_TYPES = ['heading', 'extended-heading', 'horizontalrule'];
+                    const isCountable = (node) => {
+                        if (STRUCTURAL_TYPES.includes(node.getType())) {
+                            return false;
+                        }
+                        // skip empty spacer paragraphs
+                        return node.getTextContent?.().trim() !== '' || node.getType() !== 'paragraph';
+                    };
+                    const countable = children.filter(isCountable);
+
+                    // Needs content on both sides. With a single block there's
+                    // no split that leaves both a preview and something gated,
+                    // so leave it to the author rather than placing it badly.
+                    if (countable.length < 2) {
+                        return;
+                    }
+
+                    // Whichever comes first: `afterBlocks` blocks, or half the
+                    // post. Short posts never give away more than half, long
+                    // posts still get a tight teaser.
+                    const takeCount = Math.min(afterBlocks, Math.max(1, Math.floor(countable.length / 2)));
+                    const target = countable[takeCount - 1];
+
+                    const paywallNode = $createPaywallNode();
+                    target.insertAfter(paywallNode);
+                    $selectDecoratorNode(paywallNode);
+
+                    paywallKey = paywallNode.getKey();
+                    didInsert = true;
+                });
+
+                // centre the viewport on it so the author lands looking at the
+                // thing they're being asked to position
+                if (paywallKey) {
+                    requestAnimationFrame(() => {
+                        editor.getElementByKey(paywallKey)?.scrollIntoView({block: 'center', behavior: 'smooth'});
+                    });
+                }
+
+                return didInsert;
             },
             lastNodeIsDecorator() {
                 let isDecorator = false;

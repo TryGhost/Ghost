@@ -7,7 +7,9 @@ import {tracked} from '@glimmer/tracking';
 export default class PublishFlowOptions extends Component {
     @service modals;
 
-    @tracked openSection = null;
+    // when we reopen the flow after adding a public preview we land on the
+    // audience section — the author still has to confirm who receives it
+    @tracked openSection = this.args.initialSection ?? null;
 
     @action
     toggleSection(section) {
@@ -25,16 +27,40 @@ export default class PublishFlowOptions extends Component {
 
     @action
     async confirm() {
-        if (this.args.publishOptions.shouldWarnRecipientsReceiveFullEmail) {
-            const result = await this.modals.open(PaidPostPreviewWarningModal);
+        const publishOptions = this.args.publishOptions;
 
-            if (result === 'editor') {
-                this.args.close();
-                return;
-            }
+        // Only warn when recipients without access actually exist. The count is
+        // exact (owners/admins only), so this never fires a false alarm — and
+        // it's re-evaluated on every attempt, so adding a preview or removing
+        // those recipients makes it go away.
+        if (publishOptions.mightWarnRecipientsReceiveFullEmail) {
+            const [noAccessCount, totalCount] = await Promise.all([
+                publishOptions.countNoAccessRecipients(),
+                publishOptions.countAllRecipients()
+            ]);
 
-            if (result !== 'continue') {
-                return;
+            if (noAccessCount > 0) {
+                const result = await this.modals.open(PaidPostPreviewWarningModal, {
+                    noAccessCount,
+                    // when the whole audience lacks access there's no one else
+                    // receiving it legitimately, so the copy drops "too"
+                    allLackAccess: totalCount > 0 && noAccessCount >= totalCount,
+                    visibility: publishOptions.post.visibility,
+                    tierNames: publishOptions.postTierNames,
+                    tierCount: publishOptions.postTierCount
+                });
+
+                if (result === 'editor') {
+                    // place the paywall for them rather than dropping them into
+                    // the editor with nothing inserted and no way back
+                    this.args.addPublicPreview?.();
+                    this.args.close();
+                    return;
+                }
+
+                if (result !== 'continue') {
+                    return;
+                }
             }
         }
 
