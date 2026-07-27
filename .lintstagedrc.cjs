@@ -75,7 +75,7 @@ function findWorkspace(file) {
     return null;
 }
 
-function buildCommand(workspace, files) {
+function buildEslintCommand(workspace, files) {
     const base = workspace ? path.join(ROOT, workspace) : ROOT;
     const relativeFiles = files.map(file => normalize(path.relative(base, file)));
     const dirArg = workspace ? `--dir ${shellQuote([workspace])} ` : '';
@@ -108,7 +108,7 @@ module.exports = {
             }
             groups.get(key).push(file);
         }
-        return [...groups.entries()].map(([workspace, wsFiles]) => buildCommand(workspace || null, wsFiles));
+        return [...groups.entries()].map(([workspace, wsFiles]) => buildEslintCommand(workspace || null, wsFiles));
     },
     'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': files => buildBoundaryCommand(files),
     'apps/ember-admin/**/*.hbs': files => buildEmberTemplateLintCommand(files),
