@@ -33,3 +33,15 @@ describe('Proxy: serverEvents', function () {
         sinon.assert.notCalled(busOnStub);
     });
 });
+
+describe('Proxy: prepareContextResource', function () {
+    it('removes data and aria attributes from feature image captions', function () {
+        const resource = {
+            feature_image_caption: '<span data-foo="bar" aria-label="caption" style="color: red"><a href="https://example.com">Caption</a></span>'
+        };
+
+        proxy.prepareContextResource(resource);
+
+        assert.equal(resource.feature_image_caption.toString(), '<span style="color: red"><a href="https://example.com">Caption</a></span>');
+    });
+});
