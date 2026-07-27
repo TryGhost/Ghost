@@ -213,7 +213,7 @@ const InviteUserModal = NiceModal.create(() => {
             width={540}
             onOk={handleSendInvitation}
         >
-            <Stack className='py-4 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' gap='xl'>
+            <Stack className='py-4' gap='xl'>
                 <p>
                     Send an invitation for a new person to create a staff account on your site, and select a role that matches what you’d like them to be able to do.
                 </p>
@@ -221,10 +221,12 @@ const InviteUserModal = NiceModal.create(() => {
                     <FieldLabel htmlFor='invite-email'>Email address</FieldLabel>
                     <Input
                         aria-invalid={Boolean(errors.email) || undefined}
+                        autoComplete='off'
+                        className='h-[var(--control-height)] border-transparent bg-muted'
                         id='invite-email'
                         placeholder='jamie@example.com'
                         value={email}
-                        autoFocus
+                        data-1p-ignore
                         onChange={event => setEmail(event.target.value)}
                         onKeyDown={() => setErrors(e => ({...e, email: undefined}))}
                     />

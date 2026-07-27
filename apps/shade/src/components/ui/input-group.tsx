@@ -14,7 +14,7 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
                 inputSurfaceClasses.invalidWithin,
 
                 // Wrapper layout + group context (input-group specific).
-                'group/input-group relative flex w-full items-center outline-hidden',
+                'group/input-group relative flex w-full items-center outline-hidden [&>[data-slot=input-group-control]]:bg-transparent',
                 'h-9 has-[>textarea]:h-auto',
 
                 // Variants based on alignment.

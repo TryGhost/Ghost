@@ -12,11 +12,11 @@ import {Button, Field, FieldContent, FieldDescription, FieldError, FieldGroup, F
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {PreviewModalContent} from '../../preview-modal';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {Stack, Text} from '@tryghost/shade/primitives';
 import {Trash2} from 'lucide-react';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -438,7 +438,7 @@ const Sidebar: React.FC<{
             contents:
             <>
                 <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Global</FieldLegend>
+                    <FieldLegend className='mb-0 pb-2 text-md! leading-supertight font-bold md:text-lg!'>Global</FieldLegend>
                     <FieldGroup className='gap-5'>
                     <div className='mb-1'>
                         <ColorPickerField
@@ -456,7 +456,7 @@ const Sidebar: React.FC<{
                             onChange={color => updateNewsletter({background_color: color!})}
                         />
                     </div>
-                    <div className='flex w-full items-center justify-between gap-2'>
+                    <Inline className='w-full' gap='sm' justify='between'>
                         <div className='shrink-0'>Heading font</div>
                         <Field className='max-w-[200px]'>
                             <FieldLabel className='sr-only'>Heading font</FieldLabel>
@@ -467,8 +467,8 @@ const Sidebar: React.FC<{
                                 </SelectContent>
                             </Select>
                         </Field>
-                    </div>
-                    <div className='flex w-full items-center justify-between gap-2'>
+                    </Inline>
+                    <Inline className='w-full' gap='sm' justify='between'>
                         <div className='shrink-0'>Heading weight</div>
                         <Field className='max-w-[200px]'>
                             <FieldLabel className='sr-only'>Heading weight</FieldLabel>
@@ -479,8 +479,8 @@ const Sidebar: React.FC<{
                                 </SelectContent>
                             </Select>
                         </Field>
-                    </div>
-                    <div className='flex w-full items-center justify-between gap-2'>
+                    </Inline>
+                    <Inline className='w-full' gap='sm' justify='between'>
                         <div className='shrink-0'>Body font</div>
                         <Field className='max-w-[200px]'>
                             <FieldLabel className='sr-only'>Body font</FieldLabel>
@@ -491,11 +491,11 @@ const Sidebar: React.FC<{
                                 </SelectContent>
                             </Select>
                         </Field>
-                    </div>
+                    </Inline>
                     </FieldGroup>
                 </FieldSet>
                 <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Header</FieldLegend>
+                    <FieldLegend className='mb-0 pb-2 text-md! leading-supertight font-bold md:text-lg!'>Header</FieldLegend>
                     <FieldGroup className='gap-5'>
                     <div className='mb-1'>
                         <ColorPickerField
@@ -534,7 +534,7 @@ const Sidebar: React.FC<{
                             onChange={color => updateNewsletter({post_title_color: color})}
                         />
                     </div>
-                    <div className='flex w-full justify-between'>
+                    <Inline className='w-full' gap='sm' justify='between'>
                         <div>Title alignment</div>
                         <IconToggleGroup
                             label='Title alignment'
@@ -545,12 +545,12 @@ const Sidebar: React.FC<{
                             value={newsletter.title_alignment}
                             onValueChange={titleAlignment => updateNewsletter({title_alignment: titleAlignment})}
                         />
-                    </div>
+                    </Inline>
                     </FieldGroup>
                 </FieldSet>
 
                 <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Body</FieldLegend>
+                    <FieldLegend className='mb-0 pb-2 text-md! leading-supertight font-bold md:text-lg!'>Body</FieldLegend>
                     <FieldGroup className='gap-5'>
                     <div className='mb-1'>
                         <ColorPickerField
@@ -594,7 +594,7 @@ const Sidebar: React.FC<{
                             onChange={color => updateNewsletter({button_color: color})}
                         />
                     </div>
-                    <div className='flex w-full justify-between'>
+                    <Inline className='w-full' gap='sm' justify='between'>
                         <div>Button style</div>
                         <IconToggleGroup
                             label='Button style'
@@ -605,8 +605,8 @@ const Sidebar: React.FC<{
                             value={newsletter.button_style || 'fill'}
                             onValueChange={buttonStyle => updateNewsletter({button_style: buttonStyle})}
                         />
-                    </div>
-                    <div className='flex w-full justify-between'>
+                    </Inline>
+                    <Inline className='w-full' gap='sm' justify='between'>
                         <div>Button corners</div>
                         <IconToggleGroup
                             label='Button corners'
@@ -618,7 +618,7 @@ const Sidebar: React.FC<{
                             value={newsletter.button_corners || 'rounded'}
                             onValueChange={buttonCorners => updateNewsletter({button_corners: buttonCorners})}
                         />
-                    </div>
+                    </Inline>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
@@ -640,7 +640,7 @@ const Sidebar: React.FC<{
                             onChange={color => updateNewsletter({link_color: color})}
                         />
                     </div>
-                    <div className='flex w-full justify-between'>
+                    <Inline className='w-full' gap='sm' justify='between'>
                         <div>Link style</div>
                         <IconToggleGroup
                             label='Link style'
@@ -652,8 +652,8 @@ const Sidebar: React.FC<{
                             value={newsletter.link_style || 'underline'}
                             onValueChange={linkStyle => updateNewsletter({link_style: linkStyle})}
                         />
-                    </div>
-                    <div className='flex w-full justify-between'>
+                    </Inline>
+                    <Inline className='w-full' gap='sm' justify='between'>
                         <div>Image corners</div>
                         <IconToggleGroup
                             label='Image corners'
@@ -664,7 +664,7 @@ const Sidebar: React.FC<{
                             value={newsletter.image_corners || 'square'}
                             onValueChange={imageCorners => updateNewsletter({image_corners: imageCorners})}
                         />
-                    </div>
+                    </Inline>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
