@@ -718,6 +718,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
     }
 
     await use(page);
+    await page.unrouteAll({ behavior: 'wait' });
 
     if (EGRESS_MONITOR_ENABLED) {
       page.off('request', onRequest);
