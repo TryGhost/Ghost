@@ -109,6 +109,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                     {
                         selectedLayout === 'all-in-one' &&
                         <ColorPickerField
+                            debounceMs={200}
                             direction='rtl'
                             eyedropper={true}
                             swatches={[

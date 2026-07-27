@@ -173,7 +173,7 @@ const ColorPickerField = ({
                     onTouchStartCapture={() => allowPickerChanges.current = true}
                 >
                     <ColorPicker
-                        value={normalizedValue}
+                        defaultValue={normalizedValue}
                         onChange={(hex) => {
                             if (!suppressPickerChanges.current && allowPickerChanges.current) {
                                 handleChange(hex.toLowerCase());

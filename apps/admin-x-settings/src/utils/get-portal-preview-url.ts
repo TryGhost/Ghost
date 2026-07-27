@@ -9,9 +9,10 @@ export type portalPreviewUrlTypes = {
     tiers: Tier[];
     siteData: SiteData | null;
     selectedTab: string;
+    previewTheme: 'light' | 'dark';
 };
 
-export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selectedTab} : portalPreviewUrlTypes): string | null => {
+export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selectedTab, previewTheme} : portalPreviewUrlTypes): string | null => {
     if (!siteData?.url) {
         return null;
     }
@@ -31,6 +32,7 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
     settingsParam.append('isMonthly', checkStripeEnabled(settings, config) && portalPlans.includes('monthly') ? 'true' : 'false');
     settingsParam.append('isYearly', checkStripeEnabled(settings, config) && portalPlans.includes('yearly') ? 'true' : 'false');
     settingsParam.append('page', selectedTab === 'account' ? 'accountHome' : 'signup');
+    settingsParam.append('previewTheme', previewTheme);
     settingsParam.append('buttonIcon', encodeURIComponent(getSettingValue(settings, 'portal_button_icon') || 'icon-1'));
     settingsParam.append('signupButtonText', encodeURIComponent(getSettingValue(settings, 'portal_button_signup_text') || ''));
     settingsParam.append('membersSignupAccess', getSettingValue(settings, 'members_signup_access') || 'all');
