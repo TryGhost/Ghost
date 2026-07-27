@@ -6,7 +6,7 @@ const path = require('path');
 const errors = require('@tryghost/errors');
 const fs = require('fs');
 const ImageSize = require('../../../../../core/server/lib/image/image-size');
-const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
+const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase').default;
 const probe = require('probe-image-size');
 
 // use a 1x1 gif in nock responses because it's really small and easy to work with

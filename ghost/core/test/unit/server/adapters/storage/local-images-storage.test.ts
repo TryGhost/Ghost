@@ -1,12 +1,20 @@
-const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../utils/assertions');
-const errors = require('@tryghost/errors');
-const sinon = require('sinon');
-const fs = require('fs-extra');
-const moment = require('moment');
-const path = require('path');
-const LocalImagesStorage = require('../../../../../core/server/adapters/storage/LocalImagesStorage');
+import assert from 'node:assert/strict';
+import errors from '@tryghost/errors';
+import sinon from 'sinon';
+import fs from 'fs-extra';
+import moment from 'moment';
+import path from 'path';
+import type {StorageFile} from 'ghost-storage-base';
+import type LocalImagesStorageClass from '../../../../../core/server/adapters/storage/LocalImagesStorage';
+
+// Vitest resolves `import` through Vite's SSR module runner and `require`
+// through Node's CJS cache, so the same first-party module loaded both ways
+// yields two instances with independent state. config-utils is untyped JS and
+// has to be required, so the storage adapter reading the config singleton it
+// mutates must come from the same `require` graph.
+const LocalImagesStorage: typeof LocalImagesStorageClass = require('../../../../../core/server/adapters/storage/LocalImagesStorage').default;
 const configUtils = require('../../../../utils/config-utils');
+const {assertExists} = require('../../../../utils/assertions');
 
 // Resolve content paths from the ghost/core package root so assertions do not
 // assume process.cwd() === ghost/core (the unified `pnpm test:watch` runs from
@@ -14,17 +22,14 @@ const configUtils = require('../../../../utils/config-utils');
 const ghostCoreRoot = path.join(__dirname, '../../../../..');
 
 describe('Local Images Storage', function () {
-    let image;
-    let momentStub;
-    let localFileStore;
-    let fsMkdirsStub;
-    let fsCopyStub;
-    let fsStatStub;
+    let image: StorageFile;
+    let momentStub: sinon.SinonStub;
+    let localFileStore: LocalImagesStorageClass;
+    let fsMkdirsStub: sinon.SinonStub;
+    let fsCopyStub: sinon.SinonStub;
+    let fsStatStub: sinon.SinonStub;
 
-    function fakeDate(mm, yyyy) {
-        const month = parseInt(mm, 10);
-        const year = parseInt(yyyy, 10);
-
+    function fakeDate(month: number, year: number) {
         momentStub.withArgs('YYYY').returns(year.toString());
         momentStub.withArgs('MM').returns(month < 10 ? '0' + month.toString() : month.toString());
     }
@@ -143,7 +148,7 @@ describe('Local Images Storage', function () {
         it('image does not exist', async function () {
             await assert.rejects(
                 localFileStore.read({path: 'does-not-exist.png'}),
-                (err) => {
+                (err: errors.NotFoundError & {code?: string}) => {
                     assert.equal((err instanceof errors.NotFoundError), true);
                     assert.equal(err.code, 'ENOENT');
                     return true;
@@ -156,21 +161,21 @@ describe('Local Images Storage', function () {
         it('name contains a .\d as extension', async function () {
             const url = await localFileStore.save({
                 name: 'test-1.1.1'
-            });
+            } as StorageFile);
             assertExists(url.match(/test-1.1.1/));
         });
 
         it('name contains a .zip as extension', async function () {
             const url = await localFileStore.save({
                 name: 'test-1.1.1.zip'
-            });
+            } as StorageFile);
             assertExists(url.match(/test-1.1.1.zip/));
         });
 
         it('name contains a .jpeg as extension', async function () {
             const url = await localFileStore.save({
                 name: 'test-1.1.1.jpeg'
-            });
+            } as StorageFile);
             assertExists(url.match(/test-1.1.1.jpeg/));
         });
     });
@@ -190,7 +195,7 @@ describe('Local Images Storage', function () {
     // @TODO: remove path.join mock...
     describe('on Windows', function () {
         const truePathSep = path.sep;
-        let pathJoinStub;
+        let pathJoinStub: sinon.SinonStub;
 
         beforeEach(function () {
             pathJoinStub = sinon.stub(path, 'join');
@@ -198,11 +203,11 @@ describe('Local Images Storage', function () {
         });
 
         afterEach(function () {
-            path.sep = truePathSep;
+            (path as {sep: string}).sep = truePathSep;
         });
 
         it('should return url in proper format for windows', async function () {
-            path.sep = '\\';
+            (path as {sep: string}).sep = '\\';
             pathJoinStub.returns('content\\images\\2013\\09\\IMAGE.jpg');
 
             const url = await localFileStore.save(image);
