@@ -61,9 +61,7 @@ function expandPattern(pattern) {
     return candidates;
 }
 
-const WORKSPACES = new Set(
-    loadWorkspacePatterns().flatMap(expandPattern)
-);
+const WORKSPACES = new Set(loadWorkspacePatterns().flatMap(expandPattern));
 
 function findWorkspace(file) {
     let dir = path.dirname(path.resolve(file));
@@ -79,15 +77,13 @@ function findWorkspace(file) {
 
 function buildCommand(workspace, files) {
     const base = workspace ? path.join(ROOT, workspace) : ROOT;
-    const relativeFiles = files
-        .map(file => normalize(path.relative(base, file)));
+    const relativeFiles = files.map(file => normalize(path.relative(base, file)));
     const dirArg = workspace ? `--dir ${shellQuote([workspace])} ` : '';
     return `pnpm ${dirArg}exec eslint --cache -- ${shellQuote(relativeFiles)}`;
 }
 
 function buildBoundaryCommand(files) {
-    const relativeFiles = files
-        .map(file => normalize(path.relative(ROOT, file)));
+    const relativeFiles = files.map(file => normalize(path.relative(ROOT, file)));
     return `pnpm exec depcruise --config .dependency-cruiser.cjs -- ${shellQuote(relativeFiles)}`;
 }
 
@@ -102,7 +98,7 @@ function buildEmberTemplateLintCommand(files) {
 }
 
 module.exports = {
-    '*.{js,ts,tsx,jsx,cjs}': (files) => {
+    '*.{js,ts,tsx,jsx,cjs}': files => {
         const groups = new Map();
         for (const file of files) {
             const workspace = findWorkspace(file);
@@ -112,14 +108,10 @@ module.exports = {
             }
             groups.get(key).push(file);
         }
-        return [...groups.entries()].map(([workspace, wsFiles]) =>
-            buildCommand(workspace || null, wsFiles)
-        );
+        return [...groups.entries()].map(([workspace, wsFiles]) => buildCommand(workspace || null, wsFiles));
     },
-    'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': (files) =>
-        buildBoundaryCommand(files),
-    'apps/ember-admin/**/*.hbs': (files) =>
-        buildEmberTemplateLintCommand(files),
-    'apps/{shade,admin-x-framework,activitypub,admin-x-settings,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}': (files) =>
-        buildBoundaryCommand(files)
+    'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': files => buildBoundaryCommand(files),
+    'apps/ember-admin/**/*.hbs': files => buildEmberTemplateLintCommand(files),
+    'apps/{shade,admin-x-framework,activitypub,admin-x-settings,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}':
+        files => buildBoundaryCommand(files)
 };
