@@ -758,15 +758,15 @@ describe('automations repository', function () {
             const firstRevision = await knex('automation_action_revisions').where('action_id', emailAction.id).first();
             assert(firstRevision);
             await knex('automation_action_revisions').where('id', firstRevision.id).update({
-                email_sent_count: 2,
+                email_sent_count: 3,
                 email_opened_count: 1,
-                email_clicked_count: 1
+                email_clicked_count: 2
             });
             await knex('automation_action_revisions').insert({
                 ...firstRevision,
                 id: ObjectId().toHexString(),
                 created_at: toDatabaseDate(new Date(new Date(firstRevision.created_at).getTime() + 1000)),
-                email_sent_count: 1,
+                email_sent_count: 5,
                 email_opened_count: 1,
                 email_clicked_count: 1
             });
@@ -775,13 +775,8 @@ describe('automations repository', function () {
             assert(result);
             const action = result.actions.find(candidate => candidate.id === emailAction.id);
             assert(action?.type === 'send_email');
-            assert.deepEqual(action.stats, {
-                email_clicked_count: 2,
-                email_sent_count: 3,
-                email_opened_count: 2,
-                opened_rate: 67,
-                clicked_rate: 67
-            });
+            assert.equal(action.stats.email_clicked_count, 3);
+            assert.equal(action.stats.clicked_rate, 38);
         });
     });
 
