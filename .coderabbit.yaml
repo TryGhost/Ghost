@@ -9,3 +9,64 @@ reviews:
   pre_merge_checks:
     docstrings:
       mode: "off"
+    custom_checks:
+      - name: "Type-safe boundaries"
+        mode: "warning"
+        instructions: |
+          Ghost treats type safety as a desired property: TypeScript as the language,
+          Zod as the standard for runtime validation at boundaries. A boundary is where
+          TypeScript cannot prove what exists at runtime: HTTP request input, external
+          API/SDK responses, environment and configuration values, database or filesystem
+          reads, queue/webhook/event payloads, and other serialized data entering the
+          process.
+
+          This check passes unless the PR does one of the following:
+          - Adds or modifies code that consumes data from a runtime boundary without
+            validating it first (Zod is the default mechanism; another format is fine
+            where an external contract requires one).
+          - Introduces new `any`, unchecked `as` assertions, `@ts-nocheck`, or
+            `@ts-ignore` to paper over boundary uncertainty instead of modelling it.
+          - Adds a handwritten TypeScript interface duplicating a shape that is already
+            (or should be) described by a Zod schema, instead of inferring via `z.infer`.
+
+          Do NOT fail this check for: pre-existing JavaScript files that were only
+          touched incidentally; ordinary internal function or module calls (they do not
+          need runtime validation); test code, scripts, or config files.
+  path_instructions:
+    - path: "**/*.{ts,tsx,mts,cts}"
+      instructions: |
+        Ghost's direction is trustworthy types, not merely more `.ts` files. Review with
+        the question "where does this data become trusted?" in mind:
+        - Data crossing a runtime boundary (HTTP input, external API/SDK responses,
+          env/config values, database or filesystem reads, queue/webhook/event payloads,
+          serialized data from another process) must be treated as `unknown` until
+          validated. Zod is the default way to describe and validate it.
+        - Types describing boundary data should be inferred from the Zod schema with
+          `z.infer`/`z.input`, not maintained as a second handwritten interface of the
+          same shape. Flag parallel definitions that can drift.
+        - Flag escape hatches used as a substitute for modelling the data: `any`
+          (explicit or smuggled through untyped helpers), unchecked `as` assertions on
+          boundary data, `@ts-nocheck`, and `@ts-ignore`/`@ts-expect-error` without a
+          justifying comment.
+        - Once data has crossed a validated boundary, internal code should trust and
+          preserve its type. Do NOT request Zod validation on ordinary internal function
+          or module boundaries, and flag redundant re-validation of already-validated
+          data as unnecessary cost.
+        - For backend services in ghost/core, the established pattern is a `schema.ts`
+          owning the Zod schemas with inferred types, and explicit codec/serializer
+          modules at the edges (see core/server/services/gift-links and
+          core/server/services/members-custom-fields). Prefer pointing new code at that
+          shape over ad-hoc validation scattered through business logic.
+        - Be pragmatic in test files: looser typing there is acceptable and not worth a
+          comment unless it hides a real defect in the code under test.
+    - path: "**/*.{js,jsx,cjs,mjs}"
+      instructions: |
+        New product code should be written in TypeScript wherever possible. If this PR
+        adds a NEW JavaScript source file (not a test, config, script, or generated
+        file), suggest writing it in TypeScript instead — once, briefly.
+        Do NOT ask authors to convert pre-existing JavaScript files that this PR merely
+        touches; incremental conversion of touched files is explicitly not required.
+        If the change introduces or modifies a runtime boundary (parsing HTTP input,
+        JSON, configuration, or external responses), suggest validating that data at the
+        boundary, and note that new boundary code is a good candidate for TypeScript +
+        Zod.
