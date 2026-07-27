@@ -7,6 +7,14 @@ import {LucideIcon} from '@tryghost/shade/utils';
 // those can export only components (react-refresh/only-export-components). Both
 // the read-only (flow-canvas) and editable (edit-canvas) canvases build on these.
 
+// Edge stroke + canvas theme vars, matched to the real automation-canvas
+// (automations/components/canvas/automation-canvas.tsx) so both proto canvases'
+// connector lines and dot background render identically to production — in both
+// light and dark mode. Shared here (rather than defined per-canvas) so the two
+// canvases can't drift back apart the way flow-canvas's did before.
+export const EDGE_STROKE = 'var(--xy-edge-stroke)';
+export const REACT_FLOW_THEME = '[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]';
+
 // Column layout — a single vertical stack of fixed-width nodes. Node y-positions
 // are derived from each node's *rendered height* plus a constant visible gap, so
 // the connector lines read as evenly spaced no matter how tall any individual node

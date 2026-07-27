@@ -6,15 +6,10 @@ import type {AutomationDetail, AutomationEmailStats, InsertActionAnchor} from '@
 import {insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TAIL_NODE_HEIGHT, type StepKind, formatWait, orderActions, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TAIL_NODE_HEIGHT, type StepKind, formatWait, orderActions, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {StepNodeHeader} from './flow-node-shell';
 import {EmailStatsFooter} from './email-analytics';
 import {StepSidebar} from './step-sidebar';
-
-// Edge stroke + canvas theme vars, matched to the real automation-canvas so the
-// connector lines and dot background render identically (and adapt in dark mode).
-const EDGE_STROKE = 'var(--xy-edge-stroke)';
-const REACT_FLOW_THEME = '[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]';
 
 // The real editor's StepPicker speaks 'send_email' | 'wait'; the proto's graph
 // helpers here take 'email' | 'wait'.
@@ -41,7 +36,7 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
     const d = data as StepNodeData;
     const clickable = d.kind !== 'trigger';
     return (
-        <div className={cn('w-80 rounded-xl border bg-background p-4 shadow-sm transition-colors', clickable && 'cursor-pointer', d.selected ? 'border-blue ring-1 ring-blue' : 'border-border-default', clickable && !d.selected && 'hover:border-blue/50')}>
+        <div className={cn('w-80 rounded-xl border bg-surface-elevated p-4 shadow-sm transition-colors', clickable && 'cursor-pointer', d.selected ? 'border-blue ring-1 ring-blue' : 'border-border-default', clickable && !d.selected && 'hover:border-blue/50')}>
             <Handle position={Position.Top} style={{opacity: 0}} type="target" />
             <StepNodeHeader icon={stepKindIcon[d.kind]} subtitle={d.subtitle} title={d.title} />
             {d.stats && <EmailStatsFooter stats={d.stats} />}

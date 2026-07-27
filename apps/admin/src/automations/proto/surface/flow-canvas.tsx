@@ -1,10 +1,10 @@
 import '@xyflow/react/dist/style.css';
 import React, {useMemo} from 'react';
-import {Background, type Edge, Handle, type Node, type NodeProps, Position, ReactFlow} from '@xyflow/react';
+import {Background, BackgroundVariant, type Edge, Handle, type Node, type NodeProps, Position, ReactFlow} from '@xyflow/react';
 import type {AutomationDetail, AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import type {AutomationRun, RunStepState} from '@/automations/proto/shared/mock';
-import {DETAIL_FOOTER_HEIGHT, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, type StepKind, formatWait, orderActions, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {DETAIL_FOOTER_HEIGHT, EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, type StepKind, formatWait, orderActions, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {StepNodeHeader} from './flow-node-shell';
 import {EmailStatsFooter} from './email-analytics';
 
@@ -31,7 +31,7 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
 
     if (d.kind === 'terminal') {
         return (
-            <div className={cn('flex w-80 items-center justify-center gap-2 rounded-full border bg-background px-4 py-2 text-sm font-medium', borderClass, muted && 'opacity-60')}>
+            <div className={cn('flex w-80 items-center justify-center gap-2 rounded-full border bg-surface-elevated px-4 py-2 text-sm font-medium', borderClass, muted && 'opacity-60')}>
                 <Handle position={Position.Top} style={{opacity: 0}} type="target" />
                 {done && <LucideIcon.Check className="size-4 text-green" strokeWidth={2.5} />}
                 <span className={cn(done && 'text-green', muted && 'text-muted-foreground')}>{d.title}</span>
@@ -40,7 +40,7 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
     }
 
     return (
-        <div className={cn('w-80 rounded-xl border bg-background p-4 shadow-sm', borderClass, muted && 'opacity-60')}>
+        <div className={cn('w-80 rounded-xl border bg-surface-elevated p-4 shadow-sm', borderClass, muted && 'opacity-60')}>
             <Handle position={Position.Top} style={{opacity: 0}} type="target" />
             <div className="flex items-start justify-between gap-2">
                 <StepNodeHeader icon={stepKindIcon[d.kind]} subtitle={d.subtitle} title={d.title} />
@@ -166,7 +166,7 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
                 target: ids[i + 1],
                 type: 'smoothstep',
                 style: {
-                    stroke: dashed ? 'var(--color-grey-400)' : (focused ? 'var(--color-green)' : 'var(--color-grey-400)'),
+                    stroke: (focused && targetReached) ? 'var(--color-green)' : EDGE_STROKE,
                     strokeWidth: 2,
                     strokeDasharray: dashed ? '6 6' : undefined
                 }
@@ -179,6 +179,7 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
     return (
         <div ref={canvasRef} className="size-full">
             <ReactFlow
+                className={REACT_FLOW_THEME}
                 edges={edges}
                 nodes={nodes}
                 nodesConnectable={false}
@@ -190,7 +191,7 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
                 panOnScroll
                 onInit={onInit}
             >
-                <Background color="var(--color-grey-300)" />
+                <Background variant={BackgroundVariant.Dots} />
             </ReactFlow>
         </div>
     );
