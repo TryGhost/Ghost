@@ -775,8 +775,8 @@ describe('automations repository', function () {
             assert(result);
             const action = result.actions.find(candidate => candidate.id === emailAction.id);
             assert(action?.type === 'send_email');
-            assert.equal(action.stats.email_clicked_count, 3);
-            assert.equal(action.stats.clicked_rate, 38);
+            assert.equal(action.stats?.email_clicked_count, 3);
+            assert.equal(action.stats?.clicked_rate, 38);
         });
     });
 
