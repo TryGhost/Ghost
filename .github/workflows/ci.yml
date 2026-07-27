@@ -889,10 +889,19 @@ jobs:
           ghost stop -d "$DIR"
 
       - name: Latest Release
+        # --force skips Ghost-CLI's version comparison between the archive and
+        # the installed release. Without it this step is coupled to how far the
+        # branch has drifted from main: a PR branched before the last release
+        # carries an older ghost/core version than what's on npm, and the CLI
+        # refuses with "Version in archive file ... is less than the current
+        # active version". Equal versions are just as bad in the other
+        # direction — the CLI logs "All up to date!", never installs the
+        # archive, and the curl below silently smoke-tests the published Ghost
+        # instead of this build. --force makes the update path run either way.
         run: |
           DIR=$(mktemp -d)
           ghost install local -d "$DIR"
-          ghost update -d "$DIR" --archive "$(pwd)/ghost.tgz"
+          ghost update -d "$DIR" --force --archive "$(pwd)/ghost.tgz"
           URL=$(ghost config get url -d "$DIR" --no-prompt --no-color | tail -n1)
           curl --retry 10 --retry-connrefused --retry-delay 3 -fsSI "$URL"
           ghost stop -d "$DIR"
