@@ -1,59 +1,60 @@
 import React, {useState} from 'react';
 import {type Automation, type AutomationStatus, mockAutomations} from '@/automations/proto/shared/mock-data';
-import {Badge, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
-import {Header} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade/utils';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {NewAutomationDialog} from '@/automations/proto/shared/new-automation-dialog';
+import {Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {Box, Container} from '@tryghost/shade/primitives';
+import {ListPage} from '@tryghost/shade/page-templates';
+import {PageHeader} from '@tryghost/shade/patterns';
+import {cn, LucideIcon} from '@tryghost/shade/utils';
+import {Link} from '@tryghost/admin-x-framework';
 import {useVersionLink} from '@/automations/proto/shared/use-version-link';
 
-type AutomationTemplate = {
-    id: string;
-    icon: React.ElementType;
-    title: string;
-    description: string;
+// NOTE: canvas still runs on its own legacy mock module (shared/mock-data),
+// not the shared proto/shared/mock the other two concepts use — its editor
+// (canvas/editor.tsx) depends on the same module, so unifying the data model
+// is a bigger migration than this list-page tightening pass. The status pill
+// below is canvas-local because that legacy AutomationStatus is a 3-state
+// union ('active' | 'paused' | 'draft'), unlike the real 2-state
+// AutomationStatus ('active' | 'inactive') the shared StatusBadge renders.
+
+const gridCols = 'grid grid-cols-[1fr_auto] lg:grid-cols-[minmax(0,1fr)_130px_160px]';
+
+const statusPillStyles: Record<AutomationStatus, string> = {
+    active: 'bg-green/20 text-green',
+    paused: 'bg-muted text-muted-foreground',
+    draft: 'bg-blue/15 text-blue'
 };
 
-const templates: AutomationTemplate[] = [
-    {id: 'welcome-email', icon: LucideIcon.Mail, title: 'Welcome email sequence', description: 'A multi-step onboarding sequence that greets new members over their first week.'},
-    {id: 'inactive-winback', icon: LucideIcon.Undo2, title: 'Inactive win-back', description: 'Reach out to members who haven\u2019t opened an email in 60 days.'},
-    {id: 'upgrade-nudge', icon: LucideIcon.Sparkles, title: 'Paid upgrade nudge', description: 'Encourage engaged free members to upgrade after a defined activity threshold.'},
-    {id: 'unsubscribe', icon: LucideIcon.LogOut, title: 'Unsubscribe follow-up', description: 'Ask for feedback and offer alternatives when someone unsubscribes.'},
-    {id: 'cancellation', icon: LucideIcon.MessageCircle, title: 'Cancellation survey', description: 'Collect cancellation reasons and surface offers that may retain the member.'}
-];
+const StatusPill: React.FC<{status: AutomationStatus}> = ({status}) => (
+    <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium uppercase', statusPillStyles[status])}>
+        {status === 'active' && <span className="size-1.5 rounded-full bg-green" />}
+        {status}
+    </span>
+);
 
-function statusVariant(status: AutomationStatus): 'default' | 'secondary' | 'outline' {
-    if (status === 'active') {
-        return 'default';
-    }
-    if (status === 'paused') {
-        return 'secondary';
-    }
-    return 'outline';
-}
-
-function formatUpdated(iso: string): string {
-    return new Date(iso).toLocaleDateString(undefined, {year: 'numeric', month: 'short', day: 'numeric'});
-}
+const formatUpdated = (iso: string): string => new Date(iso).toLocaleDateString(undefined, {year: 'numeric', month: 'short', day: 'numeric'});
 
 const AutomationRow: React.FC<{automation: Automation}> = ({automation}) => {
-    const navigate = useNavigate();
     const toVersioned = useVersionLink();
 
     return (
-        <TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(toVersioned(`/automations-proto/canvas/${automation.id}`))}>
-            <TableCell className="p-4">
-                <div className="font-medium">{automation.name}</div>
-                <div className="text-muted-foreground">{automation.description}</div>
-            </TableCell>
-            <TableCell className="p-4">
-                <Badge
-                    className={`capitalize ${automation.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-100' : ''}`}
-                    variant={statusVariant(automation.status)}
+        <TableRow
+            className={cn('relative w-full cursor-pointer items-center gap-x-4 p-2 hover:bg-table-row-hover lg:p-0', gridCols)}
+            data-testid="automation-list-row"
+        >
+            <TableCell className="static min-w-0 lg:p-4">
+                <Link
+                    className="before:absolute before:inset-0 before:z-10 before:rounded-sm focus-visible:outline-hidden focus-visible:before:ring-2 focus-visible:before:ring-focus-ring"
+                    to={toVersioned(`/automations-proto/canvas/${automation.id}`)}
                 >
-                    {automation.status}
-                </Badge>
+                    <span className="block text-md font-semibold">{automation.name}</span>
+                </Link>
+                <span className="block text-muted-foreground">{automation.description}</span>
             </TableCell>
-            <TableCell className="p-4 text-muted-foreground">
+            <TableCell className="hidden lg:block lg:p-4">
+                <StatusPill status={automation.status} />
+            </TableCell>
+            <TableCell className="hidden text-muted-foreground lg:block lg:p-4">
                 {formatUpdated(automation.updatedAt)}
             </TableCell>
         </TableRow>
@@ -61,84 +62,48 @@ const AutomationRow: React.FC<{automation: Automation}> = ({automation}) => {
 };
 
 const AutomationsList: React.FC = () => {
-    const navigate = useNavigate();
-    const toVersioned = useVersionLink();
     const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
 
-    const handleTemplatePick = (templateId: string) => {
-        setTemplateDialogOpen(false);
-        navigate(toVersioned(`/automations-proto/canvas/new?template=${templateId}`));
-    };
-
     return (
-        <div className='mx-auto flex size-full max-w-page flex-col'>
-            <Header>
-                <Header.Title>Automations</Header.Title>
-                <Header.Actions>
-                    <Header.ActionGroup>
-                        <Button className="font-bold" onClick={() => setTemplateDialogOpen(true)}>
-                            <LucideIcon.Plus />
-                            New automation
-                        </Button>
-                    </Header.ActionGroup>
-                </Header.Actions>
-            </Header>
-            <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
-                <DialogContent className="max-w-3xl">
-                    <DialogHeader>
-                        <DialogTitle>Create a new automation</DialogTitle>
-                        <DialogDescription>Start from a template or build your own from scratch.</DialogDescription>
-                    </DialogHeader>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        {templates.map(({id, icon: Icon, title, description}) => (
-                            <button
-                                key={id}
-                                className="flex items-start gap-3 rounded-lg border border-grey-200 p-4 text-left transition-colors hover:bg-muted"
-                                type="button"
-                                onClick={() => handleTemplatePick(id)}
-                            >
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-grey-100 text-grey-700">
-                                    <Icon className="size-5" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-semibold">{title}</span>
-                                    <span className="text-xs text-grey-600">{description}</span>
-                                </div>
-                            </button>
-                        ))}
-                        <button
-                            className="flex items-center gap-3 rounded-lg border border-dashed border-grey-300 p-4 text-left transition-colors hover:border-solid hover:bg-muted"
-                            type="button"
-                            onClick={() => handleTemplatePick('scratch')}
-                        >
-                            <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-background text-grey-700">
-                                <LucideIcon.FilePlus className="size-5" />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-sm font-semibold">Start from scratch</span>
-                                <span className="text-xs text-grey-600">An empty canvas with just a trigger.</span>
-                            </div>
-                        </button>
-                    </div>
-                </DialogContent>
-            </Dialog>
-            <section className="flex size-full grow flex-col gap-6 p-4 lg:p-8">
-                <Table data-testid="automations-list">
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-auto px-4">Automation</TableHead>
-                            <TableHead className="w-32 px-4">Status</TableHead>
-                            <TableHead className="w-40 px-4">Last updated</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {mockAutomations.map(automation => (
-                            <AutomationRow key={automation.id} automation={automation} />
-                        ))}
-                    </TableBody>
-                </Table>
-            </section>
-        </div>
+        <Box className="size-full">
+            <Container className="relative flex h-full flex-col" size="page">
+                <ListPage data-testid="automations-proto-canvas">
+                    <ListPage.Header>
+                        <PageHeader blurredBackground={false} sticky={false}>
+                            <PageHeader.Left>
+                                <PageHeader.Title>Automations</PageHeader.Title>
+                            </PageHeader.Left>
+                            <PageHeader.Actions>
+                                <PageHeader.ActionGroup>
+                                    <Button onClick={() => setTemplateDialogOpen(true)}>
+                                        <LucideIcon.Plus />
+                                        New automation
+                                    </Button>
+                                </PageHeader.ActionGroup>
+                            </PageHeader.Actions>
+                        </PageHeader>
+                    </ListPage.Header>
+                    <ListPage.Body>
+                        <Table className="flex flex-col" data-testid="automations-list">
+                            <TableHeader className="hidden lg:flex lg:flex-col">
+                                <TableRow className={cn('w-full items-center gap-x-4 border-b hover:bg-transparent', gridCols)}>
+                                    <TableHead className="lg:px-4">Name</TableHead>
+                                    <TableHead className="lg:px-4">Status</TableHead>
+                                    <TableHead className="lg:px-4">Last updated</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody className="flex flex-col">
+                                {mockAutomations.map(automation => (
+                                    <AutomationRow key={automation.id} automation={automation} />
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </ListPage.Body>
+                </ListPage>
+            </Container>
+
+            <NewAutomationDialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen} />
+        </Box>
     );
 };
 
