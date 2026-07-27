@@ -265,7 +265,7 @@ const Sidebar: React.FC<{
             title: 'General',
             contents:
             <>
-                <FieldSet className='mt-10 gap-5'>
+                <FieldSet className='mt-8 gap-4'>
                     <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Name and description</FieldLegend>
                     <FieldGroup className='gap-6 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                     <Field data-invalid={Boolean(errors.name) || undefined}>
@@ -279,7 +279,7 @@ const Sidebar: React.FC<{
                     </Field>
                     </FieldGroup>
                 </FieldSet>
-                <FieldSet className='mt-10 gap-5'>
+                <FieldSet className='mt-8 gap-4'>
                     <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Email info</FieldLegend>
                     <FieldGroup className='gap-6 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                     <Field>
@@ -290,7 +290,7 @@ const Sidebar: React.FC<{
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
                     </FieldGroup>
                 </FieldSet>
-                <FieldSet className='mt-10 gap-5'>
+                <FieldSet className='mt-8 gap-4'>
                     <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Member settings</FieldLegend>
                     <FieldGroup className='gap-6'>
                     <Field orientation='horizontal'>
@@ -309,7 +309,7 @@ const Sidebar: React.FC<{
             title: 'Content',
             contents:
             <>
-                <FieldSet className='mt-10 gap-5'>
+                <FieldSet className='mt-8 gap-4'>
                     <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Header</FieldLegend>
                     <FieldGroup className='gap-6'>
                     <div>
@@ -360,9 +360,9 @@ const Sidebar: React.FC<{
                     </FieldGroup>
                 </FieldSet>
 
-                <FieldSet className='mt-10 gap-5'>
+                <FieldSet className='mt-8 gap-4'>
                     <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Title section</FieldLegend>
-                    <FieldGroup className='gap-5'>
+                    <FieldGroup className='gap-4'>
                     <Field orientation='horizontal'>
                         <FieldLabel htmlFor='newsletter-show-post-title'>Post title</FieldLabel>
                         <Switch checked={Boolean(newsletter.show_post_title_section)} id='newsletter-show-post-title' onCheckedChange={checked => updateNewsletter({show_post_title_section: checked})} />
@@ -380,7 +380,7 @@ const Sidebar: React.FC<{
                     </FieldGroup>
                 </FieldSet>
 
-                <FieldSet className='mt-10 gap-5'>
+                <FieldSet className='mt-8 gap-4'>
                     <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Footer</FieldLegend>
                     <FieldGroup className='gap-6'>
                     <Stack gap='lg'>
@@ -415,7 +415,7 @@ const Sidebar: React.FC<{
                     />
                     </FieldGroup>
                 </FieldSet>
-                <Separator className='mt-10' />
+                <Separator className='mt-8' />
                 <div className='my-5 flex w-full items-start'>
                     <span>
                         <LucideIcon.Heart className='mt-[-1px] mr-2 size-5 text-red'/>
@@ -437,7 +437,7 @@ const Sidebar: React.FC<{
             title: 'Design',
             contents:
             <>
-                <FieldSet className='mt-10 gap-5'>
+                <FieldSet className='mt-8 gap-4'>
                     <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Global</FieldLegend>
                     <FieldGroup className='gap-5'>
                     <div className='mb-1'>
@@ -494,7 +494,7 @@ const Sidebar: React.FC<{
                     </div>
                     </FieldGroup>
                 </FieldSet>
-                <FieldSet className='mt-10 gap-5'>
+                <FieldSet className='mt-8 gap-4'>
                     <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Header</FieldLegend>
                     <FieldGroup className='gap-5'>
                     <div className='mb-1'>
@@ -549,7 +549,7 @@ const Sidebar: React.FC<{
                     </FieldGroup>
                 </FieldSet>
 
-                <FieldSet className='mt-10 gap-5'>
+                <FieldSet className='mt-8 gap-4'>
                     <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Body</FieldLegend>
                     <FieldGroup className='gap-5'>
                     <div className='mb-1'>
