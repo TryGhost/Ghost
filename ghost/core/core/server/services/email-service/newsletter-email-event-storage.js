@@ -179,7 +179,9 @@ class NewsletterEmailEventStorage {
         try {
             // Unsubscribe member from the specific newsletter
             const newsletters = await this.findNewslettersToKeep(event);
-            await this.#membersRepository.update({newsletters}, {id: event.memberId});
+            if (newsletters) {
+                await this.#membersRepository.update({newsletters}, {id: event.memberId});
+            }
 
             // Remove member from Mailgun's suppression list
             await this.#emailSuppressionList.removeUnsubscribe(event.email);
@@ -207,9 +209,14 @@ class NewsletterEmailEventStorage {
 
     async findNewslettersToKeep(event) {
         try {
-            const member = await this.#membersRepository.get({email: event.email}, {
+            const member = await this.#membersRepository.get({id: event.memberId}, {
                 withRelated: ['newsletters']
             });
+
+            if (!member) {
+                return undefined;
+            }
+
             const existingNewsletters = member.related('newsletters');
 
             const email = await this.#models.Email.findOne({id: event.emailId});
@@ -220,7 +227,7 @@ class NewsletterEmailEventStorage {
             });
         } catch (err) {
             logging.error(err);
-            return [];
+            return undefined;
         }
     }
 
