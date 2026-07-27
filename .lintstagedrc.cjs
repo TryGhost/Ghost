@@ -91,6 +91,16 @@ function buildBoundaryCommand(files) {
     return `pnpm exec depcruise --config .dependency-cruiser.cjs -- ${shellQuote(relativeFiles)}`;
 }
 
+function buildEmberTemplateLintCommand(files) {
+    const workspace = 'apps/ember-admin';
+    const base = path.join(ROOT, workspace);
+    const relativeFiles = files
+        .map(file => normalize(path.relative(base, file)))
+        .map(shellQuote)
+        .join(' ');
+    return `pnpm --dir ${shellQuote(workspace)} exec ember-template-lint ${relativeFiles}`;
+}
+
 module.exports = {
     '*.{js,ts,tsx,jsx,cjs}': (files) => {
         const groups = new Map();
@@ -108,6 +118,8 @@ module.exports = {
     },
     'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': (files) =>
         buildBoundaryCommand(files),
+    'apps/ember-admin/**/*.hbs': (files) =>
+        buildEmberTemplateLintCommand(files),
     'apps/{shade,admin-x-framework,activitypub,admin-x-settings,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}': (files) =>
         buildBoundaryCommand(files)
 };
