@@ -3,7 +3,7 @@ import React from 'react';
 import {AppProvider} from '@tryghost/admin-x-framework';
 import type {AppSettings} from '@tryghost/admin-x-framework';
 import {MAX_AUTOMATION_ACTIONS} from '@tryghost/admin-x-framework/api/automations';
-import type {AutomationDetail, AutomationDetailResponseType, AutomationEmailStats, EditAutomationPayload} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationActionLinksResponseType, AutomationDetail, AutomationDetailResponseType, AutomationEmailStats, EditAutomationPayload} from '@tryghost/admin-x-framework/api/automations';
 import {RouterProvider, createMemoryRouter} from 'react-router';
 import {act, fireEvent, render, screen, waitFor, within} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
@@ -115,6 +115,7 @@ type MockEditMutationOptions = {
     onError?: (error?: unknown) => void;
 };
 const mockUseReadAutomation = vi.fn<(...args: unknown[]) => {data?: AutomationDetailResponseType; isLoading?: boolean; isError?: boolean}>();
+const mockUseBrowseAutomationActionLinks = vi.fn<(...args: unknown[]) => {data?: AutomationActionLinksResponseType; isLoading: boolean; isError: boolean}>();
 const mockEditMutation = {
     mutate: vi.fn<(payload: EditAutomationPayload, options: MockEditMutationOptions) => void>(),
     isLoading: false,
@@ -135,6 +136,7 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     return {
         ...actual,
         useReadAutomation: (...args: unknown[]) => mockUseReadAutomation(...args),
+        useBrowseAutomationActionLinks: (...args: unknown[]) => mockUseBrowseAutomationActionLinks(...args),
         useEditAutomation: () => mockEditMutation
     };
 });
@@ -331,6 +333,12 @@ const mockAutomationWithEmailStats = (statsOverrides: Partial<AutomationEmailSta
 describe('AutomationEditor', () => {
     beforeEach(() => {
         mockUseReadAutomation.mockReset();
+        mockUseBrowseAutomationActionLinks.mockReset();
+        mockUseBrowseAutomationActionLinks.mockReturnValue({
+            data: {automation_action_links: []},
+            isLoading: false,
+            isError: false
+        });
         mockEditMutation.mutate.mockReset();
         mockReactFlow.fitView.mockReset();
         mockReactFlow.zoomIn.mockReset();
@@ -561,6 +569,119 @@ describe('AutomationEditor', () => {
         const clickedKpi = within(sidebar).getByText('Clicked').parentElement;
         expect(within(clickedKpi!).getByText('0%')).toBeInTheDocument();
         expect(within(clickedKpi!).getByText('0')).toBeInTheDocument();
+    });
+
+    it('renders up to ten top clicked links with counts, clamped percentages, and full destinations', async () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockAutomationWithEmailStats({
+            email_clicked_count: 5,
+            email_sent_count: 10,
+            email_opened_count: 7,
+            opened_rate: 70,
+            clicked_rate: 50
+        });
+        mockUseBrowseAutomationActionLinks.mockReturnValue({
+            data: {
+                automation_action_links: Array.from({length: 12}, (_, index) => ({
+                    url: `https://example.com/link-${index + 1}`,
+                    clicked_count: index === 0 ? 6 : index === 2 ? 0 : 5 - Math.min(index, 4)
+                }))
+            },
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+        expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith('automation-id-1', 'action-email', {defaultErrorHandler: false, enabled: true});
+        expect(within(sidebar).getAllByRole('link')).toHaveLength(10);
+
+        const firstLink = within(sidebar).getByRole('link', {name: 'example.com/link-1'});
+        expect(firstLink).toHaveAttribute('href', 'https://example.com/link-1');
+        expect(firstLink.querySelector('svg')).toBeInTheDocument();
+        const firstRow = firstLink.parentElement?.parentElement;
+        expect(firstRow).not.toBeNull();
+        expect(within(firstRow!).getByText('6')).toBeInTheDocument();
+        expect(within(firstRow!).getByText('100%')).toBeInTheDocument();
+        expect(firstRow?.querySelector('[style="width: 100%;"]')).toBeInTheDocument();
+        const zeroClickRow = within(sidebar).getByRole('link', {name: 'example.com/link-3'}).parentElement?.parentElement;
+        expect(within(zeroClickRow!).getByText('0')).toBeInTheDocument();
+        expect(within(zeroClickRow!).getByText('0%')).toBeInTheDocument();
+        expect(within(sidebar).queryByRole('link', {name: 'example.com/link-11'})).not.toBeInTheDocument();
+
+        fireEvent.focus(firstLink);
+        expect(await screen.findByRole('tooltip')).toHaveTextContent('https://example.com/link-1');
+    });
+
+    it('renders top clicked link loading, error, and empty states', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockAutomationWithEmailStats({
+            email_clicked_count: 2,
+            email_sent_count: 10,
+            email_opened_count: 5,
+            opened_rate: 50,
+            clicked_rate: 20
+        });
+
+        mockUseBrowseAutomationActionLinks.mockReturnValue({data: undefined, isLoading: true, isError: false});
+        const {unmount} = renderEditor();
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        expect(screen.getByTestId('automation-action-links-loading')).toBeInTheDocument();
+        unmount();
+
+        mockUseBrowseAutomationActionLinks.mockReturnValue({data: undefined, isLoading: false, isError: true});
+        const secondRender = renderEditor();
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        expect(screen.getByRole('alert')).toHaveTextContent('Couldn\'t load clicked links.');
+        secondRender.unmount();
+
+        mockUseBrowseAutomationActionLinks.mockReturnValue({data: {automation_action_links: []}, isLoading: false, isError: false});
+        renderEditor();
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        expect(screen.getByText('No click data yet.')).toBeInTheDocument();
+    });
+
+    it('disables the links request and shows a no-sends state when no emails were sent', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockAutomationWithEmailStats({
+            email_clicked_count: 0,
+            email_sent_count: 0,
+            email_opened_count: 0,
+            opened_rate: null,
+            clicked_rate: null
+        });
+
+        renderEditor();
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+
+        expect(screen.getByText('No emails sent yet.')).toBeInTheDocument();
+        expect(mockUseBrowseAutomationActionLinks).toHaveBeenCalledWith('automation-id-1', 'action-email', {defaultErrorHandler: false, enabled: false});
+    });
+
+    it('hides clicked links and skips the request when click tracking is off', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockAppSettings = createAppSettings({emailTrackClicks: false});
+        mockAutomationWithEmailStats();
+
+        renderEditor();
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).queryByText('Top clicked links')).not.toBeInTheDocument();
+        expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
+    });
+
+    it('does not request clicked links for a closed or non-email sidebar', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockAutomationWithEmailStats();
+
+        renderEditor();
+        expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', {name: 'Wait: 1 day'}));
+        expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
     });
 
     it('renders styled canvas zoom controls without the interaction toggle', () => {

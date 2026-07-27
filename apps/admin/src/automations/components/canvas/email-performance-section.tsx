@@ -1,9 +1,11 @@
 import React from 'react';
 import {useEmailTrackingSettings} from '@/automations/hooks/use-email-tracking-settings';
-import {ChartContainer, HoverCard, HoverCardContent, HoverCardTrigger, Separator} from '@tryghost/shade/components';
+import {ChartContainer, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HoverCard, HoverCardContent, HoverCardTrigger, LoadingIndicator, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import type {ChartConfig} from '@tryghost/shade/components';
-import type {AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
-import {Recharts, cn, formatNumber} from '@tryghost/shade/utils';
+import {Inline, Stack, Text} from '@tryghost/shade/primitives';
+import type {AutomationActionLink, AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
+import {useBrowseAutomationActionLinks} from '@tryghost/admin-x-framework/api/automations';
+import {LucideIcon, Recharts, cn, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {formatRate} from './format-stats';
 import {OffValue, TRACKING_OFF_MESSAGE} from './off-value';
 
@@ -142,7 +144,99 @@ const Kpi: React.FC<{
     );
 };
 
-export const EmailPerformanceSection: React.FC<{stats: AutomationEmailStats}> = ({stats}) => {
+const displayUrl = (url: string) => url.replace(/^https?:\/\//i, '');
+
+const TopClickedLinksContent: React.FC<{
+    clickedCount: number;
+    isError: boolean;
+    isLoading: boolean;
+    links: AutomationActionLink[];
+    sentCount: number;
+}> = ({clickedCount, isError, isLoading, links, sentCount}) => {
+    if (sentCount === 0) {
+        return <Text className='py-6 text-center' size='sm' tone='secondary'>No emails sent yet.</Text>;
+    }
+
+    if (isLoading) {
+        return <Inline className='py-6' data-testid='automation-action-links-loading' justify='center'><LoadingIndicator size='sm' /></Inline>;
+    }
+
+    if (isError) {
+        return <Text className='py-6 text-center text-destructive' role='alert' size='sm'>Couldn&apos;t load clicked links.</Text>;
+    }
+
+    if (links.length === 0) {
+        return <Text className='py-6 text-center' size='sm' tone='secondary'>No click data yet.</Text>;
+    }
+
+    return (
+        <TooltipProvider delayDuration={150}>
+            <DataList className='group/datalist'>
+                <DataListBody>
+                    {links.map((link) => {
+                        const percentage = clickedCount > 0 ? Math.min(link.clicked_count / clickedCount, 1) : 0;
+                        return (
+                            <DataListRow key={link.url}>
+                                <DataListBar style={{width: `${Math.round(percentage * 100)}%`}} />
+                                <DataListItemContent>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <a className='block min-w-0 hover:underline' href={link.url} rel='noreferrer' target='_blank'>
+                                                <Inline as='span' className='min-w-0' gap='sm'>
+                                                    <LucideIcon.Link className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />
+                                                    <Text as='span' className='font-medium' truncate>{displayUrl(link.url)}</Text>
+                                                </Inline>
+                                            </a>
+                                        </TooltipTrigger>
+                                        <TooltipContent className='max-w-[28rem] break-all'>{link.url}</TooltipContent>
+                                    </Tooltip>
+                                </DataListItemContent>
+                                <DataListItemValue>
+                                    <DataListItemValueAbs>{formatNumber(link.clicked_count)}</DataListItemValueAbs>
+                                    <DataListItemValuePerc>{formatPercentage(percentage)}</DataListItemValuePerc>
+                                </DataListItemValue>
+                            </DataListRow>
+                        );
+                    })}
+                </DataListBody>
+            </DataList>
+        </TooltipProvider>
+    );
+};
+
+const TopClickedLinks: React.FC<{
+    actionId: string;
+    automationId: string;
+    clickedCount: number;
+    sentCount: number;
+}> = ({actionId, automationId, clickedCount, sentCount}) => {
+    const {data, isError, isLoading} = useBrowseAutomationActionLinks(automationId, actionId, {
+        defaultErrorHandler: false,
+        enabled: sentCount > 0
+    });
+    const links = data?.automation_action_links.slice(0, 10) ?? [];
+
+    return (
+        <>
+            <Separator />
+            <Stack gap='md'>
+                <Inline justify='between'>
+                    <Text size='sm' tone='secondary' weight='medium'>Top clicked links</Text>
+                    <Text size='sm' tone='tertiary' weight='medium'>Members</Text>
+                </Inline>
+                <TopClickedLinksContent
+                    clickedCount={clickedCount}
+                    isError={isError}
+                    isLoading={isLoading}
+                    links={links}
+                    sentCount={sentCount}
+                />
+            </Stack>
+        </>
+    );
+};
+
+export const EmailPerformanceSection: React.FC<{actionId: string; automationId: string; stats: AutomationEmailStats}> = ({actionId, automationId, stats}) => {
     const {emailTrackOpens, emailTrackClicks} = useEmailTrackingSettings();
 
     return (
@@ -180,17 +274,14 @@ export const EmailPerformanceSection: React.FC<{stats: AutomationEmailStats}> = 
                     opensTracked={emailTrackOpens}
                 />
             </div>
-            {/* @TODO: NY-1457 — hidden entirely when click tracking is off; the
-                off-state is already conveyed by the Clicked KPI and ring above. */}
-            {/* {emailTrackClicks && (
-                <>
-                    <Separator />
-                    <div className='flex items-center justify-between'>
-                        <span className='text-sm font-medium text-text-secondary'>Top clicked links</span>
-                        <span className='text-sm font-medium text-muted-foreground'>Members</span>
-                    </div>
-                </>
-            )} */}
+            {emailTrackClicks && (
+                <TopClickedLinks
+                    actionId={actionId}
+                    automationId={automationId}
+                    clickedCount={stats.email_clicked_count}
+                    sentCount={stats.email_sent_count}
+                />
+            )}
         </div>
     );
 };
