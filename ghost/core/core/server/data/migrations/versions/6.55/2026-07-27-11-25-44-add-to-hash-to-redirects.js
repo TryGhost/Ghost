@@ -7,8 +7,8 @@ const leftoverIndexName = 'redirects_automation_action_revision_id_index';
 
 module.exports = combineNonTransactionalMigrations(
     createAddColumnMigration('redirects', 'to_hash', {
-        type: 'string',
-        maxlength: 64,
+        type: 'binary',
+        maxlength: 32,
         nullable: true
     }, {algorithm: 'auto'}),
     createNonTransactionalMigration(
