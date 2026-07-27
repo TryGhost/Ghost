@@ -1,9 +1,10 @@
 import NiceModal from '@ebay/nice-modal-react';
 import validator from 'validator';
 import {APIError, ValidationError} from '@tryghost/admin-x-framework/errors';
-import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSeparator, FieldSet, Input, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
+import {Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSet, Input, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {SettingsModal} from '@tryghost/shade/patterns';
+import {Stack} from '@tryghost/shade/primitives';
 import {toast} from 'sonner';
 import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
@@ -211,7 +212,7 @@ const InviteUserModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('staff');
             }}
-            cancelLabel=''
+            cancelLabel='Close'
             okLabel={okLabel}
             okVariant={saveState === 'error' || !!errors.email ? 'destructive' : 'default'}
             testId='invite-user-modal'
@@ -219,7 +220,7 @@ const InviteUserModal = NiceModal.create(() => {
             width={540}
             onOk={handleSendInvitation}
         >
-            <div className='flex flex-col gap-6 py-4 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <Stack className='py-4 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted' gap='xl'>
                 <p>
                     Send an invitation for a new person to create a staff account on your site, and select a role that matches what you’d like them to be able to do.
                 </p>
@@ -260,9 +261,8 @@ const InviteUserModal = NiceModal.create(() => {
                         })}
                     </RadioGroup>
                     <FieldError id='invite-role-error'>{errors.role}</FieldError>
-                    <FieldSeparator />
                 </FieldSet>
-            </div>
+            </Stack>
         </SettingsModal>
     );
 });
