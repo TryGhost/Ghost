@@ -62,11 +62,6 @@
                 "src/test/*.{ts,tsx}"
             ]
         },
-        "apps/admin-x-settings": {
-            "ignoreDependencies": [
-                "tailwindcss"
-            ]
-        },
         "apps/announcement-bar": {
             "ignoreDependencies": [
                 "cross-fetch"
