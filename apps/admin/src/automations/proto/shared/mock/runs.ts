@@ -19,6 +19,76 @@ function daysSeries(endDate: string, counts: number[]): EnrollmentPoint[] {
 
 type RunData = {metrics: AutomationRunMetrics; runs: AutomationRun[]};
 
+// ---------------------------------------------------------------------------
+// Run expansion — each scenario above is hand-authored with a handful of runs,
+// one per interesting shape (in-progress, completed, exited-early, etc.), so
+// they're easy to reason about individually. Real automations run against
+// thousands of members, so a list of 3-5 reads as too sparse to get a feel for
+// scanning/searching/selecting at scale. expandRuns pads a scenario's runs out
+// to `targetCount` by re-cycling the hand-authored ones onto new member
+// identities (shifting their timestamps back in history) — it's fine, even
+// expected, for these synthetic members to repeat the same journeys.
+// ---------------------------------------------------------------------------
+
+const NAME_POOL: {first: string; last: string}[] = [
+    {first: 'Owen', last: 'Brooks'}, {first: 'Maya', last: 'Chen'}, {first: 'Diego', last: 'Ramirez'},
+    {first: 'Freya', last: 'Nilsson'}, {first: 'Kwame', last: 'Asante'}, {first: 'Lucia', last: 'Moreno'},
+    {first: 'Ravi', last: 'Patel'}, {first: 'Aisling', last: 'Byrne'}, {first: 'Hana', last: 'Kobayashi'},
+    {first: 'Theo', last: 'Marchetti'}, {first: 'Zara', last: 'Hussain'}, {first: 'Callum', last: 'Fraser'},
+    {first: 'Amara', last: 'Okonkwo'}, {first: 'Felix', last: 'Bauer'}, {first: 'Nadia', last: 'Petrova'},
+    {first: 'Silas', last: 'Thorne'}, {first: 'Elin', last: 'Karlsson'}, {first: 'Jonah', last: 'Whitfield'},
+    {first: 'Priyanka', last: 'Rao'}, {first: 'Micah', last: 'Reyes'}, {first: 'Saoirse', last: 'Kelly'},
+    {first: 'Dimitri', last: 'Volkov'}, {first: 'Lena', last: 'Novak'}, {first: 'Amir', last: 'Farouk'}
+];
+
+function buildSyntheticMember(automationId: string, index: number): AutomationRun['member'] {
+    const {first, last} = NAME_POOL[index % NAME_POOL.length];
+    // Once the pool wraps, suffix the name/email so repeats stay visibly distinct.
+    const cycle = Math.floor(index / NAME_POOL.length);
+    const name = cycle > 0 ? `${first} ${last} ${cycle + 1}` : `${first} ${last}`;
+    const email = `${first.toLowerCase()}.${last.toLowerCase()}${cycle > 0 ? cycle + 1 : ''}@example.com`;
+    return {id: `mem_${automationId}_${index}`, name, email};
+}
+
+/** Shift an ISO timestamp back by `days`, or pass through null. */
+function shiftIso(iso: string | null, days: number): string | null {
+    if (!iso) {
+        return null;
+    }
+    const d = new Date(iso);
+    d.setUTCDate(d.getUTCDate() - days);
+    return d.toISOString();
+}
+
+function cloneRunForMember(template: AutomationRun, automationId: string, index: number): AutomationRun {
+    // Push each synthetic run further back in history than the last, so the
+    // list reads as an ongoing history rather than a pile of same-day runs.
+    const days = 14 + index * 3;
+    return {
+        ...template,
+        id: `run_${automationId}_${index}`,
+        automation_id: automationId,
+        member: buildSyntheticMember(automationId, index),
+        enrolled_at: shiftIso(template.enrolled_at, days)!,
+        completed_at: shiftIso(template.completed_at, days),
+        steps: template.steps.map(step => ({...step, occurred_at: shiftIso(step.occurred_at, days)}))
+    };
+}
+
+/** Pads `baseRuns` out to `targetCount` by re-cycling them onto new members. */
+function expandRuns(automationId: string, baseRuns: AutomationRun[], targetCount: number): AutomationRun[] {
+    if (baseRuns.length === 0 || targetCount <= baseRuns.length) {
+        return baseRuns;
+    }
+    const synthetic = Array.from(
+        {length: targetCount - baseRuns.length},
+        (_, i) => cloneRunForMember(baseRuns[i % baseRuns.length], automationId, i)
+    );
+    return [...baseRuns, ...synthetic];
+}
+
+const RUNS_PER_SCENARIO = 22;
+
 // --- Welcome series (healthy) ---------------------------------------------
 
 const welcomeMetrics: AutomationRunMetrics = {
@@ -31,7 +101,7 @@ const welcomeMetrics: AutomationRunMetrics = {
     enrollments_by_day: daysSeries('2026-07-21', [18, 20, 21, 23, 22, 25, 27, 26, 29, 31, 30, 32, 33, 34, 33, 35, 36, 35, 34, 33, 31, 32, 30, 29, 30, 28, 27, 28, 26, 27])
 };
 
-const welcomeRuns: AutomationRun[] = [
+const welcomeRunsBase: AutomationRun[] = [
     {
         id: 'run_sarah', automation_id: welcomeSeries.id,
         member: {id: 'mem_sarah', name: 'Sarah Lin', email: 'sarah.lin@example.com'},
@@ -106,7 +176,7 @@ const winbackMetrics: AutomationRunMetrics = {
     enrollments_by_day: daysSeries('2026-07-21', [30, 29, 27, 26, 24, 23, 21, 20, 19, 17, 16, 16, 15, 14, 13, 13, 12, 11, 11, 10, 10, 9, 9, 8, 8, 8, 7, 7, 8, 7])
 };
 
-const winbackRuns: AutomationRun[] = [
+const winbackRunsBase: AutomationRun[] = [
     {
         id: 'run_ivy', automation_id: inactiveWinback.id,
         member: {id: 'mem_ivy', name: 'Ivy Sanders', email: 'ivy.sanders@example.com'},
@@ -154,7 +224,7 @@ const upgradeMetrics: AutomationRunMetrics = {
     enrollments_by_day: daysSeries('2026-07-21', [9, 10, 10, 11, 11, 12, 11, 12, 13, 12, 13, 13, 12, 13, 14, 13, 13, 12, 13, 13, 12, 13, 14, 13, 13, 12, 13, 14, 13, 13])
 };
 
-const upgradeRuns: AutomationRun[] = [
+const upgradeRunsBase: AutomationRun[] = [
     {
         id: 'run_mila', automation_id: paidUpgradeNudge.id,
         member: {id: 'mem_mila', name: 'Mila Cho', email: 'mila.cho@example.com'},
@@ -178,6 +248,10 @@ const upgradeRuns: AutomationRun[] = [
         ]
     }
 ];
+
+const welcomeRuns = expandRuns(welcomeSeries.id, welcomeRunsBase, RUNS_PER_SCENARIO);
+const winbackRuns = expandRuns(inactiveWinback.id, winbackRunsBase, RUNS_PER_SCENARIO);
+const upgradeRuns = expandRuns(paidUpgradeNudge.id, upgradeRunsBase, RUNS_PER_SCENARIO);
 
 // --- Registry + accessor ---------------------------------------------------
 
