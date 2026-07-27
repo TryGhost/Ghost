@@ -57,6 +57,23 @@ export function getCardVisibilitySettings(cardConfig = {}) {
     return isPage ? 'web only' : 'web and email';
 }
 
+// Narrows the post model down to the properties cards actually read, so the
+// editor's config contract doesn't depend on the shape of an Ember Data model.
+// An unsaved post has no visibility until the first save applies the site
+// default, so it's resolved here to keep `visibility` present for consumers.
+export function buildCardConfigPost(post, defaultContentVisibility) {
+    if (!post) {
+        return undefined;
+    }
+
+    return {
+        displayName: post.displayName,
+        isPage: post.isPage,
+        showTitleAndFeatureImage: post.showTitleAndFeatureImage,
+        visibility: post.visibility || defaultContentVisibility
+    };
+}
+
 /**
  * Fetches the URLs of all active offers
  * @returns {Promise<{label: string, value: string}[]>}
@@ -183,6 +200,13 @@ export default class KoenigLexicalEditor extends Component {
     defaultLinks = null;
 
     editorResource = this.koenig.resource;
+
+    get normalizedCardConfig() {
+        return {
+            ...this.args.cardConfig,
+            post: buildCardConfigPost(this.args.cardConfig?.post, this.settings.defaultContentVisibility)
+        };
+    }
 
     get pinturaJsUrl() {
         if (!this.settings.pintura) {
