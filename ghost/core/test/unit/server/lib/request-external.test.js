@@ -539,7 +539,7 @@ describe('External Request', function () {
 
             await installSafeDnsLookup(options);
 
-            assert.equal(typeof options.lookup, 'function');
+            assert.equal(typeof options.dnsLookup, 'function');
         });
 
         it('does not install lookup for the configured site URL', async function () {
@@ -551,7 +551,7 @@ describe('External Request', function () {
 
             await installSafeDnsLookup(options);
 
-            assert.equal(options.lookup, undefined);
+            assert.equal(options.dnsLookup, undefined);
         });
 
         it('does not install lookup for the configured site URL with port', async function () {
@@ -563,7 +563,7 @@ describe('External Request', function () {
 
             await installSafeDnsLookup(options);
 
-            assert.equal(options.lookup, undefined);
+            assert.equal(options.dnsLookup, undefined);
         });
 
         it('installs lookup when port does not match site URL', async function () {
@@ -575,7 +575,7 @@ describe('External Request', function () {
 
             await installSafeDnsLookup(options);
 
-            assert.equal(typeof options.lookup, 'function');
+            assert.equal(typeof options.dnsLookup, 'function');
         });
 
         it('dnsLookup allows public IPs', async function () {
@@ -597,7 +597,7 @@ describe('External Request', function () {
             await installSafeDnsLookup(options);
 
             await new Promise((resolve, reject) => {
-                options.lookup('attacker.com', {}, (err, address, family) => {
+                options.dnsLookup('attacker.com', {}, (err, address, family) => {
                     if (err) {
                         return reject(err);
                     }
@@ -627,7 +627,7 @@ describe('External Request', function () {
             await installSafeDnsLookup(options);
 
             await new Promise((resolve, reject) => {
-                options.lookup('attacker.com', {}, (err) => {
+                options.dnsLookup('attacker.com', {}, (err) => {
                     if (err) {
                         assert.equal(err.message, 'URL resolves to a non-permitted private IP block');
                         assert.equal(err.code, 'URL_PRIVATE_INVALID');
@@ -657,7 +657,7 @@ describe('External Request', function () {
             await installSafeDnsLookup(options);
 
             await new Promise((resolve, reject) => {
-                options.lookup('attacker.com', {}, (err) => {
+                options.dnsLookup('attacker.com', {}, (err) => {
                     if (err) {
                         assert.equal(err.message, 'URL resolves to a non-permitted private IP block');
                         return resolve();
@@ -689,7 +689,7 @@ describe('External Request', function () {
             await installSafeDnsLookup(options);
 
             await new Promise((resolve, reject) => {
-                options.lookup('attacker.com', {all: true}, (err) => {
+                options.dnsLookup('attacker.com', {all: true}, (err) => {
                     if (err) {
                         assert.equal(err.message, 'URL resolves to a non-permitted private IP block');
                         assert.equal(err.code, 'URL_PRIVATE_INVALID');
@@ -722,7 +722,7 @@ describe('External Request', function () {
             await installSafeDnsLookup(options);
 
             await new Promise((resolve, reject) => {
-                options.lookup('attacker.com', {all: true}, (err, results) => {
+                options.dnsLookup('attacker.com', {all: true}, (err, results) => {
                     if (err) {
                         return reject(err);
                     }
@@ -751,7 +751,7 @@ describe('External Request', function () {
             await installSafeDnsLookup(options);
 
             await new Promise((resolve, reject) => {
-                options.lookup('attacker.com', {}, (err) => {
+                options.dnsLookup('attacker.com', {}, (err) => {
                     if (err) {
                         assert.equal(err.message, 'ENOTFOUND');
                         return resolve();
