@@ -5,11 +5,14 @@ import type {AutomationRun, RunStatus} from './mock';
 // these to Shade first; this lifts them into one place. The StatusPill component
 // lives in ./status-pill (kept separate so this stays a pure, non-component
 // module — the react-refresh/only-export-components rule).
-
+//
+// Pill colors match the canvas concept's run-status badges (higher-contrast
+// -100/-800 pairing instead of a tinted /15 background) — see
+// proto/canvas/editor.tsx's runStatusStyles.
 export const runStatusMeta: Record<RunStatus, {label: string; pill: string}> = {
-    in_progress: {label: 'In progress', pill: 'bg-blue/15 text-blue'},
-    completed: {label: 'Completed', pill: 'bg-green/15 text-green'},
-    exited_early: {label: 'Exited early', pill: 'bg-muted text-muted-foreground'}
+    in_progress: {label: 'In progress', pill: 'bg-blue-100 text-blue-800'},
+    completed: {label: 'Completed', pill: 'bg-green-100 text-green-800'},
+    exited_early: {label: 'Exited early', pill: 'bg-orange-100 text-orange-600'}
 };
 
 // e.g. "45% complete", or "25% complete - Unsubscribed" when exited early.
