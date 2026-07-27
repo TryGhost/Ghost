@@ -3,7 +3,7 @@ import React from 'react';
 import {AppProvider} from '@tryghost/admin-x-framework';
 import type {AppSettings} from '@tryghost/admin-x-framework';
 import {MAX_AUTOMATION_ACTIONS} from '@tryghost/admin-x-framework/api/automations';
-import type {AutomationDetail, AutomationDetailResponseType, EditAutomationPayload} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationDetail, AutomationDetailResponseType, AutomationEmailStats, EditAutomationPayload} from '@tryghost/admin-x-framework/api/automations';
 import {RouterProvider, createMemoryRouter} from 'react-router';
 import {act, fireEvent, render, screen, waitFor, within} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
@@ -303,7 +303,7 @@ const withEmptyEmailBodies = (fixture: AutomationDetail): AutomationDetail => ({
     ))
 });
 
-const mockAutomationWithEmailStats = () => {
+const mockAutomationWithEmailStats = (statsOverrides: Partial<AutomationEmailStats> = {}) => {
     mockUseReadAutomation.mockReturnValue({
         data: {
             automations: [{
@@ -312,10 +312,12 @@ const mockAutomationWithEmailStats = () => {
                     ? {
                         ...action,
                         stats: {
+                            email_clicked_count: 249,
                             email_sent_count: 1247,
                             email_opened_count: 780,
                             opened_rate: 65,
-                            clicked_rate: 24
+                            clicked_rate: 20,
+                            ...statsOverrides
                         }
                     }
                     : action))
@@ -440,7 +442,7 @@ describe('AutomationEditor', () => {
         const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
         expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('1,247');
         expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('65%');
-        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('24%');
+        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('20%');
     });
 
     it.each([
@@ -458,12 +460,12 @@ describe('AutomationEditor', () => {
         const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
         expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('1,247');
         expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent(emailTrackOpens ? '65%' : 'Off');
-        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent(emailTrackClicks ? '24%' : 'Off');
+        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent(emailTrackClicks ? '20%' : 'Off');
 
         fireEvent.click(emailStep);
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
         expect(within(sidebar).queryAllByText('65%').length > 0).toBe(emailTrackOpens);
-        expect(within(sidebar).queryAllByText('24%').length > 0).toBe(emailTrackClicks);
+        expect(within(sidebar).queryAllByText('20%').length > 0).toBe(emailTrackClicks);
         expect(within(sidebar).queryAllByText('Off')).toHaveLength(Number(!emailTrackOpens) + Number(!emailTrackClicks));
         expect(within(sidebar).getByTestId('email-performance-sent-ring')).toHaveAttribute('data-tracked', 'true');
         expect(within(sidebar).getByTestId('email-performance-opened-ring')).toHaveAttribute('data-tracked', String(emailTrackOpens));
@@ -502,27 +504,28 @@ describe('AutomationEditor', () => {
         expect(within(emailStep).queryByText('Sent')).not.toBeInTheDocument();
     });
 
-    it('renders zero sends and an unavailable open rate when there are no sends', () => {
+    it('renders clicked performance in the send-email sidebar', () => {
         mockLabs.current = {automationAnalytics: true};
-        mockUseReadAutomation.mockReturnValue({
-            data: {
-                automations: [{
-                    ...automationDetail,
-                    actions: automationDetail.actions.map(action => (action.type === 'send_email'
-                        ? {
-                            ...action,
-                            stats: {
-                                email_sent_count: 0,
-                                email_opened_count: 0,
-                                opened_rate: null,
-                                clicked_rate: null
-                            }
-                        }
-                        : action))
-                }]
-            },
-            isLoading: false,
-            isError: false
+        mockAutomationWithEmailStats();
+
+        renderEditor();
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        const clickedKpi = within(sidebar).getByText('Clicked').parentElement;
+        expect(within(clickedKpi!).getByText('20%')).toBeInTheDocument();
+        expect(within(clickedKpi!).getByText('249')).toBeInTheDocument();
+        expect(within(sidebar).getByRole('img', {name: 'Clicked rate chart ring'})).toBeInTheDocument();
+    });
+
+    it('renders zero sends and unavailable email rates when there are no sends', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockAutomationWithEmailStats({
+            email_clicked_count: 0,
+            email_sent_count: 0,
+            email_opened_count: 0,
+            opened_rate: null,
+            clicked_rate: null
         });
 
         renderEditor();
@@ -530,6 +533,34 @@ describe('AutomationEditor', () => {
         const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
         expect(within(emailStep).getByText('Sent').nextElementSibling).toHaveTextContent('0');
         expect(within(emailStep).getByText('Opened').nextElementSibling).toHaveTextContent('--');
+        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('--');
+
+        fireEvent.click(emailStep);
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        const clickedKpi = within(sidebar).getByText('Clicked').parentElement;
+        expect(within(clickedKpi!).getAllByText('--')).toHaveLength(2);
+    });
+
+    it('renders a tracked zero click rate and count', () => {
+        mockLabs.current = {automationAnalytics: true};
+        mockAutomationWithEmailStats({
+            email_clicked_count: 0,
+            email_sent_count: 10,
+            email_opened_count: 5,
+            opened_rate: 50,
+            clicked_rate: 0
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        expect(within(emailStep).getByText('Clicked').nextElementSibling).toHaveTextContent('0%');
+
+        fireEvent.click(emailStep);
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        const clickedKpi = within(sidebar).getByText('Clicked').parentElement;
+        expect(within(clickedKpi!).getByText('0%')).toBeInTheDocument();
+        expect(within(clickedKpi!).getByText('0')).toBeInTheDocument();
     });
 
     it('renders styled canvas zoom controls without the interaction toggle', () => {

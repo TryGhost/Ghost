@@ -23,10 +23,12 @@ const EmailPerformanceRing: React.FC<{
     const colorVar = `var(--chart-${color})`;
     return (
         <ChartContainer
+            aria-label={`${datatype} rate chart ring`}
             className={cn('absolute inset-0 aspect-square', !tracked && 'opacity-30')}
             config={EMAIL_PERFORMANCE_CHART_CONFIG}
             data-testid={`email-performance-${datatype.toLowerCase()}-ring`}
             data-tracked={tracked}
+            role='img'
         >
             <Recharts.RadialBarChart
                 data={[{datatype, value: tracked ? value : 0}]}
@@ -165,6 +167,7 @@ export const EmailPerformanceSection: React.FC<{stats: AutomationEmailStats}> = 
                     />
                     <Kpi
                         color='var(--chart-teal)'
+                        hoverValue={stats.email_sent_count > 0 ? formatNumber(stats.email_clicked_count) : '--'}
                         label='Clicked'
                         tracked={emailTrackClicks}
                         value={formatRate(stats.clicked_rate)}
