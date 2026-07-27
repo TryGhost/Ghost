@@ -9,7 +9,7 @@ import {toast} from 'sonner';
 import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -30,7 +30,6 @@ const InviteUserModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
     const {config} = useGlobalData();
     const editorBeta = config.labs.superEditors;
-    const focusRef = useRef<HTMLInputElement>(null);
     const [email, setEmail] = useState<string>('');
     const [saveState, setSaveState] = useState<'saving' | 'saved' | 'error' | ''>('');
     const [role, setRole] = useState<RoleType>('contributor');
@@ -43,12 +42,6 @@ const InviteUserModal = NiceModal.create(() => {
     const {data: {invites} = {}} = useBrowseInvites();
     const {mutateAsync: addInvite} = useAddInvite();
     const handleError = useHandleError();
-
-    useEffect(() => {
-        if (focusRef.current) {
-            focusRef.current.focus();
-        }
-    }, []);
 
     useEffect(() => {
         if (saveState === 'saved') {
@@ -227,11 +220,11 @@ const InviteUserModal = NiceModal.create(() => {
                 <Field data-invalid={Boolean(errors.email) || undefined}>
                     <FieldLabel htmlFor='invite-email'>Email address</FieldLabel>
                     <Input
-                        ref={focusRef}
                         aria-invalid={Boolean(errors.email) || undefined}
                         id='invite-email'
                         placeholder='jamie@example.com'
                         value={email}
+                        autoFocus
                         onChange={event => setEmail(event.target.value)}
                         onKeyDown={() => setErrors(e => ({...e, email: undefined}))}
                     />
