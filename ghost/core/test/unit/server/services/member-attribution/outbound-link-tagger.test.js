@@ -90,6 +90,16 @@ describe('OutboundLinkTagger', function () {
             const updatedUrlThree = await service.addToUrl(urlThree);
 
             assert.equal(updatedUrlThree.toString(), 'https://ad.doubleclick.net/');
+
+            const urlFour = new URL('https://substack.com/p/hello');
+            const updatedUrlFour = await service.addToUrl(urlFour);
+
+            assert.equal(updatedUrlFour.toString(), 'https://substack.com/p/hello');
+
+            const urlFive = new URL('https://example.substack.com/p/hello');
+            const updatedUrlFive = await service.addToUrl(urlFive);
+
+            assert.equal(updatedUrlFive.toString(), 'https://example.substack.com/p/hello');
         });
 
         it('does not add ref if utm_source is present', async function () {

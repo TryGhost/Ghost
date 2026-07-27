@@ -11,7 +11,10 @@ const blockedReferrerDomains = [
     'www.chicagomag.com',
     'bailii.org',
     'www.bailii.org',
-    '*.doubleclick.net'
+    '*.doubleclick.net',
+    // Substack uses ?ref= for its own referral system and 404s on unknown values
+    'substack.com',
+    '*.substack.com'
 ];
 
 const isBlockedReferrerDomain = (domain) => {
