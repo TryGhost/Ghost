@@ -81,7 +81,6 @@ interface MemberExportRow extends MemberDbRow {
     labels: Array<{name: string}>;
     subscribed: boolean;
     comped: boolean;
-    complimentary_plan: boolean;
     gift_id: string | null;
     stripe_customer_id: string | null;
     custom_field_cells: Record<string, unknown>;
@@ -307,7 +306,6 @@ export default class MembersCSVExporter {
                 ...row,
                 subscribed: subscribedSet.has(row.id),
                 comped: row.status === 'comped',
-                complimentary_plan: row.status === 'complimentary',
                 gift_id: giftIdMap.get(row.id) || null,
                 stripe_customer_id: stripeCustomerMap.get(row.id) || null,
                 created_at: moment(row.created_at).toISOString(),
