@@ -39,13 +39,16 @@ const itemsToHtml = (items) => {
                 }
             };
             itemHTMLChunks.push(serializer.serialize(imageCard.render(cardOpts)));
-
-            let linkHTML = `<h4><a href="${item.url}">${item.title}</a></h4>${item.description}`;
+            let itemURL = item.url;
+            if (/^\s*javascript:/i.test(item.url)) {
+                itemURL = '';
+            }
+            let linkHTML = `<h4><a href="${itemURL}">${item.title}</a></h4>${item.description}`;
             itemHTMLChunks.push(linkHTML);
         } else if (type === 'tweet') {
             // Should this be an oEmbed call? Probably.
             itemHTMLChunks.push(`<figure class="kg-card kg-embed-card">
-                <blockquote class="twitter-tweet"><a href="${item.url}"></a></blockquote>
+                <blockquote class="twitter-tweet"><a href="${serializer.escapeAttrValue(item.url)}"></a></blockquote>
                 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                 </figure>`);
         } else if (type === 'video') {
