@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import createKnex, {type Knex} from 'knex';
@@ -25,6 +26,7 @@ const linkLexical = (url: string): string => JSON.stringify({
         }]
     }
 });
+const hashRedirectDestination = (url: string): Buffer => createHash('sha256').update(url).digest();
 
 const addHours = (dateCol: unknown, hours: number): Date => {
     assert(typeof dateCol === 'string', 'Expected date column to be a string');
@@ -102,6 +104,21 @@ const createDatabase = async (): Promise<Knex> => {
         table.integer('email_opened_count');
         table.integer('email_clicked_count');
         table.unique(['created_at', 'action_id']);
+    });
+
+    await database.schema.createTable('redirects', (table) => {
+        table.text('id').primary();
+        table.text('automation_action_revision_id').references('id').inTable('automation_action_revisions');
+        table.text('to').notNullable();
+        table.binary('to_hash');
+        table.unique(['automation_action_revision_id', 'to_hash']);
+    });
+
+    await database.schema.createTable('members_click_events', (table) => {
+        table.text('id').primary();
+        table.text('member_id').notNullable();
+        table.text('redirect_id').notNullable().references('id').inTable('redirects');
+        table.text('created_at').notNullable();
     });
 
     await database.schema.createTable('automation_action_edges', (table) => {
@@ -854,6 +871,70 @@ describe('automations repository', function () {
             assert(action?.type === 'send_email');
             assert.equal(action.stats?.email_clicked_count, 3);
             assert.equal(action.stats?.clicked_rate, 38);
+        });
+    });
+
+    describe('getAutomationActionLinks', function () {
+        it('aggregates unique member clicks by destination hash across action revisions', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = automation.actions.find(candidate => candidate.type === 'send_email');
+            assert(action);
+            const existingRevision = await getLatestActionRevisionByActionId(action.id);
+            const secondRevisionId = ObjectId().toHexString();
+            await knex('automation_action_revisions').insert({
+                id: secondRevisionId,
+                action_id: action.id,
+                created_at: '2026-07-22 12:00:00',
+                email_subject: 'A later revision',
+                email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+                email_design_setting_id: existingRevision.email_design_setting_id
+            });
+
+            const redirects = [
+                {id: ObjectId().toHexString(), automation_action_revision_id: existingRevision.revision_id, to: 'https://example.com/alpha', to_hash: hashRedirectDestination('https://example.com/alpha')},
+                {id: ObjectId().toHexString(), automation_action_revision_id: secondRevisionId, to: 'https://example.com/alpha', to_hash: hashRedirectDestination('https://example.com/alpha')},
+                {id: ObjectId().toHexString(), automation_action_revision_id: secondRevisionId, to: 'https://example.com/beta', to_hash: hashRedirectDestination('https://example.com/beta')},
+                {id: ObjectId().toHexString(), automation_action_revision_id: secondRevisionId, to: 'https://example.com/zero', to_hash: hashRedirectDestination('https://example.com/zero')},
+                {id: ObjectId().toHexString(), automation_action_revision_id: secondRevisionId, to: 'https://example.com/aaa-zero', to_hash: hashRedirectDestination('https://example.com/aaa-zero')},
+                {id: ObjectId().toHexString(), automation_action_revision_id: secondRevisionId, to: 'https://example.com/alpha', to_hash: null}
+            ];
+            await knex('redirects').insert(redirects);
+            await knex('members_click_events').insert([
+                {id: ObjectId().toHexString(), member_id: 'member-1', redirect_id: redirects[0].id, created_at: '2026-07-22 13:00:00'},
+                {id: ObjectId().toHexString(), member_id: 'member-1', redirect_id: redirects[1].id, created_at: '2026-07-22 13:01:00'},
+                {id: ObjectId().toHexString(), member_id: 'member-2', redirect_id: redirects[1].id, created_at: '2026-07-22 13:02:00'},
+                {id: ObjectId().toHexString(), member_id: 'member-3', redirect_id: redirects[2].id, created_at: '2026-07-22 13:03:00'},
+                {id: ObjectId().toHexString(), member_id: 'member-4', redirect_id: redirects[5].id, created_at: '2026-07-22 13:04:00'}
+            ]);
+
+            assert.deepEqual(await repo.getAutomationActionLinks(automation.id, action.id), [{
+                url: 'https://example.com/alpha',
+                clicked_count: 2
+            }, {
+                url: 'https://example.com/beta',
+                clicked_count: 1
+            }, {
+                url: 'https://example.com/aaa-zero',
+                clicked_count: 0
+            }, {
+                url: 'https://example.com/zero',
+                clicked_count: 0
+            }]);
+        });
+
+        it('returns an empty list for a valid action without links', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            assert.deepEqual(await repo.getAutomationActionLinks(automation.id, automation.actions[0].id), []);
+        });
+
+        it('returns null when the action does not belong to the automation or is deleted', async function () {
+            const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+            const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+            const actionId = freeAutomation.actions[0].id;
+
+            assert.equal(await repo.getAutomationActionLinks(paidAutomation.id, actionId), null);
+            await knex('automation_actions').where('id', actionId).update({deleted_at: '2026-07-22 14:00:00'});
+            assert.equal(await repo.getAutomationActionLinks(freeAutomation.id, actionId), null);
         });
     });
 

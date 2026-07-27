@@ -69,6 +69,11 @@ type ActionStatsRow = {
     email_opened_count: number | null;
 };
 
+type ActionLinkRow = {
+    url: string;
+    clicked_count: string | number;
+};
+
 type ActionRevisionRow = {
     action_id: string;
     created_at: string;
@@ -163,6 +168,37 @@ export function createDatabaseAutomationsRepository({
 
                 return await buildAutomation(trx, automation);
             });
+        },
+
+        async getAutomationActionLinks(automationId, actionId) {
+            const action = await knex('automation_actions')
+                .select('id')
+                .where({
+                    id: actionId,
+                    automation_id: automationId
+                })
+                .whereNull('deleted_at')
+                .first();
+
+            if (!action) {
+                return null;
+            }
+
+            const rows = await knex('redirects as redirects')
+                .countDistinct({clicked_count: 'members_click_events.member_id'})
+                .select<ActionLinkRow[]>(knex.raw('MIN(??) as ??', ['redirects.to', 'url']))
+                .innerJoin('automation_action_revisions as revisions', 'revisions.id', 'redirects.automation_action_revision_id')
+                .leftJoin('members_click_events', 'members_click_events.redirect_id', 'redirects.id')
+                .where('revisions.action_id', actionId)
+                .whereNotNull('redirects.to_hash')
+                .groupBy('redirects.to_hash')
+                .orderBy('clicked_count', 'desc')
+                .orderBy('url', 'asc');
+
+            return rows.map(row => ({
+                url: row.url,
+                clicked_count: Number(row.clicked_count)
+            }));
         },
 
         async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
