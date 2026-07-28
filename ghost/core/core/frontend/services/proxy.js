@@ -16,9 +16,10 @@ const FRONTEND_SUBSCRIBABLE_EVENTS = ['site.changed', 'url.added', 'url.removed'
 // Require from the handlebars framework
 const {SafeString} = require('./handlebars');
 
-const createDOMPurify = require('dompurify');
-const {JSDOM} = require('jsdom');
-const DOMPurify = createDOMPurify(new JSDOM('').window);
+// sanitize-html over DOMPurify here: DOMPurify needs a DOM, and jsdom costs
+// ~116MB RSS to load. This module is on the boot path, so that was paid by
+// every process — including ones that never render a caption.
+const sanitizeHtml = require('sanitize-html');
 
 module.exports = {
     getFrontendKey: async () => {
@@ -48,11 +49,9 @@ module.exports = {
         (Array.isArray(data) ? data : [data]).forEach((resource) => {
             // feature_image_caption contains HTML, making it a SafeString spares theme devs from triple-curlies
             if (resource.feature_image_caption) {
-                const sanitizedCaption = DOMPurify.sanitize(resource.feature_image_caption, {
-                    ALLOWED_TAGS: ['a', 'b', 'i', 'span'],
-                    ALLOWED_ATTR: ['href', 'style'],
-                    ALLOW_DATA_ATTR: false,
-                    ALLOW_ARIA_ATTR: false
+                const sanitizedCaption = sanitizeHtml(resource.feature_image_caption, {
+                    allowedTags: ['a', 'b', 'i', 'span'],
+                    allowedAttributes: {'*': ['href', 'style']}
                 });
                 resource.feature_image_caption = new SafeString(sanitizedCaption);
             }
