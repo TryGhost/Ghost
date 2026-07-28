@@ -36,7 +36,11 @@ export const NewAutomationDialog: React.FC<NewAutomationDialogProps> = ({open, o
 
     const handleTemplatePick = (templateId: string) => {
         onOpenChange(false);
-        navigate(toVersioned(`/automations-proto/canvas/new?template=${templateId}`));
+        // Points at the float concept (the hybrid baseline) now that canvas is
+        // gone. NOTE: the create/editor flow itself lived in canvas, so `new`
+        // currently lands on float's not-found state — a stub to replace when the
+        // hybrid grows a real create flow.
+        navigate(toVersioned(`/automations-proto/float/new?template=${templateId}`));
     };
 
     return (

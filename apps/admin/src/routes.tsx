@@ -107,30 +107,9 @@ export const routes: RouteObject[] = [
             // Automations prototype concepts. Each concept owns its own route
             // subtree under /automations-proto/<concept>, so concepts can diverge
             // freely in layout and architecture. Reached directly by URL — there's
-            // no index; the sidebar item points at the default concept (surface).
-            // Canvas, dashboard, and float remain URL-only. Adding a concept = a
-            // new folder + a route block here (no nav edits).
-            {
-                path: "/automations-proto/canvas",
-                lazy: lazyComponent(() => import("./automations/proto/canvas/list")),
-            },
-            {
-                path: "/automations-proto/canvas/:id",
-                handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
-                lazy: lazyComponent(() => import("./automations/proto/canvas/editor")),
-            },
-            {
-                path: "/automations-proto/dashboard",
-                lazy: lazyComponent(() => import("./automations/proto/dashboard/list")),
-            },
-            {
-                // The dashboard concept keeps the admin sidebar visible and renders
-                // its detail page within the standard content shell (page-width
-                // Container), so it reads like Analytics/Posts rather than a
-                // full-screen editor.
-                path: "/automations-proto/dashboard/:id",
-                lazy: lazyComponent(() => import("./automations/proto/dashboard/detail")),
-            },
+            // no index; the sidebar item points at the default concept (surface),
+            // and float remains URL-only. Adding a concept = a new folder + a route
+            // block here (no nav edits).
             {
                 path: "/automations-proto/surface",
                 lazy: lazyComponent(() => import("./automations/proto/surface/list")),
