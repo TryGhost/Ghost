@@ -22,6 +22,8 @@ const appearanceOptions = {
 /** Admin sidebar locators and gestures for acceptance specs; no assertions. */
 export const sidebarScreen = {
     navLink: (name: string) => page.getByRole("navigation").getByRole("link", { name, exact: true }),
+    /** Settings renders its own nav, so role queries can't tell the two apart. */
+    isMounted: () => document.querySelector('[data-sidebar="sidebar"]') !== null,
     postsToggle: () => page.getByRole("button", { name: postsToggle }),
     networkBadge: () => page.getByTestId(networkNotificationBadge),
     userMenuTrigger: () => page.getByRole("button", { name: userMenuTrigger }),

@@ -173,9 +173,8 @@ export const routes: RouteObject[] = [
                 children: activityPubRoutes,
             },
             {
-                // Settings is a full-screen surface — hide the outer admin
-                // sidebar so Editors/Authors don't see a visible-but-dead nav
-                // (and so sidebar hooks like member-count don't keep firing).
+                // Settings hides the admin sidebar for a focused, full-screen
+                // surface.
                 path: `settings/*`,
                 lazy: lazyComponent(() => import("./settings/settings")),
                 handle: {

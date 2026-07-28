@@ -101,14 +101,14 @@ describe("Sidebar navigation", () => {
     });
 
     it("hides the outer admin sidebar on settings routes", async () => {
-        // Settings is full-screen; leaving the shell sidebar mounted made it
-        // look clickable while clicks were swallowed (see #26607).
         allowUnhandledRequests();
-        await renderAdminApp("/settings/staff");
+        await renderAdminApp("/");
+
+        await expect.element(sidebarScreen.navLink("Settings")).toBeVisible();
+        await sidebarScreen.navLink("Settings").click();
 
         await expect.poll(currentRoute).toMatch(/^\/settings/);
-        await expect.element(sidebarScreen.navLink("Settings")).not.toBeInTheDocument();
-        await expect.element(sidebarScreen.navLink("Posts")).not.toBeInTheDocument();
+        await expect.poll(sidebarScreen.isMounted).toBe(false);
     });
 });
 
