@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const debug = require('@tryghost/debug')('services:route-settings:service');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -7,12 +6,6 @@ const tpl = require('@tryghost/tpl');
 const messages = {
     loadError: 'Could not load routes.yaml file.'
 };
-
-/**
- * md5 of the expanded default route settings — the routes_hash value for a
- * site that has never customised its routes.
- */
-const DEFAULT_ROUTES_SETTING_HASH = '3d180d52c663d173a6be791ef411ed01';
 
 function isStoredContentError(err) {
     return err.errorType === 'ValidationError' || err.errorType === 'IncorrectUsageError';
@@ -31,9 +24,9 @@ class DynamicRoutingService {
     }
 
     /**
-     * Wire the storage-layer dependency so the API surface (upload, download,
-     * getCurrentHash) works immediately after boot — even when the frontend is
-     * disabled and `start()` is never called.
+     * Wire the storage-layer dependency so the API surface (upload, download)
+     * works immediately after boot — even when the frontend is disabled and
+     * `start()` is never called.
      *
      * @param {object} deps
      * @param {RouteSettingsStore} deps.store - adapter-manager provided store
@@ -69,8 +62,8 @@ class DynamicRoutingService {
             // A stored-content error means the site's routes.yaml is invalid —
             // either it fails validation or it isn't parseable YAML. Log a
             // targeted error so the failure is easy to spot in the logs, then
-            // rethrow so the caller (boot, or the routes-hash sync) surfaces the
-            // genuine error rather than silently degrading.
+            // rethrow so the caller surfaces the genuine error rather than
+            // silently degrading.
             if (isStoredContentError(err)) {
                 logging.error(new errors.InternalServerError({
                     message: 'Route settings could not be loaded because the routes.yaml file is invalid. Please fix the file.',
@@ -82,18 +75,6 @@ class DynamicRoutingService {
 
             throw err;
         }
-    }
-
-    getDefaultHash() {
-        return DEFAULT_ROUTES_SETTING_HASH;
-    }
-
-    async getCurrentHash() {
-        const expanded = await this.loadRouteSettings();
-
-        return crypto.createHash('md5')
-            .update(JSON.stringify(expanded), 'binary')
-            .digest('hex');
     }
 
     async download() {

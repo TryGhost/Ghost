@@ -119,11 +119,4 @@ describe('Integration: DynamicRoutingService over a real FileStore', function ()
             return true;
         });
     });
-
-    it('getCurrentHash over the bundled defaults matches the known default hash', async function () {
-        const defaultYaml = await fs.readFile(path.join(DEFAULT_SETTINGS_BASE_PATH, 'default-routes.yaml'), 'utf8');
-        await writeRoutes(defaultYaml);
-
-        assert.equal(await service.getCurrentHash(), service.getDefaultHash());
-    });
 });

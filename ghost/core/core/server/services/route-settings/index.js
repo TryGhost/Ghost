@@ -19,10 +19,6 @@ module.exports = {
         return service.loadRouteSettings.bind(service);
     },
 
-    get getDefaultHash() {
-        return service.getDefaultHash.bind(service);
-    },
-
     /**
      * Methods backing the Admin API settings endpoint — delegate to the
      * service instance so the endpoint stays decoupled from service wiring.
@@ -33,9 +29,6 @@ module.exports = {
         },
         get download() {
             return service.download.bind(service);
-        },
-        get getCurrentHash() {
-            return service.getCurrentHash.bind(service);
         }
     }
 };
