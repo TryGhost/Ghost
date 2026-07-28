@@ -596,11 +596,11 @@ describe('MemberWelcomeEmailRenderer', function () {
             };
 
             it('rewrites absolute content links in HTML and finalized plaintext', async function () {
-                const result = await renderTracked('<p><a href="https://external.com/page">External link</a></p>');
+                const result = await renderTracked('<p><a href="https://external.example/page">External link</a></p>');
 
                 sinon.assert.calledOnceWithExactly(
                     addAutomationTrackingToUrl,
-                    sinon.match(url => url.href === 'https://external.com/page'),
+                    sinon.match(url => url.href === 'https://external.example/page'),
                     'revision-id',
                     memberUuid
                 );
@@ -615,7 +615,7 @@ describe('MemberWelcomeEmailRenderer', function () {
             });
 
             it('uses the same redirect destination for repeated URLs', async function () {
-                const result = await renderTracked('<p><a href="https://external.com/page">One</a><a href="https://external.com/page">Two</a></p>');
+                const result = await renderTracked('<p><a href="https://external.example/page">One</a><a href="https://external.example/page">Two</a></p>');
 
                 sinon.assert.calledTwice(addAutomationTrackingToUrl);
                 assert.equal((result.html.match(new RegExp(`https://example.com/r/abc123\\?m=${memberUuid}`, 'g')) || []).length, 2);
@@ -631,7 +631,7 @@ describe('MemberWelcomeEmailRenderer', function () {
             });
 
             it('does not touch wrapper and footer links', async function () {
-                const result = await renderTracked('<p><a href="https://external.com/page">Content</a></p>');
+                const result = await renderTracked('<p><a href="https://external.example/page">Content</a></p>');
                 const $ = cheerio.load(result.html);
 
                 sinon.assert.calledOnce(addAutomationTrackingToUrl);
@@ -640,15 +640,15 @@ describe('MemberWelcomeEmailRenderer', function () {
             });
 
             it('does not rewrite links when click tracking is disabled', async function () {
-                const result = await renderTracked('<p><a href="https://external.com/page">Link</a></p>', {trackClicks: false});
+                const result = await renderTracked('<p><a href="https://external.example/page">Link</a></p>', {trackClicks: false});
                 const $ = cheerio.load(result.html);
 
                 sinon.assert.notCalled(addAutomationTrackingToUrl);
-                assert.equal($('a[href="https://external.com/page"]').text(), 'Link');
+                assert.equal($('a[href="https://external.example/page"]').text(), 'Link');
             });
 
             it('does not rewrite links when the member UUID is absent', async function () {
-                await renderTracked('<p><a href="https://external.com/page">Link</a></p>', {
+                await renderTracked('<p><a href="https://external.example/page">Link</a></p>', {
                     member: {name: 'John', email: 'john@example.com'}
                 });
 
