@@ -15,10 +15,15 @@ const messages = {
 const managedAttributes = ['href', 'class', 'activeClass', 'parentActiveClass'];
 
 function _formatAttrs(attributes) {
-    return Object.keys(attributes)
+    let attributeString = '';
+    Object.keys(attributes).forEach((key) => {
+        let value = attributes[key];
+
         // @TODO handle non-string attributes?
-        .map(key => `${key}="${attributes[key]}"`)
-        .join(' ');
+        attributeString += `${key}="${value}" `;
+    });
+
+    return attributeString;
 }
 
 module.exports = function link(options) {
@@ -55,9 +60,12 @@ module.exports = function link(options) {
     // Prepare output
     let classString = classes.length > 0 ? `class="${classes.join(' ')}"` : '';
     let hrefString = `href="${href}"`;
-    let attributeString = _formatAttrs(attributes);
-    let openingTag = `<a ${[classString, hrefString, attributeString].filter(Boolean).join(' ')}>`;
+    let attributeString = _.size(attributes) > 0 ? _formatAttrs(attributes) : '';
+    let openingTag = `<a ${classString} ${hrefString} ${attributeString}>`;
     let closingTag = `</a>`;
+
+    // Clean up any extra spaces
+    openingTag = openingTag.replace(/\s{2,}/g, ' ').replace(/\s>/, '>');
 
     return new SafeString(`${openingTag}${options.fn(this)}${closingTag}`);
 };
