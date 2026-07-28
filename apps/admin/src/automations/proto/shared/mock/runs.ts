@@ -151,13 +151,27 @@ const welcomeRunsBase: AutomationRun[] = [
         ]
     },
     {
+        // Just enrolled (minutes ago) — the fresh end of the "started" range.
         id: 'run_noah', automation_id: welcomeSeries.id,
         member: {id: 'mem_noah', name: 'Noah Bennett', email: 'noah.bennett@example.com'},
-        status: 'in_progress', enrolled_at: '2026-07-20T18:03:00Z', completed_at: null,
+        status: 'in_progress', enrolled_at: '2026-07-21T09:06:00Z', completed_at: null,
         current_action_id: 'act_wait_3d', exit_reason: null,
         steps: [
-            {action_id: 'act_welcome_email', state: 'done', occurred_at: '2026-07-20T18:03:00Z', detail: 'Delivered'},
-            {action_id: 'act_wait_3d', state: 'current', occurred_at: '2026-07-20T18:04:00Z', detail: 'Waiting — resumes Jul 23'},
+            {action_id: 'act_welcome_email', state: 'done', occurred_at: '2026-07-21T09:06:00Z', detail: 'Delivered'},
+            {action_id: 'act_wait_3d', state: 'current', occurred_at: '2026-07-21T09:07:00Z', detail: 'Waiting — resumes Jul 24'},
+            {action_id: 'act_tips_email', state: 'upcoming', occurred_at: null, detail: null},
+            {action_id: 'act_week1_email', state: 'upcoming', occurred_at: null, detail: null}
+        ]
+    },
+    {
+        // Enrolled a few hours ago — the middle of the range.
+        id: 'run_elena', automation_id: welcomeSeries.id,
+        member: {id: 'mem_elena', name: 'Elena Ross', email: 'elena.ross@example.com'},
+        status: 'in_progress', enrolled_at: '2026-07-21T05:20:00Z', completed_at: null,
+        current_action_id: 'act_wait_3d', exit_reason: null,
+        steps: [
+            {action_id: 'act_welcome_email', state: 'done', occurred_at: '2026-07-21T05:20:00Z', detail: 'Opened'},
+            {action_id: 'act_wait_3d', state: 'current', occurred_at: '2026-07-21T05:21:00Z', detail: 'Waiting — resumes Jul 24'},
             {action_id: 'act_tips_email', state: 'upcoming', occurred_at: null, detail: null},
             {action_id: 'act_week1_email', state: 'upcoming', occurred_at: null, detail: null}
         ]
@@ -200,13 +214,26 @@ const winbackRunsBase: AutomationRun[] = [
         ]
     },
     {
+        // Enrolled minutes ago — the fresh end of the range.
         id: 'run_ada', automation_id: inactiveWinback.id,
         member: {id: 'mem_ada', name: 'Ada Flores', email: 'ada.flores@example.com'},
-        status: 'in_progress', enrolled_at: '2026-07-19T16:10:00Z', completed_at: null,
+        status: 'in_progress', enrolled_at: '2026-07-21T08:32:00Z', completed_at: null,
         current_action_id: 'act_wb_wait', exit_reason: null,
         steps: [
-            {action_id: 'act_wb_hey', state: 'done', occurred_at: '2026-07-19T16:10:00Z', detail: 'Delivered — not opened'},
-            {action_id: 'act_wb_wait', state: 'current', occurred_at: '2026-07-19T16:11:00Z', detail: 'Waiting — resumes Jul 26'},
+            {action_id: 'act_wb_hey', state: 'done', occurred_at: '2026-07-21T08:32:00Z', detail: 'Delivered — not opened'},
+            {action_id: 'act_wb_wait', state: 'current', occurred_at: '2026-07-21T08:33:00Z', detail: 'Waiting — resumes Jul 28'},
+            {action_id: 'act_wb_offer', state: 'upcoming', occurred_at: null, detail: null}
+        ]
+    },
+    {
+        // Enrolled a few hours ago — the middle of the range.
+        id: 'run_omar', automation_id: inactiveWinback.id,
+        member: {id: 'mem_omar', name: 'Omar Haddad', email: 'omar.haddad@example.com'},
+        status: 'in_progress', enrolled_at: '2026-07-21T03:45:00Z', completed_at: null,
+        current_action_id: 'act_wb_wait', exit_reason: null,
+        steps: [
+            {action_id: 'act_wb_hey', state: 'done', occurred_at: '2026-07-21T03:45:00Z', detail: 'Opened'},
+            {action_id: 'act_wb_wait', state: 'current', occurred_at: '2026-07-21T03:46:00Z', detail: 'Waiting — resumes Jul 28'},
             {action_id: 'act_wb_offer', state: 'upcoming', occurred_at: null, detail: null}
         ]
     }
@@ -245,6 +272,30 @@ const upgradeRunsBase: AutomationRun[] = [
             {action_id: 'act_up_email', state: 'done', occurred_at: '2026-07-16T14:20:00Z', detail: 'Opened · upgraded'},
             {action_id: 'act_up_wait', state: 'skipped', occurred_at: null, detail: null},
             {action_id: 'act_up_email2', state: 'skipped', occurred_at: null, detail: null}
+        ]
+    },
+    {
+        // Enrolled minutes ago — also the only in-progress shape in this scenario.
+        id: 'run_yuki', automation_id: paidUpgradeNudge.id,
+        member: {id: 'mem_yuki', name: 'Yuki Tanaka', email: 'yuki.tanaka@example.com'},
+        status: 'in_progress', enrolled_at: '2026-07-21T09:01:00Z', completed_at: null,
+        current_action_id: 'act_up_wait', exit_reason: null,
+        steps: [
+            {action_id: 'act_up_email', state: 'done', occurred_at: '2026-07-21T09:01:00Z', detail: 'Opened'},
+            {action_id: 'act_up_wait', state: 'current', occurred_at: '2026-07-21T09:02:00Z', detail: 'Waiting — resumes Jul 26'},
+            {action_id: 'act_up_email2', state: 'upcoming', occurred_at: null, detail: null}
+        ]
+    },
+    {
+        // Enrolled a few hours ago — the middle of the range.
+        id: 'run_diego', automation_id: paidUpgradeNudge.id,
+        member: {id: 'mem_diego_up', name: 'Diego Salas', email: 'diego.salas@example.com'},
+        status: 'in_progress', enrolled_at: '2026-07-21T02:10:00Z', completed_at: null,
+        current_action_id: 'act_up_wait', exit_reason: null,
+        steps: [
+            {action_id: 'act_up_email', state: 'done', occurred_at: '2026-07-21T02:10:00Z', detail: 'Opened · clicked 1 link'},
+            {action_id: 'act_up_wait', state: 'current', occurred_at: '2026-07-21T02:11:00Z', detail: 'Waiting — resumes Jul 26'},
+            {action_id: 'act_up_email2', state: 'upcoming', occurred_at: null, detail: null}
         ]
     }
 ];
