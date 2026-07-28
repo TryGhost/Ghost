@@ -37,6 +37,8 @@ const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings, localTiers}) =>
     const containerRef = useRef<HTMLDivElement>(null);
     const [frame, setFrame] = useState({scale: 0, width: 0, height: 0});
 
+    // Recomputed every render and handed straight to the iframe, exactly as
+    // PortalPreview does it — that's what makes the preview track typing.
     const href = getGiftPreviewUrl({
         settings: localSettings,
         tiers: localTiers,

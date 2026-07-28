@@ -1,12 +1,11 @@
 import GiftPreview from './gift-preview';
-import HtmlField from '../../../html-field';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo} from 'react';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Badge, Checkbox, Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldSet} from '@tryghost/shade/components';
+import {Badge, Checkbox, Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldSet, Input, Textarea} from '@tryghost/shade/components';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
-import {PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
+import {PreviewModalContent} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {Text} from '@tryghost/shade/primitives';
 import {type Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -24,6 +23,10 @@ const DURATION_OPTIONS = [
     {months: 6, label: '6 months', anchor: 'monthly'},
     {months: 12, label: '1 year', anchor: 'yearly'}
 ] as const;
+
+// Matches a real HTML tag — a letter must follow the "<" — so a description
+// containing a stray "<" isn't treated as markup.
+const HTML_TAG_REGEX = /<\/?[a-z][^>]*>/i;
 
 const GiftSidebar: React.FC<{
     localSettings: Setting[]
@@ -62,17 +65,27 @@ const GiftSidebar: React.FC<{
         updateSetting('gift_tiers', JSON.stringify(nextIds.length === paidTiers.length ? [] : nextIds));
     };
 
-    // The defaults are inserted into the fields as real, editable text (rather
-    // than surfaced as grey placeholders). The settings themselves stay null
-    // until the value is actually edited, so the gift page keeps its
-    // translatable fallbacks for sites that never customise these. The
-    // description default is pre-wrapped in <p> to match the editor's own
-    // serialization — its on-load event only skips marking the form dirty when
-    // the normalized HTML equals the value it was given.
+    // Heading and description behave identically: the default is shown as a
+    // placeholder, an empty setting stays null, and the gift page falls back to
+    // its own translatable copy. Clearing a field therefore restores the
+    // default rather than blanking the section.
     const defaultHeading = 'Gift a membership';
-    const defaultDescription = `<p>Share a full membership to ${siteData?.title || 'your site'} with a friend or colleague</p>`;
-    const headingValue = giftPageHeading?.toString() || defaultHeading;
-    const descriptionValue = giftPageDescription?.toString() || defaultDescription;
+    const defaultDescription = `Share a full membership to ${siteData?.title || 'your site'} with a friend or colleague`;
+    const headingValue = giftPageHeading?.toString() || '';
+    // The description used to be edited as rich text, so a previously saved
+    // value may still be HTML. Show it as plain text rather than making the
+    // publisher stare at raw <p> tags; editing rewrites the setting as plain
+    // text. The tag test requires a letter after the "<" so a typed "a < b"
+    // isn't mistaken for markup and mangled on the round trip.
+    const descriptionValue = useMemo(() => {
+        const stored = giftPageDescription?.toString() || '';
+        if (!HTML_TAG_REGEX.test(stored)) {
+            return stored;
+        }
+        const div = document.createElement('div');
+        div.innerHTML = stored;
+        return div.innerText.trim();
+    }, [giftPageDescription]);
 
     // Soft limits, surfaced via the same "Recommended: X characters" counter
     // used by the Portal modal — the gift page renders both in full, so past
@@ -80,11 +93,7 @@ const GiftSidebar: React.FC<{
     const headingRecommendedLength = 60;
     const descriptionRecommendedLength = 225;
     const headingLength = headingValue.length;
-    const descriptionLength = useMemo(() => {
-        const div = document.createElement('div');
-        div.innerHTML = descriptionValue;
-        return div.innerText.trim().length;
-    }, [descriptionValue]);
+    const descriptionLength = descriptionValue.length;
 
     const handleImageUpload = async (file: File) => {
         try {
@@ -140,19 +149,29 @@ const GiftSidebar: React.FC<{
                     </ImageUpload>
                     <FieldDescription>Shown above the heading at up to 140px tall</FieldDescription>
                 </Field>
-                <TextField
-                    hint={<>Recommended: <strong>{headingRecommendedLength}</strong> characters. You&apos;ve used <strong className={headingLength > headingRecommendedLength ? 'text-red' : 'text-green'}>{headingLength}</strong></>}
-                    title="Heading"
-                    value={headingValue}
-                    onChange={e => updateSetting('gift_page_heading', e.target.value || null)}
-                />
-                <HtmlField
-                    hint={<>Recommended: <strong>{descriptionRecommendedLength}</strong> characters. You&apos;ve used <strong className={descriptionLength > descriptionRecommendedLength ? 'text-red' : 'text-green'}>{descriptionLength}</strong></>}
-                    nodes='MINIMAL_NODES'
-                    title="Description"
-                    value={descriptionValue}
-                    onChange={html => updateSetting('gift_page_description', html || null)}
-                />
+                {/* Label + control + hint laid out exactly as the welcome email
+                    design modal does it (member-emails/welcome-email-customize-modal). */}
+                <div className='flex flex-col gap-1.5'>
+                    <label className='font-medium' htmlFor='gift-page-heading'>Heading</label>
+                    <Input
+                        id='gift-page-heading'
+                        placeholder={defaultHeading}
+                        value={headingValue}
+                        onChange={e => updateSetting('gift_page_heading', e.target.value || null)}
+                    />
+                    <p className='text-sm text-muted-foreground'>Recommended: <strong>{headingRecommendedLength}</strong> characters. You&apos;ve used <strong className={headingLength > headingRecommendedLength ? 'text-red' : 'text-green'}>{headingLength}</strong></p>
+                </div>
+                <div className='flex flex-col gap-1.5'>
+                    <label className='font-medium' htmlFor='gift-page-description'>Description</label>
+                    <Textarea
+                        id='gift-page-description'
+                        placeholder={defaultDescription}
+                        rows={3}
+                        value={descriptionValue}
+                        onChange={e => updateSetting('gift_page_description', e.target.value || null)}
+                    />
+                    <p className='text-sm text-muted-foreground'>Recommended: <strong>{descriptionRecommendedLength}</strong> characters. You&apos;ve used <strong className={descriptionLength > descriptionRecommendedLength ? 'text-red' : 'text-green'}>{descriptionLength}</strong></p>
+                </div>
             </div>
 
             <div>

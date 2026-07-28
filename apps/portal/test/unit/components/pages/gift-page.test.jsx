@@ -23,6 +23,18 @@ describe('GiftPage', () => {
         expect(getByText(/Share a full membership to/)).toBeInTheDocument();
     });
 
+    test('restores the default description when it is cleared', () => {
+        // Heading and description behave the same way: clearing either returns
+        // its default rather than blanking the section.
+        const {getByRole, getByText} = renderGiftPage({
+            gift_page_heading: '',
+            gift_page_description: ''
+        });
+
+        expect(getByRole('heading', {level: 1, name: 'Gift a membership'})).toBeInTheDocument();
+        expect(getByText(/Share a full membership to/)).toBeInTheDocument();
+    });
+
     test('renders custom heading, description and image when set', () => {
         const {getByRole, getByText, queryByText, container} = renderGiftPage({
             gift_page_heading: 'Give the gift of great journalism',
