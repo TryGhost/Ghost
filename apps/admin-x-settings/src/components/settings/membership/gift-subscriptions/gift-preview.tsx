@@ -10,10 +10,21 @@ import {useGlobalData} from '../../../providers/global-data-provider';
 // then scale it to fill the pane edge-to-edge (never upscaling past 1:1).
 //
 // The scaled frame is positioned ABSOLUTELY so it can't inflate the container we
-// measure against. The preview area (deviceSelector=false → a `flex grow
-// items-center` wrapper, no DesktopChrome) gives the container a real height only
-// when nothing in-flow forces it taller; an in-flow fixed/derived height fed back
-// on the measurement and pushed the page's content out of view.
+// measure against: the container gets a real height only when nothing in-flow
+// forces it taller, and an in-flow fixed/derived height fed back on the
+// measurement and pushed the page's content out of view.
+//
+// The modal passes previewToolbar={false} (there's nothing to put in the toolbar —
+// no device selector, no URL tabs), so the preview lands directly in the pane with
+// no header and no scroll container. Unlike DesktopChrome — which gutters the sides
+// and runs flush to the bottom because a toolbar supplies its top spacing — this
+// pane has no header, so the card is inset evenly on all four sides and rounded on
+// every corner. The gradient behind it is applied here rather than via
+// previewBgColor, which only takes effect on the toolbar layout.
+//
+// The outer flex + `w-full` (rather than `h-full`) on the card is what makes the
+// card stretch: as a stretched flex item its height comes from the padded content
+// box directly, with no percentage to resolve against an ancestor.
 const DESIGN_WIDTH = 1280;
 
 interface GiftPreviewProps {
@@ -52,22 +63,24 @@ const GiftPreview: React.FC<GiftPreviewProps> = ({localSettings, localTiers}) =>
     }, []);
 
     return (
-        <div ref={containerRef} className='relative size-full overflow-hidden bg-white dark:bg-black'>
-            {frame.scale > 0 && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: frame.width,
-                        height: frame.height,
-                        transform: `scale(${frame.scale})`,
-                        transformOrigin: 'top left'
-                    }}
-                >
-                    <PortalFrame href={href || ''} portalParent='preview' />
-                </div>
-            )}
+        <div className='flex size-full bg-gradient-to-tr from-white to-[#f9f9fa] p-8 dark:from-grey-950 dark:to-black'>
+            <div ref={containerRef} className='relative w-full overflow-hidden rounded-lg bg-white shadow-sm dark:bg-black'>
+                {frame.scale > 0 && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: frame.width,
+                            height: frame.height,
+                            transform: `scale(${frame.scale})`,
+                            transformOrigin: 'top left'
+                        }}
+                    >
+                        <PortalFrame href={href || ''} portalParent='gift-preview' />
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

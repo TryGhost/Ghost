@@ -102,17 +102,21 @@ export class GiftEmailService {
         return this.settingsCache.get('accent_color') || DEFAULT_ACCENT_COLOR;
     }
 
-    // Must produce the same words as Portal's getGiftDurationLabel so the
-    // delivery email and the redemption page describe the gift identically
-    // ("1 year", "3 years", "1 month", "3 months").
+    // Every use of this label is attributive — it always sits in front of
+    // "{tierName} membership" — so English takes the singular unit: "a 6 month
+    // Gold membership", not "a 6 months Gold membership". Portal's
+    // getGiftDurationAttributiveLabel must produce the same words so the email
+    // and the redemption page describe the gift identically.
     private getCadenceLabel(cadence: 'month' | 'year', duration: number): string {
         if (duration === 1) {
             return cadence === 'year' ? this.t('1 year') : this.t('1 month');
         }
+        // Deliberately not a `count` variable: i18next pluralises on `count`,
+        // which would resolve these back to "6 months" via the _other form.
         if (cadence === 'year') {
-            return this.t('{count} years', {count: duration});
+            return this.t('{years} year', {years: duration});
         }
-        return this.t('{count} months', {count: duration});
+        return this.t('{months} month', {months: duration});
     }
 
     private formatDate(date: Date): string {

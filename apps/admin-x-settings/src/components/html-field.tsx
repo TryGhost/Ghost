@@ -1,7 +1,7 @@
 import HtmlEditor, {type HtmlEditorProps} from './html-editor';
 import React from 'react';
 import clsx from 'clsx';
-import {FieldDescription, FieldLabel, inputSurface} from '@tryghost/shade/components';
+import {FieldLabel, inputSurface} from '@tryghost/shade/components';
 
 export type HtmlFieldProps = HtmlEditorProps & {
     title?: string;
@@ -47,7 +47,11 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
             <div className={textFieldClasses}>
                 <HtmlEditor {...props} value={value} />
             </div>
-            {hint && <FieldDescription className={clsx('mt-1', error && 'text-destructive', hintClassName)}>{hint}</FieldDescription>}
+            {/* Deliberately not FieldDescription: its positional margin rules
+                (last:mt-0) zero the gap when the hint is the last child, leaving
+                HtmlField hints tighter than TextField's LegacyHint (mt-1). Same
+                classes as LegacyHint so the two field types stay in step. */}
+            {hint && <p className={clsx('mt-1 text-sm leading-normal font-normal', error ? 'text-destructive' : 'text-muted-foreground', hintClassName)}>{hint}</p>}
         </div>
     );
 };

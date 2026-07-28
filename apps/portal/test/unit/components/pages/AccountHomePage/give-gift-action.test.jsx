@@ -36,7 +36,8 @@ describe('GiveGiftAction', () => {
         const {queryByText} = setup({site: paidSite(), member: paidMember()});
 
         expect(queryByText('Gift a membership')).toBeInTheDocument();
-        expect(queryByText('Gift')).toBeInTheDocument();
+        expect(queryByText('For a friend or colleague')).toBeInTheDocument();
+        expect(queryByText('Buy')).toBeInTheDocument();
     });
 
     test('opens the gift page with account home as the previous page', () => {

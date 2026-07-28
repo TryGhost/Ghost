@@ -89,6 +89,36 @@ describe('GiftEmailService', function () {
         sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('1 month')));
     });
 
+    it('describes a multi-month gift attributively', async function () {
+        // The label always sits in front of "{tierName} membership", where
+        // English takes the singular unit: "a 6 month Gold membership".
+        //
+        // The mock reproduces i18next's pluralisation, which kicks in whenever
+        // a `count` option is present and would resolve "{count} month" to its
+        // _other form. That's a real trap for this label, so it's emulated here
+        // rather than left to be discovered in a translated inbox.
+        const pluralAware = (key, options = {}) => {
+            const params = {...options};
+            delete params.interpolation;
+            const pluralised = params.count !== undefined && params.count !== 1
+                ? key.replace(/(month|year)$/, '$1s')
+                : key;
+
+            return pluralised.replace(/\{(\w+)\}/g, (_, name) => (
+                params[name] === undefined ? `{${name}}` : String(params[name])
+            ));
+        };
+        service = new GiftEmailService({mailer, settingsCache, urlUtils, getFromAddress, blogIcon, t: pluralAware});
+
+        await service.sendPurchaseConfirmation({...defaultData, cadence: 'month', duration: 6});
+
+        // The duration and tier are each wrapped in <strong>, so compare the
+        // stripped text rather than the markup.
+        const text = mailer.send.lastCall.args[0].html.replace(/<[^>]+>/g, '');
+        assert.match(text, /6 month Gold membership/);
+        assert.doesNotMatch(text, /6 months Gold/);
+    });
+
     it('formats the expiry date with the active locale', async function () {
         const localizedSettingsCache = {
             get: (key) => {

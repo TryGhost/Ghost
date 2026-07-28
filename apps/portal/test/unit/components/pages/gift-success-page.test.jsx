@@ -23,10 +23,11 @@ describe('GiftSuccessPage', () => {
 
         // The redeem link is the hero, with a plain "share it" subtitle
         expect(getByText('https://example.com/gift/gift-token-123')).toBeInTheDocument();
-        expect(getByText(/share the link below whenever the moment feels right/i)).toBeInTheDocument();
-        // No emailed-mode confirmation or demoted share label
+        expect(getByText(/send the link below to share it with whoever you'd like/i)).toBeInTheDocument();
+        // No emailed-mode confirmation, and no label above the link
         expect(queryByText(/emailed it to the recipient/i)).not.toBeInTheDocument();
         expect(queryByText('Share it yourself')).not.toBeInTheDocument();
+        expect(queryByText('Your gift link')).not.toBeInTheDocument();
         // Footer nudging the buyer that a copy is in their inbox
         expect(getByText(/emailed a copy to your inbox/i)).toBeInTheDocument();
     });
@@ -52,7 +53,7 @@ describe('GiftSuccessPage', () => {
         expect(getByText('Your gift is scheduled')).toBeInTheDocument();
         // Date format is locale/timezone dependent, so just assert the
         // scheduled-delivery sentence renders with the year interpolated in
-        expect(getByText(/We'll email it to the recipient on .*2030.* a copy is in your inbox too\./)).toBeInTheDocument();
+        expect(getByText(/We'll email it to the recipient on .*2030.*\. A copy is in your inbox too\./)).toBeInTheDocument();
         expect(getByText('Share it yourself')).toBeInTheDocument();
     });
 

@@ -147,14 +147,14 @@ const GiftSuccessPage = () => {
     const isEmailed = delivery === 'sent' || delivery === 'scheduled';
 
     let titleText = t('Your gift is ready');
-    let subtitleText = t('It\'s ready to give — share the link below whenever the moment feels right.');
+    let subtitleText = t('Send the link below to share it with whoever you\'d like.');
     if (delivery === 'scheduled' && deliveryDate) {
         const formattedDate = new Date(deliveryDate).toLocaleDateString(undefined, {day: 'numeric', month: 'short', year: 'numeric'});
         titleText = t('Your gift is scheduled');
-        subtitleText = t('We\'ll email it to the recipient on {deliveryDate} — a copy is in your inbox too.', {deliveryDate: formattedDate});
+        subtitleText = t('We\'ll email it to the recipient on {deliveryDate}. A copy is in your inbox too.', {deliveryDate: formattedDate});
     } else if (delivery === 'sent') {
         titleText = t('Your gift is on its way');
-        subtitleText = t('We\'ve emailed it to the recipient — a copy is in your inbox too.');
+        subtitleText = t('We\'ve emailed it to the recipient. A copy is in your inbox too.');
     }
 
     return (
@@ -176,7 +176,7 @@ const GiftSuccessPage = () => {
                             </header>
 
                             <div className='gh-portal-gift-checkout-section'>
-                                <p className='gh-portal-gift-success-share-label'>{isEmailed ? t('Share it yourself') : t('Your gift link')}</p>
+                                {isEmailed && <p className='gh-portal-gift-success-share-label'>{t('Share it yourself')}</p>}
                                 <div className='gh-portal-gift-success-link'>
                                     <span className='gh-portal-gift-success-link-url'>{redeemUrl}</span>
                                     <button className={'gh-portal-gift-success-copy' + (copied ? ' is-copied' : '')} onClick={handleCopy} type='button'>
@@ -189,7 +189,7 @@ const GiftSuccessPage = () => {
 
                             {!isEmailed && (
                                 <p className='gh-portal-gift-success-footer'>
-                                    {t('No rush — we\'ve emailed a copy to your inbox, so the link is always there when you need it.')}
+                                    {t('Not ready to share? We\'ve also emailed a copy to your inbox.')}
                                 </p>
                             )}
                         </div>

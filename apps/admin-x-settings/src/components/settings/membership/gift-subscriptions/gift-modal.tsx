@@ -1,17 +1,15 @@
-import GiftDurationsPrototype from './gift-durations-prototype';
 import GiftPreview from './gift-preview';
 import HtmlField from '../../../html-field';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo} from 'react';
-import useCurrencyInput from '../../../../hooks/use-currency-input';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Checkbox, Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldSet, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, Separator} from '@tryghost/shade/components';
+import {Badge, Checkbox, Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldSet} from '@tryghost/shade/components';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {PreviewModalContent, TextField} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {Text} from '@tryghost/shade/primitives';
-import {type Tier, getPaidActiveTiers, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
+import {type Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {Trash2} from 'lucide-react';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -27,49 +25,11 @@ const DURATION_OPTIONS = [
     {months: 12, label: '1 year', anchor: 'yearly'}
 ] as const;
 
-// Price a tier's gift for a duration when no explicit gift price is set
-const getDerivedPriceInCents = (tier: Tier, months: number) => {
-    if (months % 12 === 0) {
-        return (tier.yearly_price || 0) * (months / 12);
-    }
-    return (tier.monthly_price || 0) * months;
-};
-
-// A single currency input, wired to useCurrencyInput. An empty field shows the
-// derived default as a grey placeholder; typing sets an override; clearing it
-// drops the override (never 0). The hook re-syncs when valueInCents changes
-// externally, so external updates flow back into the field.
-const GiftPriceField: React.FC<{
-    title: string;
-    placeholder: string;
-    currency?: string;
-    valueInCents: number | '';
-    onChange: (cents: number) => void;
-}> = ({title, placeholder, currency, valueInCents, onChange}) => {
-    const input = useCurrencyInput(valueInCents, onChange);
-    return (
-        <Field>
-            <FieldLabel>{title}</FieldLabel>
-            <InputGroup className='border-transparent bg-muted'>
-                <InputGroupInput
-                    inputMode='decimal'
-                    placeholder={placeholder}
-                    value={input.value}
-                    onBlur={input.onBlur}
-                    onChange={event => input.onChange(event.target.value)}
-                />
-                <InputGroupAddon align='inline-end'><InputGroupText>{currency}</InputGroupText></InputGroupAddon>
-            </InputGroup>
-        </Field>
-    );
-};
-
 const GiftSidebar: React.FC<{
     localSettings: Setting[]
     updateSetting: (key: string, value: SettingValue) => void
     localTiers: Tier[]
-    updateTier: (tier: Tier) => void
-}> = ({localSettings, updateSetting, localTiers, updateTier}) => {
+}> = ({localSettings, updateSetting, localTiers}) => {
     const {siteData} = useGlobalData();
     const {mutateAsync: uploadImage} = useUploadImage();
     const handleError = useHandleError();
@@ -102,25 +62,29 @@ const GiftSidebar: React.FC<{
         updateSetting('gift_tiers', JSON.stringify(nextIds.length === paidTiers.length ? [] : nextIds));
     };
 
-    // The gift page shows the description in full (no "Show more"), so cap it at
-    // a length that always fits on screen alongside the form.
-    const descriptionMaxLength = 350;
+    // The defaults are inserted into the fields as real, editable text (rather
+    // than surfaced as grey placeholders). The settings themselves stay null
+    // until the value is actually edited, so the gift page keeps its
+    // translatable fallbacks for sites that never customise these. The
+    // description default is pre-wrapped in <p> to match the editor's own
+    // serialization — its on-load event only skips marking the form dirty when
+    // the normalized HTML equals the value it was given.
+    const defaultHeading = 'Gift a membership';
+    const defaultDescription = `<p>Share a full membership to ${siteData?.title || 'your site'} with a friend or colleague</p>`;
+    const headingValue = giftPageHeading?.toString() || defaultHeading;
+    const descriptionValue = giftPageDescription?.toString() || defaultDescription;
+
+    // Soft limits, surfaced via the same "Recommended: X characters" counter
+    // used by the Portal modal — the gift page renders both in full, so past
+    // these they start to crowd the layout.
+    const headingRecommendedLength = 60;
+    const descriptionRecommendedLength = 225;
+    const headingLength = headingValue.length;
     const descriptionLength = useMemo(() => {
         const div = document.createElement('div');
-        div.innerHTML = giftPageDescription?.toString() || '';
+        div.innerHTML = descriptionValue;
         return div.innerText.trim().length;
-    }, [giftPageDescription]);
-
-    // The heading renders large on the gift page — keep it to a punchy single
-    // thought so it doesn't wrap into a wall of text.
-    const headingMaxLength = 60;
-    // The default heading is surfaced as the placeholder (Ghost's convention for
-    // signalling a default — see SEO meta, newsletter sender, portal fields): an
-    // empty field shows the default in grey, a typed value renders in black, so
-    // "default vs customised" is legible at a glance. An empty setting stays null
-    // so the gift page keeps its translatable fallback.
-    const defaultHeading = 'Gift a membership';
-    const headingLength = (giftPageHeading || '').toString().length;
+    }, [descriptionValue]);
 
     const handleImageUpload = async (file: File) => {
         try {
@@ -147,70 +111,98 @@ const GiftSidebar: React.FC<{
         updateSetting('gift_durations', JSON.stringify([...new Set(next)].sort((a, b) => a - b)));
     };
 
-    const updateGiftPrice = (tier: Tier, months: number, cents: number) => {
-        updateTier({
-            ...tier,
-            gift_prices: {
-                ...(tier.gift_prices || {}),
-                [months]: cents > 0 ? cents : null
-            }
-        });
-    };
-
-    const showPricing = offeredDurations.length > 0 && offeredTiers.length > 0;
-
     return (
-        <div className='flex flex-col gap-8 pt-4'>
+        <div className='mt-6 flex flex-col gap-8'>
+            {/* Ordered to match the gift page itself: image, then heading,
+                then description. */}
             <div className='flex flex-col gap-6'>
+                <Field>
+                    <FieldLabel htmlFor='gift-page-image'>Image</FieldLabel>
+                    <ImageUpload className={`w-full ${giftPageImage ? 'h-[120px]' : 'h-[52px]'}`}>
+                        {giftPageImage ? (
+                            <ImageUploadPreview>
+                                <ImageUploadImage alt='Gift page image' src={giftPageImage} />
+                                <ImageUploadActions>
+                                    <ImageUploadAction aria-label='Remove gift page image' className='!top-1 !right-1' type='button' onClick={() => updateSetting('gift_page_image', null)}>
+                                        <Trash2 />
+                                    </ImageUploadAction>
+                                </ImageUploadActions>
+                            </ImageUploadPreview>
+                        ) : (
+                            <ImageUploadDropzone
+                                accept={{'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']}}
+                                inputId='gift-page-image'
+                                onDropAccepted={files => files[0] && handleImageUpload(files[0])}
+                            >
+                                <span className='text-control font-medium'>Upload image</span>
+                            </ImageUploadDropzone>
+                        )}
+                    </ImageUpload>
+                    <FieldDescription>Shown above the heading at up to 140px tall</FieldDescription>
+                </Field>
                 <TextField
-                    hint={<>Leave blank to use the default. Under <strong>{headingMaxLength}</strong> characters — you&apos;ve used <strong className={headingLength > headingMaxLength ? 'text-red dark:text-red-500' : ''}>{headingLength}</strong>.</>}
-                    maxLength={headingMaxLength}
-                    placeholder={defaultHeading}
+                    hint={<>Recommended: <strong>{headingRecommendedLength}</strong> characters. You&apos;ve used <strong className={headingLength > headingRecommendedLength ? 'text-red' : 'text-green'}>{headingLength}</strong></>}
                     title="Heading"
-                    value={giftPageHeading || ''}
+                    value={headingValue}
                     onChange={e => updateSetting('gift_page_heading', e.target.value || null)}
                 />
                 <HtmlField
-                    hint={<>Sell the value of a gift membership, or leave blank to use the default. Under <strong>{descriptionMaxLength}</strong> characters — you&apos;ve used <strong className={descriptionLength > descriptionMaxLength ? 'text-red dark:text-red-500' : ''}>{descriptionLength}</strong>.</>}
+                    hint={<>Recommended: <strong>{descriptionRecommendedLength}</strong> characters. You&apos;ve used <strong className={descriptionLength > descriptionRecommendedLength ? 'text-red' : 'text-green'}>{descriptionLength}</strong></>}
                     nodes='MINIMAL_NODES'
-                    placeholder={`Share a full membership to ${siteData?.title || 'your site'} with a friend or colleague`}
                     title="Description"
-                    value={giftPageDescription?.toString() || ''}
+                    value={descriptionValue}
                     onChange={html => updateSetting('gift_page_description', html || null)}
                 />
-                <div>
-                    <Text as='h6' className='text-base' weight='semibold'>Image</Text>
-                    <FieldDescription>Shown above the heading at up to 140px tall — logos and wide images work best.</FieldDescription>
-                    <div className='mt-3'>
-                        <ImageUpload className={`w-full ${giftPageImage ? 'h-[120px]' : 'h-[52px]'}`}>
-                            {giftPageImage ? (
-                                <ImageUploadPreview>
-                                    <ImageUploadImage alt='Gift page image' src={giftPageImage} />
-                                    <ImageUploadActions>
-                                        <ImageUploadAction aria-label='Remove gift page image' className='!top-1 !right-1' type='button' onClick={() => updateSetting('gift_page_image', null)}>
-                                            <Trash2 />
-                                        </ImageUploadAction>
-                                    </ImageUploadActions>
-                                </ImageUploadPreview>
-                            ) : (
-                                <ImageUploadDropzone
-                                    accept={{'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']}}
-                                    inputId='gift-page-image'
-                                    onDropAccepted={files => files[0] && handleImageUpload(files[0])}
-                                >
-                                    <span className='text-control font-medium'>Upload gift page image</span>
-                                </ImageUploadDropzone>
-                            )}
-                        </ImageUpload>
-                    </div>
-                </div>
+            </div>
+
+            <div>
+                <Text as='h5' className='text-base' weight='semibold'>Durations</Text>
+                <FieldSet className='mt-4'>
+                    <FieldGroup data-slot='checkbox-group'>
+                        {DURATION_OPTIONS.map(({months, label, anchor}) => {
+                            const anchorAvailable = portalPlans.includes(anchor);
+                            const isChecked = giftDurations.includes(months) && anchorAvailable;
+                            // The last offered duration can't be unchecked — at least one is required.
+                            const isLastOffered = isChecked && offeredDurations.length === 1;
+                            // The last offered duration is disabled without a
+                            // callout — the disabled checkbox communicates it.
+                            const hint = anchorAvailable ? undefined : `Requires the ${anchor} plan to be enabled in Portal settings`;
+                            // 1 month and 1 year map straight onto the tier's own
+                            // prices; 3 and 6 are multiplied out, so tag those.
+                            const priceTag = anchorAvailable && months > 1 && anchor === 'monthly'
+                                ? `${months}× monthly tier price`
+                                : null;
+                            const disabled = !anchorAvailable || isLastOffered;
+                            return (
+                                <Field key={String(months)} data-disabled={disabled || undefined} orientation='horizontal'>
+                                    <Checkbox
+                                        checked={isChecked}
+                                        disabled={disabled}
+                                        id={`gift-duration-${months}`}
+                                        value={String(months)}
+                                        onCheckedChange={checked => toggleDuration(months, checked === true)}
+                                    />
+                                    <FieldContent>
+                                        <FieldLabel htmlFor={`gift-duration-${months}`}>
+                                            {label}
+                                            {priceTag && <Badge variant='secondary'>{priceTag}</Badge>}
+                                        </FieldLabel>
+                                        {hint && <FieldDescription>{hint}</FieldDescription>}
+                                    </FieldContent>
+                                </Field>
+                            );
+                        })}
+                    </FieldGroup>
+                </FieldSet>
+                {offeredDurations.length === 0 && (
+                    <Text className='mt-1 text-muted-foreground' leading='normal' size='sm'>No durations are available, so the gift page is currently unavailable to readers.</Text>
+                )}
             </div>
 
             {paidTiers.length > 1 && (
                 <div>
                     <Text as='h5' className='text-base' weight='semibold'>Tiers</Text>
-                    <FieldDescription>Choose which tiers readers can gift.</FieldDescription>
-                    <FieldSet className='mt-3'>
+                    <FieldSet className='mt-4'>
                         <FieldGroup data-slot='checkbox-group'>
                             {paidTiers.map((tier) => {
                                 // The last offered tier can't be unchecked — at least one is required.
@@ -226,7 +218,6 @@ const GiftSidebar: React.FC<{
                                         />
                                         <FieldContent>
                                             <FieldLabel htmlFor={`gift-tier-${tier.id}`}>{tier.name}</FieldLabel>
-                                            {isLastOffered && <FieldDescription>At least one tier must be giftable</FieldDescription>}
                                         </FieldContent>
                                     </Field>
                                 );
@@ -235,79 +226,6 @@ const GiftSidebar: React.FC<{
                     </FieldSet>
                 </div>
             )}
-
-            <div>
-                <Text as='h5' className='text-base' weight='semibold'>Durations</Text>
-                <FieldDescription>Choose which subscription lengths readers can gift.</FieldDescription>
-                <FieldSet className='mt-3'>
-                    <FieldGroup data-slot='checkbox-group'>
-                        {DURATION_OPTIONS.map(({months, label, anchor}) => {
-                            const anchorAvailable = portalPlans.includes(anchor);
-                            const isChecked = giftDurations.includes(months) && anchorAvailable;
-                            // The last offered duration can't be unchecked — at least one is required.
-                            const isLastOffered = isChecked && offeredDurations.length === 1;
-                            let hint;
-                            if (!anchorAvailable) {
-                                hint = `Requires the ${anchor} plan to be enabled in Portal settings`;
-                            } else if (isLastOffered) {
-                                hint = 'At least one duration must be giftable';
-                            }
-                            const disabled = !anchorAvailable || isLastOffered;
-                            return (
-                                <Field key={String(months)} data-disabled={disabled || undefined} orientation='horizontal'>
-                                    <Checkbox
-                                        checked={isChecked}
-                                        disabled={disabled}
-                                        id={`gift-duration-${months}`}
-                                        value={String(months)}
-                                        onCheckedChange={checked => toggleDuration(months, checked === true)}
-                                    />
-                                    <FieldContent>
-                                        <FieldLabel htmlFor={`gift-duration-${months}`}>{label}</FieldLabel>
-                                        {hint && <FieldDescription>{hint}</FieldDescription>}
-                                    </FieldContent>
-                                </Field>
-                            );
-                        })}
-                    </FieldGroup>
-                </FieldSet>
-                {offeredDurations.length === 0 && (
-                    <FieldDescription className='mt-2'>No durations are available, so the gift page is currently unavailable to readers.</FieldDescription>
-                )}
-            </div>
-
-            {showPricing && (
-                <div>
-                    <Text as='h5' className='text-base' weight='semibold'>Pricing</Text>
-                    <FieldDescription>Set your own one-time gift price for any tier and duration. Leave a field blank to use the default shown in grey: whole-year durations use the tier&apos;s yearly price, and every other duration uses its monthly price × the number of months.</FieldDescription>
-                    <div className='mt-3 flex flex-col gap-6'>
-                        {offeredTiers.map((tier, i) => (
-                            <React.Fragment key={tier.id}>
-                                {i > 0 && <Separator />}
-                                <div>
-                                    {offeredTiers.length > 1 && (
-                                        <Text as='h6' className='mb-3 text-base' weight='semibold'>{tier.name}</Text>
-                                    )}
-                                    <div className='flex flex-col gap-3'>
-                                        {offeredDurations.map(({months, label}) => (
-                                            <GiftPriceField
-                                                key={months}
-                                                currency={tier.currency}
-                                                placeholder={(getDerivedPriceInCents(tier, months) / 100).toFixed(2)}
-                                                title={label}
-                                                valueInCents={tier.gift_prices?.[months] ?? ''}
-                                                onChange={cents => updateGiftPrice(tier, months, cents)}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            </React.Fragment>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            <GiftDurationsPrototype initialMonths={giftDurations} tiers={offeredTiers.length ? offeredTiers : paidTiers} />
         </div>
     );
 };
@@ -318,18 +236,16 @@ const GiftModal: React.FC = () => {
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
-    const {mutateAsync: editTier} = useEditTier();
 
     const {formState, setFormState, saveState, handleSave, updateForm, okProps} = useForm({
         initialState: {
             settings: settings as Dirtyable<Setting>[],
-            tiers: (allTiers as Dirtyable<Tier>[]) || []
+            // Read-only here — used to list which tiers can be gifted. Only the
+            // gift_tiers setting changes; tier records themselves don't.
+            tiers: (allTiers as Tier[]) || []
         },
         savingDelay: 500,
         onSave: async () => {
-            await Promise.all(formState.tiers.filter(({dirty}) => dirty).map(tier => editTier(tier)));
-            setFormState(state => ({...state, tiers: state.tiers.map(tier => ({...tier, dirty: false}))}));
-
             const changedSettings = formState.settings.filter(setting => setting.dirty);
             if (changedSettings.length) {
                 await editSettings(changedSettings);
@@ -341,7 +257,7 @@ const GiftModal: React.FC = () => {
 
     useEffect(() => {
         if (!formState.tiers.length && allTiers?.length) {
-            setFormState(state => ({...state, tiers: allTiers as Dirtyable<Tier>[]}));
+            setFormState(state => ({...state, tiers: allTiers as Tier[]}));
         }
     }, [allTiers, formState.tiers, setFormState]);
 
@@ -354,24 +270,12 @@ const GiftModal: React.FC = () => {
         }));
     };
 
-    const updateTier = (newTier: Tier) => {
-        updateForm(state => ({
-            ...state,
-            tiers: state.tiers.map(tier => (
-                tier.id === newTier.id ? {...newTier, dirty: true} : tier
-            ))
-        }));
-    };
-
     const sidebar = (
-        <div className='pt-4'>
-            <GiftSidebar
-                localSettings={formState.settings}
-                localTiers={formState.tiers}
-                updateSetting={updateSetting}
-                updateTier={updateTier}
-            />
-        </div>
+        <GiftSidebar
+            localSettings={formState.settings}
+            localTiers={formState.tiers}
+            updateSetting={updateSetting}
+        />
     );
 
     const preview = <GiftPreview localSettings={formState.settings} localTiers={formState.tiers} />;
@@ -381,12 +285,11 @@ const GiftModal: React.FC = () => {
             afterClose={() => updateRoute('gift-subscriptions')}
             buttonsDisabled={okProps.disabled}
             cancelLabel='Close'
-            deviceSelector={false}
             dirty={saveState === 'unsaved'}
-            okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
+            okVariant={okProps.variant}
             preview={preview}
-            previewBgColor='greygradient'
+            previewToolbar={false}
             sidebar={sidebar}
             testId='gift-modal'
             title='Gift subscriptions'

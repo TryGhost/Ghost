@@ -44,14 +44,14 @@ function GiveGiftAction() {
         >
             <div className="gh-portal-list-detail">
                 <h3>{t('Gift a membership')}</h3>
-                <p>{t('Buy a membership for someone else')}</p>
+                <p>{t('For a friend or colleague')}</p>
             </div>
             <span
                 className="gh-portal-list-action"
                 data-test-button="give-gift-subscription"
                 aria-hidden="true"
             >
-                {t('Gift')}
+                {t('Buy')}
             </span>
         </section>
     );

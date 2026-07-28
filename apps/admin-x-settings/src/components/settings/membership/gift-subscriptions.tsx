@@ -46,7 +46,7 @@ const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <Field orientation='horizontal'>
                         <FieldContent>
                             <FieldLabel htmlFor='gift-subscriptions-toggle'>Show in Portal</FieldLabel>
-                            <FieldDescription>Adds a gift option to your signup page and members&apos; account area. Your shareable link keeps working even when this is off.</FieldDescription>
+                            <FieldDescription>Show a gift link option on your signup page and in your members&apos; account area.</FieldDescription>
                         </FieldContent>
                         <Switch
                             checked={isVisibleInPortal}

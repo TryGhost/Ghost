@@ -51,7 +51,7 @@ describe('GiftPage', () => {
 
     test('renders the full description with no Show more toggle', () => {
         // The gift page no longer collapses long descriptions — the admin caps
-        // the input at 350 chars so it always fits, and it renders in full.
+        // the input at 225 chars so it always fits, and it renders in full.
         const longDescription = `<p>${'Give the gift of quality journalism. '.repeat(9).trim()}</p>`;
         const {container, queryByRole} = renderGiftPage({
             gift_page_description: longDescription

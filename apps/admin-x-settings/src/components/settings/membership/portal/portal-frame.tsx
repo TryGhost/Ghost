@@ -56,6 +56,12 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     if (portalParent === 'preview') {
         loaderClassNames = 'absolute z-50 mt-[-7%] flex h-screen items-center justify-center';
         loaderVisibility = 'invisible';
+    } else if (portalParent === 'gift-preview') {
+        // `absolute` with no width shrinks to the spinner and pins it to the
+        // left of the containing block, so justify-center has nothing to work
+        // with. inset-0 fills the preview area and centres on both axes.
+        loaderClassNames = 'absolute inset-0 z-50 flex items-center justify-center';
+        loaderVisibility = 'invisible';
     } else if (portalParent === 'offers') {
         loaderClassNames = 'absolute z-50 flex w-full h-full items-center justify-center';
         loaderVisibility = 'invisible';

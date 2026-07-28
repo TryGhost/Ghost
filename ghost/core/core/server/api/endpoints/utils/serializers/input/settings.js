@@ -79,6 +79,7 @@ const EDITABLE_SETTINGS = [
     'pintura_css_url',
     'donations_currency',
     'donations_suggested_amount',
+    'gift_subscriptions_enabled',
     'gift_page_heading',
     'gift_page_description',
     'gift_page_image',

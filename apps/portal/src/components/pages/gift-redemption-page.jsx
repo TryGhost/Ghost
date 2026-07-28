@@ -7,7 +7,7 @@ import GiftCard from '../common/gift-card';
 import GiftDetailsToggle from '../common/gift-details-toggle';
 import InputForm from '../common/input-form';
 import {ValidateInputForm} from '../../utils/form';
-import {getGiftDurationLabel, getGiftRedemptionErrorMessage} from '../../utils/gift-redemption-notification';
+import {getGiftDurationAttributiveLabel, getGiftDurationLabel, getGiftRedemptionErrorMessage} from '../../utils/gift-redemption-notification';
 import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
 
@@ -18,6 +18,12 @@ export const GiftRedemptionStyles = `
 
 .gh-portal-gift-redemption-form + .gh-portal-gift-checkout-cta {
     margin-top: 16px;
+}
+
+/* An already-signed-in redeemer gets no form, so without this the message
+   block would sit flush against the button. */
+.gh-portal-gift-redemption-message + .gh-portal-gift-checkout-cta {
+    margin-top: 24px;
 }
 
 .gh-portal-gift-redemption-message {
@@ -172,7 +178,8 @@ const GiftRedemptionPage = () => {
     const buyerName = gift.buyer_name || '';
     // Mirror the exact "{duration} {tier} membership" the delivery email promised,
     // so landing on this page feels continuous rather than generic.
-    const durationLabel = getGiftDurationLabel(gift);
+    // Only used in front of "{tierName} membership", so attributive.
+    const durationLabel = getGiftDurationAttributiveLabel(gift);
     const tierName = gift.tier.name;
     // Bold the buyer + "{duration} {tier}" exactly as the delivery email does,
     // so the landing page reads as the same gift rather than a generic screen.

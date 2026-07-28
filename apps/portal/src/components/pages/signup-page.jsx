@@ -106,6 +106,19 @@ html[dir="rtl"] .gh-portal-back-sitetitle {
     margin: 24px 0 40px;
 }
 
+/* Stacked messages (sign in + gift) sit 16px apart. The leading one drops its
+   bottom margin because adjacent margins collapse to the larger of the two,
+   which would otherwise keep the single-message 40px. */
+.gh-portal-signup-message.stacked,
+.full-size .gh-portal-signup-message.stacked {
+    margin-bottom: 0;
+}
+
+.gh-portal-signup-message + .gh-portal-signup-message,
+.full-size .gh-portal-signup-message + .gh-portal-signup-message {
+    margin-top: 16px;
+}
+
 @media (max-width: 480px) {
     .preview .gh-portal-products + .gh-portal-signup-message {
         margin-bottom: 40px;
@@ -682,7 +695,7 @@ class SignupPage extends React.Component {
         return (
             <div>
                 {this.renderFreeTrialMessage()}
-                <div className='gh-portal-signup-message'>
+                <div className={'gh-portal-signup-message' + (canGift ? ' stacked' : '')}>
                     <div>{t('Already a member?')}</div>
                     <button
                         data-test-button='signin-switch'
