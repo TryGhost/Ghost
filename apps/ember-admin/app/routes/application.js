@@ -217,11 +217,10 @@ export default Route.extend(ShortcutsRoute, {
 
         if (this.config.hostSettings?.forceUpgrade) {
             // enforce opening the BMA in a force upgrade state, keeping any
-            // /pro child route from the URL (eg. a reloaded /pro/domain)
-            const requestedRoute = window.location.hash?.replace(/^#/, '');
-            const billingRoute = /^\/pro(?:\/|\?|$)/.test(requestedRoute ?? '') ? requestedRoute : '/pro';
-
-            this.billing.openBillingWindow(this.router.currentURL, billingRoute);
+            // /pro child route from the URL (eg. a reloaded /pro/domain);
+            // openBillingWindow falls back to the billing root when the hash
+            // points elsewhere
+            this.billing.openBillingWindow(this.router.currentURL, this.billing.getBillingRouteFromHash());
         }
 
         // Notify React of the initial subscription state

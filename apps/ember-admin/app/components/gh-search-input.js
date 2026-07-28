@@ -38,11 +38,17 @@ export default class GhSearchInputComponent extends Component {
         }
 
         if (selected.groupName === GHOST_PRO_GROUP_NAME) {
-            // the BMA iframe navigates via postMessage — the transition alone
-            // isn't enough when Ember considers the route unchanged (eg. after
-            // the BMA rewrote the hash itself via history.replaceState)
-            this.billing.navigateToSubRoute(selected.path.replace('/pro', ''));
-            this.router.transitionTo(selected.path);
+            if (this.router.currentURL === selected.path) {
+                // Ember treats the transition as a no-op (eg. after the BMA
+                // rewrote the hash itself via history.replaceState), so the
+                // pro-sub route hook won't run — tell the iframe directly
+                this.billing.navigateToSubRoute(selected.path.replace(/^\/pro/, ''));
+            } else {
+                // the pro-sub route forwards the destination to the BMA iframe
+                // once the transition succeeds, so an aborted transition (eg.
+                // unsaved changes) leaves the billing app untouched
+                this.router.transitionTo(selected.path);
+            }
         }
     }
 

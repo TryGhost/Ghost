@@ -51,6 +51,46 @@ export function decoratePostSearchResult(item, settings) {
     }
 }
 
+// Filters search results down to linkable site content for the editor's link
+// search: drops admin-only groups, unpublished posts/pages, and staff without
+// URLs, and decorates post/page items with metadata
+export function filterLinkSearchResults(results, settings) {
+    const filteredResults = [];
+
+    results.forEach((group) => {
+        let items = group.options;
+
+        // Ghost(Pro) results are admin billing pages, not linkable site content
+        if (group.groupName === GHOST_PRO_GROUP_NAME) {
+            return;
+        }
+
+        if (group.groupName === 'Posts' || group.groupName === 'Pages') {
+            items = items.filter(i => i.status === 'published');
+        }
+
+        if (group.groupName === 'Staff') {
+            items = items.filter(i => !/\/404\//.test(i.url));
+        }
+
+        if (items.length === 0) {
+            return;
+        }
+
+        // update the group items with metadata
+        if (group.groupName === 'Posts' || group.groupName === 'Pages') {
+            items.forEach(item => decoratePostSearchResult(item, settings));
+        }
+
+        filteredResults.push({
+            label: group.groupName,
+            items
+        });
+    });
+
+    return filteredResults;
+}
+
 export function getCardVisibilitySettings(cardConfig = {}) {
     const post = cardConfig.post;
     const isPage = post?.isPage || post?.displayName === 'page';
@@ -435,40 +475,7 @@ export default class KoenigLexicalEditor extends Component {
                 return;
             }
 
-            // only published posts/pages and staff with posts have URLs
-            const filteredResults = [];
-            results.forEach((group) => {
-                let items = group.options;
-
-                // Ghost(Pro) results are admin billing pages, not linkable site content
-                if (group.groupName === GHOST_PRO_GROUP_NAME) {
-                    return;
-                }
-
-                if (group.groupName === 'Posts' || group.groupName === 'Pages') {
-                    items = items.filter(i => i.status === 'published');
-                }
-
-                if (group.groupName === 'Staff') {
-                    items = items.filter(i => !/\/404\//.test(i.url));
-                }
-
-                if (items.length === 0) {
-                    return;
-                }
-
-                // update the group items with metadata
-                if (group.groupName === 'Posts' || group.groupName === 'Pages') {
-                    items.forEach(item => decoratePostSearchResult(item, this.settings));
-                }
-
-                filteredResults.push({
-                    label: group.groupName,
-                    items
-                });
-            });
-
-            return filteredResults;
+            return filterLinkSearchResults(results, this.settings);
         };
 
         const unsplashConfig = {

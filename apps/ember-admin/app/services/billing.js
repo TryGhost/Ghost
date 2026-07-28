@@ -30,6 +30,7 @@ export default class BillingService extends Service {
     @service feature;
     @service ghostPaths;
     @service router;
+    @service session;
     @service store;
 
     @inject config;
@@ -70,6 +71,32 @@ export default class BillingService extends Service {
     willDestroy() {
         super.willDestroy(...arguments);
         this.clearBillingAppLoadMonitor();
+    }
+
+    // Whether the current user may open the billing app: billing must be
+    // enabled for the site, and the user must be the owner — or anyone while
+    // the site is in a force-upgrade state. This is the canonical access rule
+    // consumers should share (the `pro` route enforces the user half of it)
+    get canAccessBilling() {
+        const billingEnabled = Boolean(this.config.hostSettings?.billing?.enabled);
+        const userCanAccessBilling = Boolean(this.session.user?.isOwnerOnly) || Boolean(this.config.hostSettings?.forceUpgrade);
+
+        return billingEnabled && userCanAccessBilling;
+    }
+
+    // The billing route in the current URL hash ('/pro', or a child route like
+    // '/pro/domain'), or null when the hash points elsewhere. Anchored so
+    // hashes that merely start with the same characters (eg. '#/products')
+    // don't match
+    getBillingRouteFromHash() {
+        const hash = window.location.hash;
+        const root = this.billingRouteRoot;
+
+        if (hash === root || hash.startsWith(`${root}/`) || hash.startsWith(`${root}?`)) {
+            return hash.replace(/^#/, '');
+        }
+
+        return null;
     }
 
     handleRouteChangeInIframe(destinationRoute) {
@@ -478,8 +505,14 @@ export default class BillingService extends Service {
         // transition to /pro/* the hash still points at the previous route
         let destinationRoute = this.pendingSubRoute;
 
-        if (!destinationRoute && window.location.hash && window.location.hash.includes(this.billingRouteRoot)) {
-            destinationRoute = window.location.hash.replace(this.billingRouteRoot, '');
+        if (!destinationRoute) {
+            const hashRoute = this.getBillingRouteFromHash();
+
+            if (hashRoute) {
+                // keep only the child segment ('/pro/domain' -> '/domain');
+                // billingRouteRoot minus its '#' prefix is the '/pro' root
+                destinationRoute = hashRoute.slice(this.billingRouteRoot.length - 1);
+            }
         }
 
         if (url && destinationRoute) {
@@ -537,20 +570,26 @@ export default class BillingService extends Service {
             }, billingAppOrigin);
         } else {
             this.pendingSubRoute = destinationRoute;
+
+            // when the window is already visible while the app is still
+            // loading, bake the destination into the iframe URL now — a
+            // post-load route update message can lose a race with the app's
+            // own initial redirects
+            if (this.billingWindowOpen && !this.billingAppLoaded) {
+                this.ensureBillingAppReadyForVisibleUse();
+            }
         }
     }
 
-    // Sends a route update to a child route in the BMA, because we can't control
-    // navigating to it otherwise
+    // Sends the checkout deep link (`?action=checkout`) to the BMA. Delivery
+    // goes through navigateToSubRoute so it's origin-pinned and queued until
+    // the app is ready instead of being dropped
     sendRouteUpdate() {
         const action = this.action;
 
         if (action) {
-            if (action === 'checkout' && this._isBillingIframeLoaded()) {
-                this.getBillingIframe().contentWindow.postMessage({
-                    query: 'routeUpdate',
-                    response: this.checkoutRoute
-                }, '*');
+            if (action === 'checkout') {
+                this.navigateToSubRoute(this.checkoutRoute);
             }
 
             this.action = null;
@@ -587,6 +626,10 @@ export default class BillingService extends Service {
 
         if (value) {
             this.ensureBillingAppReadyForVisibleUse();
+        } else {
+            // closing abandons any queued deep link — a stale route must not
+            // hijack a later plain /pro open
+            this.pendingSubRoute = null;
         }
 
         if (isOpeningTransition) {

@@ -25,6 +25,11 @@ export default class SearchProviderBasicService extends Service {
                     return false;
                 }
 
+                // matches on the result's `title` (mapped from the searchable's
+                // titleField by createSearchResult) plus optional `keywords`.
+                // Unlike the flex provider this ignores `searchable.index`, so a
+                // searchable's index fields must stay within {titleField, keywords}
+                // for both providers to match the same items
                 const normalizedTitle = item.title.toString().toLowerCase();
                 const normalizedKeywords = item.keywords ? item.keywords.toString().toLowerCase() : '';
 
