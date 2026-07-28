@@ -1562,6 +1562,20 @@ describe('Email renderer', function () {
             );
         });
 
+        it('renders the post title as the top-level heading', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel(baseNewsletter);
+
+            const response = await emailRenderer.renderBody(post, newsletter, null, {});
+            await validateHtml(response.html);
+
+            const $ = cheerio.load(response.html);
+            const heading = $('.post-title > table td > h1');
+
+            assert.equal(heading.length, 1);
+            assert.equal(heading.find('a.post-title-link').text(), 'Test Post');
+        });
+
         it('Converts a mobiledoc-only post to lexical before rendering', async function () {
             // Legacy posts can still be stored as mobiledoc with no lexical (mobiledoc is only
             // converted on save, not on read). The email renderer must convert the mobiledoc to
