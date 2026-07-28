@@ -224,43 +224,9 @@ pnpm dev:all                   #
 
 ### i18n Architecture
 
-**Centralized Translations:**
-- Single source: `packages/i18n/locales/{locale}/{namespace}.json`
-- Namespaces: `ghost`, `portal`, `signup-form`, `comments`, `search`
-- 60+ supported locales
-- Context descriptions: `packages/i18n/locales/context.json` — every key must have a non-empty description
+Translations are centralised in `packages/i18n`. **Never split a sentence across multiple `t()` calls** (translators can't reorder words across keys — use `@doist/react-interpolate` instead), and **always run `pnpm --filter @tryghost/i18n translate`** after adding or changing a `t()` call, or CI fails.
 
-**Translation Workflow:**
-```bash
-pnpm --filter @tryghost/i18n translate          # Extract keys from source, update all locale files + context.json
-pnpm --filter @tryghost/i18n lint:translations   # Validate interpolation variables across locales
-```
-
-`translate` is run as part of `pnpm --filter @tryghost/i18n test`. In CI, it fails if translation keys or `context.json` are out of date (`failOnUpdate: process.env.CI`). Always run `pnpm --filter @tryghost/i18n translate` after adding or changing `t()` calls.
-
-**Rules for Translation Keys:**
-1. **Never split sentences across multiple `t()` calls.** Translators cannot reorder words across separate keys. Instead, use `@doist/react-interpolate` to embed React elements (links, bold, etc.) within a single translatable string.
-2. **Always provide context descriptions.** When adding a new key, add a description in `context.json` explaining where the string appears and what it does. CI will reject empty descriptions.
-3. **Use interpolation for dynamic values.** Ghost uses `{variable}` syntax: `t('Welcome back, {name}!', {name: firstname})`
-4. **Use `<tag>` syntax for inline elements.** Combined with `@doist/react-interpolate`: `t('Click <a>here</a> to retry')` with `mapping={{ a: <a href="..." /> }}`
-
-**Correct pattern (using Interpolate):**
-```jsx
-import Interpolate from '@doist/react-interpolate';
-
-<Interpolate
-    mapping={{ a: <a href={link} /> }}
-    string={t('Could not sign in. <a>Click here to retry</a>')}
-/>
-```
-
-**Incorrect pattern (split sentences):**
-```jsx
-// BAD: translators cannot reorder "Click here to retry" relative to the first sentence
-{t('Could not sign in.')} <a href={link}>{t('Click here to retry')}</a>
-```
-
-See `apps/portal/src/components/pages/email-receiving-faq.js` for a canonical example of correct `Interpolate` usage.
+For the full workflow, namespaces, and interpolation patterns, load the `i18n-translations` skill from `.agents/skills/i18n-translations`.
 
 ### Build Dependencies (Nx)
 
@@ -273,42 +239,10 @@ Critical build order (Nx handles automatically):
 
 ## CSS Architecture
 
-### TailwindCSS v4 Setup
-
-Ghost Admin uses **TailwindCSS v4** via the `@tailwindcss/vite` plugin. CSS processing is centralized — only `apps/admin/vite.config.ts` loads the `@tailwindcss/vite` plugin. All embedded React apps (activitypub, admin-x-settings, admin-x-design-system) are scanned from this single entry point.
-
-### Entry Point
-
-`apps/admin/src/index.css` is the main CSS entry point. It contains:
-- `@source` directives that scan class usage in shade, activitypub, admin-x-settings, admin-x-design-system, and kg-unsplash-selector
-- `@import "@tryghost/shade/styles.css"` which loads the Shade design system styles
-
-### Shade Styles
-
-`apps/shade/styles.css` uses **unlayered** Tailwind imports:
-```css
-@import "tailwindcss/theme.css";
-@import "./preflight.css";
-@import "tailwindcss/utilities.css";
-@import "tw-animate-css";
-@import "./tailwind.theme.css";
-```
-
-**Why unlayered:** Ember's legacy CSS (`.flex`, `.hidden`, etc.) is unlayered. If Tailwind utilities were in a `@layer`, they would lose to Ember's unlayered CSS in the cascade. Keeping both unlayered means source order determines specificity.
-
-Theme tokens/variants/animations are defined in CSS (`apps/shade/tailwind.theme.css` + runtime vars in `styles.css`), so there is no JS `@config` bridge in the Admin runtime lane. `tw-animate-css` is the v4 replacement for `tailwindcss-animate`.
-
-### Critical Rule: Embedded Apps Must NOT Import Shade Independently
-
-Apps consumed via `@source` (activitypub, admin-x-settings) must **NOT** import `@tryghost/shade/styles.css` in their own CSS. Doing so causes duplicate Tailwind utilities and cascade conflicts. All Tailwind CSS is generated once via the admin entry point.
-
-### Public Apps
-
-Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `announcement-bar`) remain on **TailwindCSS v3**. They are built as UMD bundles for CDN distribution and are independent of the admin CSS pipeline.
-
-### Legacy Apps
-
-`admin-x-design-system` and `admin-x-settings` are consumed via `@source` in admin's centralized v4 pipeline for production, and both packages build with CSS-first Tailwind v4 setup.
+Admin runs TailwindCSS v4 through a single centralized pipeline; the public apps
+remain on v3. See [apps/AGENTS.md](apps/AGENTS.md) for the entry point, the
+unlayered-imports rationale, and the rule that embedded apps must not import
+Shade styles independently.
 
 ## Code Guidelines
 
@@ -316,26 +250,9 @@ Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `anno
 When the user asks you to create a commit or draft a commit message, load and follow the `commit` skill from `.agents/skills/commit`.
 
 ### ESLint Config
-Source of truth: two internal config packages — [`@internal/cfg-eslint`](configs/eslint/index.mjs) (shared rule atoms + the `nodeLibConfig` factory for Node libs) and [`@internal/cfg-eslint-react`](configs/eslint-react/index.mjs) (the `reactAppConfig` factory for every `apps/*` workspace). Both factories are synchronous and have full JSDoc with `@example`s; hover the call site in your editor. Consume them by name — declare the package as a `workspace:*` devDependency.
+Lint config lives in two internal packages — [`@internal/cfg-eslint`](configs/eslint/index.mjs) and [`@internal/cfg-eslint-react`](configs/eslint-react/index.mjs) — consumed by name as a `workspace:*` devDependency. **Rules are `'error'` or `'off'` — never `'warn'`.**
 
-Minimal example for a new admin React app (`apps/new-feature/eslint.config.js`):
-
-```js
-import {reactAppConfig} from '@internal/cfg-eslint-react';
-export default reactAppConfig({
-    tailwindCssPath: `${import.meta.dirname}/../admin/src/index.css`,
-    shadeRestricted: true
-});
-```
-
-Conventions:
-- **Rules are `'error'` or `'off'` — never `'warn'`.** Warnings get ignored and pollute output. Applies to every workspace covered by the factories above + the standalones; `e2e/` has its own setup (see [e2e/CLAUDE.md](e2e/CLAUDE.md)) and currently still uses warn-level Playwright rules — a separate cleanup.
-- **Params prefixed `legacy*`** (`legacyTailwindV3ConfigPath`, `legacyJsTsSplit`) are escape hatches for migrations that haven't shipped yet. Intentional and visible — PRs to remove them are scoped.
-- **Standalone configs** (`ghost/core`, `apps/ember-admin`, `apps/admin`, `apps/admin-toolbar`) exist because their rule sets genuinely don't fit a factory — read the file directly. They import shared atoms (`correctnessRules`, `nodeLibRules`, `localFilenamesPlugin`, `strictLinterOptions`) from `@internal/cfg-eslint`.
-- **Plugin deps**: a workspace must declare every eslint plugin its config resolves. Two cases:
-  - *Factory consumers* only import a factory, which supplies its plugins as objects from the config package — so they need just the config package (`@internal/cfg-eslint` / `@internal/cfg-eslint-react`) as a `workspace:*` devDependency, not the individual plugins.
-  - *Hand-rolled configs* (the standalones above, plus the inline configs in `koenig/kg-*` and `e2e/`) `import` plugins directly, so each must list those plugins in its own `devDependencies` — most commonly `eslint-plugin-ghost: catalog:`. Don't rely on the root hoisting a plugin for you; there are no eslint plugins left in the root `package.json` (only `eslint` itself and `globals`, which the root config uses).
-  - Exception: Tailwind — a workspace that uses it must list `tailwindcss` as its own (dev)Dependency regardless (the settings-based resolver requires it locally), and the legacy v3 apps pin `eslint-plugin-tailwindcss` via `catalog:tailwind3`.
+When creating or editing an `eslint.config.js`, load the `eslint-config` skill from `.agents/skills/eslint-config` for the factories, the standalone configs, and the plugin-dependency rules.
 
 ### When Working on Admin UI
 - **New features:** Build in React in `apps/admin` (domain folders under `src/`)
