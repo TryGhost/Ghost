@@ -163,9 +163,11 @@ class MemberWelcomeEmailRenderer {
         const contentWithReplacements = this.#applyReplacements({definitions, text: content, escapeHtml: true});
         const subjectWithReplacements = this.#applyReplacements({definitions, text: subject, escapeHtml: false});
 
-        // Resolve relative links (e.g. #/portal/signup) to absolute URLs using the site URL
+        // Resolve relative links, including Ghost Portal routes such as #/portal/signup,
+        // while preserving document-local anchors such as #section.
         const contentWithAbsoluteLinks = await linkReplacer.replace(contentWithReplacements, async (url, originalPath) => {
-            if (originalPath.startsWith('#') && !originalPath.startsWith('#/')) {
+            const isDocumentAnchor = originalPath.startsWith('#') && !originalPath.startsWith('#/');
+            if (isDocumentAnchor) {
                 return originalPath;
             }
             const isTrackable = ['http:', 'https:'].includes(url.protocol);
