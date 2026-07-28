@@ -32,7 +32,7 @@ describe('activation-bridge', function () {
         // Characterisation tests for the full expanded output. The expected
         // values are the canonical expansions the legacy validate.js produced
         // before it was retired — parsing + the bridge must keep matching them
-        // so routes_hash and router wiring stay byte-for-byte stable.
+        // so the expanded output and router wiring stay byte-for-byte stable.
         describe('produces the expected expanded output', function () {
             const cases: Array<{name: string; raw: unknown; expected: object}> = [
                 {
@@ -398,9 +398,10 @@ describe('activation-bridge', function () {
     });
 
     describe('hash continuity', function () {
-        // routes_hash is md5(JSON.stringify(...)) over the expanded settings —
-        // parsing + the bridge must keep producing the known default hash so a
-        // site that never customised its routes keeps the same stored value.
+        // This md5 over the expanded settings is a structural fingerprint of
+        // the default routes — parsing + the bridge must keep producing the
+        // known default hash so a site that never customised its routes keeps
+        // the same expanded output.
         const DEFAULT_ROUTES_HASH = '3d180d52c663d173a6be791ef411ed01';
 
         const defaultRoutesYaml = fs.readFileSync(

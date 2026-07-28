@@ -62,8 +62,8 @@ class DynamicRoutingService {
             // A stored-content error means the site's routes.yaml is invalid —
             // either it fails validation or it isn't parseable YAML. Log a
             // targeted error so the failure is easy to spot in the logs, then
-            // rethrow so the caller (boot, or the routes-hash sync) surfaces the
-            // genuine error rather than silently degrading.
+            // rethrow so the caller surfaces the genuine error rather than
+            // silently degrading.
             if (isStoredContentError(err)) {
                 logging.error(new errors.InternalServerError({
                     message: 'Route settings could not be loaded because the routes.yaml file is invalid. Please fix the file.',
