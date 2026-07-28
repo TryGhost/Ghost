@@ -8,6 +8,7 @@ const errors = require('@tryghost/errors');
 const {MESSAGES} = require('./constants');
 const {wrapReplacementStrings} = require('@tryghost/kg-default-nodes').utils.replacementStrings;
 const linkReplacer = require('../lib/link-replacer');
+const linkTracking = require('../link-tracking');
 const emailDesign = require('../email-rendering/email-design');
 const {registerHelpers} = require('../email-service/helpers/register-helpers');
 
@@ -116,9 +117,11 @@ class MemberWelcomeEmailRenderer {
      * @param {Object} options.member - Member data (name, email)
      * @param {Object} options.siteSettings - Site settings (title, url, accentColor)
      * @param {string} [options.unsubscribeUrl] - When set, the footer shows an "Unsubscribe from these emails" link instead of "Manage your preferences"
+     * @param {boolean} [options.trackClicks]
+     * @param {string | null} [options.automationActionRevisionId]
      * @returns {Promise<{html: string, text: string, subject: string}>}
      */
-    async render({lexical, subject, designSettings, member, siteSettings, unsubscribeUrl}) {
+    async render({lexical, subject, designSettings, member, siteSettings, unsubscribeUrl, trackClicks = false, automationActionRevisionId = null}) {
         designSettings = designSettings || {};
 
         const design = emailDesign.getEmailDesign({
@@ -161,7 +164,15 @@ class MemberWelcomeEmailRenderer {
         const subjectWithReplacements = this.#applyReplacements({definitions, text: subject, escapeHtml: false});
 
         // Resolve relative links (e.g. #/portal/signup) to absolute URLs using the site URL
-        const contentWithAbsoluteLinks = await linkReplacer.replace(contentWithReplacements, (url) => {
+        const contentWithAbsoluteLinks = await linkReplacer.replace(contentWithReplacements, async (url, originalPath) => {
+            if (originalPath.startsWith('#') && !originalPath.startsWith('#/')) {
+                return originalPath;
+            }
+            const isTrackable = ['http:', 'https:'].includes(url.protocol);
+            if (trackClicks && automationActionRevisionId && member.uuid && isTrackable) {
+                await linkTracking.init();
+                return await linkTracking.service.addAutomationTrackingToUrl(url, automationActionRevisionId, member.uuid);
+            }
             return url;
         }, {base: siteSettings.url});
 
