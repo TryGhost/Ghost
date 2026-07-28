@@ -548,10 +548,14 @@ describe('Comments Service: CommentsService', function () {
     });
 
     describe('sendNewCommentNotifications', function () {
-        function setupNotificationTest({parentMemberId, inReplyToMemberId, parentStatus = 'published'}) {
+        function setupNotificationTest({parentMemberId, inReplyToMemberId, parentStatus = 'published', parentNotified = parentStatus === 'published'}) {
             const {instance, models} = createClassInstance();
             instance.emails.notifyPostAuthors = sinon.stub().resolves();
+            // Mirrors the real contract: resolves with the notified member id, or undefined when it bails out
             instance.emails.notifyParentCommentAuthor = sinon.stub().resolves();
+            instance.emails.notifyParentCommentAuthor
+                .withArgs(sinon.match.any, sinon.match({type: 'parent'}))
+                .resolves(parentNotified ? parentMemberId : undefined);
 
             const commentsById = {
                 'parent-id': buildCommentModel({id: 'parent-id', member_id: parentMemberId, status: parentStatus}),
@@ -606,6 +610,32 @@ describe('Comments Service: CommentsService', function () {
             await instance.sendNewCommentNotifications(reply);
 
             sinon.assert.calledWithMatch(instance.emails.notifyParentCommentAuthor, reply, {type: 'in_reply_to'});
+        });
+
+        it('still sends the in_reply_to email when the parent notification bails for a reason other than status', async function () {
+            const {instance, reply} = setupNotificationTest({
+                parentMemberId: 'author-id',
+                inReplyToMemberId: 'author-id',
+                parentNotified: false
+            });
+
+            await instance.sendNewCommentNotifications(reply);
+
+            sinon.assert.calledWithMatch(instance.emails.notifyParentCommentAuthor, reply, {type: 'in_reply_to'});
+        });
+
+        it('passes the already-loaded in_reply_to comment through instead of re-querying it', async function () {
+            const {instance, reply} = setupNotificationTest({
+                parentMemberId: 'author-a',
+                inReplyToMemberId: 'author-b'
+            });
+
+            await instance.sendNewCommentNotifications(reply);
+
+            const inReplyToCall = instance.emails.notifyParentCommentAuthor
+                .getCalls()
+                .find(call => call.args[1].type === 'in_reply_to');
+            assert.equal(inReplyToCall.args[1].parent.get('id'), 'in-reply-to-id');
         });
     });
 

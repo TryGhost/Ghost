@@ -378,28 +378,17 @@ class CommentsService {
     async sendNewCommentNotifications(comment) {
         await this.emails.notifyPostAuthors(comment);
 
-        if (comment.get('parent_id')) {
-            await this.emails.notifyParentCommentAuthor(comment, {type: 'parent'});
-        }
-        if (comment.get('in_reply_to_id') && !(await this.#isDuplicateReplyNotification(comment))) {
-            await this.emails.notifyParentCommentAuthor(comment, {type: 'in_reply_to'});
-        }
-    }
+        const notifiedMemberId = comment.get('parent_id')
+            ? await this.emails.notifyParentCommentAuthor(comment, {type: 'parent'})
+            : null;
 
-    /** @private */
-    async #isDuplicateReplyNotification(comment) {
-        if (!comment.get('parent_id')) {
-            return false;
+        if (comment.get('in_reply_to_id')) {
+            const inReplyTo = await this.models.Comment.findOne({id: comment.get('in_reply_to_id')});
+
+            if (inReplyTo && (!notifiedMemberId || inReplyTo.get('member_id') !== notifiedMemberId)) {
+                await this.emails.notifyParentCommentAuthor(comment, {type: 'in_reply_to', parent: inReplyTo});
+            }
         }
-
-        const [parentComment, inReplyToComment] = await Promise.all([
-            this.models.Comment.findOne({id: comment.get('parent_id')}),
-            this.models.Comment.findOne({id: comment.get('in_reply_to_id')})
-        ]);
-
-        return !!parentComment && !!inReplyToComment &&
-            parentComment.get('status') === 'published' &&
-            parentComment.get('member_id') === inReplyToComment.get('member_id');
     }
 
     async likeComment(commentId, member, options = {}) {
