@@ -32,8 +32,7 @@ Two categories of apps:
 
 **Foundation Libraries**:
 - `admin-x-framework` - Shared API hooks, routing, utilities
-- `admin-x-design-system` - Legacy design system (being phased out)
-- `shade` - New design system (shadcn/ui + Radix UI + react-hook-form + zod)
+- `shade` - Design system (shadcn/ui + Radix UI + react-hook-form + zod)
 
 ### koenig/* - Ghost editor (Koenig) packages
 Merged from the former TryGhost/Koenig repo with full git history:
@@ -231,7 +230,7 @@ For the full workflow, namespaces, and interpolation patterns, load the `i18n-tr
 ### Build Dependencies (Nx)
 
 Critical build order (Nx handles automatically):
-1. `shade` + `admin-x-design-system` build
+1. `shade` builds
 2. `admin-x-framework` builds (depends on #1)
 3. Admin apps build (depend on #2)
 4. `apps/ember-admin` builds (depends on #3, copies via asset-delivery)
@@ -250,14 +249,14 @@ Shade styles independently.
 When the user asks you to create a commit or draft a commit message, load and follow the `commit` skill from `.agents/skills/commit`.
 
 ### ESLint Config
-Lint config lives in two internal packages — [`@internal/cfg-eslint`](configs/eslint/index.mjs) and [`@internal/cfg-eslint-react`](configs/eslint-react/index.mjs) — consumed by name as a `workspace:*` devDependency. **Rules are `'error'` or `'off'` — never `'warn'`.**
+Lint config lives in two internal packages — [`@internal/cfg-eslint`](configs/eslint/index.mjs) and [`@internal/cfg-eslint-react`](configs/eslint-react/index.mjs) — consumed by name as a `workspace:*` devDependency. **Rules are `'error'` or `'off'` — never `'warn'`**, across the shared configs and the standalones; `e2e/` is the one exception, with warn-level Playwright rules still pending cleanup.
 
 When creating or editing an `eslint.config.js`, load the `eslint-config` skill from `.agents/skills/eslint-config` for the factories, the standalone configs, and the plugin-dependency rules.
 
 ### When Working on Admin UI
 - **New features:** Build in React in `apps/admin` (domain folders under `src/`)
 - **Use:** `admin-x-framework` for API hooks (`useBrowse`, `useEdit`, etc.)
-- **Use:** `shade` design system for new components (not admin-x-design-system)
+- **Use:** `shade` design system for new components
 - **Translations:** Add to `packages/i18n/locales/en/ghost.json`
 
 ### When Working on Public UI
@@ -272,10 +271,6 @@ When creating or editing an `eslint.config.js`, load the `eslint-config` skill f
 - **Services:** `ghost/core/core/server/services/`
 - **Models:** `ghost/core/core/server/models/`
 - **Frontend & theme rendering:** `ghost/core/core/frontend/`
-
-### Design System Usage
-- **New components:** Use `shade` (shadcn/ui-inspired)
-- **Legacy:** `admin-x-design-system` (being phased out, avoid for new work)
 
 ### Analytics (Tinybird)
 - **Local development:** `pnpm dev:analytics` (starts Tinybird + MySQL)

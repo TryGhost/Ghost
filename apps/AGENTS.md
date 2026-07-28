@@ -7,12 +7,12 @@ monorepo-wide conventions.
 
 ### TailwindCSS v4 Setup
 
-Ghost Admin uses **TailwindCSS v4** via the `@tailwindcss/vite` plugin. CSS processing is centralized — only `apps/admin/vite.config.ts` loads the `@tailwindcss/vite` plugin. All embedded React apps (activitypub, admin-x-settings, admin-x-design-system) are scanned from this single entry point.
+Ghost Admin uses **TailwindCSS v4** via the `@tailwindcss/vite` plugin. CSS processing is centralized — only `apps/admin/vite.config.ts` loads the `@tailwindcss/vite` plugin. All embedded React apps (activitypub, admin-x-settings) are scanned from this single entry point.
 
 ### Entry Point
 
 `apps/admin/src/index.css` is the main CSS entry point. It contains:
-- `@source` directives that scan class usage in shade, activitypub, admin-x-settings, admin-x-design-system, and kg-unsplash-selector
+- `@source` directives that scan class usage in shade, activitypub, admin-x-settings, admin-x-framework, and kg-unsplash-selector
 - `@import "@tryghost/shade/styles.css"` which loads the Shade design system styles
 
 ### Shade Styles
@@ -40,4 +40,4 @@ Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `anno
 
 ### Legacy Apps
 
-`admin-x-design-system` and `admin-x-settings` are consumed via `@source` in admin's centralized v4 pipeline for production, and both packages build with CSS-first Tailwind v4 setup.
+`admin-x-settings` is consumed via `@source` in admin's centralized v4 pipeline for production, and builds with a CSS-first Tailwind v4 setup.
