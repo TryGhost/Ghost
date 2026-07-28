@@ -1574,6 +1574,10 @@ describe('Email renderer', function () {
 
             assert.equal(heading.length, 1);
             assert.equal(heading.find('a.post-title-link').text(), 'Test Post');
+
+            // Outlook's Word engine ignores `inherit`, so the heading needs concrete values
+            assert.match(heading.attr('style'), /font-size: 36px/);
+            assert.doesNotMatch(heading.attr('style'), /inherit/);
         });
 
         it('Converts a mobiledoc-only post to lexical before rendering', async function () {

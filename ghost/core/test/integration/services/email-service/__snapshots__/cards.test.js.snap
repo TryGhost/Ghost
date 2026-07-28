@@ -598,7 +598,9 @@ table.body h2 span {
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                                <h1 class=\\"post-title-heading\\" style=\\"margin-top: 0; text-rendering: optimizeLegibility; margin: 0; font-size: 36px; line-height: 1.1; font-weight: 700; font-family: Georgia, serif; letter-spacing: -0.01em;\\">
+                                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                                </h1>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -772,7 +774,12 @@ Daily newsletter [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
+
+
+
+
 A random test post [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
 
 
 
@@ -1497,7 +1504,9 @@ table.body h2 span {
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                                <h1 class=\\"post-title-heading\\" style=\\"margin-top: 0; text-rendering: optimizeLegibility; margin: 0; font-size: 36px; line-height: 1.1; font-weight: 700; font-family: Georgia, serif; letter-spacing: -0.01em;\\">
+                                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                                </h1>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1671,7 +1680,12 @@ Daily newsletter [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
+
+
+
+
 A random test post [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
 
 
 
@@ -8220,7 +8234,9 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                                <h1 class=\\"post-title-heading\\" style=\\"margin-top: 0; text-rendering: optimizeLegibility; margin: 0; font-size: 36px; line-height: 1.1; font-weight: 700; font-family: Georgia, serif; letter-spacing: -0.01em;\\">
+                                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                                </h1>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -8687,7 +8703,12 @@ Daily newsletter [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
+
+
+
+
 A random test post [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
 
 
 
@@ -9799,7 +9820,9 @@ Beautiful, modern publishing with newsletters and premium subscriptions built-in
                                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                         <tr>
                                                             <td style=\\"vertical-align: top; font-family: Georgia, serif; letter-spacing: -0.01em; font-size: 36px; line-height: 1.1; font-weight: 700; text-align: center; color: #000000;\\" valign=\\"top\\" align=\\"center\\">
-                                                                <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                                <h1 class=\\"post-title-heading\\" style=\\"margin-top: 0; text-rendering: optimizeLegibility; margin: 0; font-size: 36px; line-height: 1.1; font-weight: 700; font-family: Georgia, serif; letter-spacing: -0.01em;\\">
+                                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" class=\\"post-title-link\\" style=\\"text-decoration: none; display: block; margin-top: 32px; text-align: center; line-height: 1.1; overflow-wrap: anywhere; color: #000000;\\" target=\\"_blank\\">A random test post</a>
+                                                                </h1>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -10266,7 +10289,12 @@ Daily newsletter [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
+
+
+
+
 A random test post [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
+
 
 
 
