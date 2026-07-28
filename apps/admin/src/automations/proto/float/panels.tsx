@@ -216,9 +216,13 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
 
     // Sticky search + collapsing filters: when the sentinel just above the sticky
     // bar scrolls out the top of the scroll container, the search bar has stuck —
-    // collapse the 2x2 metric cards into a one-line chip row inside the bar.
+    // the 2x2 cards have scrolled off and the chip row shows in the bar. The -12px
+    // top rootMargin gives the trigger a small dead-zone: when a filter shrinks the
+    // table and the scroll clamps back to the boundary, the sentinel stays just
+    // outside it, so we don't flicker back to unstuck (which would drop the chips).
     const scrollRef = useRef<HTMLDivElement>(null);
     const sentinelRef = useRef<HTMLDivElement>(null);
+    const stickyBlockRef = useRef<HTMLDivElement>(null);
     const [stuck, setStuck] = useState(false);
     useEffect(() => {
         const root = scrollRef.current;
@@ -228,9 +232,30 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
         }
         const observer = new IntersectionObserver(
             ([entry]) => setStuck(!entry.isIntersecting),
-            {root, threshold: 0}
+            {root, rootMargin: '-12px 0px 0px 0px', threshold: 0}
         );
         observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, []);
+
+    // Reserve at least a viewport of height for the sticky bar + table block, set
+    // from JS so it's reliable (a CSS percentage min-height can fail to resolve
+    // inside a flex scroll container). Without it, filtering to a few rows shrinks
+    // the content so far that the scroll collapses past the sentinel and unsticks
+    // the search + chips; with it, the scroll clamps to the block's top — headers
+    // just under the sticky bar — instead.
+    useEffect(() => {
+        const root = scrollRef.current;
+        const block = stickyBlockRef.current;
+        if (!root || !block) {
+            return;
+        }
+        const apply = () => {
+            block.style.minHeight = `${root.clientHeight}px`;
+        };
+        apply();
+        const observer = new ResizeObserver(apply);
+        observer.observe(root);
         return () => observer.disconnect();
     }, []);
 
@@ -313,10 +338,15 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
             {/* The instant this scrolls out the top, the search bar below has stuck. */}
             <div ref={sentinelRef} className="h-px" />
 
-            {/* Sticky control bar — search always; once stuck (the 2x2 cards have
-                scrolled off) a one-line chip row expands here in their place, via the
-                grid-rows 0fr→1fr height trick so the collapse animates. */}
-            <div className={cn('sticky top-0 z-10 bg-background px-6 py-4', stuck && 'border-b border-border-default')}>
+            {/* Reserves at least a viewport of height for the sticky bar + table (min-
+                height set from JS above). When a filter shrinks the table, the scroll
+                clamps to the top of THIS block (headers just under the sticky bar)
+                rather than collapsing back past the sentinel and dropping the chips. */}
+            <div ref={stickyBlockRef}>
+                {/* Sticky control bar — search always; once stuck (the 2x2 cards have
+                    scrolled off) a one-line chip row expands here in their place, via the
+                    grid-rows 0fr→1fr height trick so the collapse animates. */}
+                <div className={cn('sticky top-0 z-10 bg-background px-6 py-4', stuck && 'border-b border-border-default')}>
                 <InputGroup className="w-full">
                     <InputGroupAddon>
                         <LucideIcon.Search />
@@ -407,6 +437,7 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                     })}
                 </TableBody>
                 </Table>
+                </div>
             </div>
         </div>
     );
