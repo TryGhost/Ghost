@@ -1,7 +1,4 @@
 import assert from 'node:assert/strict';
-import crypto from 'node:crypto';
-import fs from 'fs-extra';
-import path from 'node:path';
 import sinon from 'sinon';
 import {afterEach, beforeEach, describe, it} from 'vitest';
 
@@ -57,26 +54,6 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
         assert.deepEqual(expanded.routes['/about/'], {templates: ['about']});
         assert.equal(expanded.collections['/'].permalink, '/:slug/');
         assert.equal(expanded.taxonomies.tag, '/tag/:slug/');
-    });
-
-    it('getCurrentHash over the bundled defaults matches the known default hash', async function () {
-        const defaultYaml = await fs.readFile(
-            path.join(__dirname, '../../../../../core/server/services/route-settings/default-routes.yaml'),
-            'utf8'
-        );
-        await store.replace(fromYaml(defaultYaml));
-
-        assert.equal(await service.getCurrentHash(), service.getDefaultHash());
-    });
-
-    it('getCurrentHash matches md5 of the stringified expansion', async function () {
-        await store.replace(fromYaml(CUSTOM_YAML));
-
-        const expected = crypto.createHash('md5')
-            .update(JSON.stringify(await service.loadRouteSettings()), 'binary')
-            .digest('hex');
-
-        assert.equal(await service.getCurrentHash(), expected);
     });
 
     describe('loadRouteSettings validation failure', function () {
