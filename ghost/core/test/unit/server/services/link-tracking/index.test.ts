@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+
 const DomainEvents = require('@tryghost/domain-events');
 
 const linkRedirection = require('../../../../../core/server/services/link-redirection');
@@ -20,13 +21,13 @@ describe('LinkTrackingServiceWrapper', function () {
         linkRedirection.service = {};
         linkRedirection.linkRedirectRepository = {};
 
-        let finishInitialization;
-        const initialization = new Promise((resolve) => {
+        let finishInitialization!: () => void;
+        const initialization = new Promise<void>((resolve) => {
             finishInitialization = resolve;
         });
         const originalInit = LinkClickTrackingService.prototype.init;
         const subscribe = sinon.stub(DomainEvents, 'subscribe');
-        const init = sinon.stub(LinkClickTrackingService.prototype, 'init').callsFake(function () {
+        const init = sinon.stub(LinkClickTrackingService.prototype, 'init').callsFake(function (this: InstanceType<typeof LinkClickTrackingService>) {
             originalInit.call(this);
             return initialization;
         });
