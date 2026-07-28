@@ -144,7 +144,7 @@ export default class KoenigLexicalEditorInput extends Component {
             results.forEach((group) => {
                 let items = group.options;
 
-                // Ghost (Pro) results are admin billing pages, not linkable site content
+                // Ghost(Pro) results are admin billing pages, not linkable site content
                 if (group.groupName === GHOST_PRO_GROUP_NAME) {
                     return;
                 }

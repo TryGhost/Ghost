@@ -360,7 +360,7 @@ describe('Acceptance: Search', function () {
             expect(currentURL()).to.equal(`/settings/staff/${testData.user.slug}`);
         });
 
-        describe('Ghost (Pro) results', function () {
+        describe('Ghost(Pro) results', function () {
             const enableBilling = (server) => {
                 server.db.configs.update(1, {
                     hostSettings: {
@@ -372,7 +372,7 @@ describe('Acceptance: Search', function () {
                 });
             };
 
-            it('shows Ghost (Pro) results before content results', async function () {
+            it('shows Ghost(Pro) results before content results', async function () {
                 enableBilling(this.server);
                 this.server.create('post', {title: 'Backup post', slug: 'backup-post'});
 
@@ -380,14 +380,14 @@ describe('Acceptance: Search', function () {
                 await openSearch(this.owner);
                 await searchFor('backup');
 
-                assertSearchGroups(['Ghost (Pro)', 'Posts']);
+                assertSearchGroups(['Ghost(Pro)', 'Posts']);
 
                 const searchOptions = getSearchOptions();
                 const titles = searchOptions.map(option => getTitleText(option));
-                expect(titles).to.include('Ghost (Pro) → Request backup');
+                expect(titles).to.include('Request backup');
             });
 
-            it('navigates to the billing page when selecting a Ghost (Pro) result', async function () {
+            it('navigates to the billing page when selecting a Ghost(Pro) result', async function () {
                 enableBilling(this.server);
 
                 await visit('/analytics');
@@ -399,7 +399,7 @@ describe('Acceptance: Search', function () {
                 expect(currentURL()).to.equal('/pro/support');
             });
 
-            it('does not show Ghost (Pro) results when billing is not enabled', async function () {
+            it('does not show Ghost(Pro) results when billing is not enabled', async function () {
                 await visit('/analytics');
                 await openSearch(this.owner);
                 await searchFor('backup');
