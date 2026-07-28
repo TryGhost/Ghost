@@ -95,7 +95,7 @@ class LinkRedirectsService {
      * creating it on first use. A concurrent winning insert is returned after a
      * duplicate-key failure.
      * @param {string} automationActionRevisionId
-     * @param {URL} to
+     * @param {Readonly<URL>} to
      * @returns {Promise<LinkRedirect>}
      */
     async getOrAddAutomationRedirect(automationActionRevisionId, to) {

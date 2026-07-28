@@ -194,7 +194,7 @@ module.exports = class LinkRedirectRepository {
     /**
      * Get an automation LinkRedirect by action revision and destination URL
      * @param {string} automationActionRevisionId
-     * @param {URL} url
+     * @param {Readonly<URL>} url
      * @returns {Promise<InstanceType<LinkRedirect>|undefined>} LinkRedirect
      */
     async getByAutomationActionRevisionAndURL(automationActionRevisionId, url) {
@@ -210,7 +210,7 @@ module.exports = class LinkRedirectRepository {
 
     /**
      * The destination column is too long to index, so unique lookups use its SHA-256 digest
-     * @param {URL} url
+     * @param {Readonly<URL>} url
      * @returns {Buffer}
      */
     #getToHash(url) {

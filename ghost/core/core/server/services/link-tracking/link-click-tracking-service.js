@@ -235,7 +235,7 @@ class LinkClickTrackingService {
 
     /**
      * Add first-party tracking to a URL in an automation email
-     * @param {URL} url
+     * @param {Readonly<URL>} url
      * @param {string} automationActionRevisionId
      * @param {string} memberUuid
      * @return {Promise<URL>}
