@@ -5,6 +5,9 @@ import ObjectId from 'bson-objectid';
 import {dequal} from 'dequal';
 import {type Knex} from 'knex';
 import moment from 'moment';
+// @ts-expect-error This module currently lacks type definitions.
+import lexicalLib from '../../lib/lexical';
+import urlUtils from '../../../shared/url-utils';
 import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import type {
     AutomatedEmailEvents,
@@ -921,7 +924,7 @@ async function updateAutomation(trx: Knex.Transaction, automation: AutomationRow
 async function replaceAutomationGraph(trx: Knex.Transaction, automationId: string, submittedActions: AutomationAction[], edges: AutomationEdge[]): Promise<void> {
     const existingActions = await loadAutomationActionRows(trx, automationId);
     const existingActionById = new Map(existingActions.map(action => [action.id, action]));
-    const actions = await resolveEmailDesignSettingIds(trx, submittedActions);
+    const actions = (await resolveEmailDesignSettingIds(trx, submittedActions)).map(formatActionOnWrite);
     const submittedActionIds = new Set(actions.map(action => action.id));
     const actionIdsWithOwners = await loadActionIdsWithOwners(trx, [...submittedActionIds]);
     const latestRevisionByActionId = new Map((await loadLatestActionRevisions(trx, [...submittedActionIds])).map(revision => [revision.action_id, revision]));
@@ -980,6 +983,23 @@ async function replaceAutomationGraph(trx: Knex.Transaction, automationId: strin
     await deleteAutomationEdges(trx, automationId);
 
     await insertActionEdges(trx, edges);
+}
+
+function formatActionOnWrite(action: AutomationAction): AutomationAction {
+    if (action.type !== 'send_email') {
+        return action;
+    }
+
+    return {
+        ...action,
+        data: {
+            ...action.data,
+            email_lexical: urlUtils.lexicalToTransformReady(action.data.email_lexical, {
+                nodes: lexicalLib.nodes,
+                transformMap: lexicalLib.urlTransformMap
+            })
+        }
+    };
 }
 
 async function resolveEmailDesignSettingIds(trx: Knex.Transaction, actions: ReadonlyArray<AutomationAction>): Promise<AutomationAction[]> {
@@ -1312,7 +1332,7 @@ function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null):
             type: 'send_email',
             data: {
                 email_subject: requireValue(row, 'email_subject'),
-                email_lexical: requireValue(row, 'email_lexical'),
+                email_lexical: urlUtils.transformReadyToAbsolute(requireValue(row, 'email_lexical')),
                 email_design_setting_id: requireValue(row, 'email_design_setting_id')
             },
             stats: stats ?? EMPTY_EMAIL_STATS
