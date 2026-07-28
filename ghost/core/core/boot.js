@@ -304,11 +304,6 @@ async function initDynamicRouting() {
         urlService: urlService.facade
     });
 
-    const getRoutesHash = () => routeSettingsModule.service.getCurrentHash();
-
-    const settings = require('./server/services/settings/settings-service');
-    await settings.syncRoutesHash(getRoutesHash);
-
     debug('End: Dynamic Routing');
 }
 

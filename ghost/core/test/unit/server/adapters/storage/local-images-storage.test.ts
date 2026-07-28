@@ -192,14 +192,11 @@ describe('Local Images Storage', function () {
         });
     });
 
-    // @TODO: remove path.join mock...
     describe('on Windows', function () {
         const truePathSep = path.sep;
-        let pathJoinStub: sinon.SinonStub;
 
         beforeEach(function () {
-            pathJoinStub = sinon.stub(path, 'join');
-            sinon.stub(configUtils.config, 'getContentPath').returns('content/images/');
+            sinon.stub(configUtils.config, 'getContentPath').returns('content\\images\\');
         });
 
         afterEach(function () {
@@ -207,8 +204,8 @@ describe('Local Images Storage', function () {
         });
 
         it('should return url in proper format for windows', async function () {
-            (path as {sep: string}).sep = '\\';
-            pathJoinStub.returns('content\\images\\2013\\09\\IMAGE.jpg');
+            // @ts-expect-error - path.sep is read-only, but we can override it for testing purposes
+            path.sep = '\\';
 
             const url = await localFileStore.save(image);
             if (truePathSep === '\\') {

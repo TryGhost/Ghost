@@ -164,8 +164,9 @@ export class CustomFieldValuesService {
     /**
      * Resolve input into the writes it implies, rejecting anything invalid, and
      * writing nothing. Returned so a caller can validate before it commits to a
-     * change it would have to unwind (the member edit validates up front), then
-     * apply the same plan without re-resolving or re-validating.
+     * change it would have to unwind (the member edit and the importer both validate
+     * up front, before opening a transaction), then apply the same plan without
+     * re-resolving or re-validating.
      */
     async planWrite(input: unknown): Promise<PlannedWrite[]> {
         const values = this.parseValues(input);
@@ -225,15 +226,18 @@ export class CustomFieldValuesService {
      * Apply a plan from `planWrite`.
      *
      * Merge, not replace: only the fields in the plan are touched, so a caller
-     * that doesn't know about a field can't erase it. The whole plan is applied in
-     * one transaction, so a mid-batch failure rolls the batch back.
+     * that doesn't know about a field can't erase it.
+     *
+     * Always transactional, so a mid-batch failure rolls the batch back. Passed an
+     * executor it joins that transaction -- the importer passes its per-member one, so a
+     * failed value write takes the member with it; passed nothing it opens its own.
      */
-    async applyWrite(memberId: string, writes: PlannedWrite[]): Promise<void> {
+    async applyWrite(memberId: string, writes: PlannedWrite[], executor: Knex = this.knex): Promise<void> {
         if (writes.length === 0) {
             return;
         }
 
-        await this.knex.transaction(async (trx) => {
+        const apply = async (trx: Knex) => {
             for (const {field, value} of writes) {
                 const target = {member_id: memberId, custom_field_id: field.id};
 
@@ -250,6 +254,14 @@ export class CustomFieldValuesService {
                     .onConflict(['member_id', 'custom_field_id'])
                     .merge({...valueColumns, updated_at: new Date()});
             }
-        });
+        };
+
+        // isTransaction is knex's marker for a transactor: join an existing transaction
+        // rather than nesting a savepoint under it, otherwise open one.
+        if (executor.isTransaction) {
+            await apply(executor);
+        } else {
+            await executor.transaction(apply);
+        }
     }
 }
