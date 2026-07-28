@@ -111,7 +111,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
         describe('initialize', function () {
             it('initialize with controller+data+filter', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
-                    controller: 'channel',
+                    type: 'channel',
                     data: {query: {}, router: {}},
                     filter: 'tag:test'
                 }, routerCreatedSpy);
@@ -139,7 +139,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             it('initialize with controller+filter', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
-                    controller: 'channel',
+                    type: 'channel',
                     filter: 'tag:test'
                 }, routerCreatedSpy);
 
@@ -166,7 +166,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             it('initialize with controller+data', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
-                    controller: 'channel',
+                    type: 'channel',
                     data: {query: {}, router: {}}
                 }, routerCreatedSpy);
 
@@ -177,7 +177,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 configUtils.set('url', 'http://localhost:2366/blog/');
 
                 new StaticRoutesRouter('/channel/', {
-                    controller: 'channel',
+                    type: 'channel',
                     data: {query: {}, router: {}},
                     filter: 'author:michi'
                 }, routerCreatedSpy);
@@ -197,7 +197,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
         describe('fn: _prepareChannelContext', function () {
             it('with data+filter', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
-                    controller: 'channel',
+                    type: 'channel',
                     data: {query: {}, router: {}},
                     filter: 'tag:test'
                 }, routerCreatedSpy);
@@ -218,7 +218,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             it('with data', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/nothingcomparestoyou/', {
-                    controller: 'channel',
+                    type: 'channel',
                     data: {query: {type: 'read'}, router: {}}
                 }, routerCreatedSpy);
 
@@ -238,7 +238,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             it('with filter', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
-                    controller: 'channel',
+                    type: 'channel',
                     filter: 'tag:test'
                 }, routerCreatedSpy);
 
@@ -258,7 +258,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             it('with order+limit', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
-                    controller: 'channel',
+                    type: 'channel',
                     filter: 'tag:test',
                     limit: 2,
                     order: 'published_at asc'

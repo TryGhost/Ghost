@@ -121,90 +121,128 @@ function convertSlugsToColons(value: string): string {
     return value.replace(/{(\w+)}/g, ':$1');
 }
 
-function expandRoute(route: Route): Record<string, any> {
-    const expanded: Record<string, any> = {};
+/**
+ * Router-facing shapes. These mirror the domain model (arrays, `type`,
+ * `contentType`, `{slug}`→`:slug` permalinks) but still carry the legacy
+ * `data` expansion (`{query, router}`) and `:slug` notation that the routers,
+ * controllers and URL service consume today. Later cleanup PRs peel those two
+ * conversions off into the permalink/API adapters (HKG-1896/HKG-1897).
+ */
+interface RouterRoute {
+    path: string;
+    type: 'channel' | 'template';
+    templates: string[];
+    data?: ExpandedData;
+    contentType?: string;
+    filter?: string;
+    order?: string;
+    limit?: number | 'all';
+    rss?: boolean;
+}
 
-    expanded.templates = route.templates || [];
+interface RouterCollection {
+    path: string;
+    permalink: string;
+    templates: string[];
+    data?: ExpandedData;
+    filter?: string;
+    order?: string;
+    limit?: number | 'all';
+    rss?: boolean;
+}
+
+interface RouterTaxonomy {
+    key: string;
+    permalink: string;
+}
+
+interface RouterSettings {
+    routes: RouterRoute[];
+    collections: RouterCollection[];
+    taxonomies: RouterTaxonomy[];
+}
+
+function buildRouterRoute(route: Route): RouterRoute {
+    const result: RouterRoute = {
+        path: route.path,
+        type: route.type,
+        templates: route.templates || []
+    };
 
     if (route.data !== undefined) {
-        expanded.data = expandRouteData(route.data);
+        result.data = expandRouteData(route.data);
     }
 
     if (route.type === 'channel') {
         const channel = route as ChannelRoute;
-        expanded.controller = 'channel';
         if (channel.filter !== undefined) {
-            expanded.filter = channel.filter;
+            result.filter = channel.filter;
         }
         if (channel.order !== undefined) {
-            expanded.order = channel.order;
+            result.order = channel.order;
         }
         if (channel.limit !== undefined) {
-            expanded.limit = channel.limit;
+            result.limit = channel.limit;
         }
         if (channel.rss !== undefined) {
-            expanded.rss = channel.rss;
+            result.rss = channel.rss;
         }
     } else {
         const template = route as TemplateRoute;
         if (template.contentType !== undefined) {
-            expanded.content_type = template.contentType;
+            result.contentType = template.contentType;
         }
     }
 
-    return expanded;
+    return result;
 }
 
-function expandCollection(collection: CollectionConfig): Record<string, any> {
-    const expanded: Record<string, any> = {};
-
-    expanded.permalink = convertSlugsToColons(collection.permalink);
-    expanded.templates = collection.templates || [];
+function buildRouterCollection(collection: CollectionConfig): RouterCollection {
+    const result: RouterCollection = {
+        path: collection.path,
+        permalink: convertSlugsToColons(collection.permalink),
+        templates: collection.templates || []
+    };
 
     if (collection.data !== undefined) {
-        expanded.data = expandRouteData(collection.data);
+        result.data = expandRouteData(collection.data);
     }
-
     if (collection.filter !== undefined) {
-        expanded.filter = collection.filter;
+        result.filter = collection.filter;
     }
     if (collection.order !== undefined) {
-        expanded.order = collection.order;
+        result.order = collection.order;
     }
     if (collection.limit !== undefined) {
-        expanded.limit = collection.limit;
+        result.limit = collection.limit;
     }
     if (collection.rss !== undefined) {
-        expanded.rss = collection.rss;
+        result.rss = collection.rss;
     }
 
-    return expanded;
+    return result;
 }
 
 /**
- * Converts a RouteSettings domain model into the legacy expanded format
- * that routerManager.start() expects.
+ * Converts a RouteSettings domain model into the array shape that
+ * RouterManager.start() iterates. Each route/collection carries its own `path`,
+ * and taxonomies become `{key, permalink}` entries, so the routing layer no
+ * longer reads paths from map keys.
  *
- * This is a temporary adapter — it gets removed once RouterManager is
- * refactored to consume the domain model directly (HKG-1895/HKG-1898).
+ * Temporary adapter: removed in HKG-1898 once the routers consume the domain
+ * model directly.
  */
-export function expandRouteSettings(settings: RouteSettings): {routes: Record<string, any>; collections: Record<string, any>; taxonomies: Record<string, string>} {
-    const routes: Record<string, any> = {};
-    for (const route of settings.routes) {
-        routes[route.path] = expandRoute(route);
-    }
-
-    const collections: Record<string, any> = {};
-    for (const collection of settings.collections) {
-        collections[collection.path] = expandCollection(collection);
-    }
-
-    const taxonomies: Record<string, string> = {};
+export function buildRouterSettings(settings: RouteSettings): RouterSettings {
+    const taxonomies: RouterTaxonomy[] = [];
     for (const [key, value] of Object.entries(settings.taxonomies)) {
         if (value) {
-            taxonomies[key] = convertSlugsToColons(value);
+            taxonomies.push({key, permalink: convertSlugsToColons(value)});
         }
     }
 
-    return {routes, collections, taxonomies};
+    return {
+        routes: settings.routes.map(buildRouterRoute),
+        collections: settings.collections.map(buildRouterCollection),
+        taxonomies
+    };
 }

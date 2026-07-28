@@ -46,14 +46,14 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
         assert.equal(await service.download(), CUSTOM_YAML);
     });
 
-    it('loadRouteSettings expands the domain model into the router format', async function () {
+    it('loadRouteSettings expands the domain model into the router array format', async function () {
         await store.replace(fromYaml(CUSTOM_YAML));
 
         const expanded = await service.loadRouteSettings();
 
-        assert.deepEqual(expanded.routes['/about/'], {templates: ['about']});
-        assert.equal(expanded.collections['/'].permalink, '/:slug/');
-        assert.equal(expanded.taxonomies.tag, '/tag/:slug/');
+        assert.deepEqual(expanded.routes, [{path: '/about/', type: 'template', templates: ['about']}]);
+        assert.deepEqual(expanded.collections, [{path: '/', permalink: '/:slug/', templates: ['index']}]);
+        assert.deepEqual(expanded.taxonomies, [{key: 'tag', permalink: '/tag/:slug/'}]);
     });
 
     describe('loadRouteSettings validation failure', function () {
@@ -103,7 +103,7 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
 
             const settings = await service.loadRouteSettings();
 
-            assert.deepEqual(settings.routes['/about/'], {templates: ['about']});
+            assert.deepEqual(settings.routes, [{path: '/about/', type: 'template', templates: ['about']}]);
             assert.equal(errorStub.called, false);
         });
     });
