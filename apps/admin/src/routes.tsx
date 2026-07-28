@@ -107,18 +107,9 @@ export const routes: RouteObject[] = [
             // Automations prototype concepts. Each concept owns its own route
             // subtree under /automations-proto/<concept>, so concepts can diverge
             // freely in layout and architecture. Reached directly by URL — there's
-            // no index; the sidebar item points at the default concept (surface),
-            // and float remains URL-only. Adding a concept = a new folder + a route
-            // block here (no nav edits).
-            {
-                path: "/automations-proto/surface",
-                lazy: lazyComponent(() => import("./automations/proto/surface/list")),
-            },
-            {
-                path: "/automations-proto/surface/:id",
-                handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
-                lazy: lazyComponent(() => import("./automations/proto/surface/detail")),
-            },
+            // no index; the sidebar item points at the default concept (float),
+            // and surface remains URL-only. Adding a concept = a new folder + a
+            // route block here (no nav edits).
             {
                 path: "/automations-proto/float",
                 lazy: lazyComponent(() => import("./automations/proto/float/list")),
@@ -130,6 +121,15 @@ export const routes: RouteObject[] = [
                 path: "/automations-proto/float/:id",
                 handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
                 lazy: lazyComponent(() => import("./automations/proto/float/detail")),
+            },
+            {
+                path: "/automations-proto/surface",
+                lazy: lazyComponent(() => import("./automations/proto/surface/list")),
+            },
+            {
+                path: "/automations-proto/surface/:id",
+                handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
+                lazy: lazyComponent(() => import("./automations/proto/surface/detail")),
             },
             {
                 // The tag detail route delegates to Ember. It must be declared
