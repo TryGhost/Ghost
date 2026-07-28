@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const lexicalLib = require('../../lib/lexical');
 const labs = require('../../../shared/labs');
+const urlUtils = require('../../../shared/url-utils').default;
 const {finalize} = require('../email-rendering/finalize');
 const errors = require('@tryghost/errors');
 const {MESSAGES} = require('./constants');
@@ -138,7 +139,8 @@ class MemberWelcomeEmailRenderer {
 
         let content;
         try {
-            content = await lexicalLib.render(lexical, {target: 'email', design});
+            const absoluteLexical = urlUtils.transformReadyToAbsolute(lexical);
+            content = await lexicalLib.render(absoluteLexical, {target: 'email', design});
         } catch (err) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.INVALID_LEXICAL_STRUCTURE,

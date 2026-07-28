@@ -3,6 +3,7 @@ const cheerio = require('cheerio');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const lexicalLib = require('../../../../../core/server/lib/lexical');
+const config = require('../../../../../core/shared/config');
 const emailDesign = require('../../../../../core/server/services/email-rendering/email-design');
 const MemberWelcomeEmailRenderer = require('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
 
@@ -326,6 +327,63 @@ describe('MemberWelcomeEmailRenderer', function () {
             const $link = $('a[href="https://example.com/#/portal/support"]');
             assert($link.length, 'Expected a link to the absolute portal support URL');
             assert.equal($link.text(), 'Support us');
+        });
+
+        it('resolves transform-ready URLs before rendering Lexical content', async function () {
+            lexicalRenderStub.restore();
+            const renderer = createRenderer();
+            const siteUrl = config.get('url');
+            const lexical = JSON.stringify({
+                root: {
+                    children: [{
+                        children: [{
+                            children: [{
+                                detail: 0,
+                                format: 0,
+                                mode: 'normal',
+                                style: '',
+                                text: 'Open the archive',
+                                type: 'extended-text',
+                                version: 1
+                            }],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            rel: 'noreferrer',
+                            target: null,
+                            title: null,
+                            type: 'link',
+                            url: '__GHOST_URL__/archive/',
+                            version: 1
+                        }],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'paragraph',
+                        version: 1
+                    }],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const result = await renderer.render({
+                lexical,
+                subject: 'Welcome!',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: {
+                    ...defaultSiteSettings,
+                    url: siteUrl
+                }
+            });
+
+            const $ = cheerio.load(result.html);
+            const $link = $(`a[href="${siteUrl}/archive/"]`);
+            assert($link.length, 'Expected a transform-ready URL to resolve against the site URL');
+            assert(!result.html.includes('__GHOST_URL__'));
         });
 
         it('generates plain text from HTML', async function () {
