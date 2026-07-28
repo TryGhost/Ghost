@@ -1,9 +1,9 @@
 import React, {useMemo, useRef, useState} from 'react';
-import {InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeadButton, TableHeader, TableRow} from '@tryghost/shade/components';
+import {Button, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeadButton, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Box, Inline, Stack} from '@tryghost/shade/primitives';
 import {GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
-import type {AutomationRun, AutomationScenario, RunStatus} from '@/automations/proto/shared/mock';
+import type {AutomationRun, AutomationScenario} from '@/automations/proto/shared/mock';
 import {toAreaData} from '@/automations/proto/shared/chart';
 
 // Flyout content for the float concept's rail — adapted from the surface
@@ -38,7 +38,7 @@ export const OverviewPanel: React.FC<{scenario: AutomationScenario}> = ({scenari
     const chartMax = Math.max(...chartData.map(point => point.value), 1);
 
     return (
-        <div className="flex w-96 flex-col gap-4 p-4">
+        <div className="flex w-[480px] flex-col gap-4 p-6">
             <Inline align="center" justify="between">
                 <span className="text-md font-semibold">Overview</span>
                 <Select value={range} onValueChange={setRange}>
@@ -84,8 +84,6 @@ export const OverviewPanel: React.FC<{scenario: AutomationScenario}> = ({scenari
     );
 };
 
-type FilterKey = 'all' | RunStatus;
-
 // --- Float-local run row presentation --------------------------------------
 // The dashboard/surface concepts describe a run with the shared runProgress
 // text ("45% complete - Upgraded to paid") + shared StatusPill (In progress /
@@ -95,13 +93,21 @@ type FilterKey = 'all' | RunStatus;
 // exactly as the other concepts use them.
 
 const runPercent = (run: AutomationRun): number => {
+    // Running: proto-only synthetic spread across ~10–90%, keyed on run id so it's
+    // stable and the rings vary + sort. A real build would derive this from
+    // completed steps + how far through the current wait the member is (the raw
+    // step count below is too coarse, and every in-progress fixture is early).
+    if (run.status === 'in_progress') {
+        const hash = [...run.id].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+        return 10 + (hash % 81);
+    }
     const total = run.steps.length;
     const done = run.steps.filter(step => step.state === 'done').length;
     return total > 0 ? Math.round((done / total) * 100) : 0;
 };
 
-// Status label is derived, not a fixed enum: completed → Done, in-progress → In
-// progress, exited → Unsubscribed/Upgraded. (Labels here are still a first pass —
+// Status label is derived, not a fixed enum: completed → Done, in-progress →
+// Running, exited → Unsubscribed/Upgraded. (Labels here are still a first pass —
 // the exact wording is being worked out.)
 const runStatusLabel = (run: AutomationRun): string => {
     if (run.status === 'completed') {
@@ -118,17 +124,71 @@ const runStatusLabel = (run: AutomationRun): string => {
         const hash = [...run.id].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
         return hash % 3 === 0 ? 'Upgraded' : 'Unsubscribed';
     }
-    return 'In progress';
+    return 'Running';
 };
 
-// Slim progress bar — the same neutral track and fill for every run.
-const RunProgressBar: React.FC<{value: number}> = ({value}) => (
-    <div className="h-1 w-12 shrink-0 overflow-hidden rounded-full bg-muted">
-        <div className="h-full rounded-full bg-foreground" style={{width: `${value}%`}} />
-    </div>
-);
+// Deterministic "now" so the relative "started" times stay stable across
+// reviews — same fixed clock the shared automations list uses.
+const NOW_MS = new Date('2026-07-21T09:12:00Z').getTime();
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-type SortKey = 'member' | 'progress' | 'status';
+// Compact "started" label: 2m / 2h / 2d ago, then "Jul 2" once it's a week out.
+const startedLabel = (iso: string): string => {
+    const then = new Date(iso);
+    const mins = Math.round((NOW_MS - then.getTime()) / 60_000);
+    if (mins < 1) {
+        return 'Just now';
+    }
+    if (mins < 60) {
+        return `${mins}m ago`;
+    }
+    const hours = Math.round(mins / 60);
+    if (hours < 24) {
+        return `${hours}h ago`;
+    }
+    const days = Math.round(hours / 24);
+    if (days < 7) {
+        return `${days}d ago`;
+    }
+    return `${MONTHS[then.getUTCMonth()]} ${then.getUTCDate()}`;
+};
+
+// Progress ring — only in-progress runs use it (their fill is the live
+// measure). The arc inherits currentColor from the status cell; the track is a
+// faint version of it.
+const ProgressRing: React.FC<{value: number}> = ({value}) => {
+    const radius = 7;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference * (1 - Math.min(Math.max(value, 0), 100) / 100);
+    return (
+        <svg className="size-[18px] shrink-0 -rotate-90" fill="none" viewBox="0 0 18 18">
+            <circle className="stroke-muted-foreground/30" cx="9" cy="9" r={radius} strokeWidth="1.5" />
+            <circle className="stroke-current" cx="9" cy="9" r={radius} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" strokeWidth="1.5" />
+        </svg>
+    );
+};
+
+// Status glyph: the ring for in-progress (fills with runPercent), otherwise a
+// fixed outcome icon. Icon inherits the row's status colour via currentColor.
+const StatusGlyph: React.FC<{run: AutomationRun; label: string; pct: number}> = ({run, label, pct}) => {
+    if (run.status === 'in_progress') {
+        return <ProgressRing value={pct} />;
+    }
+    const Icon = label === 'Upgraded' ? LucideIcon.ChevronsUp : label === 'Unsubscribed' ? LucideIcon.CircleMinus : LucideIcon.Check;
+    return <Icon className="size-[18px] shrink-0" strokeWidth={1.5} />;
+};
+
+// Quick-filter chips (test) — each matches a derived status label and carries the
+// same glyph/colour as the status column. Running shows a fixed ~50% ring just to
+// convey the shape.
+const QUICK_FILTERS: {label: string; color: string; glyph: React.ReactNode}[] = [
+    {label: 'Running', color: 'text-blue-500', glyph: <ProgressRing value={50} />},
+    {label: 'Upgraded', color: 'text-green', glyph: <LucideIcon.ChevronsUp strokeWidth={1.5} />},
+    {label: 'Unsubscribed', color: 'text-muted-foreground', glyph: <LucideIcon.CircleMinus strokeWidth={1.5} />},
+    {label: 'Done', color: 'text-muted-foreground', glyph: <LucideIcon.Check strokeWidth={1.5} />}
+];
+
+type SortKey = 'member' | 'started' | 'status';
 type SortDir = 'asc' | 'desc';
 type SortState = {key: SortKey; direction: SortDir};
 
@@ -171,9 +231,11 @@ interface RunsPanelProps {
 
 export const RunsPanel: React.FC<RunsPanelProps> = ({scenario, selectedMemberId, onSelectMember}) => {
     const {runs} = scenario;
-    const [filter, setFilter] = useState<FilterKey>('all');
     const [query, setQuery] = useState('');
     const [sort, setSort] = useState<SortState>({key: 'member', direction: 'asc'});
+    // Quick-filter chip (test) — matches on the derived status label, independent
+    // of the existing status dropdown.
+    const [quickFilter, setQuickFilter] = useState<string | null>(null);
 
     // Clicking a column sorts by it ascending; clicking the active column flips
     // the direction.
@@ -184,24 +246,27 @@ export const RunsPanel: React.FC<RunsPanelProps> = ({scenario, selectedMemberId,
     ));
 
     const visible = useMemo(() => runs.filter((run) => {
-        const matchesFilter = filter === 'all' || run.status === filter;
         const q = query.trim().toLowerCase();
-        const matchesQuery = run.member.name.toLowerCase().includes(q) || run.member.email.toLowerCase().includes(q);
-        return matchesFilter && matchesQuery;
-    }), [runs, filter, query]);
+        return run.member.name.toLowerCase().includes(q) || run.member.email.toLowerCase().includes(q);
+    }), [runs, query]);
 
     const sorted = useMemo<SortedRun[]>(() => {
-        const rows = visible.map(run => ({run, label: runStatusLabel(run), pct: runPercent(run)}));
+        const rows = visible
+            .map(run => ({run, label: runStatusLabel(run), pct: runPercent(run)}))
+            .filter(row => !quickFilter || row.label === quickFilter);
         rows.sort((a, b) => {
-            const cmp = sort.key === 'progress'
-                ? a.pct - b.pct
-                : sort.key === 'status'
-                    ? a.label.localeCompare(b.label)
+            // Status sorts by progress % (so the rings order by fill), then by
+            // label to keep same-percent rows grouped. enrolled_at is ISO 8601, so
+            // a lexical compare is chronological.
+            const cmp = sort.key === 'status'
+                ? (a.pct - b.pct) || a.label.localeCompare(b.label)
+                : sort.key === 'started'
+                    ? a.run.enrolled_at.localeCompare(b.run.enrolled_at)
                     : a.run.member.name.localeCompare(b.run.member.name);
             return sort.direction === 'asc' ? cmp : -cmp;
         });
         return rows;
-    }, [visible, sort]);
+    }, [visible, sort, quickFilter]);
 
     // Opening this panel focuses the first member so the canvas has something to
     // show right away — mirrors the surface pane's tab-entry sync, simplified to a
@@ -215,48 +280,56 @@ export const RunsPanel: React.FC<RunsPanelProps> = ({scenario, selectedMemberId,
     }
 
     return (
-        <div className="flex min-h-0 w-[420px] flex-1 flex-col gap-4 p-4">
-            {/* Title + search/filter on one row, matching the Overview header. */}
-            <Inline align="center" className="shrink-0" gap="md">
+        <div className="flex min-h-0 w-[480px] flex-1 flex-col gap-4 p-6">
+            {/* Title left, a fixed 200px search pinned right. Status filtering now
+                lives in the quick-filter chips below, so the old dropdown is gone. */}
+            <Inline align="center" className="shrink-0" gap="md" justify="between">
                 <span className="text-md font-semibold">Runs</span>
-                <Inline align="center" className="min-w-0 flex-1" gap="sm">
-                    <InputGroup className="min-w-0 flex-1">
-                        <InputGroupAddon>
-                            <LucideIcon.Search />
-                        </InputGroupAddon>
-                        <InputGroupInput
-                            placeholder="Search members…"
-                            value={query}
-                            onChange={e => setQuery(e.target.value)}
-                        />
-                    </InputGroup>
-                    <Select value={filter} onValueChange={value => setFilter(value as FilterKey)}>
-                        <SelectTrigger className="w-32 shrink-0">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All</SelectItem>
-                            <SelectItem value="in_progress">In progress</SelectItem>
-                            <SelectItem value="completed">Done</SelectItem>
-                            <SelectItem value="exited_early">Exited early</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </Inline>
+                <InputGroup className="w-[200px] shrink-0">
+                    <InputGroupAddon>
+                        <LucideIcon.Search />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                        placeholder="Search members…"
+                        value={query}
+                        onChange={e => setQuery(e.target.value)}
+                    />
+                </InputGroup>
+            </Inline>
+
+            {/* Quick-filter chip row (test) — toggles a label match on top of the
+                existing controls. */}
+            <Inline align="center" className="shrink-0 flex-wrap" gap="sm">
+                {QUICK_FILTERS.map((qf) => {
+                    const active = quickFilter === qf.label;
+                    return (
+                        <Button
+                            key={qf.label}
+                            aria-pressed={active}
+                            className={`h-8 gap-1.5 rounded-full px-3 font-normal ${active ? 'border-foreground bg-muted-foreground/10' : ''}`}
+                            variant="outline"
+                            onClick={() => setQuickFilter(active ? null : qf.label)}
+                        >
+                            <span className={qf.color}>{qf.glyph}</span>
+                            <span className="text-sm">{qf.label}</span>
+                        </Button>
+                    );
+                })}
             </Inline>
 
             {/* Table's className lands on the inner <table>, not a wrapping
                 scroll container (see table.tsx), so the scrollable region has
                 to be a div around it rather than a class on Table itself. */}
             <div className="min-h-0 flex-1 overflow-y-auto">
-                {/* table-fixed so the Progress/Status columns keep their set widths
+                {/* table-fixed so the Started/Status columns keep their set widths
                     (below) no matter how the labels change between sorts/filters —
                     only the flexible Member column reflows. */}
                 <Table className="table-fixed" data-testid="float-runs-table">
                     <TableHeader>
                         <TableRow className="hover:bg-transparent">
                             <SortHead label="Member" onSort={onSort} sort={sort} sortKey="member" />
-                            <SortHead className="w-28" label="Progress" onSort={onSort} sort={sort} sortKey="progress" />
-                            <SortHead className="w-32" label="Status" onSort={onSort} sort={sort} sortKey="status" />
+                            <SortHead className="w-24" label="Started" onSort={onSort} sort={sort} sortKey="started" />
+                            <SortHead className="w-24" label="Status" onSort={onSort} sort={sort} sortKey="status" />
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -267,28 +340,33 @@ export const RunsPanel: React.FC<RunsPanelProps> = ({scenario, selectedMemberId,
                         )}
                         {sorted.map(({run, label: statusLabel, pct}) => {
                             const isSelected = run.id === selectedMemberId;
-                            // Outcomes are colour-coded; an active run stays neutral-bright
-                            // and a finished ("Done") run stays muted.
+                            // In-progress reads blue (its ring arc inherits the same colour
+                            // via currentColor), Upgraded green, and everything settled
+                            // (Done / Unsubscribed) is muted.
                             const statusColor = statusLabel === 'Upgraded'
                                 ? 'text-green'
-                                : statusLabel === 'Unsubscribed'
-                                    ? 'text-orange'
-                                    : run.status === 'in_progress' ? 'text-foreground' : 'text-muted-foreground';
+                                : run.status === 'in_progress' ? 'text-blue-500' : 'text-muted-foreground';
                             return (
                                 <TableRow
                                     key={run.id}
                                     aria-selected={isSelected}
-                                    className={`cursor-pointer ${isSelected ? 'bg-muted' : 'hover:bg-table-row-hover'}`}
+                                    // Row drives the states with subtle muted-foreground tints;
+                                    // cells neutralise Shade's built-in group-hover (its
+                                    // table-row-hover token blends into this panel's surface).
+                                    className={`cursor-pointer transition-colors ${isSelected ? 'bg-muted-foreground/10' : 'hover:bg-muted-foreground/5'}`}
                                     onClick={() => onSelectMember(run.id)}
                                 >
-                                    <TableCell className="min-w-0 px-4 py-4">
+                                    <TableCell className="min-w-0 px-4 py-4 group-hover:bg-transparent">
                                         <span className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4 align-middle">
-                                        <RunProgressBar value={pct} />
+                                    <TableCell className="w-24 px-4 py-4 align-middle group-hover:bg-transparent">
+                                        <span className="block truncate text-sm text-muted-foreground">{startedLabel(run.enrolled_at)}</span>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4 align-middle">
-                                        <span className={`block truncate text-sm ${statusColor}`}>{statusLabel}</span>
+                                    <TableCell className="w-24 px-4 py-4 align-middle group-hover:bg-transparent">
+                                        {/* Icon only — the quick-filter legend above names each state. */}
+                                        <div className={statusColor} title={statusLabel}>
+                                            <StatusGlyph label={statusLabel} pct={pct} run={run} />
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             );
