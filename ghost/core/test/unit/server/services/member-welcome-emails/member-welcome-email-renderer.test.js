@@ -570,7 +570,6 @@ describe('MemberWelcomeEmailRenderer', function () {
         describe('automation click tracking', function () {
             const memberUuid = '00000000-0000-4000-8000-000000000001';
             let addAutomationTrackingToUrl;
-            let originalService;
 
             beforeEach(function () {
                 sinon.stub(linkTracking, 'init').resolves();
@@ -580,12 +579,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                     tracked.searchParams.set('m', uuid);
                     return tracked;
                 });
-                originalService = linkTracking.service;
-                linkTracking.service = {addAutomationTrackingToUrl};
-            });
-
-            afterEach(function () {
-                linkTracking.service = originalService;
+                sinon.define(linkTracking, 'service', {addAutomationTrackingToUrl});
             });
 
             const renderTracked = async (html, options = {}) => {
