@@ -106,7 +106,7 @@ describe('automation link redirects', function () {
         return await testUtils.knex('redirects').whereNotNull('automation_action_revision_id').select();
     }
 
-    it('persists the destination digest as 32 raw bytes and reads it back', async function () {
+    it('persists the destination digest and is able to read it back', async function () {
         const destination = new URL('https://external.example.com/pricing');
 
         const redirect = await linkRedirectsService.getOrAddAutomationRedirect(revisionId, destination);
@@ -116,7 +116,6 @@ describe('automation link redirects', function () {
         assert.equal(rows[0].automation_action_revision_id, revisionId);
 
         const expectedHash = crypto.createHash('sha256').update(destination.href).digest();
-        assert.equal(Buffer.from(rows[0].to_hash).length, 32);
         assert.equal(Buffer.from(rows[0].to_hash).equals(expectedHash), true);
 
         const found = await linkRedirectsService.getOrAddAutomationRedirect(revisionId, destination);
