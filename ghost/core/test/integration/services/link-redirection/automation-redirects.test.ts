@@ -1,8 +1,8 @@
-// @ts-check
-const assert = require('node:assert/strict');
-const crypto = require('node:crypto');
-const ObjectId = require('bson-objectid').default;
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import ObjectId from 'bson-objectid';
+import sinon from 'sinon';
+
 const testUtils = require('../../../utils');
 
 const urlUtils = require('../../../../core/shared/url-utils').default;
@@ -11,6 +11,21 @@ const LinkRedirectsService = require('../../../../core/server/services/link-redi
 const EventRegistry = require('../../../../core/server/lib/common/events');
 const {Redirect} = require('../../../../core/server/models');
 
+type LinkRedirect = {
+    from: URL;
+    to: URL;
+};
+
+type LinkRedirectsServiceInstance = {
+    getOrAddAutomationRedirect(automationActionRevisionId: string, to: URL): Promise<LinkRedirect>;
+};
+
+type RedirectRow = {
+    automation_action_revision_id: string;
+    to_hash: Uint8Array;
+    from: string;
+};
+
 /**
  * These cover the parts the unit tests stub out: that the SHA-256 destination digest
  * survives a round trip through the varbinary(32) `to_hash` column, and that the unique
@@ -18,9 +33,9 @@ const {Redirect} = require('../../../../core/server/models');
  * when concurrent sends race to create the same redirect.
  */
 describe('automation link redirects', function () {
-    let linkRedirectsService;
-    let revisionId;
-    let otherRevisionId;
+    let linkRedirectsService: LinkRedirectsServiceInstance;
+    let revisionId: string;
+    let otherRevisionId: string;
 
     beforeAll(async function () {
         await testUtils.setup('default')();
@@ -87,8 +102,8 @@ describe('automation link redirects', function () {
         return revisionIdToCreate;
     }
 
-    function getRedirectRows() {
-        return testUtils.knex('redirects').whereNotNull('automation_action_revision_id').select();
+    async function getRedirectRows(): Promise<RedirectRow[]> {
+        return await testUtils.knex('redirects').whereNotNull('automation_action_revision_id').select();
     }
 
     it('persists the destination digest as 32 raw bytes and reads it back', async function () {
