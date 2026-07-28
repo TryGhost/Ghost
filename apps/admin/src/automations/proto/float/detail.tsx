@@ -3,7 +3,7 @@ import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations
 import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, Input, Kbd, Label} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {getScenario, mockAutomations} from '@/automations/proto/shared/mock';
 import {OverviewPanel, RunsPanel} from './panels';
 import {SurfaceEditCanvas as FloatEditCanvas} from '@/automations/proto/surface/edit-canvas';
@@ -12,7 +12,7 @@ import {useVersionLink} from '@/automations/proto/shared/use-version-link';
 
 type LiveStatus = 'active' | 'inactive';
 type SaveState = 'saved' | 'saving';
-type RailPanel = 'overview' | 'runs' | 'more' | null;
+type RailPanel = 'overview' | 'runs' | 'edit' | null;
 type StopScope = 'new' | 'all';
 
 const StatusPill: React.FC<{status: LiveStatus}> = ({status}) => (
@@ -162,11 +162,18 @@ const StopAutomationDialog: React.FC<{
 const AutomationFloat: React.FC = () => {
     const {id} = useParams<{id: string}>();
     const navigate = useNavigate();
+    const location = useLocation();
     const toVersioned = useVersionLink();
 
     const scenario = id ? getScenario(id) : undefined;
 
-    const [railPanel, setRailPanel] = useState<RailPanel>(null);
+    // Overview is open by default when arriving from the list. The title switcher
+    // carries the current panel forward in navigation state (see below), so
+    // hopping between automations keeps whatever panel you're on — handy for
+    // comparing the same view across automations.
+    const [railPanel, setRailPanel] = useState<RailPanel>(
+        (location.state as {railPanel?: RailPanel} | null)?.railPanel ?? 'overview'
+    );
     const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
     const [liveStatus, setLiveStatus] = useState<LiveStatus>(scenario?.automation.status ?? 'active');
     const [dirty, setDirty] = useState(false);
@@ -175,6 +182,7 @@ const AutomationFloat: React.FC = () => {
     const [stopOpen, setStopOpen] = useState(false);
     const [draft, setDraft] = useState<AutomationDetail | null>(null);
     const [switcherOpen, setSwitcherOpen] = useState(false);
+    const [moreOpen, setMoreOpen] = useState(false);
     const railRef = useRef<HTMLDivElement>(null);
 
     // Canvas focus tracks the rail: Runs focuses a member (the first, on
@@ -198,9 +206,19 @@ const AutomationFloat: React.FC = () => {
             return;
         }
         const onPointerDown = (event: PointerEvent) => {
-            if (event.target instanceof Node && !railRef.current?.contains(event.target)) {
-                setRailPanel(null);
+            const node = event.target;
+            if (!(node instanceof Node) || railRef.current?.contains(node)) {
+                return;
             }
+            // The flyout's own Select dropdowns (Runs filter, Overview range)
+            // portal to <body>, so they aren't DOM descendants of the rail even
+            // though they belong to it — don't treat a click inside one as an
+            // outside click. Radix positions them in a popper-content wrapper.
+            const el = node instanceof Element ? node : node.parentElement;
+            if (el?.closest('[data-radix-popper-content-wrapper]')) {
+                return;
+            }
+            setRailPanel(null);
         };
         const onKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
@@ -227,25 +245,25 @@ const AutomationFloat: React.FC = () => {
     }
 
     const {automation} = scenario;
-    // Editability follows the live status, Resend-style: a live automation is a
-    // read-only preview, a stopped one is fully editable.
+    // Editing can only happen once stopped, Resend-style. Edit is its own rail
+    // view; the editable canvas only shows on that view when stopped. On the Edit
+    // view while still live, we show the read-only preview with a lock alert
+    // telling the user to stop first.
     const isEditable = liveStatus === 'inactive';
+    const inEditView = railPanel === 'edit';
+    const showEditCanvas = inEditView && isEditable;
+    const showEditLock = inEditView && !isEditable;
     const selectedRun = selectedMemberId ? scenario.runs.find(r => r.id === selectedMemberId) ?? null : null;
     const activeDraft = draft ?? automation;
 
-    // One controlled slot — railPanel — holds whichever rail flyout is open, so
-    // at most one shows at a time. Overview/Runs toggle it directly on click;
-    // clicking straight from one to the other just reassigns the slot, so
-    // switching is a single click with no dismiss race.
+    // One controlled slot — railPanel — holds the active rail view (an Overview/
+    // Runs flyout, or the Edit canvas). Overview/Runs/Edit toggle it directly on
+    // click; clicking straight from one to another just reassigns the slot, so
+    // switching is a single click with no dismiss race. The ⋯ menu is deliberately
+    // NOT part of this slot (its own `moreOpen` below) — it's a transient dropdown
+    // that must not replace the current view (e.g. opening it mid-edit).
     const togglePanel = (panel: Exclude<RailPanel, null>) => {
         setRailPanel(current => (current === panel ? null : panel));
-    };
-
-    // The ⋯ menu shares the same slot but is a Radix DropdownMenu, so its
-    // open/close comes through onOpenChange; releasing only if it still holds the
-    // slot keeps a stale close from clobbering a flyout opened right after.
-    const moreOpenChange = (open: boolean) => {
-        setRailPanel(current => (open ? 'more' : (current === 'more' ? null : current)));
     };
 
     const handleDraftChange = (next: AutomationDetail) => {
@@ -279,10 +297,19 @@ const AutomationFloat: React.FC = () => {
                 the canvas, the way the post editor floats its own chrome over the
                 document. */}
             <div className="relative min-h-0 flex-1 overflow-hidden bg-muted/30">
-                {isEditable ? (
+                {showEditCanvas ? (
                     <FloatEditCanvas draft={activeDraft} onChange={handleDraftChange} />
                 ) : (
                     <FloatFlowCanvas automation={automation} selectedRun={selectedRun} />
+                )}
+
+                {/* Edit view while still live — a subtle lock alert instead of an
+                    editable canvas, so the "stop first" rule is taught in place. */}
+                {showEditLock && (
+                    <div className="absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border-default bg-surface-elevated px-3 py-1.5 text-sm text-muted-foreground shadow-sm">
+                        <LucideIcon.Lock className="size-3.5" strokeWidth={2} />
+                        Stop the automation to make edits
+                    </div>
                 )}
 
                 {/* Top-left — back arrow, then title + status. Title and status live in
@@ -312,7 +339,9 @@ const AutomationFloat: React.FC = () => {
                                         onClick={() => {
                                             setSwitcherOpen(false);
                                             if (a.id !== automation.id) {
-                                                navigate(toVersioned(`/automations-proto/float/${a.id}`));
+                                                // Carry the open panel forward so the switch keeps
+                                                // the current view for comparison.
+                                                navigate(toVersioned(`/automations-proto/float/${a.id}`), {state: {railPanel}});
                                             }
                                         }}
                                     >
@@ -324,37 +353,23 @@ const AutomationFloat: React.FC = () => {
                         </HoverCard>
                     </Inline>
 
-                    {/* Rail — analytics + actions, present whether live or stopped. The
-                        button column and the open flyout sit side by side (items-start),
-                        so the flyout lands just right of the buttons and top-aligned with
-                        the rail — under the title — and never covers the buttons, so
-                        switching straight from one flyout to another is a single click.
-                        No Edit button: editability is driven by live status, not a toggle. */}
+                    {/* Rail — Overview/Runs open flyouts; Edit switches the canvas to the
+                        editable view. The button column and any open flyout sit side by
+                        side (items-start), so the flyout lands just right of the buttons and
+                        top-aligned with the rail — under the title — and never covers the
+                        buttons, so switching is a single click. The ⋯ actions menu lives in
+                        the top-right cluster, next to the primary Stop/Start action. */}
                     <div ref={railRef} className="flex items-start gap-3">
                         <div className="flex flex-col gap-1">
                             <RailButton active={railPanel === 'overview'} icon={LucideIcon.ChartNoAxesColumn} label="Overview" onClick={() => togglePanel('overview')} />
                             <RailButton active={railPanel === 'runs'} icon={LucideIcon.Users} label="Runs" onClick={() => togglePanel('runs')} />
-                            {/* modal={false} so the open menu doesn't block pointer events to
-                                the other rail buttons — that block is what forces an extra
-                                click when switching from the menu to a flyout. */}
-                            <DropdownMenu modal={false} open={railPanel === 'more'} onOpenChange={moreOpenChange}>
-                                <DropdownMenuTrigger asChild>
-                                    <RailButton active={railPanel === 'more'} icon={LucideIcon.MoreHorizontal} label="More actions" />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" side="right">
-                                    <DropdownMenuItem>
-                                        <LucideIcon.Copy /> Duplicate
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-destructive focus:text-destructive">
-                                        <LucideIcon.Trash2 /> Delete
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            {/* Edit is just another view; whether editing is allowed (stop
+                                first) is taught by the lock alert on the view, not the button. */}
+                            <RailButton active={railPanel === 'edit'} icon={LucideIcon.Pencil} label="Edit" onClick={() => togglePanel('edit')} />
                         </div>
 
                         {(railPanel === 'overview' || railPanel === 'runs') && (
-                            <div className="flex max-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-md border border-border/60 bg-surface-elevated-2 shadow-md dark:border-border/30">
+                            <div className="flex max-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-md border border-border-default bg-surface-elevated shadow-md">
                                 {railPanel === 'overview' ? (
                                     <OverviewPanel scenario={scenario} />
                                 ) : (
@@ -365,16 +380,30 @@ const AutomationFloat: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Top-right — the one primary action for the current lifecycle state:
-                    Stop while live (opens the high-friction confirm), Start once stopped.
-                    Stopped also shows the autosave indicator, since that's the editable
-                    state. Floats over the canvas like the post editor's Publish. */}
+                {/* Top-right — the ⋯ actions menu, then the one primary action for the
+                    current lifecycle state: Stop while live (opens the high-friction
+                    confirm), Start once stopped. Stopped also shows the autosave
+                    indicator. Floats over the canvas like the post editor's Publish. */}
                 <div className="absolute top-4 right-4 z-10 flex items-center gap-3">
+                    {showEditCanvas && <span className="text-xs text-muted-foreground">{workingText}</span>}
+                    {/* modal={false} so the menu doesn't block pointer events to the rest
+                        of the surface, matching how the analytics flyouts behave. */}
+                    <DropdownMenu modal={false} open={moreOpen} onOpenChange={setMoreOpen}>
+                        <DropdownMenuTrigger asChild>
+                            <RailButton active={moreOpen} icon={LucideIcon.MoreHorizontal} label="More actions" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                                <LucideIcon.Copy /> Duplicate
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive focus:text-destructive">
+                                <LucideIcon.Trash2 /> Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     {isEditable ? (
-                        <>
-                            <span className="text-xs text-muted-foreground">{workingText}</span>
-                            <Button onClick={() => setStartOpen(true)}>Start</Button>
-                        </>
+                        <Button onClick={() => setStartOpen(true)}>Start</Button>
                     ) : (
                         <Button onClick={() => setStopOpen(true)}>Stop</Button>
                     )}
