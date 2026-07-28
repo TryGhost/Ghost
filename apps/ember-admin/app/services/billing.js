@@ -528,11 +528,13 @@ export default class BillingService extends Service {
             return;
         }
 
-        if (this.billingAppLoaded && this._isBillingIframeLoaded()) {
+        const billingAppOrigin = this.getBillingAppOrigin();
+
+        if (this.billingAppLoaded && this._isBillingIframeLoaded() && billingAppOrigin) {
             this.getBillingIframe().contentWindow.postMessage({
                 query: 'routeUpdate',
                 response: destinationRoute
-            }, '*');
+            }, billingAppOrigin);
         } else {
             this.pendingSubRoute = destinationRoute;
         }

@@ -194,8 +194,23 @@ describe('Unit: Service: billing', function () {
 
         service.navigateToSubRoute('/domain');
 
-        expect(postMessage.calledOnceWith({query: 'routeUpdate', response: '/domain'})).to.be.true;
+        expect(postMessage.calledOnceWith({query: 'routeUpdate', response: '/domain'}, 'https://billing.example.test')).to.be.true;
         expect(service.pendingSubRoute).to.be.null;
+    });
+
+    it('keeps a sub route pending when the billing app origin is unknown', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const postMessage = sinon.stub();
+        const iframe = {src: '', addEventListener: sinon.stub(), contentWindow: {postMessage}};
+        sinon.stub(service, 'getBillingIframe').returns(iframe);
+        service.billingAppLoaded = true;
+        this.owner.lookup('config:main').hostSettings = {};
+
+        service.navigateToSubRoute('/domain');
+
+        expect(postMessage.called).to.be.false;
+        expect(service.pendingSubRoute).to.equal('/domain');
     });
 
     it('keeps a sub route pending until the billing app reports ready', function () {
@@ -212,7 +227,7 @@ describe('Unit: Service: billing', function () {
 
         service.markBillingAppLoaded();
 
-        expect(postMessage.calledOnceWith({query: 'routeUpdate', response: '/domain'})).to.be.true;
+        expect(postMessage.calledOnceWith({query: 'routeUpdate', response: '/domain'}, 'https://billing.example.test')).to.be.true;
         expect(service.pendingSubRoute).to.be.null;
     });
 
