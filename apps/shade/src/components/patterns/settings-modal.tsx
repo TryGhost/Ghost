@@ -36,6 +36,8 @@ export interface SettingsModalProps {
     buttonsDisabled?: boolean;
     okDisabled?: boolean;
     footer?: boolean | React.ReactNode;
+    /** Extra classes on the default footer's button row, e.g. to constrain its width. */
+    footerClassName?: string;
     header?: boolean;
     padding?: boolean;
     onOk?: () => void;
@@ -133,6 +135,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
     okLoading = false,
     cancelLabel = 'Cancel',
     footer,
+    footerClassName,
     header,
     leftButton,
     buttonsDisabled,
@@ -255,7 +258,8 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
     const footerClasses = cn(
         paddingClasses,
         'flex w-full items-center justify-between',
-        stickyFooter && 'py-6'
+        stickyFooter && 'py-6',
+        footerClassName
     );
     const modalStyles: React.CSSProperties = {
         ...(typeof width === 'number' ? {width: '100%', maxWidth: `${width}px`} : {}),
