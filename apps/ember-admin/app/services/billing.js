@@ -181,8 +181,8 @@ export default class BillingService extends Service {
         this.billingAppIframeSrcSetAt = Date.now();
         this.resetBillingAppLoadDiagnostics();
         iframe.src = this.getIframeURL();
-        // any pending sub route is now part of the iframe URL, so the app
-        // boots directly on it and no post-load route update is needed
+        // the pending sub route is now part of the iframe URL — no post-load
+        // route update needed
         this.pendingSubRoute = null;
     }
 

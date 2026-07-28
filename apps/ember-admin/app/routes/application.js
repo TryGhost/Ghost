@@ -217,8 +217,7 @@ export default Route.extend(ShortcutsRoute, {
 
         if (this.config.hostSettings?.forceUpgrade) {
             // enforce opening the BMA in a force upgrade state, keeping any
-            // /pro child route from the URL (eg. a reloaded /pro/domain) so
-            // deep links land on the right billing page
+            // /pro child route from the URL (eg. a reloaded /pro/domain)
             const requestedRoute = window.location.hash?.replace(/^#/, '');
             const billingRoute = requestedRoute?.startsWith('/pro') ? requestedRoute : '/pro';
 

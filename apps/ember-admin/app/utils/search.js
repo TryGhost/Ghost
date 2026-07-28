@@ -1,10 +1,8 @@
 export const GHOST_PRO_GROUP_NAME = 'Ghost(Pro)';
 
-// Static list of Ghost(Pro) billing pages/actions. These don't come from the
-// search-index API — they're indexed client-side and only shown when the
-// current user can access the billing app (see isSearchableAvailable).
-// Every entry also matches "ghost"/"pro" queries via the shared keywords
-// appended below, so searching the product name lists the whole group.
+// Static list of Ghost(Pro) billing pages/actions, indexed client-side rather
+// than fetched from the search-index API. Every entry shares the ghost/pro
+// keywords appended below so searching the product name lists the whole group.
 export const GHOST_PRO_SEARCH_ITEMS = [
     {
         id: 'start-subscription',

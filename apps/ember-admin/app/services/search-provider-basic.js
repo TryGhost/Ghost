@@ -71,7 +71,6 @@ export default class SearchProviderBasicService extends Service {
     }
 
     async _loadSearchable(searchable, content) {
-        // static searchables (eg. Ghost(Pro) pages) are indexed client-side
         if (searchable.staticItems) {
             const items = searchable.staticItems.map(
                 item => createSearchResult(searchable, item)

@@ -85,7 +85,6 @@ export default class SearchProviderFlexService extends Service {
     }
 
     async #loadSearchable(searchable) {
-        // static searchables (eg. Ghost(Pro) pages) are indexed client-side
         if (searchable.staticItems) {
             searchable.staticItems.forEach((item) => {
                 this.indexes[searchable.model].add(item);
