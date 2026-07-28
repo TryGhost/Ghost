@@ -386,14 +386,7 @@ class CommentsService {
         }
     }
 
-    /**
-     * @private
-     * The same member can author both the thread's parent comment and the comment being
-     * replied to — the parent notification above already emails them about this reply, so
-     * the in_reply_to notification would be a second, identical email. Only a published
-     * parent comment counts, because the parent notification is not sent otherwise.
-     * https://github.com/TryGhost/Ghost/issues/29501
-     */
+    /** @private */
     async #isDuplicateReplyNotification(comment) {
         if (!comment.get('parent_id')) {
             return false;
