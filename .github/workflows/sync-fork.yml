@@ -1,0 +1,121 @@
+name: Sync Fork
+
+# Fast-forwards this repo's `main` to TryGhost/Ghost's `main`.
+#
+# This is the manual equivalent of GitHub's "Sync fork" button, for copies of
+# Ghost that GitHub doesn't treat as forks — GitHub won't let you fork a public
+# repo privately, so those repos are hard copies with no upstream relationship
+# and no sync button.
+#
+# It only ever fast-forwards. If `main` has diverged from upstream — any commit
+# on `main` that upstream doesn't have — the run fails and tells you what to do,
+# rather than merging or rewriting anything. Fork-local work belongs on branches
+# other than `main`.
+#
+# Auth: pushing to `main` needs a token. GITHUB_TOKEN works, but pushes made with
+# it don't trigger workflows, so the fast-forwarded `main` gets no CI run. Set the
+# `SYNC_FORK_TOKEN` secret (a PAT or GitHub App token with `contents: write`) if
+# you want CI to run on the synced commits — it's used in preference to
+# GITHUB_TOKEN when present.
+#
+# If `main` is a protected branch, the token's identity needs permission to push
+# to it (bypass list / "Allow specified actors").
+
+on:
+  schedule:
+    # Daily at 05:37 UTC. Off the top of the hour to dodge GH Actions scheduler
+    # contention (see the same note in renovate.yml).
+    - cron: '37 5 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: sync-fork
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  UPSTREAM_REPO: https://github.com/TryGhost/Ghost.git
+
+jobs:
+  sync:
+    # Runs only in TryGhost-owned copies: never in upstream itself (nothing to
+    # sync from), never in real GitHub forks (which have the built-in sync), and
+    # never in someone else's org. `fork` is absent from some event payloads, so
+    # compare against `true` rather than negating.
+    if: >-
+      github.repository_owner == 'TryGhost'
+      && github.repository != 'TryGhost/Ghost'
+      && github.event.repository.fork != true
+    name: Fast-forward main to upstream
+    runs-on: ubuntu-slim
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+          # Full history — a shallow clone can't compute a merge base against
+          # upstream. Blobless keeps that cheap: this job only walks commits, it
+          # never reads file contents. Submodules are deliberately left
+          # uninitialised; a fast-forward only moves the gitlinks.
+          fetch-depth: 0
+          filter: blob:none
+          token: ${{ secrets.SYNC_FORK_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Fast-forward main
+        run: |
+          set -euo pipefail
+
+          git remote add upstream "$UPSTREAM_REPO"
+          git fetch --quiet upstream 'refs/heads/main:refs/remotes/upstream/main'
+
+          # Resolve explicitly against the remote-tracking ref: a bare `main`
+          # resolves to our *local* main, which would compare the fork to itself.
+          SHA=$(git rev-parse --verify 'refs/remotes/upstream/main^{commit}')
+
+          if [ "$(git rev-parse HEAD)" = "$SHA" ]; then
+            echo "main is already at upstream main (${SHA}); nothing to do."
+            exit 0
+          fi
+
+          # Strictly ahead: nothing to fast-forward, but those fork-local commits
+          # turn into a hard divergence failure below as soon as upstream moves.
+          if git merge-base --is-ancestor "$SHA" HEAD; then
+            AHEAD=$(git rev-list --count "$SHA"..HEAD)
+            echo "::warning::main is ${AHEAD} commit(s) ahead of upstream main (${SHA}) — fork-local commits belong on a branch other than main"
+            exit 0
+          fi
+
+          if ! git merge-base --is-ancestor HEAD "$SHA"; then
+            # Unrelated histories have no merge base, and `set -e` would abort
+            # here before the summary is written — fall back to listing all of
+            # `main` in that case.
+            if BASE=$(git merge-base HEAD "$SHA" 2>/dev/null); then
+              LOCAL_COMMITS="${BASE}..HEAD"
+            else
+              LOCAL_COMMITS="HEAD"
+            fi
+            {
+              echo "## ⚠️ Cannot fast-forward \`main\`"
+              echo
+              echo "\`main\` has diverged from upstream — it carries commits upstream doesn't have:"
+              echo
+              echo '```'
+              git log --oneline --no-decorate "$LOCAL_COMMITS"
+              echo '```'
+              echo
+              echo "This workflow only fast-forwards. Move that work onto a branch other than \`main\`, or reconcile it by hand."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::main has diverged from upstream — see job summary"
+            exit 1
+          fi
+
+          COUNT=$(git rev-list --count HEAD.."$SHA")
+
+          # No `--force`: git rejects a non-fast-forward push on its own, so this
+          # can't rewrite `main` even if the checks above are wrong.
+          git push origin "${SHA}:refs/heads/main"
+
+          echo "Fast-forwarded \`main\` to upstream \`${SHA}\` (${COUNT} commits)." >> "$GITHUB_STEP_SUMMARY"
