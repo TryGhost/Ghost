@@ -2,8 +2,6 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import {getSchedulerPollTime} from '../../../../../core/server/services/automations/scheduler-poll-time';
 
-const SITE_UUID = '11111111-0000-4000-8000-111111111111';
-
 const addSeconds = (date: Readonly<Date>, seconds: number): Date => new Date(date.getTime() + seconds * 1000);
 
 function* everyFiveSecondsOfJanuaryFirst(): Iterable<Date> {
