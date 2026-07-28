@@ -7,7 +7,6 @@ import {expandRouteSettings} from '../../../../../core/server/services/route-set
 import {parseRouteSettings} from '../../../../../core/server/services/route-settings/route-settings-parser';
 import {buildRouteSettings} from './route-settings-fixture';
 
-const validate = require('../../../../../core/server/services/route-settings/validate');
 const parseYaml = require('../../../../../core/server/services/route-settings/yaml-parser');
 
 // The bridge only reads structural fields — raw objects built inline have no
@@ -30,412 +29,240 @@ describe('activation-bridge', function () {
             });
         });
 
-        describe('behavioral equivalence with validate.js', function () {
-            it('matches validate.js for bare string template route', function () {
-                const raw = {
-                    routes: {'/about/': 'about'},
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for template route with content_type', function () {
-                const raw = {
-                    routes: {
-                        '/api/': {
-                            template: 'api',
-                            content_type: 'application/json'
-                        }
-                    },
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for channel route', function () {
-                const raw = {
-                    routes: {
-                        '/featured/': {
-                            controller: 'channel',
-                            filter: 'featured:true',
-                            template: 'featured'
-                        }
-                    },
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for channel route with rss disabled', function () {
-                const raw = {
-                    routes: {
-                        '/featured/': {
-                            controller: 'channel',
-                            filter: 'featured:true',
-                            rss: false
-                        }
-                    },
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for route with shortform data', function () {
-                const raw = {
-                    routes: {
-                        '/food/': {
-                            template: 'food',
-                            data: 'tag.food'
-                        }
-                    },
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for route with named shortform data', function () {
-                const raw = {
-                    routes: {
-                        '/food/': {
-                            template: 'food',
+        // Characterisation tests for the full expanded output. The expected
+        // values are the canonical expansions the legacy validate.js produced
+        // before it was retired — parsing + the bridge must keep matching them
+        // so routes_hash and router wiring stay byte-for-byte stable.
+        describe('produces the expected expanded output', function () {
+            const cases: Array<{name: string; raw: unknown; expected: object}> = [
+                {
+                    name: 'bare string template route',
+                    raw: {routes: {'/about/': 'about'}, collections: {}, taxonomies: {}},
+                    expected: {routes: {'/about/': {templates: ['about']}}, collections: {}, taxonomies: {}}
+                },
+                {
+                    name: 'template route with content_type',
+                    raw: {routes: {'/api/': {template: 'api', content_type: 'application/json'}}, collections: {}, taxonomies: {}},
+                    expected: {routes: {'/api/': {content_type: 'application/json', templates: ['api']}}, collections: {}, taxonomies: {}}
+                },
+                {
+                    name: 'channel route',
+                    raw: {routes: {'/featured/': {controller: 'channel', filter: 'featured:true', template: 'featured'}}, collections: {}, taxonomies: {}},
+                    expected: {routes: {'/featured/': {controller: 'channel', filter: 'featured:true', templates: ['featured']}}, collections: {}, taxonomies: {}}
+                },
+                {
+                    name: 'channel route with rss disabled',
+                    raw: {routes: {'/featured/': {controller: 'channel', filter: 'featured:true', rss: false}}, collections: {}, taxonomies: {}},
+                    expected: {routes: {'/featured/': {controller: 'channel', filter: 'featured:true', rss: false, templates: []}}, collections: {}, taxonomies: {}}
+                },
+                {
+                    name: 'route with shortform data',
+                    raw: {routes: {'/food/': {template: 'food', data: 'tag.food'}}, collections: {}, taxonomies: {}},
+                    expected: {
+                        routes: {'/food/': {
                             data: {
-                                recipe: 'tag.recipes',
-                                post: 'post.my-post'
-                            }
-                        }
-                    },
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for route with longform read data', function () {
-                const raw = {
-                    routes: {
-                        '/food/': {
-                            template: 'food',
-                            data: {
-                                people: {
-                                    resource: 'authors',
-                                    type: 'read',
-                                    slug: 'joe'
-                                }
-                            }
-                        }
-                    },
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for route with longform browse data', function () {
-                const raw = {
-                    routes: {
-                        '/food/': {
-                            template: 'food',
-                            data: {
-                                featured: {
-                                    resource: 'posts',
-                                    type: 'browse',
-                                    filter: 'featured:true',
-                                    limit: 3
-                                }
-                            }
-                        }
-                    },
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for collection with permalink', function () {
-                const raw = {
-                    routes: {},
-                    collections: {
-                        '/': {
-                            permalink: '/{slug}/',
-                            template: 'index'
-                        }
-                    },
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for collection with filter and data', function () {
-                const raw = {
-                    routes: {},
-                    collections: {
-                        '/podcast/': {
-                            permalink: '/podcast/{slug}/',
-                            filter: 'tag:podcast',
-                            template: 'podcast',
-                            data: 'tag.podcast'
-                        }
-                    },
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for taxonomies', function () {
-                const raw = {
-                    routes: {},
-                    collections: {},
-                    taxonomies: {
-                        tag: '/tag/{slug}/',
-                        author: '/author/{slug}/'
+                                query: {tag: {controller: 'tagsPublic', type: 'read', resource: 'tags', options: {slug: 'food', visibility: 'public'}}},
+                                router: {tags: [{slug: 'food', redirect: true}]}
+                            },
+                            templates: ['food']
+                        }},
+                        collections: {},
+                        taxonomies: {}
                     }
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for a full routes.yaml', function () {
-                const raw = {
-                    routes: {
-                        '/about/': 'about',
-                        '/food/': {
-                            template: 'food',
-                            data: 'tag.food'
-                        },
-                        '/featured/': {
-                            controller: 'channel',
-                            filter: 'featured:true',
-                            template: 'featured'
-                        }
-                    },
-                    collections: {
-                        '/podcast/': {
-                            permalink: '/podcast/{slug}/',
-                            filter: 'tag:podcast',
-                            template: 'podcast',
-                            data: 'tag.podcast'
-                        },
-                        '/': {
-                            permalink: '/{slug}/',
-                            template: 'index'
-                        }
-                    },
-                    taxonomies: {
-                        tag: '/tag/{slug}/',
-                        author: '/author/{slug}/'
+                },
+                {
+                    name: 'route with named shortform data',
+                    raw: {routes: {'/food/': {template: 'food', data: {recipe: 'tag.recipes', post: 'post.my-post'}}}, collections: {}, taxonomies: {}},
+                    expected: {
+                        routes: {'/food/': {
+                            data: {
+                                query: {
+                                    recipe: {controller: 'tagsPublic', type: 'read', resource: 'tags', options: {slug: 'recipes', visibility: 'public'}},
+                                    post: {controller: 'postsPublic', type: 'read', resource: 'posts', options: {slug: 'my-post'}}
+                                },
+                                router: {
+                                    tags: [{slug: 'recipes', redirect: true}],
+                                    posts: [{slug: 'my-post', redirect: true}]
+                                }
+                            },
+                            templates: ['food']
+                        }},
+                        collections: {},
+                        taxonomies: {}
                     }
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for channel route with explicit rss: true', function () {
-                const raw = {
-                    routes: {
-                        '/featured/': {
-                            controller: 'channel',
-                            filter: 'featured:true',
-                            rss: true
-                        }
-                    },
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for channel route with rss omitted', function () {
-                const raw = {
-                    routes: {
-                        '/featured/': {
-                            controller: 'channel',
-                            filter: 'featured:true'
-                        }
-                    },
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for template route with array templates', function () {
-                const raw = {
-                    routes: {'/about/': {template: ['about', 'default']}},
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for longform read data with redirect: false', function () {
-                const raw = {
-                    routes: {
-                        '/food/': {
-                            template: 'food',
+                },
+                {
+                    name: 'route with longform read data',
+                    raw: {routes: {'/food/': {template: 'food', data: {people: {resource: 'authors', type: 'read', slug: 'joe'}}}}, collections: {}, taxonomies: {}},
+                    expected: {
+                        routes: {'/food/': {
                             data: {
-                                people: {
-                                    resource: 'authors',
-                                    type: 'read',
-                                    slug: 'joe',
-                                    redirect: false
-                                }
-                            }
-                        }
-                    },
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for longform browse data with limit: all', function () {
-                const raw = {
-                    routes: {
-                        '/food/': {
-                            template: 'food',
+                                query: {people: {options: {slug: 'joe'}, type: 'read', resource: 'authors', controller: 'authorsPublic'}},
+                                router: {authors: [{slug: 'joe', redirect: true}]}
+                            },
+                            templates: ['food']
+                        }},
+                        collections: {},
+                        taxonomies: {}
+                    }
+                },
+                {
+                    name: 'route with longform browse data',
+                    raw: {routes: {'/food/': {template: 'food', data: {featured: {resource: 'posts', type: 'browse', filter: 'featured:true', limit: 3}}}}, collections: {}, taxonomies: {}},
+                    expected: {
+                        routes: {'/food/': {
                             data: {
-                                featured: {
-                                    resource: 'posts',
-                                    type: 'browse',
-                                    limit: 'all'
-                                }
-                            }
-                        }
-                    },
-                    collections: {},
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js when two data entries resolve to the same router key', function () {
-                const raw = {
-                    routes: {
-                        '/food/': {
-                            template: 'food',
+                                query: {featured: {options: {limit: 3, filter: 'featured:true'}, type: 'browse', resource: 'posts', controller: 'postsPublic'}},
+                                router: {posts: [{redirect: true}]}
+                            },
+                            templates: ['food']
+                        }},
+                        collections: {},
+                        taxonomies: {}
+                    }
+                },
+                {
+                    name: 'collection with permalink',
+                    raw: {routes: {}, collections: {'/': {permalink: '/{slug}/', template: 'index'}}, taxonomies: {}},
+                    expected: {routes: {}, collections: {'/': {permalink: '/:slug/', templates: ['index']}}, taxonomies: {}}
+                },
+                {
+                    name: 'collection with filter and data',
+                    raw: {routes: {}, collections: {'/podcast/': {permalink: '/podcast/{slug}/', filter: 'tag:podcast', template: 'podcast', data: 'tag.podcast'}}, taxonomies: {}},
+                    expected: {
+                        routes: {},
+                        collections: {'/podcast/': {
+                            permalink: '/podcast/:slug/',
+                            filter: 'tag:podcast',
                             data: {
-                                one: 'post.first',
-                                two: 'post.second'
-                            }
-                        }
+                                query: {tag: {controller: 'tagsPublic', type: 'read', resource: 'tags', options: {slug: 'podcast', visibility: 'public'}}},
+                                router: {tags: [{slug: 'podcast', redirect: true}]}
+                            },
+                            templates: ['podcast']
+                        }},
+                        taxonomies: {}
+                    }
+                },
+                {
+                    name: 'taxonomies',
+                    raw: {routes: {}, collections: {}, taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}},
+                    expected: {routes: {}, collections: {}, taxonomies: {tag: '/tag/:slug/', author: '/author/:slug/'}}
+                },
+                {
+                    name: 'a full routes.yaml',
+                    raw: {
+                        routes: {
+                            '/about/': 'about',
+                            '/food/': {template: 'food', data: 'tag.food'},
+                            '/featured/': {controller: 'channel', filter: 'featured:true', template: 'featured'}
+                        },
+                        collections: {
+                            '/podcast/': {permalink: '/podcast/{slug}/', filter: 'tag:podcast', template: 'podcast', data: 'tag.podcast'},
+                            '/': {permalink: '/{slug}/', template: 'index'}
+                        },
+                        taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
                     },
-                    collections: {},
-                    taxonomies: {}
-                };
+                    expected: {
+                        routes: {
+                            '/about/': {templates: ['about']},
+                            '/food/': {
+                                data: {
+                                    query: {tag: {controller: 'tagsPublic', type: 'read', resource: 'tags', options: {slug: 'food', visibility: 'public'}}},
+                                    router: {tags: [{slug: 'food', redirect: true}]}
+                                },
+                                templates: ['food']
+                            },
+                            '/featured/': {controller: 'channel', filter: 'featured:true', templates: ['featured']}
+                        },
+                        collections: {
+                            '/podcast/': {
+                                permalink: '/podcast/:slug/',
+                                filter: 'tag:podcast',
+                                data: {
+                                    query: {tag: {controller: 'tagsPublic', type: 'read', resource: 'tags', options: {slug: 'podcast', visibility: 'public'}}},
+                                    router: {tags: [{slug: 'podcast', redirect: true}]}
+                                },
+                                templates: ['podcast']
+                            },
+                            '/': {permalink: '/:slug/', templates: ['index']}
+                        },
+                        taxonomies: {tag: '/tag/:slug/', author: '/author/:slug/'}
+                    }
+                },
+                {
+                    name: 'channel route with explicit rss: true',
+                    raw: {routes: {'/featured/': {controller: 'channel', filter: 'featured:true', rss: true}}, collections: {}, taxonomies: {}},
+                    expected: {routes: {'/featured/': {controller: 'channel', filter: 'featured:true', rss: true, templates: []}}, collections: {}, taxonomies: {}}
+                },
+                {
+                    name: 'channel route with rss omitted',
+                    raw: {routes: {'/featured/': {controller: 'channel', filter: 'featured:true'}}, collections: {}, taxonomies: {}},
+                    expected: {routes: {'/featured/': {controller: 'channel', filter: 'featured:true', templates: []}}, collections: {}, taxonomies: {}}
+                },
+                {
+                    name: 'template route with array templates',
+                    raw: {routes: {'/about/': {template: ['about', 'default']}}, collections: {}, taxonomies: {}},
+                    expected: {routes: {'/about/': {templates: ['about', 'default']}}, collections: {}, taxonomies: {}}
+                },
+                {
+                    name: 'longform read data with redirect: false',
+                    raw: {routes: {'/food/': {template: 'food', data: {people: {resource: 'authors', type: 'read', slug: 'joe', redirect: false}}}}, collections: {}, taxonomies: {}},
+                    expected: {
+                        routes: {'/food/': {
+                            data: {
+                                query: {people: {options: {slug: 'joe'}, type: 'read', resource: 'authors', controller: 'authorsPublic'}},
+                                router: {authors: [{redirect: false, slug: 'joe'}]}
+                            },
+                            templates: ['food']
+                        }},
+                        collections: {},
+                        taxonomies: {}
+                    }
+                },
+                {
+                    name: 'longform browse data with limit: all',
+                    raw: {routes: {'/food/': {template: 'food', data: {featured: {resource: 'posts', type: 'browse', limit: 'all'}}}}, collections: {}, taxonomies: {}},
+                    expected: {
+                        routes: {'/food/': {
+                            data: {
+                                query: {featured: {options: {limit: 'all'}, type: 'browse', resource: 'posts', controller: 'postsPublic'}},
+                                router: {posts: [{redirect: true}]}
+                            },
+                            templates: ['food']
+                        }},
+                        collections: {},
+                        taxonomies: {}
+                    }
+                },
+                {
+                    name: 'two data entries resolve to the same router key',
+                    raw: {routes: {'/food/': {template: 'food', data: {one: 'post.first', two: 'post.second'}}}, collections: {}, taxonomies: {}},
+                    expected: {
+                        routes: {'/food/': {
+                            data: {
+                                query: {
+                                    one: {controller: 'postsPublic', type: 'read', resource: 'posts', options: {slug: 'first'}},
+                                    two: {controller: 'postsPublic', type: 'read', resource: 'posts', options: {slug: 'second'}}
+                                },
+                                router: {posts: [{slug: 'first', redirect: true}, {slug: 'second', redirect: true}]}
+                            },
+                            templates: ['food']
+                        }},
+                        collections: {},
+                        taxonomies: {}
+                    }
+                },
+                {
+                    name: 'collection with rss: false',
+                    raw: {routes: {}, collections: {'/': {permalink: '/{slug}/', template: 'index', rss: false}}, taxonomies: {}},
+                    expected: {routes: {}, collections: {'/': {permalink: '/:slug/', rss: false, templates: ['index']}}, taxonomies: {}}
+                }
+            ];
 
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
-            });
-
-            it('matches validate.js for collection with rss: false', function () {
-                const raw = {
-                    routes: {},
-                    collections: {
-                        '/': {
-                            permalink: '/{slug}/',
-                            template: 'index',
-                            rss: false
-                        }
-                    },
-                    taxonomies: {}
-                };
-
-                const legacy = validate(structuredClone(raw));
-                const domain = parse(raw);
-                const expanded = expandRouteSettings(domain);
-
-                assert.deepEqual(expanded, legacy);
+            cases.forEach(({name, raw, expected}) => {
+                it(name, function () {
+                    assert.deepEqual(expandRouteSettings(parse(raw)), expected);
+                });
             });
         });
 
@@ -572,8 +399,8 @@ describe('activation-bridge', function () {
 
     describe('hash continuity', function () {
         // routes_hash is md5(JSON.stringify(...)) over the expanded settings —
-        // the bridge must keep producing the known default hash from
-        // route-settings.js so it survives the switch away from validate.js.
+        // parsing + the bridge must keep producing the known default hash so a
+        // site that never customised its routes keeps the same stored value.
         const DEFAULT_ROUTES_HASH = '3d180d52c663d173a6be791ef411ed01';
 
         const defaultRoutesYaml = fs.readFileSync(
@@ -587,13 +414,7 @@ describe('activation-bridge', function () {
                 .digest('hex');
         }
 
-        it('legacy validate.js produces the known default routes hash', function () {
-            const legacy = validate(parseYaml(defaultRoutesYaml));
-
-            assert.equal(hash(legacy), DEFAULT_ROUTES_HASH);
-        });
-
-        it('bridge output serializes to the same hash as validate.js for default routes', function () {
+        it('bridge output serializes to the known default routes hash', function () {
             const domain = parseRouteSettings(parseYaml(defaultRoutesYaml), defaultRoutesYaml);
             const expanded = expandRouteSettings(domain);
 

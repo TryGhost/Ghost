@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const _ = require('lodash');
-const yaml = require('js-yaml');
 const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
@@ -12,7 +11,9 @@ const defaultSettings = require('../../../../../core/server/data/schema/default-
 // Routes are yaml so we can require the file directly
 const routeSettings = require('../../../../../core/server/services/route-settings');
 routeSettings.init();
-const validateRouteSettings = require('../../../../../core/server/services/route-settings/validate');
+const {expandRouteSettings} = require('../../../../../core/server/services/route-settings/activation-bridge');
+const {parseRouteSettings} = require('../../../../../core/server/services/route-settings/route-settings-parser');
+const parseYaml = require('../../../../../core/server/services/route-settings/yaml-parser');
 
 /**
  * @NOTE
@@ -44,7 +45,8 @@ describe('DB version integrity', function () {
     // and the values above will need updating as confirmation
     it('should not change without fixing this test', function () {
         const routesPath = path.join(config.get('paths').defaultRouteSettings, 'default-routes.yaml');
-        const defaultRoutes = validateRouteSettings(yaml.load(fs.readFileSync(routesPath, 'utf-8')));
+        const defaultRoutesSource = fs.readFileSync(routesPath, 'utf-8');
+        const defaultRoutes = expandRouteSettings(parseRouteSettings(parseYaml(defaultRoutesSource), defaultRoutesSource));
 
         const tablesNoValidation = _.cloneDeep(schema);
         let schemaHash;
