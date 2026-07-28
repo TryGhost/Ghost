@@ -33,3 +33,76 @@ export const runProgress = (run: AutomationRun): string => {
     }
     return `${pct}% complete`;
 };
+
+// A short "where are they now" line for under a member's name, derived from the
+// run's steps (replaces the raw progress %):
+//   exited_early → the exit reason ("Unsubscribed", "Upgraded to paid")
+//   waiting      → "Waiting for email N" (the next email after the current wait)
+//   sending      → "Sending email N" (a send_email step is the current frontier)
+//   otherwise    → the most recent completed step ("Opened email 1", "Waited 3 days")
+// `actions` is the automation's ordered action list, used to number the emails.
+export const latestActivity = (run: AutomationRun, actions: ReadonlyArray<{id: string; type: string}>): string => {
+    if (run.status === 'exited_early') {
+        return run.exit_reason ?? 'Exited early';
+    }
+
+    // 1-based position of each send_email action → "email 1", "email 2", ...
+    const emailNumber = new Map<string, number>();
+    let sent = 0;
+    actions.forEach((action) => {
+        if (action.type === 'send_email') {
+            emailNumber.set(action.id, sent += 1);
+        }
+    });
+
+    const current = run.steps.find(step => step.state === 'current');
+    if (current) {
+        const currentIndex = actions.findIndex(action => action.id === current.action_id);
+        const currentAction = currentIndex >= 0 ? actions[currentIndex] : undefined;
+        if (currentAction?.type === 'wait') {
+            const nextEmail = actions.slice(currentIndex + 1).find(action => action.type === 'send_email');
+            const num = nextEmail && emailNumber.get(nextEmail.id);
+            return num ? `Waiting for email ${num}` : 'Waiting';
+        }
+        const num = emailNumber.get(current.action_id);
+        if (num) {
+            return `Sending email ${num}`;
+        }
+    }
+
+    // Fall back to the last thing that actually happened.
+    const lastDone = [...run.steps].reverse().find(step => step.state === 'done' && !!step.detail);
+    if (lastDone?.detail) {
+        const verb = lastDone.detail.split(' · ')[0].split(' — ')[0]; // "Opened", "Delivered", "Waited 3 days"
+        const num = emailNumber.get(lastDone.action_id);
+        return num ? `${verb} email ${num}` : verb;
+    }
+
+    return run.status === 'completed' ? 'Completed' : 'Enrolled';
+};
+
+// Deterministic "now" so the relative "started" times stay stable across
+// reviews — same fixed clock the shared automations list uses.
+const NOW_MS = new Date('2026-07-21T09:12:00Z').getTime();
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// Compact "started" label: 2m / 2h / 2d ago, then "Jul 2" once it's a week out.
+export const startedLabel = (iso: string): string => {
+    const then = new Date(iso);
+    const mins = Math.round((NOW_MS - then.getTime()) / 60_000);
+    if (mins < 1) {
+        return 'Just now';
+    }
+    if (mins < 60) {
+        return `${mins}m ago`;
+    }
+    const hours = Math.round(mins / 60);
+    if (hours < 24) {
+        return `${hours}h ago`;
+    }
+    const days = Math.round(hours / 24);
+    if (days < 7) {
+        return `${days}d ago`;
+    }
+    return `${MONTHS[then.getUTCMonth()]} ${then.getUTCDate()}`;
+};

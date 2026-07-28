@@ -1,10 +1,10 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {Avatar, BarChartLoadingIndicator, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Navbar, NavbarActions, NavbarNavigation, PageMenu, PageMenuItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {BarChartLoadingIndicator, InputGroup, InputGroupAddon, InputGroupInput, MetricValue, Navbar, NavbarActions, NavbarNavigation, PageMenu, PageMenuItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Box, Inline, Stack} from '@tryghost/shade/primitives';
 import {GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import type {AutomationScenario, RunStatus} from '@/automations/proto/shared/mock';
-import {runProgress} from '@/automations/proto/shared/member-runs';
+import {latestActivity, startedLabel} from '@/automations/proto/shared/member-runs';
 import {StatusPill} from '@/automations/proto/shared/status-pill';
 import {toAreaData} from '@/automations/proto/shared/chart';
 
@@ -62,16 +62,16 @@ const RunsChartCardSkeleton: React.FC = () => (
 const RunRowSkeleton: React.FC = () => (
     <TableRow aria-hidden="true" className="hover:bg-transparent">
         <TableCell className="min-w-0 px-4 py-3">
-            <div className="flex min-w-0 items-center gap-3">
-                <Skeleton className="size-8 min-w-8 rounded-full" />
-                <div className="min-w-0 flex-1">
-                    <Skeleton className="mb-1 h-4 w-32 max-w-full" />
-                    <Skeleton className="h-3 w-24 max-w-full" />
-                </div>
+            <div className="min-w-0">
+                <Skeleton className="mb-1 h-4 w-32 max-w-full" />
+                <Skeleton className="h-3 w-24 max-w-full" />
             </div>
         </TableCell>
+        <TableCell className="w-24 px-4 py-3">
+            <Skeleton className="h-4 w-10" />
+        </TableCell>
         <TableCell className="px-4 py-3 text-right">
-            <Skeleton className="ml-auto h-5 w-20 rounded-full" />
+            <Skeleton className="ml-auto h-5 w-20 rounded-sm" />
         </TableCell>
     </TableRow>
 );
@@ -236,11 +236,15 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
                         </Select>
                     </Inline>
 
-                    <Table data-testid="surface-runs-table">
+                    {/* table-fixed so the Started/Status columns keep their set
+                        widths no matter how the labels change between filters —
+                        only the flexible Member column reflows. */}
+                    <Table className="table-fixed" data-testid="surface-runs-table">
                         <TableHeader>
                             <TableRow className="hover:bg-transparent">
-                                <TableHead className="px-4">Member</TableHead>
-                                <TableHead className="px-4 text-right">Status</TableHead>
+                                <TableHead className="px-4 text-base">Member</TableHead>
+                                <TableHead className="w-24 px-4 text-base">Started</TableHead>
+                                <TableHead className="w-24 px-4 text-right text-base">Status</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -254,7 +258,7 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
                             )}
                             {!isLoading && visible.length === 0 && (
                                 <TableRow className="hover:bg-transparent">
-                                    <TableCell className="py-6 text-center text-sm text-muted-foreground" colSpan={2}>No members match.</TableCell>
+                                    <TableCell className="py-6 text-center text-base text-muted-foreground" colSpan={3}>No members match.</TableCell>
                                 </TableRow>
                             )}
                             {!isLoading && visible.map((run) => {
@@ -263,18 +267,16 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
                                     <TableRow
                                         key={run.id}
                                         aria-selected={isSelected}
-                                        className={`cursor-pointer ${isSelected ? 'bg-muted' : 'hover:bg-table-row-hover'}`}
+                                        className={`cursor-pointer ${isSelected ? 'bg-muted/60' : 'hover:bg-table-row-hover'}`}
                                         onClick={() => onSelectMember(run.id)}
                                     >
                                         <TableCell className="min-w-0 px-4 py-3">
-                                            <div className="flex min-w-0 items-center gap-3">
-                                                <Avatar className="size-8 min-w-8" email={run.member.email} name={run.member.name} />
-                                                <div className="min-w-0">
-                                                    <span className={`block truncate text-md ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>
-                                                    <span className="block truncate text-muted-foreground">{runProgress(run)}</span>
-                                                </div>
+                                            <div className="min-w-0">
+                                                <span className={`block truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>
+                                                <span className="block truncate text-muted-foreground">{latestActivity(run, scenario.automation.actions)}</span>
                                             </div>
                                         </TableCell>
+                                        <TableCell className="w-24 px-4 py-3 text-base text-muted-foreground">{startedLabel(run.enrolled_at)}</TableCell>
                                         <TableCell className="px-4 py-3 text-right"><StatusPill status={run.status} /></TableCell>
                                     </TableRow>
                                 );

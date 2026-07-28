@@ -5,6 +5,7 @@ import {GhAreaChart} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import type {AutomationRun, AutomationScenario} from '@/automations/proto/shared/mock';
 import {toAreaData} from '@/automations/proto/shared/chart';
+import {startedLabel} from '@/automations/proto/shared/member-runs';
 
 // Flyout content for the float concept's rail — adapted from the surface
 // concept's SurfaceAnalyticsPane (analytics-pane.tsx), which docks both of
@@ -125,32 +126,6 @@ const runStatusLabel = (run: AutomationRun): string => {
         return hash % 3 === 0 ? 'Upgraded' : 'Unsubscribed';
     }
     return 'Running';
-};
-
-// Deterministic "now" so the relative "started" times stay stable across
-// reviews — same fixed clock the shared automations list uses.
-const NOW_MS = new Date('2026-07-21T09:12:00Z').getTime();
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-// Compact "started" label: 2m / 2h / 2d ago, then "Jul 2" once it's a week out.
-const startedLabel = (iso: string): string => {
-    const then = new Date(iso);
-    const mins = Math.round((NOW_MS - then.getTime()) / 60_000);
-    if (mins < 1) {
-        return 'Just now';
-    }
-    if (mins < 60) {
-        return `${mins}m ago`;
-    }
-    const hours = Math.round(mins / 60);
-    if (hours < 24) {
-        return `${hours}h ago`;
-    }
-    const days = Math.round(hours / 24);
-    if (days < 7) {
-        return `${days}d ago`;
-    }
-    return `${MONTHS[then.getUTCMonth()]} ${then.getUTCDate()}`;
 };
 
 // Progress ring — only in-progress runs use it (their fill is the live
