@@ -1,20 +1,44 @@
+import {Fragment} from "react";
 import {Banner, Button} from "@tryghost/shade/components"
+import {useBrowseConfig} from "@tryghost/admin-x-framework/api/config";
 
 import ghostProLogo from "@/assets/images/ghost-pro-logo.png";
 import ghostProLogoDark from "@/assets/images/ghost-pro-logo-dark.png";
 
+const DAYS_PLACEHOLDER = "{{days}}";
+
+const DEFAULT_TITLE = "Unlock every feature";
+const DEFAULT_MESSAGE = `Choose a plan to access the full power of Ghost right away, you have ${DAYS_PLACEHOLDER} free trial remaining.`;
+const DEFAULT_UPGRADE_URL = "#/pro/billing/plans";
+const DEFAULT_LOGO_ALT = "Ghost Pro";
+
 function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
+    const { data: config } = useBrowseConfig();
+    const bannerConfig = config?.config.hostSettings?.billing?.upgradeBanner;
+
+    const messageParts = (bannerConfig?.message || DEFAULT_MESSAGE).split(DAYS_PLACEHOLDER);
+
+    const logo = bannerConfig?.logo || ghostProLogo;
+    const logoDark = bannerConfig?.logoDark || bannerConfig?.logo || ghostProLogoDark;
+    // A host's own logo is not the Ghost(Pro) logo, so fall back to decorative rather than mislabelling it
+    const logoAlt = bannerConfig?.logoAlt ?? ((bannerConfig?.logo || bannerConfig?.logoDark) ? "" : DEFAULT_LOGO_ALT);
+
     return (
         <Banner variant='gradient' size='lg' className="mx-2 flex flex-col items-stretch">
             <div>
-                <img src={ghostProLogo} alt="Ghost Pro" className="max-h-[33px] dark:hidden" />
-                <img src={ghostProLogoDark} alt="Ghost Pro" className="hidden max-h-[33px] dark:block" />
+                <img src={logo} alt={logoAlt} className="max-h-[33px] dark:hidden" />
+                <img src={logoDark} alt={logoAlt} className="hidden max-h-[33px] dark:block" />
             </div>
-            <div className="mt-3 text-base font-semibold">Unlock every feature</div>
+            <div className="mt-3 text-base font-semibold">{bannerConfig?.title || DEFAULT_TITLE}</div>
             <div className="mt-2 mb-4 text-sm text-gray-700">
-                Choose a plan to access the full power of Ghost right away, you have <span className="font-semibold text-foreground">{trialDaysRemaining} days</span> free trial remaining.
+                {messageParts.map((part, index) => (
+                    <Fragment key={index}>
+                        {index > 0 && <span className="font-semibold text-foreground">{trialDaysRemaining} days</span>}
+                        {part}
+                    </Fragment>
+                ))}
             </div>
-            <Button asChild><a href="#/pro/billing/plans">Upgrade now</a></Button>
+            <Button asChild><a href={bannerConfig?.upgradeUrl || DEFAULT_UPGRADE_URL}>Upgrade now</a></Button>
         </Banner>
     )
 }
