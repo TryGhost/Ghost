@@ -76,6 +76,15 @@ const RunRowSkeleton: React.FC = () => (
     </TableRow>
 );
 
+// Surface uses its own run-status wording (Running / Stopped) across the metric
+// tiles, filter, and badges. Kept local so the dashboard's shared labels are
+// unaffected.
+const STATUS_LABEL: Record<RunStatus, string> = {
+    in_progress: 'Running',
+    completed: 'Completed',
+    exited_early: 'Stopped'
+};
+
 type FilterKey = 'all' | RunStatus;
 
 interface SurfaceAnalyticsPaneProps {
@@ -149,7 +158,10 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
                 </NavbarNavigation>
                 <NavbarActions className="mt-0">
                     <Select value={range} onValueChange={setRange}>
-                        <SelectTrigger className="w-40">
+                        {/* Leading calendar; the SelectTrigger's built-in trailing chevron
+                            (its last svg child) is hidden since there's no prop for it. */}
+                        <SelectTrigger className="w-36 justify-start gap-2 [&>svg:last-child]:hidden">
+                            <LucideIcon.Calendar className="size-4 text-muted-foreground" />
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -199,9 +211,9 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
                             </>
                         ) : (
                             <>
-                                <MetricTile dot="bg-blue" label="In progress" value={metrics.in_progress} />
-                                <MetricTile dot="bg-green" label="Completed" value={metrics.completed} />
-                                <MetricTile dot="bg-orange" label="Exited early" value={metrics.exited_early} />
+                                <MetricTile dot="bg-blue" label={STATUS_LABEL.in_progress} value={metrics.in_progress} />
+                                <MetricTile dot="bg-green" label={STATUS_LABEL.completed} value={metrics.completed} />
+                                <MetricTile dot="bg-orange" label={STATUS_LABEL.exited_early} value={metrics.exited_early} />
                             </>
                         )}
                     </div>
@@ -212,11 +224,15 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
             {tab === 'runs' && (
                 <div className="mt-4 flex flex-col gap-4">
                     <Inline align="center" gap="sm">
-                        <InputGroup className="min-w-0 flex-1" data-disabled={isLoading || undefined}>
+                        {/* h-(--control-height) + inner !h-[34px] follows the members page's
+                            search box, so this lines up with the Select (also --control-height,
+                            32px) instead of the InputGroup's taller h-9 default. */}
+                        <InputGroup className="h-(--control-height) min-w-0 flex-1" data-disabled={isLoading || undefined}>
                             <InputGroupAddon>
                                 <LucideIcon.Search />
                             </InputGroupAddon>
                             <InputGroupInput
+                                className="!h-[34px]"
                                 disabled={isLoading}
                                 placeholder="Search members…"
                                 value={query}
@@ -228,10 +244,10 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All</SelectItem>
-                                <SelectItem value="in_progress">In progress</SelectItem>
-                                <SelectItem value="completed">Completed</SelectItem>
-                                <SelectItem value="exited_early">Exited early</SelectItem>
+                                <SelectItem value="all">All statuses</SelectItem>
+                                <SelectItem value="in_progress">{STATUS_LABEL.in_progress}</SelectItem>
+                                <SelectItem value="completed">{STATUS_LABEL.completed}</SelectItem>
+                                <SelectItem value="exited_early">{STATUS_LABEL.exited_early}</SelectItem>
                             </SelectContent>
                         </Select>
                     </Inline>
@@ -276,8 +292,8 @@ export const SurfaceAnalyticsPane: React.FC<SurfaceAnalyticsPaneProps> = ({scena
                                                 <span className="block truncate text-muted-foreground">{latestActivity(run, scenario.automation.actions)}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="w-24 px-4 py-3 text-base text-muted-foreground">{startedLabel(run.enrolled_at)}</TableCell>
-                                        <TableCell className="px-4 py-3 text-right"><StatusPill status={run.status} /></TableCell>
+                                        <TableCell className="w-24 px-4 py-3 text-base">{startedLabel(run.enrolled_at)}</TableCell>
+                                        <TableCell className="px-4 py-3 text-right"><StatusPill label={STATUS_LABEL[run.status]} status={run.status} /></TableCell>
                                     </TableRow>
                                 );
                             })}
