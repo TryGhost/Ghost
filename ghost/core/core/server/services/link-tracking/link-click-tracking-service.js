@@ -233,6 +233,20 @@ class LinkClickTrackingService {
         return url;
     }
 
+    /**
+     * Add first-party tracking to a URL in an automation email
+     * @param {URL} url
+     * @param {string} automationActionRevisionId
+     * @param {string} memberUuid
+     * @return {Promise<URL>}
+     */
+    async addAutomationTrackingToUrl(url, automationActionRevisionId, memberUuid) {
+        const redirect = await this.#linkRedirectService.getOrAddAutomationRedirect(automationActionRevisionId, url);
+        const trackedUrl = new URL(redirect.from.href);
+        trackedUrl.searchParams.set('m', memberUuid);
+        return trackedUrl;
+    }
+
     subscribe() {
         this.#DomainEvents.subscribe(RedirectEvent, async (event) => {
             const uuid = event.data.url.searchParams.get('m');
