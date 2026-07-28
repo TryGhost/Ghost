@@ -1,8 +1,10 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const nock = require('nock');
+const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const markdownToLexical = require('../../utils/fixtures/data-generator').markdownToLexical;
 const jobsService = require('../../../core/server/services/mentions-jobs');
+const urlService = require('../../../core/server/services/url');
 
 let agent;
 let mentionUrl = new URL('https://www.otherghostsite.com/');
@@ -60,6 +62,7 @@ describe('Mentions Service', function () {
     });
 
     afterEach(async function () {
+        sinon.restore();
         mockManager.restore();
     });
 
@@ -265,6 +268,48 @@ describe('Mentions Service', function () {
 
                 assert.equal(mentionMockTwo.isDone(), true);
                 assert.equal(endpointMockTwo.isDone(), true);
+            });
+
+            it('Deleted published post sends with a resolvable url, not a thin resource', async function () {
+                // Deleting a published post fires `unpublished` from onDestroyed,
+                // by which point bookshelf has cleared the model's attributes.
+                // The webmention job must still resolve the post's url — regression
+                // for the thin-resource error on that path.
+                const publishedPost = {status: 'published', ...mentionsPost};
+                const res = await agent
+                    .post('posts/')
+                    .body({posts: [publishedPost]})
+                    .expectStatus(201);
+
+                await jobsService.allSettled();
+                await DomainEvents.allSettled();
+                assert.equal(endpointMock.isDone(), true);
+
+                nock.cleanAll();
+                addMentionMocks();
+
+                // Capture the resource the real webmention job hands the URL
+                // service, so we can prove it isn't the attribute-less husk.
+                const slug = res.body.posts[0].slug;
+                const getUrlForResource = sinon.stub(urlService.facade, 'getUrlForResource')
+                    .callsFake(() => `http://127.0.0.1:2369/${slug}/`);
+
+                const postId = res.body.posts[0].id;
+                await agent.delete(`posts/${postId}/`)
+                    .expectStatus(204);
+
+                await jobsService.allSettled();
+                await DomainEvents.allSettled();
+
+                // the webmention for the removed content went out...
+                assert.equal(endpointMock.isDone(), true);
+                // ...and the resource that produced its url carried the post's
+                // own columns (recovered from the destroyed model's previous
+                // state), not a relations-only husk.
+                sinon.assert.called(getUrlForResource);
+                const resource = getUrlForResource.getCall(0).args[0];
+                assert.equal(resource.status, 'published');
+                assert.equal(resource.slug, slug);
             });
 
             it('Newly published page (page.published)', async function () {

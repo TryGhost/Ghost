@@ -1,10 +1,12 @@
+import LimitModal from '../../../limit-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
-import {Form, LimitModal, Modal, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {numberWithCommas} from '../../../../utils/helpers';
+import {SettingsModal} from '@tryghost/shade/patterns';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -87,15 +89,15 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         return null;
     }
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             updateRoute(returnRoute);
         }}
         backDropClick={false}
-        okColor='black'
         okDisabled={saveState === 'saving'}
         okLabel='Create'
         okLoading={saveState === 'saving'}
+        okVariant='default'
         size='sm'
         testId='add-newsletter-modal'
         title='Create newsletter'
@@ -105,40 +107,30 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             }
         }}
     >
-        <Form
-            marginBottom={false}
-            marginTop
-        >
-            <TextField
-                autoFocus={true}
-                error={Boolean(errors.name)}
-                hint={errors.name}
-                maxLength={191}
-                placeholder='Weekly roundup'
-                title='Name'
-                value={formState.name}
-                onChange={e => updateForm(state => ({...state, name: e.target.value}))}
-                onKeyDown={() => clearError('name')}
-            />
-            <TextArea
-                maxLength={2000}
-                title='Description'
-                value={formState.description}
-                onChange={e => updateForm(state => ({...state, description: e.target.value}))}
-            />
-            <Toggle
-                checked={formState.optInExistingSubscribers}
-                direction='rtl'
-                hint={formState.optInExistingSubscribers ?
-                    `This newsletter will be available to all members. Your ${subscriberCount === undefined ? '' : numberWithCommas(subscriberCount)} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
-                    'The newsletter will be available to all new members. Existing members won’t be subscribed, but may visit their account area to opt-in to future emails.'
-                }
-                label='Opt-in existing subscribers'
-                labelStyle='heading'
-                onChange={e => updateForm(state => ({...state, optInExistingSubscribers: e.target.checked}))}
-            />
-        </Form>
-    </Modal>;
+        <FieldGroup className='mt-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <Field data-invalid={Boolean(errors.name) || undefined}>
+                <FieldLabel htmlFor='newsletter-name'>Name</FieldLabel>
+                <Input aria-invalid={Boolean(errors.name) || undefined} id='newsletter-name' maxLength={191} placeholder='Weekly roundup' value={formState.name} autoFocus onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
+                {errors.name && <FieldError>{errors.name}</FieldError>}
+            </Field>
+            <Field>
+                <FieldLabel htmlFor='newsletter-description'>Description</FieldLabel>
+                <Textarea className='border-transparent bg-muted' id='newsletter-description' maxLength={2000} value={formState.description} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
+            </Field>
+            <Field orientation='horizontal'>
+                <FieldContent>
+                    <FieldLabel htmlFor='opt-in-existing-subscribers'>Opt-in existing subscribers</FieldLabel>
+                    <FieldDescription>
+                        {formState.optInExistingSubscribers ?
+                            `This newsletter will be available to all members. Your ${subscriberCount === undefined ? '' : formatNumber(subscriberCount)} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
+                            'The newsletter will be available to all new members. Existing members won’t be subscribed, but may visit their account area to opt-in to future emails.'
+                        }
+                    </FieldDescription>
+                </FieldContent>
+                <Switch checked={formState.optInExistingSubscribers} id='opt-in-existing-subscribers' onCheckedChange={checked => updateForm(state => ({...state, optInExistingSubscribers: checked}))} />
+            </Field>
+        </FieldGroup>
+    </SettingsModal>;
 };
 
 export default NiceModal.create(AddNewsletterModal);

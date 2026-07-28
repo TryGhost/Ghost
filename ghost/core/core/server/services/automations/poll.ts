@@ -183,6 +183,7 @@ const processStep = async ({
                 break;
             }
             memberWelcomeEmailService.init();
+            const trackClicks = Boolean(settingsCache.get('email_track_clicks'));
             const trackOpens = Boolean(settingsCache.get('email_track_opens'));
             const sendResult = await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
@@ -209,6 +210,7 @@ const processStep = async ({
                     memberId: step.member_id,
                     memberName: member.get('name'),
                     memberUuid: member.get('uuid'),
+                    trackClicks,
                     trackOpens: trackOpensForRecipient
                 });
             } catch (err) {
@@ -221,17 +223,19 @@ const processStep = async ({
                     }
                 }, `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`);
             }
-            try {
-                await scheduleAutomationEmailAnalyticsJob();
-            } catch (err) {
-                logging.error({
-                    err,
-                    system: {
-                        event: 'automations.poll.analytics_scheduling_failed',
-                        member_id: step.member_id,
-                        step_id: step.id
-                    }
-                }, `[AUTOMATIONS] Failed to schedule email analytics job for step ${step.id}`);
+            if (mailgunMessageId) {
+                try {
+                    await scheduleAutomationEmailAnalyticsJob();
+                } catch (err) {
+                    logging.error({
+                        err,
+                        system: {
+                            event: 'automations.poll.analytics_scheduling_failed',
+                            member_id: step.member_id,
+                            step_id: step.id
+                        }
+                    }, `[AUTOMATIONS] Failed to schedule email analytics job for step ${step.id}`);
+                }
             }
             break;
         }

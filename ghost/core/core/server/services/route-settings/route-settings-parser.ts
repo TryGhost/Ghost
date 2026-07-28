@@ -11,22 +11,15 @@ import type {
     TemplateRoute
 } from '@tryghost/adapter-base-route-settings';
 import {z} from 'zod';
-import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
+import type {PathSegment} from './validation-errors';
+import {describeValue, formatLocation, humanList, toValidationError, validationError} from './validation-errors';
 
 const messages = {
-    validationError: 'The following definition "{at}" is invalid: {reason}',
-    badDataError: 'Please wrap the data definition into a custom name.',
+    badDataError: '"{key}" is a reserved key. Please wrap the data definition into a custom name.',
     badDataHelp: 'Example:\n data:\n  my-tag:\n    resource: tags\n    ...\n',
-    authorDeprecatedError: 'Please choose a different name. We recommend not using author.'
+    authorDeprecatedError: '"author" is reserved. Please choose a different name. We recommend not using author.'
 };
-
-function validationError(at: string, reason: string, help?: string): errors.ValidationError {
-    return new errors.ValidationError({
-        message: tpl(messages.validationError, {at, reason}),
-        ...(help ? {help} : {})
-    });
-}
 
 const VALID_SHORTFORM_RESOURCES = ['tag', 'page', 'post', 'author'] as const;
 const VALID_LONGFORM_RESOURCES = ['tags', 'posts', 'pages', 'authors'] as const;
@@ -40,21 +33,40 @@ const OptionalBooleanField = z.boolean().nullish().transform(v => v ?? undefined
 const LimitField = z.union([z.number(), z.literal('all'), z.string().regex(/^\d+$/).transform(Number)])
     .nullish().transform(v => v ?? undefined);
 
-const DataShortFormSchema = z.string().superRefine((v, ctx) => {
-    if (!/^[a-zA-Z0-9_]+\.[a-zA-Z0-9_-]+$/.test(v)) {
-        ctx.addIssue({code: 'custom', message: tpl(messages.validationError, {at: v, reason: 'Incorrect Format. Please use e.g. tag.recipes'})});
-        return;
+const SHORTFORM_HELP = 'e.g. data: tag.recipes';
+
+/**
+ * Shorthand data definitions look like `tag.recipes` — resource, dot, slug.
+ *
+ * `%s` stands in for the slug: on channel routes and collections, fetch-data
+ * substitutes it with the request's `slug` param at query time, which is how a
+ * wildcard route such as `/author/:slug/` serves a different author per request.
+ * There is no static slug that could replace it, so rejecting it would break
+ * those routes.
+ */
+function validateDataShortForm(value: string, path: PathSegment[]): void {
+    if (!/^[a-zA-Z0-9_]+\.(?:%s|[a-zA-Z0-9_-]+)$/.test(value)) {
+        throw validationError(
+            formatLocation(path),
+            `"${value}" is not a valid data shorthand. Please use resource.slug, e.g. tag.recipes.`,
+            SHORTFORM_HELP
+        );
     }
-    const resource = v.split('.')[0];
+
+    const resource = value.split('.')[0];
     if (!(VALID_SHORTFORM_RESOURCES as readonly string[]).includes(resource)) {
-        ctx.addIssue({code: 'custom', message: tpl(messages.validationError, {at: v, reason: `${resource} not supported. Please use ${VALID_SHORTFORM_RESOURCES.join(', ')}.`})});
+        throw validationError(
+            formatLocation(path),
+            `resource "${resource}" is not supported. Please use ${humanList(VALID_SHORTFORM_RESOURCES)}.`,
+            SHORTFORM_HELP
+        );
     }
-});
+}
 
 const DataReadEntrySchema = z.object({
     type: z.literal('read'),
     resource: z.enum(VALID_LONGFORM_RESOURCES),
-    slug: z.string({message: 'slug is required for read data entries.'}).min(1, {message: 'slug is required for read data entries.'}),
+    slug: z.string().min(1),
     redirect: z.boolean().optional(),
     include: z.string().optional(),
     visibility: z.string().optional(),
@@ -76,34 +88,40 @@ const DataBrowseEntrySchema = z.object({
 
 const DataLongFormEntrySchema = z.discriminatedUnion('type', [DataReadEntrySchema, DataBrowseEntrySchema]);
 
-function parseDataEntry(key: string, value: unknown): DataEntry {
+const DATA_ENTRY_HELP = 'e.g.\n data:\n  my-tag:\n    resource: tags\n    type: read\n    slug: recipes\n';
+
+function parseDataEntry(value: unknown, path: PathSegment[]): DataEntry {
     if (typeof value === 'string') {
-        const result = DataShortFormSchema.safeParse(value);
-        if (!result.success) {
-            throw toValidationError(result.error);
-        }
+        validateDataShortForm(value, path);
         return value as DataShortForm;
     }
 
-    if (typeof value === 'object' && value !== null) {
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         const result = DataLongFormEntrySchema.safeParse(value);
         if (!result.success) {
             const issue = result.error.issues[0];
-            if (issue.message.includes('discriminator')) {
-                const typeVal = (value as Record<string, unknown>).type;
-                if (typeVal === undefined) {
-                    throw validationError(JSON.stringify(value), 'type is required.');
+            const at = formatLocation(path);
+            const record = value as Record<string, unknown>;
+
+            // A failed `type` discriminator surfaces as a union issue on that
+            // key — matched on the code rather than the wording, which zod
+            // is free to change.
+            if (issue.code === 'invalid_union' && issue.path[0] === 'type') {
+                if (record.type === undefined) {
+                    throw validationError(at, 'type is required. Please use read or browse.', DATA_ENTRY_HELP);
                 }
-                throw validationError(JSON.stringify(value), `${typeVal} not supported. Please use read, browse.`);
+                throw validationError(at, `type "${record.type}" is not supported. Please use read or browse.`, DATA_ENTRY_HELP);
             }
-            if (issue.path?.includes('resource')) {
-                const resVal = (value as Record<string, unknown>).resource;
-                if (resVal === undefined) {
-                    throw validationError(JSON.stringify(value), 'resource is required.');
+            if (issue.path.includes('resource')) {
+                if (record.resource === undefined) {
+                    throw validationError(at, `resource is required. Please use ${humanList(VALID_LONGFORM_RESOURCES)}.`, DATA_ENTRY_HELP);
                 }
-                throw validationError(JSON.stringify(value), `${resVal} not supported. Please use ${VALID_LONGFORM_RESOURCES.join(', ')}.`);
+                throw validationError(at, `resource "${record.resource}" is not supported. Please use ${humanList(VALID_LONGFORM_RESOURCES)}.`, DATA_ENTRY_HELP);
             }
-            throw toValidationError(result.error);
+            if (issue.path.includes('slug') && !record.slug) {
+                throw validationError(at, 'slug is required for read data entries.', DATA_ENTRY_HELP);
+            }
+            throw toValidationError(result.error, path, value);
         }
         // Fields set to an explicitly empty value parse to undefined — drop the
         // keys so "unset" means absent in the domain model and serialized output.
@@ -116,41 +134,41 @@ function parseDataEntry(key: string, value: unknown): DataEntry {
         return result.data;
     }
 
-    throw validationError(key, 'Incorrect Format. Please use e.g. tag.recipes');
+    throw validationError(
+        formatLocation(path),
+        `a data entry must be a shorthand like tag.recipes, or a map with type and resource, but ${describeValue(value)} was provided.`,
+        DATA_ENTRY_HELP
+    );
 }
 
-function parseRouteData(data: unknown): RouteData {
+function parseRouteData(data: unknown, path: PathSegment[]): RouteData {
     if (typeof data === 'string') {
-        const result = DataShortFormSchema.safeParse(data);
-        if (!result.success) {
-            throw toValidationError(result.error);
-        }
+        validateDataShortForm(data, path);
         return data as DataShortForm;
     }
 
-    if (typeof data !== 'object' || data === null) {
-        throw validationError(String(data), 'Incorrect Format. Please use e.g. tag.recipes');
+    if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+        throw validationError(
+            formatLocation(path),
+            `data must be a shorthand like tag.recipes, or a map of named data entries, but ${describeValue(data)} was provided.`,
+            DATA_ENTRY_HELP
+        );
     }
 
     const record = data as Record<string, unknown>;
 
     for (const key of Object.keys(record)) {
         if (RESERVED_DATA_KEYS.includes(key)) {
-            throw new errors.ValidationError({
-                message: tpl(messages.badDataError),
-                help: messages.badDataHelp
-            });
+            throw validationError(formatLocation([...path, key]), tpl(messages.badDataError, {key}), messages.badDataHelp);
         }
         if (key === 'author') {
-            throw new errors.ValidationError({
-                message: tpl(messages.authorDeprecatedError)
-            });
+            throw validationError(formatLocation([...path, key]), messages.authorDeprecatedError);
         }
     }
 
     const parsed: Record<string, DataEntry> = {};
     for (const [key, value] of Object.entries(record)) {
-        parsed[key] = parseDataEntry(key, value);
+        parsed[key] = parseDataEntry(value, [...path, key]);
     }
     return parsed;
 }
@@ -163,7 +181,9 @@ const TemplateField = z.union([z.string(), z.array(z.string())]).nullish().defau
         return Array.isArray(v) ? v : [v];
     });
 
-const RouteObjectSchema = z.object({
+// The schemas are built per route/collection so that errors raised while
+// parsing nested `data` can name the exact path they came from.
+const routeObjectSchema = (path: PathSegment[]) => z.object({
     controller: z.literal('channel').optional(),
     template: TemplateField,
     data: z.unknown().optional(),
@@ -174,7 +194,7 @@ const RouteObjectSchema = z.object({
     rss: OptionalBooleanField
 }).transform((val): Omit<Route, 'path'> => {
     const templates = val.template;
-    const data = val.data !== undefined ? parseRouteData(val.data) : undefined;
+    const data = val.data !== undefined ? parseRouteData(val.data, [...path, 'data']) : undefined;
 
     if (val.controller === 'channel') {
         const route: Omit<ChannelRoute, 'path'> = {
@@ -215,8 +235,8 @@ const RouteObjectSchema = z.object({
     return route;
 });
 
-const RawCollectionValueSchema = z.object({
-    permalink: z.string({message: 'Please define a permalink route.'}).optional(),
+const collectionValueSchema = (path: PathSegment[]) => z.object({
+    permalink: z.string().optional(),
     template: TemplateField,
     data: z.unknown().optional(),
     filter: OptionalStringField,
@@ -224,7 +244,7 @@ const RawCollectionValueSchema = z.object({
     limit: LimitField,
     rss: OptionalBooleanField
 }).transform((val): Omit<CollectionConfig, 'path'> => {
-    const data = val.data !== undefined ? parseRouteData(val.data) : undefined;
+    const data = val.data !== undefined ? parseRouteData(val.data, [...path, 'data']) : undefined;
     const collection: Omit<CollectionConfig, 'path'> = {
         permalink: val.permalink ?? '',
         templates: val.template
@@ -249,15 +269,35 @@ const RawCollectionValueSchema = z.object({
 
 const RouteSettingsSchema = z.object({
     routes: z.record(z.string(), z.unknown()).nullable().optional().default({}),
-    collections: z.record(z.string(), RawCollectionValueSchema).nullable().optional().default({}),
+    collections: z.record(z.string(), z.unknown()).nullable().optional().default({}),
     taxonomies: z.record(z.string(), z.string()).nullable().optional().default({})
 });
 
-function toValidationError(error: z.ZodError): errors.ValidationError {
-    const issue = error.issues[0];
-    return new errors.ValidationError({
-        message: issue.message
-    });
+/**
+ * Every path in routes.yaml — route paths, collection paths, permalinks and
+ * taxonomy permalinks — follows the same rules, so they share one message set.
+ *
+ * `allowParamNotation` is set for route and collection keys, which are mounted on
+ * Express verbatim: nothing rewrites `{param}` to `:param` for them the way it
+ * does for permalinks and taxonomies. So `/author/:slug/` is a working wildcard
+ * route on live sites and `/author/{slug}/` would be a dead literal path —
+ * rejecting :param there would break the former, and the suggested rewrite would
+ * silently produce the latter.
+ */
+function validatePath(value: string, path: PathSegment[], example: string, {allowParamNotation = false}: {allowParamNotation?: boolean} = {}): void {
+    const at = formatLocation(path);
+
+    if (!value.startsWith('/')) {
+        throw validationError(at, `"${value}" is missing a leading slash. Please use e.g. ${example}.`);
+    }
+    if (!value.endsWith('/')) {
+        throw validationError(at, `"${value}" is missing a trailing slash. Please use e.g. ${example}.`);
+    }
+    if (!allowParamNotation && /\/:\w+/.test(value)) {
+        // Suggest the same path in the notation Ghost expects, rather than a
+        // generic example the author then has to translate.
+        throw validationError(at, `"${value}" uses the :param notation. Please use "${value.replace(/\/:(\w+)/g, '/{$1}')}".`);
+    }
 }
 
 export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSettings {
@@ -265,7 +305,7 @@ export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSetti
 
     const parsed = RouteSettingsSchema.safeParse(obj);
     if (!parsed.success) {
-        throw toValidationError(parsed.error);
+        throw toValidationError(parsed.error, [], obj);
     }
 
     const {routes: rawRoutes, collections: rawCollections, taxonomies: rawTaxonomies} = parsed.data;
@@ -273,18 +313,11 @@ export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSetti
     const routes: Route[] = [];
     if (rawRoutes) {
         for (const [path, value] of Object.entries(rawRoutes)) {
-            if (!path.startsWith('/')) {
-                throw validationError(path, 'A leading slash is required.');
-            }
-            if (!path.endsWith('/')) {
-                throw validationError(path, 'A trailing slash is required.');
-            }
-            if (/\/:\w+/.test(path)) {
-                throw validationError(path, 'Please use the following notation e.g. /{slug}/.');
-            }
+            const routeLocation: PathSegment[] = ['routes', path];
+            validatePath(path, routeLocation, '/about/', {allowParamNotation: true});
 
             if (value === null || value === undefined) {
-                throw validationError(path, 'Please define a template.', 'e.g. /about/: about');
+                throw validationError(formatLocation(routeLocation), 'Please define a template, e.g. /about/: about.');
             }
 
             if (typeof value === 'string') {
@@ -292,14 +325,14 @@ export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSetti
                 continue;
             }
 
-            const routeResult = RouteObjectSchema.safeParse(value);
+            const routeResult = routeObjectSchema(routeLocation).safeParse(value);
             if (!routeResult.success) {
-                throw toValidationError(routeResult.error);
+                throw toValidationError(routeResult.error, routeLocation, value);
             }
 
             const route = routeResult.data;
             if (route.type === 'template' && (!route.templates || route.templates.length === 0) && !route.data && !(route as Omit<TemplateRoute, 'path'>).contentType) {
-                throw validationError(path, 'Please define a template.', 'e.g. /about/: about');
+                throw validationError(formatLocation(routeLocation), 'Please define a template, e.g. /about/: about.');
             }
 
             routes.push({...route, path} as Route);
@@ -309,49 +342,35 @@ export function parseRouteSettings(raw: unknown, yamlSource: string): RouteSetti
     const collections: CollectionConfig[] = [];
     if (rawCollections) {
         for (const [path, value] of Object.entries(rawCollections)) {
-            if (!path.startsWith('/')) {
-                throw validationError(path, 'A leading slash is required.');
+            const collectionLocation: PathSegment[] = ['collections', path];
+            validatePath(path, collectionLocation, '/blog/', {allowParamNotation: true});
+
+            const collectionResult = collectionValueSchema(collectionLocation).safeParse(value);
+            if (!collectionResult.success) {
+                throw toValidationError(collectionResult.error, collectionLocation, value);
             }
-            if (!path.endsWith('/')) {
-                throw validationError(path, 'A trailing slash is required.');
+
+            const collection = collectionResult.data;
+            if (!collection.permalink) {
+                throw validationError(formatLocation(collectionLocation), 'Please define a permalink route, e.g. permalink: /{slug}/.');
             }
-            if (/\/:\w+/.test(path)) {
-                throw validationError(path, 'Please use the following notation e.g. /{slug}/.');
-            }
-            if (!value.permalink) {
-                throw validationError(path, 'Please define a permalink route.', 'e.g. permalink: /{slug}/');
-            }
-            if (!value.permalink.startsWith('/')) {
-                throw validationError(value.permalink, 'A leading slash is required.');
-            }
-            if (!value.permalink.endsWith('/')) {
-                throw validationError(value.permalink, 'A trailing slash is required.');
-            }
-            if (/\/:\w+/.test(value.permalink)) {
-                throw validationError(value.permalink, 'Please use the following notation e.g. /{slug}/.');
-            }
-            collections.push({...value, path});
+            validatePath(collection.permalink, [...collectionLocation, 'permalink'], '/{slug}/');
+
+            collections.push({...collection, path});
         }
     }
 
     const taxonomies: TaxonomyConfig = {};
     if (rawTaxonomies) {
         for (const [key, value] of Object.entries(rawTaxonomies)) {
+            const taxonomyLocation: PathSegment[] = ['taxonomies', key];
             if (!['tag', 'author'].includes(key)) {
-                throw validationError(key, 'Unknown taxonomy.');
+                throw validationError(formatLocation(taxonomyLocation), 'Unknown taxonomy. Please use tag or author.');
             }
             if (!value) {
-                throw validationError(key, 'Please define a taxonomy permalink route.', 'e.g. tag: /tag/{slug}/');
+                throw validationError(formatLocation(taxonomyLocation), `Please define a taxonomy permalink route, e.g. ${key}: /${key}/{slug}/.`);
             }
-            if (!value.startsWith('/')) {
-                throw validationError(value, 'A leading slash is required.');
-            }
-            if (!value.endsWith('/')) {
-                throw validationError(value, 'A trailing slash is required.');
-            }
-            if (/\/:\w+/.test(value)) {
-                throw validationError(value, 'Please use the following notation e.g. /{slug}/.');
-            }
+            validatePath(value, taxonomyLocation, `/${key}/{slug}/`);
             if (key === 'tag') {
                 taxonomies.tag = value;
             }

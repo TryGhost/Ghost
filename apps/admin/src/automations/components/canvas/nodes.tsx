@@ -1,6 +1,7 @@
 import '@xyflow/react/dist/style.css';
 import React, {useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
+import {useEmailTrackingSettings} from '@/automations/hooks/use-email-tracking-settings';
 import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {Handle, Position} from '@xyflow/react';
 import type {Node, NodeProps} from '@xyflow/react';
@@ -25,10 +26,6 @@ export type StepNodeDisplayData = {
   isPlaceholderValue?: boolean;
   showStatsFooter?: boolean;
   stats?: AutomationEmailStats;
-  // Whether opens/clicks tracking is on (from Settings → Analytics); drives the
-  // footer "Off" treatment.
-  opensTracked?: boolean;
-  clicksTracked?: boolean;
   value?: string;
   warningMessage?: string;
 };
@@ -172,10 +169,7 @@ const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
     );
 };
 
-// A single footer metric. Tracked → the value; not tracked → a muted, inert "Off"
-// that keeps the column in place (distinct from formatRate's "--" = no data yet).
-// "Off" is non-interactive here; the explanation lives in the side panel.
-const FooterMetric: React.FC<{label: string; tracked: boolean; children: React.ReactNode}> = ({label, tracked, children}) => (
+const FooterMetric: React.FC<{label: string; tracked?: boolean; children: React.ReactNode}> = ({label, tracked = true, children}) => (
     <div className='flex flex-col text-left'>
         <span className={cn('text-xs', tracked ? 'text-text-secondary' : 'text-muted-foreground')}>{label}</span>
         {tracked
@@ -184,17 +178,17 @@ const FooterMetric: React.FC<{label: string; tracked: boolean; children: React.R
     </div>
 );
 
-const EmailStepStatsFooter: React.FC<{
-    stats: AutomationEmailStats;
-    opensTracked: boolean;
-    clicksTracked: boolean;
-}> = ({stats, opensTracked, clicksTracked}) => (
-    <div className='mt-3 grid w-full grid-cols-3 gap-3 border-t border-border-default pt-3'>
-        <FooterMetric label='Sent' tracked={true}>{formatNumber(stats.email_sent_count)}</FooterMetric>
-        <FooterMetric label='Opened' tracked={opensTracked}>{formatRate(stats.opened_rate)}</FooterMetric>
-        <FooterMetric label='Clicked' tracked={clicksTracked}>{formatRate(stats.clicked_rate)}</FooterMetric>
-    </div>
-);
+const EmailStepStatsFooter: React.FC<{stats: AutomationEmailStats}> = ({stats}) => {
+    const {emailTrackOpens, emailTrackClicks} = useEmailTrackingSettings();
+
+    return (
+        <div className='mt-3 grid w-full grid-cols-3 gap-3 border-t border-border-default pt-3'>
+            <FooterMetric label='Sent'>{formatNumber(stats.email_sent_count)}</FooterMetric>
+            <FooterMetric label='Opened' tracked={emailTrackOpens}>{formatRate(stats.opened_rate)}</FooterMetric>
+            <FooterMetric label='Clicked' tracked={emailTrackClicks}>{formatRate(stats.clicked_rate)}</FooterMetric>
+        </div>
+    );
+};
 
 const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
     <NodeShell data={data}>
@@ -205,7 +199,7 @@ const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
 TriggerNode.displayName = 'TriggerNode';
 
 const StepNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
-    <NodeShell data={data} footer={data.showStatsFooter && data.stats ? <EmailStepStatsFooter clicksTracked={data.clicksTracked ?? true} opensTracked={data.opensTracked ?? true} stats={data.stats} /> : undefined}>
+    <NodeShell data={data} footer={data.showStatsFooter && data.stats ? <EmailStepStatsFooter stats={data.stats} /> : undefined}>
         <HiddenHandle position={Position.Top} type='target' />
         <StepNodeContent data={data} />
         <HiddenHandle position={Position.Bottom} type='source' />

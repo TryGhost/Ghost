@@ -1,14 +1,18 @@
 import AdvancedThemeSettings from './theme/advanced-theme-settings';
+import ConfirmationModal from '../../confirmation-modal';
 import InvalidThemeModal, {type FatalErrors} from './theme/invalid-theme-modal';
+import LimitModal from '../../limit-modal';
 import NiceModal, {type NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/official-themes';
 import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/theme-installed-modal';
 import ThemePreview from './theme/theme-preview';
-import {Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
+import {Button, Dropzone, LoadingIndicator, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type InstalledTheme, type Theme, type ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type OfficialTheme} from '../../providers/settings-app-provider';
+import {PageHeader, SettingsModal} from '@tryghost/shade/patterns';
+import {toast} from 'sonner';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -34,17 +38,16 @@ const UploadModalContent: React.FC<{onUpload: (file: File) => void}> = ({onUploa
     const modal = useModal();
 
     return <div className="-mb-6">
-        <FileUpload
-            id="theme-upload"
-            onUpload={(file) => {
+        <Dropzone
+            accept={{'application/zip': ['.zip']}}
+            inputId="theme-upload"
+            onDropAccepted={([file]) => {
                 modal.remove();
                 onUpload(file);
             }}
         >
-            <div className="cursor-pointer bg-grey-50 p-10 text-center dark:bg-grey-950">
             Click to select or drag & drop zip file
-            </div>
-        </FileUpload>
+        </Dropzone>
     </div>;
 };
 
@@ -112,7 +115,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 okLabel: 'Overwrite',
                 cancelLabel: 'Cancel',
                 okRunningLabel: 'Overwriting...',
-                okColor: 'red',
+                okVariant: 'destructive',
                 onOk: async (confirmModal) => {
                     setUploading(true);
 
@@ -213,16 +216,12 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
     const left =
     <div className='hidden md:!visible md:!block'>
-        <TabView
-            border={false}
-            selectedTab={currentTab}
-            tabs={[
-                {id: 'official', title: 'Official themes'},
-                {id: 'installed', title: 'Installed'}
-            ]}
-            onTabChange={(id: string) => {
-                setCurrentTab(id);
-            }} />
+        <Tabs value={currentTab} variant='button-sm' onValueChange={setCurrentTab}>
+            <TabsList>
+                <TabsTrigger value='official'>Official themes</TabsTrigger>
+                <TabsTrigger value='installed'>Installed</TabsTrigger>
+            </TabsList>
+        </Tabs>
     </div>;
 
     const handleUpload = () => {
@@ -250,27 +249,30 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const right =
         <div className='flex items-center gap-14'>
             <div className='flex items-center gap-3'>
-                <Button label='Close' onClick={() => {
+                <Button className='font-semibold' type='button' variant='ghost' onClick={() => {
                     modal.remove();
                     onClose();
-                }} />
-                <Button color='black' label='Upload theme' loading={isUploading} onClick={handleUpload} />
+                }}>Close</Button>
+                <Button disabled={isUploading} type='button' onClick={handleUpload}>{isUploading && <LoadingIndicator size='sm' />}Upload theme</Button>
             </div>
         </div>;
 
     return (<>
-        <PageHeader containerClassName='bg-white dark:bg-black' left={left} right={right} />
+        <PageHeader blurredBackground={false} className='sticky -top-px z-50 h-22 min-h-[92px] bg-background p-8' sticky={false}>
+            <PageHeader.Left className='flex-auto'>
+                {left}
+            </PageHeader.Left>
+            <PageHeader.Actions className='flex-auto justify-end'>
+                {right}
+            </PageHeader.Actions>
+        </PageHeader>
         <div className='px-[8vmin] md:hidden'>
-            <TabView
-                border={false}
-                selectedTab={currentTab}
-                tabs={[
-                    {id: 'official', title: 'Official themes'},
-                    {id: 'installed', title: 'Installed'}
-                ]}
-                onTabChange={(id: string) => {
-                    setCurrentTab(id);
-                }} />
+            <Tabs value={currentTab} variant='button-sm' onValueChange={setCurrentTab}>
+                <TabsList>
+                    <TabsTrigger value='official'>Official themes</TabsTrigger>
+                    <TabsTrigger value='installed'>Installed</TabsTrigger>
+                </TabsList>
+            </Tabs>
         </div>
     </>);
 };
@@ -364,7 +366,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     okLabel: 'Install',
                     cancelLabel: 'Cancel',
                     okRunningLabel: 'Installing...',
-                    okColor: 'black',
+                    okVariant: 'default',
                     onOk: async (confirmModal) => {
                         let data: ThemesInstallResponseType | undefined;
                         setInstalledFromMarketplace(true);
@@ -377,11 +379,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                             data = await installTheme(themeRef);
                             if (data?.themes[0]) {
                                 await activateTheme(data.themes[0].name);
-                                showToast({
-                                    title: 'Theme activated',
-                                    type: 'success',
-                                    message: <div><span className='capitalize'>{data.themes[0].name}</span> is now your active theme</div>
-                                });
+                                toast.success('Theme activated', {description: <div><span className='capitalize'>{data.themes[0].name}</span> is now your active theme</div>});
                             }
                             confirmModal?.remove();
                             updateRoute('');
@@ -431,7 +429,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                         okLabel: 'Overwrite',
                         okRunningLabel: 'Installing...',
                         cancelLabel: 'Cancel',
-                        okColor: 'red',
+                        okVariant: 'destructive',
                         onOk: async (confirmModal) => {
                             confirmModal?.remove();
                             await performInstallation();
@@ -511,7 +509,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     }
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('');
             }}
@@ -562,7 +560,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     }
                 </div>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 };
 

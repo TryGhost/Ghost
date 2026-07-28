@@ -4,9 +4,10 @@ import {cp, readFile, writeFile, readdir, stat, rm, mkdir} from 'node:fs/promise
 import {existsSync} from 'node:fs';
 import {join, dirname, relative, resolve, sep} from 'node:path';
 
-const ROOT = join(import.meta.dirname, '..');
-const TEMPLATE_DIR = join(ROOT, 'packages', '_template');
-const PACKAGES_DIR = join(ROOT, 'packages');
+import {ROOT_DIR} from './lib/constants.js';
+
+const TEMPLATE_DIR = join(ROOT_DIR, 'packages', '_template');
+const PACKAGES_DIR = join(ROOT_DIR, 'packages');
 
 const USAGE = `Usage: pnpm create-package <name> [options]
 
@@ -52,9 +53,9 @@ if (!/^[a-z0-9][a-z0-9-]*$/.test(name)) {
     fail(`Invalid package name "${name}". Use lowercase kebab-case, e.g. "email-utils" (no @scope — it becomes @tryghost/${name}).`);
 }
 
-const targetDir = values.dir ? resolve(ROOT, values.dir) : join(PACKAGES_DIR, name);
+const targetDir = values.dir ? resolve(ROOT_DIR, values.dir) : join(PACKAGES_DIR, name);
 // Path relative to the repo root, always forward-slashed for package.json.
-const packageDir = relative(ROOT, targetDir).split(sep).join('/');
+const packageDir = relative(ROOT_DIR, targetDir).split(sep).join('/');
 if (packageDir.startsWith('../') || packageDir === '' || packageDir === '..') {
     fail(`--dir must resolve to a location inside the repository. Got: ${targetDir}`);
 }

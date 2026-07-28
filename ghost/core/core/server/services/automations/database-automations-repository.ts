@@ -5,6 +5,9 @@ import ObjectId from 'bson-objectid';
 import {dequal} from 'dequal';
 import {type Knex} from 'knex';
 import moment from 'moment';
+// @ts-expect-error This module currently lacks type definitions.
+import lexicalLib from '../../lib/lexical';
+import urlUtils from '../../../shared/url-utils';
 import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import type {
     AutomatedEmailEvents,
@@ -65,6 +68,7 @@ interface ActionRow {
 
 type ActionStatsRow = {
     action_id: string;
+    email_clicked_count: number | null;
     email_sent_count: number | null;
     email_opened_count: number | null;
 };
@@ -226,6 +230,12 @@ export function createDatabaseAutomationsRepository({
 
         async recordEmailSent(options): Promise<void> {
             await knex.transaction(async (trx) => {
+                await trx('automation_action_revisions')
+                    .where('id', options.automationActionRevisionId)
+                    .update({
+                        email_sent_count: trx.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1])
+                    });
+
                 const now = toDatabaseDate(new Date());
                 await trx('automated_email_recipients').insert({
                     id: ObjectId().toHexString(),
@@ -235,16 +245,11 @@ export function createDatabaseAutomationsRepository({
                     member_name: options.memberName,
                     automation_action_revision_id: options.automationActionRevisionId,
                     ...(options.mailgunMessageId ? {mailgun_message_id: options.mailgunMessageId} : {}),
+                    track_clicks: options.trackClicks,
                     track_opens: options.trackOpens,
                     created_at: now,
                     updated_at: now
                 });
-
-                await trx('automation_action_revisions')
-                    .where('id', options.automationActionRevisionId)
-                    .update({
-                        email_sent_count: trx.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1])
-                    });
             });
         },
 
@@ -290,7 +295,11 @@ export function createDatabaseAutomationsRepository({
                     }
                 }
 
-                for (const [id, opens] of newOpensPerRevision) {
+                // Keep lock acquisition order consistent across concurrent transactions to avoid deadlocks.
+                const revisions = [...newOpensPerRevision.entries()]
+                    .sort(([left], [right]) => left.localeCompare(right));
+
+                for (const [id, opens] of revisions) {
                     await trx('automation_action_revisions')
                         .where({id})
                         .update({
@@ -566,6 +575,7 @@ async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<
         .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
         .innerJoin('automation_action_revisions as revision', 'revision.id', 'step.automation_action_revision_id')
         .innerJoin('automation_actions as action', 'action.id', 'revision.action_id')
+        .whereIn('step.id', candidateIds)
         .where('step.locked_by', lockId)
         .orderBy([
             'step.ready_at',
@@ -581,13 +591,14 @@ async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<
 
 async function findNextPendingReadyAt(trx: Knex.Transaction, staleLockCutoff: Readonly<Date>): Promise<Date | null> {
     const row = await trx('automation_run_steps')
-        .min({next_ready_at: 'ready_at'})
+        .select({next_ready_at: 'ready_at'})
         .where('status', 'pending')
         .where((builder) => {
             builder
                 .whereNull('locked_by')
                 .orWhere('locked_at', '<', toDatabaseDate(staleLockCutoff));
         })
+        .orderBy('ready_at')
         .first();
     return row?.next_ready_at ? new Date(row.next_ready_at) : null;
 }
@@ -913,7 +924,7 @@ async function updateAutomation(trx: Knex.Transaction, automation: AutomationRow
 async function replaceAutomationGraph(trx: Knex.Transaction, automationId: string, submittedActions: AutomationAction[], edges: AutomationEdge[]): Promise<void> {
     const existingActions = await loadAutomationActionRows(trx, automationId);
     const existingActionById = new Map(existingActions.map(action => [action.id, action]));
-    const actions = await resolveEmailDesignSettingIds(trx, submittedActions);
+    const actions = (await resolveEmailDesignSettingIds(trx, submittedActions)).map(formatActionOnWrite);
     const submittedActionIds = new Set(actions.map(action => action.id));
     const actionIdsWithOwners = await loadActionIdsWithOwners(trx, [...submittedActionIds]);
     const latestRevisionByActionId = new Map((await loadLatestActionRevisions(trx, [...submittedActionIds])).map(revision => [revision.action_id, revision]));
@@ -972,6 +983,23 @@ async function replaceAutomationGraph(trx: Knex.Transaction, automationId: strin
     await deleteAutomationEdges(trx, automationId);
 
     await insertActionEdges(trx, edges);
+}
+
+function formatActionOnWrite(action: AutomationAction): AutomationAction {
+    if (action.type !== 'send_email') {
+        return action;
+    }
+
+    return {
+        ...action,
+        data: {
+            ...action.data,
+            email_lexical: urlUtils.lexicalToTransformReady(action.data.email_lexical, {
+                nodes: lexicalLib.nodes,
+                transformMap: lexicalLib.urlTransformMap
+            })
+        }
+    };
 }
 
 async function resolveEmailDesignSettingIds(trx: Knex.Transaction, actions: ReadonlyArray<AutomationAction>): Promise<AutomationAction[]> {
@@ -1257,6 +1285,7 @@ async function loadActionStats(
     const rows: ActionStatsRow[] = await trx('automation_action_revisions')
         .select('action_id')
         .sum({
+            email_clicked_count: 'email_clicked_count',
             email_sent_count: 'email_sent_count',
             email_opened_count: 'email_opened_count'
         })
@@ -1303,7 +1332,7 @@ function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null):
             type: 'send_email',
             data: {
                 email_subject: requireValue(row, 'email_subject'),
-                email_lexical: requireValue(row, 'email_lexical'),
+                email_lexical: urlUtils.transformReadyToAbsolute(requireValue(row, 'email_lexical')),
                 email_design_setting_id: requireValue(row, 'email_design_setting_id')
             },
             stats: stats ?? EMPTY_EMAIL_STATS
@@ -1312,6 +1341,7 @@ function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null):
 }
 
 const EMPTY_EMAIL_STATS: AutomationEmailStats = {
+    email_clicked_count: 0,
     email_sent_count: 0,
     email_opened_count: 0,
     opened_rate: null,
@@ -1319,16 +1349,19 @@ const EMPTY_EMAIL_STATS: AutomationEmailStats = {
 };
 
 function buildEmailStats(row: ActionStatsRow): AutomationEmailStats {
+    const emailClickedCount = row.email_clicked_count ?? 0;
     const emailSentCount = row.email_sent_count ?? 0;
     const emailOpenedCount = row.email_opened_count ?? 0;
     return {
+        email_clicked_count: emailClickedCount,
         email_sent_count: emailSentCount,
         email_opened_count: emailOpenedCount,
         opened_rate: emailSentCount
             ? Math.round(emailOpenedCount / emailSentCount * 100)
             : null,
-        // TODO(NY-1387) Populate clicked_rate once click tracking is implemented.
-        clicked_rate: null
+        clicked_rate: emailSentCount
+            ? Math.round(emailClickedCount / emailSentCount * 100)
+            : null
     };
 }
 

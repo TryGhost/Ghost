@@ -44,7 +44,5 @@
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
   },
-  "dependencies": {
-    "lodash": "catalog:"
-  }
+  "dependencies": {}
 }

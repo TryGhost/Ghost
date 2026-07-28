@@ -61,11 +61,11 @@ class PostsService {
      * @returns
      */
     async editPost(frame, options) {
-        await this.postEmailHandler.validateBeforeSave(frame);
+        const preflight = await this.postEmailHandler.validateBeforeSave(frame);
 
         const model = await this.models.Post.edit(frame.data.posts[0], frame.options);
 
-        await this.postEmailHandler.createOrRetryEmail(model);
+        await this.postEmailHandler.createOrRetryEmail(model, {preflight});
 
         const dto = model.toJSON(frame.options);
 
@@ -329,8 +329,8 @@ class PostsService {
         return result;
     }
 
-    async export(frame) {
-        return await this.postsExporter.export(frame.options);
+    async export(options) {
+        return await this.postsExporter.export(options);
     }
 
     async #updatePosts(data, options) {

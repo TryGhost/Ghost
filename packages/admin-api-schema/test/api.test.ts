@@ -172,6 +172,40 @@ describe('Exposes a correct API', function () {
             await apiSchema.validate({data, schema: 'webhooks-edit', definition: 'webhooks'});
         });
 
+        it('Keeps custom_fields on a member body instead of stripping it', async function () {
+            // `additionalProperties: false` + ajv's `removeAdditional` means an
+            // undeclared property is silently dropped rather than rejected, so this
+            // asserts survival, not acceptance — dropping it is the failure mode
+            // the declaration exists to prevent.
+            const edit = {members: [{custom_fields: {'favourite-topic': 'Ghosts'}}]};
+            await apiSchema.validate({data: edit, schema: 'members-edit', definition: 'members'});
+            assert.deepEqual(edit.members[0]?.custom_fields, {'favourite-topic': 'Ghosts'});
+
+            const add = {members: [{email: 'test@example.com', custom_fields: {'favourite-topic': 'Ghosts'}}]};
+            await apiSchema.validate({data: add, schema: 'members-add', definition: 'members'});
+            assert.deepEqual(add.members[0]?.custom_fields, {'favourite-topic': 'Ghosts'});
+        });
+
+        it('Judges no part of custom_fields, whatever shape it arrives in', async function () {
+            // The declaration exists to stop the key being stripped, not to validate
+            // it: only a site's field definitions know what a given key accepts, and
+            // this schema applies to every site whether or not the feature is on.
+            for (const anyShape of [null, [], 'x', 5, true, {}, {a: 'b'}]) {
+                const data = {members: [{custom_fields: anyShape}]};
+                await apiSchema.validate({data, schema: 'members-edit', definition: 'members'});
+                assert.deepEqual(data.members[0]?.custom_fields, anyShape, `expected ${JSON.stringify(anyShape)} to survive untouched`);
+            }
+        });
+
+        it('Leaves the values inside custom_fields untouched', async function () {
+            // `removeAdditional` must not recurse into the object: composite values
+            // (an address, say) are validated by the field-type catalog downstream,
+            // so anything stripped here would vanish before it got there.
+            const data = {members: [{custom_fields: {home: {line1: '1 Main St', city: 'Dublin'}}}]};
+            await apiSchema.validate({data, schema: 'members-edit', definition: 'members'});
+            assert.deepEqual(data.members[0]?.custom_fields, {home: {line1: '1 Main St', city: 'Dublin'}});
+        });
+
         it('Uses schema $id for error key when dataPath is empty', async function () {
             const data = {};
 

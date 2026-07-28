@@ -20,7 +20,7 @@ import articleBodyStyles from '@src/components/article-body-styles';
 import getReadingTime from '../../../utils/get-reading-time';
 import {Activity} from '@src/api/activitypub';
 import {cardsCSS, cardsJS} from '@src/utils/cards-assets';
-import {enforceVideoCardInlinePlayback, escapeHtml, isSafeUrl, openLinksInNewTab} from '@src/utils/content-formatters';
+import {enforceVideoCardInlinePlayback, escapeHtml, isSafeUrl, openLinksInNewTab, sanitizeArticleContent} from '@src/utils/content-formatters';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../../utils/pending-activity';
 import {useDebounce} from 'use-debounce';
@@ -69,9 +69,12 @@ const ArticleBody: React.FC<{
 
     const cssContent = articleBodyStyles();
     const shouldEnforceVideoCardInlinePlayback = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
     const articleHtml = useMemo(() => {
         const transformedHtml = shouldEnforceVideoCardInlinePlayback ? enforceVideoCardInlinePlayback(html) : html;
-        return openLinksInNewTab(transformedHtml);
+        // Sanitize last so the transformations above can't reintroduce
+        // anything unsafe
+        return sanitizeArticleContent(openLinksInNewTab(transformedHtml));
     }, [html, shouldEnforceVideoCardInlinePlayback]);
 
     const htmlContent = `

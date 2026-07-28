@@ -1,6 +1,6 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {withErrorBoundary} from '../../error-boundary';
 
@@ -12,7 +12,7 @@ const AnnouncementBar: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button className='mt-[-5px]' color='clear' label='Customize' size='sm' onClick={openModal}/>}
+            customButtons={<Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={openModal}>Customize</Button>}
             description="Highlight important updates or offers"
             keywords={keywords}
             navid='announcement-bar'

@@ -1,12 +1,14 @@
+import ConfirmationModal from '../../../confirmation-modal';
 import NewslettersList from './newsletters-list';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {type ReactNode, useEffect, useState} from 'react';
 import useQueryParams from '../../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {Button, ConfirmationModal} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {type InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
 import {type Newsletter, type NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
 import {arrayMove} from '@dnd-kit/sortable';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {withErrorBoundary} from '../../../error-boundary';
@@ -15,10 +17,10 @@ const NavigateToNewsletter = ({id, children}: {id: string; children: ReactNode})
     const modal = useModal();
     const {updateRoute} = useRouting();
 
-    return <button className="text-green" type="button" onClick={() => {
+    return <Button className='h-auto p-0 text-green hover:text-green' type='button' variant='link' onClick={() => {
         updateRoute(`newsletters/${id}`);
         modal.remove();
-    }}>{children}</button>;
+    }}>{children}</Button>;
 };
 
 const isNewsletterVerificationRoute = () => {
@@ -144,11 +146,9 @@ const NewslettersTabContent: React.FC<NewslettersTabContentProps> = ({filter}) =
             ) : (
                 <NewslettersList isLoading={isLoading} newsletters={archivedNewsletters} />
             )}
-            {isEnd === false && <Button
-                label={`Load more (showing ${newsletters?.length || 0}/${meta?.pagination.total || 0} newsletters)`}
-                link
-                onClick={() => fetchNextPage()}
-            />}
+            {isEnd === false && <Button type='button' variant='link' onClick={() => fetchNextPage()}>
+                Load more (showing {formatNumber(newsletters?.length || 0)}/{formatNumber(meta?.pagination.total || 0)} newsletters)
+            </Button>}
         </>
     );
 };

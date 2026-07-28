@@ -1,22 +1,23 @@
 import React, {createContext, useContext, useEffect, useState} from 'react';
 import {Toaster} from '../components/ui/sonner';
 import {createPortal} from 'react-dom';
-// import {FetchKoenigLexical} from '../global/form/HtmlEditor';
 import {GlobalDirtyStateProvider} from '../hooks/use-global-dirty-state';
 import Icon from '../components/ui/icon';
 import {SHADE_APP_NAMESPACES} from '@/shade-app';
 
+export type FetchKoenigLexical = () => Promise<unknown>;
+
 interface ShadeContextType {
     isAnyTextFieldFocused: boolean;
     setFocusState: (value: boolean) => void;
-    // fetchKoenigLexical: FetchKoenigLexical;
+    fetchKoenigLexical: FetchKoenigLexical | null;
     darkMode: boolean;
 }
 
 const ShadeContext = createContext<ShadeContextType>({
     isAnyTextFieldFocused: false,
     setFocusState: () => {},
-    // fetchKoenigLexical: async () => {},
+    fetchKoenigLexical: null,
     darkMode: false
 });
 
@@ -42,6 +43,7 @@ const ToasterPortal = () => {
         ? createPortal(
             <div className={SHADE_APP_NAMESPACES} style={{width: 'unset', height: 'unset'}}>
                 <Toaster
+                    duration={5000}
                     icons={{
                         error: <Icon.ErrorFill className='text-red' />,
                         success: <Icon.SuccessFill className='text-green' />,
@@ -59,6 +61,7 @@ const ToasterPortal = () => {
                             maxWidth: '290px'
                         }
                     }}
+                    closeButton
                 />
             </div>,
             document.body
@@ -67,12 +70,12 @@ const ToasterPortal = () => {
 };
 
 interface ShadeProviderProps {
-    // fetchKoenigLexical: FetchKoenigLexical;
+    fetchKoenigLexical: FetchKoenigLexical | null;
     darkMode: boolean;
     children: React.ReactNode;
 }
 
-const ShadeProvider: React.FC<ShadeProviderProps> = ({darkMode, children}) => {
+const ShadeProvider: React.FC<ShadeProviderProps> = ({darkMode, fetchKoenigLexical, children}) => {
     const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
 
     const setFocusState = (value: boolean) => {
@@ -80,7 +83,7 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({darkMode, children}) => {
     };
 
     return (
-        <ShadeContext.Provider value={{isAnyTextFieldFocused, setFocusState, darkMode}}>
+        <ShadeContext.Provider value={{isAnyTextFieldFocused, setFocusState, fetchKoenigLexical, darkMode}}>
             <GlobalDirtyStateProvider>
                 {children}
                 <ToasterPortal />

@@ -9,8 +9,8 @@ const ParentRouter = require('./parent-router');
 const EmailRouter = require('./email-router');
 const UnsubscribeRouter = require('./unsubscribe-router');
 
-// This emits its own routing events
-const events = require('../../../server/lib/common/events');
+// Frontend-internal routing events (router.created / routers.reset)
+const routingEvents = require('./events');
 
 class RouterManager {
     constructor({registry}) {
@@ -31,9 +31,7 @@ class RouterManager {
     }
 
     routerCreated(router) {
-        // NOTE: this event should be become an "internal frontend even"
-        //       and should not be consumed by the modules outside the frontend
-        events.emit('router.created', router);
+        routingEvents.emit('router.created', router);
 
         // CASE: there are router types which do not generate resource urls
         //       e.g. static route router, in this case we don't want ot notify the URL service
@@ -68,9 +66,7 @@ class RouterManager {
         this.registry.resetAllRouters();
         this.registry.resetAllRoutes();
 
-        // NOTE: this event could become an "internal frontend" in the future, it's used has been kept to prevent
-        //       from tying up this module with sitemaps
-        events.emit('routers.reset');
+        routingEvents.emit('routers.reset');
 
         this.siteRouter = new ParentRouter('SiteRouter');
         this.registry.setRouter('siteRouter', this.siteRouter);

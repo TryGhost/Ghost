@@ -2,7 +2,8 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import trackEvent from '../../../../utils/analytics';
 import {type ConfigResponseType, configDataType} from '@tryghost/admin-x-framework/api/config';
-import {Modal, Toggle} from '@tryghost/admin-x-design-system';
+import {SettingsModal} from '@tryghost/shade/patterns';
+import {Switch} from '@tryghost/shade/components';
 import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -54,7 +55,7 @@ const FeatureToggleConfirmationModal = NiceModal.create<FeatureToggleConfirmatio
     };
 
     return (
-        <Modal
+        <SettingsModal
             backDropClick={false}
             buttonsDisabled={isRunning}
             cancelLabel='Cancel'
@@ -66,7 +67,7 @@ const FeatureToggleConfirmationModal = NiceModal.create<FeatureToggleConfirmatio
             onOk={handleConfirm}
         >
             <div className='py-4'>{prompt}</div>
-        </Modal>
+        </SettingsModal>
     );
 });
 
@@ -101,8 +102,7 @@ const FeatureToggle: React.FC<FeatureToggleProps> = ({label, flag, disabled, con
         }
     };
 
-    return <Toggle checked={isEnabled} disabled={disabled} label={label} labelClasses='sr-only' name={`feature-${flag}`} onChange={async () => {
-        const newValue = !isEnabled;
+    return <Switch aria-label={label || flag} checked={isEnabled} disabled={disabled} name={`feature-${flag}`} onCheckedChange={async (newValue) => {
 
         if (confirmation && newValue) {
             NiceModal.show(FeatureToggleConfirmationModal, {

@@ -1,4 +1,4 @@
-import {Select} from '@tryghost/admin-x-design-system';
+import {Field, FieldDescription, FieldLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {type User, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -51,38 +51,49 @@ const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }>
             value: 'owner'
         };
         return (
-            <div>
-                <Select
-                    disabled={true}
-                    hint={
-                        <>
-                            This user is the owner of the site. <a className='font-medium text-grey-800 transition-colors hover:text-grey-900 dark:text-grey-500 dark:hover:text-grey-400' href='https://ghost.org/help/transfer-publication-ownership/' rel='noopener noreferrer' target='_blank'>Transfer ownership</a> first to change their role.
-                        </>
-                    }
-                    options={[ownerOption]}
-                    selectedOption={ownerOption}
-                    title="Role"
-                    onSelect={() => {}}
-                />
-            </div>
+            <Field>
+                <FieldLabel>Role</FieldLabel>
+                <Select value={ownerOption.value} disabled>
+                    <SelectTrigger aria-label='Role'><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value={ownerOption.value}>{ownerOption.label}</SelectItem>
+                    </SelectContent>
+                </Select>
+                <FieldDescription>
+                    This user is the owner of the site. <a href='https://ghost.org/help/transfer-publication-ownership/' rel='noopener noreferrer' target='_blank'>Transfer ownership</a> first to change their role.
+                </FieldDescription>
+            </Field>
         );
     }
 
+    const selectedRoleValue = user.roles[0].name.toLowerCase();
+    const selectedRoleLabel = optionsArray.find(option => option.value.toLowerCase() === selectedRoleValue)?.label;
+
     return (
-        <Select
-            options={optionsArray}
-            selectedOption={optionsArray.find(option => option.value === user.roles[0].name.toLowerCase())}
-            testId='role-select'
-            title="Role"
-            onSelect={(option) => {
-                if (option) {
-                    const role = roles?.find(r => r.name.toLowerCase() === option.value.toLowerCase());
+        <Field>
+            <FieldLabel>Role</FieldLabel>
+            <Select
+                value={selectedRoleValue}
+                onValueChange={(value) => {
+                    const role = roles?.find(r => r.name.toLowerCase() === value.toLowerCase());
                     if (role) {
                         setUserData?.({...user, roles: [role]});
                     }
-                }
-            }}
-        />
+                }}
+            >
+                <SelectTrigger aria-label='Role' data-testid='role-select'><SelectValue>{selectedRoleLabel}</SelectValue></SelectTrigger>
+                <SelectContent>
+                    {optionsArray.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                            <span className='flex flex-col'>
+                                <span>{option.label}</span>
+                                <span className='text-sm text-muted-foreground'>{option.hint}</span>
+                            </span>
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </Field>
     );
 };
 

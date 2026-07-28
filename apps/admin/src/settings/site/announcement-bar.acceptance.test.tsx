@@ -32,7 +32,7 @@ function siteUrl(): string {
 }
 
 describe("Announcement bar", () => {
-    it("requests homepage and post previews", async () => {
+    it("requests homepage and post previews and switches device size", async () => {
         fakeSettingsScreens();
         const latestUrl = latestPost();
         const homepagePreview = fakeSitePreview(siteUrl(), previewHtml);
@@ -46,6 +46,11 @@ describe("Announcement bar", () => {
         await modal.getByTestId(sel.designToolbar).getByRole("tab", { name: "Post" }).click();
         await expect(postPreview).toHaveRequestedPreview({ announcement_bg: "dark", announcement: "" });
         expect(homepagePreview.requests[0]?.accept).toContain("text/html");
+
+        await modal.getByRole("radio", { name: "Mobile" }).click();
+        await expect.element(modal.getByTestId(sel.previewMobile)).toBeVisible();
+        await modal.getByRole("radio", { name: "Desktop" }).click();
+        await expect(modal.getByTestId(sel.previewMobile)).toHaveCount(0);
     });
 
     it("saves the selected background colour", async () => {

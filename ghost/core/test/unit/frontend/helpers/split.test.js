@@ -37,11 +37,18 @@ describe('{{split}} helper in block mode', function () {
     });
     it('splits safe strings correctly', function () {
         const hash = {
-            safestring_split_me: new SafeString('hello-world-lets-gooo')
+            safestring_split_me: new SafeString('<strong>hello</strong>-<em>world</em>')
         };
         const templateString = '{{#split safestring_split_me separator="-" as |elements|}}{{#foreach elements}}{{this}}{{/foreach}}{{/split}}';
-        const expected = 'helloworldletsgooo';
+        const expected = '<strong>hello</strong><em>world</em>';
         shouldCompileToExpected(templateString, hash, expected);
+    });
+
+    it('escapes unsafe strings', function () {
+        const templateString = '{{#split value separator=" " as |elements|}}{{#foreach elements}}{{this}}{{/foreach}}{{/split}}';
+        const expected = 'Thisis&lt;strong&gt;unsafe&lt;/strong&gt;';
+
+        shouldCompileToExpected(templateString, {value: 'This is <strong>unsafe</strong>'}, expected);
     });
     it('does not need a block definition', function () {
         const templateString = '{{#split "hello,world" separator=","}}{{#foreach this}}{{this}}{{#unless @last}}|{{/unless}}{{/foreach}}{{/split}}';
@@ -106,11 +113,18 @@ describe('{{split}} helper in inline mode', function () {
     });
     it('splits safe strings correctly', function () {
         const hash = {
-            safestring_split_me: new SafeString('hello-world-lets-gooo')
+            safestring_split_me: new SafeString('<strong>hello</strong>-<em>world</em>')
         };
         const templateString = '{{#foreach (split safestring_split_me separator="-")}}{{this}}{{/foreach}}';
-        const expected = 'helloworldletsgooo';
+        const expected = '<strong>hello</strong><em>world</em>';
         shouldCompileToExpected(templateString, hash, expected);
+    });
+
+    it('escapes unsafe strings', function () {
+        const templateString = '{{#foreach (split value separator=" ")}}{{this}}{{/foreach}}';
+        const expected = 'Thisis&lt;strong&gt;unsafe&lt;/strong&gt;';
+
+        shouldCompileToExpected(templateString, {value: 'This is <strong>unsafe</strong>'}, expected);
     });
     it('does not return empty strings with a leading separator', function () {
         const templateString = '{{#foreach (split ",hello,world" separator=",")}}{{this}}{{#unless @last}}<br>{{/unless}}{{/foreach}}';

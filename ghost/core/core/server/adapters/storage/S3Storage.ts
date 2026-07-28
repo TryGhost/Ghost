@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type {Request, Response, NextFunction, RequestHandler} from 'express';
 import {z} from 'zod';
-import StorageBase from 'ghost-storage-base';
+import {StorageBase} from 'ghost-storage-base';
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';

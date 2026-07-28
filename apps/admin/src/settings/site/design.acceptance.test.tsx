@@ -76,9 +76,9 @@ describe("Design settings", () => {
         await modal.getByTestId(sel.designToolbar).getByRole("tab", { name: "Post" }).click();
         await expect(postPreview!).toHaveRequestedPreview({ custom: "{}" });
 
-        await modal.getByRole("button", { name: "Mobile" }).click();
+        await modal.getByRole("radio", { name: "Mobile" }).click();
         await expect.element(modal.getByTestId(sel.previewMobile)).toBeVisible();
-        await modal.getByRole("button", { name: "Desktop" }).click();
+        await modal.getByRole("radio", { name: "Desktop" }).click();
         await expect(modal.getByTestId(sel.previewMobile)).toHaveCount(0);
     });
 
@@ -90,7 +90,7 @@ describe("Design settings", () => {
         const modal = settingsScreen.designModal();
         const color = modal.getByTestId(sel.accentColorPicker);
         await color.getByRole("button").click();
-        await color.getByRole("textbox").fill("#cd5786");
+        await page.getByRole("textbox", { name: "Hex color" }).fill("#cd5786");
         await expect(homepagePreview).toHaveRequestedPreview({ c: "#cd5786" });
         await modal.getByRole("button", { name: "Close" }).click();
 
@@ -108,7 +108,7 @@ describe("Design settings", () => {
         const modal = settingsScreen.designModal();
         const color = modal.getByTestId(sel.accentColorPicker);
         await color.getByRole("button").click();
-        await color.getByRole("textbox").fill("#cd5786");
+        await page.getByRole("textbox", { name: "Hex color" }).fill("#cd5786");
 
         await expect(homepagePreview).toHaveRequestedPreview({ c: "#cd5786" });
         await expect.element(modal.getByTestId(sel.toggleUnsplashButton)).toBeVisible();

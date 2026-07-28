@@ -1,5 +1,10 @@
 import {FIELD_TYPE_IDS, type FieldType} from '@tryghost/custom-field-types';
+import {csvColumnsForField} from '@tryghost/custom-field-types/csv';
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
+
+// Re-exported so the import mapping can recognise a custom_fields.* column (same reason
+// as the re-exports below).
+export {isCustomFieldColumn} from '@tryghost/custom-field-types/csv';
 
 // Re-exported so admin apps can type address values and validate against the
 // same schemas the server enforces, without a direct dependency on the shared
@@ -33,21 +38,31 @@ export type MemberCustomField = {
 export type MemberCustomFieldUserType = {
     id: FieldType;
     label: string;
-    // Icon name, resolved by the rendering app's icon set (today that's the
-    // admin-x-design-system set in Settings — the only surface showing type
-    // icons). A name rather than a component keeps this catalog render-free.
-    icon: string;
     // Which control collects/edits a value of this type
     input: 'text' | 'textarea' | 'address';
+    // Composite types only: label per sub-field, keyed by the sub-field key the shared
+    // value schema defines. Kept with the type's other presentation, not a parallel map.
+    subFields?: Record<string, string>;
 };
 
 // Presentation for every field type in the shared catalog. The explicit
 // Record<FieldType, ...> annotation keeps this exhaustive: adding a field type
 // upstream fails to compile here until it has a presentation.
 const fieldTypePresentation: Record<FieldType, Omit<MemberCustomFieldUserType, 'id'>> = {
-    short_text: {label: 'Short text', icon: 'aa', input: 'text'},
-    long_text: {label: 'Long text', icon: 'long-text', input: 'textarea'},
-    address: {label: 'Address', icon: 'map-pin', input: 'address'}
+    short_text: {label: 'Short text', input: 'text'},
+    long_text: {label: 'Long text', input: 'textarea'},
+    address: {
+        label: 'Address',
+        input: 'address',
+        subFields: {
+            line1: 'Address line 1',
+            line2: 'Address line 2',
+            city: 'City',
+            state: 'State',
+            postal_code: 'Postal code',
+            country: 'Country'
+        }
+    }
 };
 
 // The catalog in the shared catalog's declared order, so every admin surface
@@ -55,10 +70,37 @@ const fieldTypePresentation: Record<FieldType, Omit<MemberCustomFieldUserType, '
 export const memberCustomFieldUserTypes: MemberCustomFieldUserType[] =
     FIELD_TYPE_IDS.map(id => ({id, ...fieldTypePresentation[id]}));
 
-// Resolve the user type for a field loaded from the API. Falls back to the
-// first entry so an unknown future type degrades to a rendered row, not a crash.
-export const userTypeForField = (field: MemberCustomField): MemberCustomFieldUserType => {
-    return memberCustomFieldUserTypes.find(userType => userType.id === field.type) || memberCustomFieldUserTypes[0];
+// Resolve the presentation for a field type. Falls back to the first entry so an unknown
+// future type degrades to a rendered row, not a crash.
+export const userTypeForFieldType = (type: FieldType): MemberCustomFieldUserType => {
+    return memberCustomFieldUserTypes.find(userType => userType.id === type) || memberCustomFieldUserTypes[0];
+};
+
+// As above, for a field loaded from the API.
+export const userTypeForField = (field: MemberCustomField): MemberCustomFieldUserType => userTypeForFieldType(field.type);
+
+// A custom field CSV column offered as an import mapping target: the column name the
+// backend reads (`value`) and a human label for the picker.
+export type MemberCustomFieldCsvColumn = {label: string; value: string};
+
+/**
+ * The CSV import mapping targets for a set of custom fields: one per column the export
+ * writes, labelled for the field (and sub-field, for a composite). Column names come from
+ * the shared codec the exporter writes and the importer reads, so a target is exactly a
+ * round-tripping column rather than one hand-kept in sync.
+ */
+export const memberCustomFieldCsvColumns = (fields: MemberCustomField[]): MemberCustomFieldCsvColumn[] => {
+    return fields.flatMap((field) => {
+        const columns = csvColumnsForField({key: field.key, type: field.type});
+        return columns.map((column) => {
+            if (columns.length === 1) {
+                return {label: field.name, value: column};
+            }
+            const sub = column.slice(column.lastIndexOf('.') + 1);
+            const subLabel = userTypeForFieldType(field.type).subFields?.[sub] ?? sub;
+            return {label: `${field.name} (${subLabel})`, value: column};
+        });
+    });
 };
 
 export interface MemberCustomFieldsResponseType {

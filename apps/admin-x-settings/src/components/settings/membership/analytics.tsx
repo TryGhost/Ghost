@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
+import {Field, FieldContent, FieldDescription, FieldLabel, Separator, Switch} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
-import {Separator} from '@tryghost/shade/components';
-import {SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getSettingValues, isSettingReadOnly} from '@tryghost/admin-x-framework/api/settings';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {withErrorBoundary} from '../../error-boundary';
@@ -40,8 +40,8 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
     }, [limiter]);
 
-    const handleToggleChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting(key, e.target.checked);
+    const handleToggleChange = (key: string, checked: boolean) => {
+        updateSetting(key, checked);
         handleEditingChange(true);
     };
 
@@ -49,28 +49,24 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const inputs = (
         <SettingGroupContent className="analytics-settings gap-y-0!" columns={1}>
-            <Toggle
-                align='center'
-                checked={didUserEnableWebAnalytics && isWebAnalyticsAvailable}
-                containerClasses='py-4'
-                direction='rtl'
-                disabled={!isWebAnalyticsAvailable}
-                gap='gap-0'
-                hint={
-                    !isWebAnalyticsConfigured ?
-                        <>
-                            Cookie-free, first party traffic analytics for your site
-                        </>
-                        :
-                        <>
-                            Cookie-free, first party traffic analytics for your site, powered by <a className='text-green' href="https://ghost.org/integrations/tinybird" rel="noopener noreferrer" target='_blank'>Tinybird</a>
-                        </>
-                }
-                label='Web analytics'
-                onChange={(e) => {
-                    handleToggleChange('web_analytics', e);
-                }}
-            />
+            <Field className='py-4' data-disabled={!isWebAnalyticsAvailable || undefined} orientation='horizontal'>
+                <FieldContent>
+                    <FieldLabel htmlFor='web-analytics'>Web analytics</FieldLabel>
+                    <FieldDescription>
+                        {!isWebAnalyticsConfigured ?
+                            <>Cookie-free, first party traffic analytics for your site</>
+                            :
+                            <>Cookie-free, first party traffic analytics for your site, powered by <a className='text-green' href="https://ghost.org/integrations/tinybird" rel="noopener noreferrer" target='_blank'>Tinybird</a></>
+                        }
+                    </FieldDescription>
+                </FieldContent>
+                <Switch
+                    checked={Boolean(didUserEnableWebAnalytics && isWebAnalyticsAvailable)}
+                    disabled={!isWebAnalyticsAvailable}
+                    id='web-analytics'
+                    onCheckedChange={checked => handleToggleChange('web_analytics', checked)}
+                />
+            </Field>
             {(
                 isWebAnalyticsLimited ? (
                     <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 dark:border-grey-900 dark:bg-grey-900'>
@@ -92,58 +88,37 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <Separator />
                 )
             )}
-            <Toggle
-                align='center'
-                checked={trackEmailOpens}
-                containerClasses='py-4'
-                direction='rtl'
-                gap='gap-0'
-                hint='Record when a member opens an email'
-                label='Email opens'
-                onChange={(e) => {
-                    handleToggleChange('email_track_opens', e);
-                }}
-            />
+            <Field className='py-4' orientation='horizontal'>
+                <FieldContent>
+                    <FieldLabel htmlFor='email-opens'>Email opens</FieldLabel>
+                    <FieldDescription>Record when a member opens an email</FieldDescription>
+                </FieldContent>
+                <Switch checked={Boolean(trackEmailOpens)} id='email-opens' onCheckedChange={checked => handleToggleChange('email_track_opens', checked)} />
+            </Field>
             <Separator />
-            <Toggle
-                align='center'
-                checked={trackEmailClicks}
-                containerClasses='py-4'
-                direction='rtl'
-                disabled={isEmailTrackClicksReadOnly}
-                gap='gap-0'
-                hint='Record when a member clicks on any link in an email'
-                label='Email clicks'
-                onChange={(e) => {
-                    handleToggleChange('email_track_clicks', e);
-                }}
-            />
+            <Field className='py-4' data-disabled={isEmailTrackClicksReadOnly || undefined} orientation='horizontal'>
+                <FieldContent>
+                    <FieldLabel htmlFor='email-clicks'>Email clicks</FieldLabel>
+                    <FieldDescription>Record when a member clicks on any link in an email</FieldDescription>
+                </FieldContent>
+                <Switch checked={Boolean(trackEmailClicks)} disabled={isEmailTrackClicksReadOnly} id='email-clicks' onCheckedChange={checked => handleToggleChange('email_track_clicks', checked)} />
+            </Field>
             <Separator />
-            <Toggle
-                align='center'
-                checked={trackMemberSources}
-                containerClasses='py-4'
-                direction='rtl'
-                gap='gap-0'
-                hint='Track the traffic sources and posts that drive the most member growth'
-                label='Member sources'
-                onChange={(e) => {
-                    handleToggleChange('members_track_sources', e);
-                }}
-            />
+            <Field className='py-4' orientation='horizontal'>
+                <FieldContent>
+                    <FieldLabel htmlFor='member-sources'>Member sources</FieldLabel>
+                    <FieldDescription>Track the traffic sources and posts that drive the most member growth</FieldDescription>
+                </FieldContent>
+                <Switch checked={Boolean(trackMemberSources)} id='member-sources' onCheckedChange={checked => handleToggleChange('members_track_sources', checked)} />
+            </Field>
             <Separator />
-            <Toggle
-                align='center'
-                checked={outboundLinkTagging}
-                containerClasses='py-4'
-                direction='rtl'
-                gap='gap-0'
-                hint='Make it easier for other sites to track the traffic you send them in their analytics'
-                label='Outbound link tagging'
-                onChange={(e) => {
-                    handleToggleChange('outbound_link_tagging', e);
-                }}
-            />
+            <Field className='py-4' orientation='horizontal'>
+                <FieldContent>
+                    <FieldLabel htmlFor='outbound-link-tagging'>Outbound link tagging</FieldLabel>
+                    <FieldDescription>Make it easier for other sites to track the traffic you send them in their analytics</FieldDescription>
+                </FieldContent>
+                <Switch checked={Boolean(outboundLinkTagging)} id='outbound-link-tagging' onCheckedChange={checked => handleToggleChange('outbound_link_tagging', checked)} />
+            </Field>
         </SettingGroupContent>
     );
 

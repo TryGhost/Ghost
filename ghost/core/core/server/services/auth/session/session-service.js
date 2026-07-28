@@ -58,7 +58,7 @@ const AUTH_CODE_CHALLENGE_BYTES = 16;
  * @param {() => string} deps.getBlogLogo
  * @param {import('../../mail').GhostMailer} deps.mailer
  * @param {import('../../i18n').t} deps.t
- * @param {import('../../../../shared/url-utils')} deps.urlUtils
+ * @param {import('../../../../shared/url-utils').default} deps.urlUtils
  * @param {() => boolean} deps.isStaffDeviceVerificationDisabled
  * @returns {SessionService}
  */
@@ -208,7 +208,34 @@ module.exports = function createSessionService({
      * @returns {Promise<void>}
      */
     async function createSessionForUser(req, res, user) {
-        const session = await getSession(req, res);
+        const previousSession = await getSession(req, res);
+
+        // Carried over to the new session so verification state survives login
+        const {
+            user_id: previousUserId,
+            verified: previousVerified,
+            auth_code_challenge: previousAuthCodeChallenge,
+            auth_code_generated_at: previousAuthCodeGeneratedAt
+        } = previousSession;
+
+        // Ensure a new session is always created
+        await new Promise((resolve, reject) => {
+            req.session.regenerate((err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+
+        const session = req.session;
+        session.user_id = previousUserId;
+        // A different user doesn't inherit the previous user's verification
+        session.verified = previousUserId && previousUserId !== user.id ? undefined : previousVerified;
+        session.auth_code_challenge = previousAuthCodeChallenge;
+        session.auth_code_generated_at = previousAuthCodeGeneratedAt;
+
         const origin = getOriginOfRequest(req);
         await assignUserToSession({
             session,

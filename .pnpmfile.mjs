@@ -76,14 +76,14 @@ async function updateConfig(config) {
     const ignoredPackages = new Set(versioning.ignore ?? []);
 
     // step 1: enumerate all workspace packages with glob
-    const ignore = packages
+    const exclude = packages
         .filter(p => p.startsWith('!'))
         .map(p => p.slice(1));
     const patterns = packages
         .filter(p => !p.startsWith('!'))
         .map(p => `${p}/package.json`);
 
-    const files = await Array.fromAsync(glob(patterns, {ignore}));
+    const files = await Array.fromAsync(glob(patterns, {exclude}));
 
     // step 2: read each package.json and check for "private", if so add to
     // the ignore set

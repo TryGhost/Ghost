@@ -1,6 +1,7 @@
 import {act, waitFor} from '@testing-library/react';
 import {describe, expect, it, vi} from 'vitest';
 import {currentUserQueryKey} from '../../../src/api/current-user';
+import type {UserRoleType} from '../../../src/api/roles';
 import {createTestQueryClient, renderHookWithProviders} from '../../../src/test/test-utils';
 import {getMemberCountQueryKey, getMemberSigninUrl, useAddMember, useBrowseMembersInfinite, useBulkDeleteMembers, useDeleteMember, useEditMember, useEditMemberSubscription, useImportMembers, useMemberActivityFeed, useMemberCount, useMemberLogout, useRemoveMemberEmailSuppression} from '../../../src/api/members';
 import type {MemberActivityEvent, MembersInfiniteResponseType, MembersResponseType} from '../../../src/api/members';
@@ -27,7 +28,7 @@ function seedMemberCount(queryClient: ReturnType<typeof createTestQueryClient>, 
     queryClient.setQueryData(memberCountKey, membersResponse(total), options);
 }
 
-function createQueryClientWithCurrentUser() {
+function createQueryClientWithCurrentUser(roles: Array<{id: string; name: UserRoleType}> = []) {
     const queryClient = createTestQueryClient();
 
     queryClient.setQueryDefaults(currentUserQueryKey, {staleTime: Infinity});
@@ -37,7 +38,7 @@ function createQueryClientWithCurrentUser() {
             id: 'user-1',
             name: 'Test User',
             email: 'test@example.com',
-            roles: []
+            roles
         }]
     });
 
@@ -221,7 +222,7 @@ describe('members api', () => {
     });
 
     it('fetches the member count with the dedicated count hook', async () => {
-        const queryClient = createQueryClientWithCurrentUser();
+        const queryClient = createQueryClientWithCurrentUser([{id: 'role-1', name: 'Administrator'}]);
 
         await withMockFetch({
             json: membersResponse(102466)
@@ -233,6 +234,21 @@ describe('members api', () => {
             });
 
             expect(mockFetch.calls[0][0].toString()).toBe('http://localhost:3000/ghost/api/admin/members/?limit=1');
+        });
+    });
+
+    it('does not fetch the member count for roles that cannot manage members', async () => {
+        const queryClient = createQueryClientWithCurrentUser([{id: 'role-1', name: 'Editor'}]);
+
+        await withMockFetch({}, async (mockFetch) => {
+            const {result} = renderHookWithProviders(() => useMemberCount(), {queryClient});
+
+            await act(async () => {
+                await Promise.resolve();
+            });
+
+            expect(result.current).toBeUndefined();
+            expect(mockFetch.calls).toHaveLength(0);
         });
     });
 

@@ -4,6 +4,7 @@ import ObjectId from 'bson-objectid';
 import createKnex, {type Knex} from 'knex';
 import moment from 'moment';
 import {NON_EMPTY_EMAIL_LEXICAL} from '../../../../utils/automations-fixtures';
+import ghostConfig from '../../../../../core/shared/config';
 import {createDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/database-automations-repository';
 import type {AutomatedEmailEvents, AutomationAction, AutomationsRepository, AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
 
@@ -13,6 +14,17 @@ const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
 const toDatabaseDate = (date: Date | string): string => moment(date).format(DATABASE_DATE_FORMAT);
 const toRepositoryDateISOString = (date: Date | string): string => new Date(toDatabaseDate(date)).toISOString();
+const linkLexical = (url: string): string => JSON.stringify({
+    root: {
+        children: [{
+            type: 'paragraph',
+            children: [{
+                type: 'link',
+                url
+            }]
+        }]
+    }
+});
 
 const addHours = (dateCol: unknown, hours: number): Date => {
     assert(typeof dateCol === 'string', 'Expected date column to be a string');
@@ -88,6 +100,7 @@ const createDatabase = async (): Promise<Knex> => {
         table.integer('email_sent_count');
         table.integer('email_tracked_sent_count');
         table.integer('email_opened_count');
+        table.integer('email_clicked_count');
         table.unique(['created_at', 'action_id']);
     });
 
@@ -131,7 +144,9 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('mailgun_message_id');
         table.datetime('delivered_at');
         table.datetime('opened_at');
+        table.datetime('clicked_at');
         table.boolean('track_opens').notNullable().defaultTo(false);
+        table.boolean('track_clicks').notNullable().defaultTo(false);
         table.datetime('created_at');
         table.datetime('updated_at');
     });
@@ -413,6 +428,7 @@ describe('automations repository', function () {
                 'automation_actions.type as action_type',
                 'automation_action_revisions.id as revision_id',
                 'automation_action_revisions.wait_hours as wait_hours',
+                'automation_action_revisions.email_lexical as email_lexical',
                 'automation_action_revisions.email_design_setting_id as email_design_setting_id'
             )
             .innerJoin('automation_action_revisions', 'automation_action_revisions.action_id', 'automation_actions.id')
@@ -675,6 +691,70 @@ describe('automations repository', function () {
         });
     });
 
+    describe('URL serialization', function () {
+        it('returns stored transform-ready email URLs as absolute URLs', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(emailAction);
+
+            await knex('automation_action_revisions')
+                .where('action_id', emailAction.id)
+                .update({
+                    email_lexical: linkLexical('__GHOST_URL__/archive/')
+                });
+
+            const result = await repo.getById(automation.id);
+            assert(result);
+            const returnedEmailAction = result.actions.find(action => action.id === emailAction.id);
+            assert(returnedEmailAction?.type === 'send_email');
+            assert(returnedEmailAction.data.email_lexical.includes(`${ghostConfig.get('url')}/archive/`));
+            assert(!returnedEmailAction.data.email_lexical.includes('__GHOST_URL__'));
+        });
+
+        it('stores internal URLs as transform-ready without creating a revision on an unchanged save', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(emailAction?.type === 'send_email');
+
+            const absoluteLexical = linkLexical(`${ghostConfig.get('url')}/archive/`);
+            const updatedActions = automation.actions.map(action => (
+                action.id === emailAction.id
+                    ? {
+                        ...emailAction,
+                        data: {
+                            ...emailAction.data,
+                            email_lexical: absoluteLexical
+                        }
+                    }
+                    : action
+            ));
+
+            const result = await repo.edit(automation.id, {
+                status: automation.status,
+                actions: updatedActions,
+                edges: automation.edges
+            });
+
+            assert(result);
+            const returnedEmailAction = result.actions.find(action => action.id === emailAction.id);
+            assert(returnedEmailAction?.type === 'send_email');
+            assert(returnedEmailAction.data.email_lexical.includes(`${ghostConfig.get('url')}/archive/`));
+            assert(!returnedEmailAction.data.email_lexical.includes('__GHOST_URL__'));
+
+            const storedRevision = await getLatestActionRevisionByActionId(emailAction.id);
+            assert.equal(storedRevision.email_lexical, linkLexical('__GHOST_URL__/archive/'));
+            const initialRevisionCount = await getRevisionCount(emailAction.id);
+
+            await repo.edit(automation.id, {
+                status: result.status,
+                actions: result.actions,
+                edges: result.edges
+            });
+
+            assert.equal(await getRevisionCount(emailAction.id), initialRevisionCount);
+        });
+    });
+
     describe('email stats', function () {
         it('reports the opened count and rate as 0 when there are sends but no recorded opens', async function () {
             const automation = await getAutomationBySlug('member-welcome-email-free');
@@ -696,10 +776,11 @@ describe('automations repository', function () {
                 assert.fail('Expected a send_email action');
             }
             assert.deepEqual(action.stats, {
+                email_clicked_count: 0,
                 email_sent_count: 3,
                 email_opened_count: 0,
                 opened_rate: 0,
-                clicked_rate: null
+                clicked_rate: 0
             });
         });
 
@@ -711,6 +792,7 @@ describe('automations repository', function () {
                 assert.fail('Expected a send_email action');
             }
             assert.deepEqual(action.stats, {
+                email_clicked_count: 0,
                 email_sent_count: 0,
                 email_opened_count: 0,
                 opened_rate: null,
@@ -738,11 +820,40 @@ describe('automations repository', function () {
                 assert.fail('Expected a send_email action');
             }
             assert.deepEqual(action.stats, {
+                email_clicked_count: 0,
                 email_sent_count: 4,
                 email_opened_count: 3,
                 opened_rate: 75,
-                clicked_rate: null
+                clicked_rate: 0
             });
+        });
+
+        it('aggregates click counts across revisions and rounds the rate', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(emailAction);
+            const firstRevision = await knex('automation_action_revisions').where('action_id', emailAction.id).first();
+            assert(firstRevision);
+            await knex('automation_action_revisions').where('id', firstRevision.id).update({
+                email_sent_count: 3,
+                email_opened_count: 1,
+                email_clicked_count: 2
+            });
+            await knex('automation_action_revisions').insert({
+                ...firstRevision,
+                id: ObjectId().toHexString(),
+                created_at: toDatabaseDate(new Date(new Date(firstRevision.created_at).getTime() + 1000)),
+                email_sent_count: 5,
+                email_opened_count: 1,
+                email_clicked_count: 1
+            });
+
+            const result = await repo.getById(automation.id);
+            assert(result);
+            const action = result.actions.find(candidate => candidate.id === emailAction.id);
+            assert(action?.type === 'send_email');
+            assert.equal(action.stats?.email_clicked_count, 3);
+            assert.equal(action.stats?.clicked_rate, 38);
         });
     });
 
@@ -1865,6 +1976,7 @@ describe('automations repository', function () {
                 memberId: 'member-id',
                 memberName: 'Test Member',
                 memberUuid: '00000000-0000-4000-8000-000000000001',
+                trackClicks: true,
                 trackOpens: true
             });
 
@@ -1879,6 +1991,8 @@ describe('automations repository', function () {
                 mailgun_message_id: 'mailgun-message-id',
                 delivered_at: null,
                 opened_at: null,
+                clicked_at: null,
+                track_clicks: 1,
                 track_opens: 1,
                 created_at: recipient.created_at,
                 updated_at: recipient.updated_at
@@ -1904,12 +2018,14 @@ describe('automations repository', function () {
                 memberId: 'member-id',
                 memberName: null,
                 memberUuid: '00000000-0000-4000-8000-000000000001',
+                trackClicks: false,
                 trackOpens: false
             });
 
             const recipient = await knex('automated_email_recipients').first();
             assert.equal(recipient.mailgun_message_id, null);
             assert.equal(recipient.member_name, null);
+            assert.equal(recipient.track_clicks, 0);
             assert.equal(recipient.track_opens, 0);
         });
     });

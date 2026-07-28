@@ -248,7 +248,7 @@ function installSafeDnsLookup(options) {
     const requestHref = options.url.href;
     // Use 'lookup' (the native http.request option) rather than 'dnsLookup'
     // (got's public API property which doesn't flow to the native request).
-    options.lookup = (hostname, dnsOpts, callback) => {
+    options.dnsLookup = (hostname, dnsOpts, callback) => {
         if (typeof dnsOpts === 'function') {
             callback = dnsOpts;
             dnsOpts = {};

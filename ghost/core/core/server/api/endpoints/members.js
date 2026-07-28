@@ -3,13 +3,26 @@
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const models = require('../../models');
 const membersService = require('../../services/members');
 
-const settingsCache = require('../../../shared/settings-cache');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 const {getCSVExportFileName} = require('./utils/csv-export-filename');
+
+// Shape the import service's outcome into the API response envelope: an inline import
+// reports its stats and label, a deferred one only how much it accepted.
+function importCSVResponse(outcome) {
+    if (outcome.deferred) {
+        return {meta: {originalImportSize: outcome.originalImportSize}};
+    }
+    return {
+        meta: {
+            originalImportSize: outcome.originalImportSize,
+            stats: {imported: outcome.result.imported, invalid: outcome.result.errors},
+            import_label: outcome.result.importLabel || null
+        }
+    };
+}
 
 const messages = {
     memberNotFound: 'Member not found.',
@@ -418,33 +431,17 @@ const controller = {
             method: 'add'
         },
         async query(frame) {
-            const siteTimezone = settingsCache.get('timezone');
-
-            const importLabel = {
-                name: `Import ${moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm')}`
-            };
-
-            const globalLabels = [importLabel].concat(frame.data.labels);
-            const pathToCSV = frame.file.path;
-            const headerMapping = frame.data.mapping;
-
-            let email;
-            if (frame.user) {
-                email = frame.user.get('email');
-            } else {
-                email = (await models.User.getOwnerUser()).get('email');
-            }
-
-            return membersService.processImport({
-                pathToCSV,
-                headerMapping,
-                globalLabels,
-                importLabel,
-                LabelModel: models.Label,
-                user: {
-                    email: email
-                }
+            // The endpoint adapts the request frame into the import service's arguments
+            // and shapes its outcome into the response envelope, so neither the frame nor
+            // the meta shape crosses into the domain. The recipient is the request user;
+            // the service falls back to the site owner when there is none.
+            const outcome = await membersService.importCSV({
+                filePath: frame.file.path,
+                mapping: frame.data.mapping,
+                extraLabels: frame.data.labels || [],
+                requestUserEmail: frame.user ? frame.user.get('email') : null
             });
+            return importCSVResponse(outcome);
         }
     },
 

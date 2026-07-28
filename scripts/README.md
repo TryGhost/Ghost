@@ -7,7 +7,7 @@ those targets whenever anything here changes.
 
 New automation belongs here by default, whether it runs locally, in CI, or both.
 The old `.github/scripts` split tracked nothing real — `release-apps` is run by
-devs via `pnpm ship`, while `release.cjs` is run by a workflow.
+devs via `pnpm ship`, while `release.js` is run by a workflow.
 
 ## Adding a script
 

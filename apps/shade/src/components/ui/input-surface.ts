@@ -33,11 +33,11 @@ import {cn} from '@/lib/utils';
  *   )} />
  */
 export const inputSurfaceClasses = {
-    base: 'rounded-md border border-control-border bg-surface-elevated transition-colors dark:bg-transparent',
+    base: 'rounded-md border border-control-border bg-control-surface transition-colors',
     focusSelf:
-        'focus-visible:outline-hidden focus-visible:bg-transparent focus-visible:border-focus-ring focus-visible:ring-2 focus-visible:ring-focus-ring/25',
+        'focus-visible:outline-hidden focus-visible:border-focus-ring focus-visible:ring-2 focus-visible:ring-focus-ring/25',
     focusWithin:
-        'has-[:focus-visible]:outline-hidden has-[:focus-visible]:bg-transparent has-[:focus-visible]:border-focus-ring has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus-ring/25',
+        'has-[:focus-visible]:outline-hidden has-[:focus-visible]:border-focus-ring has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus-ring/25',
     invalidSelf:
         'aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-destructive/20 dark:aria-[invalid=true]:ring-destructive/40',
     invalidWithin:

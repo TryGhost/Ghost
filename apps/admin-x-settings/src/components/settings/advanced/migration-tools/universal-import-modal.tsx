@@ -1,6 +1,8 @@
+import ConfirmationModal from '../../../confirmation-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {Button, ConfirmationModal, FileUpload, Link, Modal} from '@tryghost/admin-x-design-system';
+import {Button, Dropzone} from '@tryghost/shade/components';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useImportContent} from '@tryghost/admin-x-framework/api/db';
 
@@ -11,12 +13,12 @@ const UniversalImportModal: React.FC = () => {
     const handleError = useHandleError();
 
     return (
-        <Modal
+        <SettingsModal
             backDropClick={false}
             footer={
                 <div className='flex w-full items-center justify-between p-8'>
-                    <Link href="https://docs.ghost.org/migration/ghost" target="_blank">Learn about importing</Link>
-                    <Button color='outline' disabled={uploading} label='Cancel' onClick={() => modal.remove()} />
+                    <a className='text-green hover:text-green-400' href="https://docs.ghost.org/migration/ghost" rel='noopener noreferrer' target="_blank">Learn about importing</a>
+                    <Button className='font-semibold' disabled={uploading} type='button' variant='ghost' onClick={() => modal.remove()}>Cancel</Button>
                 </div>
             }
             okLabel=''
@@ -25,10 +27,10 @@ const UniversalImportModal: React.FC = () => {
             title='Universal import'
         >
             <div className='py-4'>
-                <FileUpload
-                    accept="application/json, application/zip"
-                    id="import-file"
-                    onUpload={async (file) => {
+                <Dropzone
+                    accept={{'application/json': ['.json'], 'application/zip': ['.zip']}}
+                    inputId="import-file"
+                    onDropAccepted={async ([file]) => {
                         setUploading(true);
                         try {
                             await importContent(file);
@@ -48,14 +50,14 @@ const UniversalImportModal: React.FC = () => {
                         }
                     }}
                 >
-                    <div className="-mb-4 cursor-pointer bg-grey-50 p-10 text-center dark:bg-grey-950">
+                    <div className="text-center">
                         {uploading ? 'Uploading...' : <>
                         Select any JSON or zip file that contains <br />posts and settings
                         </>}
                     </div>
-                </FileUpload>
+                </Dropzone>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 };
 

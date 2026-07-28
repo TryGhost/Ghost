@@ -1,17 +1,23 @@
 import BookmarkThumb from '../../../../assets/images/stripe-thumb.jpg';
+import ConfirmationModal from '../../../confirmation-modal';
 import GhostLogo from '../../../../assets/images/orb-squircle.png';
 import GhostLogoPink from '../../../../assets/images/orb-pink.png';
+import LimitModal from '../../../limit-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
+import StripeButton from '../../../stripe-button';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import StripeVerifiedBadge from '../../../../assets/images/stripe-verified.svg';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, ConfirmationModal, Form, Heading, LimitModal, Modal, StripeButton, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldError, FieldGroup, FieldLabel, Input, Switch, Textarea} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {SettingsModal} from '@tryghost/shade/patterns';
+import {Text} from '@tryghost/shade/primitives';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
-import {toast} from 'react-hot-toast';
+import {toast} from 'sonner';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../../providers/global-data-provider';
@@ -25,7 +31,7 @@ const Start: React.FC<{onNext?: () => void}> = ({onNext}) => {
     return (
         <div>
             <div className='flex items-center justify-between'>
-                <Heading level={3}>Getting paid</Heading>
+                <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>Getting paid</Text>
                 <img alt='Stripe Verified Partner Badge' src={StripeVerifiedBadge} />
             </div>
             <div className='mt-6 mb-7'>
@@ -122,24 +128,24 @@ const Connect: React.FC = () => {
     return (
         <div>
             <div className='mb-6 flex items-center justify-between'>
-                <Heading level={3}>Connect with Stripe</Heading>
-                <Toggle
-                    checked={testMode}
-                    direction='rtl'
-                    label='Test mode'
-                    labelClasses={`translate-y-[1px] ${testMode ? 'text-[#EC6803]' : 'text-grey-800'}`}
-                    toggleBg='stripetest'
-                    onChange={e => setTestMode(e.target.checked)}
-                />
+                <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>Connect with Stripe</Text>
+                <Field className='w-auto' orientation='horizontal'>
+                    <FieldLabel className={testMode ? 'text-orange' : 'text-muted-foreground'} htmlFor='stripe-test-mode'>Test mode</FieldLabel>
+                    <Switch checked={testMode} className='data-[state=checked]:bg-orange!' id='stripe-test-mode' onCheckedChange={setTestMode} />
+                </Field>
             </div>
-            <Heading level={6} grey>Step 1 — <span className='text-black dark:text-white'>Generate secure key</span></Heading>
+            <Text as='h6' className='text-base' tone='secondary' weight='semibold'>Step 1 — <span className='text-foreground'>Generate secure key</span></Text>
             <div className='mt-2 mb-4'>
                 Click on the <strong>“Connect with Stripe”</strong> button to generate a secure key that connects your Ghost site with Stripe.
             </div>
-            <StripeButton href={stripeConnectUrl} tag='a' target='_blank' />
-            <Heading className='mt-8 mb-2' level={6} grey>Step 2 — <span className='text-black dark:text-white'>Paste secure key</span></Heading>
-            <TextArea error={Boolean(error)} hint={error || undefined} placeholder='Paste your secure key here' onChange={onTokenChange}></TextArea>
-            {submitEnabled && <Button className='mt-5' color='green' label='Save Stripe settings' onClick={onSubmit} />}
+            <StripeButton href={stripeConnectUrl} target='_blank' />
+            <Text as='h6' className='mt-8 mb-2 text-base' tone='secondary' weight='semibold'>Step 2 — <span className='text-foreground'>Paste secure key</span></Text>
+            <Field data-invalid={Boolean(error) || undefined}>
+                <FieldLabel className='sr-only' htmlFor='stripe-secure-key'>Secure key</FieldLabel>
+                <Textarea aria-invalid={Boolean(error) || undefined} className='border-transparent bg-muted' id='stripe-secure-key' placeholder='Paste your secure key here' onChange={onTokenChange} />
+                {error && <FieldError>{error}</FieldError>}
+            </Field>
+            {submitEnabled && <Button className='mt-5' type='button' onClick={onSubmit}>Save Stripe settings</Button>}
         </div>
     );
 };
@@ -181,19 +187,24 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     return (
         <section>
             <div className='flex items-center justify-between'>
-                <Button color='red' disabled={isFetchingMembers} icon='link-broken' iconColorClass='text-red' label='Disconnect' link onClick={openDisconnectStripeModal} />
-                <Button icon='close' iconColorClass='dark:text-white' label='Close' size='sm' hideLabel link onClick={onClose} />
+                <Button className='text-destructive hover:text-destructive' disabled={isFetchingMembers} type='button' variant='ghost' onClick={openDisconnectStripeModal}>
+                    <LucideIcon.Unlink />
+                    Disconnect
+                </Button>
+                <Button aria-label='Close' size='icon' type='button' variant='ghost' onClick={onClose}>
+                    <LucideIcon.X />
+                </Button>
             </div>
             <div className='my-20 flex flex-col items-center'>
                 <div className='relative h-20 w-[200px]'>
                     <img alt='Ghost Logo' className='absolute left-10 size-16' src={GhostLogo} />
                     <img alt='Stripe Logo' className='absolute right-10 size-16 rounded-2xl shadow-[-1.5px_0_0_1.5px_#fff] dark:shadow-[-1.5px_0_0_1.5px_black]' src={StripeLogo} />
                 </div>
-                <Heading className='text-center' level={3}>You are connected with Stripe!{stripeConnectLivemode ? null : ' (Test mode)'}</Heading>
+                <Text as='h3' className='text-center md:text-2xl' leading='heading' size='xl' weight='bold'>You are connected with Stripe!{stripeConnectLivemode ? null : ' (Test mode)'}</Text>
                 <div className='mt-1'>Connected to <strong>{stripeConnectAccountName ? stripeConnectAccountName : 'Test mode'}</strong></div>
             </div>
             <div className='flex flex-col items-center'>
-                <Heading level={6}>Read next</Heading>
+                <Text as='h6' className='text-base' weight='semibold'>Read next</Text>
                 <a className='mt-5 flex w-100 flex-col items-stretch justify-between overflow-hidden rounded-md border border-grey-200 transition-all hover:border-grey-400 md:flex-row dark:border-grey-900' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
                     <div className='order-2 p-4 md:order-1'>
                         <div className='text-md font-semibold'>How to setup and manage your Stripe account</div>
@@ -218,16 +229,12 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
 
     const onSubmit = async () => {
         try {
-            toast.remove();
+            toast.dismiss();
             await handleSave();
             onClose();
         } catch (e) {
             if (e instanceof JSONError) {
-                showToast({
-                    title: 'Failed to save settings',
-                    type: 'error',
-                    message: 'Check you copied both keys correctly'
-                });
+                toast.error('Failed to save settings', {description: 'Check you copied both keys correctly'});
                 return;
             }
 
@@ -237,12 +244,12 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
 
     return (
         <div>
-            <Heading level={3}>Connect Stripe</Heading>
-            <Form marginBottom={false} marginTop>
-                <TextField title='Publishable key' value={publishableKey?.toString() ?? ''} onChange={e => updateSetting('stripe_publishable_key', e.target.value)} />
-                <TextField title='Secure key' value={secretKey?.toString() ?? ''} onChange={e => updateSetting('stripe_secret_key', e.target.value)} />
-                <Button className='mt-5' color='green' disabled={saveState === 'saving'} label='Save Stripe settings' onClick={onSubmit} />
-            </Form>
+            <Text as='h3' className='md:text-2xl' leading='heading' size='xl' weight='bold'>Connect Stripe</Text>
+            <FieldGroup className='mt-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                <Field><FieldLabel htmlFor='stripe-publishable-key'>Publishable key</FieldLabel><Input id='stripe-publishable-key' value={publishableKey?.toString() ?? ''} onChange={e => updateSetting('stripe_publishable_key', e.target.value)} /></Field>
+                <Field><FieldLabel htmlFor='stripe-secure-key'>Secure key</FieldLabel><Input id='stripe-secure-key' value={secretKey?.toString() ?? ''} onChange={e => updateSetting('stripe_secret_key', e.target.value)} /></Field>
+                <Button className='mt-5' disabled={saveState === 'saving'} type='button' onClick={onSubmit}>Save Stripe settings</Button>
+            </FieldGroup>
         </div>
     );
 };
@@ -306,7 +313,7 @@ const StripeConnectModal: React.FC = () => {
         contents = <Connect />;
     }
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             updateRoute('tiers');
         }}
@@ -318,7 +325,7 @@ const StripeConnectModal: React.FC = () => {
         hideXOnMobile
     >
         {contents}
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(StripeConnectModal);

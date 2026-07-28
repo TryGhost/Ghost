@@ -1,6 +1,8 @@
 import { page } from "vitest/browser";
 import * as sel from "@tryghost/test-data/selectors/settings";
 
+const toast = () => page.getByRole("region", { name: /Notifications/ }).getByRole("listitem");
+
 /** Settings locators and gestures shared by the acceptance batches; no assertions. */
 export const settingsScreen = {
     section: (testId: string) => page.getByTestId(testId),
@@ -18,10 +20,10 @@ export const settingsScreen = {
     localeSelect: () => page.getByTestId(sel.localeSelect),
     timezoneSelect: () => page.getByTestId(sel.timezoneSelect),
     seoTabView: () => page.getByTestId(sel.seoTabView),
-    selectOption: (name: string) => page.getByTestId(sel.selectOption).filter({ hasText: name }),
-    selectOptionExact: (name: string) => page.getByTestId(sel.selectOption).filter({ hasText: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`) }),
-    errorToast: () => page.getByTestId(sel.toastError),
-    successToast: () => page.getByTestId(sel.toastSuccess),
+    selectOption: (name: string) => page.getByRole("option").filter({ hasText: name }),
+    selectOptionExact: (name: string) => page.getByRole("option", { name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:\\s|$)`) }),
+    errorToast: toast,
+    successToast: toast,
     inviteUserModal: () => page.getByTestId(sel.inviteUserModal),
     limitModal: () => page.getByTestId(sel.limitModal),
     enableNewsletters: () => page.getByTestId(sel.enableNewsletters),
@@ -33,7 +35,8 @@ export const settingsScreen = {
     mailgun: () => page.getByTestId(sel.mailgun),
     addNewsletterModal: () => page.getByTestId(sel.addNewsletterModal),
     newsletterModal: () => page.getByTestId(sel.newsletterModal),
-    infoToast: () => page.getByTestId(sel.toastInfo),
+    infoToast: toast,
+    notification: (text: string) => page.getByRole("region", { name: /Notifications/ }).getByText(text, { exact: true }),
     access: () => page.getByTestId(sel.access),
     customFields: () => page.getByTestId(sel.customFields),
     customFieldModal: () => page.getByTestId(sel.customFieldModal),
@@ -63,7 +66,7 @@ export const settingsScreen = {
     menu: () => page.getByRole("menu"),
     menuItem: (name: string) => page.getByRole("menuitem", {name}),
     sidebar: () => page.getByTestId(sel.settingsSidebar),
-    search: () => page.getByLabelText(sel.settingsSearchLabel),
+    search: () => page.getByRole("textbox", {name: sel.settingsSearchLabel, exact: true}),
     exitButton: () => page.getByTestId(sel.exitSettings),
     confirmationModal: () => page.getByTestId(sel.confirmationModal),
     confirmationAction: (name: "Leave" | "Stay") => settingsScreen.confirmationModal().getByRole("button", { name }),

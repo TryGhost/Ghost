@@ -1,8 +1,9 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const storage = require('../../../../../core/server/adapters/storage');
+const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');
 const handleImageSizes = require('../../../../../core/frontend/web/middleware/handle-image-sizes.js');
+const {imageSize} = require('../../../../../core/server/lib/image');
 const errors = require('@tryghost/errors');
 const imageTransform = require('@tryghost/image-transform');
 const {deferred} = require('../../../../utils/deferred')
@@ -117,7 +118,10 @@ describe('handleImageSizes middleware', function () {
                 }
             };
 
-            sinon.stub(storage, 'getStorage').returns(dummyStorage);
+            sinon.stub(adapterManager, 'getAdapter').returns(dummyStorage);
+            // imageSize resolves the images storage adapter once at require time,
+            // so stubbing adapterManager alone doesn't reach it
+            sinon.stub(imageSize, 'imageStore').value(dummyStorage);
             sinon.stub(activeTheme, 'get').returns(dummyTheme);
             resizeFromBufferStub = sinon.stub(imageTransform, 'resizeFromBuffer').resolves(Buffer.from([]));
         });

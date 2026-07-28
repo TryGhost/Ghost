@@ -54,7 +54,8 @@
         },
         "route-settings": {
             "active": "FileStore",
-            "FileStore": {}
+            "FileStore": {},
+            "S3RouteSettingsStore": {}
         }
     },
     "storage": {
@@ -72,6 +73,9 @@
         "paymentProcessors": [],
         "customFields": {
             "maxDefinitions": 100
+        },
+        "importer": {
+            "inlineThreshold": 500
         },
         "emailTemplate": {
             "showSiteHeader": true,
@@ -362,5 +366,6 @@
         "captureLinkClickBadMemberUuid": false
     },
     "disableJSBackups": false,
-    "disableMigrationBackups": false
+    "disableMigrationBackups": false,
+    "usingLoopbackReverseProxy": false
 }

@@ -1,6 +1,9 @@
-import {type SelectOptionGroup} from '@tryghost/admin-x-design-system';
+export interface WebhookEventOptionGroup {
+    label: string;
+    options: Array<{label: string; value: string}>;
+}
 
-const webhookEventOptions: SelectOptionGroup[] = [
+const webhookEventOptions: WebhookEventOptionGroup[] = [
     {
         label: 'Global',
         options: [{value: 'site.changed', label: 'Site changed (rebuild)'}]

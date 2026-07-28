@@ -170,6 +170,13 @@ describe('Exporter', function () {
             sinon.assert.calledOnce(loggingStub);
             assert.match(result, /^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
         });
+
+        it('should return the base filename if path separator is present', async function () {
+            const filename = '../../backup';
+            const result = await exporter.fileName({filename});
+            assertExists(result);
+            assert.equal(result, 'backup.json');
+        });
     });
 
     describe('Export table allowlists', function () {
@@ -204,7 +211,7 @@ describe('Exporter', function () {
 
             // NOTE: if default settings changed either modify the settings keys blocklist or increase allowedKeysLength
             //       This is a reminder to think about the importer/exporter scenarios ;)
-            const allowedKeysLength = 108;
+            const allowedKeysLength = 107;
             assert.equal(totalKeysLength, SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
         });
     });

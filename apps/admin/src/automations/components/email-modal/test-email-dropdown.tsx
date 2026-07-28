@@ -1,5 +1,5 @@
 import validator from 'validator';
-import {Button, Input} from '@tryghost/shade/components';
+import {Button, Input, PopoverContent} from '@tryghost/shade/components';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useEffect, useRef, useState} from 'react';
@@ -10,15 +10,13 @@ export interface TestEmailDropdownProps {
   subject: string
   lexical: string
   validateForm: () => boolean
-  onClose: () => void
 }
 
 const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
     automationId,
     subject,
     lexical,
-    validateForm,
-    onClose
+    validateForm
 }) => {
     const {data: currentUser} = useCurrentUser();
     const {mutateAsync: sendTestEmail} = useSendTestAutomationEmail();
@@ -41,18 +39,6 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
             setTestEmail(currentUser.email);
         }
     }, [currentUser?.email]);
-
-    // Close dropdown on Escape and stop propagation to prevent modal from *also* closing
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                e.stopPropagation();
-                onClose();
-            }
-        };
-        document.addEventListener('keydown', handleKeyDown, true);
-        return () => document.removeEventListener('keydown', handleKeyDown, true);
-    }, [onClose]);
 
     const handleSendTestEmail = async () => {
         setTestEmailError('');
@@ -95,7 +81,7 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
     };
 
     return (
-        <div className='absolute top-full right-0 z-10 mt-2 w-[260px] rounded border border-grey-300 bg-white p-4 shadow-lg dark:border-grey-950 dark:bg-grey-950' data-testid='test-email-dropdown'>
+        <PopoverContent align='end' className='w-[260px] p-4' data-testid='test-email-dropdown' sideOffset={8}>
             <div className='mb-3'>
                 <label className='mb-2 block text-sm font-semibold' htmlFor='test-email-input'>Send test email</label>
                 <Input
@@ -115,7 +101,7 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
                 {sendState === 'sent' ? 'Sent' : sendState === 'sending' ? 'Sending...' : 'Send'}
             </Button>
             {testEmailError && <span className='mt-2 block text-xs text-destructive'>{testEmailError}</span>}
-        </div>
+        </PopoverContent>
     );
 };
 

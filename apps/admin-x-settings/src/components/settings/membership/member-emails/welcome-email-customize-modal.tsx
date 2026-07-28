@@ -517,7 +517,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
     const fetchErrorMessage = 'Unable to load email design settings. Please try again.';
     const modalOkProps = hasSaveError ? {
         ...okProps,
-        color: 'red' as const,
+        variant: 'destructive' as const,
         label: 'Retry'
     } : okProps;
 

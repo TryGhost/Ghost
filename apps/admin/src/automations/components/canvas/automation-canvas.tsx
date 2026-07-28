@@ -4,7 +4,7 @@ import EmailContentModal from '@/automations/components/email-modal/email-conten
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Banner, Button, LoadingIndicator} from '@tryghost/shade/components';
 import {MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import type {AutomationAction, AutomationDetail, AutomationEmailStats, AutomationSendEmailAction} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationAction, AutomationDetail, AutomationSendEmailAction} from '@tryghost/admin-x-framework/api/automations';
 import {AutomationCanvasControls} from './controls';
 import {TAIL_CANVAS_ID, TRIGGER_CANVAS_ID} from './nodes';
 import {nodeTypes, toApiAnchor} from './node-helpers';
@@ -16,7 +16,6 @@ import {type StepPickerType} from './step-picker';
 import {StepSidebar} from './step-sidebar';
 import {formatWait} from './format-wait';
 import {isEmptyEmailLexical} from '@/automations/utils';
-import {getSettingValues, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useFeatureFlag} from '@/hooks/use-feature-flag';
 import {useLocation, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import type {EmailModalMode} from '@/automations/components/types';
@@ -41,15 +40,6 @@ const edgeTypes = {
     'add-step-edge': AddStepEdge
 };
 
-// Placeholder counts for the canvas footer; matches the sidebar panel's data so
-// a step reads consistently in both surfaces.
-const MOCK_AUTOMATION_STATS: AutomationEmailStats = {
-    email_sent_count: 1247,
-    email_opened_count: 1185,
-    opened_rate: 95,
-    clicked_rate: 26
-};
-
 const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
     switch (action.type) {
     case 'wait':
@@ -59,7 +49,7 @@ const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
             icon: LucideIcon.Mail,
             isPlaceholderValue: !action.data.email_subject,
             label: 'Send email',
-            stats: MOCK_AUTOMATION_STATS, // placeholder until real data is wired
+            stats: action.stats,
             value: action.data.email_subject || 'Untitled',
             warningMessage: isEmptyEmailLexical(action.data.email_lexical) ? 'Empty email body' : undefined
         };
@@ -169,8 +159,6 @@ type BuildGraphParams = {
     actionErrors: Record<string, string>;
     automation: AutomationDetail;
     automationAnalyticsEnabled: boolean;
-    opensTracked: boolean;
-    clicksTracked: boolean;
     disabled: boolean;
     onDelete: (stepId: string) => void;
     onEditEmailBody: (stepId: string, mode?: EmailModalMode) => void;
@@ -181,7 +169,7 @@ type BuildGraphParams = {
     selectedStepId: string | null;
 }
 
-const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, opensTracked, clicksTracked, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[] } => {
+const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[] } => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -223,10 +211,9 @@ const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, opens
     ordered.forEach((action) => {
         const displayData = buildActionData(action);
         const errorMessage = actionErrors[action.id];
-        // Gated on the automationAnalytics feature flag.
         const showStatsFooter = automationAnalyticsEnabled
             && action.type === 'send_email'
-            && Boolean(displayData.stats)
+            && Boolean(action.stats)
             && !errorMessage
             && !displayData.warningMessage;
 
@@ -249,8 +236,6 @@ const buildGraph = ({actionErrors, automation, automationAnalyticsEnabled, opens
                 isNew: newStepId === action.id,
                 selected: selectedStepId === action.id,
                 showStatsFooter,
-                opensTracked,
-                clicksTracked,
                 onSelect: () => onSelectStep(action.id)
             },
             ...baseNodeProps
@@ -467,12 +452,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         : undefined;
 
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
-    // Footer tracking states from Settings → Analytics; default to tracked until
-    // the settings load.
-    const {data: settingsData} = useBrowseSettings();
-    const [emailTrackOpens, emailTrackClicks] = getSettingValues<boolean>(settingsData?.settings || [], ['email_track_opens', 'email_track_clicks']);
-    const opensTracked = emailTrackOpens !== false;
-    const clicksTracked = emailTrackClicks !== false;
     const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
 
     const graph = useMemo(() => {
@@ -483,8 +462,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
             actionErrors,
             automation,
             automationAnalyticsEnabled,
-            opensTracked,
-            clicksTracked,
             disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
             onDelete: handleRequestDelete,
             onEditEmailBody: handleContextMenuEditEmail,
@@ -494,7 +471,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
             newStepId,
             selectedStepId
         });
-    }, [actionErrors, automation, automationAnalyticsEnabled, opensTracked, clicksTracked, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handlePick, handleRequestDelete, newStepId, selectedStepId]);
+    }, [actionErrors, automation, automationAnalyticsEnabled, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handlePick, handleRequestDelete, newStepId, selectedStepId]);
 
     const clearDetail = useCallback(() => {
         setSelectedStep(null);

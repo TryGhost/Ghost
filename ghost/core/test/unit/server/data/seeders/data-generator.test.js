@@ -41,7 +41,12 @@ describe('Data Generator', function () {
                         break;
                     } else if (rowName === '@@INDEXES@@') {
                         for (const indexes of row) {
-                            table.index(indexes);
+                            // We ignore the index prefix for SQLite.
+                            if (indexes && typeof indexes === 'object' && !Array.isArray(indexes)) {
+                                table.index(indexes.columns);
+                            } else {
+                                table.index(indexes);
+                            }
                         }
                         break;
                     } else if (rowName === '@@PRIMARY_KEY@@') {

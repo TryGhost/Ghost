@@ -49,6 +49,25 @@ describe('Comments Service: CommentsServiceEmails', function () {
             );
         });
 
+        it('passes a pages resource to the facade for a comment on a page', function () {
+            // Comments are enabled on pages too. The lazy URL service routes
+            // by the passed type: a page typed 'posts' matches none of the
+            // post collections' filters and resolves to /404/, so the
+            // notification email links to the 404 page.
+            const {instance, urlService} = createClassInstance({});
+            const fakeBookshelfModel = {
+                toJSON: () => ({id: '123', slug: 'my-page', type: 'page'})
+            };
+
+            instance.getPostUrl(fakeBookshelfModel, '456');
+
+            sinon.assert.calledWith(
+                urlService.facade.getUrlForResource,
+                sinon.match({id: '123', slug: 'my-page', type: 'pages'}),
+                {absolute: true}
+            );
+        });
+
         it('serialises Bookshelf-model input so spread does not lose the id', function () {
             // Real callers (notify*Authors / notifyParentCommentAuthor / notifyReport)
             // pass a Bookshelf model from Post.findOne. Spreading one with

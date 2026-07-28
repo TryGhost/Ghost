@@ -4,7 +4,9 @@ import ThemePreview from './design-and-branding/theme-preview';
 import ThemeSettings from './design-and-branding/theme-settings';
 import useQueryParams from '../../../hooks/use-query-params';
 import {type CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/custom-theme-settings';
-import {PreviewModalContent, type Tab, TabView} from '@tryghost/admin-x-design-system';
+import {Laptop, Smartphone} from 'lucide-react';
+import {PreviewChrome, Tabs, TabsContent, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
+import {PreviewModalContent} from '../preview-modal';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
@@ -28,22 +30,6 @@ const Sidebar: React.FC<{
 }) => {
     const [selectedTab, setSelectedTab] = useState('global');
 
-    const tabs: Tab[] = [
-        {
-            id: 'global',
-            title: 'Brand',
-            contents: <GlobalSettings updateSetting={updateGlobalSetting} values={globalSettings} />
-        }
-    ];
-
-    if (themeSettingSections.length > 0) {
-        tabs.push({
-            id: 'theme-settings',
-            title: 'Theme',
-            contents: <ThemeSettings sections={themeSettingSections} updateSetting={updateThemeSetting} />
-        });
-    }
-
     const handleTabChange = (id: string) => {
         setSelectedTab(id);
         onTabChange(id);
@@ -52,8 +38,15 @@ const Sidebar: React.FC<{
     return (
         <div className='flex h-full flex-col justify-between'>
             <div className='grow p-7 pt-0' data-testid="design-setting-tabs">
-                {tabs.length > 1 ?
-                    <TabView selectedTab={selectedTab} stickyHeader={true} tabs={tabs} onTabChange={handleTabChange} />
+                {themeSettingSections.length > 0 ?
+                    <Tabs value={selectedTab} variant='underline' onValueChange={handleTabChange}>
+                        <TabsList className='sticky top-0 z-50 bg-surface-elevated-2'>
+                            <TabsTrigger value='global'>Brand</TabsTrigger>
+                            <TabsTrigger value='theme-settings'>Theme</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value='global'><GlobalSettings updateSetting={updateGlobalSetting} values={globalSettings} /></TabsContent>
+                        <TabsContent value='theme-settings'><ThemeSettings sections={themeSettingSections} updateSetting={updateThemeSetting} /></TabsContent>
+                    </Tabs>
                     :
                     <GlobalSettings updateSetting={updateGlobalSetting} values={globalSettings} />
                 }
@@ -77,6 +70,7 @@ const DesignModal: React.FC = () => {
     const {mutateAsync: editThemeSettings} = useEditCustomThemeSettings();
     const handleError = useHandleError();
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
+    const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
     const {updateRoute} = useRouting();
 
     const refParam = useQueryParams().getParam('ref');
@@ -143,16 +137,8 @@ const DesignModal: React.FC = () => {
         title: id === 'site-wide' ? 'Site wide' : (id === 'homepage' ? 'Homepage' : 'Post')
     }));
 
-    let previewTabs: Tab[] = [];
-    if (latestPost) {
-        previewTabs = [
-            {id: 'homepage', title: 'Homepage'},
-            {id: 'post', title: 'Post'}
-        ];
-    }
-
     const onSelectURL = (id: string) => {
-        if (previewTabs.length) {
+        if (latestPost) {
             setSelectedPreviewTab(id);
         }
     };
@@ -175,7 +161,7 @@ const DesignModal: React.FC = () => {
         break;
     }
 
-    const previewContent =
+    const rawPreviewContent =
         <ThemePreview
             settings={{
                 description,
@@ -189,6 +175,29 @@ const DesignModal: React.FC = () => {
             }}
             url={selectedTabURL}
         />;
+    const previewContent = previewDevice === 'desktop' ? (
+        <PreviewChrome data-testid='preview-desktop' device='desktop'>{rawPreviewContent}</PreviewChrome>
+    ) : (
+        <PreviewChrome data-testid='preview-mobile' device='mobile'>{rawPreviewContent}</PreviewChrome>
+    );
+    const previewTabs = latestPost ? (
+        <Tabs value={selectedPreviewTab} variant='button-sm' onValueChange={onSelectURL}>
+            <TabsList>
+                <TabsTrigger value='homepage'>Homepage</TabsTrigger>
+                <TabsTrigger value='post'>Post</TabsTrigger>
+            </TabsList>
+        </Tabs>
+    ) : undefined;
+    const deviceSelector = (
+        <ToggleGroup type='single' value={previewDevice} onValueChange={(value) => {
+            if (value === 'desktop' || value === 'mobile') {
+                setPreviewDevice(value);
+            }
+        }}>
+            <ToggleGroupItem aria-label='Desktop' value='desktop'><Laptop /></ToggleGroupItem>
+            <ToggleGroupItem aria-label='Mobile' value='mobile'><Smartphone /></ToggleGroupItem>
+        </ToggleGroup>
+    );
     const sidebarContent =
         <Sidebar
             globalSettings={{description, accentColor, icon, logo, coverImage, headingFont, bodyFont}}
@@ -209,13 +218,12 @@ const DesignModal: React.FC = () => {
         }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
-        defaultTab='homepage'
+        deviceSelector={deviceSelector}
         dirty={saveState === 'unsaved'}
-        okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
+        okVariant={okProps.variant}
         preview={previewContent}
         previewToolbarTabs={previewTabs}
-        selectedURL={selectedPreviewTab}
         sidebar={sidebarContent}
         sidebarPadding={false}
         siteLink={getHomepageUrl(siteData!)}
@@ -225,7 +233,6 @@ const DesignModal: React.FC = () => {
         onOk={async () => {
             await handleSave({fakeWhenUnchanged: true});
         }}
-        onSelectURL={onSelectURL}
     />;
 };
 

@@ -78,7 +78,7 @@ describe("Portal settings", () => {
 
         const modal = await openPortal();
         await modal.getByRole("tab", {name: "Look & feel"}).click();
-        await modal.getByRole("textbox").fill("become a member of something epic");
+        await modal.getByRole("textbox", {name: "Signup button text"}).fill("become a member of something epic");
         await modal.getByRole("switch").click();
         await modal.getByRole("button", {name: "Save"}).click();
 
@@ -87,6 +87,31 @@ describe("Portal settings", () => {
             {key: "portal_button", value: false},
             {key: "portal_button_signup_text", value: "become a member of something epic"},
         ]);
+    });
+
+    it("keeps the preview and settings tabs synchronized", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings");
+
+        const modal = await openPortal();
+        const previewAccountTab = modal.getByRole("tab", {name: "Account page"}).first();
+        const settingsAccountTab = modal.getByRole("tab", {name: "Account page"}).last();
+        const linksTab = modal.getByRole("tab", {name: "Links"});
+        const lookAndFeelTab = modal.getByRole("tab", {name: "Look & feel"});
+        const signupTab = modal.getByRole("tab", {name: "Signup", exact: true});
+        const signupOptionsTab = modal.getByRole("tab", {name: "Signup options"});
+
+        await previewAccountTab.click();
+        await expect.element(settingsAccountTab).toHaveAttribute("data-state", "active");
+
+        await linksTab.click();
+        await expect.element(settingsAccountTab).toHaveAttribute("data-state", "active");
+
+        await lookAndFeelTab.click();
+        await expect.element(signupTab).toHaveAttribute("data-state", "active");
+
+        await signupOptionsTab.click();
+        await expect.element(signupTab).toHaveAttribute("data-state", "active");
     });
 
     it("validates and saves the support email address", async () => {
@@ -102,7 +127,7 @@ describe("Portal settings", () => {
         await expect.element(modal.getByText("Enter a valid email address")).toBeVisible();
 
         await supportEmail.fill("hello@world.com");
-        supportEmail.element().blur();
+        await modal.getByRole("tab", {name: "Signup options"}).click();
         await modal.getByRole("button", {name: "Save"}).click();
 
         await expect.element(modal.getByRole("button", {name: "Saved"})).toBeVisible();

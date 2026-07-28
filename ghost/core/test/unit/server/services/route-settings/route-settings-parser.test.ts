@@ -322,7 +322,7 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             it('still rejects non-numeric string limits', function () {
                 assert.throws(() => {
                     parse({collections: {'/': {permalink: '/{slug}/', limit: 'banana'}}});
-                }, /Invalid input/);
+                }, /The following definition "collections\['\/'\]\.limit" is invalid: limit must be a number or "all" \(e\.g\. limit: 5\), but the text "banana" was provided\./);
             });
 
             it('still accepts the literal "all" limit', function () {
@@ -514,11 +514,15 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             const original = buildRouteSettings({
                 routes: [
                     {type: 'template', path: '/about/', templates: ['about']},
-                    {type: 'channel', path: '/featured/', templates: ['featured'], filter: 'featured:true', rss: true, data: 'tag.featured'}
+                    {type: 'channel', path: '/featured/', templates: ['featured'], filter: 'featured:true', rss: true, data: 'tag.featured'},
+                    // A :param key becomes a YAML mapping key containing a colon,
+                    // which only became expressible once keys accepted :param.
+                    {type: 'channel', path: '/author/:slug/', templates: ['author'], data: 'author.%s'}
                 ],
                 collections: [
                     {path: '/', permalink: '/{slug}/', templates: ['index']},
-                    {path: '/podcast/', permalink: '/podcast/{slug}/', templates: ['podcast'], filter: 'tag:podcast'}
+                    {path: '/podcast/', permalink: '/podcast/{slug}/', templates: ['podcast'], filter: 'tag:podcast'},
+                    {path: '/locations/:location/', permalink: '/locations/{slug}/', templates: ['tag']}
                 ],
                 taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
             });

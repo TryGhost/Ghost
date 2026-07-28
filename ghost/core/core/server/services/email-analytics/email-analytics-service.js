@@ -105,7 +105,7 @@ module.exports = class EmailAnalyticsService {
      * @param {object} dependencies
      * @param {object} dependencies.queries
      * @param {object} dependencies.provider
-     * @param {PrometheusClient} dependencies.prometheusClient
+     * @param {PrometheusClient} [dependencies.prometheusClient]
      * @param {() => BatchEventProcessor} dependencies.createEventProcessor
      * @param {JobNames} dependencies.jobNames
      * @param {CursorSeed} dependencies.cursorSeed

@@ -367,11 +367,93 @@ describe('UrlServiceFacade', function () {
             assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
         });
 
+        it('includes the serializer context (api endpoint) in a forward parity mismatch', async function () {
+            // Diagnostic: the compare-log caller stack truncates at the async
+            // api-framework boundary, so the producing endpoint is threaded in
+            // explicitly to pin thin-resource / mismatch producers in production.
+            compareFacade.getUrlForResource(
+                {type: 'posts', id: 'a'},
+                {serializerContext: {apiType: 'admin', docName: 'posts', method: 'read'}}
+            );
+            await flush();
+
+            sinon.assert.calledOnce(logging.error);
+            const reported = logging.error.firstCall.args[0];
+            assert.equal(reported.code, 'LAZY_URL_PARITY_MISMATCH');
+            assert.deepEqual(reported.errorDetails.serializer, {apiType: 'admin', docName: 'posts', method: 'read'});
+        });
+
+        it('includes the serializer context when the lazy backend throws (thin resource)', async function () {
+            lazyUrlService.getUrlForResource.throws(new Error('thin resource'));
+            compareFacade.getUrlForResource(
+                {type: 'posts', id: 'a'},
+                {serializerContext: {apiType: 'admin', docName: 'posts', method: 'read'}}
+            );
+            await flush();
+
+            const reported = logging.error.firstCall.args[0];
+            assert.equal(reported.code, 'LAZY_URL_COMPARE_ERROR');
+            assert.equal(reported.errorDetails.serializer.method, 'read');
+        });
+
         it('does not report when the lazy forward URL matches', async function () {
             lazyUrlService.getUrlForResource.returns('/hello-world/');
             compareFacade.getUrlForResource({type: 'posts', id: 'a'});
             await flush();
             sinon.assert.notCalled(logging.error);
+        });
+
+        it('does not report a tag/author whose eager URL is /404/ but lazy resolves it', async function () {
+            // Eager cache missing a routable tag/author (no model event) — lazy
+            // is authoritative, so this eager staleness is expected noise.
+            urlService.getUrlByResourceId.returns('/404/');
+            lazyUrlService.getUrlForResource.returns('/tag/news/');
+            compareFacade.getUrlForResource({type: 'tags', id: 't1'});
+            compareFacade.getUrlForResource({type: 'authors', id: 'u1'});
+            await flush();
+            sinon.assert.notCalled(logging.error);
+        });
+
+        it('still reports a post whose eager URL is /404/ (not the tag/author class)', async function () {
+            urlService.getUrlByResourceId.returns('/404/');
+            lazyUrlService.getUrlForResource.returns('/hello-world/');
+            compareFacade.getUrlForResource({type: 'posts', id: 'a'});
+            await flush();
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
+        });
+
+        it('does not report an author whose eager URL is the stale ghost-user default', async function () {
+            urlService.getUrlByResourceId.returns('https://site.com/author/ghost-user/');
+            lazyUrlService.getUrlForResource.returns('https://site.com/author/nick/');
+            compareFacade.getUrlForResource({type: 'authors', id: 'u1'});
+            await flush();
+            sinon.assert.notCalled(logging.error);
+        });
+
+        it('does not report a non-published resource that eager still serves but lazy 404s', async function () {
+            urlService.getUrlByResourceId.returns('/hello-world/');
+            lazyUrlService.getUrlForResource.returns('/404/');
+            compareFacade.getUrlForResource({type: 'posts', id: 'a', status: 'draft'});
+            await flush();
+            sinon.assert.notCalled(logging.error);
+        });
+
+        it('still reports a PUBLISHED resource that lazy 404s (a real lazy bug)', async function () {
+            urlService.getUrlByResourceId.returns('/hello-world/');
+            lazyUrlService.getUrlForResource.returns('/404/');
+            compareFacade.getUrlForResource({type: 'posts', id: 'a', status: 'published'});
+            await flush();
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
+        });
+
+        it('still reports a lazy 404 when the resource carries no status', async function () {
+            urlService.getUrlByResourceId.returns('/hello-world/');
+            lazyUrlService.getUrlForResource.returns('/404/');
+            compareFacade.getUrlForResource({type: 'posts', id: 'a'});
+            await flush();
+            sinon.assert.calledOnce(logging.error);
         });
 
         it('reports a mismatch when lazy ownership differs', async function () {
@@ -450,15 +532,43 @@ describe('UrlServiceFacade', function () {
             await flush();
         });
 
-        it('reports a parity mismatch when the lazy resource differs', async function () {
+        it('reports a parity mismatch when lazy resolves a different resource', async function () {
             urlService.getResource.returns({config: {type: 'posts'}, data: {id: 'eager', slug: 's'}});
-            lazyUrlService.resolveUrl.resolves({type: 'posts', id: 'eager', slug: 'different'});
+            lazyUrlService.resolveUrl.resolves({type: 'posts', id: 'different', slug: 's'});
 
             await compareFacade.resolveUrl('/x/');
             await flush();
 
             sinon.assert.calledOnce(logging.error);
             assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
+        });
+
+        it('reports when the URL resolves on one side but not the other', async function () {
+            urlService.getResource.returns({config: {type: 'posts'}, data: {id: 'eager', slug: 's'}});
+            lazyUrlService.resolveUrl.resolves(null);
+
+            await compareFacade.resolveUrl('/x/');
+            await flush();
+
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
+        });
+
+        it('does not report when both sides resolve the same resource with a different record shape', async function () {
+            // Same resolved resource, different serialization: lazy carries a
+            // `parent` key and an expanded image URL, eager keeps the placeholder.
+            urlService.getResource.returns({config: {type: 'tags'}, data: {
+                id: 'eager', slug: 'news', canonical_url: '__GHOST_URL__/tag/news/'
+            }});
+            lazyUrlService.resolveUrl.resolves({
+                type: 'tags', id: 'eager', slug: 'news', parent: null,
+                canonical_url: 'https://example.com/tag/news/'
+            });
+
+            await compareFacade.resolveUrl('/tag/news/');
+            await flush();
+
+            sinon.assert.notCalled(logging.error);
         });
 
         it('does not report when eager and lazy resources are deep equal', async function () {

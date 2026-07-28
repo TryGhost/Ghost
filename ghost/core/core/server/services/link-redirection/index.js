@@ -1,4 +1,4 @@
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const LinkRedirectRepository = require('./link-redirect-repository');
 const adapterManager = require('../adapter-manager').default;
 const config = require('../../../shared/config');

@@ -30,7 +30,7 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@internal/cfg-eslint": "workspace:*",
-    "concurrently": "catalog:",
+    "@internal/cfg-vite-public-app": "workspace:*",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "globals": "catalog:",

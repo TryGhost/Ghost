@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../../utils');
 const urlService = require('../../../../../../../../core/server/services/url');
-const urlUtils = require('../../../../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../../../../core/shared/url-utils').default;
 const urlUtil = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/url');
 
 describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
@@ -42,6 +42,18 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
             assert.equal(resource.id, 'id1');
             assert.equal(resource.slug, post.slug);
             assert.deepEqual(options, {absolute: true});
+        });
+
+        it('passes the api endpoint identity (serializerContext) for compare diagnostics', function () {
+            // The compare-log caller stack truncates at the async api-framework
+            // boundary, so the api-framework Frame's endpoint identity is
+            // threaded to the URL service to pin producers in production.
+            const post = pageModel(testUtils.DataGenerator.forKnex.createPost({id: 'id1', mobiledoc: '{}', html: 'html'}));
+
+            urlUtil.forPost(post.id, post, {options: {}, apiType: 'admin', docName: 'posts', method: 'read'});
+
+            const [, options] = getUrlForResourceStub.firstCall.args;
+            assert.deepEqual(options.serializerContext, {apiType: 'admin', docName: 'posts', method: 'read'});
         });
 
         it('still passes id when attrs has been stripped (e.g. fields=url)', function () {

@@ -4,7 +4,7 @@ const validator = require('@tryghost/validator');
 
 const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../shared/settings-cache');
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 
 const messages = {
     passwordDoesNotComplyLength: 'Your password must be at least {minLength} characters long.',

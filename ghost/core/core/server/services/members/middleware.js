@@ -4,7 +4,7 @@ const logging = require('@tryghost/logging');
 const membersService = require('./service');
 const emailSuppressionList = require('../email-suppression-list');
 const models = require('../../models');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const spamPrevention = require('../../web/shared/middleware/api/spam-prevention');
 const {
     formattedMemberResponse,

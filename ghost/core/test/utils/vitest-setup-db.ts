@@ -86,13 +86,14 @@ if (!process.env.NODE_ENV.includes('mysql')) {
 
 // Flush this worker's V8 coverage after every file. The external c8 collector
 // reads NODE_V8_COVERAGE, which Node writes only on a clean process exit — but
-// vitest force-terminates the forks (the same reason the forks-teardown deadlock
-// doesn't bite). Under isolate:true each file runs in its own short-lived fork
-// that's recycled mid-run, so most never reach that flush and their coverage is
-// lost (a SIGTERM handler is unreliable: recycled forks don't all get one).
-// Running v8.takeCoverage() in this per-file afterAll writes each file's coverage
-// to disk before its fork is torn down, so c8 captures every file. No-op off
-// coverage runs.
+// vitest force-terminates its workers (kill + SIGKILL for forks,
+// worker.terminate() for threads), so that write never happens. Under
+// isolate:true each file runs in its own short-lived worker that's recycled
+// mid-run, so most never reach that flush and their coverage is lost (a SIGTERM
+// handler is unreliable: recycled workers don't all get one, and a thread can't
+// take signals at all). Running v8.takeCoverage() in this per-file afterAll
+// writes each file's coverage to disk before its worker is torn down, so c8
+// captures every file. No-op off coverage runs.
 if (process.env.NODE_V8_COVERAGE) {
     afterAll(() => {
         try {
@@ -103,13 +104,13 @@ if (process.env.NODE_V8_COVERAGE) {
     });
 }
 
-// NOTE: each fork still leaves a DB behind — vitest force-terminates forks (which
-// is also why the forks-teardown deadlock doesn't bite), so a process 'exit'
-// handler can't reclaim them. sqlite stays bounded: the next fork on a slot
-// deletes the file at boot (see the derivation above) and recreates it, so a run
-// reuses at most ~poolSize files in /tmp instead of leaving a fresh random one
-// behind every run. mysql names are random per fork but ephemeral on CI (the
-// container dies with the job); locally the mysql suite is rarely run.
+// NOTE: each worker still leaves a DB behind — vitest force-terminates its
+// workers, so a process 'exit' handler can't reclaim them. sqlite stays bounded:
+// the next worker on a slot deletes the file at boot (see the derivation above)
+// and recreates it, so a run reuses at most ~poolSize files in /tmp instead of
+// leaving a fresh random one behind every run. mysql names are random per worker
+// but ephemeral on CI (the container dies with the job); locally the mysql suite
+// is rarely run.
 
 const canonicalTestPort = 2369;
 // The per-fork port must be unique among forks running concurrently. Each test

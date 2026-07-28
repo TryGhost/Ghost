@@ -58,6 +58,18 @@ describe("Publication language settings", () => {
         await expect.element(settingsScreen.localeSelect()).toHaveTextContent("English (en)");
     });
 
+    it("restores the language dropdown when cancelling Other", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings");
+
+        await settingsScreen.localeSelect().click();
+        await settingsScreen.selectOption("Other").click();
+        await settingsScreen.publicationLanguage().getByRole("button", { name: "Cancel" }).click();
+
+        await expect.element(settingsScreen.localeSelect()).toBeVisible();
+        await expect.element(settingsScreen.localeSelect()).toHaveTextContent("English (en)");
+    });
+
     it("displays a stored custom locale", async () => {
         fakeSettingsScreens();
         await renderAdminApp("/settings", {
@@ -65,5 +77,22 @@ describe("Publication language settings", () => {
         });
 
         await expect.element(settingsScreen.publicationLanguage().getByLabelText("Site language")).toHaveValue("cy");
+    });
+
+    it("clears validation when cancelling changes to a stored custom locale", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings", {
+            boot: { browseSettings: { response: settingsResponse({ settings: { locale: "cy" } }) } },
+        });
+
+        const section = settingsScreen.publicationLanguage();
+        const language = section.getByLabelText("Site language");
+        await language.fill("invalid--locale");
+        await expect.element(section.getByText("Invalid locale format")).toBeVisible();
+        await section.getByRole("button", { name: "Cancel" }).click();
+
+        await expect.element(language).toHaveValue("cy");
+        await expect(section.getByText("Invalid locale format")).toHaveCount(0);
+        await expect.element(section.getByText("Enter a custom locale code.")).toBeVisible();
     });
 });

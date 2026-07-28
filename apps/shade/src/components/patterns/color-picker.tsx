@@ -3,9 +3,11 @@ import Color from 'color';
 import {PipetteIcon} from 'lucide-react';
 import * as Slider from '@radix-ui/react-slider';
 import {
+    type ButtonHTMLAttributes,
     type ComponentProps,
     createContext,
     type HTMLAttributes,
+    forwardRef,
     memo,
     useCallback,
     useContext,
@@ -24,6 +26,89 @@ import {
     SelectValue
 } from '@/components/ui/select';
 import {cn} from '@/lib/utils';
+
+export interface ColorSwatchOption {
+    title: string;
+    hex: string;
+    value?: string | null;
+}
+
+export interface ColorSwatchProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value' | 'onSelect'> {
+    color: string;
+    selected?: boolean;
+    size?: 'md' | 'lg';
+}
+
+const isTransparent = (color: string) => {
+    const normalized = color.toLowerCase();
+    return normalized === 'transparent' || (normalized.length === 5 && normalized[4] === '0') || (normalized.length === 9 && normalized.slice(7) === '00');
+};
+
+export const ColorSwatch = ({color, selected, size = 'md', className, style, ...props}: ColorSwatchProps) => (
+    <button
+        aria-pressed={selected}
+        className={cn(
+            'relative flex shrink-0 cursor-pointer items-center overflow-hidden rounded-full border border-control-border',
+            size === 'lg' ? 'size-6' : 'size-5',
+            selected && 'ring-2 ring-focus-ring',
+            className
+        )}
+        style={{backgroundColor: color, ...style}}
+        type="button"
+        {...props}
+    >
+        {isTransparent(color) && (
+            <span aria-hidden="true" className="pointer-events-none absolute top-1/2 left-[-30%] block h-px w-[160%] -translate-y-1/2 -rotate-45 bg-destructive" data-testid="transparent-indicator" />
+        )}
+    </button>
+);
+
+export interface ColorSwatchRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onSelect'> {
+    swatches: ColorSwatchOption[];
+    value?: string | null;
+    size?: 'md' | 'lg';
+    onSelect: (value: string | null) => void;
+}
+
+export const ColorSwatchRow = ({swatches, value, size = 'md', onSelect, className, ...props}: ColorSwatchRowProps) => (
+    <div className={cn('flex items-center gap-1', className)} {...props}>
+        {swatches.map((swatch) => {
+            const swatchValue = swatch.value === undefined ? swatch.hex : swatch.value;
+            return (
+                <ColorSwatch
+                    key={swatch.title}
+                    aria-label={swatch.title}
+                    color={swatch.hex}
+                    selected={swatchValue === value || swatch.hex.toLowerCase() === value?.toLowerCase()}
+                    size={size}
+                    title={swatch.title}
+                    onClick={() => onSelect(swatchValue)}
+                />
+            );
+        })}
+    </div>
+);
+
+export interface ColorPickerTriggerProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value'> {
+    value?: string | null;
+}
+
+export const ColorPickerTrigger = forwardRef<HTMLButtonElement, ColorPickerTriggerProps>(({value, className, ...props}, ref) => (
+    <button
+        ref={ref}
+        aria-label="Pick color"
+        className={cn('relative size-6 cursor-pointer rounded-full border border-control-border', className)}
+        type="button"
+        {...props}
+    >
+        <span aria-hidden="true" className="absolute inset-0 rounded-full bg-[conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))]" />
+        {value && (
+            <span className="absolute inset-[3px] overflow-hidden rounded-full border border-background" style={{backgroundColor: value}} />
+        )}
+    </button>
+));
+
+ColorPickerTrigger.displayName = 'ColorPickerTrigger';
 
 interface ColorPickerContextValue {
     hue: number;
@@ -125,7 +210,7 @@ export type ColorPickerSelectionProps = HTMLAttributes<HTMLDivElement>;
 export const ColorPickerSelection = memo(
     ({className, ...props}: ColorPickerSelectionProps) => {
         const containerRef = useRef<HTMLDivElement>(null);
-        const [isDragging, setIsDragging] = useState(false);
+        const activePointerId = useRef<number | null>(null);
         const [positionX, setPositionX] = useState(0);
         const [positionY, setPositionY] = useState(0);
         const {hue, saturation, lightness, setSaturation, setLightness} =
@@ -172,30 +257,6 @@ export const ColorPickerSelection = memo(
             [setSaturation, setLightness]
         );
 
-        const handlePointerMove = useCallback(
-            (event: PointerEvent) => {
-                if (!isDragging) {
-                    return;
-                }
-                updateColorFromPointer(event);
-            },
-            [isDragging, updateColorFromPointer]
-        );
-
-        useEffect(() => {
-            const handlePointerUp = () => setIsDragging(false);
-
-            if (isDragging) {
-                window.addEventListener('pointermove', handlePointerMove);
-                window.addEventListener('pointerup', handlePointerUp);
-            }
-
-            return () => {
-                window.removeEventListener('pointermove', handlePointerMove);
-                window.removeEventListener('pointerup', handlePointerUp);
-            };
-        }, [isDragging, handlePointerMove]);
-
         return (
             <div
                 ref={containerRef}
@@ -206,10 +267,27 @@ export const ColorPickerSelection = memo(
                 style={{
                     background: backgroundGradient
                 }}
+                onPointerCancel={(e) => {
+                    if (activePointerId.current === e.pointerId) {
+                        activePointerId.current = null;
+                    }
+                }}
                 onPointerDown={(e) => {
                     e.preventDefault();
-                    setIsDragging(true);
+                    activePointerId.current = e.pointerId;
+                    e.currentTarget.setPointerCapture?.(e.pointerId);
                     updateColorFromPointer(e.nativeEvent);
+                }}
+                onPointerMove={(e) => {
+                    if (activePointerId.current === e.pointerId) {
+                        updateColorFromPointer(e.nativeEvent);
+                    }
+                }}
+                onPointerUp={(e) => {
+                    if (activePointerId.current === e.pointerId) {
+                        activePointerId.current = null;
+                        e.currentTarget.releasePointerCapture?.(e.pointerId);
+                    }
                 }}
                 {...props}
             >
@@ -403,6 +481,7 @@ export const ColorPickerFormat = ({
                 {...props}
             >
                 <Input
+                    aria-label="Hex color"
                     className="h-8 px-2 font-mono text-xs shadow-none"
                     type="text"
                     value={inputValue ?? hex}
@@ -434,6 +513,7 @@ export const ColorPickerFormat = ({
                 {values.map((value, index) => (
                     <Input
                         key={index}
+                        aria-label={`${mode.toUpperCase()} channel ${index + 1}`}
                         className={cn(
                             'h-8 flex-1 px-2 font-mono text-xs shadow-none focus:z-10',
                             index && 'rounded-l-none',

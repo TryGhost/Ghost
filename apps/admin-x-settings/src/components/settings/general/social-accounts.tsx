@@ -1,8 +1,9 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
+import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError, normalizeSocialInput} from '../../../utils/social-urls';
-import {SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {withErrorBoundary} from '../../error-boundary';
 import type {Setting} from '@tryghost/admin-x-framework/api/settings';
@@ -136,20 +137,22 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onEditingChange={handleEditingChange}
             onSave={handleSaveClick}
         >
-            <SettingGroupContent>
+            <SettingGroupContent className='[&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
                 {visiblePlatforms.map(config => (
-                    <TextField
-                        key={config.key}
-                        data-testid={config.testId}
-                        error={!!errors[config.key]}
-                        hint={errors[config.key]}
-                        placeholder={config.placeholder}
-                        title={config.publicationTitle}
-                        value={urls[config.key]}
-                        onBlur={() => handleSocialBlur(config.key)}
-                        onChange={event => handleSocialChange(config.key, event.target.value)}
-                        onFocus={() => setFocusedKey(config.key)}
-                    />
+                    <Field key={config.key} data-invalid={Boolean(errors[config.key]) || undefined}>
+                        <FieldLabel htmlFor={`publication-${config.key}`}>{config.publicationTitle}</FieldLabel>
+                        <Input
+                            aria-invalid={Boolean(errors[config.key]) || undefined}
+                            data-testid={config.testId}
+                            id={`publication-${config.key}`}
+                            placeholder={config.placeholder}
+                            value={urls[config.key]}
+                            onBlur={() => handleSocialBlur(config.key)}
+                            onChange={event => handleSocialChange(config.key, event.target.value)}
+                            onFocus={() => setFocusedKey(config.key)}
+                        />
+                        {errors[config.key] && <FieldError>{errors[config.key]}</FieldError>}
+                    </Field>
                 ))}
             </SettingGroupContent>
         </TopLevelGroup>

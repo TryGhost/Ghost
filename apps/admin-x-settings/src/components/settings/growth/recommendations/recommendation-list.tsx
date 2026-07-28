@@ -3,17 +3,15 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import RecommendationIcon from './recommendation-icon';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, Link, type PaginationData, type ShowMoreData, Table, TableRow} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemContent, Button, LoadingIndicator, NoValueLabel, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
-import {NoValueLabel, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
-import {formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface RecommendationListProps {
     recommendations: Recommendation[],
-    pagination?: PaginationData,
-    showMore?: ShowMoreData,
+    showMore?: {hasMore: boolean; loadMore: () => void},
     isLoading: boolean
 }
 
@@ -37,8 +35,9 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     const clicks = count === 1 ? 'click' : 'clicks';
 
     return (
-        <TableRow className='group hover:cursor-pointer' testId='recommendation-list-item' onClick={showDetails}>
-            <Inline className='w-full' gap='none'>
+        <ActionListItem className='group' data-testid='recommendation-list-item'>
+            <ActionListItemContent asChild>
+                <button className='flex w-full text-left' type='button' onClick={showDetails}>
                 <div className='grow py-3 pr-6'>
                     <Inline gap='md'>
                         <RecommendationIcon isGhostSite={isGhostSite} {...recommendation} />
@@ -53,19 +52,20 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                             <div className='mr-2'>
                                 <span>{formatNumber(count)}</span>
                             </div>
-                            <div className='text-grey-700 lowercase'>
+                            <div className='text-muted-foreground lowercase'>
                                 <span>{showSubscribers ? newMembers : clicks}</span>
                                 <span className='invisible group-hover:visible'> from you</span>
                             </div>
                         </div>
                     )}
                 </div>
-            </Inline>
-        </TableRow>
+                </button>
+            </ActionListItemContent>
+        </ActionListItem>
     );
 };
 
-const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, pagination, showMore, isLoading}) => {
+const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, showMore, isLoading}) => {
     const {
         siteData
     } = useSettingGroup();
@@ -84,42 +84,43 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
         setTimeout(() => setCopied(false), 2000);
     };
 
-    if (isLoading || recommendations.length) {
-        return <Table
-            hint={
-                <span>
-                    Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link>
+    if (isLoading) {
+        return <div className='flex justify-center p-5'><LoadingIndicator size='md' /></div>;
+    }
+
+    if (recommendations.length) {
+        return <>
+            <ActionList>
+                {recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
+            </ActionList>
+            <div className='border-t border-border pt-2'>
+                {showMore?.hasMore && <Button className='mb-2 h-auto p-0 text-green hover:text-green' type='button' variant='link' onClick={showMore.loadMore}>Show all</Button>}
+                <div className='text-sm text-muted-foreground'>
+                    Shared with new members after signup, or anytime using <a className='text-green hover:text-green-400' href={recommendationsURL} rel='noopener noreferrer' target='_blank'>this link</a>
                     <TooltipProvider delayDuration={0}>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button
-                                    className='ml-1 align-middle leading-none'
-                                    color='clear'
-                                    hideLabel={true}
-                                    icon={copied ? 'check-circle' : 'duplicate'}
-                                    iconColorClass={copied ? 'text-green w-[14px] h-[14px]' : 'text-grey-600 hover:opacity-80 w-[14px] h-[14px]'}
-                                    label={copied ? 'Copied' : 'Copy'}
-                                    unstyled={true}
+                                    aria-label={copied ? 'Copied' : 'Copy'}
+                                    className='ml-1 size-6 align-middle leading-none'
+                                    size='icon'
+                                    type='button'
+                                    variant='ghost'
                                     onClick={copyRecommendationsUrl}
-                                />
+                                >{copied ? <LucideIcon.CircleCheck className='size-3.5! text-green' /> : <LucideIcon.Copy className='size-3.5! text-muted-foreground' />}</Button>
                             </TooltipTrigger>
                             <TooltipContent>{copied ? 'Copied' : 'Copy link'}</TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
-                </span>
-            }
-            isLoading={isLoading}
-            pagination={pagination}
-            showMore={showMore}
-            hintSeparator>
-            {recommendations && recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
-        </Table>;
+                </div>
+            </div>
+        </>;
     } else {
         return <NoValueLabel>
-            <Button color='grey' label='Add first recommendation' size='sm' onClick={() => {
+            <Button size='sm' type='button' variant='secondary' onClick={() => {
                 openAddNewRecommendationModal();
-            }}></Button>
-            <span className='mt-2 max-w-[40ch] text-center text-sm'>Need inspiration? <Link href="https://ghost.org/explore" target='_blank'>Explore thousands of sites</Link></span>
+            }}>Add first recommendation</Button>
+            <span className='mt-2 max-w-[40ch] text-center text-sm'>Need inspiration? <a className='text-green hover:text-green-400' href="https://ghost.org/explore" rel='noopener noreferrer' target='_blank'>Explore thousands of sites</a></span>
         </NoValueLabel>;
     }
 };

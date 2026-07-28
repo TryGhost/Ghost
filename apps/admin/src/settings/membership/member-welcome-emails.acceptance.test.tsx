@@ -158,10 +158,6 @@ function pasteText(content: string) {
     }));
 }
 
-function pressEscape() {
-    document.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape", code: "Escape", bubbles: true, cancelable: true}));
-}
-
 describe("Member welcome emails", () => {
     it("previews the unsaved draft only after Preview is selected", async () => {
         fakeSettingsScreens();
@@ -277,7 +273,7 @@ describe("Member welcome emails", () => {
         const dropdown = page.getByTestId("test-email-dropdown");
         await expect.element(dropdown).toBeVisible();
 
-        pressEscape();
+        await userEvent.keyboard("{Escape}");
         await expect(dropdown).toHaveCount(0);
         await expect.element(modal).toBeVisible();
     });
@@ -285,7 +281,7 @@ describe("Member welcome emails", () => {
     it("only asks for close confirmation after the draft becomes dirty", async () => {
         const modal = await openWelcomeEmailModal();
         (modal.getByRole("button", {name: "Close"}).element() as HTMLElement).focus();
-        pressEscape();
+        await userEvent.keyboard("{Escape}");
         await expect(modal).toHaveCount(0);
         await expect(settingsScreen.confirmationModal()).toHaveCount(0);
 
@@ -308,7 +304,7 @@ describe("Member welcome emails", () => {
         document.body.appendChild(linkInput);
         linkInput.focus();
 
-        pressEscape();
+        await userEvent.keyboard("{Escape}");
 
         await expect.element(modal).toBeVisible();
         expect(window.location.hash).toContain("/settings/memberemails");
@@ -712,7 +708,7 @@ describe("Member welcome emails", () => {
         it("closes a pristine customize modal on Escape without confirmation", async () => {
             const modal = await openCustomizeModal();
 
-            pressEscape();
+            await userEvent.keyboard("{Escape}");
 
             await expect(modal).toHaveCount(0);
             await expect(settingsScreen.welcomeEmailDirtyConfirmModal()).toHaveCount(0);
@@ -723,14 +719,14 @@ describe("Member welcome emails", () => {
             const modal = await openCustomizeModal();
             await modal.getByLabelText("Email footer").fill("Unsaved footer change");
 
-            pressEscape();
+            await userEvent.keyboard("{Escape}");
 
             const confirmation = settingsScreen.welcomeEmailDirtyConfirmModal();
             await expect.element(confirmation).toBeVisible();
             await expect.element(modal).toBeVisible();
             await expect.poll(currentRoute).toBe("/settings/memberemails");
 
-            pressEscape();
+            await userEvent.keyboard("{Escape}");
 
             await expect(confirmation).toHaveCount(0);
             await expect.element(modal).toBeVisible();

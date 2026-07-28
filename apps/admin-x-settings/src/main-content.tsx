@@ -2,11 +2,13 @@ import ExitSettingsButton from './components/exit-settings-button';
 import Settings from './components/settings';
 import Sidebar from './components/sidebar';
 import Users from './components/settings/general/users';
-import {Heading, confirmIfDirty, topLevelBackdropClasses, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
+import {DirtyConfirmDialog, useDirtyConfirmation} from '@tryghost/shade/patterns';
 import {type ReactNode, useEffect} from 'react';
+import {Text} from '@tryghost/shade/primitives';
 import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/users';
-import {toast} from 'react-hot-toast';
+import {toast} from 'sonner';
 import {useGlobalData} from './components/providers/global-data-provider';
+import {useGlobalDirtyState} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const EMPTY_KEYWORDS: string[] = [];
@@ -27,19 +29,23 @@ const MainContent: React.FC = () => {
     const {currentUser} = useGlobalData();
     const {loadingModal} = useRouting();
     const {isDirty} = useGlobalDirtyState();
+    const {confirm, dialogProps} = useDirtyConfirmation();
 
     const navigateAway = (escLocation: string) => {
         window.location.hash = escLocation;
     };
     const hasOpenModal = () => {
-        // Legacy admin-x-design-system modals render a dedicated backdrop element.
         if (document.getElementById('modal-backdrop')) {
             return true;
         }
 
-        // Newer Shade/Radix dialogs expose their open state via dialog roles.
         return Boolean(document.querySelector(OPEN_SHADE_MODAL_SELECTOR));
     };
+
+    useEffect(() => {
+        // Reset any toasts that may have been left open before entering Settings.
+        toast.dismiss();
+    }, []);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -49,7 +55,7 @@ const MainContent: React.FC = () => {
                     return;
                 }
 
-                confirmIfDirty(isDirty, () => {
+                confirm(isDirty, () => {
                     navigateAway('/');
                 });
             }
@@ -60,12 +66,7 @@ const MainContent: React.FC = () => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isDirty]);
-
-    useEffect(() => {
-        // resets any toasts that may have been left open on initial load
-        toast.remove();
-    }, []);
+    }, [confirm, isDirty]);
 
     // Contributors/Authors only see their profile modal (rendered via routing)
     // Don't render the main settings content for them
@@ -79,18 +80,19 @@ const MainContent: React.FC = () => {
                 <div className='flex-1 bg-white dark:bg-grey-950'>
                     <div className='h-full overflow-y-auto overscroll-y-contain' id="admin-x-settings-scroller">
                         <div className='mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10'>
-                            <Heading className='mb-[5vmin]'>Settings</Heading>
+                            <Text as='h1' className='mb-[5vmin] text-4xl' leading='supertight' weight='bold'>Settings</Text>
                             <Users highlight={false} keywords={EMPTY_KEYWORDS} />
                         </div>
                     </div>
                 </div>
+                <DirtyConfirmDialog {...dialogProps} />
             </Page>
         );
     }
 
     return (
         <Page>
-            {loadingModal && <div className={`fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] tablet:h-[100vh] ${topLevelBackdropClasses}`} />}
+            {loadingModal && <div className='fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] bg-modal-backdrop backdrop-blur-[3px] tablet:h-[100vh]' />}
             <div className="fixed inset-x-0 top-0 z-[35] max-w-[calc(100%-16px)] flex-1 basis-[320px] overscroll-y-contain bg-white p-8 tablet:relative tablet:inset-x-auto tablet:top-auto tablet:h-full tablet:overflow-y-scroll tablet:bg-grey-50 tablet:py-0 dark:bg-grey-950 dark:tablet:bg-[#101114]" id="admin-x-settings-sidebar-scroller">
                 <div className="relative w-full">
                     <Sidebar />
@@ -101,6 +103,7 @@ const MainContent: React.FC = () => {
                     <Settings />
                 </div>
             </div>
+            <DirtyConfirmDialog {...dialogProps} />
         </Page>
     );
 };

@@ -95,7 +95,7 @@ export const themeEditorConfirmModal = "theme-editor-confirm-modal";
 export const themeEditorInputModal = "theme-editor-input-modal";
 
 // accessible names
-export const settingsSearchLabel = "Search";
+export const settingsSearchLabel = "Search settings";
 export const siteTitleLabel = "Site title";
 export const suggestedAmountLabel = "Suggested amount";
 export const siteDescriptionLabel = "Site description";

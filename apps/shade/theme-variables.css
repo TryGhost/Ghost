@@ -27,6 +27,11 @@
     --surface-elevated-2: var(--color-white);
     --surface-overlay: var(--color-white);
     --surface-overlay-foreground: var(--color-black);
+    --modal-backdrop: rgb(98 109 121 / 0.2);
+    --form-sheet-backdrop: rgb(98 109 121 / 0.08);
+    --preview-canvas: var(--color-gray-50);
+    --preview-gradient-start: var(--color-white);
+    --preview-gradient-end: var(--color-gray-50);
     --surface-inverse: var(--color-black);
     --surface-inverse-foreground: var(--color-white);
     --text-primary: var(--color-black);
@@ -75,6 +80,7 @@
     --tab-active: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
     --button-hover: var(--color-gray-100);
     --interactive-hover: var(--button-hover);
+    --control-surface: var(--surface-elevated);
     --control-border: var(--color-gray-200);
     --table-row-hover: var(--color-gray-50);
     --members-sticky-hover-bg: var(--table-row-hover);
@@ -113,6 +119,7 @@
     --tab-active: color-mix(in oklab, oklch(36.77% 0.006 248.2) 60%, transparent);
     --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
     --interactive-hover: var(--button-hover);
+    --control-surface: transparent;
     --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
     --table-row-hover: var(--color-sidebar-bg);
     --members-sticky-hover-bg: var(--table-row-hover);
@@ -144,6 +151,9 @@
     --surface-elevated-2: oklch(0.235 0.004 260);
     --surface-overlay: var(--color-black);
     --surface-overlay-foreground: var(--color-gray-400);
+    --preview-canvas: var(--color-black);
+    --preview-gradient-start: var(--color-gray-950);
+    --preview-gradient-end: var(--color-black);
     --surface-inverse: var(--color-white);
     --surface-inverse-foreground: var(--color-black);
     --text-primary: var(--color-gray-200);

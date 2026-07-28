@@ -3,13 +3,14 @@ import TopLevelGroup from '../../top-level-group';
 import clsx from 'clsx';
 import useQueryParams from '../../../hooks/use-query-params';
 import useStaffUsers from '../../../hooks/use-staff-users';
-import {Avatar, NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade/components';
-import {Button, List, ListItem, TabView, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Avatar, NoValueLabel, NoValueLabelIcon, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade/components';
+import {Button} from '@tryghost/shade/components';
 import {type User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {type UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
 import {UserRoundX} from 'lucide-react';
 import {formatNumber} from '@tryghost/shade/utils';
 import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -49,7 +50,10 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
         <div className={clsx('group flex gap-3', hasAdminAccess(currentUser) && 'cursor-pointer')} data-testid='owner-user' onClick={showDetailModal}>
             <Avatar className='size-12' email={user.email} name={user.name} src={user.profile_image} />
             <div className='flex flex-col'>
-                <span>{user.name} &mdash; <strong>Owner</strong> {hasAdminAccess(currentUser) && <button className='ml-2 inline-block font-semibold text-green group-hover:visible md:invisible' type='button'>View profile</button>}</span>
+                <span>{user.name} &mdash; <strong>Owner</strong> {hasAdminAccess(currentUser) && <Button className='ml-2 h-auto p-0 text-green group-hover:visible hover:text-green md:invisible' type='button' variant='link' onClick={(event) => {
+                    event.stopPropagation();
+                    showDetailModal();
+                }}>View profile</Button>}</span>
                 <span className='text-sm text-grey-700'>{user.email}</span>
             </div>
         </div>
@@ -74,7 +78,7 @@ const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
     }
 
     return (
-        <List titleSeparator={false}>
+        <ActionList>
             {users.map((user) => {
                 let title = user.name || '';
                 if (user.status === 'inactive') {
@@ -86,22 +90,31 @@ const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
                     currentUser.id === user.id;
 
                 return (
-                    <ListItem
-                        key={user.id}
-                        action={canEdit && <Button color='green' label='Edit' link={true} onClick={() => showDetailModal(user)}/>}
-                        avatar={<Avatar className='size-10' email={user.email} name={user.name} src={user.profile_image} />}
-                        bgOnHover={canEdit}
-                        className='min-h-[64px]'
-                        detail={user.email}
-                        hideActions={true}
-                        id={`list-item-${user.id}`}
-                        separator={false}
-                        testId='user-list-item'
-                        title={title}
-                        onClick={() => canEdit && showDetailModal(user)} />
+                    <ActionListItem key={user.id} className='min-h-16' data-testid='user-list-item' hover={canEdit}>
+                        <ActionListItemContent asChild>
+                            {canEdit ? (
+                                <button className='flex w-full items-center gap-3 py-3 text-left' id={`list-item-${user.id}`} type='button' onClick={() => showDetailModal(user)}>
+                                    <Avatar className='size-10' email={user.email} name={user.name} src={user.profile_image} />
+                                    <span className='min-w-0 grow'>
+                                        <span className='block'>{title}</span>
+                                        <span className='block truncate text-sm text-muted-foreground'>{user.email}</span>
+                                    </span>
+                                </button>
+                            ) : (
+                                <div className='flex w-full items-center gap-3 py-3' id={`list-item-${user.id}`}>
+                                    <Avatar className='size-10' email={user.email} name={user.name} src={user.profile_image} />
+                                    <span className='min-w-0 grow'>
+                                        <span className='block'>{title}</span>
+                                        <span className='block truncate text-sm text-muted-foreground'>{user.email}</span>
+                                    </span>
+                                </div>
+                            )}
+                        </ActionListItemContent>
+                        {canEdit && <ActionListItemActions visibility='hover'><Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' size='sm' type='button' variant='link' onClick={() => showDetailModal(user)}>Edit</Button></ActionListItemActions>}
+                    </ActionListItem>
                 );
             })}
-        </List>
+        </ActionList>
     );
 };
 
@@ -124,30 +137,29 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
     return (
         <div className='flex gap-2'>
             <Button
-                color='red'
-                label={revokeActionLabel}
-                link={true}
+                className='text-destructive hover:text-destructive'
+                disabled={revokeState === 'progress'}
+                size='sm'
+                type='button'
+                variant='ghost'
                 onClick={async () => {
                     try {
                         setRevokeState('progress');
                         await deleteInvite(invite.id);
-                        showToast({
-                            title: `Invitation revoked`,
-                            message: invite.email,
-                            type: 'success'
-                        });
+                        toast.success(`Invitation revoked`, {description: invite.email});
                     } catch (e) {
                         handleError(e);
                     } finally {
                         setRevokeState('');
                     }
                 }}
-            />
+            >{revokeActionLabel}</Button>
             <Button
                 className='ml-2'
-                color='green'
-                label={resendActionLabel}
-                link={true}
+                disabled={resendState === 'progress'}
+                size='sm'
+                type='button'
+                variant='ghost'
                 onClick={async () => {
                     try {
                         setResendState('progress');
@@ -156,18 +168,14 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                             email: invite.email,
                             roleId: invite.role_id
                         });
-                        showToast({
-                            title: `Invitation resent`,
-                            message: invite.email,
-                            type: 'success'
-                        });
+                        toast.success(`Invitation resent`, {description: invite.email});
                     } catch (e) {
                         handleError(e);
                     } finally {
                         setResendState('');
                     }
                 }}
-            />
+            >{resendActionLabel}</Button>
         </div>
     );
 };
@@ -183,27 +191,22 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     }
 
     return (
-        <List>
+        <ActionList>
             {users.map((user) => {
                 return (
-                    <ListItem
-                        key={user.id}
-                        action={<UserInviteActions invite={user} />}
-                        avatar={<Avatar className='size-10' email={user.email} />}
-                        className='min-h-[64px]'
-                        detail={user.role}
-                        hideActions={true}
-                        id={`list-item-${user.id}`}
-                        separator={false}
-                        testId='user-invite'
-                        title={user.email}
-                        onClick={() => {
-                            // do nothing
-                        }}
-                    />
+                    <ActionListItem key={user.id} className='min-h-16' data-testid='user-invite' hover={false}>
+                        <ActionListItemContent className='flex items-center gap-3 py-3' id={`list-item-${user.id}`}>
+                            <Avatar className='size-10' email={user.email} />
+                            <span className='min-w-0 grow'>
+                                <span className='block'>{user.email}</span>
+                                <span className='block text-sm text-muted-foreground'>{user.role}</span>
+                            </span>
+                        </ActionListItemContent>
+                        <ActionListItemActions><UserInviteActions invite={user} /></ActionListItemActions>
+                    </ActionListItem>
                 );
             })}
-        </List>
+        </ActionList>
     );
 };
 
@@ -231,9 +234,9 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
     };
 
     const buttons = (
-        <Button className='mt-[-5px]' color='clear' label='Invite people' size='sm' linkWithPadding onClick={() => {
+        <Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={() => {
             showInviteModal();
-        }} />
+        }}>Invite people</Button>
     );
 
     const tabParam = useQueryParams().getParam('tab');
@@ -251,39 +254,6 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         setSelectedTab(newTab);
     };
 
-    const tabs = [
-        {
-            id: 'administrators',
-            title: 'Administrators',
-            contents: (<UsersList groupname='administrators' users={adminUsers} />),
-            counter: adminUsers.length ? adminUsers.length : undefined
-        },
-        {
-            id: 'editors',
-            title: 'Editors',
-            contents: (<UsersList groupname='editors' users={editorUsers} />),
-            counter: editorUsers.length ? editorUsers.length : undefined
-        },
-        {
-            id: 'authors',
-            title: 'Authors',
-            contents: (<UsersList groupname='authors' users={authorUsers} />),
-            counter: authorUsers.length ? authorUsers.length : undefined
-        },
-        {
-            id: 'contributors',
-            title: 'Contributors',
-            contents: (<UsersList groupname='contributors' users={contributorUsers} />),
-            counter: contributorUsers.length ? contributorUsers.length : undefined
-        },
-        {
-            id: 'invited',
-            title: 'Invited',
-            contents: (<InvitesUserList users={invites} />),
-            counter: totalInvites ? totalInvites : undefined
-        }
-    ];
-
     const require2fa = getSettingValue<boolean>(settings, 'require_email_mfa') || false;
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
@@ -298,18 +268,33 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
             title='Staff'
         >
             <Owner user={ownerUser} />
-            {(users.length > 1 || invites.length > 0) && <TabView selectedTab={selectedTab} tabs={tabs} testId='user-tabview' onTabChange={updateSelectedTab} />}
+            {(users.length > 1 || invites.length > 0) && (
+                <Tabs data-testid='user-tabview' value={selectedTab} variant='underline' onValueChange={updateSelectedTab}>
+                    <TabsList>
+                        <TabsTrigger value='administrators'>Administrators{adminUsers.length > 0 && <TabsTriggerCount>{formatNumber(adminUsers.length)}</TabsTriggerCount>}</TabsTrigger>
+                        <TabsTrigger value='editors'>Editors{editorUsers.length > 0 && <TabsTriggerCount>{formatNumber(editorUsers.length)}</TabsTriggerCount>}</TabsTrigger>
+                        <TabsTrigger value='authors'>Authors{authorUsers.length > 0 && <TabsTriggerCount>{formatNumber(authorUsers.length)}</TabsTriggerCount>}</TabsTrigger>
+                        <TabsTrigger value='contributors'>Contributors{contributorUsers.length > 0 && <TabsTriggerCount>{formatNumber(contributorUsers.length)}</TabsTriggerCount>}</TabsTrigger>
+                        <TabsTrigger value='invited'>Invited{totalInvites > 0 && <TabsTriggerCount>{formatNumber(totalInvites)}</TabsTriggerCount>}</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value='administrators'><UsersList groupname='administrators' users={adminUsers} /></TabsContent>
+                    <TabsContent value='editors'><UsersList groupname='editors' users={editorUsers} /></TabsContent>
+                    <TabsContent value='authors'><UsersList groupname='authors' users={authorUsers} /></TabsContent>
+                    <TabsContent value='contributors'><UsersList groupname='contributors' users={contributorUsers} /></TabsContent>
+                    <TabsContent value='invited'><InvitesUserList users={invites} /></TabsContent>
+                </Tabs>
+            )}
 
             {hasNextPage && selectedTab !== 'invited' && <Button
-                label={`Load more (showing ${formatNumber(users.length)}/${formatNumber(totalUsers)} users)`}
-                link
+                type='button'
+                variant='link'
                 onClick={() => fetchNextPage()}
-            />}
+            >{`Load more (showing ${formatNumber(users.length)}/${formatNumber(totalUsers)} users)`}</Button>}
             {invitesHasNextPage && selectedTab === 'invited' && <Button
-                label={`Load more (showing ${formatNumber(invites.length)}/${formatNumber(totalInvites)} invites)`}
-                link
+                type='button'
+                variant='link'
                 onClick={() => fetchNextInvitePage()}
-            />}
+            >{`Load more (showing ${formatNumber(invites.length)}/${formatNumber(totalInvites)} invites)`}</Button>}
 
             {config?.security?.staffDeviceVerification && hasAdminAccess(currentUser) && (
                 <div className={`flex flex-col gap-6 ${users.length > 1 || invites.length > 0 ? '-mt-6' : ''}`}>
@@ -319,12 +304,10 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
                             <span className='text-[1.5rem] font-semibold tracking-tight'>Security settings</span>
                             <span>Require email 2FA codes to be used on all staff logins</span>
                         </div>
-                        <Toggle
+                        <Switch
+                            aria-label='Require email 2FA codes on staff logins'
                             checked={require2fa}
-                            direction='rtl'
-                            gap='gap-0'
-                            onChange={async () => {
-                                const newValue = !require2fa;
+                            onCheckedChange={async (newValue) => {
                                 try {
                                     await editSettings([{
                                         key: 'require_email_mfa',

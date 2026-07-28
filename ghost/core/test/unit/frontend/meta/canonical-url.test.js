@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const urlUtils = require('../../../../core/shared/url-utils');
+const urlUtils = require('../../../../core/shared/url-utils').default;
 const urlService = require('../../../../core/server/services/url');
 const testUtils = require('../../../utils');
 

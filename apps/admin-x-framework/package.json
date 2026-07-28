@@ -92,7 +92,6 @@
         "@types/react-dom": "catalog:",
         "@vitejs/plugin-react": "catalog:",
         "@vitest/coverage-v8": "catalog:",
-        "c8": "catalog:",
         "eslint": "catalog:",
         "glob": "catalog:",
         "jsdom": "catalog:",
@@ -115,8 +114,8 @@
         "bson-objectid": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",
-        "react-hot-toast": "catalog:",
-        "react-router": "catalog:"
+        "react-router": "catalog:",
+        "sonner": "catalog:"
     },
     "peerDependencies": {
         "react": "^18.2.0",

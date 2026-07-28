@@ -1,11 +1,16 @@
 import AnnouncementBarPreview from './announcement-bar/announcement-bar-preview';
+import ColorSwatchField from '../../color-swatch-field';
+import HtmlField from '../../html-field';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {CheckboxGroup, ColorIndicator, Form, HtmlField, PreviewModalContent, type Tab, showToast} from '@tryghost/admin-x-design-system';
+import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, PreviewChrome, Tabs, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
+import {Laptop, Smartphone} from 'lucide-react';
+import {PreviewModalContent} from '../preview-modal';
 import {debounce} from '../../../utils/debounce';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -61,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     ];
 
     return (
-        <Form>
+        <FieldGroup className='mb-10 gap-8'>
             <HtmlField
                 nodes='MINIMAL_NODES'
                 placeholder='Highlight breaking news, offers or updates'
@@ -70,9 +75,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onBlur={onBlur}
                 onChange={announcementTextHandler}
             />
-            <ColorIndicator
-                isExpanded={false}
-                picker={false}
+            <ColorSwatchField
+                size='lg'
                 swatches={[
                     {
                         hex: '#08090c',
@@ -90,21 +94,26 @@ const Sidebar: React.FC<SidebarProps> = ({
                         value: 'accent'
                     }
                 ]}
-                swatchSize='lg'
                 title='Background color'
                 value={announcementBackgroundColor}
-                onSwatchChange={(e) => {
+                onChange={(e) => {
                     if (e !== null) {
                         toggleColorSwatch(e);
                     }
                 }}
-                onTogglePicker={() => {}}
             />
-            <CheckboxGroup
-                checkboxes={visibilityCheckboxes}
-                title='Visibility'
-            />
-        </Form>
+            <FieldSet>
+                <FieldLegend variant='label'>Visibility</FieldLegend>
+                <FieldGroup data-slot='checkbox-group'>
+                    {visibilityCheckboxes.map(checkbox => (
+                        <Field key={checkbox.value} orientation='horizontal'>
+                            <Checkbox checked={checkbox.checked} id={`announcement-${checkbox.value}`} onCheckedChange={checked => checkbox.onChange(checked === true)} />
+                            <FieldLabel htmlFor={`announcement-${checkbox.value}`}>{checkbox.label}</FieldLabel>
+                        </Field>
+                    ))}
+                </FieldGroup>
+            </FieldSet>
+        </FieldGroup>
     );
 };
 
@@ -119,6 +128,7 @@ const AnnouncementBarModal: React.FC = () => {
     const visibilitySettings = JSON.parse(announcementVisibility?.toString() || '[]') as string[];
     const {updateRoute} = useRouting();
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
+    const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
 
     const toggleColorSwatch = (e: string | null) => {
         updateSetting('announcement_background', e);
@@ -163,16 +173,8 @@ const AnnouncementBarModal: React.FC = () => {
         }
     });
 
-    let previewTabs: Tab[] = [];
-    if (latestPost) {
-        previewTabs = [
-            {id: 'homepage', title: 'Homepage'},
-            {id: 'post', title: 'Post'}
-        ];
-    }
-
     const onSelectURL = (id: string) => {
-        if (previewTabs.length) {
+        if (latestPost) {
             setSelectedPreviewTab(id);
         }
     };
@@ -187,12 +189,35 @@ const AnnouncementBarModal: React.FC = () => {
         break;
     }
 
-    const preview = <AnnouncementBarPreview
+    const rawPreview = <AnnouncementBarPreview
         announcementBackgroundColor={announcementBackgroundColor}
         announcementContent={announcementContent}
         url={selectedTabURL}
         visibility={visibilitySettings}
     />;
+    const preview = previewDevice === 'desktop' ? (
+        <PreviewChrome data-testid='preview-desktop' device='desktop'>{rawPreview}</PreviewChrome>
+    ) : (
+        <PreviewChrome data-testid='preview-mobile' device='mobile'>{rawPreview}</PreviewChrome>
+    );
+    const previewTabs = latestPost ? (
+        <Tabs value={selectedPreviewTab} variant='button-sm' onValueChange={onSelectURL}>
+            <TabsList>
+                <TabsTrigger value='homepage'>Homepage</TabsTrigger>
+                <TabsTrigger value='post'>Post</TabsTrigger>
+            </TabsList>
+        </Tabs>
+    ) : undefined;
+    const deviceSelector = (
+        <ToggleGroup type='single' value={previewDevice} onValueChange={(value) => {
+            if (value === 'desktop' || value === 'mobile') {
+                setPreviewDevice(value);
+            }
+        }}>
+            <ToggleGroupItem aria-label='Desktop' value='desktop'><Laptop /></ToggleGroupItem>
+            <ToggleGroupItem aria-label='Mobile' value='mobile'><Smartphone /></ToggleGroupItem>
+        </ToggleGroup>
+    );
 
     return <PreviewModalContent
         afterClose={() => {
@@ -200,27 +225,22 @@ const AnnouncementBarModal: React.FC = () => {
         }}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
-        deviceSelector={true}
+        deviceSelector={deviceSelector}
         dirty={false}
-        okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
+        okVariant={okProps.variant}
         preview={preview}
         previewBgColor='greygradient'
         previewToolbarTabs={previewTabs}
-        selectedURL={selectedPreviewTab}
         sidebar={sidebar}
         testId='announcement-bar-modal'
         title='Announcement'
         titleHeadingLevel={5}
         onOk={async () => {
             if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                showToast({
-                    type: 'error',
-                    message: 'An error occurred while saving your changes. Please try again.'
-                });
+                toast.error('An error occurred while saving your changes. Please try again.');
             }
         }}
-        onSelectURL={onSelectURL}
     />;
 };
 

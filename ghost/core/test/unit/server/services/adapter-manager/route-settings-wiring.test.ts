@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import type {RouteSettings} from '@tryghost/adapter-base-route-settings';
+import defaults from '../../../../../core/shared/config/defaults.json';
+import {normalizeAdapterConfig, resolveAdapterOptions} from '../../../../../core/server/services/adapter-manager/utils';
 
 // the adapter-manager is required via its `.default` export (so its methods stay
 // stubbable) and config-utils is untyped JS, so neither can be imported.
@@ -33,6 +35,57 @@ describe('UNIT: adapter-manager route-settings wiring', function () {
         assert.deepEqual(settings.routes, []);
         assert.deepEqual(settings.collections, [{path: '/', permalink: '/{slug}/', templates: ['index']}]);
         assert.deepEqual(settings.taxonomies, {tag: '/tag/{slug}/', author: '/author/{slug}/'});
+    });
+
+    it('registers S3RouteSettingsStore as a selectable adapter in the default config', function () {
+        assert.ok(defaults.adapters['route-settings'].S3RouteSettingsStore);
+    });
+
+    it('returns an S3RouteSettingsStore instance when it is the active adapter', function () {
+        configUtils.set('adapters:route-settings:active', 'S3RouteSettingsStore');
+        configUtils.set('adapters:route-settings:S3RouteSettingsStore', {
+            bucket: 'a-bucket',
+            staticFileURLPrefix: 'content/settings'
+        });
+        adapterManager.clearCache();
+
+        const store = adapterManager.getAdapter('route-settings');
+
+        assert.ok(store instanceof RouteSettingsStoreBase);
+        assert.equal(store.constructor.name, 'S3RouteSettingsStore');
+    });
+
+    it('resolves the bundled default settings path for the S3 store without operator config', function () {
+        configUtils.set('adapters:route-settings:active', 'S3RouteSettingsStore');
+        configUtils.set('adapters:route-settings:S3RouteSettingsStore', {
+            bucket: 'a-bucket',
+            staticFileURLPrefix: 'content/settings'
+        });
+
+        const {adapterConfig} = resolveAdapterOptions('route-settings', normalizeAdapterConfig(configUtils.config));
+        const {defaultSettingsBasePath} = adapterConfig as {defaultSettingsBasePath?: string};
+
+        // Asserted against the literal from overrides.json rather than re-reading
+        // `paths:defaultRouteSettings`, which would pass as undefined === undefined
+        // if the path ever stopped resolving — while the store's schema requires
+        // a non-empty string and would reject it at construction.
+        assert.ok(defaultSettingsBasePath?.endsWith('core/server/services/route-settings/'));
+    });
+
+    it('rejects a misconfigured S3 store at boot with a clear error', function () {
+        configUtils.set('adapters:route-settings:active', 'S3RouteSettingsStore');
+        configUtils.set('adapters:route-settings:S3RouteSettingsStore', {
+            // bucket and staticFileURLPrefix are both missing
+        });
+        adapterManager.clearCache();
+
+        assert.throws(() => {
+            adapterManager.init();
+        }, (err: Error & {errorType?: string}) => {
+            assert.equal(err.errorType, 'IncorrectUsageError');
+            assert.match(err.message, /route-settings: .*requires a bucket name/);
+            return true;
+        });
     });
 
     it('rejects an unknown active adapter with a clear error', function () {

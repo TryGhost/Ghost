@@ -29,8 +29,9 @@ export type CustomFieldVerb = keyof typeof COMMANDS;
 // `details` is stored in the action's `context` column (Ghost's slot for "diffs,
 // meta"). We always pass the field's `primary_name` so the log reads as a human
 // label, not a bare key — this is what keeps the timeline legible after a hard
-// delete, when the row itself is gone.
-export type CustomFieldActionDetails = {primary_name: string; previous_name?: string};
+// delete, when the row itself is gone. `key` rides alongside it because the key is
+// how a field is addressed publicly — its id never leaves the API.
+export type CustomFieldActionDetails = {primary_name: string; key: string; previous_name?: string};
 
 export type RecordCustomFieldAction =
     (input: {context: RequestContext; verb: CustomFieldVerb; subject: string; details: CustomFieldActionDetails}) => Promise<void>;
@@ -47,6 +48,9 @@ export async function recordCustomFieldAction(
         await Action.add({
             event: COMMANDS[verb],
             resource_type: 'member_custom_field',
+            // The field's id: this column holds 24 characters, and a key minted from
+            // a publisher-chosen name is bounded by the far wider key column, so only
+            // the id fits every field.
             resource_id: subject,
             actor_type: context.actor.type,
             actor_id: context.actor.id,

@@ -3,9 +3,7 @@ import {cva, type VariantProps} from 'class-variance-authority';
 
 import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
 import {inputSurfaceClasses} from '@/components/ui/input-surface';
-import {Textarea} from '@/components/ui/textarea';
 
 function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
     return (
@@ -16,7 +14,7 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
                 inputSurfaceClasses.invalidWithin,
 
                 // Wrapper layout + group context (input-group specific).
-                'group/input-group relative flex w-full items-center outline-hidden',
+                'group/input-group relative flex w-full items-center outline-hidden [&>[data-slot=input-group-control]]:bg-transparent',
                 'h-9 has-[>textarea]:h-auto',
 
                 // Variants based on alignment.
@@ -28,7 +26,7 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
                 // Focus state — scoped to the input-group control specifically so that
                 // focusing an InputGroupButton inside the group does NOT trigger the surface
                 // focus ring. This is why we don't use inputSurface('within') here.
-                'has-[[data-slot=input-group-control]:focus-visible]:border-focus-ring has-[[data-slot=input-group-control]:focus-visible]:bg-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-focus-ring/25 has-[[data-slot=input-group-control]:focus-visible]:outline-hidden',
+                'has-[[data-slot=input-group-control]:focus-visible]:border-focus-ring has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-focus-ring/25 has-[[data-slot=input-group-control]:focus-visible]:outline-hidden',
 
                 className
             )}
@@ -98,23 +96,20 @@ const inputGroupButtonVariants = cva(
     }
 );
 
-function InputGroupButton({
-    className,
-    type = 'button',
-    variant = 'ghost',
-    size = 'xs',
-    ...props
-}: Omit<React.ComponentProps<typeof Button>, 'size'> & VariantProps<typeof inputGroupButtonVariants>) {
-    return (
-        <Button
-            className={cn(inputGroupButtonVariants({size}), className)}
-            data-size={size}
-            type={type}
-            variant={variant}
-            {...props}
-        />
-    );
-}
+const InputGroupButton = React.forwardRef<
+    HTMLButtonElement,
+    Omit<React.ComponentProps<typeof Button>, 'size'> & VariantProps<typeof inputGroupButtonVariants>
+>(({className, type = 'button', variant = 'ghost', size = 'xs', ...props}, ref) => (
+    <Button
+        ref={ref}
+        className={cn(inputGroupButtonVariants({size}), className)}
+        data-size={size}
+        type={type}
+        variant={variant}
+        {...props}
+    />
+));
+InputGroupButton.displayName = 'InputGroupButton';
 
 function InputGroupText({className, ...props}: React.ComponentProps<'span'>) {
     return (
@@ -128,37 +123,31 @@ function InputGroupText({className, ...props}: React.ComponentProps<'span'>) {
     );
 }
 
-function InputGroupInput({
-    className,
-    ...props
-}: React.ComponentProps<'input'>) {
-    return (
-        <Input
-            className={cn(
-                'flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:shadow-none focus-visible:ring-0 focus-visible:outline-hidden dark:bg-transparent',
-                className
-            )}
-            data-slot="input-group-control"
-            {...props}
-        />
-    );
-}
+const InputGroupInput = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(({className, ...props}, ref) => (
+    <input
+        ref={ref}
+        className={cn(
+            'flex h-9 w-full flex-1 border-0 bg-transparent px-3 py-1 text-control outline-hidden file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+            className
+        )}
+        data-slot="input-group-control"
+        {...props}
+    />
+));
+InputGroupInput.displayName = 'InputGroupInput';
 
-function InputGroupTextarea({
-    className,
-    ...props
-}: React.ComponentProps<'textarea'>) {
-    return (
-        <Textarea
-            className={cn(
-                'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus-visible:shadow-none focus-visible:ring-0 focus-visible:outline-hidden dark:bg-transparent',
-                className
-            )}
-            data-slot="input-group-control"
-            {...props}
-        />
-    );
-}
+const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<'textarea'>>(({className, ...props}, ref) => (
+    <textarea
+        ref={ref}
+        className={cn(
+            'min-h-[80px] w-full flex-1 resize-none border-0 bg-transparent p-3 text-base outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+            className
+        )}
+        data-slot="input-group-control"
+        {...props}
+    />
+));
+InputGroupTextarea.displayName = 'InputGroupTextarea';
 
 export {
     InputGroup,

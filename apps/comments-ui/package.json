@@ -45,7 +45,7 @@
         ]
     },
     "dependencies": {
-        "@doist/react-interpolate": "2.2.3",
+        "@doist/react-interpolate": "2.2.4",
         "@headlessui/react": "1.7.19",
         "@tiptap/core": "2.27.2",
         "@tiptap/extension-blockquote": "2.27.2",
@@ -66,6 +66,7 @@
         "@typescript/native": "catalog:",
         "typescript": "catalog:",
         "@internal/cfg-eslint-react": "workspace:*",
+        "@internal/cfg-vite-public-app": "workspace:*",
         "@playwright/test": "catalog:",
         "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "catalog:react17",
@@ -73,11 +74,9 @@
         "@tryghost/nql": "catalog:",
         "@types/react": "catalog:react17",
         "@types/react-dom": "catalog:react17",
-        "@vitejs/plugin-react": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "autoprefixer": "10.5.2",
         "bson-objectid": "catalog:",
-        "concurrently": "catalog:",
         "eslint": "catalog:",
         "eslint-plugin-tailwindcss": "catalog:tailwind3",
         "jsdom": "catalog:",
@@ -87,7 +86,6 @@
         "sinon": "catalog:",
         "tailwindcss": "catalog:tailwind3",
         "vite": "catalog:",
-        "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"
     },
     "nx": {

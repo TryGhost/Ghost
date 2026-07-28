@@ -85,7 +85,7 @@ module.exports = function MembersAPI({
     commentsService,
     emailAddressService,
     giftService,
-    customFieldsService
+    customFieldValues
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -169,7 +169,7 @@ module.exports = function MembersAPI({
         nextPaymentCalculator,
         commentsService,
         giftService,
-        customFieldsService
+        customFieldValues
     });
 
     const geolocationService = new GeolocationService();

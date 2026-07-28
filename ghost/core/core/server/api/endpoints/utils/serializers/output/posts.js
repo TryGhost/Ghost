@@ -71,6 +71,10 @@ module.exports = {
         });
     },
 
+    importCSV(result, apiConfig, frame) {
+        frame.response = result;
+    },
+
     bulkEdit(bulkActionResult, _apiConfig, frame) {
         frame.response = {
             bulk: {

@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
 const settingsCache = require('../../../shared/settings-cache');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 function generateJWTToken(frame) {
     const userData = {

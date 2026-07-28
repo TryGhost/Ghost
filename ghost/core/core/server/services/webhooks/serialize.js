@@ -1,4 +1,18 @@
-module.exports = async (event, model) => {
+// The event model doesn't reliably carry the relations the URL service reads
+// when routing (collection filters like tags:internal-tag), so under lazy
+// routing an under-loaded post 404s. Ask the URL service which relations it
+// needs and load only the ones missing — reloading a relation the event
+// already carries (e.g. authors) would strip its nested roles from the
+// payload. Returns [] under eager routing, which resolves URLs by id.
+const loadRequiredUrlRelations = async (model, urlService) => {
+    const required = urlService.getRequiredRelations();
+    const missing = required.filter(relation => !model.relations[relation]);
+    if (missing.length) {
+        await model.load(missing);
+    }
+};
+
+module.exports = ({urlService}) => async (event, model) => {
     const _ = require('lodash');
     const api = require('../../api').endpoints;
     const apiFramework = require('@tryghost/api-framework');
@@ -28,6 +42,7 @@ module.exports = async (event, model) => {
         case 'posts':
         case 'pages':
             frame.options.formats = POST_FORMATS;
+            await loadRequiredUrlRelations(model, urlService);
             frame.options.withRelated = POST_WITH_RELATED;
             model._originalOptions = {
                 withRelated: POST_WITH_RELATED
