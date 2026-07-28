@@ -1,4 +1,5 @@
 const sinon = require('sinon');
+const {randomUUID} = require('node:crypto');
 const {setImmediate: flushEventLoop} = require('node:timers/promises');
 
 const StartAutomationsPollEvent = require('../../../../../core/server/services/automations/events/start-automations-poll-event');
@@ -24,6 +25,7 @@ describe('automations service', function () {
             domainEvents,
             apiUrl: 'https://fake.example.com/ghost/api/admin',
             schedulerAdapter,
+            siteUuid: randomUUID(),
             internalKeys: new Map([
                 ['ghost-scheduler', Promise.resolve({id: 'k1', secret: 'aaaa'})]
             ])
@@ -178,7 +180,10 @@ describe('automations service', function () {
             sinon.assert.calledOnceWithExactly(
                 schedulerAdapter.schedule,
                 sinon.match({
-                    time: future.getTime(),
+                    time: sinon.match(value => (
+                        value >= future.getTime() &&
+                        value < future.getTime() + (15 * 60 * 1000)
+                    )),
                     url: sinon.match((value) => (
                         typeof value === 'string' &&
                         new URL(value).searchParams.has('token')

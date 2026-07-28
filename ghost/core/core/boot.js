@@ -361,6 +361,7 @@ async function initServices({ghostServer} = {}) {
     const {withErrorCapture} = require('./server/adapters/scheduling/error-capture');
 
     const urlUtils = require('./shared/url-utils').default;
+    const settingsCache = require('./shared/settings-cache');
     const internalKeys = require('./server/services/internal-keys').default;
 
     // Initialize things that other services depend on first.
@@ -405,7 +406,8 @@ async function initServices({ghostServer} = {}) {
             domainEvents,
             apiUrl,
             schedulerAdapter,
-            internalKeys
+            internalKeys,
+            siteUuid: settingsCache.get('site_uuid')
         })
     ]);
 
