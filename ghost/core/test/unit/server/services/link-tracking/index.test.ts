@@ -27,8 +27,8 @@ describe('LinkTrackingServiceWrapper', function () {
         });
         const originalInit = LinkClickTrackingService.prototype.init;
         const subscribe = sinon.stub(DomainEvents, 'subscribe');
-        const init = sinon.stub(LinkClickTrackingService.prototype, 'init').callsFake(function (this: InstanceType<typeof LinkClickTrackingService>) {
-            originalInit.call(this);
+        const init = sinon.stub(LinkClickTrackingService.prototype, 'init').callsFake(function (this: InstanceType<typeof LinkClickTrackingService>, ...args: Parameters<typeof originalInit>) {
+            originalInit.apply(this, args);
             return initialization;
         });
         const wrapper = new linkTracking.LinkTrackingServiceWrapper();
