@@ -633,6 +633,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 sinon.assert.notCalled(addAutomationTrackingToUrl);
                 assert(result.html.includes('href="#section"'));
                 assert(result.html.includes('href="mailto:hi@example.com"'));
+                assert(result.html.includes('href="http://["'));
             });
 
             it('does not touch wrapper and footer links', async function () {
