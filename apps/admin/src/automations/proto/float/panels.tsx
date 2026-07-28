@@ -275,6 +275,39 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                         />
                     </Stack>
                 </Box>
+
+                {/* Count + filter cards, directly under the chart. They sit ABOVE the
+                    sticky search bar, so they scroll away naturally as it sticks (no
+                    collapse) and the table always lands right beneath the bar, no matter
+                    how many facets there are. Single-select (re-click to clear); glyph/
+                    colour mirror the table's Status column. */}
+                <div className="grid grid-cols-2 gap-3">
+                    {STATUS_FACETS.map((facet) => {
+                        const active = statusFilter === facet.label;
+                        return (
+                            <button
+                                key={facet.label}
+                                aria-pressed={active}
+                                className={cn(
+                                    'rounded-lg border px-4 py-3 text-left transition-colors',
+                                    active ? 'border-foreground bg-muted-foreground/10' : 'border-border-default hover:bg-muted-foreground/5'
+                                )}
+                                type="button"
+                                onClick={() => setStatusFilter(active ? null : facet.label)}
+                            >
+                                <MetricValue
+                                    label={(
+                                        <>
+                                            <span className={facet.color}>{facet.glyph}</span>
+                                            {facet.label}
+                                        </>
+                                    )}
+                                    value={formatNumber(counts[facet.label] ?? 0)}
+                                />
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* The instant this scrolls out the top, the search bar below has stuck. */}
@@ -321,41 +354,10 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                 </div>
             </div>
 
-            {/* Status cards (2x2) + runs table. The cards scroll away behind the
-                sticky bar (their chip counterparts take over once stuck). */}
-            <div className="flex flex-col gap-4 px-6 pb-6">
-                {/* Count + filter in one — single-select (re-click to clear); the
-                    glyph/colour mirror the table's Status column. */}
-                <div className="grid grid-cols-2 gap-3">
-                    {STATUS_FACETS.map((facet) => {
-                        const active = statusFilter === facet.label;
-                        return (
-                            <button
-                                key={facet.label}
-                                aria-pressed={active}
-                                className={cn(
-                                    'rounded-lg border px-4 py-3 text-left transition-colors',
-                                    active ? 'border-foreground bg-muted-foreground/10' : 'border-border-default hover:bg-muted-foreground/5'
-                                )}
-                                type="button"
-                                onClick={() => setStatusFilter(active ? null : facet.label)}
-                            >
-                                <MetricValue
-                                    label={(
-                                        <>
-                                            <span className={facet.color}>{facet.glyph}</span>
-                                            {facet.label}
-                                        </>
-                                    )}
-                                    value={formatNumber(counts[facet.label] ?? 0)}
-                                />
-                            </button>
-                        );
-                    })}
-                </div>
-
-                {/* table-fixed keeps the Started/Status column widths steady no matter
-                    how the labels change. */}
+            {/* Runs table. The cards above scroll off as the search bar sticks, so the
+                header lands right beneath the sticky bar every time. table-fixed keeps
+                the Started/Status column widths steady no matter how the labels change. */}
+            <div className="px-6 pb-6">
                 <Table className="table-fixed" data-testid="float-runs-table">
                 <TableHeader>
                     <TableRow className="hover:bg-transparent">
