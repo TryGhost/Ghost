@@ -1,4 +1,5 @@
 import {Meta, createQuery, createMutation} from '../utils/api/hooks';
+import {escapeNqlString} from '../utils/nql';
 
 export type LinkResponseType = {
     links: LinkItem[];
@@ -57,6 +58,9 @@ export const useBulkEditLinks = createMutation<BulkEditLinksResponseType, useBul
         }
     }),
     searchParams: ({originalUrl, postId}) => ({
-        filter: `post_id:'${postId}'+to:'${originalUrl}'`
+        // URLs may legally contain single quotes (e.g. a trailing `'` typo),
+        // which would otherwise terminate the NQL string literal and make the
+        // whole filter unparseable - silently breaking the edit
+        filter: `post_id:${escapeNqlString(postId)}+to:${escapeNqlString(originalUrl)}`
     })
 });

@@ -1,3 +1,4 @@
+import nqlLang from '@tryghost/nql-lang';
 import {describe, expect, it} from 'vitest';
 import {escapeNqlString, formatDateInTimezone, getDayBoundsInUtc} from './filter-normalization';
 
@@ -10,6 +11,28 @@ describe('filter-normalization', () => {
         // NQL only unescapes \' and \" - lone backslashes are literal
         // characters, so doubling them would query a different value
         expect(escapeNqlString('test\\\'value')).toBe(String.raw`'test\\'value'`);
+    });
+
+    // escaping has to round-trip any value exactly through the same parser the
+    // admin uses to restore filters from the URL, without letting a crafted
+    // value break out into additional filter conditions
+    describe.each([
+        ['simple'],
+        ['can\'t stop'],
+        ['trailing quote\''],
+        ['trailing backslash \\'],
+        ['backslash quote \\\''],
+        [`x',foo:1`],
+        [`x\\',foo:1`],
+        ['\'\''],
+        ['\\'],
+        [`https://example.com/foo-bar-baz/'`]
+    ])('round-trips %j through NQL', (value) => {
+        it('without injection', () => {
+            // an exact object match proves both that the value round-trips and
+            // that no extra filter conditions were injected
+            expect(nqlLang.parse(`name:${escapeNqlString(value)}`)).toEqual({name: value});
+        });
     });
 
     it('computes UTC day bounds from a site timezone date', () => {
