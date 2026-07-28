@@ -1,18 +1,17 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
 import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, Input, Kbd, Label} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {getScenario, mockAutomations} from '@/automations/proto/shared/mock';
-import {OverviewPanel, RunsPanel} from './panels';
+import {CanvasSidePanel} from './panels';
 import {SurfaceEditCanvas as FloatEditCanvas} from '@/automations/proto/surface/edit-canvas';
 import {SurfaceFlowCanvas as FloatFlowCanvas} from '@/automations/proto/surface/flow-canvas';
 import {useVersionLink} from '@/automations/proto/shared/use-version-link';
 
 type LiveStatus = 'active' | 'inactive';
 type SaveState = 'saved' | 'saving';
-type RailPanel = 'overview' | 'runs' | 'edit' | null;
 type StopScope = 'new' | 'all';
 
 const StatusPill: React.FC<{status: LiveStatus}> = ({status}) => (
@@ -162,18 +161,14 @@ const StopAutomationDialog: React.FC<{
 const AutomationFloat: React.FC = () => {
     const {id} = useParams<{id: string}>();
     const navigate = useNavigate();
-    const location = useLocation();
     const toVersioned = useVersionLink();
 
     const scenario = id ? getScenario(id) : undefined;
 
-    // Overview is open by default when arriving from the list. The title switcher
-    // carries the current panel forward in navigation state (see below), so
-    // hopping between automations keeps whatever panel you're on — handy for
-    // comparing the same view across automations.
-    const [railPanel, setRailPanel] = useState<RailPanel>(
-        (location.state as {railPanel?: RailPanel} | null)?.railPanel ?? 'overview'
-    );
+    // The Overview + Runs card is always docked now (no toolbar toggles), so the
+    // only view state left is whether we're editing the flow. Editing is entered
+    // from the header and only when stopped.
+    const [editing, setEditing] = useState(false);
     const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
     const [liveStatus, setLiveStatus] = useState<LiveStatus>(scenario?.automation.status ?? 'active');
     const [dirty, setDirty] = useState(false);
@@ -183,55 +178,6 @@ const AutomationFloat: React.FC = () => {
     const [draft, setDraft] = useState<AutomationDetail | null>(null);
     const [switcherOpen, setSwitcherOpen] = useState(false);
     const [moreOpen, setMoreOpen] = useState(false);
-    const railRef = useRef<HTMLDivElement>(null);
-
-    // Canvas focus tracks the rail: Runs focuses a member (the first, on
-    // entry), anything else (Overview open, or nothing open) clears it back to
-    // the generic preview. Runs off the panel state itself, not the toggle
-    // click, so it stays correct no matter how the panel closes (Escape,
-    // outside click, switching to Overview, ...). Kept above the early return
-    // below — hooks must run unconditionally on every render.
-    useEffect(() => {
-        if (railPanel !== 'runs') {
-            setSelectedMemberId(null);
-        }
-    }, [railPanel]);
-
-    // Overview/Runs render as plain in-flow panels (not Radix popovers), so we
-    // dismiss them ourselves: any pointerdown outside the rail, or Escape, closes
-    // the open flyout. The ⋯ menu is a Radix DropdownMenu and dismisses itself, so
-    // it's excluded here. Kept above the early return — hooks run unconditionally.
-    useEffect(() => {
-        if (railPanel !== 'overview' && railPanel !== 'runs') {
-            return;
-        }
-        const onPointerDown = (event: PointerEvent) => {
-            const node = event.target;
-            if (!(node instanceof Node) || railRef.current?.contains(node)) {
-                return;
-            }
-            // The flyout's own Select dropdowns (Runs filter, Overview range)
-            // portal to <body>, so they aren't DOM descendants of the rail even
-            // though they belong to it — don't treat a click inside one as an
-            // outside click. Radix positions them in a popper-content wrapper.
-            const el = node instanceof Element ? node : node.parentElement;
-            if (el?.closest('[data-radix-popper-content-wrapper]')) {
-                return;
-            }
-            setRailPanel(null);
-        };
-        const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                setRailPanel(null);
-            }
-        };
-        document.addEventListener('pointerdown', onPointerDown, true);
-        document.addEventListener('keydown', onKeyDown);
-        return () => {
-            document.removeEventListener('pointerdown', onPointerDown, true);
-            document.removeEventListener('keydown', onKeyDown);
-        };
-    }, [railPanel]);
 
     const goBack = () => navigate(toVersioned('/automations-proto/float'));
 
@@ -245,26 +191,14 @@ const AutomationFloat: React.FC = () => {
     }
 
     const {automation} = scenario;
-    // Editing can only happen once stopped, Resend-style. Edit is its own rail
-    // view; the editable canvas only shows on that view when stopped. On the Edit
-    // view while still live, we show the read-only preview with a lock alert
-    // telling the user to stop first.
+    // Editing can only happen once stopped, Resend-style. Edit is entered from
+    // the header — its button only appears when stopped — so the editable canvas
+    // replaces the read-only preview; no "stop first" lock is needed since you
+    // can't reach edit while live.
     const isEditable = liveStatus === 'inactive';
-    const inEditView = railPanel === 'edit';
-    const showEditCanvas = inEditView && isEditable;
-    const showEditLock = inEditView && !isEditable;
+    const showEditCanvas = editing && isEditable;
     const selectedRun = selectedMemberId ? scenario.runs.find(r => r.id === selectedMemberId) ?? null : null;
     const activeDraft = draft ?? automation;
-
-    // One controlled slot — railPanel — holds the active rail view (an Overview/
-    // Runs flyout, or the Edit canvas). Overview/Runs/Edit toggle it directly on
-    // click; clicking straight from one to another just reassigns the slot, so
-    // switching is a single click with no dismiss race. The ⋯ menu is deliberately
-    // NOT part of this slot (its own `moreOpen` below) — it's a transient dropdown
-    // that must not replace the current view (e.g. opening it mid-edit).
-    const togglePanel = (panel: Exclude<RailPanel, null>) => {
-        setRailPanel(current => (current === panel ? null : panel));
-    };
 
     const handleDraftChange = (next: AutomationDetail) => {
         setDraft(next);
@@ -279,6 +213,7 @@ const AutomationFloat: React.FC = () => {
         setStartOpen(false);
         setDirty(false);
         setLiveStatus('active');
+        setEditing(false); // leave the edit canvas — a live automation is read-only
     };
 
     const handleStop = (scope: StopScope) => {
@@ -292,10 +227,50 @@ const AutomationFloat: React.FC = () => {
     const workingText = saveState === 'saving' ? 'Saving…' : dirty ? 'Unsaved changes' : 'No changes';
 
     return (
-        <div className="fixed inset-0 z-50 flex flex-col bg-background" data-testid="float-detail">
-            {/* No boxed header, no docked pane — every control floats directly on
-                the canvas, the way the post editor floats its own chrome over the
-                document. */}
+        <div className="fixed inset-0 z-50 flex bg-background" data-testid="float-detail">
+            {/* Persistent left card — back arrow + title pinned at the top (kept
+                across view and edit), then the Overview + Runs content scrolling
+                below. Replaces the old floating rail + Overview/Runs flyouts. */}
+            <aside className="flex w-[480px] shrink-0 flex-col border-r border-border-default bg-background">
+                {/* Back arrow + title/status switcher stay at the top of the card.
+                    Title and status live in one trigger so hovering the whole block
+                    opens the switcher; the back arrow is separate (leaves to the list). */}
+                <Inline align="center" className="shrink-0 px-4 pt-4" gap="sm">
+                    <RailButton icon={LucideIcon.ArrowLeft} label="Back to automations" onClick={goBack} />
+                    <HoverCard closeDelay={150} open={switcherOpen} openDelay={150} onOpenChange={setSwitcherOpen}>
+                        <HoverCardTrigger asChild>
+                            <Button className="h-auto min-w-0 gap-2 rounded-full px-2 py-1 text-lg font-semibold" variant="ghost">
+                                <span className="truncate">{automation.name}</span>
+                                <StatusPill status={liveStatus} />
+                            </Button>
+                        </HoverCardTrigger>
+                        <HoverCardContent align="start" className="max-h-80 w-64 overflow-y-auto p-1">
+                            {mockAutomations.map(a => (
+                                <Button
+                                    key={a.id}
+                                    className={cn(
+                                        'w-full justify-between gap-3 px-2 py-1.5 font-normal',
+                                        a.id === automation.id && 'bg-muted-foreground/10 font-medium'
+                                    )}
+                                    variant="ghost"
+                                    onClick={() => {
+                                        setSwitcherOpen(false);
+                                        if (a.id !== automation.id) {
+                                            navigate(toVersioned(`/automations-proto/float/${a.id}`));
+                                        }
+                                    }}
+                                >
+                                    <span className="truncate">{a.name}</span>
+                                    <StatusPill status={a.status} />
+                                </Button>
+                            ))}
+                        </HoverCardContent>
+                    </HoverCard>
+                </Inline>
+                <CanvasSidePanel scenario={scenario} selectedMemberId={selectedMemberId} onSelectMember={setSelectedMemberId} />
+            </aside>
+
+            {/* Canvas — fills the rest; the lifecycle chrome floats top-right over it. */}
             <div className="relative min-h-0 flex-1 overflow-hidden bg-muted/30">
                 {showEditCanvas ? (
                     <FloatEditCanvas draft={activeDraft} onChange={handleDraftChange} />
@@ -303,87 +278,10 @@ const AutomationFloat: React.FC = () => {
                     <FloatFlowCanvas automation={automation} selectedRun={selectedRun} />
                 )}
 
-                {/* Edit view while still live — a subtle lock alert instead of an
-                    editable canvas, so the "stop first" rule is taught in place. */}
-                {showEditLock && (
-                    <div className="absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border-default bg-surface-elevated px-3 py-1.5 text-sm text-muted-foreground shadow-sm">
-                        <LucideIcon.Lock className="size-3.5" strokeWidth={2} />
-                        Stop the automation to make edits
-                    </div>
-                )}
-
-                {/* Top-left — back arrow, then title + status. Title and status live in
-                    one trigger (the switcher) so hovering the whole block, not just the
-                    name, opens it. Back arrow is a separate button since it does
-                    something else (leave to the list); Inline keeps both vertically
-                    centered on the same row. */}
-                <div className="absolute top-4 left-4 z-10 flex flex-col gap-1">
-                    <Inline align="center" gap="sm">
-                        <RailButton icon={LucideIcon.ArrowLeft} label="Back to automations" onClick={goBack} />
-                        <HoverCard closeDelay={150} open={switcherOpen} openDelay={150} onOpenChange={setSwitcherOpen}>
-                            <HoverCardTrigger asChild>
-                                <Button className="h-auto gap-2 rounded-full px-2 py-1 text-lg font-semibold" variant="ghost">
-                                    {automation.name}
-                                    <StatusPill status={liveStatus} />
-                                </Button>
-                            </HoverCardTrigger>
-                            <HoverCardContent align="start" className="max-h-80 w-64 overflow-y-auto p-1">
-                                {mockAutomations.map(a => (
-                                    <Button
-                                        key={a.id}
-                                        className={cn(
-                                            'w-full justify-between gap-3 px-2 py-1.5 font-normal',
-                                            a.id === automation.id && 'bg-muted-foreground/10 font-medium'
-                                        )}
-                                        variant="ghost"
-                                        onClick={() => {
-                                            setSwitcherOpen(false);
-                                            if (a.id !== automation.id) {
-                                                // Carry the open panel forward so the switch keeps
-                                                // the current view for comparison.
-                                                navigate(toVersioned(`/automations-proto/float/${a.id}`), {state: {railPanel}});
-                                            }
-                                        }}
-                                    >
-                                        <span className="truncate">{a.name}</span>
-                                        <StatusPill status={a.status} />
-                                    </Button>
-                                ))}
-                            </HoverCardContent>
-                        </HoverCard>
-                    </Inline>
-
-                    {/* Rail — Overview/Runs open flyouts; Edit switches the canvas to the
-                        editable view. The button column and any open flyout sit side by
-                        side (items-start), so the flyout lands just right of the buttons and
-                        top-aligned with the rail — under the title — and never covers the
-                        buttons, so switching is a single click. The ⋯ actions menu lives in
-                        the top-right cluster, next to the primary Stop/Start action. */}
-                    <div ref={railRef} className="flex items-start gap-3">
-                        <div className="flex flex-col gap-1">
-                            <RailButton active={railPanel === 'overview'} icon={LucideIcon.ChartNoAxesColumn} label="Overview" onClick={() => togglePanel('overview')} />
-                            <RailButton active={railPanel === 'runs'} icon={LucideIcon.Users} label="Runs" onClick={() => togglePanel('runs')} />
-                            {/* Edit is just another view; whether editing is allowed (stop
-                                first) is taught by the lock alert on the view, not the button. */}
-                            <RailButton active={railPanel === 'edit'} icon={LucideIcon.Pencil} label="Edit" onClick={() => togglePanel('edit')} />
-                        </div>
-
-                        {(railPanel === 'overview' || railPanel === 'runs') && (
-                            <div className="flex max-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-md border border-border-default bg-surface-elevated shadow-md">
-                                {railPanel === 'overview' ? (
-                                    <OverviewPanel scenario={scenario} />
-                                ) : (
-                                    <RunsPanel scenario={scenario} selectedMemberId={selectedMemberId} onSelectMember={setSelectedMemberId} />
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Top-right — the ⋯ actions menu, then the one primary action for the
-                    current lifecycle state: Stop while live (opens the high-friction
-                    confirm), Start once stopped. Stopped also shows the autosave
-                    indicator. Floats over the canvas like the post editor's Publish. */}
+                {/* Top-right — autosave indicator (while editing), the ⋯ actions menu,
+                    the Edit/Done toggle (only when stopped — a live automation is
+                    read-only), then the one primary lifecycle action: Stop while live
+                    (high-friction confirm), Start once stopped. */}
                 <div className="absolute top-4 right-4 z-10 flex items-center gap-3">
                     {showEditCanvas && <span className="text-xs text-muted-foreground">{workingText}</span>}
                     {/* modal={false} so the menu doesn't block pointer events to the rest
@@ -402,6 +300,17 @@ const AutomationFloat: React.FC = () => {
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
+                    {/* Edit lives in the header now (not a rail); only shown once
+                        stopped, and toggles to Done while editing. */}
+                    {isEditable && (
+                        editing ? (
+                            <Button variant="outline" onClick={() => setEditing(false)}>Done</Button>
+                        ) : (
+                            <Button variant="outline" onClick={() => setEditing(true)}>
+                                <LucideIcon.Pencil /> Edit
+                            </Button>
+                        )
+                    )}
                     {isEditable ? (
                         <Button onClick={() => setStartOpen(true)}>Start</Button>
                     ) : (
