@@ -95,8 +95,7 @@ export const SEARCHABLES = [
         idField: 'id',
         titleField: 'title',
         index: ['title', 'keywords'],
-        staticItems: GHOST_PRO_SEARCH_ITEMS,
-        requiresBillingAccess: true
+        staticItems: GHOST_PRO_SEARCH_ITEMS
     },
     {
         name: 'Posts',
@@ -148,18 +147,4 @@ export function createSearchResult(searchable, item) {
         visibility: item.visibility,
         publishedAt: item.published_at
     };
-}
-
-// Searchables that require billing access (Ghost(Pro) pages) are only shown
-// when the billing app is enabled for the site and the current user is allowed
-// to open it (mirrors the access rules in the `pro` route)
-export function isSearchableAvailable(searchable, {config, session}) {
-    if (!searchable.requiresBillingAccess) {
-        return true;
-    }
-
-    const billingEnabled = Boolean(config?.hostSettings?.billing?.enabled);
-    const userCanAccessBilling = Boolean(session?.user?.isOwnerOnly) || Boolean(config?.hostSettings?.forceUpgrade);
-
-    return billingEnabled && userCanAccessBilling;
 }

@@ -1,7 +1,6 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
-import {SEARCHABLES, createSearchResult, isSearchableAvailable, sortSearchResultsByStatus} from '../utils/search';
-import {inject} from 'ghost-admin/decorators/inject';
+import {SEARCHABLES, createSearchResult, sortSearchResultsByStatus} from '../utils/search';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
@@ -11,9 +10,6 @@ export default class SearchProviderBasicService extends Service {
     @service ajax;
     @service notifications;
     @service ghostPaths;
-    @service session;
-
-    @inject config;
 
     content = [];
 
@@ -24,10 +20,6 @@ export default class SearchProviderBasicService extends Service {
         const results = [];
 
         SEARCHABLES.forEach((searchable) => {
-            if (!isSearchableAvailable(searchable, this)) {
-                return;
-            }
-
             let matchedContent = this.content.filter((item) => {
                 if (item.groupName !== searchable.name) {
                     return false;

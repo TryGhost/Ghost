@@ -1,8 +1,7 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
 import {default as Flexsearch} from 'flexsearch';
-import {SEARCHABLES, createSearchResult, isSearchableAvailable, sortSearchResultsByStatus} from '../utils/search';
-import {inject} from 'ghost-admin/decorators/inject';
+import {SEARCHABLES, createSearchResult, sortSearchResultsByStatus} from '../utils/search';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
@@ -14,9 +13,6 @@ export default class SearchProviderFlexService extends Service {
     @service ajax;
     @service notifications;
     @service ghostPaths;
-    @service session;
-
-    @inject config;
 
     indexes = SEARCHABLES.reduce((indexes, searchable) => {
         indexes[searchable.model] = new Document({
@@ -37,10 +33,6 @@ export default class SearchProviderFlexService extends Service {
         const results = [];
 
         SEARCHABLES.forEach((searchable) => {
-            if (!isSearchableAvailable(searchable, this)) {
-                return;
-            }
-
             const searchResults = this.indexes[searchable.model].search(term, {enrich: true});
             const usedIds = new Set();
             let groupResults = [];

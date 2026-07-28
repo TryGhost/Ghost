@@ -1,5 +1,7 @@
 import Service from '@ember/service';
+import {GHOST_PRO_GROUP_NAME} from '../utils/search';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
@@ -10,14 +12,27 @@ export default class SearchService extends Service {
     @service notifications;
     @service searchProviderBasic;
     @service searchProviderFlex;
+    @service session;
     @service settings;
     @service store;
+
+    @inject config;
 
     isContentStale = true;
 
     get provider() {
         const isEnglish = this.settings.locale?.toLowerCase().startsWith('en') ?? true;
         return isEnglish ? this.searchProviderFlex : this.searchProviderBasic;
+    }
+
+    // Ghost(Pro) results deep-link into the billing app, so they're only shown
+    // when billing is enabled for the site and the current user is allowed to
+    // open it (mirrors the access rules in the `pro` route)
+    get #canAccessBilling() {
+        const billingEnabled = Boolean(this.config.hostSettings?.billing?.enabled);
+        const userCanAccessBilling = Boolean(this.session.user?.isOwnerOnly) || Boolean(this.config.hostSettings?.forceUpgrade);
+
+        return billingEnabled && userCanAccessBilling;
     }
 
     @action
@@ -42,7 +57,13 @@ export default class SearchService extends Service {
             yield this.refreshContentTask.lastRunning;
         }
 
-        return yield this.provider.searchTask.perform(term);
+        const results = yield this.provider.searchTask.perform(term);
+
+        if (!this.#canAccessBilling) {
+            return results.filter(group => group.groupName !== GHOST_PRO_GROUP_NAME);
+        }
+
+        return results;
     }
 
     @task({drop: true})
