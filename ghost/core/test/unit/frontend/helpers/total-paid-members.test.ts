@@ -1,6 +1,5 @@
-const assert = require('node:assert/strict');
-
-const total_paid_members = require('../../../../core/frontend/helpers/total_paid_members');
+import assert from 'node:assert/strict';
+import total_paid_members from '../../../../core/frontend/helpers/total_paid_members';
 
 describe('{{total_paid_members}} helper', function () {
     it('can render total paid members', async function () {

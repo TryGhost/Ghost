@@ -1,6 +1,6 @@
-const StatsService = require('../../../../../core/server/services/stats/stats-service');
-const knex = require('knex').default;
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
+import knex from 'knex';
+import StatsService from '../../../../../core/server/services/stats/stats-service';
 
 describe('StatsService', function () {
     it('Exposes a create factory', function () {

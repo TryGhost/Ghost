@@ -1,7 +1,6 @@
-const assert = require('node:assert/strict');
-const {assertExists} = require('../../../utils/assertions');
-
-const color_to_rgba = require('../../../../core/frontend/helpers/color_to_rgba');
+import assert from 'node:assert/strict';
+import {assertExists} from '../../../utils/assertions';
+import color_to_rgba from '../../../../core/frontend/helpers/color_to_rgba';
 
 describe('{{color_to_rgba}} helper', function () {
     it('has color_to_rgba helper', function () {

@@ -1,11 +1,8 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
+import milestonesService from '../../../../../core/server/services/milestones';
 
 describe('Milestones Service', function () {
-    let milestonesService;
-
     it('Provides expected public API', async function () {
-        milestonesService = require('../../../../../core/server/services/milestones');
-
         assert.ok(milestonesService.initAndRun);
     });
 });

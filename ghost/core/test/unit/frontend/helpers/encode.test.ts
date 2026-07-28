@@ -1,8 +1,8 @@
-const assert = require('node:assert/strict');
-const {assertExists} = require('../../../utils/assertions');
+import assert from 'node:assert/strict';
+import {assertExists} from '../../../utils/assertions';
 
 // Stuff we are testing
-const encode = require('../../../../core/frontend/helpers/encode');
+import encode from '../../../../core/frontend/helpers/encode';
 
 describe('{{encode}} helper', function () {
     it('can escape URI', function () {
