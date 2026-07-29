@@ -6,7 +6,7 @@ import type {AutomationDetail, AutomationEmailStats, InsertActionAnchor} from '@
 import {insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TAIL_NODE_HEIGHT, type StepKind, formatWait, orderActions, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TAIL_NODE_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {StepNodeHeader} from './flow-node-shell';
 import {EmailStatsFooter} from './email-analytics';
 import {StepSidebar} from './step-sidebar';
@@ -117,7 +117,7 @@ interface SurfaceEditCanvasProps {
 }
 
 export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onChange}) => {
-    const {canvasRef, onInit} = useCenteredColumn();
+    const {canvasRef, onInit, size} = useCenteredColumn();
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
     const ordered = orderActions(draft);
@@ -143,7 +143,7 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
         }
     };
 
-    const {nodes, edges} = useMemo(() => {
+    const {nodes, edges, contentBottom} = useMemo(() => {
         // Height-aware layout: trigger, then each action (email nodes carry a stats
         // footer), then the tail button. Even visible gaps regardless of node height.
         const heights = [REGULAR_NODE_HEIGHT];
@@ -212,8 +212,16 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                 }
             });
         }
-        return {nodes: built, edges: builtEdges};
+        // Bottom edge of the tail node — drives the pan bound below.
+        const bottom = ys.length ? ys[ys.length - 1] + heights[heights.length - 1] : 0;
+
+        return {nodes: built, edges: builtEdges, contentBottom: bottom};
     }, [draft, ordered, selectedId]);
+
+    const translateExtent = useMemo(
+        () => panTranslateExtent(contentBottom, size),
+        [contentBottom, size]
+    );
 
     return (
         <div className="flex size-full">
@@ -225,8 +233,11 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                     nodes={nodes}
                     nodesConnectable={false}
                     nodesDraggable={false}
+                    maxZoom={1}
+                    minZoom={0.5}
                     nodeTypes={nodeTypes}
                     proOptions={{hideAttribution: true}}
+                    translateExtent={translateExtent}
                     zoomOnScroll={false}
                     panOnDrag
                     panOnScroll

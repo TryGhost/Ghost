@@ -4,7 +4,7 @@ import {Background, BackgroundVariant, type Edge, Handle, type Node, type NodePr
 import type {AutomationDetail, AutomationEmailStats} from '@tryghost/admin-x-framework/api/automations';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import type {AutomationRun, RunStepState} from '@/automations/proto/shared/mock';
-import {DETAIL_FOOTER_HEIGHT, EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, type StepKind, formatWait, orderActions, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {DETAIL_FOOTER_HEIGHT, EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
 import {StepNodeHeader} from './flow-node-shell';
 import {EmailStatsFooter} from './email-analytics';
 
@@ -65,13 +65,16 @@ const reachedStates: ReadonlySet<RunStepState | 'done'> = new Set(['done', 'curr
 interface SurfaceFlowCanvasProps {
     automation: AutomationDetail;
     selectedRun: AutomationRun | null;
+    // Space to reserve on the left for a floating overlay (the performance card), so
+    // the flow centres beside it and can't be panned underneath. 0 = full width.
+    leftInset?: number;
 }
 
-export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation, selectedRun}) => {
-    const {canvasRef, onInit} = useCenteredColumn();
+export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation, selectedRun, leftInset = 0}) => {
+    const {canvasRef, onInit, size} = useCenteredColumn(leftInset);
     const focused = Boolean(selectedRun);
 
-    const {nodes, edges} = useMemo(() => {
+    const {nodes, edges, contentBottom} = useMemo(() => {
         const ordered = orderActions(automation);
         const stepByAction = new Map((selectedRun?.steps ?? []).map(s => [s.action_id, s]));
 
@@ -173,8 +176,16 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
             });
         }
 
-        return {nodes: built, edges: builtEdges};
+        // Bottom edge of the last node — drives the pan bound below.
+        const bottom = ys.length ? ys[ys.length - 1] + nodeHeight(descriptors[descriptors.length - 1].data) : 0;
+
+        return {nodes: built, edges: builtEdges, contentBottom: bottom};
     }, [automation, selectedRun, focused]);
+
+    const translateExtent = useMemo(
+        () => panTranslateExtent(contentBottom, size, leftInset),
+        [contentBottom, size, leftInset]
+    );
 
     return (
         <div ref={canvasRef} className="size-full">
@@ -184,8 +195,11 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
                 nodes={nodes}
                 nodesConnectable={false}
                 nodesDraggable={false}
+                maxZoom={1}
+                minZoom={0.5}
                 nodeTypes={nodeTypes}
                 proOptions={{hideAttribution: true}}
+                translateExtent={translateExtent}
                 zoomOnScroll={false}
                 panOnDrag
                 panOnScroll

@@ -1,4 +1,4 @@
-import {type ElementType, useCallback, useEffect, useRef} from 'react';
+import {type ElementType, useCallback, useEffect, useRef, useState} from 'react';
 import type {AutomationAction, AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
 import type {ReactFlowInstance} from '@xyflow/react';
 import {LucideIcon} from '@tryghost/shade/utils';
@@ -87,13 +87,16 @@ export const orderActions = (automation: AutomationDetail): AutomationAction[] =
     return ordered;
 };
 
-// Centres the node column horizontally in the canvas and keeps it centred as the
-// canvas resizes (window, sidebar collapse, edit-mode expand) while preserving
-// the user's pan/zoom. Returns the ref to attach to the ReactFlow wrapper and the
-// onInit handler to pass to <ReactFlow>.
-export function useCenteredColumn() {
+// Centres the node column in the canvas and keeps it centred as the canvas resizes
+// (window, sidebar collapse, edit-mode expand) while preserving the user's pan/zoom.
+// `leftInset` reserves space on the left (e.g. the floating performance card) so the
+// column is centred in the area BESIDE it, never underneath. Also tracks the canvas
+// size so panTranslateExtent can bound panning to a real viewport. Returns the ref
+// for the ReactFlow wrapper, the onInit handler, and the current canvas size.
+export function useCenteredColumn(leftInset = 0) {
     const canvasRef = useRef<HTMLDivElement>(null);
     const flowRef = useRef<ReactFlowInstance | null>(null);
+    const [size, setSize] = useState({width: 0, height: 0});
 
     const centerColumn = useCallback(() => {
         const instance = flowRef.current;
@@ -102,24 +105,65 @@ export function useCenteredColumn() {
             return;
         }
         const {y, zoom} = instance.getViewport();
-        void instance.setViewport({x: Math.round(el.clientWidth / 2 - (NODE_WIDTH * zoom) / 2), y, zoom});
-    }, []);
+        const x = Math.round(leftInset + (el.clientWidth - leftInset - NODE_WIDTH * zoom) / 2);
+        void instance.setViewport({x, y, zoom});
+    }, [leftInset]);
 
     useEffect(() => {
         const el = canvasRef.current;
         if (!el) {
             return;
         }
-        const observer = new ResizeObserver(() => centerColumn());
+        const observer = new ResizeObserver(() => {
+            setSize({width: el.clientWidth, height: el.clientHeight});
+            centerColumn();
+        });
         observer.observe(el);
         return () => observer.disconnect();
     }, [centerColumn]);
 
     const onInit = useCallback((instance: ReactFlowInstance) => {
         flowRef.current = instance;
-        const width = canvasRef.current?.clientWidth ?? 800;
-        void instance.setViewport({x: Math.round(width / 2 - NODE_WIDTH / 2), y: 48, zoom: 1});
-    }, []);
+        const el = canvasRef.current;
+        const width = el?.clientWidth ?? 800;
+        setSize({width, height: el?.clientHeight ?? 600});
+        const x = Math.round(leftInset + (width - leftInset - NODE_WIDTH) / 2);
+        void instance.setViewport({x, y: 48, zoom: 1});
+    }, [leftInset]);
 
-    return {canvasRef, onInit};
+    return {canvasRef, onInit, size};
+}
+
+// Bounds panning to the automation's content plus a margin, so the flow can't be
+// lost in an infinite void (à la Resend). Grows automatically as the flow gets
+// taller — `contentBottom` is the y of the last node's bottom edge, and the column
+// spans x: 0..NODE_WIDTH. The extent always contains the centred initial viewport
+// (zoom 1, y = 48, offset by leftInset), so bounding never fights useCenteredColumn.
+//
+// Vertical slack is a share of the viewport (you pan to read a tall flow); horizontal
+// slack is a small FIXED value — the column is narrow and shouldn't wander sideways,
+// and a viewport-sized horizontal margin let it slide off the right edge entirely.
+// NOTE: this is a fixed flow-coordinate box, so the on-screen slack scales with zoom
+// (see PAN_MARGIN_RATIO usage + minZoom/maxZoom on the canvases).
+export const PAN_MARGIN_RATIO = 0.5;
+export const PAN_SLACK_X = 160;
+export function panTranslateExtent(
+    contentBottom: number,
+    size: {width: number; height: number},
+    leftInset = 0
+): [[number, number], [number, number]] {
+    const w = size.width || 1200;
+    const h = size.height || 800;
+    const marginY = h * PAN_MARGIN_RATIO;
+    // The centred initial viewport in flow coords (matches useCenteredColumn: zoom 1,
+    // y = 48). Included so the bound can never clamp our own starting position.
+    const centeredX = leftInset + (w - leftInset - NODE_WIDTH) / 2;
+    const visLeft = -centeredX;
+    const visRight = w - centeredX;
+    const visTop = -48;
+    const visBottom = h - 48;
+    return [
+        [Math.min(0, visLeft) - PAN_SLACK_X, Math.min(0, visTop) - marginY],
+        [Math.max(NODE_WIDTH, visRight) + PAN_SLACK_X, Math.max(contentBottom, visBottom) + marginY]
+    ];
 }
