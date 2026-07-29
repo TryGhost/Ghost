@@ -11,7 +11,9 @@ const blockedReferrerDomains = [
     'www.chicagomag.com',
     'bailii.org',
     'www.bailii.org',
-    '*.doubleclick.net'
+    '*.doubleclick.net',
+    // Substack's client app throws on any non-empty ?ref= value and swaps the post for an error screen
+    '*.substack.com'
 ];
 
 const isBlockedReferrerDomain = (domain) => {
