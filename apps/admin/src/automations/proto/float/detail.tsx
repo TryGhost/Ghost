@@ -211,9 +211,11 @@ const AutomationFloat: React.FC = () => {
 
     return (
         <div className="fixed inset-0 z-50 flex bg-background" data-testid="float-detail">
-            {/* Persistent left card — back arrow + title pinned at the top (kept
-                across view and edit), then the Overview + Runs content scrolling
-                below. Replaces the old floating rail + Overview/Runs flyouts. */}
+            {/* Left performance card — back arrow + title at the top, then the
+                Overview + Runs content scrolling below. Hidden while editing: the run
+                analytics are irrelevant when you're building the flow, so the edit
+                canvas takes the full width. */}
+            {!showEditCanvas && (
             <aside className="flex w-[480px] shrink-0 flex-col border-r border-border-default bg-background">
                 {/* Back arrow + title/status switcher stay at the top of the card.
                     Title and status live in one trigger so hovering the whole block
@@ -252,6 +254,7 @@ const AutomationFloat: React.FC = () => {
                 </Inline>
                 <CanvasSidePanel scenario={scenario} selectedMemberId={selectedMemberId} onSelectMember={setSelectedMemberId} />
             </aside>
+            )}
 
             {/* Canvas — fills the rest; the lifecycle chrome floats top-right over it. */}
             <div className="relative min-h-0 flex-1 overflow-hidden bg-muted/30">
