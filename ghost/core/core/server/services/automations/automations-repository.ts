@@ -1,4 +1,5 @@
 import type {ReadonlyDeep} from 'type-fest';
+import type {Knex} from 'knex';
 
 export interface Pagination {
     page: number;
@@ -195,4 +196,15 @@ export interface AutomationsRepository {
     trackEmailDeliveredAndOpened(
         eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>
     ): Promise<void>;
+    /**
+     * Track the first click for an automated email recipient.
+     *
+     */
+    trackEmailClicked(options: {
+        automationActionRevisionId: string;
+        memberId: string;
+        clickedAt: Readonly<Date>;
+    }, transactionOptions?: {
+        transacting?: Knex.Transaction;
+    }): Promise<void>;
 }

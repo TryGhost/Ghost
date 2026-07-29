@@ -307,6 +307,50 @@ export function createDatabaseAutomationsRepository({
                         });
                 }
             });
+        },
+
+        async trackEmailClicked({automationActionRevisionId, memberId, clickedAt}, {transacting} = {}) {
+            const trackClick = async (trx: Knex.Transaction) => {
+                const recipient = await trx('automated_email_recipients')
+                    .select('id', 'clicked_at')
+                    .where({
+                        automation_action_revision_id: automationActionRevisionId,
+                        member_id: memberId,
+                        track_clicks: true
+                    })
+                    .where('created_at', '<=', toDatabaseDate(clickedAt))
+                    .orderBy('created_at', 'desc')
+                    .orderBy('id', 'desc')
+                    .forUpdate()
+                    .first();
+
+                if (!recipient || recipient.clicked_at !== null) {
+                    return;
+                }
+
+                const updated = await trx('automated_email_recipients')
+                    .where({id: recipient.id})
+                    .whereNull('clicked_at')
+                    .update({clicked_at: clickedAt});
+
+                if (updated === 0) {
+                    return;
+                }
+
+                await trx('automation_action_revisions')
+                    .where({id: automationActionRevisionId})
+                    .update({
+                        email_clicked_count: trx.raw('COALESCE(email_clicked_count, 0) + 1')
+                    });
+
+            };
+
+            if (transacting) {
+                await trackClick(transacting);
+                return;
+            }
+
+            await knex.transaction(trackClick);
         }
     };
 }

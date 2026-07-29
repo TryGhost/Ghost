@@ -142,56 +142,128 @@ describe('LinkClickTrackingService', function () {
     });
 
     describe('subscribe', function () {
-        it('Ignores redirects without a member id', async function () {
-            const event = RedirectEvent.create({
-                url: new URL('https://example.com/destination'),
-                link: {}
-            });
-            const save = sinon.stub().resolves();
+        const CLICKED_AT = new Date('2026-07-29T12:34:56.000Z');
+
+        let subscriber;
+        let save;
+        let trackEmailClicked;
+        let runInTransaction;
+        let transacting;
+
+        const createRedirectEvent = ({
+            memberUuid = 'memberUuid',
+            automationActionRevisionId,
+            linkId = new ObjectID(),
+            timestamp = CLICKED_AT
+        } = {}) => {
+            const url = new URL('https://example.com/destination');
+            if (memberUuid) {
+                url.searchParams.set('m', memberUuid);
+            }
+
+            return RedirectEvent.create({
+                url,
+                link: {
+                    link_id: linkId,
+                    ...(automationActionRevisionId ? {automationActionRevisionId} : {})
+                }
+            }, timestamp);
+        };
+
+        beforeEach(function () {
+            transacting = {};
+            save = sinon.stub().resolves('member-id');
+            trackEmailClicked = sinon.stub().resolves();
+            runInTransaction = sinon.stub().callsFake(callback => callback(transacting));
 
             const service = new LinkClickTrackingService({
                 DomainEvents: {
                     subscribe: (eventType, callback) => {
                         assert.equal(eventType, RedirectEvent);
-                        callback(event);
+                        subscriber = callback;
                     }
                 },
-                linkClickRepository: {
-                    save
-                }
+                linkClickRepository: {save},
+                automationsApi: {trackEmailClicked},
+                runInTransaction
             });
 
             service.subscribe();
+        });
+
+        it('Ignores redirects without a member id', async function () {
+            await subscriber(createRedirectEvent({memberUuid: null}));
+
             sinon.assert.notCalled(save);
         });
 
-        it('Tracks redirects with a member id', async function () {
+        it('Saves member clicks for newsletter redirects', async function () {
             const linkId = new ObjectID();
-            const event = RedirectEvent.create({
-                url: new URL('https://example.com/destination?m=memberId'),
-                link: {
-                    link_id: linkId
-                }
-            });
-            const save = sinon.stub().resolves();
-
-            const service = new LinkClickTrackingService({
-                DomainEvents: {
-                    subscribe: (eventType, callback) => {
-                        assert.equal(eventType, RedirectEvent);
-                        callback(event);
-                    }
-                },
-                linkClickRepository: {
-                    save
-                }
+            const event = createRedirectEvent({
+                memberUuid: 'memberId',
+                linkId
             });
 
-            service.subscribe();
-            sinon.assert.calledOnce(save);
+            await subscriber(event);
 
-            assert.equal(save.firstCall.args[0].member_uuid, 'memberId');
-            assert.equal(save.firstCall.args[0].link_id, linkId);
+            sinon.assert.calledOnceWithExactly(save, sinon.match({
+                member_uuid: 'memberId',
+                link_id: linkId,
+                timestamp: CLICKED_AT
+            }));
+            sinon.assert.notCalled(runInTransaction);
+        });
+
+        it('Saves automation clicks and analytics in the same transaction', async function () {
+            const linkId = new ObjectID();
+            const event = createRedirectEvent({
+                linkId,
+                automationActionRevisionId: 'revision-id'
+            });
+
+            await subscriber(event);
+
+            sinon.assert.calledOnceWithExactly(runInTransaction, sinon.match.func);
+            sinon.assert.calledOnceWithExactly(save, sinon.match.object, {transacting});
+            sinon.assert.calledOnceWithExactly(trackEmailClicked, {
+                automationActionRevisionId: 'revision-id',
+                memberId: 'member-id',
+                clickedAt: CLICKED_AT
+            }, {transacting});
+        });
+
+        it('Propagates raw click persistence failures', async function () {
+            const error = new Error('click insert failed');
+            const event = createRedirectEvent({
+                automationActionRevisionId: 'revision-id'
+            });
+            save.rejects(error);
+
+            await assert.rejects(subscriber(event), error);
+            sinon.assert.notCalled(trackEmailClicked);
+        });
+
+        it('Skips automation analytics when the member cannot be found', async function () {
+            const event = createRedirectEvent({
+                memberUuid: 'unknownMemberUuid',
+                automationActionRevisionId: 'revision-id'
+            });
+            save.resolves();
+
+            await subscriber(event);
+
+            sinon.assert.notCalled(trackEmailClicked);
+        });
+
+        it('Propagates automation analytics failures so the transaction rolls back', async function () {
+            const error = new Error('analytics update failed');
+            const event = createRedirectEvent({
+                automationActionRevisionId: 'revision-id'
+            });
+            trackEmailClicked.rejects(error);
+
+            await assert.rejects(subscriber(event), error);
+            sinon.assert.calledOnceWithExactly(trackEmailClicked, sinon.match.object, {transacting});
         });
     });
 
