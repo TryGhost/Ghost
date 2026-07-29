@@ -161,7 +161,6 @@ function getAssetUrl(assetPath, hasMinFile) {
     if (cardAssetType) {
         hash = cardAssets.getHash(cardAssetType);
     } else if (config.get('caching:assets:contentBasedHash:enabled')) {
-        // Use file-based SHA256 hash if enabled via config (defaults to false for backwards compatibility)
         if (isThemeAsset) {
             // Theme assets resolve relative to the theme's assets/ directory, so an
             // explicitly-spelled prefix has to come back off before we look the file up

@@ -37,7 +37,7 @@ describe('{{asset}} helper', function () {
         it('handles ghost.css for default templates correctly', function () {
             rendered = asset('public/ghost.css');
             assertExists(rendered);
-            assert.equal(String(rendered), '/public/ghost.css?v=abc');
+            assert.match(String(rendered), /^\/public\/ghost\.css\?v=[A-Za-z0-9_-]{16}$/);
         });
 
         it('handles custom favicon correctly', function () {
@@ -106,7 +106,7 @@ describe('{{asset}} helper', function () {
         it('handles ghost.css for default templates correctly', function () {
             rendered = asset('public/ghost.css');
             assertExists(rendered);
-            assert.equal(String(rendered), 'http://127.0.0.1/public/ghost.css?v=abc');
+            assert.match(String(rendered), /^http:\/\/127\.0\.0\.1\/public\/ghost\.css\?v=[A-Za-z0-9_-]{16}$/);
         });
     });
 
