@@ -5,7 +5,7 @@ import type {AutomationDetail, AutomationEmailStats} from '@tryghost/admin-x-fra
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import type {AutomationRun, RunStepState} from '@/automations/proto/shared/mock';
 import {DETAIL_FOOTER_HEIGHT, EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
-import {StepNodeHeader} from './flow-node-shell';
+import {NODE_CARD_PADDING, NODE_CARD_SHELL, NODE_CARD_SURFACE, StepNodeHeader} from './flow-node-shell';
 import {EmailStatsFooter} from './email-analytics';
 
 const fmtDateTime = (iso: string): string => new Date(iso).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'});
@@ -31,7 +31,7 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
 
     if (d.kind === 'terminal') {
         return (
-            <div className={cn('flex w-80 items-center justify-center gap-2 rounded-full border bg-surface-elevated-2 px-4 py-2 text-sm font-medium', borderClass, muted && 'opacity-60')}>
+            <div className={cn('flex w-80 items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-medium', NODE_CARD_SURFACE, borderClass, muted && 'opacity-60')}>
                 <Handle position={Position.Top} style={{opacity: 0}} type="target" />
                 {done && <LucideIcon.Check className="size-4 text-green" strokeWidth={2.5} />}
                 <span className={cn(done && 'text-green', muted && 'text-muted-foreground')}>{d.title}</span>
@@ -40,7 +40,7 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
     }
 
     return (
-        <div className={cn('w-80 rounded-xl border bg-surface-elevated-2 p-6 shadow-sm', borderClass, muted && 'opacity-60')}>
+        <div className={cn(NODE_CARD_SHELL, NODE_CARD_PADDING, borderClass, muted && 'opacity-60')}>
             <Handle position={Position.Top} style={{opacity: 0}} type="target" />
             <div className="flex items-start justify-between gap-2">
                 <StepNodeHeader icon={stepKindIcon[d.kind]} subtitle={d.subtitle} title={d.title} />

@@ -1,5 +1,12 @@
 import React from 'react';
 
+// Shared node-card shell tokens — one source of truth so surface / radius / elevation /
+// padding updates apply to every card state (read step, edit step, terminal pill).
+// Border COLOR, interaction, and inner structure stay per-variant.
+export const NODE_CARD_SURFACE = 'bg-surface-elevated-2';
+export const NODE_CARD_SHELL = `w-80 rounded-xl border shadow-sm ${NODE_CARD_SURFACE}`;
+export const NODE_CARD_PADDING = 'p-6';
+
 interface StepNodeHeaderProps {
     icon: React.ElementType;
     title: string;
