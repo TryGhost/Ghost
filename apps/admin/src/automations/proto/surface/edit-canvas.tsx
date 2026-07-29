@@ -2,18 +2,30 @@ import '@xyflow/react/dist/style.css';
 import React, {useMemo, useState} from 'react';
 import StepPicker, {type StepPickerType} from '@/automations/components/canvas/step-picker';
 import {Background, BackgroundVariant, BaseEdge, type Edge, EdgeLabelRenderer, type EdgeProps, Handle, type Node, type NodeProps, Position, ReactFlow, getSmoothStepPath} from '@xyflow/react';
-import type {AutomationDetail, AutomationEmailStats, InsertActionAnchor} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationDetail, InsertActionAnchor} from '@tryghost/admin-x-framework/api/automations';
 import {insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import {Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
+import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, Label, Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Stack} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TAIL_NODE_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
-import {StepNodeHeader} from './flow-node-shell';
-import {EmailStatsFooter} from './email-analytics';
+import {EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, TAIL_NODE_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
+import {NODE_CARD_PADDING, NODE_CARD_SHELL, StepNodeHeader} from './flow-node-shell';
 import {StepSidebar} from './step-sidebar';
 
 // The real editor's StepPicker speaks 'send_email' | 'wait'; the proto's graph
 // helpers here take 'email' | 'wait'.
 const toInsertKind = (type: StepPickerType): 'email' | 'wait' => (type === 'send_email' ? 'email' : 'wait');
+
+// Wait duration <-> {amount, unit} (mirrors the side panel; whole days when even).
+const splitWait = (hours: number): {amount: number; unit: 'days' | 'hours'} => (
+    hours % 24 === 0 ? {amount: hours / 24, unit: 'days'} : {amount: hours, unit: 'hours'}
+);
+const waitToHours = (amount: number, unit: 'days' | 'hours'): number => (unit === 'days' ? amount * 24 : amount);
+
+// Height a node's always-visible inline edit form adds (estimated — tune to the
+// rendered form since node Y-positions are laid out manually). No Delete here — that
+// moved to the hover overflow menu. Email: subject + edit-content; wait: duration row.
+const EMAIL_FORM_HEIGHT = 160;
+const WAIT_FORM_HEIGHT = 112;
 
 // Dashed circular "insert step" button, matched to the real add-step-edge.
 const INSERT_BUTTON_CLASSES = 'border-dashed border-border-default bg-surface-page text-text-secondary shadow-sm hover:border-border-strong';
@@ -30,16 +42,98 @@ const AddStepPopover: React.FC<{children: React.ReactNode; onPick: (type: StepPi
     </Popover>
 );
 
-type StepNodeData = {kind: StepKind; title: string; subtitle: string; selected: boolean; stats?: AutomationEmailStats};
+type StepNodeData = {
+    kind: StepKind;
+    title: string;
+    subtitle: string;
+    selected: boolean;
+    // Always-visible inline edit form (non-trigger nodes).
+    subject?: string;
+    waitHours?: number;
+    onSubjectChange?: (subject: string) => void;
+    onWaitChange?: (hours: number) => void;
+    onDelete?: () => void;
+    onEditContent?: () => void;
+};
 
 const StepNode: React.FC<NodeProps> = ({data}) => {
     const d = data as StepNodeData;
     const clickable = d.kind !== 'trigger';
+    const isEmail = d.kind === 'email';
+    const [menuOpen, setMenuOpen] = useState(false);
+    const wait = splitWait(d.waitHours ?? 24);
+    const changeWait = (amount: number, unit: 'days' | 'hours') => {
+        const hours = waitToHours(amount, unit);
+        if (Number.isSafeInteger(hours) && hours > 0) {
+            d.onWaitChange?.(hours);
+        }
+    };
     return (
-        <div className={cn('w-80 rounded-xl border bg-surface-elevated p-4 shadow-sm transition-colors', clickable && 'cursor-pointer', d.selected ? 'border-blue ring-1 ring-blue' : 'border-border-default', clickable && !d.selected && 'hover:border-blue/50')}>
+        <div className={cn('group transition-colors', NODE_CARD_SHELL, clickable && 'cursor-pointer', d.selected ? 'border-blue ring-1 ring-blue' : 'border-border-default', clickable && !d.selected && 'hover:border-blue/50')}>
             <Handle position={Position.Top} style={{opacity: 0}} type="target" />
-            <StepNodeHeader icon={stepKindIcon[d.kind]} subtitle={d.subtitle} title={d.title} />
-            {d.stats && <EmailStatsFooter stats={d.stats} />}
+            <div className={cn('relative', NODE_CARD_PADDING)}>
+                <StepNodeHeader icon={stepKindIcon[d.kind]} title={d.title} />
+                {clickable && (
+                    // Overflow menu — revealed on node hover, kept visible while its menu
+                    // is open. nodrag/nopan + stopPropagation so it doesn't pan or re-select.
+                    <div
+                        className={cn('nodrag nopan absolute top-2 right-2 transition-opacity', menuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100')}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+                            <DropdownMenuTrigger asChild>
+                                <Button aria-label="Step actions" size="icon" variant="ghost">
+                                    <LucideIcon.MoreHorizontal />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => d.onDelete?.()}>
+                                    <LucideIcon.Trash2 /> Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                )}
+            </div>
+            {clickable && (
+                // Always-visible inline edit form. nodrag/nopan + stopPropagation so typing
+                // and selecting don't pan the canvas or re-fire node selection.
+                <div className={cn('nodrag nopan cursor-default border-t border-border-default', NODE_CARD_PADDING)} onClick={e => e.stopPropagation()}>
+                    {isEmail ? (
+                        <Stack gap="md">
+                            <Stack gap="sm">
+                                <Label>Subject line</Label>
+                                <Input placeholder="Subject line" value={d.subject ?? ''} onChange={e => d.onSubjectChange?.(e.target.value)} />
+                            </Stack>
+                            <Button className="w-full" variant="outline" onClick={() => d.onEditContent?.()}>
+                                <LucideIcon.Pencil /> Edit email content
+                            </Button>
+                        </Stack>
+                    ) : (
+                        <Stack gap="sm">
+                            <Label>Wait for</Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    className="w-24"
+                                    min={1}
+                                    type="number"
+                                    value={wait.amount}
+                                    onChange={e => changeWait(Math.max(1, Number(e.target.value) || 1), wait.unit)}
+                                />
+                                <Select value={wait.unit} onValueChange={value => changeWait(wait.amount, value as 'days' | 'hours')}>
+                                    <SelectTrigger className="flex-1">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="hours">Hours</SelectItem>
+                                        <SelectItem value="days">Days</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </Stack>
+                    )}
+                </div>
+            )}
             <Handle position={Position.Bottom} style={{opacity: 0}} type="source" />
         </div>
     );
@@ -119,6 +213,8 @@ interface SurfaceEditCanvasProps {
 export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onChange}) => {
     const {canvasRef, onInit, size} = useCenteredColumn();
     const [selectedId, setSelectedId] = useState<string | null>(null);
+    // Email-content dialog, opened from a card's inline "Edit email content" button.
+    const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 
     const ordered = orderActions(draft);
     const selectedAction = ordered.find(a => a.id === selectedId) ?? null;
@@ -148,7 +244,8 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
         // footer), then the tail button. Even visible gaps regardless of node height.
         const heights = [REGULAR_NODE_HEIGHT];
         ordered.forEach((action) => {
-            heights.push(action.type === 'send_email' ? REGULAR_NODE_HEIGHT + STATS_FOOTER_HEIGHT : REGULAR_NODE_HEIGHT);
+            // Every editable node shows its inline form, so all carry the form height.
+            heights.push(REGULAR_NODE_HEIGHT + (action.type === 'send_email' ? EMAIL_FORM_HEIGHT : WAIT_FORM_HEIGHT));
         });
         heights.push(TAIL_NODE_HEIGHT);
         const ys = stackNodeY(heights);
@@ -174,7 +271,16 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                     title: isEmail ? 'Send email' : 'Wait',
                     subtitle: isEmail ? (action.data.email_subject || 'Untitled') : formatWait(action.data.wait_hours),
                     selected: action.id === selectedId,
-                    stats: action.type === 'send_email' ? action.stats : undefined
+                    // Inline-form values + per-node handlers (each edits its own action).
+                    subject: action.type === 'send_email' ? action.data.email_subject : undefined,
+                    waitHours: action.type === 'wait' ? action.data.wait_hours : undefined,
+                    onSubjectChange: (subject: string) => onChange(updateSendEmailAction({detail: draft, actionId: action.id, emailSubject: subject, emailLexical: action.type === 'send_email' ? action.data.email_lexical : ''})),
+                    onWaitChange: (hours: number) => onChange(updateWaitAction({detail: draft, actionId: action.id, waitHours: hours})),
+                    onDelete: () => {
+                        onChange(removeAction({detail: draft, actionId: action.id}));
+                        setSelectedId(null);
+                    },
+                    onEditContent: () => setEmailDialogOpen(true)
                 },
                 draggable: false,
                 connectable: false,
@@ -261,6 +367,19 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                     onWaitChange={handleWaitChange}
                 />
             )}
+
+            {/* Email content editing is out of scope for the prototype — opened from a
+                card's inline "Edit email content" button. */}
+            <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Email content</DialogTitle>
+                        <DialogDescription>
+                            The full email editor isn’t wired up in this prototype — this is where the Koenig content editor would open to design the email.
+                        </DialogDescription>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
