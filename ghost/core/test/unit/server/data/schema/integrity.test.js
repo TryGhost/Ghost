@@ -39,7 +39,7 @@ describe('DB version integrity', function () {
     const currentSchemaHash = 'c0fe7246714201a82b75f80308d5e300';
     const currentFixturesHash = '065b413e1d1f4f95fa7cb7734c5e7934';
     const currentSettingsHash = '8650db85b9a61afe4797ad6333066c62';
-    const currentRoutesHash = '96a7d0955083bae3f79522b23a1d698d';
+    const currentRoutesHash = '66467df9cfcaf50e31649aa51e605491';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
