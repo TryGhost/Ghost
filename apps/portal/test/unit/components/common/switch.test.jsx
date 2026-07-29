@@ -109,4 +109,13 @@ describe('Switch', () => {
         expect(input).not.toHaveAttribute('tabindex');
         expect(input).toHaveAttribute('aria-label', 'Accessible');
     });
+
+    test('does not set an empty aria-label when label is omitted', () => {
+        const {container} = render(
+            <Switch id="unlabelled-switch" onToggle={() => {}} />
+        );
+        const input = container.querySelector('input[type="checkbox"]');
+
+        expect(input).not.toHaveAttribute('aria-label');
+    });
 });

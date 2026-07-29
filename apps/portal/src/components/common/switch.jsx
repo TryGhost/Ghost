@@ -107,9 +107,10 @@ function Switch({id, label = '', onToggle, checked = false, disabled = false, da
     // focus order so keyboard/SR users get a single stop with the correct
     // toggle state.
     const wrapperProps = presentational ? {'aria-hidden': true} : {};
+    // Never emit an empty aria-label — that announces a nameless checkbox.
     const inputProps = presentational
         ? {tabIndex: -1}
-        : {'aria-label': label};
+        : (label ? {'aria-label': label} : {});
 
     return (
         <div className="gh-portal-for-switch" data-test-switch={dataTestId} {...wrapperProps}>

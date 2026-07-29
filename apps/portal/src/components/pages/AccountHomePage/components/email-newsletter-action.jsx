@@ -16,12 +16,15 @@ function EmailNewsletterAction() {
         doAction('updateNewsletterPreference', {newsletters: subscribedNewsletters});
     };
 
+    const labelId = 'portal-toggle-label-email-newsletter';
+
     return (
         <section
             className='gh-portal-list-clickable'
             role="button"
             tabIndex={0}
             aria-pressed={subscribed}
+            aria-labelledby={labelId}
             onClick={onToggleSubscription}
             onKeyDown={(e) => {
                 if (e.target !== e.currentTarget) {
@@ -34,7 +37,7 @@ function EmailNewsletterAction() {
             }}
         >
             <div className='gh-portal-list-detail email-newsletter'>
-                <h3>{t('Email newsletter')}</h3>
+                <h3 id={labelId}>{t('Email newsletter')}</h3>
                 <p>{label} {hasMemberGotEmailSuppression({member}) && subscribed && <button
                     className='gh-portal-btn-text gh-email-faq-page-button'
                     onClick={(e) => {

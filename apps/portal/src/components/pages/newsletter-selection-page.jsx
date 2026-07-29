@@ -38,6 +38,8 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
         setSubscribedNewsletters(updatedNewsletters);
     };
 
+    const labelId = `portal-toggle-label-${newsletter.id}`;
+
     return (
         <section
             className='gh-portal-list-toggle-wrapper gh-portal-list-clickable'
@@ -45,6 +47,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
             role="button"
             tabIndex={0}
             aria-pressed={isChecked}
+            aria-labelledby={labelId}
             onClick={handleToggle}
             onKeyDown={(e) => {
                 if (e.target !== e.currentTarget) {
@@ -57,7 +60,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
             }}
         >
             <div className='gh-portal-list-detail gh-portal-list-big'>
-                <h3>{newsletter.name}</h3>
+                <h3 id={labelId}>{newsletter.name}</h3>
                 <p>{newsletter.description}</p>
             </div>
             <div onClick={(e) => e.stopPropagation()}>

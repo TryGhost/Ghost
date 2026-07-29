@@ -23,6 +23,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     const isChecked = subscribedNewsletters.some((d) => {
         return d.id === newsletter?.id;
     });
+    const labelId = `portal-toggle-label-${newsletter.id}`;
 
     const handleToggle = () => {
         let updatedNewsletters = [];
@@ -45,6 +46,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
             role="button"
             tabIndex={0}
             aria-pressed={isChecked}
+            aria-labelledby={labelId}
             onClick={handleToggle}
             onKeyDown={(e) => {
                 if (e.target !== e.currentTarget) {
@@ -57,7 +59,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
             }}
         >
             <div className='gh-portal-list-detail'>
-                <h3>{newsletter.name}</h3>
+                <h3 id={labelId}>{newsletter.name}</h3>
                 <p>{newsletter?.description}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}} onClick={(e) => e.stopPropagation()}>
@@ -96,6 +98,8 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
         }
     };
 
+    const labelId = 'portal-toggle-label-comments';
+
     return (
         <section
             className='gh-portal-list-toggle-wrapper gh-portal-list-clickable'
@@ -103,6 +107,7 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
             role="button"
             tabIndex={0}
             aria-pressed={isChecked}
+            aria-labelledby={labelId}
             onClick={handleToggle}
             onKeyDown={(e) => {
                 if (e.target !== e.currentTarget) {
@@ -115,7 +120,7 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
             }}
         >
             <div className='gh-portal-list-detail'>
-                <h3>{t('Comments')}</h3>
+                <h3 id={labelId}>{t('Comments')}</h3>
                 <p>{t('Get notified when someone replies to your comment')}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}} onClick={(e) => e.stopPropagation()}>
@@ -153,6 +158,8 @@ function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChang
         }
     };
 
+    const labelId = 'portal-toggle-label-updates-and-announcements';
+
     return (
         <section
             className='gh-portal-list-toggle-wrapper gh-portal-list-clickable'
@@ -160,6 +167,7 @@ function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChang
             role="button"
             tabIndex={0}
             aria-pressed={!!enableUpdatesAndAnnouncements}
+            aria-labelledby={labelId}
             onClick={handleToggle}
             onKeyDown={(e) => {
                 if (e.target !== e.currentTarget) {
@@ -172,7 +180,7 @@ function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChang
             }}
         >
             <div className='gh-portal-list-detail'>
-                <h3>{t('Updates & announcements')}</h3>
+                <h3 id={labelId}>{t('Updates & announcements')}</h3>
                 <p>{t('Occasional updates from {siteTitle}', {siteTitle: site?.title})}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}} onClick={(e) => e.stopPropagation()}>

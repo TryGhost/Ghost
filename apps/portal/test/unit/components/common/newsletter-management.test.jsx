@@ -1,6 +1,6 @@
 import {render, fireEvent, act} from '../../../utils/test-utils';
 import NewsletterManagement from '../../../../src/components/common/newsletter-management';
-import {getSiteData, getMemberData} from '../../../../src/utils/fixtures-generator';
+import {getSiteData, getMemberData, getNewslettersData} from '../../../../src/utils/fixtures-generator';
 
 const noop = () => {};
 
@@ -31,6 +31,51 @@ const renderManagement = (overrides = {}) => {
 };
 
 describe('NewsletterManagement', () => {
+    test('wires accessible names from the visible titles to each preference toggle', () => {
+        const newsletters = getNewslettersData({numOfNewsletters: 1}).map(n => ({
+            ...n,
+            id: 'n1',
+            name: 'Weekly Digest'
+        }));
+        const site = getSiteData({
+            newsletters,
+            labs: {automations: true}
+        });
+
+        const {getByRole, getByTestId} = render(
+            <NewsletterManagement
+                hasNewslettersEnabled={true}
+                subscribedNewsletters={[]}
+                updateSubscribedNewsletters={noop}
+                updateCommentNotifications={vi.fn().mockResolvedValue(undefined)}
+                updateUpdatesAndAnnouncements={vi.fn().mockResolvedValue(undefined)}
+                unsubscribeAll={noop}
+                isPaidMember={false}
+                isCommentsEnabled={true}
+                enableCommentNotifications={false}
+                canChangeUpdatesAndAnnouncements={true}
+                enableUpdatesAndAnnouncements={false}
+            />,
+            {
+                overrideContext: {
+                    site,
+                    member: getMemberData()
+                }
+            }
+        );
+
+        const commentToggle = getByRole('button', {name: 'Comments'});
+        expect(commentToggle).toHaveAttribute('aria-labelledby', 'portal-toggle-label-comments');
+        expect(commentToggle.querySelector('#portal-toggle-label-comments')).toHaveTextContent('Comments');
+
+        const updatesToggle = getByRole('button', {name: 'Updates & announcements'});
+        expect(updatesToggle).toHaveAttribute('aria-labelledby', 'portal-toggle-label-updates-and-announcements');
+
+        const newsletterToggle = getByTestId('newsletter-toggle');
+        expect(newsletterToggle).toHaveAttribute('aria-labelledby', 'portal-toggle-label-n1');
+        expect(newsletterToggle.querySelector('#portal-toggle-label-n1')).toHaveTextContent('Weekly Digest');
+    });
+
     describe('CommentsSection isUpdating guard', () => {
         test('coalesces rapid double-clicks on the inner Switch into a single update', async () => {
             // Slow update: stays pending so the second click hits the guard.
