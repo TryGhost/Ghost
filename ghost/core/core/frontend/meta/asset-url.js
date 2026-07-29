@@ -121,9 +121,12 @@ function getAssetUrl(assetPath, hasMinFile) {
         return getFaviconUrl();
     }
 
-    // Determine asset type
-    const isPublicAsset = assetPath.match(/^public\//);
-    const isThemeAsset = !isPublicAsset && !assetPath.match(/^asset/);
+    // Determine asset type. Anything that isn't a public asset is served out of the
+    // active theme's assets/ directory — but a caller may already have spelled that
+    // prefix themselves, in which case we must not add it a second time.
+    const isPublicAsset = !!assetPath.match(/^public\//);
+    const isThemeAsset = !isPublicAsset;
+    const hasAssetsPrefix = isThemeAsset && !!assetPath.match(/^asset/);
 
     // CASE: Build the output URL
     // If assetCdnUrl is configured, use it as the base (produces an absolute URL).
@@ -134,7 +137,7 @@ function getAssetUrl(assetPath, hasMinFile) {
         : urlUtils.urlJoin(urlUtils.getSubdir(), '/');
 
     // Optionally add /assets/
-    if (isThemeAsset) {
+    if (isThemeAsset && !hasAssetsPrefix) {
         output = urlUtils.urlJoin(output, 'assets/');
     }
 
@@ -152,9 +155,10 @@ function getAssetUrl(assetPath, hasMinFile) {
     // Use file-based SHA256 hash if enabled via config (defaults to false for backwards compatibility)
     if (config.get('caching:assets:contentBasedHash:enabled')) {
         if (isThemeAsset) {
-            // For theme assets, use file-based SHA256 hash
-            hash = getThemeAssetHash(hashPath);
-        } else if (isPublicAsset) {
+            // Theme assets resolve relative to the theme's assets/ directory, so an
+            // explicitly-spelled prefix has to come back off before we look the file up
+            hash = getThemeAssetHash(hashPath.replace(/^assets\//, ''));
+        } else {
             // For public assets, use file-based SHA256 hash
             hash = getPublicAssetHash(hashPath);
         }

@@ -267,6 +267,19 @@ describe('getAssetUrl', function () {
             assert.equal(testUrl, `/assets/${testFile}?v=${expectedHash}`);
         });
 
+        it('should use the same hash whether or not the caller spells the assets/ prefix', function () {
+            sinon.stub(themeEngine, 'getActive').returns({
+                path: fixturesPath
+            });
+
+            const bare = getAssetUrl('built/screen.css');
+            const prefixed = getAssetUrl('assets/built/screen.css');
+
+            // Same file, same URL, so the cache-busting key must match too
+            assert.equal(prefixed, bare);
+            assert.match(prefixed, /^\/assets\/built\/screen\.css\?v=[A-Za-z0-9_-]{16}$/);
+        });
+
         it('should fallback to global hash when theme asset file does not exist', function () {
             // Mock active theme
             sinon.stub(themeEngine, 'getActive').returns({
