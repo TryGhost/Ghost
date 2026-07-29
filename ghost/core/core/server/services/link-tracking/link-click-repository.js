@@ -54,9 +54,11 @@ module.exports = class LinkClickRepository {
 
     /**
      * @param {LinkClick} linkClick
-     * @returns {Promise<void>}
+     * @param {object} [options]
+     * @param {object} [options.transacting]
+     * @returns {Promise<string | undefined>}
      */
-    async save(linkClick) {
+    async save(linkClick, options = {}) {
         let member;
 
         if (config && config.get('linkClickTrackingCacheMemberUuid')) {
@@ -76,11 +78,25 @@ module.exports = class LinkClickRepository {
             // Only store the pathname (no support for variable query strings)
             redirect_id: linkClick.link_id.toHexString(),
             member_id: member.id
-        }, {});
+        }, options);
 
         linkClick.event_id = ObjectID.createFromHexString(model.id);
+        const timestamp = linkClick.timestamp ?? new Date();
 
-        // Dispatch event
-        this.#DomainEvents.dispatch(this.#MemberLinkClickEvent.create({memberId: member.id, memberLastSeenAt: member.get('last_seen_at'), linkId: linkClick.link_id.toHexString()}, new Date()));
+        const event = this.#MemberLinkClickEvent.create({
+            memberId: member.id,
+            memberLastSeenAt: member.get('last_seen_at'),
+            linkId: linkClick.link_id.toHexString()
+        }, timestamp);
+
+        if (options.transacting) {
+            options.transacting.executionPromise.then(() => {
+                this.#DomainEvents.dispatch(event);
+            }, () => undefined);
+        } else {
+            this.#DomainEvents.dispatch(event);
+        }
+
+        return member.id;
     }
 };
