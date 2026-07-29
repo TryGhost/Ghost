@@ -365,12 +365,6 @@ describe('LazyUrlService', function () {
         });
     });
 
-    describe('hasFinished', function () {
-        it('always returns true', function () {
-            assert.equal(new LazyUrlService({urlUtils, findResource: noopFindResource}).hasFinished(), true);
-        });
-    });
-
     describe('reset', function () {
         it('drops all registered router configs', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
@@ -802,6 +796,28 @@ describe('LazyUrlService', function () {
 
             assert.deepEqual(service.getRequiredFields('posts').sort(), ['primary_tag', 'slug', 'status', 'type']);
             assert.deepEqual(service.getRequiredFields('pages').sort(), ['primary_author', 'slug', 'status', 'type']);
+        });
+    });
+
+    // hasFinished() gates the maintenance middleware, so it must report not-ready
+    // until routers are registered (it was previously hardcoded true).
+    describe('hasFinished — readiness gating', function () {
+        it('is not finished before any router is registered', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            assert.equal(service.hasFinished(), false);
+        });
+
+        it('is finished once routers are registered', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+            assert.equal(service.hasFinished(), true);
+        });
+
+        it('is not finished again after a reset (route-reload window)', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+            service.reset();
+            assert.equal(service.hasFinished(), false);
         });
     });
 });
