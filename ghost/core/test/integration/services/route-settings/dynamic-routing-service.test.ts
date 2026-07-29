@@ -69,14 +69,14 @@ describe('Integration: DynamicRoutingService over a real FileStore', function ()
 
     const writeRoutes = (yaml: string) => fs.writeFile(path.join(contentDir, 'routes.yaml'), yaml, 'utf8');
 
-    it('loadRouteSettings expands a valid stored file into the router format', async function () {
+    it('loadRouteSettings expands a valid stored file into the router array format', async function () {
         await writeRoutes(VALID_YAML);
 
         const expanded = await service.loadRouteSettings();
 
-        assert.deepEqual(expanded.routes['/about/'], {templates: ['about']});
-        assert.equal(expanded.collections['/'].permalink, '/:slug/');
-        assert.equal(expanded.taxonomies.tag, '/tag/:slug/');
+        assert.deepEqual(expanded.routes, [{path: '/about/', type: 'template', templates: ['about']}]);
+        assert.deepEqual(expanded.collections, [{path: '/', permalink: '/:slug/', templates: ['index']}]);
+        assert.deepEqual(expanded.taxonomies, [{key: 'tag', permalink: '/tag/:slug/'}]);
     });
 
     it('loadRouteSettings logs ROUTE_SETTINGS_VALIDATION_ERROR and rethrows when the file fails validation', async function () {

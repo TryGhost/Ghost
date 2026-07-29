@@ -30,12 +30,12 @@ class StaticRoutesRouter extends ParentRouter {
             this.limit = object.limit;
             this.order = object.order;
 
-            this.controller = object.controller;
+            this.type = object.type;
 
             debug(this.route.value, this.templates, this.filter, this.data);
             this._registerChannelRoutes();
         } else {
-            this.contentType = object.content_type;
+            this.contentType = object.contentType;
             debug(this.route.value, this.templates);
             this._registerStaticRoute();
         }
@@ -56,11 +56,11 @@ class StaticRoutesRouter extends ParentRouter {
         }
 
         // REGISTER: channel route
-        this.mountRoute(this.route.value, controllers[this.controller]);
+        this.mountRoute(this.route.value, controllers[this.type]);
 
         // REGISTER: pagination
         this.router().param('page', middleware.pageParam);
-        this.mountRoute(urlUtils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers[this.controller]);
+        this.mountRoute(urlUtils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers[this.type]);
 
         this.routerCreated(this);
     }
@@ -74,7 +74,7 @@ class StaticRoutesRouter extends ParentRouter {
      */
     _prepareChannelContext(req, res, next) {
         res.routerOptions = {
-            type: this.controller,
+            type: this.type,
             name: this.routerName,
             context: [this.routerName],
             filter: this.filter,
@@ -131,11 +131,9 @@ class StaticRoutesRouter extends ParentRouter {
      * @returns {boolean}
      */
     isChannel(object) {
-        if (object && object.controller && object.controller === 'channel') {
-            return true;
-        }
-
-        return this.controller === 'channel';
+        // buildRouterSettings always sets `type` ('channel' | 'template') on
+        // every route, so a channel is simply `type === 'channel'`.
+        return object?.type === 'channel';
     }
 }
 

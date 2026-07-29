@@ -121,90 +121,130 @@ function convertSlugsToColons(value: string): string {
     return value.replace(/{(\w+)}/g, ':$1');
 }
 
-function expandRoute(route: Route): Record<string, any> {
-    const expanded: Record<string, any> = {};
+/**
+ * Router-facing shapes. RouterManager consumes the domain model after the two
+ * conversions the bridge still applies: `data` expanded to `{query, router}`,
+ * and collection/taxonomy permalinks rewritten to `:slug`.
+ *
+ * Routes and collections are written as their domain counterpart with just
+ * `data` overridden to the expanded shape — `Omit<…, 'data'> & {data?}` rather
+ * than `extends`, because the override changes `data`'s type (interface
+ * extension can only add fields, not retype them). That keeps the delta from
+ * the domain model explicit: `data` is the only structural difference. When the
+ * bridge is removed (HKG-1898) the override falls away and these collapse back
+ * to `Route` / `CollectionConfig`.
+ */
+type RouterChannelRoute = Omit<ChannelRoute, 'data'> & {data?: ExpandedData};
+type RouterTemplateRoute = Omit<TemplateRoute, 'data'> & {data?: ExpandedData};
+type RouterRoute = RouterChannelRoute | RouterTemplateRoute;
 
-    expanded.templates = route.templates || [];
+type RouterCollection = Omit<CollectionConfig, 'data'> & {data?: ExpandedData};
 
-    if (route.data !== undefined) {
-        expanded.data = expandRouteData(route.data);
-    }
-
-    if (route.type === 'channel') {
-        const channel = route as ChannelRoute;
-        expanded.controller = 'channel';
-        if (channel.filter !== undefined) {
-            expanded.filter = channel.filter;
-        }
-        if (channel.order !== undefined) {
-            expanded.order = channel.order;
-        }
-        if (channel.limit !== undefined) {
-            expanded.limit = channel.limit;
-        }
-        if (channel.rss !== undefined) {
-            expanded.rss = channel.rss;
-        }
-    } else {
-        const template = route as TemplateRoute;
-        if (template.contentType !== undefined) {
-            expanded.content_type = template.contentType;
-        }
-    }
-
-    return expanded;
+// Taxonomies and RouteSettings have no direct domain counterpart to derive from:
+// the domain stores taxonomies as a `{tag, author}` map, which the bridge
+// flattens into these `{key, permalink}` entries, and RouterSettings drops
+// `yamlSource` and swaps all three array element types (routes, collections,
+// taxonomies) — so they stay standalone.
+interface RouterTaxonomy {
+    key: string;
+    permalink: string;
 }
 
-function expandCollection(collection: CollectionConfig): Record<string, any> {
-    const expanded: Record<string, any> = {};
+export interface RouterSettings {
+    routes: RouterRoute[];
+    collections: RouterCollection[];
+    taxonomies: RouterTaxonomy[];
+}
 
-    expanded.permalink = convertSlugsToColons(collection.permalink);
-    expanded.templates = collection.templates || [];
+function buildRouterRoute(route: Route): RouterRoute {
+    const data = route.data !== undefined ? expandRouteData(route.data) : undefined;
+
+    // Build per branch: RouterRoute is a discriminated union, so each member is
+    // constructed as its concrete type. `route` is narrowed by the check.
+    if (route.type === 'channel') {
+        const result: RouterChannelRoute = {
+            path: route.path,
+            type: 'channel',
+            templates: route.templates || []
+        };
+        if (data !== undefined) {
+            result.data = data;
+        }
+        if (route.filter !== undefined) {
+            result.filter = route.filter;
+        }
+        if (route.order !== undefined) {
+            result.order = route.order;
+        }
+        if (route.limit !== undefined) {
+            result.limit = route.limit;
+        }
+        if (route.rss !== undefined) {
+            result.rss = route.rss;
+        }
+        return result;
+    }
+
+    const result: RouterTemplateRoute = {
+        path: route.path,
+        type: 'template',
+        templates: route.templates || []
+    };
+    if (data !== undefined) {
+        result.data = data;
+    }
+    if (route.contentType !== undefined) {
+        result.contentType = route.contentType;
+    }
+    return result;
+}
+
+function buildRouterCollection(collection: CollectionConfig): RouterCollection {
+    const result: RouterCollection = {
+        path: collection.path,
+        permalink: convertSlugsToColons(collection.permalink),
+        templates: collection.templates || []
+    };
 
     if (collection.data !== undefined) {
-        expanded.data = expandRouteData(collection.data);
+        result.data = expandRouteData(collection.data);
     }
-
     if (collection.filter !== undefined) {
-        expanded.filter = collection.filter;
+        result.filter = collection.filter;
     }
     if (collection.order !== undefined) {
-        expanded.order = collection.order;
+        result.order = collection.order;
     }
     if (collection.limit !== undefined) {
-        expanded.limit = collection.limit;
+        result.limit = collection.limit;
     }
     if (collection.rss !== undefined) {
-        expanded.rss = collection.rss;
+        result.rss = collection.rss;
     }
 
-    return expanded;
+    return result;
 }
 
 /**
- * Converts a RouteSettings domain model into the legacy expanded format
- * that routerManager.start() expects.
+ * Converts a RouteSettings domain model into the array shape that
+ * RouterManager.start() iterates. Each route/collection carries its own `path`,
+ * and taxonomies become `{key, permalink}` entries, so the routing layer no
+ * longer reads paths from map keys.
  *
- * This is a temporary adapter — it gets removed once RouterManager is
- * refactored to consume the domain model directly (HKG-1895/HKG-1898).
+ * Temporary adapter: removed in HKG-1898 once the routers consume the domain
+ * model directly.
  */
-export function expandRouteSettings(settings: RouteSettings): {routes: Record<string, any>; collections: Record<string, any>; taxonomies: Record<string, string>} {
-    const routes: Record<string, any> = {};
-    for (const route of settings.routes) {
-        routes[route.path] = expandRoute(route);
-    }
-
-    const collections: Record<string, any> = {};
-    for (const collection of settings.collections) {
-        collections[collection.path] = expandCollection(collection);
-    }
-
-    const taxonomies: Record<string, string> = {};
+export function buildRouterSettings(settings: RouteSettings): RouterSettings {
+    const taxonomies: RouterTaxonomy[] = [];
     for (const [key, value] of Object.entries(settings.taxonomies)) {
         if (value) {
-            taxonomies[key] = convertSlugsToColons(value);
+            taxonomies.push({key, permalink: convertSlugsToColons(value)});
         }
     }
 
-    return {routes, collections, taxonomies};
+    return {
+        routes: settings.routes.map(buildRouterRoute),
+        collections: settings.collections.map(buildRouterCollection),
+        taxonomies
+    };
 }

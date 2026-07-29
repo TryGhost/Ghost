@@ -11,7 +11,7 @@ const defaultSettings = require('../../../../../core/server/data/schema/default-
 // Routes are yaml so we can require the file directly
 const routeSettings = require('../../../../../core/server/services/route-settings');
 routeSettings.init();
-const {expandRouteSettings} = require('../../../../../core/server/services/route-settings/activation-bridge');
+const {buildRouterSettings} = require('../../../../../core/server/services/route-settings/activation-bridge');
 const {parseRouteSettings} = require('../../../../../core/server/services/route-settings/route-settings-parser');
 const parseYaml = require('../../../../../core/server/services/route-settings/yaml-parser');
 
@@ -39,14 +39,14 @@ describe('DB version integrity', function () {
     const currentSchemaHash = 'c0fe7246714201a82b75f80308d5e300';
     const currentFixturesHash = '065b413e1d1f4f95fa7cb7734c5e7934';
     const currentSettingsHash = '8650db85b9a61afe4797ad6333066c62';
-    const currentRoutesHash = '3d180d52c663d173a6be791ef411ed01';
+    const currentRoutesHash = '96a7d0955083bae3f79522b23a1d698d';
 
     // If this test is failing, then it is likely a change has been made that requires a DB version bump,
     // and the values above will need updating as confirmation
     it('should not change without fixing this test', function () {
         const routesPath = path.join(config.get('paths').defaultRouteSettings, 'default-routes.yaml');
         const defaultRoutesSource = fs.readFileSync(routesPath, 'utf-8');
-        const defaultRoutes = expandRouteSettings(parseRouteSettings(parseYaml(defaultRoutesSource), defaultRoutesSource));
+        const defaultRoutes = buildRouterSettings(parseRouteSettings(parseYaml(defaultRoutesSource), defaultRoutesSource));
 
         const tablesNoValidation = _.cloneDeep(schema);
         let schemaHash;
