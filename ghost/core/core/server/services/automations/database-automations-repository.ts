@@ -196,7 +196,7 @@ export function createDatabaseAutomationsRepository({
                 .orderBy('url', 'asc');
 
             return rows.map(row => ({
-                url: row.url,
+                url: urlUtils.transformReadyToAbsolute(row.url),
                 clicked_count: Number(row.clicked_count)
             }));
         },

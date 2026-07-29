@@ -875,6 +875,26 @@ describe('automations repository', function () {
     });
 
     describe('getAutomationActionLinks', function () {
+        it('returns stored transform-ready destinations as absolute URLs', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = automation.actions.find(candidate => candidate.type === 'send_email');
+            assert(action);
+            const revision = await getLatestActionRevisionByActionId(action.id);
+            const absoluteUrl = `${ghostConfig.get('url')}/archive/`;
+
+            await knex('redirects').insert({
+                id: ObjectId().toHexString(),
+                automation_action_revision_id: revision.revision_id,
+                to: '__GHOST_URL__/archive/',
+                to_hash: hashRedirectDestination(absoluteUrl)
+            });
+
+            assert.deepEqual(await repo.getAutomationActionLinks(automation.id, action.id), [{
+                url: absoluteUrl,
+                clicked_count: 0
+            }]);
+        });
+
         it('aggregates unique member clicks by destination hash across action revisions', async function () {
             const automation = await getAutomationBySlug('member-welcome-email-free');
             const action = automation.actions.find(candidate => candidate.type === 'send_email');
