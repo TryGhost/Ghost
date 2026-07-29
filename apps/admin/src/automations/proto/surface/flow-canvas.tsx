@@ -31,7 +31,7 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
 
     if (d.kind === 'terminal') {
         return (
-            <div className={cn('flex w-80 items-center justify-center gap-2 rounded-full border bg-surface-elevated px-4 py-2 text-sm font-medium', borderClass, muted && 'opacity-60')}>
+            <div className={cn('flex w-80 items-center justify-center gap-2 rounded-full border bg-surface-elevated-2 px-4 py-2 text-sm font-medium', borderClass, muted && 'opacity-60')}>
                 <Handle position={Position.Top} style={{opacity: 0}} type="target" />
                 {done && <LucideIcon.Check className="size-4 text-green" strokeWidth={2.5} />}
                 <span className={cn(done && 'text-green', muted && 'text-muted-foreground')}>{d.title}</span>
@@ -40,7 +40,7 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
     }
 
     return (
-        <div className={cn('w-80 rounded-xl border bg-surface-elevated p-4 shadow-sm', borderClass, muted && 'opacity-60')}>
+        <div className={cn('w-80 rounded-xl border bg-surface-elevated-2 p-6 shadow-sm', borderClass, muted && 'opacity-60')}>
             <Handle position={Position.Top} style={{opacity: 0}} type="target" />
             <div className="flex items-start justify-between gap-2">
                 <StepNodeHeader icon={stepKindIcon[d.kind]} subtitle={d.subtitle} title={d.title} />
