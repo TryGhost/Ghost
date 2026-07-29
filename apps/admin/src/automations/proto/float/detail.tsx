@@ -210,58 +210,16 @@ const AutomationFloat: React.FC = () => {
     const workingText = saveState === 'saving' ? 'Saving…' : dirty ? 'Unsaved changes' : 'No changes';
 
     return (
-        <div className="fixed inset-0 z-50 flex bg-background" data-testid="float-detail">
-            {/* Left performance card — back arrow + title at the top, then the
-                Overview + Runs content scrolling below. Hidden while editing: the run
-                analytics are irrelevant when you're building the flow, so the edit
-                canvas takes the full width. */}
-            {!showEditCanvas && (
-            <aside className="flex w-[480px] shrink-0 flex-col border-r border-border-default bg-background">
-                {/* Back arrow + title/status switcher stay at the top of the card.
-                    Title and status live in one trigger so hovering the whole block
-                    opens the switcher; the back arrow is separate (leaves to the list). */}
-                <Inline align="center" className="shrink-0 px-4 pt-4" gap="sm">
-                    <RailButton icon={LucideIcon.ArrowLeft} label="Back to automations" onClick={goBack} />
-                    <HoverCard closeDelay={150} open={switcherOpen} openDelay={150} onOpenChange={setSwitcherOpen}>
-                        <HoverCardTrigger asChild>
-                            <Button className="h-auto min-w-0 gap-2 rounded-full px-2 py-1 text-lg font-semibold" variant="ghost">
-                                <span className="truncate">{automation.name}</span>
-                                <StatusPill status={liveStatus} />
-                            </Button>
-                        </HoverCardTrigger>
-                        <HoverCardContent align="start" className="max-h-80 w-64 overflow-y-auto p-1">
-                            {mockAutomations.map(a => (
-                                <Button
-                                    key={a.id}
-                                    className={cn(
-                                        'w-full justify-between gap-3 px-2 py-1.5 font-normal',
-                                        a.id === automation.id && 'bg-muted-foreground/10 font-medium'
-                                    )}
-                                    variant="ghost"
-                                    onClick={() => {
-                                        setSwitcherOpen(false);
-                                        if (a.id !== automation.id) {
-                                            navigate(toVersioned(`/automations-proto/float/${a.id}`));
-                                        }
-                                    }}
-                                >
-                                    <span className="truncate">{a.name}</span>
-                                    <StatusPill status={a.status} />
-                                </Button>
-                            ))}
-                        </HoverCardContent>
-                    </HoverCard>
-                </Inline>
-                <CanvasSidePanel scenario={scenario} selectedMemberId={selectedMemberId} onSelectMember={setSelectedMemberId} />
-            </aside>
-            )}
-
-            {/* Canvas — fills the rest; the lifecycle chrome floats top-right over it. */}
-            <div className="relative min-h-0 flex-1 overflow-hidden bg-muted/30">
+        <div className="fixed inset-0 z-50 bg-background" data-testid="float-detail">
+            {/* Canvas is full-bleed; the performance card + header float over its
+                top-left (below) and the lifecycle chrome over its top-right. */}
+            <div className="absolute inset-0 overflow-hidden bg-muted/30">
                 {showEditCanvas ? (
                     <FloatEditCanvas draft={activeDraft} onChange={handleDraftChange} />
                 ) : (
-                    <FloatFlowCanvas automation={automation} selectedRun={selectedRun} />
+                    // leftInset ≈ the floating card's footprint (left-4 + w-480 + gap)
+                    // so the flow centres beside it and panning can't tuck it under.
+                    <FloatFlowCanvas automation={automation} leftInset={512} selectedRun={selectedRun} />
                 )}
 
                 {/* Top-right — autosave indicator (while editing), the ⋯ actions menu,
@@ -303,6 +261,50 @@ const AutomationFloat: React.FC = () => {
                         <Button onClick={() => setStopOpen(true)}>Stop</Button>
                     )}
                 </div>
+            </div>
+
+            {/* Top-left — back arrow + automation title float over the canvas and stay
+                visible in edit mode; the performance card floats below them and hides
+                while editing. The column is pointer-events-none so its empty gaps pass
+                clicks through to the canvas; the header and card opt back in. */}
+            <div className="pointer-events-none absolute inset-y-4 left-4 z-20 flex w-[480px] flex-col gap-3">
+                <Inline align="center" className="pointer-events-auto shrink-0" gap="sm">
+                    <RailButton icon={LucideIcon.ArrowLeft} label="Back to automations" onClick={goBack} />
+                    <HoverCard closeDelay={150} open={switcherOpen} openDelay={150} onOpenChange={setSwitcherOpen}>
+                        <HoverCardTrigger asChild>
+                            <Button className="h-auto min-w-0 gap-2 rounded-full px-2 py-1 text-lg font-semibold" variant="ghost">
+                                <span className="truncate">{automation.name}</span>
+                                <StatusPill status={liveStatus} />
+                            </Button>
+                        </HoverCardTrigger>
+                        <HoverCardContent align="start" className="max-h-80 w-64 overflow-y-auto p-1">
+                            {mockAutomations.map(a => (
+                                <Button
+                                    key={a.id}
+                                    className={cn(
+                                        'w-full justify-between gap-3 px-2 py-1.5 font-normal',
+                                        a.id === automation.id && 'bg-muted-foreground/10 font-medium'
+                                    )}
+                                    variant="ghost"
+                                    onClick={() => {
+                                        setSwitcherOpen(false);
+                                        if (a.id !== automation.id) {
+                                            navigate(toVersioned(`/automations-proto/float/${a.id}`));
+                                        }
+                                    }}
+                                >
+                                    <span className="truncate">{a.name}</span>
+                                    <StatusPill status={a.status} />
+                                </Button>
+                            ))}
+                        </HoverCardContent>
+                    </HoverCard>
+                </Inline>
+                {!showEditCanvas && (
+                    <div className="pointer-events-auto flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border-default bg-background shadow-lg">
+                        <CanvasSidePanel scenario={scenario} selectedMemberId={selectedMemberId} onSelectMember={setSelectedMemberId} />
+                    </div>
+                )}
             </div>
 
             {/* Stop — the high-friction confirm that unlocks editing. */}
