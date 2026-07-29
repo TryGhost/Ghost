@@ -33,21 +33,24 @@ const StatusPill: React.FC<{status: LiveStatus}> = ({status}) => (
 // is required (not optional) because the ⋯ button is a DropdownMenuTrigger with
 // `asChild`, which clones its child and attaches a ref — a plain function
 // component would silently drop it.
-interface RailButtonProps {
+interface RailButtonProps extends React.ComponentPropsWithoutRef<'button'> {
     icon: React.ElementType;
     label: string;
     active?: boolean;
-    onClick?: () => void;
 }
 
-const RailButton = React.forwardRef<HTMLButtonElement, RailButtonProps>(({icon: Icon, label, active, onClick}, ref) => (
+// `...rest` is essential: when this is a DropdownMenuTrigger with `asChild`,
+// Radix clones it and injects the handlers that actually open the menu
+// (onPointerDown/onKeyDown) plus aria-*/data-state. Forwarding only the ref
+// isn't enough — those props must be spread onto the real <Button> too.
+const RailButton = React.forwardRef<HTMLButtonElement, RailButtonProps>(({icon: Icon, label, active, ...rest}, ref) => (
     <Button
         ref={ref}
         aria-label={label}
         className={cn(active && 'bg-muted')}
         size="icon"
         variant="ghost"
-        onClick={onClick}
+        {...rest}
     >
         <Icon strokeWidth={2} />
     </Button>
