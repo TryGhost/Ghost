@@ -13,7 +13,7 @@ describe('Toggle card', function () {
                 }
             };
 
-            expect(serializer.serialize(card.render(opts))).toBe('<details class="kg-card kg-toggle-card"><summary class="kg-toggle-heading"><h4 class="kg-toggle-heading-text">This is toggle heading</h4><span class="kg-toggle-card-icon" aria-hidden="true"><svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"/></svg></span></summary><div class="kg-toggle-content">This is toggle content</div></details>');
+            expect(serializer.serialize(card.render(opts))).toBe('<details class="kg-card kg-toggle-card"><summary class="kg-toggle-heading"><h4 class="kg-toggle-heading-text">This is toggle heading<span class="kg-toggle-card-icon" aria-hidden="true"><svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"/></svg></span></h4></summary><div class="kg-toggle-content">This is toggle content</div></details>');
         });
     });
 

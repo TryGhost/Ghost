@@ -31,6 +31,11 @@ const generateItem = function generateItem(post) {
     // before the item is built so the excerpt fallback below sees clean
     // content rather than raw player chrome (e.g. "Play video 0:00 1× Unmute").
     htmlContent('.kg-card').each(function (index, card) {
+        // Feed readers do not load card assets, so native toggles must expose their content.
+        if (htmlContent(card).is('details.kg-toggle-card')) {
+            htmlContent(card).attr('open', '');
+        }
+
         // Bookmark card
         htmlContent(card).find('.kg-bookmark-thumbnail, .kg-bookmark-icon, .kg-bookmark-metadata').remove();
         htmlContent(card).find('.kg-bookmark-description').wrap('<small></small>');

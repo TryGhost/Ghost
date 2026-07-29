@@ -10,7 +10,6 @@
     padding: 1.2em;
 }
 
-/* Native <details> cards (current renderer) — browser hides content when closed. */
 .kg-toggle-card summary.kg-toggle-heading {
     list-style: none;
 }
@@ -19,8 +18,7 @@
     display: none;
 }
 
-/* Legacy div-based cards still toggled via data-kg-toggle-state + toggle.js */
-.kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content {
+.kg-toggle-card:not(details)[data-kg-toggle-state="close"] .kg-toggle-content {
     height: 0;
     overflow: hidden;
     transition: opacity .5s ease, top .35s ease;
@@ -50,6 +48,13 @@
     line-height: 1.3em;
     margin-top: 0;
     margin-bottom: 0;
+}
+
+details.kg-toggle-card h4.kg-toggle-heading-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
 }
 
 .kg-toggle-content p:first-of-type {
@@ -99,9 +104,8 @@
     fill-rule: evenodd;
 }
 
-/* Closed chevron: native details without [open], or legacy data-kg-toggle-state=close */
-.kg-toggle-card:not([open]):not([data-kg-toggle-state]) .kg-toggle-heading svg,
-.kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-heading svg {
+details.kg-toggle-card:not([open]) .kg-toggle-heading svg,
+.kg-toggle-card:not(details)[data-kg-toggle-state="close"] .kg-toggle-heading svg {
     transform: unset;
 }
 

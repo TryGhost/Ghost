@@ -323,6 +323,29 @@ describe('Content Formatters', function () {
             expect(link.getAttribute('rel')).toBe('noopener noreferrer');
         });
 
+        it('preserves native toggle card structure and accessibility attributes', function () {
+            const result = sanitizeArticleContent(`
+                <details class="kg-card kg-toggle-card">
+                    <summary class="kg-toggle-heading">
+                        <h4 class="kg-toggle-heading-text">
+                            Spoilers below
+                            <span class="kg-toggle-card-icon" aria-hidden="true"></span>
+                        </h4>
+                    </summary>
+                    <div class="kg-toggle-content"><p>The answer is 42.</p></div>
+                </details>
+            `);
+
+            const div = renderHtml(result);
+            const details = div.querySelector('details.kg-toggle-card') as HTMLDetailsElement;
+
+            expect(details).not.toBeNull();
+            expect(details.hasAttribute('open')).toBe(false);
+            expect(details.querySelector('summary.kg-toggle-heading')).not.toBeNull();
+            expect(details.querySelector('.kg-toggle-card-icon')?.getAttribute('aria-hidden')).toBe('true');
+            expect(details.querySelector('.kg-toggle-content')?.textContent).toBe('The answer is 42.');
+        });
+
         it('does not loosen the default sanitizeHtml rules', function () {
             sanitizeArticleContent('<script src="https://platform.twitter.com/widgets.js"></script>');
 

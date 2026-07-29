@@ -173,12 +173,14 @@ describe('ToggleNode', function () {
             assertPrettifiesTo(element.outerHTML, html`
             <details class="kg-card kg-toggle-card">
                 <summary class="kg-toggle-heading">
-                    <h4 class="kg-toggle-heading-text">Heading</h4>
-                    <span class="kg-toggle-card-icon" aria-hidden="true">
-                        <svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                            <path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path>
-                        </svg>
-                    </span>
+                    <h4 class="kg-toggle-heading-text">
+                        Heading
+                        <span class="kg-toggle-card-icon" aria-hidden="true">
+                            <svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path>
+                            </svg>
+                        </span>
+                    </h4>
                 </summary>
                 <div class="kg-toggle-content">Content</div>
             </details>
@@ -219,7 +221,7 @@ describe('ToggleNode', function () {
     });
 
     describe('importDOM', function () {
-        it('parses toggle card', editorTest(function () {
+        it('parses legacy div-based toggle card', editorTest(function () {
             const document = createDocument(html`
                 <div class="kg-card kg-toggle-card" data-kg-toggle-state="close"><div class="kg-toggle-heading"><h4 class="kg-toggle-heading-text">Heading</h4><button class="kg-toggle-card-icon" aria-label="Expand toggle to read content"><svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path></svg></button></div><div class="kg-toggle-content">Content</div></div>
             `);
@@ -229,9 +231,14 @@ describe('ToggleNode', function () {
             expect(nodes[0].content).toBe('Content');
         }));
 
-        it('parses details-based toggle card', editorTest(function () {
+        it('parses details-based toggle card without importing the presentational icon', editorTest(function () {
             const document = createDocument(html`
-                <details class="kg-card kg-toggle-card"><summary class="kg-toggle-heading"><h4 class="kg-toggle-heading-text">Heading</h4><span class="kg-toggle-card-icon" aria-hidden="true"></span></summary><div class="kg-toggle-content">Content</div></details>
+                <details class="kg-card kg-toggle-card">
+                    <summary class="kg-toggle-heading">
+                        <h4 class="kg-toggle-heading-text"><strong>Heading</strong><span class="kg-toggle-card-icon" aria-hidden="true"></span></h4>
+                    </summary>
+                    <div class="kg-toggle-content"><p>Content</p></div>
+                </details>
             `);
             const nodes = $generateNodesFromDOM(editor, document) as ToggleNode[];
             expect(nodes.length).toBe(1);

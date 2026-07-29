@@ -293,6 +293,26 @@ describe('RSS: Generate Feed', function () {
             assert.doesNotMatch(content, /kg-bookmark-metadata/);
         });
 
+        it('opens native toggle cards so feed readers expose their content', async function () {
+            const html = await renderCard('toggle', {
+                heading: 'Spoilers below',
+                content: '<p>The answer is 42.</p>'
+            });
+
+            assert.match(html, /<details class="kg-card kg-toggle-card">/);
+            assert.doesNotMatch(html, /<details[^>]* open/);
+
+            data.posts = [Object.assign({}, posts[0], {html})];
+
+            const xmlData = await generateFeed(baseUrl, data);
+            assertExists(xmlData);
+
+            const content = getEncodedContent(xmlData);
+            assert.match(content, /<details class="kg-card kg-toggle-card" open>/);
+            assert.match(content, /Spoilers below/);
+            assert.match(content, /The answer is 42\./);
+        });
+
         it('strips video player chrome and leaves a playable video with poster and controls', async function () {
             const html = await renderCard('video', {
                 src: '/content/x.mp4',

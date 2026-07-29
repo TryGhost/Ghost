@@ -1168,7 +1168,15 @@
     padding: 1.2em;
 }
 
-.gh-whats-new .kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content{
+.gh-whats-new .kg-toggle-card summary.kg-toggle-heading {
+    list-style: none;
+}
+
+.gh-whats-new .kg-toggle-card summary.kg-toggle-heading::-webkit-details-marker {
+    display: none;
+}
+
+.gh-whats-new .kg-toggle-card:not(details)[data-kg-toggle-state="close"] .kg-toggle-content {
     height: 0;
     overflow: hidden;
     transition: opacity .5s ease, top .35s ease;
@@ -1183,10 +1191,6 @@
     transition: opacity 1s ease, top .35s ease;
     top: 0;
     position: relative;
-}
-
-.gh-whats-new .kg-toggle-card[data-kg-toggle-state="close"] svg {
-    transform: unset;
 }
 
 .gh-whats-new .kg-toggle-heading {
@@ -1204,6 +1208,13 @@
     margin-bottom: 0;
     text-transform: none;
     color: inherit;
+}
+
+.gh-whats-new details.kg-toggle-card h4.kg-toggle-heading-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
 }
 
 .gh-whats-new .kg-toggle-content p:first-of-type {
@@ -1231,6 +1242,7 @@
     margin-left: 1em;
     background: none;
     border: 0;
+    flex-shrink: 0;
 }
 
 .gh-whats-new .kg-toggle-heading svg {
@@ -1247,6 +1259,11 @@
     stroke-linejoin: round;
     stroke-width: 1.5;
     fill-rule: evenodd;
+}
+
+.gh-whats-new details.kg-toggle-card:not([open]) .kg-toggle-heading svg,
+.gh-whats-new .kg-toggle-card:not(details)[data-kg-toggle-state="close"] .kg-toggle-heading svg {
+    transform: unset;
 }
 
 .gh-whats-new .kg-toggle-card + .kg-toggle-card {
@@ -1925,4 +1942,3 @@
     background: #fff;
     color: #151515;
 }
-

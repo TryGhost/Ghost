@@ -11,18 +11,15 @@ interface ToggleNodeData {
 interface RenderOptions extends ExportDOMOptions {}
 
 function cardTemplate({node}: {node: ToggleNodeData}) {
-    // Native <details>/<summary> so screen readers expose expand/collapse
-    // without custom click-only JS (see TryGhost/Ghost#27462).
     return (
         `
         <details class="kg-card kg-toggle-card">
             <summary class="kg-toggle-heading">
-                <h4 class="kg-toggle-heading-text">${node.heading}</h4>
-                <span class="kg-toggle-card-icon" aria-hidden="true">
-                    <svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path>
-                    </svg>
-                </span>
+                <h4 class="kg-toggle-heading-text">${node.heading}<span class="kg-toggle-card-icon" aria-hidden="true">
+                        <svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path>
+                        </svg>
+                    </span></h4>
             </summary>
             <div class="kg-toggle-content">${node.content}</div>
         </details>
