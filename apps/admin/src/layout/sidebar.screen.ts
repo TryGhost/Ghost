@@ -1,5 +1,6 @@
 import { page } from "vitest/browser";
 import {
+    adminSidebar,
     appearanceMenuItem,
     darkAppearanceOption,
     lightAppearanceOption,
@@ -21,6 +22,10 @@ const appearanceOptions = {
 
 /** Admin sidebar locators and gestures for acceptance specs; no assertions. */
 export const sidebarScreen = {
+    // The settings app renders its own nav, so the shell sidebar needs its own hook.
+    shellNav: () => page.getByTestId(adminSidebar),
+    /** The shell's content area, rendered by AdminLayout alongside the sidebar. */
+    shellMain: () => page.getByRole("main").first(),
     navLink: (name: string) => page.getByRole("navigation").getByRole("link", { name, exact: true }),
     postsToggle: () => page.getByRole("button", { name: postsToggle }),
     networkBadge: () => page.getByTestId(networkNotificationBadge),

@@ -172,9 +172,15 @@ const appRoutes: RouteObject[] = [
         children: activityPubRoutes,
     },
     {
+        // hideAdminSidebar lives on the handle, not the lazy module, so the shell
+        // hides at first paint instead of waiting on the settings chunk.
         path: `settings/*`,
         lazy: lazyComponent(() => import("./settings/settings")),
-        handle: { allowInForceUpgrade: true, requiresAccess: canAccessSettingsRoute } satisfies RouteHandle & AccessRouteHandle,
+        handle: {
+            allowInForceUpgrade: true,
+            hideAdminSidebar: true,
+            requiresAccess: canAccessSettingsRoute
+        } satisfies RouteHandle & AdminRouteHandle & AccessRouteHandle,
     },
     {path: "/posts", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
     {path: "/pages", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},

@@ -90,14 +90,28 @@ describe("Sidebar navigation", () => {
         await expect.poll(currentRoute).toBe("/posts?type=scheduled");
     });
 
-    it("navigates to settings from the sidebar footer", async () => {
+    it("navigates to settings from the sidebar footer and hides the shell nav", async () => {
         // The settings app owns its request graph; this spec asserts only the shell navigation.
         allowUnhandledRequests();
         await renderAdminApp("/");
 
+        await expect.element(sidebarScreen.shellNav()).toBeVisible();
         await sidebarScreen.navLink("Settings").click();
 
         await expect.poll(currentRoute).toMatch(/^\/settings/);
+        await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
+    });
+
+    it("hides the shell nav when a settings route is loaded directly", async () => {
+        // The settings app owns its request graph; this spec asserts only the shell navigation.
+        allowUnhandledRequests();
+        await renderAdminApp("/settings/staff");
+
+        await expect.poll(currentRoute).toMatch(/^\/settings\/staff/);
+        // The shell mounts only once the current user resolves — wait for it, or a
+        // sidebar that appears on that later paint slips past the assertion.
+        await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
+        await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
     });
 });
 
