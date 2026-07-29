@@ -1,4 +1,5 @@
 const moment = require('moment-timezone');
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 
@@ -186,7 +187,6 @@ class NewsletterEmailEventStorage {
             }
 
             if (result.status === 'ok') {
-                // Unsubscribe member from the specific newsletter
                 await this.#membersRepository.update({newsletters: result.newsletters}, {id: event.memberId});
             }
 
@@ -247,7 +247,10 @@ class NewsletterEmailEventStorage {
                 })
             };
         } catch (err) {
-            logging.error(err);
+            logging.error(new errors.InternalServerError({
+                message: `Could not resolve newsletters to keep for unsubscribe event (member ${event.memberId}, email ${event.emailId})`,
+                err
+            }));
             return {status: 'failed'};
         }
     }
