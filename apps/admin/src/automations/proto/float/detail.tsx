@@ -170,12 +170,12 @@ const AutomationFloat: React.FC = () => {
     }
 
     const {automation} = scenario;
-    // Editing can only happen once stopped, Resend-style. Edit is entered from
-    // the header — its button only appears when stopped — so the editable canvas
-    // replaces the read-only preview; no "stop first" lock is needed since you
-    // can't reach edit while live.
+    // Edit is always available and enters the edit canvas straight away, live or not —
+    // it's never hidden behind Stop. `isEditable` (stopped) only governs whether edits
+    // can be APPLIED; while live, that's surfaced as a plain banner over the edit canvas
+    // (below), never a disabled button or a redirecting popover.
     const isEditable = liveStatus === 'inactive';
-    const showEditCanvas = editing && isEditable;
+    const showEditCanvas = editing;
     const selectedRun = selectedMemberId ? scenario.runs.find(r => r.id === selectedMemberId) ?? null : null;
     const activeDraft = draft ?? automation;
 
@@ -222,10 +222,20 @@ const AutomationFloat: React.FC = () => {
                     <FloatFlowCanvas automation={automation} leftInset={512} selectedRun={selectedRun} />
                 )}
 
+                {/* Editing a live automation: you can explore/edit freely, but changes
+                    can't be applied until it's stopped. Surface that as a plain banner
+                    (Stop is right there in the header) — never a disabled Edit button or
+                    a popover that redirects you. pointer-events-none: it's informational. */}
+                {showEditCanvas && !isEditable && (
+                    <div className="pointer-events-none absolute top-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-lg border border-border-default bg-background px-4 py-2.5 shadow-lg">
+                        <LucideIcon.Info className="size-4 shrink-0 text-blue-500" />
+                        <span className="text-sm">This automation is live — stop it to apply your changes.</span>
+                    </div>
+                )}
+
                 {/* Top-right — autosave indicator (while editing), the ⋯ actions menu,
-                    the Edit/Done toggle (only when stopped — a live automation is
-                    read-only), then the one primary lifecycle action: Stop while live
-                    (high-friction confirm), Start once stopped. */}
+                    the always-available Edit/Done toggle, then the primary lifecycle
+                    action: Stop while live (high-friction confirm), Start once stopped. */}
                 <div className="absolute top-4 right-4 z-10 flex items-center gap-3">
                     {showEditCanvas && <span className="text-xs text-muted-foreground">{workingText}</span>}
                     {/* modal={false} so the menu doesn't block pointer events to the rest
@@ -244,16 +254,15 @@ const AutomationFloat: React.FC = () => {
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    {/* Edit lives in the header now (not a rail); only shown once
-                        stopped, and toggles to Done while editing. */}
-                    {isEditable && (
-                        editing ? (
-                            <Button variant="outline" onClick={() => setEditing(false)}>Done</Button>
-                        ) : (
-                            <Button variant="outline" onClick={() => setEditing(true)}>
-                                <LucideIcon.Pencil /> Edit
-                            </Button>
-                        )
+                    {/* Edit is always available — it enters the edit canvas whether or not
+                        the automation is live (a banner explains the live case), toggling
+                        to Done while editing. */}
+                    {editing ? (
+                        <Button variant="outline" onClick={() => setEditing(false)}>Done</Button>
+                    ) : (
+                        <Button variant="outline" onClick={() => setEditing(true)}>
+                            <LucideIcon.Pencil /> Edit
+                        </Button>
                     )}
                     {isEditable ? (
                         <Button onClick={handleStart}>Start</Button>
