@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
-import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, Input, Kbd, Label} from '@tryghost/shade/components';
-import {Inline} from '@tryghost/shade/primitives';
+import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, Label, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
+import {Inline, Stack} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {getScenario, mockAutomations} from '@/automations/proto/shared/mock';
@@ -62,31 +62,28 @@ const STOP_OPTIONS: {value: StopScope; title: string; description: string}[] = [
     {value: 'all', title: 'Stop all runs', description: 'New members stop enrolling, and members currently in the flow are removed.'}
 ];
 
-const STOP_CONFIRM_PHRASE = 'stop all';
-
-// Deliberately high-friction, mirroring Resend but folded into one dialog: pick
-// a scope, then type the confirm phrase and submit with ⌘/Ctrl+Return. Stopping
-// is what unlocks editing a live automation, so it shouldn't be a one-click
-// accident.
+// Deliberately a considered action, not a one-click accident: a live automation
+// is read-only, and stopping is what unlocks editing. The friction is the shape of
+// the flow itself — open the dialog, actively pick a scope (nothing is selected by
+// default), then press the destructive confirm. An earlier iteration also made you
+// type a confirm phrase, which was overkill on top of a modal + deliberate choice
+// + red button.
 const StopAutomationDialog: React.FC<{
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onConfirm: (scope: StopScope) => void;
 }> = ({open, onOpenChange, onConfirm}) => {
-    const [scope, setScope] = useState<StopScope>('new');
-    const [confirmText, setConfirmText] = useState('');
-    const canSubmit = confirmText.trim().toLowerCase() === STOP_CONFIRM_PHRASE;
+    const [scope, setScope] = useState<StopScope | null>(null);
 
-    // Reset back to defaults every time the dialog opens.
+    // Reset the selection every time the dialog opens, so it always starts blank.
     useEffect(() => {
         if (open) {
-            setScope('new');
-            setConfirmText('');
+            setScope(null);
         }
     }, [open]);
 
     const submit = () => {
-        if (canSubmit) {
+        if (scope) {
             onConfirm(scope);
         }
     };
@@ -101,49 +98,28 @@ const StopAutomationDialog: React.FC<{
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex flex-col gap-2">
+                <RadioGroup value={scope ?? ''} onValueChange={value => setScope(value as StopScope)}>
                     {STOP_OPTIONS.map((option) => {
                         const selected = scope === option.value;
                         return (
-                            <Button
+                            <Label
                                 key={option.value}
-                                aria-pressed={selected}
-                                className={cn('h-auto w-full flex-col items-start gap-1 p-3 text-left whitespace-normal', selected && 'border-foreground bg-muted')}
-                                variant="outline"
-                                onClick={() => setScope(option.value)}
+                                className={cn('flex cursor-pointer items-start gap-3 rounded-lg border p-3', selected ? 'border-foreground bg-muted' : 'border-border-default')}
+                                htmlFor={`stop-${option.value}`}
                             >
-                                <span className="text-md font-semibold">{option.title}</span>
-                                <span className="text-sm font-normal text-muted-foreground">{option.description}</span>
-                            </Button>
+                                <RadioGroupItem className="mt-0.5" id={`stop-${option.value}`} value={option.value} />
+                                <Stack gap="xs">
+                                    <span className="text-md font-semibold">{option.title}</span>
+                                    <span className="text-sm font-normal text-muted-foreground">{option.description}</span>
+                                </Stack>
+                            </Label>
                         );
                     })}
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="stop-confirm">
-                        Type <span className="font-semibold text-foreground">stop all</span> to confirm
-                    </Label>
-                    <Input
-                        autoFocus
-                        id="stop-confirm"
-                        placeholder="stop all"
-                        value={confirmText}
-                        onChange={e => setConfirmText(e.target.value)}
-                        onKeyDown={(e) => {
-                            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                                e.preventDefault();
-                                submit();
-                            }
-                        }}
-                    />
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        Press <Kbd>⌘</Kbd><Kbd>↵</Kbd> to submit
-                    </span>
-                </div>
+                </RadioGroup>
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                    <Button disabled={!canSubmit} variant="destructive" onClick={submit}>Stop automation</Button>
+                    <Button disabled={!scope} variant="destructive" onClick={submit}>Stop automation</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
