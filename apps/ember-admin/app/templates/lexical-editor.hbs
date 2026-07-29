@@ -115,6 +115,7 @@
                 <Editor::PublishManagement
                     @post={{this.post}}
                     @hasUnsavedChanges={{this.hasDirtyAttributes}}
+                    @tkCount={{this.tkCount}}
                     @beforePublish={{perform this.beforeSaveTask}}
                     @afterPublish={{this.afterSave}}
                     @saveTask={{this.saveTask}}
