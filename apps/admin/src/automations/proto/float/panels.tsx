@@ -391,22 +391,27 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                 </InputGroup>
                 <div className={cn('grid transition-[grid-template-rows,opacity] duration-200 ease-out', stuck ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
                     <div className="overflow-hidden">
-                        <div className="flex gap-2 overflow-x-auto pt-4">
+                        <div className="flex gap-2 pt-4">
                             {STATUS_FACETS.map((facet) => {
                                 const active = statusFilter === facet.label;
                                 return (
                                     <button
                                         key={facet.label}
+                                        // Label dropped here (the 2x2 cards above teach the
+                                        // glyph→meaning mapping before these collapse in) so the
+                                        // chips stay narrow enough to avoid a side-scroll. The
+                                        // name lives on aria-label + title for a11y and hover recall.
+                                        aria-label={facet.label}
                                         aria-pressed={active}
                                         className={cn(
-                                            'flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors [&_svg]:size-4',
+                                            'flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full border px-3 text-sm transition-colors [&_svg]:size-4',
                                             active ? 'border-foreground bg-muted-foreground/10' : 'border-border-default hover:bg-muted-foreground/5'
                                         )}
+                                        title={facet.label}
                                         type="button"
                                         onClick={() => setStatusFilter(active ? null : facet.label)}
                                     >
                                         <span className={facet.color}>{facet.glyph}</span>
-                                        <span>{facet.label}</span>
                                         <span className="text-muted-foreground tabular-nums">{formatNumber(counts[facet.label] ?? 0)}</span>
                                     </button>
                                 );
