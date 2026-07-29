@@ -16,14 +16,11 @@
 /**
  * Convert a domain-model permalink into Express / URL-service notation.
  *
- * @example toExpressNotation('/{slug}/')              // => '/:slug/'
+ * @example toExpressNotation('/{slug}/')               // => '/:slug/'
  * @example toExpressNotation('/{primary_tag}/{slug}/') // => '/:primary_tag/:slug/'
- * @example toExpressNotation('/:slug/')               // => '/:slug/' (idempotent)
- *
- * @param {string} permalink permalink in `{slug}` (domain) notation
- * @returns {string} permalink in `:slug` (infrastructure) notation
+ * @example toExpressNotation('/:slug/')                // => '/:slug/' (idempotent)
  */
-function toExpressNotation(permalink) {
+export function toExpressNotation(permalink: string): string {
     return permalink.replace(/{(\w+)}/g, ':$1');
 }
 
@@ -35,15 +32,7 @@ function toExpressNotation(permalink) {
  * @example toDomainNotation('/:slug/')               // => '/{slug}/'
  * @example toDomainNotation('/:primary_tag/:slug/')  // => '/{primary_tag}/{slug}/'
  * @example toDomainNotation('/{slug}/')              // => '/{slug}/' (idempotent)
- *
- * @param {string} permalink permalink in `:slug` (infrastructure) notation
- * @returns {string} permalink in `{slug}` (domain) notation
  */
-function toDomainNotation(permalink) {
+export function toDomainNotation(permalink: string): string {
     return permalink.replace(/:(\w+)/g, '{$1}');
 }
-
-module.exports = {
-    toExpressNotation,
-    toDomainNotation
-};
