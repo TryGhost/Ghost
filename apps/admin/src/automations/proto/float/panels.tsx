@@ -465,9 +465,9 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                                 <TableCell className="w-24 px-4 py-4 align-middle group-hover:bg-transparent">
                                     <span className="block truncate text-sm text-muted-foreground">{startedLabel(run.enrolled_at)}</span>
                                 </TableCell>
-                                <TableCell className="w-24 px-4 py-4 align-middle group-hover:bg-transparent">
+                                <TableCell className="w-24 px-4 py-4 text-center align-middle group-hover:bg-transparent">
                                     {/* Icon only — the status cards above name each state. */}
-                                    <div className={statusColor} title={statusLabel}>
+                                    <div className={cn('flex justify-center', statusColor)} title={statusLabel}>
                                         <StatusGlyph label={statusLabel} pct={pct} run={run} />
                                     </div>
                                 </TableCell>
