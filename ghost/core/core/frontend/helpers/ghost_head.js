@@ -77,10 +77,8 @@ function finaliseStructuredData(meta) {
 }
 
 function getMembersHelper(data, frontendKey, excludeList) {
-    // Do not load Portal if both Memberships and Tips & Donations and Recommendations are disabled
-    if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled') && !settingsCache.get('recommendations_enabled')) {
-        return '';
-    }
+    // Always load Portal when not excluded: the share modal (#/share) needs it even
+    // when Memberships, Tips & Donations, and Recommendations are all disabled.
     let membersHelper = '';
     if (!excludeList.has('portal')) {
         const {scriptUrl} = getFrontendAppConfig('portal');

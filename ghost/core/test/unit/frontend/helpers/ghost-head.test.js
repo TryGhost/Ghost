@@ -1306,9 +1306,12 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
 
-        it('skips portal and stripe when members are disabled', async function () {
+        it('includes portal even when members are disabled', async function () {
+            // Share modal (#/share) still needs Portal when memberships are off.
             getStub.withArgs('members_enabled').returns(false);
-            getStub.withArgs('paid_members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(false);
+            getStub.withArgs('donations_enabled').returns(false);
+            getStub.withArgs('recommendations_enabled').returns(false);
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
