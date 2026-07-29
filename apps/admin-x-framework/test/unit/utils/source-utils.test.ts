@@ -223,6 +223,19 @@ describe('source-utils', () => {
             });
         });
 
+        it('maps known display names like GitHub to real domains', () => {
+            // Without this map entry, "GitHub" is treated as a domain label and
+            // becomes the broken outbound link https://github/
+            expect(getFaviconDomain('GitHub')).toEqual({
+                domain: 'github.com',
+                isDirectTraffic: false
+            });
+            expect(getFaviconDomain('Yandex')).toEqual({
+                domain: 'yandex.com',
+                isDirectTraffic: false
+            });
+        });
+
         it('returns null for invalid inputs', () => {
             expect(getFaviconDomain(null as any)).toEqual({
                 domain: null,
@@ -433,6 +446,8 @@ describe('source-utils', () => {
             expect(SOURCE_DOMAIN_MAP.Twitter).toBe('twitter.com');
             expect(SOURCE_DOMAIN_MAP.LinkedIn).toBe('linkedin.com');
             expect(SOURCE_DOMAIN_MAP.Reddit).toBe('reddit.com');
+            expect(SOURCE_DOMAIN_MAP.GitHub).toBe('github.com');
+            expect(SOURCE_DOMAIN_MAP.Yandex).toBe('yandex.com');
         });
 
         it('contains search engine mappings', () => {
