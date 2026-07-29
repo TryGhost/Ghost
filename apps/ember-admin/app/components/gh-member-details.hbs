@@ -88,20 +88,20 @@
                         <div class="gh-members-no-stats">
                             <p>
                                 {{#if @member.name}}
-                                    We’ll show {{first-name @member.name}}’s email stats here once they receive their first newsletter.
+                                    We’ll show {{first-name @member.name}}’s newsletter stats here once they receive their first newsletter.
                                 {{else}}
-                                    We’ll show this member’s email stats here once they receive their first newsletter.
+                                    We’ll show this member’s newsletter stats here once they receive their first newsletter.
                                 {{/if}}
                             </p>
                         </div>
                     {{else}}
                         <div class="gh-member-details-stats">
                             <div class="gh-member-details-stat">
-                                <p>Emails received</p>
+                                <p>Newsletters received</p>
                                 <div class="gh-data-summary gh-cp-data-summary">{{@member.emailCount}}</div>
                             </div>
                             <div class="gh-member-details-stat">
-                                <p>Emails opened</p>
+                                <p>Newsletters opened</p>
                                 <div class="gh-data-summary gh-cp-data-summary">{{@member.emailOpenedCount}}</div>
                             </div>
                             <div class="gh-member-details-stat open-rate">

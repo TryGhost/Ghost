@@ -208,11 +208,11 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'email_opened_event') {
-            return 'opened email';
+            return 'opened newsletter';
         }
 
         if (event.type === 'email_sent_event') {
-            return 'sent email';
+            return 'sent newsletter';
         }
 
         if (event.type === 'automated_email_sent_event') {
@@ -227,15 +227,15 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'email_delivered_event') {
-            return 'received email';
+            return 'received newsletter';
         }
 
         if (event.type === 'email_failed_event') {
-            return 'bounced email';
+            return 'bounced newsletter';
         }
 
         if (event.type === 'email_complaint_event') {
-            return 'email flagged as spam';
+            return 'newsletter flagged as spam';
         }
 
         if (event.type === 'comment_event') {
