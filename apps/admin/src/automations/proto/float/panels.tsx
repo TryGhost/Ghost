@@ -92,7 +92,7 @@ const StatusGlyph: React.FC<{run: AutomationRun; label: string; pct: number}> = 
 const STATUS_FACETS: {label: string; color: string; glyph: React.ReactNode}[] = [
     {label: 'Running', color: 'text-blue-500', glyph: <ProgressRing value={50} />},
     {label: 'Upgraded', color: 'text-green', glyph: <LucideIcon.ChevronsUp strokeWidth={1.5} />},
-    {label: 'Unsubscribed', color: 'text-muted-foreground', glyph: <LucideIcon.CircleMinus strokeWidth={1.5} />},
+    {label: 'Unsubscribed', color: 'text-yellow', glyph: <LucideIcon.CircleMinus strokeWidth={1.5} />},
     {label: 'Done', color: 'text-muted-foreground', glyph: <LucideIcon.Check strokeWidth={1.5} />}
 ];
 
@@ -442,11 +442,13 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                     {sorted.map(({run, label: statusLabel, pct}) => {
                         const isSelected = run.id === selectedMemberId;
                         // In-progress reads blue (its ring arc inherits the same colour
-                        // via currentColor), Upgraded green, and everything settled
-                        // (Done / Unsubscribed) is muted.
+                        // via currentColor), Upgraded green, Unsubscribed yellow, and
+                        // Done (settled) is muted. Mirrors the status cards' colours.
                         const statusColor = statusLabel === 'Upgraded'
                             ? 'text-green'
-                            : run.status === 'in_progress' ? 'text-blue-500' : 'text-muted-foreground';
+                            : statusLabel === 'Unsubscribed'
+                                ? 'text-yellow'
+                                : run.status === 'in_progress' ? 'text-blue-500' : 'text-muted-foreground';
                         return (
                             <TableRow
                                 key={run.id}
