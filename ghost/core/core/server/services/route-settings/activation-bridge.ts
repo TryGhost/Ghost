@@ -4,8 +4,6 @@ import {QUERY} from '../../../frontend/services/routing/config';
 import type {
     RouteSettings,
     Route,
-    ChannelRoute,
-    TemplateRoute,
     CollectionConfig,
     RouteData,
     DataShortForm,
@@ -156,7 +154,7 @@ interface RouterTaxonomy {
     permalink: string;
 }
 
-interface RouterSettings {
+export interface RouterSettings {
     routes: RouterRoute[];
     collections: RouterCollection[];
     taxonomies: RouterTaxonomy[];
@@ -174,24 +172,21 @@ function buildRouterRoute(route: Route): RouterRoute {
     }
 
     if (route.type === 'channel') {
-        const channel = route as ChannelRoute;
-        if (channel.filter !== undefined) {
-            result.filter = channel.filter;
+        // `route` is narrowed to ChannelRoute here by the discriminant check.
+        if (route.filter !== undefined) {
+            result.filter = route.filter;
         }
-        if (channel.order !== undefined) {
-            result.order = channel.order;
+        if (route.order !== undefined) {
+            result.order = route.order;
         }
-        if (channel.limit !== undefined) {
-            result.limit = channel.limit;
+        if (route.limit !== undefined) {
+            result.limit = route.limit;
         }
-        if (channel.rss !== undefined) {
-            result.rss = channel.rss;
+        if (route.rss !== undefined) {
+            result.rss = route.rss;
         }
-    } else {
-        const template = route as TemplateRoute;
-        if (template.contentType !== undefined) {
-            result.contentType = template.contentType;
-        }
+    } else if (route.contentType !== undefined) {
+        result.contentType = route.contentType;
     }
 
     return result;

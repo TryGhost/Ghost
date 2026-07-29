@@ -185,10 +185,11 @@ module.exports = RouterManager;
  */
 
 /**
- * @typedef {Object} RouteSettings
- * @property {Array} routes - route entries, each carrying its own `path`
- * @property {Array} collections - collection entries, each carrying its own `path`
- * @property {Array} taxonomies - `{key, permalink}` entries
+ * The shape RouterManager consumes — produced by the activation bridge. This is
+ * a temporary reference into server code; when the bridge is removed (HKG-1898)
+ * it becomes the domain `RouteSettings` from @tryghost/adapter-base-route-settings.
+ *
+ * @typedef {import('../../../server/services/route-settings/activation-bridge').RouterSettings} RouteSettings
  */
 
 /**
