@@ -135,7 +135,22 @@ pnpm test:single test/unit/path/to/test.test.js   # routes test/unit/* → unit 
 # Watch a single DB-backed file (integration/e2e) — the default test:watch only
 # covers unit tests, so point it at the DB config explicitly:
 pnpm exec vitest -c vitest.config.db.ts test/integration/path/to/test.test.js
+
+# Ember Admin tests (from the repository root)
+pnpm nx run ghost-admin:test
+
+# Run one Ember Admin test file. Paths are relative to apps/ember-admin.
+# The explicit `1` supplies the numeric value required by the test script's
+# trailing `--parallel` option before additional Ember Exam arguments.
+pnpm nx run ghost-admin:test -- 1 --file-path=tests/acceptance/editor/publish-flow-test.js
 ```
+
+> **Always run Ember Admin tests through Nx.** Running `ember test` or
+> `ember exam` directly from `apps/ember-admin` skips the dependency build
+> graph and commonly fails in fresh worktrees with missing outputs such as
+> `koenig-lexical.umd.js`, `@tryghost/admin-x-framework/hooks`, or
+> `@tryghost/kg-converters`. For focused runs, use Ember Exam's `--file-path`
+> as shown above rather than appending `--filter` to the package script.
 
 ### Linting
 ```bash
