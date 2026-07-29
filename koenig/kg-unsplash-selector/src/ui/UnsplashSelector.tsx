@@ -14,11 +14,16 @@ const UnsplashSelector: FunctionComponent<UnsplashSelectorProps> = ({closeModal,
         <>
             <div className="fixed inset-0 z-40 h-[100vh] bg-black opacity-60"></div>
             <div className="not-kg-prose fixed inset-8 z-50 overflow-hidden rounded bg-white shadow-xl" data-kg-modal="unsplash">
-                <button className="absolute right-6 top-6 cursor-pointer" type="button">
+                <button
+                    aria-label="Close"
+                    className="absolute right-6 top-6 cursor-pointer"
+                    data-kg-modal-close-button
+                    type="button"
+                    onClick={() => closeModal()}
+                >
                     <CloseIcon
+                        aria-hidden="true"
                         className="text-grey-400 size-4 stroke-2"
-                        data-kg-modal-close-button
-                        onClick={() => closeModal()}
                     />
                 </button>
                 <div className="flex h-full flex-col">
