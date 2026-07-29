@@ -392,6 +392,21 @@ describe('Default Frontend routing', function () {
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders);
         });
+
+        it('should retrieve card assets', async function () {
+            const css = await request.get('/public/cards.min.css')
+                .expect('Cache-Control', testUtils.cacheRules.year)
+                .expect('Content-Type', 'text/css')
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders);
+
+            assert.match(css.text, /\.kg-/);
+
+            await request.get('/public/cards.min.js')
+                .expect('Content-Type', 'application/javascript')
+                .expect(200);
+        });
+
     });
 
     describe('Site Map', function () {
