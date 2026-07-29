@@ -6,6 +6,7 @@ const urlUtils = require('../../shared/url-utils').default;
 const {SafeString} = require('../services/handlebars');
 const assetHash = require('../services/asset-hash');
 const themeEngine = require('../services/theme-engine');
+const {cardAssets} = require('../services/assets-minification');
 
 /**
  * Serve either uploaded favicon or default
@@ -152,8 +153,15 @@ function getAssetUrl(assetPath, hasMinFile) {
     // Get the appropriate hash for this asset (ignore URL anchor)
     const hashPath = assetPath.includes('#') ? assetPath.slice(0, assetPath.indexOf('#')) : assetPath;
     let hash;
-    // Use file-based SHA256 hash if enabled via config (defaults to false for backwards compatibility)
-    if (config.get('caching:assets:contentBasedHash:enabled')) {
+
+    // Card assets are assembled in memory, so their content hash is always
+    // available and always matches the bytes we serve — there's no file to miss
+    // and therefore no reason to gate this on contentBasedHash
+    const cardAssetType = hashPath.match(/^public\/cards\.min\.(css|js)$/)?.[1];
+    if (cardAssetType) {
+        hash = cardAssets.getHash(cardAssetType);
+    } else if (config.get('caching:assets:contentBasedHash:enabled')) {
+        // Use file-based SHA256 hash if enabled via config (defaults to false for backwards compatibility)
         if (isThemeAsset) {
             // Theme assets resolve relative to the theme's assets/ directory, so an
             // explicitly-spelled prefix has to come back off before we look the file up
