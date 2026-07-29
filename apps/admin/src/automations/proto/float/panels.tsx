@@ -119,9 +119,19 @@ const SortHead: React.FC<{
 }> = ({label, sortKey, sort, onSort, className}) => {
     const active = sort.key === sortKey;
     return (
-        <TableHead className={`px-4 ${className ?? ''}`}>
+        // Sticky-pinned below the search/chip bar (top: --stick-top, measured in
+        // panels). bg-background makes rows scroll under it; the border-collapse
+        // table means the row's own border-b won't stick, so the bottom divider is
+        // drawn as an inset box-shadow instead. z-10 sits under the bar's z-20.
+        <TableHead className={cn('sticky top-[var(--stick-top,80px)] z-10 bg-background px-4 shadow-[inset_0_-1px_0_var(--border-default)]', className)}>
             <TableHeadButton
                 className="font-medium text-muted-foreground normal-case"
+                // type="button" is required: Shade's Button sets no default type, so
+                // this renders a native submit button. The React admin mounts inside
+                // the Ember shell's forms, so a submit here fires an ancestor form and
+                // scroll jumps to the top on every sort. Only surfaced once the header
+                // went sticky (you couldn't reach the control mid-scroll before).
+                type="button"
                 onClick={() => onSort(sortKey)}
             >
                 {label}
@@ -223,6 +233,7 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
     const scrollRef = useRef<HTMLDivElement>(null);
     const sentinelRef = useRef<HTMLDivElement>(null);
     const stickyBlockRef = useRef<HTMLDivElement>(null);
+    const stickyBarRef = useRef<HTMLDivElement>(null);
     const [stuck, setStuck] = useState(false);
     useEffect(() => {
         const root = scrollRef.current;
@@ -256,6 +267,27 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
         apply();
         const observer = new ResizeObserver(apply);
         observer.observe(root);
+        return () => observer.disconnect();
+    }, []);
+
+    // Dock the sortable table header directly beneath the sticky search/chip bar.
+    // The bar's height changes when the chips expand, so rather than a hardcoded
+    // offset we measure its live height and expose it as --stick-top on the block;
+    // the header cells sticky-pin at top: var(--stick-top). offsetHeight is integer
+    // px and the observer fires through the chip expand/collapse animation, so the
+    // header tracks the bar flush in every state.
+    useEffect(() => {
+        const bar = stickyBarRef.current;
+        const block = stickyBlockRef.current;
+        if (!bar || !block) {
+            return;
+        }
+        const apply = () => {
+            block.style.setProperty('--stick-top', `${bar.offsetHeight}px`);
+        };
+        apply();
+        const observer = new ResizeObserver(apply);
+        observer.observe(bar);
         return () => observer.disconnect();
     }, []);
 
@@ -346,7 +378,7 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                 {/* Sticky control bar — search always; once stuck (the 2x2 cards have
                     scrolled off) a one-line chip row expands here in their place, via the
                     grid-rows 0fr→1fr height trick so the collapse animates. */}
-                <div className={cn('sticky top-0 z-10 bg-background px-6 py-4', stuck && 'border-b border-border-default')}>
+                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-background px-6 py-4', stuck && 'border-b border-border-default')}>
                 <InputGroup className="w-full">
                     <InputGroupAddon>
                         <LucideIcon.Search />
