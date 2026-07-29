@@ -42,7 +42,7 @@ describe('Comments Service Email Renderer', function () {
 
             // assert
             assert(result.html.includes('Hey there,</p>'));
-            assert(result.html.includes('This message was sent from <a class="small" href="https://ghost.org" style="text-decoration: underline; color: #738A94; font-size: 11px;">Cathy\'s blog</a>'));
+            assert(result.html.includes('This message was sent from <a class="small" href="https://ghost.org" style="text-decoration: underline; color: #5B6B73; font-size: 11px;">Cathy\'s blog</a>'));
             assert(result.text.includes('Someone just replied to your comment on Test post\'s the best post.'));
         });
 
