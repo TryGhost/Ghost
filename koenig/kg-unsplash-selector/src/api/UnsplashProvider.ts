@@ -10,6 +10,7 @@ export class UnsplashProvider implements IUnsplashProvider {
     SEARCH_IS_RUNNING: boolean = false;
     LAST_REQUEST_URL: string = '';
     IS_LOADING: boolean = false;
+    private searchAbortController: AbortController | null = null;
 
     constructor(HEADERS: DefaultHeaderTypes) {
         this.HEADERS = HEADERS;
@@ -19,23 +20,23 @@ export class UnsplashProvider implements IUnsplashProvider {
         if (this.REQUEST_IS_RUNNING) {
             return null;
         }
-    
+
         this.LAST_REQUEST_URL = url;
         const options = {
             method: 'GET',
             headers: this.HEADERS as unknown as HeadersInit
         };
-    
+
         try {
             this.REQUEST_IS_RUNNING = true;
             this.IS_LOADING = true;
-    
+
             const response = await fetch(url, options);
             const checkedResponse = await this.checkStatus(response);
             this.extractPagination(checkedResponse);
-    
+
             const jsonResponse = await checkedResponse.json();
-            
+
             if ('results' in jsonResponse) {
                 return jsonResponse.results;
             } else {
@@ -106,14 +107,53 @@ export class UnsplashProvider implements IUnsplashProvider {
     }
 
     public async searchPhotos(term: string): Promise<Photo[]> {
-        const url = `${this.API_URL}/search/photos?query=${term}&per_page=30`;
-
-        const request = await this.makeRequest(url);
-        if (request) {
-            return request as Photo[];
+        // Abort any in-flight search so a newer query (e.g. "Germany") is not
+        // silently dropped while a partial term request (e.g. "Germ") is running.
+        // Previously makeRequest() returned null when REQUEST_IS_RUNNING was true,
+        // which caused the full typed query to never hit the Unsplash API.
+        if (this.searchAbortController) {
+            this.searchAbortController.abort();
         }
+        this.searchAbortController = new AbortController();
+        const {signal} = this.searchAbortController;
 
-        return [];
+        const url = `${this.API_URL}/search/photos?query=${encodeURIComponent(term)}&per_page=30`;
+        this.LAST_REQUEST_URL = url;
+        this.SEARCH_IS_RUNNING = true;
+        this.IS_LOADING = true;
+
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: this.HEADERS as unknown as HeadersInit,
+                signal
+            });
+            const checkedResponse = await this.checkStatus(response);
+            this.extractPagination(checkedResponse);
+
+            const jsonResponse = await checkedResponse.json();
+            if (signal.aborted) {
+                return [];
+            }
+
+            if ('results' in jsonResponse) {
+                return jsonResponse.results;
+            }
+
+            return jsonResponse;
+        } catch (error) {
+            if (error instanceof DOMException && error.name === 'AbortError') {
+                return [];
+            }
+            this.ERROR = error as string;
+            return [];
+        } finally {
+            // Only clear search state if this is still the active search.
+            if (this.searchAbortController?.signal === signal) {
+                this.SEARCH_IS_RUNNING = false;
+                this.IS_LOADING = false;
+            }
+        }
     }
 
     public async triggerDownload(photo: Pick<Photo, 'links'>): Promise<void> {
@@ -126,10 +166,10 @@ export class UnsplashProvider implements IUnsplashProvider {
         if (response.status >= 200 && response.status < 300) {
             return response;
         }
-    
+
         let errorText = '';
         let responseTextPromise: Promise<string>; // or Promise<string> if you know the type
-    
+
         const contentType = response.headers.get('content-type');
         if (contentType === 'application/json') {
             responseTextPromise = response.json().then(json => (json).errors[0]); // or cast to a specific type if you know it
@@ -138,18 +178,18 @@ export class UnsplashProvider implements IUnsplashProvider {
         } else {
             throw new Error('Unsupported content type');
         }
-    
+
         return responseTextPromise.then((responseText: string) => { // you can type responseText based on what you expect
             if (response.status === 403 && response.headers.get('x-ratelimit-remaining') === '0') {
                 // we've hit the rate limit on the API
                 errorText = 'Unsplash API rate limit reached, please try again later.';
             }
-    
+
             errorText = errorText || responseText || `Error ${response.status}: Uh-oh! Trouble reaching the Unsplash API`;
-    
+
             // set error text for display in UI
             this.ERROR = errorText;
-    
+
             // throw error to prevent further processing
             let error = new Error(errorText) as Error; // or create a custom Error class
             throw error;

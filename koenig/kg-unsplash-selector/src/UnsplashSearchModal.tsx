@@ -32,6 +32,7 @@ export const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onI
     const [isLoading, setIsLoading] = useState<boolean>(UnsplashLib.searchIsRunning() || true);
     const initLoadRef = useRef<boolean>(false);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const searchTermRef = useRef<string>('');
     const [zoomedImg, setZoomedImg] = useState<Photo | null>(null);
     const [dataset, setDataset] = useState<Photo[][] | []>([]);
 
@@ -91,9 +92,11 @@ export const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onI
         const query = e.target.value;
         if (query.length > 2) {
             setZoomedImg(null);
+            searchTermRef.current = query;
             setSearchTerm(query);
         }
         if (query.length === 0) {
+            searchTermRef.current = '';
             setSearchTerm('');
             initLoadRef.current = false;
             await loadInitPhotos();
@@ -102,10 +105,15 @@ export const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onI
 
     const search = React.useCallback(async () => {
         if (searchTerm) {
+            const termAtRequest = searchTerm;
             setIsLoading(true);
             setDataset([]);
             UnsplashLib.clearPhotos();
-            await UnsplashLib.updateSearch(searchTerm);
+            await UnsplashLib.updateSearch(termAtRequest);
+            // A newer search may have started while this one was in flight.
+            if (searchTermRef.current !== termAtRequest) {
+                return;
+            }
             const columns = UnsplashLib.getColumns();
             if (columns) {
                 setDataset(columns);

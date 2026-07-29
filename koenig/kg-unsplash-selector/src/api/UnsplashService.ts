@@ -18,6 +18,7 @@ export class UnsplashService implements IUnsplashService {
     private photoUseCases: PhotoUseCases;
     private masonryService: MasonryService;
     public photos: Photo[] = [];
+    private currentSearchTerm: string | null = null;
 
     constructor(photoUseCases: PhotoUseCases, masonryService: MasonryService) {
         this.photoUseCases = photoUseCases;
@@ -46,7 +47,12 @@ export class UnsplashService implements IUnsplashService {
     }
 
     async updateSearch(term: string) {
+        this.currentSearchTerm = term;
         let results = await this.photoUseCases.searchPhotos(term);
+        // Ignore stale responses if a newer search started while this one was in flight.
+        if (this.currentSearchTerm !== term) {
+            return;
+        }
         this.photos = results;
         this.layoutPhotos();
     }
