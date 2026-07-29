@@ -27,6 +27,16 @@ export class GalleryNode extends generateDecoratorNode({
     properties: galleryProperties,
     defaultRenderFn: renderGalleryNode
 }) {
+    // Deep-copy images on clone so copy/paste does not share array state
+    // between gallery cards (reordering one must not mutate the other).
+    static clone(node: GalleryNode) {
+        const dataset = node.getDataset();
+        return new this({
+            ...dataset,
+            images: (dataset.images ?? []).map(image => ({...image}))
+        }, node.__key);
+    }
+
     /* override */
     static get urlTransformMap() {
         return {

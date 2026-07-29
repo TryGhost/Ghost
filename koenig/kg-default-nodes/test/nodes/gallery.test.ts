@@ -167,6 +167,17 @@ describe('GalleryNode', function () {
 
             expect(cloneDataset).toEqual({...galleryNodeDataset});
         }));
+
+        it('does not share the images array with the original node', editorTest(function () {
+            const galleryNode = $createGalleryNode(dataset);
+            const clone = GalleryNode.clone(galleryNode) as GalleryNode;
+
+            expect(clone.images).not.toBe(galleryNode.images);
+            expect(clone.images[0]).not.toBe(galleryNode.images[0]);
+
+            clone.images = clone.images.slice(1);
+            expect(galleryNode.images).toHaveLength((dataset.images as unknown[]).length);
+        }));
     });
 
     describe('urlTransformMap', function () {
