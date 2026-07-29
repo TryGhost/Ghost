@@ -12,8 +12,7 @@ const blockedReferrerDomains = [
     'bailii.org',
     'www.bailii.org',
     '*.doubleclick.net',
-    // Substack uses ?ref= for its own referral system and 404s on unknown values
-    'substack.com',
+    // Substack's client app throws on any non-empty ?ref= value and swaps the post for an error screen
     '*.substack.com'
 ];
 
