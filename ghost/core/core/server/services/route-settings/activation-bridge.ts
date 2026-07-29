@@ -4,6 +4,8 @@ import {QUERY} from '../../../frontend/services/routing/config';
 import type {
     RouteSettings,
     Route,
+    ChannelRoute,
+    TemplateRoute,
     CollectionConfig,
     RouteData,
     DataShortForm,
@@ -120,35 +122,29 @@ function convertSlugsToColons(value: string): string {
 }
 
 /**
- * Router-facing shapes. These mirror the domain model (arrays, `type`,
- * `contentType`, `{slug}`→`:slug` permalinks) but still carry the legacy
- * `data` expansion (`{query, router}`) and `:slug` notation that the routers,
- * controllers and URL service consume today. Later cleanup PRs peel those two
- * conversions off into the permalink/API adapters (HKG-1896/HKG-1897).
+ * Router-facing shapes. RouterManager consumes the domain model after the two
+ * conversions the bridge still applies: `data` expanded to `{query, router}`,
+ * and collection/taxonomy permalinks rewritten to `:slug`.
+ *
+ * Routes and collections are written as their domain counterpart with just
+ * `data` overridden to the expanded shape — `Omit<…, 'data'> & {data?}` rather
+ * than `extends`, because the override changes `data`'s type (interface
+ * extension can only add fields, not retype them). That keeps the delta from
+ * the domain model explicit: `data` is the only structural difference. When the
+ * bridge is removed (HKG-1898) the override falls away and these collapse back
+ * to `Route` / `CollectionConfig`.
  */
-interface RouterRoute {
-    path: string;
-    type: 'channel' | 'template';
-    templates: string[];
-    data?: ExpandedData;
-    contentType?: string;
-    filter?: string;
-    order?: string;
-    limit?: number | 'all';
-    rss?: boolean;
-}
+type RouterChannelRoute = Omit<ChannelRoute, 'data'> & {data?: ExpandedData};
+type RouterTemplateRoute = Omit<TemplateRoute, 'data'> & {data?: ExpandedData};
+type RouterRoute = RouterChannelRoute | RouterTemplateRoute;
 
-interface RouterCollection {
-    path: string;
-    permalink: string;
-    templates: string[];
-    data?: ExpandedData;
-    filter?: string;
-    order?: string;
-    limit?: number | 'all';
-    rss?: boolean;
-}
+type RouterCollection = Omit<CollectionConfig, 'data'> & {data?: ExpandedData};
 
+// Taxonomies and RouteSettings have no direct domain counterpart to derive from:
+// the domain stores taxonomies as a `{tag, author}` map, which the bridge
+// flattens into these `{key, permalink}` entries, and RouterSettings drops
+// `yamlSource` and swaps all three array element types (routes, collections,
+// taxonomies) — so they stay standalone.
 interface RouterTaxonomy {
     key: string;
     permalink: string;
@@ -161,18 +157,19 @@ export interface RouterSettings {
 }
 
 function buildRouterRoute(route: Route): RouterRoute {
-    const result: RouterRoute = {
-        path: route.path,
-        type: route.type,
-        templates: route.templates || []
-    };
+    const data = route.data !== undefined ? expandRouteData(route.data) : undefined;
 
-    if (route.data !== undefined) {
-        result.data = expandRouteData(route.data);
-    }
-
+    // Build per branch: RouterRoute is a discriminated union, so each member is
+    // constructed as its concrete type. `route` is narrowed by the check.
     if (route.type === 'channel') {
-        // `route` is narrowed to ChannelRoute here by the discriminant check.
+        const result: RouterChannelRoute = {
+            path: route.path,
+            type: 'channel',
+            templates: route.templates || []
+        };
+        if (data !== undefined) {
+            result.data = data;
+        }
         if (route.filter !== undefined) {
             result.filter = route.filter;
         }
@@ -185,10 +182,20 @@ function buildRouterRoute(route: Route): RouterRoute {
         if (route.rss !== undefined) {
             result.rss = route.rss;
         }
-    } else if (route.contentType !== undefined) {
-        result.contentType = route.contentType;
+        return result;
     }
 
+    const result: RouterTemplateRoute = {
+        path: route.path,
+        type: 'template',
+        templates: route.templates || []
+    };
+    if (data !== undefined) {
+        result.data = data;
+    }
+    if (route.contentType !== undefined) {
+        result.contentType = route.contentType;
+    }
     return result;
 }
 
