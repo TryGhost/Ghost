@@ -3,6 +3,7 @@ import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations
 import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyIndicator, HoverCard, HoverCardContent, HoverCardTrigger, Label, RadioGroup, RadioGroupItem} from '@tryghost/shade/components';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {toast} from 'sonner';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {getScenario, mockAutomations} from '@/automations/proto/shared/mock';
 import {CanvasSidePanel} from './panels';
@@ -152,7 +153,6 @@ const AutomationFloat: React.FC = () => {
     const [liveStatus, setLiveStatus] = useState<LiveStatus>(scenario?.automation.status ?? 'active');
     const [dirty, setDirty] = useState(false);
     const [saveState, setSaveState] = useState<SaveState>('saved');
-    const [startOpen, setStartOpen] = useState(false);
     const [stopOpen, setStopOpen] = useState(false);
     const [draft, setDraft] = useState<AutomationDetail | null>(null);
     const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -186,13 +186,17 @@ const AutomationFloat: React.FC = () => {
         window.setTimeout(() => setSaveState('saved'), 700);
     };
 
-    // Start — take the (edited, stopped) automation live. Low-friction on
-    // purpose; the friction lives on Stop.
-    const confirmStart = () => {
-        setStartOpen(false);
+    // Start — take the (edited, stopped) automation live. No confirm dialog: going
+    // live is low-friction and reversible via Stop, and a blocking modal would
+    // interrupt the edit→start flow. A toast confirms it instead. All the friction
+    // lives on Stop.
+    const handleStart = () => {
         setDirty(false);
         setLiveStatus('active');
         setEditing(false); // leave the edit canvas — a live automation is read-only
+        toast.success('Automation is live', {
+            description: 'It’ll start enrolling members who match the trigger.'
+        });
     };
 
     const handleStop = (scope: StopScope) => {
@@ -291,28 +295,12 @@ const AutomationFloat: React.FC = () => {
                         )
                     )}
                     {isEditable ? (
-                        <Button onClick={() => setStartOpen(true)}>Start</Button>
+                        <Button onClick={handleStart}>Start</Button>
                     ) : (
                         <Button onClick={() => setStopOpen(true)}>Stop</Button>
                     )}
                 </div>
             </div>
-
-            {/* Start confirmation — one click of friction before going live. */}
-            <Dialog open={startOpen} onOpenChange={setStartOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Start this automation?</DialogTitle>
-                        <DialogDescription>
-                            This takes your flow live and starts enrolling members who match the trigger.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setStartOpen(false)}>Cancel</Button>
-                        <Button onClick={confirmStart}>Start</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
 
             {/* Stop — the high-friction confirm that unlocks editing. */}
             <StopAutomationDialog open={stopOpen} onConfirm={handleStop} onOpenChange={setStopOpen} />
