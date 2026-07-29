@@ -114,12 +114,12 @@ const LookAndFeel: React.FC<{
                             </ToggleGroup>
                             <ImageUpload className={`size-[46px] overflow-visible border ${currentIcon === uploadedIcon ? 'border-primary' : 'border-transparent'}`}>
                                 {uploadedIcon ? (
-                                    <ImageUploadPreview>
-                                        <ImageUploadImage src={uploadedIcon} />
+                                    <ImageUploadPreview className='overflow-visible'>
+                                        <ImageUploadImage className='rounded-md' src={uploadedIcon} />
                                         <Button
                                             aria-label='Use uploaded Portal icon'
                                             aria-pressed={currentIcon === uploadedIcon}
-                                            className='absolute inset-0 z-10 size-full rounded-none bg-transparent'
+                                            className='absolute inset-0 z-10 size-full rounded-md bg-transparent hover:bg-transparent'
                                             size='icon'
                                             type='button'
                                             variant='ghost'

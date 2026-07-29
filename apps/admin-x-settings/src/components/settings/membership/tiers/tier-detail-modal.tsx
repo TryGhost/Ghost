@@ -8,10 +8,10 @@ import useSortableIndexedList from '../../../../hooks/use-sortable-indexed-list'
 import useUrlInput from '../../../../hooks/use-url-input';
 import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, MultiSelectCombobox, SortableList, Switch} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {Inline, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {SettingsModal} from '@tryghost/shade/patterns';
-import {Text} from '@tryghost/shade/primitives';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
 import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
@@ -333,48 +333,46 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                 <FieldSet className='gap-0'>
                     <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Benefits</FieldLegend>
                     <FieldGroup className='mb-10 gap-0 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
-                        <div className='-mt-3'>
                         <SortableList
                             getDragHandleLabel={({item}) => `Reorder benefit${item ? `: ${item}` : ''}`}
                             items={benefits.items}
                             itemSeparator={false}
-                            renderItem={({id, item}) => <div className='relative flex w-full items-center gap-5'>
-                                <div className='absolute top-1/2 left-[-32px] flex size-6 -translate-y-1/2 items-center justify-center bg-background group-hover:hidden'><LucideIcon.Check className='size-4' /></div>
+                            renderItem={({id, item}) => <Inline align='center' className='relative w-full' gap='lg'>
+                                <Inline align='center' className='absolute top-1/2 left-[-32px] size-6 -translate-y-1/2 bg-background group-hover:hidden' justify='center'><LucideIcon.Check className='size-4' /></Inline>
                                 <Input aria-label='Benefit' className='grow' maxLength={191} value={item} onChange={e => benefits.updateItem(id, e.target.value)} />
                                 <Button aria-label='Delete benefit' className='absolute top-1/2 right-1 z-10 size-5! -translate-y-1/2 p-0! opacity-0 group-hover:opacity-100' size='icon' type='button' variant='secondary' onClick={() => benefits.removeItem(id)}>
                                     <LucideIcon.Trash2 />
                                 </Button>
-                            </div>}
+                            </Inline>}
                             onMove={benefits.moveItem}
                         />
-                    </div>
-                    <div className="relative mt-1 flex items-center gap-3">
-                        <LucideIcon.Check className='size-4' />
-                        <Field className='w-100'>
-                            <FieldLabel className='sr-only' htmlFor='new-tier-benefit'>New benefit</FieldLabel>
-                            <Input
-                            className='grow'
-                            id='new-tier-benefit'
-                            maxLength={191}
-                            placeholder='Expert analysis'
-                            value={benefits.newItem}
-                            onChange={e => benefits.setNewItem(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    benefits.addItem();
-                                }
-                            }} />
-                        </Field>
-                        <Button
-                            aria-label='Add benefit'
-                            className='absolute top-1/2 right-1 z-10 size-[22px]! -translate-y-1/2 p-0!'
-                            size='icon'
-                            type='button'
-                            onClick={() => benefits.addItem()}
-                        >
-                            <LucideIcon.Plus />
-                        </Button>
-                        </div>
+                        <Inline align='center' className='relative mt-1' gap='md'>
+                            <LucideIcon.Check className='size-4' />
+                            <Field className='w-100'>
+                                <FieldLabel className='sr-only' htmlFor='new-tier-benefit'>New benefit</FieldLabel>
+                                <Input
+                                    className='grow'
+                                    id='new-tier-benefit'
+                                    maxLength={191}
+                                    placeholder='Expert analysis'
+                                    value={benefits.newItem}
+                                    onChange={e => benefits.setNewItem(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            benefits.addItem();
+                                        }
+                                    }} />
+                            </Field>
+                            <Button
+                                aria-label='Add benefit'
+                                className='absolute top-1/2 right-1 z-10 size-[22px]! -translate-y-1/2 p-0!'
+                                size='icon'
+                                type='button'
+                                onClick={() => benefits.addItem()}
+                            >
+                                <LucideIcon.Plus />
+                            </Button>
+                        </Inline>
                     </FieldGroup>
                 </FieldSet>
             </div>

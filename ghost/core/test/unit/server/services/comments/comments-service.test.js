@@ -547,6 +547,98 @@ describe('Comments Service: CommentsService', function () {
         });
     });
 
+    describe('sendNewCommentNotifications', function () {
+        function setupNotificationTest({parentMemberId, inReplyToMemberId, parentStatus = 'published', parentNotified = parentStatus === 'published'}) {
+            const {instance, models} = createClassInstance();
+            instance.emails.notifyPostAuthors = sinon.stub().resolves();
+            // Mirrors the real contract: resolves with the notified member id, or undefined when it bails out
+            instance.emails.notifyParentCommentAuthor = sinon.stub().resolves();
+            instance.emails.notifyParentCommentAuthor
+                .withArgs(sinon.match.any, sinon.match({type: 'parent'}))
+                .resolves(parentNotified ? parentMemberId : undefined);
+
+            const commentsById = {
+                'parent-id': buildCommentModel({id: 'parent-id', member_id: parentMemberId, status: parentStatus}),
+                'in-reply-to-id': buildCommentModel({id: 'in-reply-to-id', member_id: inReplyToMemberId, status: 'published'})
+            };
+            models.Comment.findOne.callsFake(async data => commentsById[data.id] || null);
+
+            const reply = buildCommentModel({
+                id: 'reply-id',
+                parent_id: 'parent-id',
+                in_reply_to_id: 'in-reply-to-id',
+                member_id: 'replier-id'
+            });
+
+            return {instance, reply};
+        }
+
+        it('sends a single email when the same member authored the parent and in_reply_to comments', async function () {
+            const {instance, reply} = setupNotificationTest({
+                parentMemberId: 'author-id',
+                inReplyToMemberId: 'author-id'
+            });
+
+            await instance.sendNewCommentNotifications(reply);
+
+            sinon.assert.calledOnce(instance.emails.notifyParentCommentAuthor);
+            sinon.assert.calledWithMatch(instance.emails.notifyParentCommentAuthor, reply, {type: 'parent'});
+        });
+
+        it('sends both emails when the parent and in_reply_to comments have different authors', async function () {
+            const {instance, reply} = setupNotificationTest({
+                parentMemberId: 'author-a',
+                inReplyToMemberId: 'author-b'
+            });
+
+            await instance.sendNewCommentNotifications(reply);
+
+            sinon.assert.calledTwice(instance.emails.notifyParentCommentAuthor);
+            sinon.assert.calledWithMatch(instance.emails.notifyParentCommentAuthor, reply, {type: 'parent'});
+            sinon.assert.calledWithMatch(instance.emails.notifyParentCommentAuthor, reply, {type: 'in_reply_to'});
+        });
+
+        it('still sends the in_reply_to email when the shared author\'s parent comment is not published', async function () {
+            // The parent notification is only sent for published parent comments, so
+            // in this case there is no duplicate to suppress.
+            const {instance, reply} = setupNotificationTest({
+                parentMemberId: 'author-id',
+                inReplyToMemberId: 'author-id',
+                parentStatus: 'hidden'
+            });
+
+            await instance.sendNewCommentNotifications(reply);
+
+            sinon.assert.calledWithMatch(instance.emails.notifyParentCommentAuthor, reply, {type: 'in_reply_to'});
+        });
+
+        it('still sends the in_reply_to email when the parent notification bails for a reason other than status', async function () {
+            const {instance, reply} = setupNotificationTest({
+                parentMemberId: 'author-id',
+                inReplyToMemberId: 'author-id',
+                parentNotified: false
+            });
+
+            await instance.sendNewCommentNotifications(reply);
+
+            sinon.assert.calledWithMatch(instance.emails.notifyParentCommentAuthor, reply, {type: 'in_reply_to'});
+        });
+
+        it('passes the already-loaded in_reply_to comment through instead of re-querying it', async function () {
+            const {instance, reply} = setupNotificationTest({
+                parentMemberId: 'author-a',
+                inReplyToMemberId: 'author-b'
+            });
+
+            await instance.sendNewCommentNotifications(reply);
+
+            const inReplyToCall = instance.emails.notifyParentCommentAuthor
+                .getCalls()
+                .find(call => call.args[1].type === 'in_reply_to');
+            assert.equal(inReplyToCall.args[1].parent.get('id'), 'in-reply-to-id');
+        });
+    });
+
     describe('editCommentContent', function () {
         it('checks ownership before returning an unchanged comment', async function () {
             const {instance, commentModel} = createClassInstance();

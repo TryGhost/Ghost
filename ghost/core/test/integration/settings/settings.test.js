@@ -18,7 +18,6 @@ describe('Settings', function () {
     const coreSettingKeys = [
         'last_mentions_report_email_timestamp',
         'db_hash',
-        'routes_hash',
         'next_update_check',
         'notifications',
         'version_notifications',

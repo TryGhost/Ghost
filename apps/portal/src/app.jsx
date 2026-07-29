@@ -488,6 +488,8 @@ export default class App extends React.Component {
                 currency = currencyValue;
             } else if (key === 'disableBackground') {
                 data.site.disableBackground = JSON.parse(value);
+            } else if (key === 'previewTheme') {
+                data.site.preview_theme = value;
             } else if (key === 'membersSignupAccess' && value) {
                 data.site.members_signup_access = value;
             } else if (key === 'portalDefaultPlan' && value) {

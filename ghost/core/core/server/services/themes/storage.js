@@ -27,6 +27,8 @@ const messages = {
     destroyActive: 'Deleting the active theme is not allowed.'
 };
 
+const INVALID_THEME_REGEX = /^[./]*$/;
+
 let themeStorage;
 
 const getStorage = () => {
@@ -57,6 +59,13 @@ module.exports = {
         if (zip.name === 'casper.zip' || zip.name === 'source.zip') {
             throw new errors.ValidationError({
                 message: tpl(messages.overrideDefaultTheme)
+            });
+        }
+
+        // Reject theme names that only contain path elements.
+        if (INVALID_THEME_REGEX.test(themeName)) {
+            throw new errors.ValidationError({
+                message: 'Invalid theme name.'
             });
         }
 

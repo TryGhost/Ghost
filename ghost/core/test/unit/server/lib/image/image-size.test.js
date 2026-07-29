@@ -6,7 +6,7 @@ const path = require('path');
 const errors = require('@tryghost/errors');
 const fs = require('fs');
 const ImageSize = require('../../../../../core/server/lib/image/image-size');
-const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
+const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase').default;
 const probe = require('probe-image-size');
 
 // use a 1x1 gif in nock responses because it's really small and easy to work with
@@ -21,7 +21,7 @@ function createImageSize(overrides = {}) {
         storageUtils = {isLocalImage: () => false},
         validator = {isURL: () => true},
         urlUtils = {},
-        request = {},
+        fetchExternal = {},
         probe: probeOverride = probe
     } = overrides;
 
@@ -35,7 +35,7 @@ function createImageSize(overrides = {}) {
         storageUtils,
         validator,
         urlUtils,
-        request,
+        fetchExternal,
         probe: probeOverride
     });
 }
@@ -117,7 +117,7 @@ describe('lib/image: image size', function () {
             const requestMock = nock('https://static.wixstatic.com').get('/random-path').reply(404);
 
             const imageSize = createImageSize({
-                request: (requestUrl) => {
+                fetchExternal: (requestUrl) => {
                     if (requestUrl === url) {
                         return Promise.resolve({body: GIF1x1});
                     }
@@ -205,7 +205,7 @@ describe('lib/image: image size', function () {
                         return '';
                     }
                 },
-                request: (requestUrl) => {
+                fetchExternal: (requestUrl) => {
                     if (requestUrl === url) {
                         return Promise.resolve({body: GIF1x1});
                     }
@@ -392,7 +392,7 @@ describe('lib/image: image size', function () {
             }
 
             const imageSize = createImageSize({
-                request: (requestUrl) => {
+                fetchExternal: (requestUrl) => {
                     if (requestUrl === url) {
                         return Promise.reject(new NotFound());
                     }
@@ -480,7 +480,7 @@ describe('lib/image: image size', function () {
                 .reply(404);
 
             const imageSize = createImageSize({
-                request: (requestUrl) => {
+                fetchExternal: (requestUrl) => {
                     if (requestUrl === url) {
                         return Promise.resolve({
                             body: Buffer.from('2c be a4 40 f7 87 73 1e 57 2c c1 e4 0d 79 03 95 42 f0 42 2e 41 95 27 c9 5c 35 a7 71 2c 09 5a 57 d3 04 1e 83 03 28 07 96 b0 c8 88 65 07 7a d1 d6 63 50'.replace(/ /g, ''), 'hex')
@@ -502,7 +502,7 @@ describe('lib/image: image size', function () {
             const url = 'https://notarealwebsite.com/images/notapicture.dds';
 
             const imageSize = createImageSize({
-                request: () => Promise.reject({})
+                fetchExternal: () => Promise.reject({})
             });
 
             await assert.rejects(async () => {
@@ -556,7 +556,7 @@ describe('lib/image: image size', function () {
                 imageStore: createFixtureStorage(),
                 storageUtils: createFixtureStorageUtils(),
                 urlUtils: createLocalUrlUtils(expectedImageObject.url),
-                request: () => Promise.reject(new Error('request should not be used'))
+                fetchExternal: () => Promise.reject(new Error('request should not be used'))
             });
 
             const res = await imageSize.getImageSizeFromStoragePath(url);
@@ -575,7 +575,7 @@ describe('lib/image: image size', function () {
                 imageStore: createFixtureStorage(),
                 storageUtils: createFixtureStorageUtils(),
                 urlUtils: createLocalUrlUtils(expectedImageObject.url, '/blog'),
-                request: () => Promise.reject(new Error('request should not be used'))
+                fetchExternal: () => Promise.reject(new Error('request should not be used'))
             });
 
             const res = await imageSize.getImageSizeFromStoragePath(url);
@@ -594,7 +594,7 @@ describe('lib/image: image size', function () {
                 imageStore: createFixtureStorage(),
                 storageUtils: createFixtureStorageUtils(),
                 urlUtils: createLocalUrlUtils(expectedImageObject.url),
-                request: () => Promise.reject(new Error('request should not be used'))
+                fetchExternal: () => Promise.reject(new Error('request should not be used'))
             });
 
             const res = await imageSize.getImageSizeFromStoragePath(url);
@@ -613,7 +613,7 @@ describe('lib/image: image size', function () {
                 imageStore: createFixtureStorage(),
                 storageUtils: createFixtureStorageUtils(),
                 urlUtils: createLocalUrlUtils(expectedImageObject.url),
-                request: () => Promise.reject(new Error('request should not be used'))
+                fetchExternal: () => Promise.reject(new Error('request should not be used'))
             });
 
             const res = await imageSize.getImageSizeFromStoragePath(url);
@@ -627,7 +627,7 @@ describe('lib/image: image size', function () {
                 read: () => {
                     return Promise.reject(new errors.NotFoundError());
                 }
-            }, storageUtils: createFixtureStorageUtils(), urlUtils: createLocalUrlUtils('http://myblog.com/content/images/not-existing-image.png'), request: () => Promise.reject(new Error('request should not be used'))});
+            }, storageUtils: createFixtureStorageUtils(), urlUtils: createLocalUrlUtils('http://myblog.com/content/images/not-existing-image.png'), fetchExternal: () => Promise.reject(new Error('request should not be used'))});
 
             await assert.rejects(async () => {
                 await imageSize.getImageSizeFromStoragePath(url);
@@ -649,7 +649,7 @@ describe('lib/image: image size', function () {
             }, validator: {}, urlUtils: {
                 urlFor: () => 'http://myblog.com/content/images/../../../../../outside-root.png',
                 getSubdir: () => ''
-            }, request: () => {
+            }, fetchExternal: () => {
                 return Promise.reject({});
             }});
 
@@ -671,7 +671,7 @@ describe('lib/image: image size', function () {
                 getLocalImagesStoragePath: () => ''
             }, validator: {}, urlUtils: {
                 ...createLocalUrlUtils('http://myblog.com/content/images/malformed.svg')
-            }, request: () => {
+            }, fetchExternal: () => {
                 return Promise.reject({});
             }});
 

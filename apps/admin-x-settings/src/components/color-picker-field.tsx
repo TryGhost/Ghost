@@ -1,5 +1,6 @@
 import {ColorPicker, ColorPickerTrigger, type ColorSwatchOption, ColorSwatchRow} from '@tryghost/shade/patterns';
 import {FieldDescription, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
 import {type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState} from 'react';
 import {debounce} from '../utils/debounce';
 
@@ -132,9 +133,12 @@ const ColorPickerField = ({
                 setOpen(nextOpen);
             }}
         >
-            <div
-                className={`flex w-full items-start justify-between gap-2 ${direction === 'ltr' ? 'flex-row-reverse' : ''}`}
+            <Inline
+                align={hint ? 'start' : 'center'}
+                className={`w-full ${direction === 'ltr' ? 'flex-row-reverse' : ''}`}
                 data-testid={testId}
+                gap='sm'
+                justify='between'
             >
                     {title && (
                         <label className="min-w-0 flex-1 cursor-pointer text-left" htmlFor={triggerId}>
@@ -159,7 +163,7 @@ const ColorPickerField = ({
                             <ColorPickerTrigger id={triggerId} value={normalizedValue} />
                         </PopoverTrigger>
                     </div>
-            </div>
+            </Inline>
             <PopoverContent
                 align={direction === 'rtl' ? 'end' : 'start'}
                 className="w-auto p-4"
@@ -173,7 +177,7 @@ const ColorPickerField = ({
                     onTouchStartCapture={() => allowPickerChanges.current = true}
                 >
                     <ColorPicker
-                        value={normalizedValue}
+                        defaultValue={normalizedValue}
                         onChange={(hex) => {
                             if (!suppressPickerChanges.current && allowPickerChanges.current) {
                                 handleChange(hex.toLowerCase());

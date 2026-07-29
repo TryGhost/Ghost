@@ -1,0 +1,20 @@
+// Ratchet for the incremental TypeScript migration.
+//
+// `tsconfig.json` still has `strict: false` and the package as a whole does not
+// typecheck yet, so `include` is an explicit allowlist rather than `src/**/*`.
+// Each migration slice adds the files it has cleaned; `pnpm typecheck` fails on
+// anything that regresses them. Files are pulled in transitively, so only leaf
+// modules can be listed until the modules they import are migrated too.
+//
+// Delete this file once `tsconfig.json` itself is strict and covers all of src.
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "strict": true,
+        "noEmit": true
+    },
+    "include": [
+        "src/context/KoenigComposerContext.tsx",
+        "src/components/ui/cards/PaywallCard.tsx"
+    ]
+}

@@ -2,11 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const lexicalLib = require('../../lib/lexical');
 const labs = require('../../../shared/labs');
+const urlUtils = require('../../../shared/url-utils').default;
 const {finalize} = require('../email-rendering/finalize');
 const errors = require('@tryghost/errors');
 const {MESSAGES} = require('./constants');
 const {wrapReplacementStrings} = require('@tryghost/kg-default-nodes').utils.replacementStrings;
 const linkReplacer = require('../lib/link-replacer');
+const linkTracking = require('../link-tracking');
 const emailDesign = require('../email-rendering/email-design');
 const {registerHelpers} = require('../email-service/helpers/register-helpers');
 
@@ -115,9 +117,11 @@ class MemberWelcomeEmailRenderer {
      * @param {Object} options.member - Member data (name, email)
      * @param {Object} options.siteSettings - Site settings (title, url, accentColor)
      * @param {string} [options.unsubscribeUrl] - When set, the footer shows an "Unsubscribe from these emails" link instead of "Manage your preferences"
+     * @param {boolean} [options.trackClicks]
+     * @param {string | null} [options.automationActionRevisionId]
      * @returns {Promise<{html: string, text: string, subject: string}>}
      */
-    async render({lexical, subject, designSettings, member, siteSettings, unsubscribeUrl}) {
+    async render({lexical, subject, designSettings, member, siteSettings, unsubscribeUrl, trackClicks = false, automationActionRevisionId = null}) {
         designSettings = designSettings || {};
 
         const design = emailDesign.getEmailDesign({
@@ -138,7 +142,8 @@ class MemberWelcomeEmailRenderer {
 
         let content;
         try {
-            content = await lexicalLib.render(lexical, {target: 'email', design});
+            const absoluteLexical = urlUtils.transformReadyToAbsolute(lexical);
+            content = await lexicalLib.render(absoluteLexical, {target: 'email', design});
         } catch (err) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.INVALID_LEXICAL_STRUCTURE,
@@ -158,8 +163,18 @@ class MemberWelcomeEmailRenderer {
         const contentWithReplacements = this.#applyReplacements({definitions, text: content, escapeHtml: true});
         const subjectWithReplacements = this.#applyReplacements({definitions, text: subject, escapeHtml: false});
 
-        // Resolve relative links (e.g. #/portal/signup) to absolute URLs using the site URL
-        const contentWithAbsoluteLinks = await linkReplacer.replace(contentWithReplacements, (url) => {
+        // Resolve relative links, including Ghost Portal routes such as #/portal/signup,
+        // while preserving document-local anchors such as #section.
+        const contentWithAbsoluteLinks = await linkReplacer.replace(contentWithReplacements, async (url, originalPath) => {
+            const isDocumentAnchor = originalPath.startsWith('#') && !originalPath.startsWith('#/');
+            if (isDocumentAnchor) {
+                return originalPath;
+            }
+            const isTrackable = ['http:', 'https:'].includes(url.protocol);
+            if (trackClicks && automationActionRevisionId && member.uuid && isTrackable) {
+                await linkTracking.init();
+                return await linkTracking.service.addAutomationTrackingToUrl(url, automationActionRevisionId, member.uuid);
+            }
             return url;
         }, {base: siteSettings.url});
 

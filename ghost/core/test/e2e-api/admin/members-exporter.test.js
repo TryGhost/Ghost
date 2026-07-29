@@ -322,4 +322,59 @@ describe('Members API — exportCSV', function () {
             assert.equal(row.stripe_customer_id, 'cus_12345');
         }, ['filter=subscribed:false', 'filter=subscriptions.subscription_id:sub_123']);
     });
+
+    // The single-member tests above each exercise one kind of related data in
+    // isolation. This streams a whole file of members that differ in their related
+    // data and checks each row carries its own — the streaming/batching path where a
+    // per-batch map keyed by the wrong member_id would silently cross the wires.
+    it('streams a file of mixed members, each with its own related data', async function () {
+        const tier = tiers[0];
+
+        const plain = await createMember({name: 'Mixed Plain', note: 'plain'});
+        const tiered = await createMember({name: 'Mixed Tiered', products: [{id: tier.id}]});
+        const labelled = await createMember({name: 'Mixed Labelled', labels: labels.map(l => ({name: l.get('name')}))});
+        const comped = await createMember({name: 'Mixed Comped', status: 'comped'});
+        const subscribed = await createMember({name: 'Mixed Subscribed', newsletters: [{id: newsletters[0].id}]});
+
+        // No filter + limit=all takes the "export everything" streaming branch.
+        const res = await agent
+            .get('/members/upload/?limit=all')
+            .expectStatus(200)
+            .expectEmptyBody()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-disposition': anyString
+            });
+
+        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
+        const rows = Papa.parse(res.text, {header: true}).data;
+        const rowFor = id => rows.find(r => r.id === id);
+
+        const labelsList = labels.map(l => l.get('name')).sort().join(',');
+
+        const p = rowFor(plain.id);
+        assertExists(p);
+        assert.equal(p.tiers, '');
+        assert.equal(p.labels, '');
+        assert.equal(p.complimentary_plan, '');
+        assert.equal(p.subscribed_to_emails, 'false');
+
+        const t = rowFor(tiered.id);
+        assertExists(t);
+        assert.equal(t.tiers, tier.get('name'));
+        assert.equal(t.labels, '');
+
+        const l = rowFor(labelled.id);
+        assertExists(l);
+        assert.equal(l.labels.split(',').sort().join(','), labelsList);
+        assert.equal(l.tiers, '');
+
+        const c = rowFor(comped.id);
+        assertExists(c);
+        assert.equal(c.complimentary_plan, 'true');
+
+        const s = rowFor(subscribed.id);
+        assertExists(s);
+        assert.equal(s.subscribed_to_emails, 'true');
+    });
 });

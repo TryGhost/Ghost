@@ -11,6 +11,7 @@ export interface SchedulerJob {
     url: string;
     extra: {
         httpMethod: string;
+        idempotencyKey?: string;
         oldTime?: number | null;
     };
 }

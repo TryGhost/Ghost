@@ -4,12 +4,30 @@ const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils').default;
 
 class LinkTrackingServiceWrapper {
+    #initPromise;
+
     async init() {
         if (this.service) {
             // Already done
             return;
         }
 
+        if (!this.#initPromise) {
+            this.#initPromise = this.#initialise();
+        }
+
+        const initPromise = this.#initPromise;
+        try {
+            await initPromise;
+        } catch (error) {
+            if (this.#initPromise === initPromise) {
+                this.#initPromise = undefined;
+            }
+            throw error;
+        }
+    }
+
+    async #initialise() {
         const linkRedirection = require('../link-redirection');
         if (!linkRedirection.service) {
             throw new errors.InternalServerError({message: 'LinkRedirectionService should be initialised before LinkTrackingService'});
@@ -27,24 +45,29 @@ class LinkTrackingServiceWrapper {
             linkRedirectRepository: linkRedirection.linkRedirectRepository
         });
 
-        this.linkClickRepository = new LinkClickRepository({
+        const linkClickRepository = new LinkClickRepository({
             MemberLinkClickEventModel: models.MemberClickEvent,
             Member: models.Member,
             MemberLinkClickEvent: MemberLinkClickEvent,
             DomainEvents
         });
 
-        // Expose the service
-        this.service = new LinkClickTrackingService({
+        const service = new LinkClickTrackingService({
             linkRedirectService: linkRedirection.service,
-            linkClickRepository: this.linkClickRepository,
+            linkClickRepository,
             postLinkRepository,
             DomainEvents,
             urlUtils
         });
 
-        await this.service.init();
+        await service.init();
+
+        // Expose the service only after it has finished initialising
+        this.linkClickRepository = linkClickRepository;
+        this.service = service;
     }
 }
 
 module.exports = new LinkTrackingServiceWrapper();
+// Exposed for testing purposes only
+module.exports.LinkTrackingServiceWrapper = LinkTrackingServiceWrapper;

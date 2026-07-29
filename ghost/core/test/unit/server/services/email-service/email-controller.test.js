@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const EmailController = require('../../../../../core/server/services/email-service/email-controller');
 const {createModel, createModelClass} = require('./utils');
 
@@ -23,6 +24,33 @@ describe('Email Controller', function () {
             });
             assert.equal(post.id, 'options-id');
             assert.equal(newsletter.get('slug'), 'post-newsletter');
+        });
+
+        it('loads the URL service relations the lazy backend needs', async function () {
+            // On sites whose routes.yaml filters collections by tag/author the
+            // lazy URL service refuses a post without those relations as thin,
+            // which would turn email previews into a 500 in pure-lazy mode.
+            const Post = createModelClass({
+                findOne: {
+                    title: 'Post title',
+                    newsletter: createModel({slug: 'post-newsletter'})
+                }
+            });
+            const findOneSpy = sinon.spy(Post, 'findOne');
+            const controller = new EmailController({}, {
+                models: {Post},
+                getRequiredUrlRelations: () => ['tags', 'authors']
+            });
+
+            await controller._getFrameData({
+                options: {id: 'options-id'},
+                data: {}
+            });
+
+            sinon.assert.calledOnce(findOneSpy);
+            const {withRelated} = findOneSpy.firstCall.args[1];
+            assert.ok(withRelated.includes('tags'));
+            assert.ok(withRelated.includes('authors'));
         });
 
         it('throws if post is not found', async function () {

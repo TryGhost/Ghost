@@ -1,7 +1,12 @@
 import React, {useEffect} from 'react';
+import {staffProfileModalPaths} from './routing/staff-profile-paths';
 import {useRouteChangeCallback, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext} from '../../hooks/use-scroll-section';
 import type {ModalName} from './routing/modals';
+
+const staffProfilePaths = Object.fromEntries(
+    staffProfileModalPaths.map(path => [path, 'UserDetailModal' as ModalName])
+);
 
 export const modalPaths: {[key: string]: ModalName} = {
     'design/change-theme': 'DesignAndThemeModal',
@@ -10,10 +15,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'theme/edit/:name': 'DesignAndThemeModal',
     'navigation/edit': 'NavigationModal',
     'staff/invite': 'InviteUserModal',
-    'staff/:slug/social-links': 'UserDetailModal',
-    'staff/:slug/email-notifications': 'UserDetailModal',
-    'staff/:slug/edit': 'UserDetailModal',
-    'staff/:slug': 'UserDetailModal',
+    ...staffProfilePaths,
     'portal/edit': 'PortalModal',
     'tiers/add': 'TierDetailModal',
     'tiers/:id': 'TierDetailModal',
