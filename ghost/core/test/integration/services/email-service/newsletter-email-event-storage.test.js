@@ -1151,8 +1151,6 @@ processingModes.forEach(({name, batchProcessing}) => {
 
             const member = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});
 
-            // The member clicked unsubscribe on one newsletter and is a healthy member
-            // reachable by their new email — they must keep the other newsletter.
             assert.equal(
                 member.related('newsletters').length, 1,
                 `member should still have 1 newsletter but has ${member.related('newsletters').length}`

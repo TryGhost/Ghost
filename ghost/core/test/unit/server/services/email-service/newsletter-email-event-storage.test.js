@@ -521,17 +521,18 @@ describe('Email Event Storage', function () {
         });
         await eventHandler.handleUnsubscribed(event);
 
-        // The member is looked up by id, not by the (possibly stale) send-time email
         sinon.assert.calledWithMatch(get, {id: '123'});
 
-        // The member keeps newsletter_2 and is unsubscribed only from newsletter_1
         sinon.assert.calledOnce(update);
         assert(update.firstCall.args[0].newsletters.length === 1);
         assert(update.firstCall.args[0].newsletters[0].id === 'newsletter_2');
         sinon.assert.calledOnce(emailSuppressionList.removeUnsubscribe);
+
+        // Suppression may only be lifted once the local record is written
+        sinon.assert.callOrder(update, emailSuppressionList.removeUnsubscribe);
     });
 
-    it('Does not touch newsletters when the member cannot be resolved', async function () {
+    it('Unsubscribes a member subscribed to a single newsletter', async function () {
         const event = EmailUnsubscribedEvent.create({
             email: 'example@example.com',
             memberId: '123',
@@ -539,10 +540,52 @@ describe('Email Event Storage', function () {
             timestamp: new Date(0)
         });
 
-        // Member not found by id (e.g. deleted) — must not wipe their newsletters
+        const update = sinon.stub().resolves();
+        const get = sinon.stub().resolves({
+            related: sinon.stub().returns({
+                models: [{id: 'newsletter_1'}]
+            })
+        });
+
+        const emailSuppressionList = {
+            removeUnsubscribe: sinon.stub().resolves()
+        };
+
+        const Email = {
+            findOne: sinon.stub().resolves({
+                get: sinon.stub().returns('newsletter_1')
+            })
+        };
+
+        const eventHandler = new NewsletterEmailEventStorage({
+            membersRepository: {
+                get,
+                update
+            },
+            models: {
+                Email
+            },
+            emailSuppressionList
+        });
+        await eventHandler.handleUnsubscribed(event);
+
+        sinon.assert.calledOnce(update);
+        assert.deepEqual(update.firstCall.args[0].newsletters, []);
+        sinon.assert.calledOnce(emailSuppressionList.removeUnsubscribe);
+        sinon.assert.calledWith(emailSuppressionList.removeUnsubscribe, 'example@example.com');
+        sinon.assert.callOrder(update, emailSuppressionList.removeUnsubscribe);
+    });
+
+    it('Lifts Mailgun suppression when the member cannot be resolved', async function () {
+        const event = EmailUnsubscribedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            timestamp: new Date(0)
+        });
+
         const get = sinon.stub().resolves(null);
         const update = sinon.stub().resolves();
-
         const emailSuppressionList = {
             removeUnsubscribe: sinon.stub().resolves()
         };
@@ -556,11 +599,12 @@ describe('Email Event Storage', function () {
         });
         await eventHandler.handleUnsubscribed(event);
 
-        // Update is not called with an empty newsletter list
         sinon.assert.notCalled(update);
+        sinon.assert.calledOnce(emailSuppressionList.removeUnsubscribe);
+        sinon.assert.calledWith(emailSuppressionList.removeUnsubscribe, 'example@example.com');
     });
 
-    it('Does not touch newsletters when the lookup throws (transient error)', async function () {
+    it('Keeps Mailgun suppression when the lookup fails', async function () {
         const event = EmailUnsubscribedEvent.create({
             email: 'example@example.com',
             memberId: '123',
@@ -568,7 +612,6 @@ describe('Email Event Storage', function () {
             timestamp: new Date(0)
         });
 
-        // The member resolves, but a later step throws (e.g. a transient DB error)
         const get = sinon.stub().resolves({
             related: sinon.stub().returns({
                 models: [{id: 'newsletter_1'}, {id: 'newsletter_2'}]
@@ -594,8 +637,46 @@ describe('Email Event Storage', function () {
         });
         await eventHandler.handleUnsubscribed(event);
 
-        // A transient error must not be interpreted as "unsubscribe from all"
         sinon.assert.notCalled(update);
+        sinon.assert.notCalled(emailSuppressionList.removeUnsubscribe);
+        sinon.assert.calledOnce(logError);
+    });
+
+    it('Keeps Mailgun suppression when the email record is missing', async function () {
+        const event = EmailUnsubscribedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            timestamp: new Date(0)
+        });
+
+        const get = sinon.stub().resolves({
+            related: sinon.stub().returns({
+                models: [{id: 'newsletter_1'}, {id: 'newsletter_2'}]
+            })
+        });
+        const update = sinon.stub().resolves();
+        const Email = {
+            findOne: sinon.stub().resolves(null)
+        };
+        const emailSuppressionList = {
+            removeUnsubscribe: sinon.stub().resolves()
+        };
+
+        const eventHandler = new NewsletterEmailEventStorage({
+            membersRepository: {
+                get,
+                update
+            },
+            models: {
+                Email
+            },
+            emailSuppressionList
+        });
+        await eventHandler.handleUnsubscribed(event);
+
+        sinon.assert.notCalled(update);
+        sinon.assert.notCalled(emailSuppressionList.removeUnsubscribe);
         sinon.assert.calledOnce(logError);
     });
 
@@ -633,8 +714,8 @@ describe('Email Event Storage', function () {
 
         const result = await eventHandler.findNewslettersToKeep(event);
 
-        assert(result.length === 1);
-        assert(result[0].id === 'newsletter_2');
+        assert.equal(result.status, 'ok');
+        assert.deepEqual(result.newsletters, [{id: 'newsletter_2'}]);
     });
 
     it('Handles complaints', async function () {
