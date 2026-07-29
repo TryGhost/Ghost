@@ -4,7 +4,6 @@ import crypto from 'node:crypto';
 import ObjectId from 'bson-objectid';
 import {dequal} from 'dequal';
 import {type Knex} from 'knex';
-import moment from 'moment';
 // @ts-expect-error This module currently lacks type definitions.
 import lexicalLib from '../../lib/lexical';
 import urlUtils from '../../../shared/url-utils';
@@ -22,11 +21,11 @@ import type {
     EditAutomationData,
     Page
 } from './automations-repository';
+import {toDatabaseDate} from './database-date';
 import {getStaleLockCutoff} from './stale-lock-cutoff';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
 const HOUR_MS = 60 * 60 * 1000;
-const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [{
     name: 'Free member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free
@@ -53,9 +52,6 @@ interface AutomationRow {
     updated_at: string;
 }
 
-function toDatabaseDate(date: Date | string): string {
-    return moment(date).format(DATABASE_DATE_FORMAT);
-}
 
 interface ActionRow {
     id: string;
