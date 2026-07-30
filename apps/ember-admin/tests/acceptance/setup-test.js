@@ -53,7 +53,7 @@ describe('Acceptance: Setup', function () {
         await authenticateSession();
 
         await visit('/setup');
-        expect(currentURL()).to.equal('/site');
+        expect(currentURL()).to.equal('/');
     });
 
     it('redirects to signin if already set up', async function () {
@@ -207,34 +207,4 @@ describe('Acceptance: Setup', function () {
         });
     });
 
-    describe('?firstStart=true', function () {
-        beforeEach(async function () {
-            this.server.loadFixtures('configs');
-            this.server.loadFixtures('settings');
-            this.server.loadFixtures('themes');
-        });
-
-        async function authenticateAs(server, roleName, slug) {
-            let role = server.create('role', {name: roleName});
-            server.create('user', {roles: [role], slug});
-            await authenticateSession();
-        }
-
-        it('transitions owners to onboarding', async function () {
-            await authenticateAs(this.server, 'Owner', 'owner');
-            await visit('/?firstStart=true');
-            await waitUntil(() => window.location.hash === '#/setup/onboarding?returnTo=/analytics');
-            expect(window.location.hash).to.equal('#/setup/onboarding?returnTo=/analytics');
-        });
-
-        it('transitions admins without starting onboarding', async function () {
-            await authenticateAs(this.server, 'Administrator', 'admin');
-            await visit('/?firstStart=true');
-            await waitUntil(() => window.location.hash === '#/setup/onboarding?returnTo=/analytics');
-            expect(window.location.hash).to.equal('#/setup/onboarding?returnTo=/analytics');
-
-            let user = this.server.schema.users.first();
-            expect(user.accessibility).to.be.null;
-        });
-    });
 });

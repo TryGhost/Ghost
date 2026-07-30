@@ -99,7 +99,7 @@ describe("What's new menu", () => {
                 }),
             ],
         });
-        await renderAdminApp("/");
+        await renderAdminApp("/site");
 
         await sidebarScreen.userMenuTrigger().click();
         await whatsNewScreen.menuItem().click();
@@ -117,7 +117,7 @@ describe("What's new menu", () => {
         fakeEndpoint("GET", "https://ghost.org/changelog.json", {
             posts: [changelogEntry({ published_at: NEWER_THAN_LAST_SEEN })],
         });
-        await renderAdminApp("/", {
+        await renderAdminApp("/site", {
             boot: { browseMe: { response: userWhoLastSawChangelogAt(LAST_SEEN) } },
         });
 
@@ -132,7 +132,7 @@ describe("What's new menu", () => {
         fakeEndpoint("GET", "https://ghost.org/changelog.json", {
             posts: [changelogEntry({ published_at: "2020-01-01T00:00:00.000Z" })],
         });
-        await renderAdminApp("/");
+        await renderAdminApp("/site");
 
         await sidebarScreen.userMenuTrigger().click();
         await expect.element(whatsNewScreen.menuItem()).toBeVisible();
@@ -145,7 +145,7 @@ describe("What's new menu", () => {
         fakeEndpoint("GET", "https://ghost.org/changelog.json", {
             posts: [changelogEntry({ published_at: NEWER_THAN_LAST_SEEN })],
         });
-        await renderAdminApp("/", {
+        await renderAdminApp("/site", {
             boot: { browseMe: { response: userWhoLastSawChangelogAt(LAST_SEEN) } },
         });
 

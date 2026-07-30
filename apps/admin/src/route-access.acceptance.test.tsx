@@ -17,8 +17,8 @@ function asRole(name: StaffRoleName): RenderAdminAppOptions {
     return { boot: { browseMe: { response: me } } };
 }
 
-// The home route is Ember-owned and picks the landing view per role, so a
-// denied route hands off with a cross-app navigation rather than a React one.
+// Denied routes hand off to the home route with a cross-app navigation (a
+// hash update both routers observe) rather than a React-internal one.
 const homeHandoff = (): unknown => JSON.parse(document.body.dataset.externalNavigate ?? "null");
 
 const OWNER_SLUG = currentUserResponse().users[0].slug as string;

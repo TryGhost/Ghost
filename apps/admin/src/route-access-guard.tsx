@@ -14,8 +14,8 @@ export interface AccessRouteHandle {
  *
  * Routes opt in by setting `handle: { requiresAccess: <predicate> }`. A route
  * with no rule is unguarded, so the current user is only awaited on routes that
- * declare one. Denied users are sent to the home route, which Ember owns and
- * resolves per role, so the redirect is a cross-app navigation.
+ * declare one. Denied users are sent to the home route, which resolves the
+ * landing view per role.
  *
  * @example
  * ```tsx
