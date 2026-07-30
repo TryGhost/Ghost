@@ -121,6 +121,25 @@
           "type": ["string", "null"],
           "maxLength": 300
         },
+        "paywall_pitch": {
+          "type": ["string", "null"],
+          "maxLength": 300
+        },
+        "paywall_heading": {
+          "type": ["string", "null"],
+          "maxLength": 300
+        },
+        "paywall_button_text": {
+          "type": ["string", "null"],
+          "maxLength": 100
+        },
+        "paywall_button_url": {
+          "type": ["string", "null"],
+          "maxLength": 2000
+        },
+        "email_bypass_paywall": {
+          "type": ["boolean", "null"]
+        },
         "custom_template": {
           "type": ["string", "null"],
           "maxLength": 100

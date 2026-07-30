@@ -93,6 +93,18 @@ function getPostGatingShape(post) {
 }
 
 /**
+ * Whether this send deliberately delivers the full post to every recipient,
+ * including members who can't read it on the site. Publishers use it to send
+ * paid content to their whole list; the post's own access is untouched, so the
+ * web page stays gated.
+ * @param {Post} post
+ * @returns {boolean}
+ */
+function bypassesPaywall(post) {
+    return !!(post.related && post.related('posts_meta')?.get('email_bypass_paywall'));
+}
+
+/**
  * The NQL member filter selecting members WITHOUT access to a tier-restricted
  * post: members who hold none of the post's tiers. This is the exact complement
  * of the post's tier access filter (De Morgan over the OR of tiers). Free
@@ -427,7 +439,9 @@ class EmailRenderer {
         const allowedSegments = ['status:free', 'status:-free'];
         const html = await this.renderPostBaseHtml(post);
 
-        const hasPaywall = html.indexOf('<!--members-only-->') !== -1;
+        // a bypassing send carries the same full body to everyone, so the
+        // paywall stops splitting the audience
+        const hasPaywall = html.indexOf('<!--members-only-->') !== -1 && !bypassesPaywall(post);
 
         const $ = cheerioLoad(html);
         const cardSegments = [...new Set(
@@ -556,7 +570,7 @@ class EmailRenderer {
         // Members without access to the gated content (free members, or members
         // on a tier that can't read this post) get the public preview + paywall,
         // exactly as on the web.
-        if (isPaidPost && hasMembersOnlyContent && !audience.hasPostAccess) {
+        if (isPaidPost && hasMembersOnlyContent && !audience.hasPostAccess && !bypassesPaywall(post)) {
             // Add paywall
             addPaywall = true;
 
@@ -1387,7 +1401,12 @@ class EmailRenderer {
 
             // Paywall
             paywall: addPaywall ? {
-                signupUrl: signupUrl.href
+                // per-post gate copy authored in the publish flow's placement
+                // step; null fields render the default copy
+                heading: post.related('posts_meta')?.get('paywall_heading') || null,
+                pitch: post.related('posts_meta')?.get('paywall_pitch') || null,
+                buttonText: post.related('posts_meta')?.get('paywall_button_text') || null,
+                buttonUrl: post.related('posts_meta')?.get('paywall_button_url') || signupUrl.href
             } : null,
 
             year: new Date().getFullYear().toString()

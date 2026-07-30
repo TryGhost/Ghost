@@ -119,7 +119,12 @@ module.exports = {
         frontmatter: {type: 'text', maxlength: 65535, nullable: true},
         feature_image_alt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 191}}},
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
-        email_only: {type: 'boolean', nullable: false, defaultTo: false}
+        email_only: {type: 'boolean', nullable: false, defaultTo: false},
+        paywall_pitch: {type: 'string', maxlength: 300, nullable: true},
+        paywall_heading: {type: 'string', maxlength: 300, nullable: true},
+        paywall_button_text: {type: 'string', maxlength: 100, nullable: true},
+        paywall_button_url: {type: 'string', maxlength: 2000, nullable: true},
+        email_bypass_paywall: {type: 'boolean', nullable: false, defaultTo: false}
     },
     // Every gift link added to a post; replaced tokens remain as history. Liveness lives in post_gift_links.
     gift_links: {

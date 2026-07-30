@@ -2534,6 +2534,46 @@ describe('Email renderer', function () {
             assert(freeSegment.html.includes('Become a paid member of Test Blog to get access to all'));
         });
 
+        it('sends the full post to every segment when the send bypasses the paywall', async function () {
+            renderedPost = '<div> Lexical Test </div> some text for both <!--members-only--> finishing part only for members';
+            const post = {
+                related: key => (key === 'posts_meta'
+                    ? {get: k => (k === 'email_bypass_paywall' ? true : undefined)}
+                    : null),
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+                    if (key === 'visibility') {
+                        return 'paid';
+                    }
+                    if (key === 'title') {
+                        return 'Test Post';
+                    }
+                },
+                getLazyRelation: () => {
+                    return {models: [{get: k => (k === 'name' ? 'Test Author' : undefined)}]};
+                }
+            };
+            const newsletter = {
+                get: (key) => {
+                    if (key === 'show_post_title_section' || key === 'feedback_enabled') {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+
+            // the whole point of the switch: free members get the gated part
+            const freeSegment = await emailRenderer.renderBody(post, newsletter, 'status:free', {});
+            assert(freeSegment.html.includes('finishing part only for members'));
+            assert(!freeSegment.html.includes('Become a paid member of Test Blog to get access to all'));
+
+            // and with no content difference left, the send stops splitting
+            const segments = await emailRenderer.getSegments(post);
+            assert.deepEqual(segments, [null]);
+        });
+
         it('does not paywall an unsegmented (null segment) render of a gated post', async function () {
             renderedPost = '<div> Lexical Test </div> some text for both <!--members-only--> finishing part only for members';
             const post = {
