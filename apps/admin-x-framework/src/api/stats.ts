@@ -1,6 +1,8 @@
-import {Meta, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {createQuery, createQueryWithId} from '../utils/api/hooks';
 
 // Types
+
+type StatsMeta = Record<string, never>;
 
 export type TopContentItem = {
     pathname: string;
@@ -14,7 +16,7 @@ export type TopContentItem = {
 
 export type TopContentResponseType = {
     stats: TopContentItem[];
-    meta: Meta;
+    meta: StatsMeta;
 }
 
 export type MemberStatusItem = {
@@ -40,7 +42,7 @@ export type MemberCountHistoryResponseType = {
 }
 
 export type TopPostStatItem = {
-    post_id: string;
+    post_id?: string;
     attribution_url: string;
     attribution_type: string;
     attribution_id: string;
@@ -48,13 +50,14 @@ export type TopPostStatItem = {
     free_members: number;
     paid_members: number;
     mrr: number;
-    published_at: string;
+    published_at?: string;
+    post_type?: string | null;
     url_exists?: boolean;
 };
 
 export type TopPostsStatsResponseType = {
     stats: TopPostStatItem[];
-    meta: Meta;
+    meta: StatsMeta;
 };
 
 export type PostReferrerStatItem = {
@@ -67,7 +70,7 @@ export type PostReferrerStatItem = {
 
 export type PostReferrersResponseType = {
     stats: PostReferrerStatItem[];
-    meta: Meta;
+    meta: StatsMeta;
 };
 
 export type PostGrowthStatItem = {
@@ -79,7 +82,7 @@ export type PostGrowthStatItem = {
 
 export type PostGrowthStatsResponseType = {
     stats: PostGrowthStatItem[];
-    meta: Meta;
+    meta: StatsMeta;
 };
 
 export type MrrHistoryItem = {
@@ -116,7 +119,7 @@ export type NewsletterStatItem = {
 
 export type NewsletterStatsResponseType = {
     stats: NewsletterStatItem[];
-    meta: Meta;
+    meta: StatsMeta;
 };
 
 export type NewsletterSubscriberValue = {

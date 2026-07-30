@@ -1,9 +1,5 @@
-import {createBuilder} from "../factory";
-import {generateId} from "../utils";
-
-function today(): string {
-    return new Date().toISOString().slice(0, 10);
-}
+import {createBuilder, createRequiredBuilder} from "../factory";
+import type {RequiredBuilderInput} from "../factory";
 
 export interface AnalyticsKpi {
     date: string;
@@ -96,6 +92,17 @@ export interface MrrHistoryStat {
     currency: string;
 }
 
+export interface SubscriptionStat {
+    date: string;
+    tier: string;
+    cadence: string;
+    positive_delta: number;
+    negative_delta: number;
+    signups: number;
+    cancellations: number;
+    count: number;
+}
+
 export interface PostStats {
     id: string;
     recipient_count: number | null;
@@ -136,7 +143,7 @@ export interface TopContentStat {
 }
 
 export interface TopPostStat {
-    post_id: string;
+    post_id?: string;
     attribution_url: string;
     attribution_type: string;
     attribution_id: string;
@@ -144,7 +151,8 @@ export interface TopPostStat {
     free_members: number;
     paid_members: number;
     mrr: number;
-    published_at: string;
+    published_at?: string;
+    post_type?: string | null;
     url_exists?: boolean;
 }
 
@@ -184,8 +192,7 @@ export interface NewsletterSubscriberStat {
     values: NewsletterSubscriberValue[];
 }
 
-export const analyticsKpi = createBuilder<AnalyticsKpi>(() => ({
-    date: today(),
+export const analyticsKpi = createRequiredBuilder<AnalyticsKpi, "date">(() => ({
     visits: 0,
     pageviews: 0,
     bounce_rate: 0,
@@ -196,54 +203,44 @@ export const analyticsActiveVisitors = createBuilder<AnalyticsActiveVisitors>(()
     active_visitors: 0
 }));
 
-export const analyticsSource = createBuilder<AnalyticsSource>(() => ({
-    source: "direct",
+export const analyticsSource = createRequiredBuilder<AnalyticsSource, "source">(() => ({
     visits: 0
 }));
 
-export const analyticsLocation = createBuilder<AnalyticsLocation>(() => ({
-    location: "US",
+export const analyticsLocation = createRequiredBuilder<AnalyticsLocation, "location">(() => ({
     visits: 0
 }));
 
-export const analyticsDevice = createBuilder<AnalyticsDevice>(() => ({
-    device: "desktop",
+export const analyticsDevice = createRequiredBuilder<AnalyticsDevice, "device">(() => ({
     visits: 0
 }));
 
-export const analyticsUtmSource = createBuilder<AnalyticsUtmSource>(() => ({
-    utm_source: "newsletter",
+export const analyticsUtmSource = createRequiredBuilder<AnalyticsUtmSource, "utm_source">(() => ({
     visits: 0
 }));
 
-export const analyticsUtmMedium = createBuilder<AnalyticsUtmMedium>(() => ({
-    utm_medium: "email",
+export const analyticsUtmMedium = createRequiredBuilder<AnalyticsUtmMedium, "utm_medium">(() => ({
     visits: 0
 }));
 
-export const analyticsUtmCampaign = createBuilder<AnalyticsUtmCampaign>(() => ({
-    utm_campaign: "launch",
+export const analyticsUtmCampaign = createRequiredBuilder<AnalyticsUtmCampaign, "utm_campaign">(() => ({
     visits: 0
 }));
 
-export const analyticsUtmContent = createBuilder<AnalyticsUtmContent>(() => ({
-    utm_content: "hero-link",
+export const analyticsUtmContent = createRequiredBuilder<AnalyticsUtmContent, "utm_content">(() => ({
     visits: 0
 }));
 
-export const analyticsUtmTerm = createBuilder<AnalyticsUtmTerm>(() => ({
-    utm_term: "ghost",
+export const analyticsUtmTerm = createRequiredBuilder<AnalyticsUtmTerm, "utm_term">(() => ({
     visits: 0
 }));
 
-export const analyticsGiftLinkVisits = createBuilder<AnalyticsGiftLinkVisits>(() => ({
-    gift_link: "gift-token",
+export const analyticsGiftLinkVisits = createRequiredBuilder<AnalyticsGiftLinkVisits, "gift_link">(() => ({
     visits: 0,
     views: 0
 }));
 
-export const memberStatusStat = createBuilder<MemberStatusStat>(() => ({
-    date: today(),
+export const memberStatusStat = createRequiredBuilder<MemberStatusStat, "date">(() => ({
     paid: 0,
     free: 0,
     comped: 0,
@@ -252,88 +249,142 @@ export const memberStatusStat = createBuilder<MemberStatusStat>(() => ({
     paid_canceled: 0
 }));
 
-export const mrrHistoryStat = createBuilder<MrrHistoryStat>(() => ({
-    date: today(),
+export const mrrHistoryStat = createRequiredBuilder<MrrHistoryStat, "date">(() => ({
     mrr: 0,
     currency: "usd"
 }));
 
-export const postStats = createBuilder<PostStats>(() => ({
-    id: generateId(),
-    recipient_count: null,
-    opened_count: null,
-    open_rate: null,
-    member_delta: 0,
-    free_members: 0,
-    paid_members: 0,
-    visitors: 0
+export const subscriptionStat = createRequiredBuilder<SubscriptionStat, "date" | "tier" | "cadence">(() => ({
+    positive_delta: 0,
+    negative_delta: 0,
+    signups: 0,
+    cancellations: 0,
+    count: 0
 }));
 
-export const topPostViewsStat = createBuilder<TopPostViewsStat>(() => ({
-    post_id: generateId(),
-    title: "Analytics post",
-    published_at: new Date().toISOString(),
-    feature_image: null,
-    status: "published",
-    authors: "Ghost Author",
-    views: 0,
-    sent_count: null,
-    opened_count: null,
-    open_rate: null,
-    clicked_count: 0,
-    click_rate: null,
-    members: 0,
-    free_members: 0,
-    paid_members: 0
-}));
+export const postStats = createRequiredBuilder<PostStats, "id">((input) => {
+    const recipientCount = input.recipient_count ?? null;
+    const openedCount = input.opened_count ?? null;
+    const freeMembers = input.free_members ?? 0;
+    const paidMembers = input.paid_members ?? 0;
 
-export const topContentStat = createBuilder<TopContentStat>(() => ({
-    pathname: "/analytics-post/",
+    return {
+        recipient_count: null,
+        opened_count: null,
+        open_rate: recipientCount && openedCount !== null ? (openedCount / recipientCount) * 100 : null,
+        member_delta: freeMembers + paidMembers,
+        free_members: 0,
+        paid_members: 0,
+        visitors: 0
+    };
+});
+
+export const topPostViewsStat = createRequiredBuilder<TopPostViewsStat, "post_id" | "published_at">((input) => {
+    const freeMembers = input.free_members ?? 0;
+    const paidMembers = input.paid_members ?? 0;
+    const sentCount = input.sent_count ?? null;
+    const openedCount = input.opened_count ?? null;
+    const clickedCount = input.clicked_count ?? 0;
+
+    return {
+        title: "Analytics post",
+        feature_image: null,
+        status: "published",
+        authors: "Ghost Author",
+        views: 0,
+        sent_count: null,
+        opened_count: null,
+        open_rate: sentCount && openedCount !== null ? (openedCount / sentCount) * 100 : null,
+        clicked_count: 0,
+        click_rate: sentCount ? (clickedCount / sentCount) * 100 : null,
+        members: freeMembers + paidMembers,
+        free_members: 0,
+        paid_members: 0
+    };
+});
+
+export const topContentStat = createRequiredBuilder<TopContentStat, "pathname">(() => ({
     title: "Analytics post",
     visits: 0
 }));
 
-export const topPostStat = createBuilder<TopPostStat>(() => {
-    const postId = generateId();
+export const topPostStat = createRequiredBuilder<TopPostStat, "attribution_url" | "attribution_type" | "attribution_id">(() => {
     return {
-        post_id: postId,
-        attribution_url: "/analytics-post/",
-        attribution_type: "post",
-        attribution_id: postId,
         title: "Analytics post",
         free_members: 0,
         paid_members: 0,
-        mrr: 0,
-        published_at: new Date().toISOString()
+        mrr: 0
     };
 });
 
-export const postReferrerStat = createBuilder<PostReferrerStat>(() => ({
-    source: "Direct",
+export const postReferrerStat = createRequiredBuilder<PostReferrerStat, "source">(() => ({
     free_members: 0,
     paid_members: 0,
     mrr: 0
 }));
 
-export const postGrowthStat = createBuilder<PostGrowthStat>(() => ({
-    post_id: generateId(),
+export const postGrowthStat = createRequiredBuilder<PostGrowthStat, "post_id">(() => ({
     free_members: 0,
     paid_members: 0,
     mrr: 0
 }));
 
-export const newsletterStat = createBuilder<NewsletterStat>(() => ({
-    post_id: generateId(),
-    post_title: "Newsletter post",
-    send_date: new Date().toISOString(),
-    sent_to: 0,
-    total_opens: 0,
-    open_rate: 0,
-    total_clicks: 0,
-    click_rate: 0
+export const newsletterStat = createRequiredBuilder<NewsletterStat, "post_id" | "send_date">((input) => {
+    const sentTo = input.sent_to ?? 0;
+    const totalOpens = input.total_opens ?? 0;
+    const totalClicks = input.total_clicks ?? 0;
+
+    return {
+        post_title: "Newsletter post",
+        sent_to: 0,
+        total_opens: 0,
+        open_rate: sentTo ? totalOpens / sentTo : 0,
+        total_clicks: 0,
+        click_rate: sentTo ? totalClicks / sentTo : 0
+    };
+});
+
+export const newsletterSubscriberValue = createRequiredBuilder<NewsletterSubscriberValue, "date">(() => ({
+    value: 0
 }));
 
-export const newsletterSubscriberStat = createBuilder<NewsletterSubscriberStat>(() => ({
-    total: 0,
+export const newsletterSubscriberStat = createRequiredBuilder<NewsletterSubscriberStat, "total">(() => ({
     values: []
 }));
+
+export interface TinybirdPipeInputs {
+    api_kpis: RequiredBuilderInput<AnalyticsKpi, "date">;
+    api_active_visitors: Partial<AnalyticsActiveVisitors>;
+    api_top_sources: RequiredBuilderInput<AnalyticsSource, "source">;
+    api_top_locations: RequiredBuilderInput<AnalyticsLocation, "location">;
+    api_top_devices: RequiredBuilderInput<AnalyticsDevice, "device">;
+    api_top_utm_sources: RequiredBuilderInput<AnalyticsUtmSource, "utm_source">;
+    api_top_utm_mediums: RequiredBuilderInput<AnalyticsUtmMedium, "utm_medium">;
+    api_top_utm_campaigns: RequiredBuilderInput<AnalyticsUtmCampaign, "utm_campaign">;
+    api_top_utm_contents: RequiredBuilderInput<AnalyticsUtmContent, "utm_content">;
+    api_top_utm_terms: RequiredBuilderInput<AnalyticsUtmTerm, "utm_term">;
+    api_gift_link_visits: RequiredBuilderInput<AnalyticsGiftLinkVisits, "gift_link">;
+}
+
+type TinybirdPipeBuilders = {
+    [Pipe in TinybirdPipeName]: (input: TinybirdPipeInputs[Pipe]) => TinybirdPipeRows[Pipe];
+};
+
+const tinybirdPipeBuilders = {
+    api_kpis: analyticsKpi,
+    api_active_visitors: analyticsActiveVisitors,
+    api_top_sources: analyticsSource,
+    api_top_locations: analyticsLocation,
+    api_top_devices: analyticsDevice,
+    api_top_utm_sources: analyticsUtmSource,
+    api_top_utm_mediums: analyticsUtmMedium,
+    api_top_utm_campaigns: analyticsUtmCampaign,
+    api_top_utm_contents: analyticsUtmContent,
+    api_top_utm_terms: analyticsUtmTerm,
+    api_gift_link_visits: analyticsGiftLinkVisits
+} satisfies TinybirdPipeBuilders;
+
+export function buildTinybirdPipeRows<Pipe extends TinybirdPipeName>(pipe: Pipe, inputs: Array<TinybirdPipeInputs[Pipe]>): Array<TinybirdPipeRows[Pipe]> {
+    const builder = tinybirdPipeBuilders[pipe] as unknown as (input: TinybirdPipeInputs[Pipe]) => TinybirdPipeRows[Pipe];
+    return inputs.map(input => builder(input));
+}

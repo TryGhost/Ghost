@@ -1,5 +1,5 @@
-export {createBuilder} from "./factory";
-export type {Builder} from "./factory";
+export {createBuilder, createRequiredBuilder} from "./factory";
+export type {Builder, RequiredBuilder, RequiredBuilderInput} from "./factory";
 
 export {tag} from "./builders/tag";
 export type {Tag} from "./builders/tag";
@@ -39,13 +39,16 @@ export {
     analyticsUtmMedium,
     analyticsUtmSource,
     analyticsUtmTerm,
+    buildTinybirdPipeRows,
     memberStatusStat,
     mrrHistoryStat,
     newsletterStat,
     newsletterSubscriberStat,
+    newsletterSubscriberValue,
     postGrowthStat,
     postReferrerStat,
     postStats,
+    subscriptionStat,
     topContentStat,
     topPostStat,
     topPostViewsStat
@@ -70,7 +73,9 @@ export type {
     PostGrowthStat,
     PostReferrerStat,
     PostStats,
+    SubscriptionStat,
     TinybirdPipeName,
+    TinybirdPipeInputs,
     TinybirdPipeRows,
     TopContentStat,
     TopPostStat,

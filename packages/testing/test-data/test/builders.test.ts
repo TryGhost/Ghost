@@ -1,5 +1,6 @@
-import {analyticsKpi, analyticsLocation, automation, buildLexical, buildLexicalParagraph, comment, commentThread, defaultThemesResponse, label, member, newsletterStat, post, postGrowthStat, reply, tag, theme, tier} from "../src/index";
-import {describe, expect, it} from "vitest";
+import {analyticsKpi, analyticsLocation, automation, buildLexical, buildLexicalParagraph, comment, commentThread, defaultThemesResponse, label, member, newsletterStat, newsletterSubscriberStat, newsletterSubscriberValue, post, postGrowthStat, postStats, reply, subscriptionStat, tag, theme, tier, topPostStat, topPostViewsStat} from "../src/index";
+import type {AnalyticsKpi, RequiredBuilderInput} from "../src/index";
+import {describe, expect, expectTypeOf, it} from "vitest";
 
 describe("builders", () => {
     it("builds fully-populated entities with overrides winning", () => {
@@ -89,7 +90,59 @@ describe("builders", () => {
         ]);
         expect(analyticsLocation({location: "GB", visits: 42})).toEqual({location: "GB", visits: 42});
         expect(postGrowthStat({post_id: "post-id", free_members: 3})).toMatchObject({post_id: "post-id", free_members: 3, paid_members: 0});
-        expect(newsletterStat({post_title: "Weekly digest", sent_to: 1000})).toMatchObject({post_title: "Weekly digest", sent_to: 1000, total_opens: 0});
+        expect(newsletterStat({post_id: "post-id", post_title: "Weekly digest", send_date: "2026-07-29", sent_to: 1000})).toMatchObject({post_title: "Weekly digest", sent_to: 1000, total_opens: 0});
+
+        const topPost = topPostStat({post_id: "post-id", attribution_url: "/post/", attribution_type: "post", attribution_id: "post-id", published_at: "2026-07-29"});
+        expect(topPost).toMatchObject({post_id: "post-id", attribution_id: "post-id", attribution_type: "post", title: "Analytics post"});
+    });
+
+    it("requires contextual fields while defaulting incidental analytics values", () => {
+        expectTypeOf<Parameters<typeof analyticsKpi>[0]>().toEqualTypeOf<RequiredBuilderInput<AnalyticsKpi, "date">>();
+        expect(analyticsKpi({date: "2026-07-29"})).toEqual({
+            date: "2026-07-29",
+            visits: 0,
+            pageviews: 0,
+            bounce_rate: 0,
+            avg_session_sec: 0
+        });
+
+        expect(newsletterStat({
+            post_id: "post-id",
+            send_date: "2026-07-29",
+            sent_to: 1000,
+            total_opens: 400,
+            total_clicks: 60
+        })).toMatchObject({open_rate: 0.4, click_rate: 0.06});
+
+        expect(topPostViewsStat({
+            post_id: "post-id",
+            published_at: "2026-07-29",
+            sent_count: 1000,
+            opened_count: 400,
+            clicked_count: 60,
+            free_members: 3,
+            paid_members: 2
+        })).toMatchObject({members: 5, open_rate: 40, click_rate: 6, title: "Analytics post"});
+
+        const values = newsletterSubscriberValue.many([
+            {date: "2026-07-28", value: 10},
+            {date: "2026-07-29", value: 12}
+        ]);
+        expect(newsletterSubscriberStat({total: 12, values})).toEqual({total: 12, values});
+
+        expect(postStats({
+            id: "post-id",
+            recipient_count: 1000,
+            opened_count: 400,
+            free_members: 10,
+            paid_members: 2
+        })).toMatchObject({open_rate: 40, member_delta: 12});
+
+        expect(subscriptionStat({
+            date: "2026-07-29",
+            tier: "tier-id",
+            cadence: "month"
+        })).toMatchObject({count: 0, signups: 0, cancellations: 0});
     });
 
     it("builds comments with linked member and post embeds", () => {

@@ -36,7 +36,7 @@ interface UnifiedGrowthContentData {
     paid_members: number;
     mrr: number;
     percentage?: number;
-    published_at: string;
+    published_at?: string;
     url_exists?: boolean;
 }
 
