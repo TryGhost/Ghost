@@ -1,7 +1,6 @@
 import {Response} from 'miragejs';
-import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
+import {beforeEach, describe, it} from 'mocha';
 import {click, currentURL, fillIn, find, findAll, waitUntil} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -11,14 +10,6 @@ import {visit} from '../helpers/visit';
 describe('Acceptance: Setup', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
-
-    beforeEach(function () {
-        mockAnalyticsApps();
-    });
-
-    afterEach(function () {
-        cleanupMockAnalyticsApps();
-    });
 
     // Helper function to setup the setup flow
     async function setupSetupFlow(server, {fillForm = true} = {}) {
