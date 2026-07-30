@@ -26,16 +26,19 @@ interface StatsProps {
 // Tracked → the value; not tracked → a muted, inert "Off" that keeps the column
 // in place (distinct from formatRate's "--" = no data yet).
 const FooterMetric: React.FC<{label: string; tracked: boolean; children: React.ReactNode}> = ({label, tracked, children}) => (
-    <div className="flex flex-col text-left">
-        <span className={cn('text-xs', tracked ? 'text-text-secondary' : 'text-muted-foreground')}>{label}</span>
+    <div className="flex flex-col gap-1 text-left">
+        {/* Small muted label; value at 14px (text-md) foreground. */}
+        <span className="text-xs text-muted-foreground">{label}</span>
         {tracked
-            ? <span className="text-base font-medium">{children}</span>
-            : <OffValue className="text-base" />}
+            ? <span className="text-md text-foreground tabular-nums">{children}</span>
+            : <OffValue className="text-md" />}
     </div>
 );
 
-export const EmailStatsFooter: React.FC<StatsProps> = ({stats, opensTracked = true, clicksTracked = true}) => (
-    <div className="mt-3 grid w-full grid-cols-3 gap-3 border-t border-border-default pt-3">
+export const EmailStatsFooter: React.FC<StatsProps & {divider?: boolean}> = ({stats, opensTracked = true, clicksTracked = true, divider = true}) => (
+    // divider (read canvas): border-t separating stats from the header above. Without it
+    // (email preview) we drop the border and hold a 24px gap to the element above.
+    <div className={cn('grid w-full grid-cols-3 gap-3', divider ? 'mt-3 border-t border-border-default pt-3' : 'mt-[24px]')}>
         <FooterMetric label="Sent" tracked={true}>{formatNumber(stats.email_sent_count)}</FooterMetric>
         <FooterMetric label="Opened" tracked={opensTracked}>{formatRate(stats.opened_rate)}</FooterMetric>
         <FooterMetric label="Clicked" tracked={clicksTracked}>{formatRate(stats.clicked_rate)}</FooterMetric>
