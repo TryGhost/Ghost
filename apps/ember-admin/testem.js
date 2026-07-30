@@ -3,7 +3,27 @@
 
 let launch_in_ci = [process.env.BROWSER || 'Chrome'];
 
+// escape hatch for machines where desktop Chrome hangs when launched headless
+// with a fresh profile: point CHROME_HEADLESS_SHELL at a chrome-headless-shell
+// binary (e.g. from a Playwright install) and run with
+// BROWSER=ChromeHeadlessShell
+let launchers = {};
+if (process.env.CHROME_HEADLESS_SHELL) {
+    launchers.ChromeHeadlessShell = {
+        exe: process.env.CHROME_HEADLESS_SHELL,
+        args: [
+            '--disable-dev-shm-usage',
+            '--mute-audio',
+            '--remote-debugging-port=0',
+            '--window-size=1440,900',
+            `--user-data-dir=${require('os').tmpdir()}/testem-chrome-shell-${process.pid}`
+        ],
+        protocol: 'browser'
+    };
+}
+
 module.exports = {
+    launchers,
     framework: 'mocha',
     browser_start_timeout: 120,
     browser_disconnect_timeout: 60,
