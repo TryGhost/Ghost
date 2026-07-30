@@ -36,15 +36,15 @@ interface Site {
     products?: Product[];
 }
 
-function getPriceForDuration(product: Product, duration: GiftDuration): Price | null | undefined {
+function getPriceForDuration(product: Product, duration: GiftDuration): Price | null {
     if (duration === 12) {
-        return product.yearlyPrice;
+        return product.yearlyPrice ?? null;
     }
 
-    return product.monthlyPrice;
+    return product.monthlyPrice ?? null;
 }
 
-function hasValidPrice(price: Price | null | undefined): price is ValidPrice {
+function hasValidPrice(price: Price | null): price is ValidPrice {
     return !!price
         && typeof price.amount === 'number'
         && Number.isSafeInteger(price.amount)
@@ -72,7 +72,7 @@ export function getGiftPrice(product: Product, duration: GiftDuration): ValidPri
     };
 }
 
-export function getGiftProducts({site, duration}: {site?: Site | null | undefined; duration: GiftDuration}): Product[] {
+export function getGiftProducts({site, duration}: {site: Site | null; duration: GiftDuration}): Product[] {
     const {
         paid_members_enabled: paidMembersEnabled,
         portal_plans: portalPlans = [],
@@ -99,7 +99,7 @@ export function getGiftProducts({site, duration}: {site?: Site | null | undefine
     )).map(({product}) => product);
 }
 
-export function getAvailableGiftDurations({site}: {site?: Site | null | undefined}): GiftDuration[] {
+export function getAvailableGiftDurations({site}: {site: Site | null}): GiftDuration[] {
     return GIFT_DURATION_CATALOGUE.filter(duration => getGiftProducts({site, duration}).length > 0);
 }
 
@@ -109,8 +109,8 @@ export function getActiveGiftDuration({
     selectedDuration
 }: {
     availableDurations: readonly GiftDuration[];
-    portalDefaultPlan?: PortalDefaultPlan | null;
-    selectedDuration?: GiftDuration | null;
+    portalDefaultPlan: PortalDefaultPlan | null;
+    selectedDuration: GiftDuration | null;
 }): GiftDuration | null {
     if (selectedDuration && availableDurations.includes(selectedDuration)) {
         return selectedDuration;
