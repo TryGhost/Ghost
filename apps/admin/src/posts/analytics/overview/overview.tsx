@@ -6,12 +6,12 @@ import PostAnalyticsContent from '@/posts/analytics/components/post-analytics-co
 import PostAnalyticsHeader from '@/posts/analytics/components/post-analytics-header';
 import WebOverview from './components/web-overview';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, Skeleton} from '@tryghost/shade/components';
-import {KPI_METRICS} from '@/posts/analytics/Web/components/kpi-metrics';
+import {KPI_METRICS} from '@/posts/analytics/web/components/kpi-metrics';
 import {type KpiDataItem} from '@/posts/analytics/utils/kpi-helpers';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Post, usePostAnalytics} from '@/posts/analytics/providers/post-analytics-context';
 import {STATS_RANGES} from '@/shared/analytics/constants';
-import {centsToDollars} from '@/posts/analytics/Growth/growth-helpers';
+import {centsToDollars} from '@/posts/analytics/growth/growth-helpers';
 import {formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade/app';
 import {getEffectiveChartRange, sanitizeChartData} from '@/shared/analytics/chart-helpers';
 import {hasBeenEmailed, isPublishedOnly, useNavigate, useTinybirdQuery} from '@tryghost/admin-x-framework';

@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {type AvgsDataItem} from '@/analytics/views/Stats/Newsletters/newsletters';
+import {type AvgsDataItem} from '@/analytics/views/stats/newsletters/newsletters';
 import {BarChartLoadingIndicator, type ChartConfig, ChartContainer, ChartTooltip, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, Tabs, TabsList} from '@tryghost/shade/components';
 import {GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue} from '@tryghost/shade/patterns';
 import {LucideIcon, Recharts, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade/utils';

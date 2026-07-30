@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Tabs, TabsList} from '@tryghost/shade/components';
 import {GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue} from '@tryghost/shade/patterns';
-import {KPI_METRICS} from '@/posts/analytics/Web/components/kpi-metrics';
+import {KPI_METRICS} from '@/posts/analytics/web/components/kpi-metrics';
 import {type KpiDataItem, getWebKpiValues} from '@/posts/analytics/utils/kpi-helpers';
 import {getEffectiveChartRange, sanitizeChartData} from '@/shared/analytics/chart-helpers';
 import {useSearchParams} from '@tryghost/admin-x-framework';

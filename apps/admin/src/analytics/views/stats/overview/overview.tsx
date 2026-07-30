@@ -1,10 +1,10 @@
-import DateRangeSelect from '@/analytics/views/Stats/components/date-range-select';
+import DateRangeSelect from '@/analytics/views/stats/components/date-range-select';
 import LatestPost from './components/latest-post';
 import OverviewKPIs from './components/overview-kpis';
 import React, {useMemo} from 'react';
-import StatsHeader from '@/analytics/views/Stats/layout/stats-header';
-import StatsLayout from '@/analytics/views/Stats/layout/stats-layout';
-import StatsView from '@/analytics/views/Stats/layout/stats-view';
+import StatsHeader from '@/analytics/views/stats/layout/stats-header';
+import StatsLayout from '@/analytics/views/stats/layout/stats-layout';
+import StatsView from '@/analytics/views/stats/layout/stats-view';
 import TopPosts from './components/top-posts';
 import {ALL_AUDIENCES} from '@/shared/analytics/constants';
 import {type GhAreaChartDataItem} from '@tryghost/shade/patterns';

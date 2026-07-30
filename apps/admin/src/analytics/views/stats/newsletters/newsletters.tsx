@@ -1,12 +1,12 @@
 // import AudienceSelect from './components/AudienceSelect';
-import DateRangeSelect from '@/analytics/views/Stats/components/date-range-select';
+import DateRangeSelect from '@/analytics/views/stats/components/date-range-select';
 import NewsletterKPIs from './components/newsletters-kpis';
-import NewsletterSelect from '@/analytics/views/Stats/components/newsletter-select';
+import NewsletterSelect from '@/analytics/views/stats/components/newsletter-select';
 import React, {useMemo, useState} from 'react';
-import SortButton from '@/analytics/views/Stats/components/sort-button';
-import StatsHeader from '@/analytics/views/Stats/layout/stats-header';
-import StatsLayout from '@/analytics/views/Stats/layout/stats-layout';
-import StatsView from '@/analytics/views/Stats/layout/stats-view';
+import SortButton from '@/analytics/views/stats/components/sort-button';
+import StatsHeader from '@/analytics/views/stats/layout/stats-header';
+import StatsLayout from '@/analytics/views/stats/layout/stats-layout';
+import StatsView from '@/analytics/views/stats/layout/stats-view';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, NavbarActions, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {LucideIcon, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';

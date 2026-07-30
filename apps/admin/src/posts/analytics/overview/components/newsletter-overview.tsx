@@ -3,7 +3,7 @@ import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTit
 import {HTable} from '@tryghost/shade/primitives';
 import {KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber, formatPercentage} from '@tryghost/shade/utils';
-import {NewsletterRadialChart, type NewsletterRadialChartData} from '@/posts/analytics/Newsletter/components/newsletter-radial-chart';
+import {NewsletterRadialChart, type NewsletterRadialChartData} from '@/posts/analytics/newsletter/components/newsletter-radial-chart';
 import {type Post} from '@tryghost/admin-x-framework/api/posts';
 import {cleanTrackedUrl, processAndGroupTopLinks} from '@/posts/analytics/utils/link-helpers';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
