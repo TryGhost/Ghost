@@ -12,6 +12,8 @@ describe('Input Component', () => {
         
         assert.ok(input, 'Input should be rendered');
         assert.equal(input.tagName.toLowerCase(), 'input', 'Should be an input element');
+        assert.ok(input.className.includes('h-(--control-height)'), 'Should use the shared control height');
+        assert.ok(!input.className.includes('h-9'), 'Should not use a fixed height');
     });
 
     it('applies custom className correctly', () => {
@@ -69,4 +71,4 @@ describe('Input Component', () => {
         // Check that the component rendered
         assert.ok(input, 'Input should be rendered');
     });
-}); 
+});

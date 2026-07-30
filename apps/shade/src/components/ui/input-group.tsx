@@ -15,7 +15,7 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
 
                 // Wrapper layout + group context (input-group specific).
                 'group/input-group relative flex w-full items-center outline-hidden [&>[data-slot=input-group-control]]:bg-transparent',
-                'h-9 has-[>textarea]:h-auto',
+                'h-(--control-height) has-[>textarea]:h-auto',
 
                 // Variants based on alignment.
                 'has-[>[data-align=inline-start]]:[&>input]:pl-2',
@@ -127,7 +127,7 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, React.ComponentProps<
     <input
         ref={ref}
         className={cn(
-            'flex h-9 w-full flex-1 border-0 bg-transparent px-3 py-1 text-control outline-hidden file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+            'flex h-(--control-height) w-full flex-1 border-0 bg-transparent px-3 py-1 text-control outline-hidden file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
             className
         )}
         data-slot="input-group-control"
