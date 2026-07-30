@@ -18,8 +18,12 @@ else
 fi
 
 
-# Configure Stripe webhook secret
-if [ -f /mnt/shared-config/.env.stripe ]; then
+# Configure Stripe webhook secret. An explicit environment value is authoritative
+# so isolated test containers do not inherit a developer Stripe secret from the
+# shared dev volume.
+if [ -n "${WEBHOOK_SECRET:-}" ]; then
+    echo "Stripe webhook secret configured from environment"
+elif [ -f /mnt/shared-config/.env.stripe ]; then
     source /mnt/shared-config/.env.stripe
     if [ -n "${STRIPE_WEBHOOK_SECRET:-}" ]; then
         export WEBHOOK_SECRET="$STRIPE_WEBHOOK_SECRET"
@@ -31,4 +35,3 @@ fi
 
 # Execute the CMD
 exec "$@"
-

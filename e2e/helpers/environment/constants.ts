@@ -85,6 +85,10 @@ export const BASE_GHOST_ENV = [
     'mail__options__host=ghost-dev-mailpit',
     'mail__options__port=1025',
 
+    // Keep the test webhook signer and isolated Ghost containers deterministic,
+    // even when the shared development volume contains a live Stripe CLI secret.
+    `WEBHOOK_SECRET=${process.env.WEBHOOK_SECRET || 'DEFAULT_WEBHOOK_SECRET'}`,
+
     // Staff device verification (new-device 2FA) defaults off in development but ships
     // on in production. Force it on so the suite stays production-representative and the
     // 2FA settings UI / sign-in flow render regardless of the dev default.
