@@ -94,7 +94,7 @@ interface SourcesCardProps {
     className?: string;
 }
 
-export const GrowthSources: React.FC<SourcesCardProps> = ({
+const GrowthSources: React.FC<SourcesCardProps> = ({
     title = 'Top sources',
     description,
     data,

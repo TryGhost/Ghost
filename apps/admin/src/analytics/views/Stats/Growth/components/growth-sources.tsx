@@ -87,7 +87,7 @@ interface GrowthSourcesProps {
     setSortBy?: (sortBy: SourcesOrder) => void;
 }
 
-export const GrowthSources: React.FC<GrowthSourcesProps> = ({
+const GrowthSources: React.FC<GrowthSourcesProps> = ({
     range,
     limit = 20,
     showViewAll = false,
