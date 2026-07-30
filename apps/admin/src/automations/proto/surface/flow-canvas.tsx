@@ -5,8 +5,14 @@ import type {AutomationDetail, AutomationEmailStats} from '@tryghost/admin-x-fra
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import type {AutomationRun, RunStepState} from '@/automations/proto/shared/mock';
 import {DETAIL_FOOTER_HEIGHT, EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, STATS_FOOTER_HEIGHT, TERMINAL_NODE_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
-import {NODE_CARD_PADDING, NODE_CARD_SHELL, NODE_CARD_SURFACE, StepNodeHeader} from './flow-node-shell';
+import {NODE_BODY_PADDING, NODE_CARD_SURFACE, NodeCard, NodeHeader, type NodeBorder} from './flow-node-shell';
 import {EmailStatsFooter} from './email-analytics';
+import {EmailPreview} from './email-preview';
+
+// Height the email preview (subject + body sheet) adds to a read/run email node, on
+// top of the header. Footer (stats or run detail) is added separately. Estimated —
+// mirrors the edit canvas's EMAIL_FORM_HEIGHT so Y-layout stays clear of overlap.
+const EMAIL_PREVIEW_HEIGHT = 260;
 
 const fmtDateTime = (iso: string): string => new Date(iso).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'});
 
@@ -27,11 +33,12 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
     const done = d.focused && d.state === 'done';
     const current = d.focused && d.state === 'current';
     const muted = d.focused && (d.state === 'skipped' || d.state === 'upcoming');
-    const borderClass = current ? 'border-blue' : done ? 'border-green' : 'border-border-default';
+    const isEmail = d.kind === 'email';
 
     if (d.kind === 'terminal') {
+        const terminalBorder = current ? 'border-blue' : done ? 'border-green' : 'border-border-default';
         return (
-            <div className={cn('flex w-[400px] items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-medium', NODE_CARD_SURFACE, borderClass, muted && 'opacity-60')}>
+            <div className={cn('flex w-[400px] items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-medium', NODE_CARD_SURFACE, terminalBorder, muted && 'opacity-60')}>
                 <Handle position={Position.Top} style={{opacity: 0}} type="target" />
                 {done && <LucideIcon.Check className="size-4 text-green" strokeWidth={2.5} />}
                 <span className={cn(done && 'text-green', muted && 'text-muted-foreground')}>{d.title}</span>
@@ -39,22 +46,37 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
         );
     }
 
-    return (
-        <div className={cn(NODE_CARD_SHELL, NODE_CARD_PADDING, borderClass, muted && 'opacity-60')}>
-            <Handle position={Position.Top} style={{opacity: 0}} type="target" />
-            <div className="flex items-start justify-between gap-2">
-                <StepNodeHeader icon={stepKindIcon[d.kind]} subtitle={d.subtitle} title={d.title} />
-                {done && <LucideIcon.Check className="size-4 shrink-0 text-green" strokeWidth={2.5} />}
-                {current && <LucideIcon.Clock className="size-4 shrink-0 text-blue" />}
-            </div>
+    const border: NodeBorder = current ? 'current' : done ? 'done' : 'default';
+    // Run-state icon fills the same header slot the overflow/lock occupies in edit mode.
+    const action = done
+        ? <LucideIcon.Check className="size-4 text-green" strokeWidth={2.5} />
+        : current
+            ? <LucideIcon.Clock className="size-4 text-blue" />
+            : undefined;
 
-            {d.focused ? (
-                d.stateDetail && <div className="mt-3 border-t border-border-default pt-2 text-xs text-muted-foreground">{d.stateDetail}</div>
+    // Single-line header (no overline) matching edit mode's one-line title. Email flips
+    // perspective: "Send email" when previewing the flow you built (read), "Receive
+    // email" once a member's run is in focus. Trigger/wait read the same either way.
+    const label = isEmail
+        ? (d.focused ? 'Receive email' : 'Send email')
+        : d.kind === 'wait' ? `Wait ${d.subtitle}` : d.subtitle;
+
+    return (
+        <NodeCard border={border} muted={muted}>
+            <NodeHeader action={action} icon={stepKindIcon[d.kind]} title={label} />
+            {isEmail ? (
+                <div className={NODE_BODY_PADDING}>
+                    <EmailPreview subject={d.subtitle || 'Untitled'} />
+                    {d.focused
+                        ? (d.stateDetail && <div className="mt-[24px] text-xs text-muted-foreground">{d.stateDetail}</div>)
+                        : (d.stats && <EmailStatsFooter divider={false} stats={d.stats} />)}
+                </div>
             ) : (
-                d.stats && <EmailStatsFooter stats={d.stats} />
+                d.focused && d.stateDetail && (
+                    <div className={cn(NODE_BODY_PADDING, 'text-xs text-muted-foreground')}>{d.stateDetail}</div>
+                )
             )}
-            <Handle position={Position.Bottom} style={{opacity: 0}} type="source" />
-        </div>
+        </NodeCard>
     );
 };
 
@@ -134,16 +156,18 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
             state: terminalState
         }});
 
-        // Height of a node = base + whichever footer it renders. When focused, a
-        // step shows its single-line run detail; unfocused, an email shows its stats.
+        // Height of a node = base + email preview (email only) + whichever footer it
+        // renders. When focused, a step shows its single-line run detail; unfocused, an
+        // email shows its stats.
         const nodeHeight = (data: FlowNodeData): number => {
             if (data.kind === 'terminal') {
                 return TERMINAL_NODE_HEIGHT;
             }
+            const preview = data.kind === 'email' ? EMAIL_PREVIEW_HEIGHT : 0;
             const footer = focused
                 ? (data.stateDetail ? DETAIL_FOOTER_HEIGHT : 0)
                 : (data.stats ? STATS_FOOTER_HEIGHT : 0);
-            return REGULAR_NODE_HEIGHT + footer;
+            return REGULAR_NODE_HEIGHT + preview + footer;
         };
         const ys = stackNodeY(descriptors.map(d => nodeHeight(d.data)));
         const built: Node[] = descriptors.map((descriptor, i) => ({
@@ -170,7 +194,7 @@ export const SurfaceFlowCanvas: React.FC<SurfaceFlowCanvasProps> = ({automation,
                 type: 'smoothstep',
                 style: {
                     stroke: (focused && targetReached) ? 'var(--color-green)' : EDGE_STROKE,
-                    strokeWidth: 2,
+                    strokeWidth: 1,
                     strokeDasharray: dashed ? '6 6' : undefined
                 }
             });

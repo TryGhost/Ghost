@@ -205,15 +205,8 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
         return rows;
     }, [searched, statusFilter, sort]);
 
-    // Focus the first member on mount so the canvas has something to show right
-    // away — a one-time mount effect since the card is always present now.
-    const hasFocusedOnMount = useRef(false);
-    if (!hasFocusedOnMount.current) {
-        hasFocusedOnMount.current = true;
-        if (!selectedMemberId) {
-            onSelectMember(sorted[0]?.run.id ?? null);
-        }
-    }
+    // No member is selected by default — the canvas shows the read-only automation
+    // until the user picks a row.
 
     // If a status card or the search hides the selected member, de-select them —
     // the canvas shouldn't keep highlighting a member who's no longer in the list.
@@ -457,7 +450,8 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                                 // cells neutralise Shade's built-in group-hover (its
                                 // table-row-hover token blends into this panel's surface).
                                 className={`cursor-pointer transition-colors ${isSelected ? 'bg-muted-foreground/10' : 'hover:bg-muted-foreground/5'}`}
-                                onClick={() => onSelectMember(run.id)}
+                                // Toggle: clicking the selected row again de-selects it.
+                                onClick={() => onSelectMember(isSelected ? null : run.id)}
                             >
                                 <TableCell className="min-w-0 px-4 py-4 group-hover:bg-transparent">
                                     <span className={`block min-w-0 truncate text-base ${isSelected ? 'font-semibold' : 'font-medium'}`}>{run.member.name}</span>

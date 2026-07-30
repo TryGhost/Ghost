@@ -4,11 +4,12 @@ import StepPicker, {type StepPickerType} from '@/automations/components/canvas/s
 import {Background, BackgroundVariant, BaseEdge, type Edge, EdgeLabelRenderer, type EdgeProps, Handle, type Node, type NodeProps, Position, ReactFlow, getSmoothStepPath} from '@xyflow/react';
 import type {AutomationDetail, AutomationEmailStats, InsertActionAnchor} from '@tryghost/admin-x-framework/api/automations';
 import {insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {EDGE_STROKE, REACT_FLOW_THEME, REGULAR_NODE_HEIGHT, TAIL_NODE_HEIGHT, type StepKind, formatWait, orderActions, panTranslateExtent, stackNodeY, stepKindIcon, useCenteredColumn} from './flow-utils';
-import {NODE_CARD_PADDING, NODE_CARD_SHELL, StepNodeHeader} from './flow-node-shell';
+import {NODE_BODY_PADDING, NodeCard, NodeHeader} from './flow-node-shell';
 import {EmailStatsFooter} from './email-analytics';
+import {EmailPreview} from './email-preview';
 import {StepSidebar} from './step-sidebar';
 
 // The real editor's StepPicker speaks 'send_email' | 'wait'; the proto's graph
@@ -26,10 +27,6 @@ const waitToHours = (amount: number, unit: 'days' | 'hours'): number => (unit ==
 // moved to the hover overflow menu. Email: subject + edit-content; wait: duration row.
 const EMAIL_FORM_HEIGHT = 330;
 const WAIT_FORM_HEIGHT = 112;
-
-// Placeholder email body for the node's preview. The real email_lexical is empty
-// in the proto's mock data, so this stands in to make the node read as an email.
-const EMAIL_BODY_PREVIEW = 'Hey there,\n\nThanks for joining — here’s what to expect next, straight to your inbox.\n\nOver the next few weeks we’ll share our best tips, stories from the community, and the occasional behind-the-scenes look at what we’re building.\n\nGlad to have you here.';
 
 // Trigger carries a single locked field (same single-row shape as the wait form),
 // so it reserves the same height to keep the vertical rhythm even.
@@ -78,53 +75,40 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
             d.onWaitChange?.(hours);
         }
     };
+    // Header action slot: overflow menu for editable steps; a beta-lock popover for the
+    // trigger (same slot the overflow occupies elsewhere).
+    const action = clickable ? (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button aria-label="Step actions" size="icon" variant="ghost">
+                    <LucideIcon.MoreHorizontal />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => d.onDelete?.()}>
+                    <LucideIcon.Trash2 /> Delete
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    ) : (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button aria-label="Trigger locked during beta" className="text-muted-foreground" size="icon" variant="ghost">
+                    <LucideIcon.Lock />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-auto max-w-56 text-sm text-muted-foreground">
+                This trigger is locked during beta
+            </PopoverContent>
+        </Popover>
+    );
     return (
-        <div className={cn('transition-colors', NODE_CARD_SHELL, d.selected ? 'border-blue ring-1 ring-blue' : 'border-border-default')}>
-            <Handle position={Position.Top} style={{opacity: 0}} type="target" />
-            <div className={cn('flex items-center gap-2', NODE_CARD_PADDING)}>
-                <div className="min-w-0 flex-1">
-                    <StepNodeHeader icon={stepKindIcon[d.kind]} title={d.title} />
-                </div>
-                {clickable && (
-                    // Persistent overflow at the far right of the header row, vertically
-                    // centred with the title. nodrag/nopan + stopPropagation so it doesn't
-                    // pan the canvas or re-fire node selection.
-                    <div className="nodrag nopan flex shrink-0 items-center gap-1" onClick={e => e.stopPropagation()}>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button aria-label="Step actions" size="icon" variant="ghost">
-                                    <LucideIcon.MoreHorizontal />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => d.onDelete?.()}>
-                                    <LucideIcon.Trash2 /> Delete
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                )}
-                {d.kind === 'trigger' && (
-                    // Lock indicator where the overflow menu sits on other nodes. Click opens a
-                    // popover explaining the beta lock.
-                    <div className="nodrag nopan shrink-0" onClick={e => e.stopPropagation()}>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button aria-label="Trigger locked during beta" className="text-muted-foreground" size="icon" variant="ghost">
-                                    <LucideIcon.Lock />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent align="end" className="w-auto max-w-56 text-sm text-muted-foreground">
-                                This trigger is locked during beta
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                )}
-            </div>
+        <NodeCard border={d.selected ? 'selected' : 'default'}>
+            <NodeHeader action={action} icon={stepKindIcon[d.kind]} title={d.title} />
             {d.kind === 'trigger' && (
                 // Trigger criterion as a real (disabled) Select. nodrag/nopan so hovering it
                 // never pans the canvas.
-                <div className={cn('nodrag nopan cursor-default', NODE_CARD_PADDING, 'pt-0')} onClick={e => e.stopPropagation()}>
+                <div className={cn('nodrag nopan cursor-default', NODE_BODY_PADDING)} onClick={e => e.stopPropagation()}>
                     <Select disabled value={d.triggerValue ?? 'Free member sign-ups'}>
                         <SelectTrigger className="h-9">
                             <SelectValue />
@@ -139,34 +123,12 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
             {clickable && (
                 // Always-visible inline edit form. nodrag/nopan + stopPropagation so typing
                 // and selecting don't pan the canvas or re-fire node selection.
-                <div className={cn('nodrag nopan cursor-default', NODE_CARD_PADDING, 'pt-0')} onClick={e => e.stopPropagation()}>
+                <div className={cn('nodrag nopan cursor-default', NODE_BODY_PADDING)} onClick={e => e.stopPropagation()}>
                     {isEmail ? (
-                        // Inline-editable subject (standard InputGroup with a "Subject" leading
-                        // label) sits above the email preview. The preview sheet shows a body
-                        // excerpt so the node reads as an email; metrics follow below.
+                        // Shared email preview (editable: inline subject + floating edit button),
+                        // with metrics below.
                         <div>
-                            <InputGroup className="mb-3">
-                                <InputGroupAddon align="inline-start">
-                                    <InputGroupText>Subject</InputGroupText>
-                                </InputGroupAddon>
-                                <InputGroupInput placeholder="Subject line" value={d.subject ?? ''} onChange={e => d.onSubjectChange?.(e.target.value)} />
-                            </InputGroup>
-                            {/* Preview surface matches the subject input's chrome (border,
-                                fill, radius) and body text matches the "Subject" label size/colour.
-                                Edit-content floats top-right, inset to the sheet's p-4 padding. */}
-                            <div className="relative rounded-md border border-control-border bg-control-surface p-4">
-                                <p className="line-clamp-6 pr-9 text-control whitespace-pre-line text-muted-foreground">{EMAIL_BODY_PREVIEW}</p>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button aria-label="Edit email content" className="absolute top-[8px] right-[8px]" size="icon" variant="ghost" onClick={() => d.onEditContent?.()}>
-                                                <LucideIcon.SquarePen />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>Edit email content</TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            </div>
+                            <EmailPreview editable subject={d.subject ?? ''} onEditContent={d.onEditContent} onSubjectChange={d.onSubjectChange} />
                             {d.stats && <EmailStatsFooter divider={false} stats={d.stats} />}
                         </div>
                     ) : (
@@ -194,8 +156,7 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
                     )}
                 </div>
             )}
-            <Handle position={Position.Bottom} style={{opacity: 0}} type="source" />
-        </div>
+        </NodeCard>
     );
 };
 
@@ -231,13 +192,13 @@ const PlusEdge: React.FC<EdgeProps> = ({id, sourceX, sourceY, targetX, targetY, 
     const [path, labelX, labelY] = getSmoothStepPath({sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition});
 
     if (!onPick) {
-        return <BaseEdge id={id} path={path} style={{stroke: EDGE_STROKE}} />;
+        return <BaseEdge id={id} path={path} style={{stroke: EDGE_STROKE, strokeWidth: 1}} />;
     }
 
     const visible = open || edgeHovered || labelHovered;
     return (
         <g onMouseEnter={() => setEdgeHovered(true)} onMouseLeave={() => setEdgeHovered(false)}>
-            <BaseEdge id={id} interactionWidth={30} path={path} style={{stroke: EDGE_STROKE}} />
+            <BaseEdge id={id} interactionWidth={30} path={path} style={{stroke: EDGE_STROKE, strokeWidth: 1}} />
             <EdgeLabelRenderer>
                 <div
                     className="pointer-events-auto absolute"
@@ -370,7 +331,7 @@ export const SurfaceEditCanvas: React.FC<SurfaceEditCanvasProps> = ({draft, onCh
                 source,
                 target,
                 type: toTail ? 'smoothstep' : 'plus',
-                style: toTail ? {stroke: EDGE_STROKE} : undefined,
+                style: toTail ? {stroke: EDGE_STROKE, strokeWidth: 1} : undefined,
                 data: toTail ? undefined : {
                     onPick: (type: StepPickerType) => insert({
                         previousActionId: source === '__trigger__' ? undefined : source,
