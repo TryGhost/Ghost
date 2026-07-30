@@ -1141,3 +1141,1693 @@
         width: auto;
     }
 }
+
+/* Publish flow redesign (labs: publishFlowRedesign)
+/* ---------------------------------------------------------- */
+
+.gh-publish-website,
+.gh-publish-step-body {
+    width: 100%;
+    text-align: left;
+}
+
+.gh-publish-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.gh-publish-primary-question {
+    margin: 0 0 3.2rem;
+}
+
+.gh-publish-chip {
+    padding: 8px 18px;
+    border: 1px solid var(--whitegrey-d2);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--middarkgrey);
+    font-size: 1.4rem;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.gh-publish-chip:hover {
+    border-color: var(--midlightgrey);
+    color: var(--darkgrey);
+}
+
+.gh-publish-chip.active {
+    background: var(--black);
+    border-color: var(--black);
+    color: var(--white);
+    font-weight: 600;
+}
+
+.gh-publish-tier-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin-top: 4px;
+}
+
+.gh-publish-tier-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.35rem;
+    color: var(--darkgrey);
+    cursor: pointer;
+}
+
+.gh-publish-cut-hint {
+    margin: 0 0 1.2rem;
+    font-size: 1.35rem;
+    color: var(--midgrey);
+    text-align: left;
+}
+
+.gh-publish-block-list {
+    padding: 1.6rem 2rem;
+    border: 1px solid var(--whitegrey-d1);
+    border-radius: 6px;
+    background: var(--white);
+}
+
+.gh-publish-block {
+    padding: 4px 0;
+    font-size: 1.4rem;
+    line-height: 1.55;
+    color: var(--darkgrey);
+}
+
+.gh-publish-block.gated {
+    border-left: 2px solid var(--blue);
+    padding-left: 12px;
+}
+
+.gh-publish-block-card {
+    color: var(--midgrey);
+    font-style: italic;
+}
+
+.gh-publish-cut-gap {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 20px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.gh-publish-cut-gap span {
+    visibility: hidden;
+    margin: 0 auto;
+    font-size: 1.1rem;
+    color: var(--midgrey);
+}
+
+.gh-publish-cut-gap::before,
+.gh-publish-cut-gap::after {
+    content: "";
+    flex: 1;
+    border-top: 1px dashed transparent;
+}
+
+.gh-publish-cut-gap:hover span {
+    visibility: visible;
+}
+
+.gh-publish-cut-gap:hover::before,
+.gh-publish-cut-gap:hover::after {
+    border-top-color: var(--midlightgrey);
+}
+
+.gh-publish-cut-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--blue);
+}
+
+.gh-publish-cut-line::before,
+.gh-publish-cut-line::after {
+    content: "";
+    flex: 1;
+    border-top: 1.5px solid var(--blue);
+}
+
+.gh-publish-cut-line button {
+    padding: 0 4px;
+    border: none;
+    background: transparent;
+    color: var(--blue);
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+.gh-publish-block-legend {
+    margin-top: 1.2rem;
+    font-size: 1.25rem;
+    color: var(--midgrey);
+    text-align: left;
+}
+
+.gh-publish-block-legend-marker {
+    display: inline-block;
+    width: 14px;
+    margin-right: 6px;
+    border-top: 2px solid var(--blue);
+    vertical-align: middle;
+}
+
+.gh-publish-email-derived {
+    width: 100%;
+    padding: 6px 16px;
+    border: 1px solid var(--whitegrey-d1);
+    border-radius: 6px;
+    background: var(--white);
+    text-align: left;
+}
+
+.gh-publish-email-row {
+    display: block;
+    padding: 12px 0;
+    font-size: 1.4rem;
+    color: var(--darkgrey);
+}
+
+.gh-publish-email-row + .gh-publish-email-row {
+    border-top: 1px solid var(--whitegrey);
+}
+
+.gh-publish-email-upsell {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.gh-publish-email-upsell input {
+    margin-top: 3px;
+}
+
+.gh-publish-email-note {
+    margin: 1.2rem 0 0;
+    font-size: 1.35rem;
+    color: var(--midgrey);
+}
+
+.gh-publish-email-note .gh-btn-link {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--blue);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.gh-publish-summary {
+    max-width: 640px;
+    margin-top: 2rem;
+    padding: 12px 16px;
+    border-radius: 6px;
+    background: color-mod(var(--blue) alpha(8%));
+    font-size: 1.35rem;
+    line-height: 1.6;
+    color: var(--blue-d2);
+}
+
+.gh-publish-cta-sticky {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    width: 100%;
+    margin-top: 1.6rem;
+    padding: 12px 0 20px;
+    background: linear-gradient(to bottom, transparent, var(--main-bg-color, #fff) 35%);
+}
+
+.gh-publish-block-media img {
+    display: block;
+    max-width: 100%;
+    max-height: 240px;
+    border-radius: 4px;
+}
+
+.gh-publish-block-media-caption {
+    display: block;
+    margin-top: 4px;
+    font-size: 1.2rem;
+    color: var(--midgrey);
+}
+
+.gh-publish-question {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 3.2rem;
+    text-align: left;
+}
+
+.gh-publish-question-label {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--black);
+}
+
+.gh-publish-chip:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.gh-publish-step-title {
+    margin-bottom: 2.4rem;
+}
+
+.gh-publish-primary-question {
+    margin: 0 0 4.4rem;
+}
+
+.gh-publish-primary-question .gh-publish-chip {
+    padding: 10px 24px;
+    font-size: 1.6rem;
+}
+
+.gh-publish-primary-question .gh-publish-chip.active {
+    font-weight: 700;
+}
+
+.gh-publish-block-title {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding-bottom: 10px;
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--black);
+}
+
+
+
+.gh-publish-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 560px;
+    margin: 0 auto 3.2rem;
+    padding: 16px 20px;
+    background: var(--whitegrey-l1);
+    border-radius: 8px;
+    text-align: left;
+}
+
+.gh-publish-group-row {
+    font-size: 1.45rem;
+    line-height: 1.5;
+    color: var(--darkgrey);
+}
+
+.gh-publish-group-row.nothing {
+    color: var(--midgrey);
+}
+
+/* Docked publish flow (redesign): the fullscreen modal shrinks to a right-hand
+   panel so the live editor — or a canvas owned by the current step — shows on
+   the left. The container passes pointer events through; the modal and any
+   canvas re-enable them. */
+.epm-modal.publish-modal {
+    transition: width 0.35s ease, box-shadow 0.35s ease;
+}
+
+.epm-modal-container.gh-publish-dock-container {
+    pointer-events: none;
+}
+
+.epm-modal.gh-publish-docked {
+    width: min(480px, 46vw);
+    margin-left: auto;
+    border-left: 1px solid var(--whitegrey);
+    box-shadow: -8px 0 16px rgb(0 0 0 / 4%);
+}
+
+.gh-publish-docked .gh-publish-settings-container {
+    max-width: unset;
+    padding: 0 28px;
+    margin-bottom: 4rem;
+}
+
+.gh-publish-docked .gh-publish-title {
+    font-size: 2.6rem;
+    margin-bottom: 2.4rem;
+}
+
+.gh-publish-docked .gh-publish-primary-question {
+    margin-bottom: 3rem;
+}
+
+.gh-publish-placement-summary {
+    margin: 0 0 1.2rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--black);
+    text-align: left;
+}
+
+.gh-publish-docked .gh-publish-cut-hint,
+.gh-publish-docked .gh-publish-email-note {
+    text-align: left;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: unset;
+}
+
+/* the step's canvas covers the viewport left of the docked panel; it renders
+   generated artifacts (email preview, themed visitor view) with a real
+   renderer, never a facsimile */
+.gh-publish-canvas {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: min(480px, 46vw);
+    display: flex;
+    flex-direction: column;
+    background: var(--main-bg-color);
+    z-index: 1;
+}
+
+.gh-publish-canvas-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--whitegrey);
+    font-size: 1.25rem;
+    color: var(--midgrey);
+    background: var(--white);
+}
+
+.gh-publish-canvas-tabs .gh-publish-chip {
+    padding: 4px 14px;
+    font-size: 1.25rem;
+}
+
+.gh-publish-canvas-frame {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: var(--white);
+}
+
+.gh-publish-canvas-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+    padding: 0 10%;
+    color: var(--midgrey);
+}
+
+.gh-publish-canvas-empty strong {
+    font-size: 1.7rem;
+    color: var(--black);
+}
+
+.gh-publish-docked .gh-publish-header {
+    position: sticky;
+    margin: 0;
+    padding: 1.2rem 2rem;
+    height: auto;
+    background: var(--white);
+    z-index: 2;
+}
+
+.gh-publish-docked .gh-publish-settings-container {
+    margin-top: 2rem;
+}
+
+/* the epm entry animation's forwards fill keeps a computed transform on the
+   modal, which turns it into the containing block for position:fixed and
+   traps the canvas inside the panel — docked mode drops the animation */
+.epm-modal.gh-publish-docked {
+    animation: none;
+    opacity: 1;
+}
+
+.gh-publish-docked .gh-publish-settings-container.fade-in {
+    animation: none;
+    transform: none;
+}
+
+/* docked panel layout: everything left-aligned, quieter controls, CTA pinned
+   to the bottom of the panel */
+.gh-publish-docked [data-test-modal="publish-flow"] {
+    align-items: stretch;
+}
+
+.gh-publish-docked .gh-publish-settings-container {
+    align-items: flex-start;
+    text-align: left;
+    height: auto;
+    flex: 1;
+}
+
+.gh-publish-docked .gh-publish-title {
+    text-align: left;
+    font-size: 2.4rem;
+    line-height: 1.25em;
+}
+
+.gh-publish-docked .gh-publish-chip {
+    padding: 6px 14px;
+    font-size: 1.35rem;
+}
+
+.gh-publish-docked .gh-publish-chip-row {
+    justify-content: flex-start;
+    gap: 6px;
+}
+
+.gh-publish-docked .gh-publish-question {
+    margin-bottom: 2.4rem;
+}
+
+.gh-publish-placement {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-top: 0.8rem;
+    padding: 14px 16px;
+    background: var(--whitegrey-l2);
+    border-radius: 8px;
+    width: 100%;
+}
+
+.gh-publish-placement .gh-publish-placement-summary {
+    margin: 0;
+}
+
+.gh-publish-placement .gh-publish-cut-hint {
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+.gh-publish-canvas-toggle {
+    margin-top: 6px;
+    padding: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--green-d1);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.gh-publish-docked .gh-publish-cta {
+    margin-top: auto;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    padding: 16px 0 20px;
+    background: var(--white);
+    text-align: left;
+}
+
+.gh-publish-docked .gh-publish-cta .gh-btn-large {
+    width: 100%;
+}
+
+/* while docked, keep the editor's centered column inside the visible area
+   instead of underneath the panel */
+body.gh-publish-dock-active .gh-editor {
+    margin-right: min(480px, 46vw);
+    transition: margin-right 0.35s ease;
+}
+
+/* docked CTA: one column — primary action full width, Back a quiet centered
+   text link beneath it, never competing with the primary */
+.gh-publish-docked .gh-publish-cta {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.gh-publish-docked .gh-publish-cta .gh-btn {
+    width: 100%;
+}
+
+.gh-publish-docked .gh-publish-cta .gh-publish-cta-secondary {
+    align-self: center;
+    width: max-content;
+    height: auto;
+    padding: 4px 8px;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+}
+
+.gh-publish-docked .gh-publish-cta .gh-publish-cta-secondary:hover {
+    color: var(--darkgrey);
+}
+
+/* calm pass: the step marker whispers, the question is the headline */
+.gh-publish-step-title .green {
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--midlightgrey);
+}
+
+/* inbox line: what the recipient's mail client shows first — sender, subject,
+   snippet — as row-level evidence; the full render opens on demand */
+.gh-publish-inbox-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: var(--white);
+    border: 0.5px solid var(--whitegrey);
+    border-radius: 6px;
+    font-size: 1.25rem;
+    font-weight: 400;
+    text-align: left;
+}
+
+.gh-publish-inbox-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--whitegrey);
+    color: var(--darkgrey);
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.gh-publish-inbox-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.gh-publish-inbox-meta {
+    font-size: 1.15rem;
+    color: var(--midgrey);
+}
+
+.gh-publish-inbox-snippet {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--midgrey);
+}
+
+.gh-publish-inbox-snippet strong {
+    color: var(--black);
+    font-weight: 600;
+}
+
+.gh-publish-inbox-open {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    border: none;
+    background: none;
+    font-size: 1.2rem;
+    color: var(--green-d1);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.gh-publish-email-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(0 0 0 / 40%);
+}
+
+.gh-publish-email-lightbox-inner {
+    display: flex;
+    flex-direction: column;
+    width: min(680px, 92vw);
+    height: min(80vh, 900px);
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.gh-publish-email-lightbox-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--whitegrey);
+    font-size: 1.3rem;
+    color: var(--midgrey);
+}
+
+.gh-publish-email-lightbox-frame {
+    flex: 1;
+    width: 100%;
+    border: none;
+}
+.gh-publish-inbox-open-indent { margin: 4px 0 0 26px; padding-left: 0; }
+
+/* while the publish flow is docked, the editor's own header actions would
+   duplicate the flow's controls — a second Publish button mid-publish */
+body.gh-publish-dock-active .gh-editor-publish-buttons {
+    display: none;
+}
+
+.gh-publish-email-row .gh-publish-inbox-open {
+    margin-left: 4px;
+}
+
+/* one quiet entry to the email evidence — grey, under the card, out of the
+   decision path; the version switch lives in the lightbox where the
+   comparison actually happens */
+.gh-publish-preview-emails {
+    align-self: flex-start;
+    margin-top: 8px;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+
+.gh-publish-preview-emails:hover {
+    color: var(--darkgrey);
+}
+
+.gh-publish-email-lightbox-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gh-publish-email-lightbox-actions .gh-publish-chip {
+    padding: 4px 12px;
+    font-size: 1.2rem;
+}
+
+/* per-email preview: one quiet bordered button at each row's edge */
+.gh-publish-email-row-split {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.gh-publish-email-row-split > span,
+.gh-publish-email-row-split > .gh-publish-email-upsell {
+    flex: 1;
+    min-width: 0;
+}
+
+.gh-publish-email-preview-btn {
+    flex-shrink: 0;
+    padding: 3px 12px;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--midgrey);
+    background: var(--white);
+    border: 1px solid var(--whitegrey-d1);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.gh-publish-email-preview-btn:hover {
+    color: var(--darkgrey);
+    border-color: var(--midlightgrey);
+}
+
+.gh-publish-gate-fields {
+    width: 100%;
+    margin-top: 12px;
+}
+
+.gh-publish-gate-toggle {
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+
+.gh-publish-gate-toggle:hover {
+    color: var(--darkgrey);
+}
+
+.gh-publish-gate-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.gh-publish-gate-field span {
+    flex-shrink: 0;
+    width: 84px;
+    font-size: 1.2rem;
+    color: var(--midgrey);
+}
+
+.gh-publish-gate-field input {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 1.3rem;
+    border: 1px solid var(--whitegrey-d1);
+    border-radius: 4px;
+    background: var(--white);
+    color: var(--darkgrey);
+}
+
+.gh-publish-gate-field input:focus {
+    outline: none;
+    border-color: var(--midlightgrey);
+}
+
+.gh-publish-gate-note {
+    margin: 10px 0 0;
+    font-size: 1.15rem;
+    color: var(--midgrey);
+    text-align: left;
+}
+
+/* audience set builder */
+.gh-publish-audience-mode {
+    margin-bottom: 4px;
+}
+
+.gh-publish-group-tokens {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    margin: 4px 0;
+}
+
+.gh-publish-group-token {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.25rem;
+    padding: 4px 6px 4px 12px;
+    border-radius: 999px;
+    background: var(--whitegrey-l2);
+    border: 1px solid var(--whitegrey-d1);
+    color: var(--darkgrey);
+}
+
+.gh-publish-group-token-count {
+    color: var(--midgrey);
+}
+
+.gh-publish-group-token button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.gh-publish-group-token button:hover {
+    color: var(--red);
+}
+
+.gh-publish-add-group {
+    font-size: 1.25rem;
+    padding: 4px 14px;
+    border-radius: 999px;
+    border: 1px dashed var(--midlightgrey);
+    background: none;
+    color: var(--midgrey);
+    cursor: pointer;
+}
+
+.gh-publish-add-group:hover {
+    color: var(--darkgrey);
+    border-color: var(--midgrey);
+}
+
+.gh-publish-group-menu {
+    width: 100%;
+    max-width: 340px;
+    margin: 6px auto 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--whitegrey-d1);
+    border-radius: 8px;
+    background: var(--white);
+    text-align: left;
+}
+
+.gh-publish-group-menu-section {
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--midlightgrey);
+    margin: 8px 0 2px;
+}
+
+.gh-publish-group-menu-section:first-child {
+    margin-top: 0;
+}
+
+.gh-publish-group-menu-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-size: 1.3rem;
+    padding: 5px 8px;
+    border: none;
+    background: none;
+    border-radius: 4px;
+    color: var(--darkgrey);
+    cursor: pointer;
+}
+
+.gh-publish-group-menu-item:hover {
+    background: var(--whitegrey-l2);
+}
+
+/* gate fields polish: quieter, tighter, consistent with the panel */
+.gh-publish-gate-field span {
+    width: 76px;
+    font-size: 1.15rem;
+}
+
+.gh-publish-gate-field input {
+    padding: 5px 10px;
+    font-size: 1.25rem;
+    border-color: var(--whitegrey);
+}
+
+.gh-publish-gate-field input:hover {
+    border-color: var(--whitegrey-d1);
+}
+
+.gh-publish-gate-note {
+    font-size: 1.1rem;
+    color: var(--midlightgrey);
+}
+
+/* the gate room: customization as a focused sub-view, same grammar as steps */
+.gh-publish-gate-room {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: left;
+}
+
+.gh-publish-gate-room .gh-publish-gate-field {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+    margin-top: 0;
+}
+
+.gh-publish-gate-room .gh-publish-gate-field span {
+    width: auto;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
+.gh-publish-gate-room .gh-publish-gate-field input {
+    padding: 9px 12px;
+    font-size: 1.4rem;
+    border-radius: 6px;
+}
+
+.gh-publish-gate-room-hint {
+    text-align: left;
+    margin-bottom: 1.6rem;
+}
+
+/* coherence pass: one axis, one label language, one rhythm.
+   Every redesign step: left-aligned column, question-label + chips for every
+   sub-decision, cards full-width, primary action bottom-left. */
+.gh-publish-redesign {
+    align-items: flex-start;
+    text-align: left;
+}
+
+.gh-publish-redesign .gh-publish-title,
+.gh-publish-redesign .gh-publish-step-title {
+    text-align: left;
+    margin-bottom: 3.2rem;
+}
+
+.gh-publish-redesign .gh-publish-chip-row {
+    justify-content: flex-start;
+}
+
+.gh-publish-redesign .gh-publish-primary-question {
+    margin: 0 0 4rem;
+}
+
+.gh-publish-redesign .gh-publish-question {
+    align-items: flex-start;
+    margin: 0 0 3.2rem;
+    width: 100%;
+}
+
+.gh-publish-redesign .gh-publish-question-label {
+    font-size: 1.5rem;
+}
+
+.gh-publish-redesign .gh-publish-newsletter-chips {
+    margin-bottom: 0.4rem;
+}
+
+.gh-publish-redesign .gh-publish-email-recipients .gh-publish-question-label {
+    margin-top: 0.4rem;
+}
+
+.gh-publish-redesign .gh-publish-cut-hint,
+.gh-publish-redesign .gh-publish-email-note,
+.gh-publish-redesign .gh-publish-placement-summary {
+    text-align: left;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: unset;
+}
+
+.gh-publish-redesign .gh-publish-email-derived,
+.gh-publish-redesign .gh-publish-groups {
+    width: 100%;
+    max-width: unset;
+    margin-left: 0;
+    margin-right: 0;
+    text-align: left;
+}
+
+.gh-publish-redesign .gh-publish-group-tokens {
+    justify-content: flex-start;
+    margin: 4px 0 10px;
+}
+
+.gh-publish-redesign .gh-publish-group-menu {
+    margin: 2px 0 10px;
+}
+
+.gh-publish-redesign .gh-publish-placement {
+    text-align: left;
+}
+
+.gh-publish-redesign .gh-publish-confirmation,
+.gh-publish-redesign .gh-publish-summary {
+    text-align: left;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: unset;
+}
+
+.gh-publish-redesign .gh-publish-cta {
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.gh-publish-redesign .gh-publish-email-derived {
+    border: 0.5px solid var(--whitegrey-d1);
+    border-radius: 10px;
+    padding: 4px 16px;
+    background: var(--white);
+}
+
+.gh-publish-redesign .gh-publish-email-row {
+    padding: 12px 0;
+    font-size: 1.4rem;
+}
+
+.gh-publish-redesign .gh-publish-email-row + .gh-publish-email-row {
+    border-top: 0.5px solid var(--whitegrey);
+}
+
+/* content must never run under the sticky CTA */
+.gh-publish-redesign {
+    padding-bottom: 10rem;
+}
+
+.gh-publish-redesign .gh-publish-cta-sticky {
+    margin-top: 0;
+}
+
+/* proportion + overlay fixes */
+.gh-publish-redesign .gh-publish-primary-question .gh-publish-chip {
+    padding: 6px 16px;
+    font-size: 1.4rem;
+}
+
+.gh-publish-group-tokens-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.gh-publish-group-menu-overlay {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 5;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
+}
+
+.gh-publish-email-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.gh-publish-minichips {
+    display: inline-flex;
+    border: 1px solid var(--whitegrey-d1);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.gh-publish-minichip {
+    font-size: 1.15rem;
+    padding: 3px 10px;
+    border: none;
+    background: var(--white);
+    color: var(--midgrey);
+    cursor: pointer;
+}
+
+.gh-publish-minichip + .gh-publish-minichip {
+    border-left: 1px solid var(--whitegrey-d1);
+}
+
+.gh-publish-minichip.active {
+    background: var(--darkgrey);
+    color: #fff;
+}
+
+.gh-publish-email-row-muted {
+    color: var(--midgrey);
+}
+
+/* outcome rows: text breathes, controls stay in one centered cluster */
+.gh-publish-redesign .gh-publish-email-row-split {
+    align-items: center;
+    gap: 20px;
+}
+
+.gh-publish-redesign .gh-publish-email-row-split > span:first-child {
+    padding-right: 0;
+    line-height: 1.55;
+}
+
+.gh-publish-minichip {
+    white-space: nowrap;
+}
+
+/* actions never share the text's column */
+.gh-publish-redesign .gh-publish-email-row-split > .gh-publish-email-row-actions {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+.gh-publish-redesign .gh-publish-email-row-split > span:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.gh-publish-email-empty {
+    padding: 12px 0;
+    margin: 0;
+    text-align: left;
+}
+
+/* timing chips match the system's selected-chip language */
+.gh-publish-redesign .gh-publish-schedule .gh-radio {
+    border-radius: 999px;
+    border: 1px solid var(--whitegrey-d1);
+    padding: 6px 16px;
+    cursor: pointer;
+}
+
+.gh-publish-redesign .gh-publish-schedule .gh-radio.active {
+    background: var(--black);
+    border-color: var(--black);
+}
+
+.gh-publish-redesign .gh-publish-schedule .gh-radio.active label,
+.gh-publish-redesign .gh-publish-schedule .gh-radio.active .gh-radio-label {
+    color: #fff;
+}
+
+.gh-publish-redesign .gh-publish-schedule .gh-radio-button {
+    display: none;
+}
+
+/* confirm: one voice — quiet summary, one card, one sentence, one button */
+.gh-publish-redesign .gh-publish-summary {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    line-height: 1.6;
+}
+
+.gh-publish-redesign .gh-publish-schedule .gh-radio.active,
+.gh-publish-redesign .gh-publish-schedule .gh-radio.active * {
+    color: #fff;
+}
+
+.gh-publish-redesign .gh-publish-schedule .gh-radio label {
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+}
+
+/* the group menu floats above everything, scrolls past ten labels */
+.gh-publish-group-menu-overlay {
+    z-index: 40;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.gh-publish-redesign .gh-publish-cta-sticky {
+    z-index: 3;
+}
+
+/* ---------------------------------------------------------------------------
+   Publish flow redesign: placement room, settled outcome card, bypass switch
+   --------------------------------------------------------------------------- */
+
+/* evidence reads as a link, never as a state control — bordered pills in
+   these rows mean "this is selected", and Preview never was */
+.gh-publish-email-preview-btn {
+    flex-shrink: 0;
+    padding: 0;
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--midgrey);
+    background: none;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.gh-publish-email-preview-btn:hover {
+    color: var(--darkgrey);
+    text-decoration: underline;
+}
+
+.gh-publish-redesign .gh-publish-placement-summary {
+    font-size: 1.5rem;
+    color: var(--darkgrey);
+    margin: 0 0 4px;
+}
+
+.gh-publish-redesign .gh-publish-placement-summary strong {
+    font-weight: 600;
+}
+
+.gh-publish-outcome-card {
+    width: 100%;
+    border: 0.5px solid var(--whitegrey-d1);
+    border-radius: 10px;
+    background: var(--white);
+    padding: 14px 16px;
+    margin-top: 12px;
+    text-align: left;
+}
+
+.gh-publish-outcome-line {
+    font-size: 1.4rem;
+    color: var(--darkgrey);
+    margin: 0 0 8px;
+    line-height: 1.5;
+}
+
+.gh-publish-quiet-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+}
+
+.gh-publish-redesign .gh-publish-quiet-links .gh-publish-canvas-toggle {
+    margin: 0;
+    padding: 0;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+}
+
+.gh-publish-redesign .gh-publish-quiet-links .gh-publish-canvas-toggle:hover {
+    color: var(--darkgrey);
+    text-decoration: underline;
+}
+
+/* the deliberate leak switch: quiet until it's on, then it explains itself */
+.gh-publish-bypass {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    border: 0.5px solid var(--whitegrey-d1);
+    border-radius: 10px;
+    background: var(--white);
+    cursor: pointer;
+    text-align: left;
+}
+
+.gh-publish-bypass input[type="checkbox"] {
+    margin: 2px 0 0;
+    flex-shrink: 0;
+}
+
+.gh-publish-bypass-label {
+    display: block;
+    font-size: 1.4rem;
+    color: var(--darkgrey);
+}
+
+.gh-publish-bypass-note {
+    display: block;
+    font-size: 1.25rem;
+    color: var(--midgrey);
+    margin-top: 2px;
+    line-height: 1.5;
+}
+
+/* the picker's own fieldset spacing is tuned for the old settings list */
+.gh-publish-schedule-card fieldset {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.gh-publish-schedule-card .gh-date-time-picker {
+    margin: 0;
+}
+
+.gh-publish-schedule-line {
+    margin: 12px 0 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Placement lives inside step 1: the questions stay visible so the writer can
+   see they are mid-flow, and the answer sits under the question it answers.
+   --------------------------------------------------------------------------- */
+
+.gh-publish-redesign .gh-publish-answer {
+    margin: 10px 0 0;
+    font-size: 1.35rem;
+    line-height: 1.6;
+    color: var(--midgrey);
+    text-align: left;
+}
+
+.gh-publish-redesign .gh-publish-answer strong {
+    color: var(--darkgrey);
+    font-weight: 600;
+}
+
+.gh-publish-answer-action {
+    margin-left: 8px;
+    padding: 0;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+    text-decoration: underline;
+}
+
+.gh-publish-answer-action:hover {
+    color: var(--darkgrey);
+}
+
+/* the active placement block: a quiet inset panel, not a second card */
+.gh-publish-redesign .gh-publish-answer-active {
+    margin-top: 12px;
+    padding-left: 14px;
+    border-left: 2px solid var(--whitegrey-d1);
+}
+
+.gh-publish-redesign .gh-publish-answer-line {
+    margin: 0;
+    font-size: 1.4rem;
+    color: var(--darkgrey);
+}
+
+.gh-publish-redesign .gh-publish-answer-line strong {
+    font-weight: 600;
+}
+
+.gh-publish-redesign .gh-publish-answer-hint {
+    margin: 2px 0 8px;
+    font-size: 1.25rem;
+    color: var(--midgrey);
+}
+
+/* outcome rows read as "who — what", with the count beside the name */
+.gh-publish-email-row-label {
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
+.gh-publish-email-row-count {
+    margin-left: 4px;
+    color: var(--midgrey);
+}
+
+.gh-publish-email-row-verb {
+    margin-left: 10px;
+    color: var(--midgrey);
+}
+
+.gh-publish-email-detail {
+    padding: 10px 0 12px;
+    border-top: 0.5px solid var(--whitegrey);
+}
+
+.gh-publish-email-detail-line {
+    margin: 0 0 6px;
+    font-size: 1.3rem;
+    line-height: 1.55;
+    color: var(--midgrey);
+}
+
+.gh-publish-email-detail-line strong {
+    color: var(--darkgrey);
+    font-weight: 600;
+}
+
+.gh-publish-email-footnote {
+    margin: 12px 0 0;
+    font-size: 1.25rem;
+    line-height: 1.55;
+    color: var(--midgrey);
+    text-align: left;
+}
+
+.gh-publish-quiet-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+}
+
+.gh-publish-redesign .gh-publish-quiet-links .gh-publish-canvas-toggle {
+    margin: 0;
+    padding: 0;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+}
+
+.gh-publish-redesign .gh-publish-quiet-links .gh-publish-canvas-toggle:hover {
+    color: var(--darkgrey);
+    text-decoration: underline;
+}
+
+/* evidence reads as a link, never as a state control */
+.gh-publish-email-preview-btn {
+    flex-shrink: 0;
+    padding: 0;
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--midgrey);
+    background: none;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.gh-publish-email-preview-btn:hover {
+    color: var(--darkgrey);
+    text-decoration: underline;
+}
+
+/* the docked panel has one subject: the paywall */
+.gh-publish-paywall-panel {
+    text-align: left;
+}
+
+.gh-publish-paywall-where {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    border: 0.5px solid var(--whitegrey-d1);
+    border-radius: 8px;
+    background: var(--whitegrey-l1);
+}
+
+.gh-publish-paywall-where-count {
+    font-size: 1.4rem;
+    color: var(--darkgrey);
+}
+
+.gh-publish-paywall-where-count strong {
+    font-weight: 600;
+}
+
+.gh-publish-paywall-where-hint {
+    font-size: 1.25rem;
+    color: var(--midgrey);
+}
+
+.gh-publish-paywall-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.gh-publish-paywall-copy .gh-publish-question-label {
+    margin: 0;
+}
+
+.gh-publish-gate-field-pair {
+    display: flex;
+    gap: 10px;
+}
+
+.gh-publish-gate-field-pair .gh-publish-gate-field {
+    flex: 1;
+    min-width: 0;
+}
+
+.gh-publish-paywall-copy .gh-publish-gate-field textarea {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--whitegrey-d1);
+    border-radius: 5px;
+    font-size: 1.3rem;
+    line-height: 1.5;
+    color: var(--darkgrey);
+    resize: vertical;
+}
+
+.gh-publish-paywall-copy .gh-publish-gate-field textarea:focus {
+    outline: none;
+    border-color: var(--midlightgrey);
+}
+
+.gh-publish-paywall-panel .gh-publish-quiet-links {
+    margin-top: 16px;
+}
+
+/* a decided setting reads as a row with a value and an action */
+.gh-publish-setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px 14px;
+    border: 0.5px solid var(--whitegrey-d1);
+    border-radius: 8px;
+    background: var(--white);
+    text-align: left;
+}
+
+.gh-publish-setting-row-value {
+    font-size: 1.35rem;
+    color: var(--midgrey);
+    line-height: 1.5;
+}
+
+.gh-publish-setting-row-value strong {
+    color: var(--darkgrey);
+    font-weight: 600;
+}
+
+.gh-publish-setting-row-action {
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.gh-publish-setting-row-action:hover {
+    color: var(--darkgrey);
+    text-decoration: underline;
+}
+
+/* the panel is narrow: labels sit above their fields, nothing side by side */
+.gh-publish-paywall-copy .gh-publish-gate-field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    margin-top: 0;
+}
+
+.gh-publish-paywall-copy .gh-publish-gate-field span {
+    width: auto;
+    font-size: 1.2rem;
+    color: var(--midgrey);
+}
+
+.gh-publish-paywall-copy .gh-publish-gate-field input {
+    width: 100%;
+    min-width: 0;
+}
+
+.gh-publish-gate-field-pair {
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* the docked panel: one instruction, one status, then what can be opened */
+.gh-publish-panel-lede {
+    margin: 0 0 14px;
+    font-size: 1.4rem;
+    line-height: 1.55;
+    color: var(--darkgrey);
+    text-align: left;
+}
+
+.gh-publish-panel-status {
+    padding: 10px 14px;
+    margin-bottom: 22px;
+    border-radius: 8px;
+    background: var(--whitegrey-l1);
+    font-size: 1.35rem;
+    color: var(--midgrey);
+    text-align: left;
+}
+
+.gh-publish-panel-status strong {
+    color: var(--darkgrey);
+    font-weight: 600;
+}
+
+.gh-publish-panel-entries {
+    width: 100%;
+    border: 0.5px solid var(--whitegrey-d1);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--white);
+}
+
+.gh-publish-panel-entry {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2px 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.gh-publish-panel-entry + .gh-publish-panel-entry {
+    border-top: 0.5px solid var(--whitegrey);
+}
+
+.gh-publish-panel-entry:hover {
+    background: var(--whitegrey-l1);
+}
+
+.gh-publish-panel-entry-label {
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: var(--darkgrey);
+}
+
+.gh-publish-panel-entry-action {
+    grid-row: 1;
+    grid-column: 2;
+    align-self: center;
+    font-size: 1.25rem;
+    color: var(--midgrey);
+    white-space: nowrap;
+}
+
+.gh-publish-panel-entry-value {
+    grid-column: 1;
+    font-size: 1.25rem;
+    color: var(--midgrey);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gh-publish-panel-entry:hover .gh-publish-panel-entry-action {
+    color: var(--darkgrey);
+}
+
+.gh-publish-email-actions {
+    margin-top: 12px;
+}
+
+/* a fixed outcome occupies the chip group's slot so both rows line up */
+.gh-publish-email-row-state {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border: 1px solid transparent;
+    font-size: 1.15rem;
+    color: var(--midgrey);
+    white-space: nowrap;
+}
+

@@ -1,15 +1,17 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
 <fieldset>
-    <div class="gh-publish-schedule">
-        <div class="gh-radio {{unless @publishOptions.isScheduled "active"}}" {{on "click" (fn @publishOptions.toggleScheduled false)}}>
-            <div class="gh-radio-button" data-test-radio="publish-now"></div>
-            <label>Set it live now</label>
+    {{#unless @hideModeToggle}}
+        <div class="gh-publish-schedule">
+            <div class="gh-radio {{unless @publishOptions.isScheduled "active"}}" {{on "click" (fn @publishOptions.toggleScheduled false)}}>
+                <div class="gh-radio-button" data-test-radio="publish-now"></div>
+                <label>Set it live now</label>
+            </div>
+            <div class="gh-radio {{if @publishOptions.isScheduled "active"}}" {{on "click" (fn @publishOptions.toggleScheduled true)}}>
+                <div class="gh-radio-button" data-test-radio="schedule"></div>
+                <label>Schedule for later</label>
+            </div>
         </div>
-        <div class="gh-radio {{if @publishOptions.isScheduled "active"}}" {{on "click" (fn @publishOptions.toggleScheduled true)}}>
-            <div class="gh-radio-button" data-test-radio="schedule"></div>
-            <label>Schedule for later</label>
-        </div>
-    </div>
+    {{/unless}}
     {{#if @publishOptions.isScheduled}}
         <GhDateTimePicker
             @datePickerClass="publish-flow-datepicker"

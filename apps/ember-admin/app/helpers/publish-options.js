@@ -5,6 +5,7 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class PublishOptionsResource extends Resource {
+    @service feature;
     @service limit;
     @service session;
     @service settings;
@@ -36,10 +37,11 @@ export default class PublishOptionsResource extends Resource {
     }
 
     _createPublishOptions(post) {
-        const {config, limit, settings, store, membersCountCache} = this;
+        const {config, feature, limit, settings, store, membersCountCache} = this;
 
         return new PublishOptions({
             config,
+            feature,
             limit,
             post,
             settings,

@@ -87,6 +87,10 @@ const features: Feature[] = [{
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements'
+}, {
+    title: 'Publish flow redesign',
+    description: 'Redesigned publish flow: set post access and the public preview cut at publish time, with derived email recipients',
+    flag: 'publishFlowRedesign'
 }];
 
 const AlphaFeatures: React.FC = () => {

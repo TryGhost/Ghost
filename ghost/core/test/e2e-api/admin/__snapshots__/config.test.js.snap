@@ -38,6 +38,7 @@ Object {
       "paywallImprovements": true,
       "pictureImageFormats": true,
       "previewByTier": true,
+      "publishFlowRedesign": true,
       "smarterCounts": true,
       "stripeAutomaticTax": true,
       "superEditors": true,

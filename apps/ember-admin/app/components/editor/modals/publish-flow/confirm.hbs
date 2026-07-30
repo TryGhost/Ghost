@@ -1,7 +1,27 @@
-<div class="gh-publish-title" data-test-publish-flow="confirm">
-    <div class="green">Ready, set, publish.</div>
-    <div>Share it with the world.</div>
+<div class="gh-publish-title gh-publish-step-title" data-test-publish-flow="confirm">
+    <div class="green">Final review</div>
+    <div>Ready to publish</div>
 </div>
+{{#if @summary}}
+    <p class="gh-publish-confirmation gh-publish-summary" data-test-text="who-gets-what">
+        {{@summary}}
+    </p>
+{{/if}}
+
+{{! the card exists to compare outcomes between groups — with a single group
+    it just says the summary again in a box }}
+{{#if (gt @publishOptions.whoGetsWhatGroups.length 1)}}
+    <div class="gh-publish-groups" data-test-who-gets-what-groups>
+        {{#each @publishOptions.whoGetsWhatGroups as |group|}}
+            <div class="gh-publish-group-row {{if group.nothing "nothing"}}" data-test-group={{group.label}}>
+                {{#let (members-count-fetcher query=(hash filter=group.countFilter)) as |countFetcher|}}
+                    <strong>{{group.label}}{{#if countFetcher.count}} ({{format-number countFetcher.count}}){{/if}}</strong>
+                    &mdash; {{group.outcome}}
+                {{/let}}
+            </div>
+        {{/each}}
+    </div>
+{{/if}}
 <p class="gh-publish-confirmation" data-test-text="confirm-details">
     {{#if @publishOptions.isScheduled}}
         {{#let (moment-site-tz @publishOptions.scheduledAtUTC) as |scheduledAt|}}
@@ -65,7 +85,7 @@
         @runningText={{this.confirmRunningText}}
         @successText={{this.confirmSuccessText}}
         @class="gh-btn gh-btn-large"
-        @idleClass="gh-btn-pulse"
+        @idleClass={{this.confirmIdleClass}}
         @runningClass="gh-btn-green gh-btn-icon"
         @failureClass="gh-btn-red gh-btn-icon"
         data-test-button="confirm-publish"

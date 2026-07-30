@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import moment from 'moment-timezone';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {htmlSafe} from '@ember/template';
 import {isArray} from '@ember/array';
 import {isServerUnreachableError} from 'ghost-admin/services/ajax';
@@ -14,14 +15,24 @@ function isString(str) {
 export default class PublishFlowOptions extends Component {
     @service settings;
     @service feature;
+    @service membersCountCache;
     @service router;
 
     @tracked errorMessage;
+    @tracked emailCount = null;
 
     // store any derived state from PublishOptions on creation so the copy
     // doesn't change whilst the post is saving
     willEmail = this.args.publishOptions.willEmail;
     willPublish = this.args.publishOptions.willPublish;
+
+    constructor() {
+        super(...arguments);
+
+        if (this.feature.publishFlowRedesign && this.willEmail) {
+            this.fetchEmailCountTask.perform();
+        }
+    }
 
     buttonTextMap = {
         'publish+send': {
@@ -61,7 +72,17 @@ export default class PublishFlowOptions extends Component {
     get confirmButtonText() {
         let buttonText = '';
 
-        buttonText = this.buttonTextMap[this.publishType].idle;
+        if (this.feature.publishFlowRedesign) {
+            buttonText = this.redesignIdleText;
+        } else {
+            buttonText = this.buttonTextMap[this.publishType].idle;
+        }
+
+        if (this.feature.publishFlowRedesign) {
+            // the redesign builds the whole sentence, including timing — the
+            // suffixes below produced "Publish post — no email, right now"
+            return buttonText;
+        }
 
         if (this.publishType === 'publish') {
             buttonText += ` ${this.args.publishOptions.post.displayName}`;
@@ -75,6 +96,62 @@ export default class PublishFlowOptions extends Component {
         }
 
         return buttonText;
+    }
+
+    // redesign: the committing button states its consequence in people counts
+    // ("Publish & email 143 people") so the highest-stakes fact is read even
+    // by users who read nothing else
+    get redesignIdleText() {
+        const {post, isScheduled, scheduledAtUTC} = this.args.publishOptions;
+        const count = this.emailCount === null ? null : formatNumber(this.emailCount);
+        const people = `${count} ${this.emailCount === 1 ? 'person' : 'people'}`;
+
+        // a scheduled confirm schedules — it does not publish, and the verb
+        // has to say so or the button contradicts what the click does
+        if (isScheduled) {
+            const when = moment.tz(scheduledAtUTC, this.settings.timezone).format('D MMM [at] HH:mm');
+
+            if (this.publishType === 'publish+send') {
+                return count === null
+                    ? `Schedule for ${when}`
+                    : `Schedule & email ${people} on ${when}`;
+            }
+
+            if (this.publishType === 'send') {
+                return count === null
+                    ? `Schedule email for ${when}`
+                    : `Schedule email to ${people} for ${when}`;
+            }
+
+            return `Schedule ${post.displayName} for ${when}`;
+        }
+
+        if (this.publishType === 'publish+send') {
+            return count === null
+                ? `Publish & send now`
+                : `Publish & email ${people} now`;
+        }
+
+        if (this.publishType === 'send') {
+            return count === null
+                ? `Send email now`
+                : `Send to ${people} now`;
+        }
+
+        return `Publish ${post.displayName} now — no email`;
+    }
+
+    @task
+    *fetchEmailCountTask() {
+        const count = yield this.membersCountCache.count(this.args.publishOptions.fullRecipientFilter);
+        this.emailCount = count;
+    }
+
+    // the redesign spends all its weight on the button's words, not on
+    // animation — a pulsing publish button injects urgency into the moment
+    // that most needs calm
+    get confirmIdleClass() {
+        return this.feature.publishFlowRedesign ? 'gh-btn-black' : 'gh-btn-pulse';
     }
 
     get confirmRunningText() {

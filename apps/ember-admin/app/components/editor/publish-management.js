@@ -66,10 +66,17 @@ export default class PublishManagement extends Component {
         if (isValid && (!this.publishFlowModal || this.publishFlowModal?.isClosing)) {
             this.publishOptions.resetPastScheduledAt();
 
+            if (this.feature.publishFlowRedesign) {
+                await this._ensureTiersLoaded();
+            }
+
             this.publishFlowModal = this.modals.open(PublishFlowModal, {
                 publishOptions: this.publishOptions,
                 saveTask: this.publishTask,
                 togglePreviewPublish: this.togglePreviewPublish,
+                editorAPI: this.args.editorAPI,
+                savePostTask: this.args.savePostTask,
+                tiers: this.tiers,
                 skipAnimation
             });
 
@@ -139,7 +146,11 @@ export default class PublishManagement extends Component {
     // its tier selector synchronously; a failed fetch degrades the preview to
     // the free/paid audience options and is retried on the next open
     async _ensureTiersLoaded() {
-        if (!this.feature.previewByTier || !this.settings.paidMembersEnabled || this.loadTiersTask.lastSuccessful) {
+        const tiersNeeded = this.feature.previewByTier || this.feature.publishFlowRedesign;
+        // the redesigned publish flow gates content by tier, which is
+        // meaningful even before Stripe is connected (tiers always exist)
+        const paidMembersRequired = !this.feature.publishFlowRedesign;
+        if (!tiersNeeded || (paidMembersRequired && !this.settings.paidMembersEnabled) || this.loadTiersTask.lastSuccessful) {
             return;
         }
 

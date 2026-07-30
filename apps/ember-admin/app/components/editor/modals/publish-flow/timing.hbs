@@ -1,0 +1,50 @@
+<div class="gh-publish-title gh-publish-step-title" data-test-publish-flow="timing">
+    <div class="green">Step 3 of 3</div>
+    <div>When should it go out?</div>
+</div>
+
+<div class="gh-publish-step-body" data-test-setting="publish-at">
+    <div class="gh-publish-chip-row gh-publish-primary-question" data-test-timing-question>
+        <button
+            type="button"
+            class="gh-publish-chip {{unless this.isScheduled "active"}}"
+            aria-pressed="{{unless this.isScheduled "true" "false"}}"
+            {{on "click" (fn this.setScheduled false)}}
+            data-test-timing-chip="now"
+        >
+            Now
+        </button>
+        <button
+            type="button"
+            class="gh-publish-chip {{if this.isScheduled "active"}}"
+            aria-pressed="{{this.isScheduled}}"
+            {{on "click" (fn this.setScheduled true)}}
+            data-test-timing-chip="later"
+        >
+            Schedule for later
+        </button>
+    </div>
+
+    {{#if this.isScheduled}}
+        <div class="gh-publish-outcome-card gh-publish-schedule-card" data-test-schedule-card>
+            <Editor::PublishOptions::PublishAt
+                @publishOptions={{@publishOptions}}
+                @hideModeToggle={{true}}
+            />
+            <p class="gh-publish-outcome-line gh-publish-schedule-line" data-test-schedule-line>
+                Goes out <strong>{{this.scheduledLabel}}</strong>, {{this.timezoneLabel}} time.
+            </p>
+        </div>
+    {{else}}
+        <p class="gh-publish-cut-hint" data-test-timing-note>
+            It goes out the moment you confirm on the next screen.
+        </p>
+    {{/if}}
+</div>
+
+<div class="gh-publish-cta gh-publish-cta-sticky">
+    <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @next}} data-test-button="continue">
+        <span>Continue, final review &rarr;</span>
+    </button>
+    <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" @back}} data-test-button="back-to-email-step">Back</button>
+</div>

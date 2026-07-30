@@ -45,7 +45,7 @@
     {{else}}
         <GhTaskButton
             @task={{@publishManagement.saveTask}}
-            @buttonText="Update"
+            @buttonText={{if (and @publishManagement.feature.publishFlowRedesign (not @publishManagement.post.isScheduled)) "Update — no email" "Update"}}
             @runningText="Updating..."
             @successText="Updated"
             @class="gh-btn gh-btn-editor gh-editor-save-trigger"

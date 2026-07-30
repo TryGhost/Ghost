@@ -13,7 +13,10 @@
                 >
                     <span>Close</span>
                 </button>
-                {{#unless this.emailErrorMessage}}
+                {{! the redesign has no Preview button: every step shows the
+                    thing it is asking about, and the evidence links are in
+                    the steps themselves }}
+                {{#unless (or this.emailErrorMessage this.useRedesign)}}
                     <button
                         type="button"
                         class="gh-btn"
@@ -27,7 +30,7 @@
         {{/unless}}
     </header>
 
-    <div class="gh-publish-settings-container {{unless @data.skipAnimation "fade-in"}}">
+    <div class="gh-publish-settings-container {{if this.useRedesign "gh-publish-redesign"}} {{unless @data.skipAnimation "fade-in"}}">
         {{#if this.emailErrorMessage}}
             <Editor::Modals::PublishFlow::CompleteWithEmailError
                 @emailErrorMessage={{this.emailErrorMessage}}
@@ -35,6 +38,47 @@
                 @setCompleted={{this.setCompleted}}
                 @close={{@close}}
             />
+        {{else if this.useRedesign}}
+            {{#if (eq this.step "website")}}
+                <Editor::Modals::PublishFlow::Website
+                    @publishOptions={{@data.publishOptions}}
+                    @editorAPI={{@data.editorAPI}}
+                    @savePostTask={{@data.savePostTask}}
+                    @tiers={{@data.tiers}}
+                    @setDocked={{this.setDocked}}
+                    @autoPlacement={{this.placementReturnStep}}
+                    @onPlacementDone={{this.finishPlacement}}
+                    @next={{fn this.setStep "email"}}
+                    @close={{@close}}
+                />
+            {{else if (eq this.step "email")}}
+                <Editor::Modals::PublishFlow::Email
+                    @publishOptions={{@data.publishOptions}}
+                    @editorAPI={{@data.editorAPI}}
+                    @savePostTask={{@data.savePostTask}}
+                    @startPlacement={{fn this.startPlacement "email"}}
+                    @back={{fn this.setStep "website"}}
+                    @next={{fn this.setStep "timing"}}
+                    @close={{@close}}
+                />
+            {{else if (eq this.step "timing")}}
+                <Editor::Modals::PublishFlow::Timing
+                    @publishOptions={{@data.publishOptions}}
+                    @back={{fn this.setStep "email"}}
+                    @next={{fn this.setStep "confirm"}}
+                    @close={{@close}}
+                />
+            {{else}}
+                <Editor::Modals::PublishFlow::Confirm
+                    @publishOptions={{@data.publishOptions}}
+                    @recipientType={{this.recipientType}}
+                    @summary={{@data.publishOptions.whoGetsWhatSummary}}
+                    @saveTask={{this.saveTask}}
+                    @setCompleted={{this.setCompleted}}
+                    @cancel={{fn this.setStep "timing"}}
+                    @close={{@close}}
+                />
+            {{/if}}
         {{else if this.isConfirming}}
             <Editor::Modals::PublishFlow::Confirm
                 @publishOptions={{@data.publishOptions}}

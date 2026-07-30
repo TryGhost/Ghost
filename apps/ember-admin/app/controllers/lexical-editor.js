@@ -166,6 +166,11 @@ export default class LexicalEditorController extends Controller {
 
     @tracked excerptErrorMessage = '';
 
+    // tracked so components rendered before editor registration (e.g. the
+    // publish flow header) pick the API up once the editor mounts
+    @tracked editorAPI = null;
+    @tracked secondaryEditorAPI = null;
+
     /* public properties -----------------------------------------------------*/
 
     shouldFocusTitle = false;

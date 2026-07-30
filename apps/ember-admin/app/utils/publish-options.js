@@ -7,6 +7,7 @@ import {tracked} from '@glimmer/tracking';
 export default class PublishOptions {
     // passed in services
     config = null;
+    feature = null;
     limit = null;
     settings = null;
     store = null;
@@ -173,10 +174,453 @@ export default class PublishOptions {
     }
 
     get recipientFilter() {
+        if (this.feature?.publishFlowRedesign) {
+            return this.derivedRecipientFilter;
+        }
+
         if (this.selectedRecipientFilter === undefined) {
             return (this.post.newsletter && this.post.emailSegment) || this.defaultRecipientFilter;
         } else {
             return this.selectedRecipientFilter;
+        }
+    }
+
+    // publish flow redesign ---------------------------------------------------
+    // email recipients are derived from post visibility plus explicit upsell
+    // choices rather than picked with a segment select
+
+    // Row choices follow the decision already made on the website step until
+    // the writer overrides them: a post with a public preview sends it to the
+    // people who can't read the rest, a post without one sends them nothing.
+    // null = still following; true/false = the writer's own answer.
+    @tracked upsellFreeMembersOverride = null;
+    // per tier, because Bronze and Silver are different audiences even when
+    // they receive the same body — keyed by slug, absent = still following
+    @tracked otherTierOverrides = {};
+    @tracked allPaidTiers = [];
+
+    get upsellFreeMembers() {
+        return this.upsellFreeMembersOverride === null
+            ? this.hasPublicPreview
+            : this.upsellFreeMembersOverride;
+    }
+
+    isOtherTierIncluded(slug) {
+        const override = this.otherTierOverrides[slug];
+        return override === undefined ? this.hasPublicPreview : override;
+    }
+
+    @action
+    setOtherTierIncluded(slug, value) {
+        this.otherTierOverrides = {...this.otherTierOverrides, [slug]: value};
+    }
+
+    get includedOtherTiers() {
+        return this.otherPaidTiers.filter(t => this.isOtherTierIncluded(t.slug));
+    }
+
+    get upsellOtherTiers() {
+        return this.includedOtherTiers.length > 0;
+    }
+
+    // a new audience makes the old per-group answers stale
+    @action
+    resetRowChoices() {
+        this.upsellFreeMembersOverride = null;
+        this.otherTierOverrides = {};
+        this.setEmailBypassPaywall(false);
+    }
+
+    // audience set builder: 'all' sends to every newsletter subscriber the
+    // leak guard allows; 'groups' sends to the union of selected sets
+    @tracked audienceMode = 'all';
+    @tracked selectedGroups = [];
+
+    // set by the Website step from the editor's paywall position; null = unknown
+    @tracked paywallIndex = null;
+    @tracked blockCount = null;
+
+    // a public preview only exists when at least one block sits above the cut —
+    // without one, emailing non-audience members would send them the full post
+    // (email truncation only happens at the paywall marker)
+    get hasPublicPreview() {
+        return typeof this.paywallIndex === 'number' && this.paywallIndex > 0;
+    }
+
+    // a deliberate, labelled leak: this send carries the full post to every
+    // recipient, including members who can't read it on the site. Publishers
+    // use it to put paid work in front of their whole list. Site access is
+    // untouched — the page stays gated.
+    get emailBypassPaywall() {
+        return !!this.post.emailBypassPaywall;
+    }
+
+    @action
+    setEmailBypassPaywall(value) {
+        this.post.set('emailBypassPaywall', !!value);
+    }
+
+    // a group that can't read the post can still be sent something: the free preview
+    // (needs a line in the post) or, deliberately, the whole thing
+    get canIncludeNonAudience() {
+        return this.hasPublicPreview || this.emailBypassPaywall;
+    }
+
+    get audienceSegment() {
+        switch (this.post.visibility) {
+        case 'paid':
+            return 'status:-free';
+        case 'tiers':
+            return this.post.visibilitySegment;
+        default:
+            return 'status:free,status:-free';
+        }
+    }
+
+    // tiers without access to this post. Only a tier-restricted post has any:
+    // on a paid post every paid tier can read it, so there is no such group
+    get otherPaidTiers() {
+        if (this.post.visibility !== 'tiers') {
+            return [];
+        }
+
+        const postTierSlugs = (this.post.tiers || []).map(t => t.slug);
+        return this.allPaidTiers.filter(t => !postTierSlugs.includes(t.slug));
+    }
+
+    // Everyone this send is allowed to reach: the audience, plus each
+    // non-audience group whose row sends them something. null when nothing is
+    // excluded, so the selection passes through untouched.
+    get allowedSegment() {
+        const parts = [this.audienceSegment];
+        let excludedSomething = false;
+
+        if (this.canIncludeNonAudience) {
+            for (const tier of this.otherPaidTiers) {
+                if (this.isOtherTierIncluded(tier.slug)) {
+                    parts.push(`tier:${tier.slug}`);
+                } else {
+                    excludedSomething = true;
+                }
+            }
+
+            if (this.upsellFreeMembers) {
+                parts.push('status:free');
+            } else {
+                excludedSomething = true;
+            }
+        } else {
+            // no preview and no bypass: only the audience can be sent anything
+            excludedSomething = true;
+        }
+
+        return excludedSomething ? parts.join(',') : null;
+    }
+
+    get selectionFilter() {
+        if (!this.selectedGroups.length) {
+            return null;
+        }
+        return this.selectedGroups.map(g => g.filter).join(',');
+    }
+
+    get derivedRecipientFilter() {
+        const {visibility} = this.post;
+        const restricted = visibility === 'paid' || visibility === 'tiers';
+
+        if (this.audienceMode === 'groups' && this.selectionFilter) {
+            // the selection says who was asked for; this says who may actually
+            // be sent to. It covers both the leak guard (no preview, so only
+            // the audience can receive anything) and rows set to Nothing.
+            if (restricted && this.allowedSegment) {
+                return `(${this.selectionFilter})+(${this.allowedSegment})`;
+            }
+            return this.selectionFilter;
+        }
+
+        // Everyone: exact strings preserved so the post adapter serializes
+        // email_segment=all for the default case
+        if (!restricted) {
+            return 'status:free,status:-free';
+        }
+
+        if (visibility === 'paid') {
+            return (this.canIncludeNonAudience && this.upsellFreeMembers)
+                ? 'status:free,status:-free'
+                : this.audienceSegment;
+        }
+
+        // tiers: the audience always gets the full post; other tiers and
+        // free members join when their row sends them something
+        const parts = [this.audienceSegment];
+
+        if (this.canIncludeNonAudience && this.includedOtherTiers.length) {
+            parts.push(this.includedOtherTiers.map(t => `tier:${t.slug}`).join(','));
+        }
+
+        if (this.canIncludeNonAudience && this.upsellFreeMembers) {
+            parts.push('status:free');
+        }
+
+        return parts.join(',');
+    }
+
+    // outcome rows: who gets the full post vs the preview, within the
+    // current selection
+    // groups mode with nothing selected sends to no one — the outcome box
+    // must reflect that instead of falling back to the Everyone counts
+    get hasEmptySelection() {
+        return this.audienceMode === 'groups' && !this.selectionFilter;
+    }
+
+    get fullPostCountFilter() {
+        const base = this.audienceMode === 'groups' && this.selectionFilter
+            ? `(${this.selectionFilter})+(${this.audienceSegment})`
+            : `(${this.audienceSegment})`;
+        return `${this.newsletter?.recipientFilter}+${base}`;
+    }
+
+    get previewCountFilter() {
+        const base = this.audienceMode === 'groups' && this.selectionFilter
+            ? `(${this.selectionFilter})+(status:free)`
+            : `(status:free)`;
+        return `${this.newsletter?.recipientFilter}+${base}`;
+    }
+
+    get selectionCountFilter() {
+        const base = this.audienceMode === 'groups' && this.selectionFilter
+            ? `(${this.selectionFilter})`
+            : '(status:free,status:-free)';
+        return `${this.newsletter?.recipientFilter}+${base}`;
+    }
+
+    @action
+    setAudienceMode(mode) {
+        this.audienceMode = mode;
+    }
+
+    @action
+    addGroup(group) {
+        if (!this.selectedGroups.some(g => g.filter === group.filter)) {
+            this.selectedGroups = [...this.selectedGroups, group];
+        }
+    }
+
+    @action
+    removeGroup(filter) {
+        this.selectedGroups = this.selectedGroups.filter(g => g.filter !== filter);
+    }
+
+    get audienceCountFilter() {
+        return `${this.newsletter?.recipientFilter}+(${this.audienceSegment})`;
+    }
+
+    get freeUpsellCountFilter() {
+        return `${this.newsletter?.recipientFilter}+(status:free)`;
+    }
+
+    get otherTiersCountFilter() {
+        return this.countFilterForSegment(this.otherPaidTiers.map(t => `tier:${t.slug}`).join(','));
+    }
+
+    countFilterForTier(slug) {
+        return this.countFilterForSegment(`tier:${slug}`);
+    }
+
+    countFilterForSegment(segment) {
+        const base = this.audienceMode === 'groups' && this.selectionFilter
+            ? `(${this.selectionFilter})+(${segment})`
+            : `(${segment})`;
+        return `${this.newsletter?.recipientFilter}+${base}`;
+    }
+
+    get otherTiersLabel() {
+        return this.otherPaidTiers.map(t => t.name).join(', ');
+    }
+
+    // audienceDescription says who can READ; the email row needs who is
+    // SUBSCRIBED — for public posts "812 everyone" is broken English
+    get emailAudienceLabel() {
+        return this.post.visibility === 'public' ? 'subscribers' : this.audienceDescription;
+    }
+
+    get audienceDescription() {
+        switch (this.post.visibility) {
+        case 'public':
+            return 'everyone';
+        case 'members':
+            return 'members';
+        case 'paid':
+            return 'paid members';
+        case 'tiers': {
+            const names = (this.post.tiers || []).map(t => t.name);
+            return names.length ? `${names.join(', ')} members` : 'selected tiers';
+        }
+        default:
+            return 'a custom audience';
+        }
+    }
+
+    // one row per audience group for the confirm step's who-gets-what card;
+    // groups that get nothing are enumerated rather than omitted so silence
+    // never hides a consequence
+    get whoGetsWhatGroups() {
+        if (!this.willEmail) {
+            return [];
+        }
+
+        const {visibility} = this.post;
+        const onSite = this.willPostToWebsite;
+
+        if (visibility === 'public' || visibility === 'members') {
+            return [{
+                label: 'Subscribers',
+                countFilter: this.audienceCountFilter,
+                outcome: 'get the full post by email',
+                nothing: false
+            }];
+        }
+
+        const groups = [{
+            label: visibility === 'paid' ? 'Paid members' : this.audienceDescription,
+            countFilter: this.audienceCountFilter,
+            outcome: 'get the full post by email',
+            nothing: false
+        }];
+
+        // one row per tier: they are separate audiences to the publisher even
+        // though the body they receive is identical
+        for (const tier of this.otherPaidTiers) {
+            const included = this.isOtherTierIncluded(tier.slug) && this.canIncludeNonAudience;
+            groups.push({
+                label: `${tier.name} members`,
+                countFilter: this.countFilterForTier(tier.slug),
+                outcome: included
+                    ? this._includedOutcome('inviting a tier upgrade')
+                    : this._nothingOutcome(onSite),
+                nothing: !included
+            });
+        }
+
+        const freeIncluded = this.upsellFreeMembers && this.canIncludeNonAudience;
+        groups.push({
+            label: 'Free members',
+            countFilter: this.freeUpsellCountFilter,
+            outcome: freeIncluded
+                ? this._includedOutcome('with an upgrade button where it ends')
+                : this._nothingOutcome(onSite),
+            nothing: !freeIncluded
+        });
+
+        return groups;
+    }
+
+    // a group without access gets either the whole post (a deliberate choice)
+    // or the free preview; the confirm step has to name which
+    _includedOutcome(previewSuffix) {
+        return this.emailBypassPaywall
+            ? 'get the full post by email — your paywall is ignored for this send'
+            : `get the free preview by email, ${previewSuffix}`;
+    }
+
+    _nothingOutcome(onSite) {
+        if (!onSite) {
+            return 'get no email — and this post isn’t on your site';
+        }
+
+        return this.hasPublicPreview
+            ? 'get no email — on your site they see the free preview, then an upgrade prompt'
+            : 'get no email — on your site they see only the title and an upgrade prompt';
+    }
+
+    get whoGetsWhatSummary() {
+        const {visibility} = this.post;
+        const restricted = visibility === 'paid' || visibility === 'tiers';
+        const nonAudienceGets = () => {
+            if (!(this.upsellFreeMembers && this.canIncludeNonAudience)) {
+                return ' Free subscribers get no email.';
+            }
+            return this.emailBypassPaywall
+                ? ' Free subscribers get the full post too — your paywall is ignored for this send.'
+                : ' Free subscribers get the preview by email with an upgrade button.';
+        };
+
+        if (!this.willPostToWebsite) {
+            let summary = `This ${this.post.displayName} is email-only — it won’t appear on your site.`;
+            if (restricted) {
+                summary += ` The full ${this.post.displayName} goes to ${this.audienceDescription}.`;
+                summary += nonAudienceGets();
+            }
+            return summary;
+        }
+
+        if (visibility === 'public') {
+            return 'This post is public. Everyone can read all of it, on your site and by email.';
+        }
+
+        let summary = `This post is for ${this.audienceDescription}.`;
+
+        summary += this.hasPublicPreview
+            ? ' Everyone else sees the free preview on your site, then an upgrade prompt.'
+            : ' Everyone else sees only an upgrade prompt on your site.';
+
+        if (this.willEmail && restricted) {
+            summary += nonAudienceGets();
+        }
+
+        return summary;
+    }
+
+    // the redesign asks two per-step yes/no questions instead of the
+    // three-way publish type radio; publishType stays the source of truth
+    get willPostToWebsite() {
+        return this.publishType !== 'send';
+    }
+
+    get canBeEmailOnly() {
+        return !this.emailUnavailable && !this.emailDisabled;
+    }
+
+    @action
+    setWebsiteChannel(postToWebsite) {
+        if (postToWebsite) {
+            if (this.publishType === 'send') {
+                this.publishType = this.canBeEmailOnly ? 'publish+send' : 'publish';
+            }
+        } else if (this.canBeEmailOnly) {
+            this.publishType = 'send';
+        }
+    }
+
+    @action
+    setEmailChannel(sendEmail) {
+        if (sendEmail) {
+            this.publishType = this.willPostToWebsite ? 'publish+send' : 'send';
+        } else {
+            // switching email off forces the website channel on — a post has
+            // to go somewhere
+            this.publishType = 'publish';
+        }
+    }
+
+    @action
+    setUpsellFreeMembers(value) {
+        this.upsellFreeMembersOverride = value;
+    }
+
+    @action
+    setUpsellOtherTiers(value) {
+        for (const tier of this.otherPaidTiers) {
+            this.setOtherTierIncluded(tier.slug, value);
+        }
+    }
+
+    @action
+    setPaywallIndex(index, blockCount) {
+        this.paywallIndex = index;
+
+        if (typeof blockCount === 'number') {
+            this.blockCount = blockCount;
         }
     }
 
@@ -235,8 +679,9 @@ export default class PublishOptions {
 
     // setup -------------------------------------------------------------------
 
-    constructor({config, limit, post, settings, store, user, membersCountCache} = {}) {
+    constructor({config, feature, limit, post, settings, store, user, membersCountCache} = {}) {
         this.config = config;
+        this.feature = feature;
         this.limit = limit;
         this.post = post;
         this.settings = settings;
@@ -301,6 +746,15 @@ export default class PublishOptions {
         // newsletters
         if (!this.user.isContributor) {
             promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.active_members'}));
+        }
+
+        // paid tiers - used by the redesigned email step to derive upsell
+        // segments; not gated on paidMembersEnabled because tiers exist (and
+        // can gate content) before Stripe is connected
+        if (this.feature?.publishFlowRedesign) {
+            promises.push(this.store.query('tier', {filter: 'type:paid', limit: 'all'}).then((tiers) => {
+                this.allPaidTiers = tiers.toArray();
+            }));
         }
 
         yield Promise.all(promises);

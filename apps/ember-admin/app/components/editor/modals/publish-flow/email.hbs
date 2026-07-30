@@ -1,0 +1,320 @@
+<div class="gh-publish-title gh-publish-step-title" data-test-publish-flow="email">
+    <div class="green">Step 2 of 3</div>
+    {{! an email-only post has already answered "by email?" — the open
+        question is who gets what }}
+    <div>{{if this.isEmailOnly "Who gets this email?" "Send it by email?"}}</div>
+</div>
+{{! one question per step: scheduling moved to the timing step, the
+    who-gets-what summary appears only on the final review }}
+
+<div class="gh-publish-step-body">
+    {{#if this.publishOptions.emailUnavailable}}
+        <p class="gh-publish-email-note" data-test-email-unavailable>
+            This {{this.post.displayName}} won&rsquo;t be sent by email.
+        </p>
+    {{else}}
+        {{#if this.isEmailOnly}}
+            {{! no yes/no chips: the channel question was answered on step 1 }}
+        {{else}}
+            <div class="gh-publish-chip-row gh-publish-primary-question" data-test-email-question>
+                <button
+                    type="button"
+                    class="gh-publish-chip {{if this.willSendEmail "active"}}"
+                    aria-pressed="{{this.willSendEmail}}"
+                    {{on "click" (fn this.setSendEmail true)}}
+                    data-test-email-chip="yes"
+                >
+                    Yes
+                </button>
+                <button
+                    type="button"
+                    class="gh-publish-chip {{unless this.willSendEmail "active"}}"
+                    aria-pressed="{{unless this.willSendEmail "true" "false"}}"
+                    {{on "click" (fn this.setSendEmail false)}}
+                    data-test-email-chip="no"
+                >
+                    No, web only
+                </button>
+            </div>
+        {{/if}}
+
+        {{#if this.willSendEmail}}
+            <div class="gh-publish-question gh-publish-email-recipients">
+            {{#if (gt this.publishOptions.newsletters.length 1)}}
+                <span class="gh-publish-question-label">From which newsletter?</span>
+                <div class="gh-publish-chip-row gh-publish-newsletter-chips" data-test-select="newsletter">
+                    {{#each this.publishOptions.newsletters as |newsletter|}}
+                        <button
+                            type="button"
+                            class="gh-publish-chip {{if (eq newsletter this.publishOptions.newsletter) "active"}}"
+                            aria-pressed="{{eq newsletter this.publishOptions.newsletter}}"
+                            {{on "click" (fn this.handleNewsletterChange newsletter)}}
+                            data-test-newsletter-chip={{newsletter.slug}}
+                        >
+                            {{newsletter.name}}
+                        </button>
+                    {{/each}}
+                </div>
+            {{/if}}
+
+            <span class="gh-publish-question-label">Who receives it?</span>
+
+            <div class="gh-publish-chip-row gh-publish-audience-mode" data-test-audience-mode>
+                <button
+                    type="button"
+                    class="gh-publish-chip {{if (eq this.publishOptions.audienceMode "all") "active"}}"
+                    aria-pressed="{{eq this.publishOptions.audienceMode "all"}}"
+                    {{on "click" (fn this.setAudienceMode "all")}}
+                    data-test-audience-chip="all"
+                >
+                    Everyone
+                </button>
+                <button
+                    type="button"
+                    class="gh-publish-chip {{if (eq this.publishOptions.audienceMode "groups") "active"}}"
+                    aria-pressed="{{eq this.publishOptions.audienceMode "groups"}}"
+                    {{on "click" (fn this.setAudienceMode "groups")}}
+                    data-test-audience-chip="groups"
+                >
+                    Specific groups
+                </button>
+            </div>
+
+            {{#if (eq this.publishOptions.audienceMode "groups")}}
+                <div class="gh-publish-group-tokens-wrap">
+                <div class="gh-publish-group-tokens" data-test-group-tokens>
+                    {{#each this.publishOptions.selectedGroups as |group|}}
+                        <span class="gh-publish-group-token" data-test-group-token={{group.filter}}>
+                            {{group.label}}
+                            {{#let (members-count-fetcher query=(hash filter=(concat this.publishOptions.newsletter.recipientFilter "+(" group.filter ")"))) as |countFetcher|}}
+                                <span class="gh-publish-group-token-count">{{format-number countFetcher.count}}</span>
+                            {{/let}}
+                            <button type="button" aria-label="Remove group" {{on "click" (fn this.removeGroup group.filter)}} data-test-button="remove-group">&times;</button>
+                        </span>
+                    {{/each}}
+                    <button type="button" class="gh-publish-add-group" {{on "click" this.toggleGroupMenu}} data-test-button="add-group">+ Add group</button>
+                </div>
+                {{#if this.groupMenuOpen}}
+                    <div class="gh-publish-group-menu gh-publish-group-menu-overlay" data-test-group-menu>
+                        {{#each this.availableGroupSections as |section|}}
+                            <div class="gh-publish-group-menu-section">{{section.name}}</div>
+                            {{#each section.groups as |group|}}
+                                <button type="button" class="gh-publish-group-menu-item" {{on "click" (fn this.addGroup group)}} data-test-menu-group={{group.filter}}>
+                                    {{group.label}}
+                                </button>
+                            {{/each}}
+                        {{/each}}
+                    </div>
+                {{/if}}
+                </div>
+            {{/if}}
+
+            <span class="gh-publish-question-label">What they&rsquo;ll get</span>
+            <div class="gh-publish-email-derived" data-test-email-derived>
+                {{#if this.publishOptions.hasEmptySelection}}
+                    <p class="gh-publish-email-note gh-publish-email-empty" data-test-empty-selection>
+                        No groups selected yet &mdash; this email would go to no one.
+                    </p>
+                {{else if this.publishOptions.newsletter}}
+                    <div class="gh-publish-email-row gh-publish-email-row-split" data-test-email-audience>
+                        {{#let (members-count-fetcher query=(hash filter=this.publishOptions.fullPostCountFilter)) as |countFetcher|}}
+                            <span>
+                                {{#if countFetcher.count}}
+                                    <strong class="gh-publish-email-row-label">{{this.fullPostRowLabel}}</strong>
+                                    <span class="gh-publish-email-row-count">({{format-number countFetcher.count}})</span>
+                                {{else}}
+                                    <span class="gh-publish-email-row-muted">No {{this.fullPostRowLabel}} in this selection.</span>
+                                {{/if}}
+                            </span>
+                            {{#if countFetcher.count}}
+                                {{! the audience has no choice to make, but its outcome
+                                    sits in the same column as the rows that do }}
+                                <span class="gh-publish-email-row-actions">
+                                    <span class="gh-publish-email-row-state" data-test-audience-state>Full {{this.post.displayName}}</span>
+                                    <button type="button" class="gh-publish-email-preview-btn" {{on "click" (fn this.openLightbox "paid")}} data-test-button="preview-email-paid">See this email &rarr;</button>
+                                </span>
+                            {{/if}}
+                        {{/let}}
+                    </div>
+
+                    {{#if this.showUpsells}}
+                        {{#each this.otherTierRows as |row|}}
+                            <div class="gh-publish-email-row gh-publish-email-row-split" data-test-email-upsell="other-tiers" data-test-tier-row={{row.tier.slug}}>
+                                {{#let (members-count-fetcher query=(hash filter=row.countFilter)) as |countFetcher|}}
+                                    <span>
+                                        <strong>{{row.tier.name}} members</strong>
+                                        <span class="gh-publish-email-row-count">({{format-number countFetcher.count}})</span>
+                                        {{#unless countFetcher.count}}
+                                            <span class="gh-publish-email-row-muted">{{if this.inGroupsMode "not in this selection" "none yet"}}</span>
+                                        {{/unless}}
+                                    </span>
+                                    {{#if countFetcher.count}}
+                                        <span class="gh-publish-email-row-actions">
+                                            <span class="gh-publish-minichips">
+                                                <button type="button" class="gh-publish-minichip {{if (eq row.mode "full") "active"}}" aria-pressed="{{eq row.mode "full"}}" {{on "click" (fn this.setTierRowMode row.tier "full")}} data-test-tierrow="full">Full post</button>
+                                                <button type="button" class="gh-publish-minichip {{if (eq row.mode "preview") "active"}}" aria-pressed="{{eq row.mode "preview"}}" {{on "click" (fn this.setTierRowMode row.tier "preview")}} data-test-tierrow="preview">Free preview</button>
+                                                <button type="button" class="gh-publish-minichip {{if (eq row.mode "nothing") "active"}}" aria-pressed="{{eq row.mode "nothing"}}" {{on "click" (fn this.setTierRowMode row.tier "nothing")}} data-test-tierrow="nothing">Nothing</button>
+                                            </span>
+                                            {{#unless (eq row.mode "nothing")}}
+                                                <button type="button" class="gh-publish-email-preview-btn" {{on "click" (fn this.openLightbox "free")}} data-test-button="preview-email-tiers">See this email &rarr;</button>
+                                            {{/unless}}
+                                        </span>
+                                    {{/if}}
+                                {{/let}}
+                            </div>
+                        {{/each}}
+
+                        <div class="gh-publish-email-row gh-publish-email-row-split" data-test-email-upsell="free">
+                            {{#let (members-count-fetcher query=(hash filter=this.publishOptions.previewCountFilter)) as |countFetcher|}}
+                                <span>
+                                    <strong>Free members</strong>
+                                    <span class="gh-publish-email-row-count">({{format-number countFetcher.count}})</span>
+                                    {{#unless countFetcher.count}}
+                                        <span class="gh-publish-email-row-muted">{{if this.inGroupsMode "not in this selection" "none yet"}}</span>
+                                    {{/unless}}
+                                </span>
+                                {{#if countFetcher.count}}
+                                    <span class="gh-publish-email-row-actions">
+                                        <span class="gh-publish-minichips">
+                                            <button type="button" class="gh-publish-minichip {{if (eq this.freeRowMode "full") "active"}}" aria-pressed="{{eq this.freeRowMode "full"}}" {{on "click" (fn this.setFreeRowMode "full")}} data-test-freerow="full">Full post</button>
+                                            <button type="button" class="gh-publish-minichip {{if (eq this.freeRowMode "preview") "active"}}" aria-pressed="{{eq this.freeRowMode "preview"}}" {{on "click" (fn this.setFreeRowMode "preview")}} data-test-freerow="preview">Free preview</button>
+                                            <button type="button" class="gh-publish-minichip {{if (eq this.freeRowMode "nothing") "active"}}" aria-pressed="{{eq this.freeRowMode "nothing"}}" {{on "click" (fn this.setFreeRowMode "nothing")}} data-test-freerow="nothing">Nothing</button>
+                                        </span>
+                                        {{#unless (eq this.freeRowMode "nothing")}}
+                                            <button type="button" class="gh-publish-email-preview-btn" {{on "click" (fn this.openLightbox "free")}} data-test-button="preview-email-free">See this email &rarr;</button>
+                                        {{/unless}}
+                                    </span>
+                                {{/if}}
+                            {{/let}}
+                        </div>
+
+                        {{! only an email-only post decides the free preview here —
+                            a web post already answered it on step 1 }}
+                        {{#if this.showPreviewDetail}}
+                            <div class="gh-publish-email-detail" data-test-preview-detail>
+                                {{#if this.publishOptions.hasPublicPreview}}
+                                    <p class="gh-publish-email-detail-line">
+                                        Their email carries
+                                        {{#if this.publishOptions.blockCount}}
+                                            <strong>{{this.publishOptions.paywallIndex}} of {{this.publishOptions.blockCount}} sections</strong>,
+                                        {{else}}
+                                            <strong>everything above your preview line</strong>,
+                                        {{/if}}
+                                        then the paywall{{#if this.post.paywallPitch}} &mdash; <span data-test-pitch-trace>with your custom pitch</span>{{/if}}.
+                                    </p>
+                                {{else}}
+                                    <p class="gh-publish-email-detail-line" data-test-no-preview-hint>
+                                        There&rsquo;s no paywall in your {{this.post.displayName}} yet, so there&rsquo;s nothing to send them.
+                                    </p>
+                                {{/if}}
+                                <div class="gh-publish-quiet-links">
+                                    {{#if this.canPlacePreview}}
+                                        <button type="button" class="gh-btn-link gh-publish-canvas-toggle" {{on "click" this.addPaywall}} data-test-button="adjust-preview">
+                                            <span>{{if this.hasPaywall "Edit the paywall" "Add the paywall"}} &rarr;</span>
+                                        </button>
+                                    {{else}}
+                                        <button type="button" class="gh-btn-link gh-publish-canvas-toggle" {{on "click" @back}} data-test-button="back-to-website">
+                                            <span>{{if this.hasPaywall "Edit the paywall" "Add the paywall"}} &rarr;</span>
+                                        </button>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        {{else if this.showMissingLineNote}}
+                            <p class="gh-publish-email-detail-line" data-test-no-preview-hint>
+                                There&rsquo;s no public preview in your {{this.post.displayName}} yet, so there&rsquo;s nothing to send them.
+                                <button type="button" class="gh-btn-link" {{on "click" @back}} data-test-button="back-to-website">Set one on the previous step</button>
+                            </p>
+                        {{/if}}
+
+                        {{#if this.sharedFullPostNote}}
+                            <p class="gh-publish-email-detail-line" data-test-shared-full-note>
+                                One email carries one body, so everyone included gets the full {{this.post.displayName}}.
+                            </p>
+                        {{/if}}
+                    {{/if}}
+
+                {{/if}}
+            </div>
+
+            {{#if this.canAddPaywall}}
+                <div class="gh-publish-quiet-links gh-publish-email-actions">
+                    <button type="button" class="gh-btn-link gh-publish-canvas-toggle" {{on "click" this.addPaywall}} data-test-button="add-paywall">
+                        <span>Add a paywall to this email &rarr;</span>
+                    </button>
+                </div>
+            {{else if this.canRemovePaywall}}
+                <div class="gh-publish-quiet-links gh-publish-email-actions">
+                    <button type="button" class="gh-btn-link gh-publish-canvas-toggle" {{on "click" this.removePaywall}} data-test-button="remove-paywall">
+                        <span>Remove the paywall &mdash; send the whole {{this.post.displayName}} to everyone</span>
+                    </button>
+                </div>
+            {{/if}}
+
+            {{#if this.isEmailOnly}}
+                <p class="gh-publish-email-footnote" data-test-email-only-note>
+                    Only this email decides who reads what &mdash; there&rsquo;s no page on your site.
+                </p>
+            {{else if this.bypassPaywall}}
+                <p class="gh-publish-email-footnote" data-test-bypass-note>
+                    Your paywall is ignored for this email. On your site the {{this.post.displayName}} stays for {{this.publishOptions.audienceDescription}}.
+                </p>
+            {{/if}}
+            </div>
+
+            {{#if this.publishOptions.willEmail}}
+                <Editor::EmailSizeWarning @post={{this.post}} as |overLimit emailSizeKb|>
+                    {{#if overLimit}}
+                        <p class="gh-box gh-content-box pa gh-publish-setting-email-warning open">
+                            <span class="gh-email-preview-clip-title mb">This email is <span class="yellow-d1">{{emailSizeKb}}kB</span></span>
+                            <span class="gh-email-preview-clip-description">Email newsletters may get clipped in the inbox behind a &ldquo;View entire message&rdquo; link when they&rsquo;re over 100kB.</span>
+                        </p>
+                    {{/if}}
+                </Editor::EmailSizeWarning>
+            {{/if}}
+        {{/if}}
+
+    {{/if}}
+</div>
+
+{{#if this.lightboxOpen}}
+    {{#in-element this.lightboxTarget insertBefore=null}}
+        <div class="gh-publish-email-lightbox" data-test-email-lightbox>
+            <div class="gh-publish-email-lightbox-inner">
+                <div class="gh-publish-email-lightbox-bar">
+                    <span>The exact email {{this.lightboxAudienceLabel}} receives</span>
+                    <div class="gh-publish-email-lightbox-actions">
+                        {{#if this.showLightboxTabs}}
+                            <button
+                                type="button"
+                                class="gh-publish-chip {{if (eq this.viewAs "free") "active"}}"
+                                aria-pressed="{{eq this.viewAs "free"}}"
+                                {{on "click" (fn this.setViewAs "free")}}
+                                data-test-lightbox-tab="free"
+                            >
+                                Free subscriber
+                            </button>
+                            <button
+                                type="button"
+                                class="gh-publish-chip {{if (eq this.viewAs "paid") "active"}}"
+                                aria-pressed="{{eq this.viewAs "paid"}}"
+                                {{on "click" (fn this.setViewAs "paid")}}
+                                data-test-lightbox-tab="paid"
+                            >
+                                Paid member
+                            </button>
+                        {{/if}}
+                        <button type="button" class="gh-btn" {{on "click" this.closeLightbox}} data-test-button="close-email-lightbox"><span>Close</span></button>
+                    </div>
+                </div>
+                <iframe class="gh-publish-email-lightbox-frame" srcdoc={{this.previewHtml}} title="Email preview as {{this.lightboxAudienceLabel}}"></iframe>
+            </div>
+        </div>
+    {{/in-element}}
+{{/if}}
+
+<div class="gh-publish-cta gh-publish-cta-sticky">
+    <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @next}} data-test-button="continue">
+        <span>Continue &rarr;</span>
+    </button>
+    <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" @back}} data-test-button="back-to-website-step">Back</button>
+</div>

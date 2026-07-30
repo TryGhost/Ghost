@@ -1,0 +1,216 @@
+<div class="gh-publish-title gh-publish-step-title" data-test-publish-flow="website">
+    <div class="green">Step 1 of 3</div>
+    <div>
+        {{~#if this.showGateFields~}}
+            Paywall message
+        {{~else if this.placementActive~}}
+            Your paywall
+        {{~else~}}
+            Post it on your website?
+        {{~/if~}}
+    </div>
+</div>
+
+{{#if this.showGateFields}}
+    {{! one job per view: the copy, and nothing else }}
+    <div class="gh-publish-website gh-publish-paywall-panel">
+        <p class="gh-publish-panel-lede">
+            What non-members read where your post stops. It updates in the {{this.post.displayName}} as you type.
+        </p>
+        <div class="gh-publish-paywall-copy" data-test-gate-fields>
+            <label class="gh-publish-gate-field">
+                <span>Heading</span>
+                <input type="text" value={{this.gateEffective.heading}} {{on "input" (fn this.updateGateField "heading")}} {{on "change" this.saveGateFields}} data-test-input="gate-heading" />
+            </label>
+            <label class="gh-publish-gate-field">
+                <span>Message</span>
+                <textarea rows="3" {{on "input" (fn this.updateGateField "pitch")}} {{on "change" this.saveGateFields}} data-test-input="gate-pitch">{{this.gateEffective.pitch}}</textarea>
+            </label>
+            <label class="gh-publish-gate-field">
+                <span>Button</span>
+                <input type="text" value={{this.gateEffective.buttonText}} {{on "input" (fn this.updateGateField "buttonText")}} {{on "change" this.saveGateFields}} data-test-input="gate-button-text" />
+            </label>
+            <label class="gh-publish-gate-field">
+                <span>Button links to</span>
+                <input type="text" value={{this.gateEffective.buttonUrl}} {{on "input" (fn this.updateGateField "buttonUrl")}} {{on "change" this.saveGateFields}} data-test-input="gate-button-url" placeholder="An offer, or the default signup" />
+            </label>
+            <p class="gh-publish-gate-note">
+                Untouched fields follow your access setting. Your theme styles this on the web.
+            </p>
+        </div>
+    </div>
+
+    <div class="gh-publish-cta gh-publish-cta-sticky">
+        <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" this.toggleGateFields}} data-test-button="gate-done">
+            <span>Done</span>
+        </button>
+    </div>
+{{else if this.placementActive}}
+    {{! docked beside the editor. One instruction — the thing to do is on the
+        left — then the two things that can be opened from here. }}
+    <div class="gh-publish-website gh-publish-paywall-panel" data-test-placement>
+        <p class="gh-publish-panel-lede" data-test-placement-hint>
+            Click between any two paragraphs in your {{this.post.displayName}} to move the line.
+        </p>
+
+        <div class="gh-publish-panel-status" data-test-placement-summary>
+            <strong>{{this.placementSummary.publicCount}} of {{this.placementSummary.totalCount}}</strong>
+            sections stay public
+        </div>
+
+        <div class="gh-publish-panel-entries">
+            <button type="button" class="gh-publish-panel-entry" {{on "click" this.toggleGateFields}} data-test-button="toggle-gate-fields">
+                <span class="gh-publish-panel-entry-label">Paywall message</span>
+                <span class="gh-publish-panel-entry-value">{{this.gateEffective.heading}}</span>
+                <span class="gh-publish-panel-entry-action">Edit &rarr;</span>
+            </button>
+            <button type="button" class="gh-publish-panel-entry" {{on "click" this.openVisitorPreview}} data-test-button="view-as-visitor">
+                <span class="gh-publish-panel-entry-label">See it as a visitor</span>
+                <span class="gh-publish-panel-entry-value">Your site, logged out</span>
+                <span class="gh-publish-panel-entry-action">Open &rarr;</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="gh-publish-cta gh-publish-cta-sticky">
+        <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" this.donePlacing}} data-test-button="placement-done">
+            <span>Done</span>
+        </button>
+        <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" this.removePreview}} data-test-button="remove-preview">Remove preview</button>
+    </div>
+{{else}}
+<div class="gh-publish-website">
+    <div class="gh-publish-chip-row gh-publish-primary-question" data-test-website-question>
+        <button
+            type="button"
+            class="gh-publish-chip {{if this.willPostToWebsite "active"}}"
+            aria-pressed="{{this.willPostToWebsite}}"
+            {{on "click" (fn this.setPostToWebsite true)}}
+            data-test-website-chip="yes"
+        >
+            Yes
+        </button>
+        <button
+            type="button"
+            class="gh-publish-chip {{unless this.willPostToWebsite "active"}}"
+            aria-pressed="{{unless this.willPostToWebsite "true" "false"}}"
+            disabled={{unless this.canBeEmailOnly true}}
+            title={{unless this.canBeEmailOnly "Email is unavailable, so this post has to be published on your site"}}
+            {{on "click" (fn this.setPostToWebsite false)}}
+            data-test-website-chip="no"
+        >
+            No, email only
+        </button>
+    </div>
+
+    {{#if this.willPostToWebsite}}
+        <div class="gh-publish-question" data-test-visibility-question>
+            <span class="gh-publish-question-label">Who can read it?</span>
+            <div class="gh-publish-chip-row">
+                {{#each this.visibilityOptions as |option|}}
+                    <button
+                        type="button"
+                        class="gh-publish-chip {{if option.selected "active"}}"
+                        aria-pressed="{{option.selected}}"
+                        {{on "click" (fn this.setVisibility option.value)}}
+                        data-test-visibility-chip={{option.value}}
+                    >
+                        {{option.label}}
+                    </button>
+                {{/each}}
+            </div>
+            {{#if this.showTierSelection}}
+                <div class="gh-publish-tier-checkboxes" data-test-tier-checkboxes>
+                    {{#each this.tierOptions as |option|}}
+                        <label class="gh-publish-tier-checkbox">
+                            <input
+                                type="checkbox"
+                                checked={{option.selected}}
+                                {{on "change" (fn this.toggleTier option.tier)}}
+                                data-test-tier-checkbox={{option.tier.slug}}
+                            />
+                            <span>{{option.tier.name}}</span>
+                        </label>
+                    {{/each}}
+                </div>
+            {{/if}}
+        </div>
+
+        {{#if this.isRestricted}}
+            <div class="gh-publish-question" data-test-preview-question>
+                <span class="gh-publish-question-label">Add a free public preview?</span>
+                <div class="gh-publish-chip-row">
+                    <button
+                        type="button"
+                        class="gh-publish-chip {{unless this.previewEnabled "active"}}"
+                        aria-pressed="{{unless this.previewEnabled "true" "false"}}"
+                        {{on "click" (fn this.setPreviewEnabled false)}}
+                        data-test-preview-chip="no"
+                    >
+                        No, just the title
+                    </button>
+                    <button
+                        type="button"
+                        class="gh-publish-chip {{if this.previewEnabled "active"}}"
+                        aria-pressed="{{this.previewEnabled}}"
+                        {{on "click" (fn this.setPreviewEnabled true)}}
+                        data-test-preview-chip="yes"
+                    >
+                        Yes, choose where it ends
+                    </button>
+                </div>
+            </div>
+
+            {{#unless this.previewEnabled}}
+                <p class="gh-publish-cut-hint" data-test-no-preview-note>
+                    Non-members will see only the title and an upgrade prompt on your site.
+                </p>
+            {{/unless}}
+
+            {{! the answer reads as a setting with a value, not as a stray
+                sentence: same bordered-row language as the email outcomes }}
+            {{#if this.showPlacementUI}}
+                <div class="gh-publish-setting-row" data-test-placement-settled>
+                    <span class="gh-publish-setting-row-value">
+                        {{#if this.placementSummary}}
+                            Public preview ends after
+                            <strong>{{this.placementSummary.publicCount}} of {{this.placementSummary.totalCount}} sections</strong>
+                        {{else}}
+                            Public preview is set
+                        {{/if}}
+                    </span>
+                    <button type="button" class="gh-publish-setting-row-action" {{on "click" this.changePlacement}} data-test-button="change-placement">
+                        Edit paywall &rarr;
+                    </button>
+                </div>
+            {{/if}}
+        {{/if}}
+    {{else}}
+        <p class="gh-publish-cut-hint" data-test-email-only-note>
+            This {{this.post.displayName}} will only exist as an email &mdash; who reads what is decided on the next step.
+        </p>
+    {{/if}}
+</div>
+
+<div class="gh-publish-cta gh-publish-cta-sticky">
+    <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" this.handleNext}} data-test-button="continue">
+        <span>Continue to email &rarr;</span>
+    </button>
+</div>
+{{/if}}
+
+{{#if this.visitorPreviewOpen}}
+    {{#in-element this.lightboxTarget insertBefore=null}}
+        <div class="gh-publish-email-lightbox" data-test-visitor-lightbox>
+            <div class="gh-publish-email-lightbox-inner">
+                <div class="gh-publish-email-lightbox-bar">
+                    <span>What a logged-out visitor sees on your site &mdash; your theme&rsquo;s rendering.</span>
+                    <div class="gh-publish-email-lightbox-actions">
+                        <button type="button" class="gh-btn" {{on "click" this.closeVisitorPreview}} data-test-button="close-visitor-lightbox"><span>Close</span></button>
+                    </div>
+                </div>
+                <iframe class="gh-publish-email-lightbox-frame" src={{this.visitorPreviewUrl}} title="Post preview as a visitor"></iframe>
+            </div>
+        </div>
+    {{/in-element}}
+{{/if}}
