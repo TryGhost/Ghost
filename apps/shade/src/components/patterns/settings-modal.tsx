@@ -65,11 +65,11 @@ const settingsModalVariants = cva(
     {
         variants: {
             size: {
-                sm: 'max-w-[480px] rounded',
-                md: 'max-w-[720px] rounded',
-                lg: 'max-w-[1020px] rounded',
-                xl: 'max-w-[1240px] rounded',
-                full: 'h-full rounded',
+                sm: 'max-w-[480px] rounded-lg',
+                md: 'max-w-[720px] rounded-lg',
+                lg: 'max-w-[1020px] rounded-lg',
+                xl: 'max-w-[1240px] rounded-lg',
+                full: 'h-full rounded-lg',
                 bleed: 'h-full'
             },
             align: {
