@@ -10,6 +10,7 @@ import {
     type Notification,
     type Post,
     type ReplyChainResponse,
+    type ReplyResponse,
     type SearchResults,
     type SocialWebDomain,
     isApiError
@@ -1524,7 +1525,7 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
 
             return {id};
         },
-        onSuccess: (post: Post, variables) => {
+        onSuccess: (post: ReplyResponse, variables) => {
             if (typeof post.id !== 'string' || post.id.length === 0) {
                 throw new Error('Post returned from API has no id');
             }

@@ -76,6 +76,13 @@ export interface ReplyChainResponse {
     next: string | null;
 }
 
+export interface ReplyResponse {
+    id: string;
+    content?: string;
+    inReplyTo?: string;
+    image?: string;
+}
+
 export type ActivityPubCollectionResponse<T> = {data: T[], next: string | null};
 
 export interface GetProfileFollowersResponse {
@@ -420,13 +427,13 @@ export class ActivityPubAPI {
         await this.fetchJSON(url, 'POST');
     }
 
-    async reply(id: string, content: string, image?: {url: string, altText?: string}): Promise<Post> {
+    async reply(id: string, content: string, image?: {url: string, altText?: string}): Promise<ReplyResponse> {
         const url = new URL(`.ghost/activitypub/v1/actions/reply/${encodeURIComponent(id)}`, this.apiUrl);
         const body: {content: string, image?: {url: string, altText?: string}} = {content};
         if (image) {
             body.image = image;
         }
-        const response = await this.fetchJSON<Post>(url, 'POST', body);
+        const response = await this.fetchJSON<ReplyResponse>(url, 'POST', body);
         if (response === null) {
             throw new Error('Reply returned no post');
         }
