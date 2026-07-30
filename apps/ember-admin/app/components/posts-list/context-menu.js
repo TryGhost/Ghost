@@ -48,6 +48,14 @@ const messages = {
         single: 'Tag added',
         multiple: 'Tag added to {count} {type}s'
     },
+    tagsRemoved: {
+        single: 'Tags removed',
+        multiple: 'Tags removed from {count} {type}s'
+    },
+    tagRemoved: {
+        single: 'Tag removed',
+        multiple: 'Tag removed from {count} {type}s'
+    },
     duplicated: {
         single: '{Type} duplicated',
         multiple: '{count} {type}s duplicated'
@@ -151,9 +159,20 @@ export default class PostsContextMenu extends Component {
     @action
     async addTagToPosts() {
         await this.menu.openModal(AddPostTagsModal, {
+            action: 'add',
             type: this.type,
             selectionList: this.selectionList,
             confirm: this.addTagToPostsTask
+        });
+    }
+
+    @action
+    async removeTagFromPosts() {
+        await this.menu.openModal(AddPostTagsModal, {
+            action: 'remove',
+            type: this.type,
+            selectionList: this.selectionList,
+            confirm: this.removeTagFromPostsTask
         });
     }
 
@@ -222,8 +241,27 @@ export default class PostsContextMenu extends Component {
             }
         });
 
-        // Re-fetch all updated posts so the client store is up-to-date
-        // Fetch in batches of 50 to avoid too-long URLs from all of the ObjectIDs
+        yield* this.refreshUpdatedPosts();
+
+        return true;
+    }
+
+    @task
+    *removeTagFromPostsTask(tags) {
+        yield this.performBulkEdit('removeTag', {
+            tags: tags.map(tag => ({id: tag.id}))
+        });
+        const message = tags.length > 1 ? 'tagsRemoved' : 'tagRemoved';
+        this.notifications.showNotification(this.#getToastMessage(message), {type: 'success'});
+
+        yield* this.refreshUpdatedPosts();
+
+        return true;
+    }
+
+    *refreshUpdatedPosts() {
+        // Re-fetch all updated posts so the client store is up-to-date.
+        // Fetch in batches of 50 to avoid too-long URLs from all of the ObjectIDs.
         const updatedPosts = this.selectionList.availableModels;
         const BATCH_SIZE = 50;
         for (let i = 0; i < updatedPosts.length; i += BATCH_SIZE) {
@@ -233,8 +271,6 @@ export default class PostsContextMenu extends Component {
 
         // Remove posts that no longer match the filter
         this.updateFilteredPosts();
-
-        return true;
     }
 
     @task

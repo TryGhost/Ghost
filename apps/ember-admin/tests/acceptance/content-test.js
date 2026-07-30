@@ -170,12 +170,13 @@ describe('Acceptance: Posts / Pages', function () {
 
                     // Test that the context menu has the correct buttons
                     const buttons = contextMenu.querySelectorAll('button');
-                    expect(buttons.length, 'context menu buttons').to.equal(5);
+                    expect(buttons.length, 'context menu buttons').to.equal(6);
                     expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
                     expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Unpublish');
                     expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Feature');
                     expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Add a tag');
-                    expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Duplicate');
+                    expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Remove a tag');
+                    expect(buttons[5].innerText.trim(), 'context menu button 6').to.contain('Duplicate');
                 });
 
                 // Note: we cover the functionality of the context menu buttons in the 'as admin' section
@@ -435,17 +436,18 @@ describe('Acceptance: Posts / Pages', function () {
                         let buttons = contextMenu.querySelectorAll('button');
 
                         expect(contextMenu, 'context menu').to.exist;
-                        expect(buttons.length, 'context menu buttons').to.equal(7);
+                        expect(buttons.length, 'context menu buttons').to.equal(8);
                         expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
                         expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Share as a gift');
                         expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Unpublish');
                         expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Feature'); // or Unfeature
                         expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Add a tag');
-                        expect(buttons[5].innerText.trim(), 'context menu button 6').to.contain('Duplicate');
-                        expect(buttons[6].innerText.trim(), 'context menu button 7').to.contain('Delete');
+                        expect(buttons[5].innerText.trim(), 'context menu button 6').to.contain('Remove a tag');
+                        expect(buttons[6].innerText.trim(), 'context menu button 7').to.contain('Duplicate');
+                        expect(buttons[7].innerText.trim(), 'context menu button 8').to.contain('Delete');
 
                         // duplicate the post
-                        await click(buttons[5]);
+                        await click(buttons[6]);
 
                         const posts = findAll('[data-test-post-id]');
                         expect(posts.length, 'all posts count').to.equal(5);
@@ -558,14 +560,15 @@ describe('Acceptance: Posts / Pages', function () {
                         let buttons = contextMenu.querySelectorAll('button');
 
                         expect(contextMenu, 'context menu').to.exist;
-                        expect(buttons.length, 'context menu buttons').to.equal(7);
+                        expect(buttons.length, 'context menu buttons').to.equal(8);
                         expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
                         expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Share as a gift');
                         expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Unpublish');
                         expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Feature'); // or Unfeature
                         expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Add a tag');
-                        expect(buttons[5].innerText.trim(), 'context menu button 6').to.contain('Duplicate');
-                        expect(buttons[6].innerText.trim(), 'context menu button 7').to.contain('Delete');
+                        expect(buttons[5].innerText.trim(), 'context menu button 6').to.contain('Remove a tag');
+                        expect(buttons[6].innerText.trim(), 'context menu button 7').to.contain('Duplicate');
+                        expect(buttons[7].innerText.trim(), 'context menu button 8').to.contain('Delete');
 
                         // Copy the post link
                         await click(buttons[0]);
@@ -594,12 +597,13 @@ describe('Acceptance: Posts / Pages', function () {
                         let buttons = contextMenu.querySelectorAll('button');
 
                         expect(contextMenu, 'context menu').to.exist;
-                        expect(buttons.length, 'context menu buttons').to.equal(5);
+                        expect(buttons.length, 'context menu buttons').to.equal(6);
                         expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy preview link');
                         expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Feature'); // or Unfeature
                         expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
-                        expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Duplicate');
-                        expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Delete');
+                        expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Remove a tag');
+                        expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Duplicate');
+                        expect(buttons[5].innerText.trim(), 'context menu button 6').to.contain('Delete');
 
                         // Copy the preview link
                         await click(buttons[0]);
@@ -716,6 +720,36 @@ describe('Acceptance: Posts / Pages', function () {
                         let [lastRequest] = this.server.pretender.handledRequests.slice(-2);
                         expect(lastRequest.queryParams.filter, 'add tag request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
                         expect(JSON.parse(lastRequest.requestBody).bulk.action, 'add tag request action').to.equal('addTag');
+                    });
+
+                    it('can remove a tag from multiple posts', async function () {
+                        const removableTag = this.server.create('tag', {name: 'Bulk removable', slug: 'bulk-removable'});
+                        publishedPost.update({tags: [removableTag]});
+                        authorPost.update({tags: [removableTag]});
+
+                        await visit('/posts');
+
+                        const posts = findAll('[data-test-post-id]');
+                        const postThreeContainer = posts[2].parentElement;
+                        const postFourContainer = posts[3].parentElement;
+
+                        await click(postThreeContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+                        await click(postFourContainer, {metaKey: ctrlOrCmd === 'command', ctrlKey: ctrlOrCmd === 'ctrl'});
+                        await triggerEvent(postFourContainer, 'contextmenu');
+                        await click('[data-test-button="remove-tag"]');
+
+                        expect(find('[data-test-modal="remove-tags"]'), 'remove tags modal').to.exist;
+                        await selectChoose('#remove-post-tags', 'Bulk removable');
+                        await click('[data-test-button="confirm"]');
+
+                        const bulkRequest = [...this.server.pretender.handledRequests].reverse().find(request => request.method === 'PUT' && request.url.includes('/posts/bulk/'));
+                        expect(bulkRequest.queryParams.filter, 'remove tag request id').to.equal(`id:['${publishedPost.id}','${authorPost.id}']`);
+                        expect(JSON.parse(bulkRequest.requestBody).bulk, 'remove tag request').to.deep.equal({
+                            action: 'removeTag',
+                            meta: {
+                                tags: [{id: removableTag.id}]
+                            }
+                        });
                     });
 
                     it('cannot change access when members is disabled', async function () {

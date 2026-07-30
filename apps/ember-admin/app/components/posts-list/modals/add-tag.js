@@ -16,6 +16,14 @@ export default class AddTag extends Component {
         return ['tags'];
     }
 
+    get isRemove() {
+        return this.args.data.action === 'remove';
+    }
+
+    get triggerId() {
+        return this.isRemove ? 'remove-post-tags' : 'add-post-tags';
+    }
+
     @action
     handleChange(newTags) {
         this.selectedTags.forEach((tag) => {
@@ -29,7 +37,7 @@ export default class AddTag extends Component {
     @task
     *confirm() {
         if (this.selectedTags.length === 0) {
-            this.errors.add('tags', 'Select at least one tag');
+            this.errors.add('tags', `Select at least one tag to ${this.isRemove ? 'remove' : 'add'}`);
             return;
         }
         this.errors.clear();

@@ -16,10 +16,6 @@
                     <span class="gh-content-entry-author">
                         By {{post-author-names @post}}
 
-                        {{#if @post.primaryTag}}
-                            in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
-                        {{/if}}
-
                         -
                     </span>
                     {{#if (or @post.isDraft @post.isScheduled)}}
@@ -69,9 +65,6 @@
                     <span class="gh-content-entry-author">
                         By {{post-author-names @post}}
 
-                        {{#if @post.primaryTag}}
-                            in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
-                        {{/if}}
                         -
                     </span>
                     {{#if (or @post.isDraft @post.isScheduled)}}
@@ -143,6 +136,10 @@
                 </p>
             {{/unless}}
         </LinkTo>
+    {{/if}}
+
+    {{#if @post.isPost}}
+        <PostsList::TagEditor @post={{@post}} />
     {{/if}}
 
     {{!-- Metrics columns wrapper --}}

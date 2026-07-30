@@ -1,0 +1,133 @@
+<div
+    class="gh-post-list-tags"
+    data-ignore-select
+    {{did-insert this.setupOverflow}}
+    {{will-destroy this.teardownOverflow}}
+    ...attributes
+>
+    <div class="gh-post-list-tags-visible" aria-label="Tags for {{@post.title}}">
+        {{#each this.tags as |tag index|}}
+            {{#if (lt index this.visibleTagCount)}}
+                <span
+                    class="gh-post-list-tag {{if (eq index 0) "primary"}}"
+                    title={{tag.name}}
+                    aria-label="{{tag.name}}{{if (eq index 0) ", primary tag"}}"
+                    data-test-post-tag={{tag.slug}}
+                >
+                    {{tag.name}}
+                </span>
+            {{/if}}
+        {{/each}}
+        {{#if this.overflowCount}}
+            <span class="gh-post-list-tag-overflow-wrapper gh-tooltip-trigger">
+                <button
+                    type="button"
+                    class="gh-post-list-tag-overflow"
+                    aria-label="{{this.overflowCount}} more tags: {{this.overflowTagNames}}"
+                    aria-describedby="post-{{@post.id}}-overflow-tags"
+                    data-test-post-tags-overflow
+                >
+                    +{{this.overflowCount}}
+                </button>
+                <span
+                    id="post-{{@post.id}}-overflow-tags"
+                    class="gh-tooltip gh-post-list-tags-overflow-tooltip"
+                    role="tooltip"
+                    data-test-post-tags-overflow-tooltip
+                >
+                    {{#each this.overflowTags as |tag|}}
+                        <span title={{tag.name}}>{{tag.name}}</span>
+                    {{/each}}
+                </span>
+            </span>
+        {{/if}}
+    </div>
+
+    <div class="gh-post-list-tags-measure" aria-hidden="true">
+        {{#each this.tags as |tag|}}
+            <span class="gh-post-list-tag" data-tag-measure>{{tag.name}}</span>
+        {{/each}}
+        <span class="gh-post-list-tag-overflow" data-overflow-measure>+{{this.tags.length}}</span>
+    </div>
+
+    {{#if this.canEdit}}
+        <GhBasicDropdown
+            @horizontalPosition="right"
+            @onClose={{this.closeEditor}}
+            @onOpen={{this.openEditor}}
+            @renderInPlace={{true}}
+            @verticalPosition="auto"
+            as |dropdown|
+        >
+            <dropdown.Trigger
+                aria-label="Edit tags for {{@post.title}}"
+                class="gh-post-list-tags-edit"
+                data-test-edit-post-tags
+                type="button"
+            >
+                {{svg-jar "tag"}}
+                <span>Edit tags</span>
+            </dropdown.Trigger>
+
+            <dropdown.Content class="gh-post-list-tags-popover dropdown-menu" data-test-post-tags-popover>
+                <h3>Edit tags</h3>
+                <p>The first tag is the primary tag.</p>
+
+                <GhTagsTokenInput
+                    @allowCreation={{true}}
+                    @onChange={{this.updateTags}}
+                    @renderInPlace={{true}}
+                    @selected={{this.draftTags}}
+                    @triggerId="post-{{@post.id}}-tags"
+                    @placeholder="Select or enter tags..."
+                />
+
+                {{#if this.draftTags.length}}
+                    <ol class="gh-post-list-tags-order" aria-label="Tag order">
+                        {{#each this.draftTags as |tag index|}}
+                            <li>
+                                <span title={{tag.name}}>
+                                    {{tag.name}}
+                                    {{#if (eq index 0)}}<em>Primary</em>{{/if}}
+                                </span>
+                                <span class="gh-post-list-tags-order-actions">
+                                    <button
+                                        type="button"
+                                        aria-label="Move {{tag.name}} earlier"
+                                        disabled={{eq index 0}}
+                                        {{on "click" (fn this.moveTag tag -1)}}
+                                    >
+                                        {{svg-jar "arrow-up"}}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        aria-label="Move {{tag.name}} later"
+                                        disabled={{eq index this.lastDraftTagIndex}}
+                                        {{on "click" (fn this.moveTag tag 1)}}
+                                    >
+                                        {{svg-jar "arrow-down"}}
+                                    </button>
+                                </span>
+                            </li>
+                        {{/each}}
+                    </ol>
+                {{/if}}
+
+                <div class="gh-post-list-tags-popover-actions">
+                    <button class="gh-btn" type="button" {{on "click" (fn this.cancel dropdown)}} data-test-button="cancel">
+                        <span>Cancel</span>
+                    </button>
+                    <GhTaskButton
+                        @buttonText="Save"
+                        @runningText="Saving"
+                        @showSuccess={{false}}
+                        @task={{this.saveTags}}
+                        @taskArgs={{dropdown}}
+                        @class="gh-btn gh-btn-primary"
+                        data-test-button="save-tags"
+                    />
+                </div>
+            </dropdown.Content>
+        </GhBasicDropdown>
+    {{/if}}
+</div>

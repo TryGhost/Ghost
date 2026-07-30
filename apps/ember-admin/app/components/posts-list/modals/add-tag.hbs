@@ -1,6 +1,6 @@
-<div class="modal-content" data-test-modal="add-tags">
+<div class="modal-content" data-test-modal={{if this.isRemove "remove-tags" "add-tags"}}>
     <header class="modal-header">
-        <h1>Add tags</h1>
+        <h1>{{if this.isRemove "Remove tags" "Add tags"}}</h1>
     </header>
     <button type="button" class="close" title="Close" {{on "click" (fn @close false)}} data-test-button="close">{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
@@ -8,13 +8,13 @@
         <p>
             <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="tags">
                 <GhTagsTokenInput
-                    @allowCreation={{true}}
+                    @allowCreation={{not this.isRemove}}
                     @selected={{this.selectedTags}}
                     @onChange={{this.handleChange}}
                     @onCreate={{this.handleCreate}}
                     @renderInPlace={{true}}
                     @triggerId={{this.triggerId}}
-                    @placeholder="Select or enter tags..."
+                    @placeholder={{if this.isRemove "Select tags to remove..." "Select or enter tags..."}}
                 />
                 <GhErrorMessage @errors={{this.errors}} @property="tags" />
             </GhFormGroup>
@@ -25,8 +25,8 @@
         <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" (fn @close false)}}><span>Cancel</span></button>
 
          <GhTaskButton
-            @buttonText="Add"
-            @runningText="Adding"
+            @buttonText={{if this.isRemove "Remove" "Add"}}
+            @runningText={{if this.isRemove "Removing" "Adding"}}
             @showSuccess={{false}}
             @task={{this.confirm}}
             @class="gh-btn gh-btn-primary gh-btn-icon"

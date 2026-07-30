@@ -57,6 +57,11 @@
             <span>{{svg-jar "tag"}}Add a tag</span>
         </button>
     </li>
+    <li>
+        <button class="mr2" type="button" {{on "click" this.removeTagFromPosts}} data-test-button="remove-tag">
+            <span>{{svg-jar "tag"}}Remove a tag</span>
+        </button>
+    </li>
 
     {{#if this.membersUtils.isMembersEnabled}}
         <li>
