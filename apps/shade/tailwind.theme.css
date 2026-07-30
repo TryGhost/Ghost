@@ -168,6 +168,13 @@
     --color-surface-panel: var(--surface-panel);
     --color-surface-elevated: var(--surface-elevated);
     --color-surface-elevated-2: var(--surface-elevated-2);
+    --color-modal-backdrop: var(--modal-backdrop);
+    --color-form-sheet-backdrop: var(--form-sheet-backdrop);
+    --color-preview-canvas: var(--preview-canvas);
+    --color-preview-gradient-start: var(--preview-gradient-start);
+    --color-preview-gradient-end: var(--preview-gradient-end);
+    --color-surface-inverse: var(--surface-inverse);
+    --color-surface-inverse-foreground: var(--surface-inverse-foreground);
     --color-text-primary: var(--text-primary);
     --color-text-secondary: var(--text-secondary);
     --color-text-tertiary: var(--text-tertiary);
@@ -210,6 +217,7 @@
     --color-button-hover: var(--button-hover);
     --color-interactive-hover: var(--interactive-hover);
     --color-table-row-hover: var(--table-row-hover);
+    --color-control-surface: var(--control-surface);
     --color-control-border: var(--control-border);
 
     /* Typography */

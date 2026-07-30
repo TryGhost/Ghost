@@ -63,6 +63,7 @@
         "eslint-plugin-react-hooks": "catalog:",
         "eslint-plugin-react-refresh": "catalog:",
         "eslint-plugin-tailwindcss": "catalog:",
+        "ghost-admin": "workspace:*",
         "globals": "catalog:",
         "jest-extended": "7.0.0",
         "jsdom": "catalog:",
@@ -97,7 +98,6 @@
                     "ghost-monorepo:docker:up",
                     "ghost-admin:dev",
                     "@tryghost/admin-x-framework:dev",
-                    "@tryghost/admin-x-design-system:dev",
                     "@tryghost/shade:dev"
                 ]
             },
@@ -131,7 +131,6 @@
                     "build",
                     {
                         "projects": [
-                            "@tryghost/admin-x-design-system",
                             "ghost-admin"
                         ],
                         "target": "build"
@@ -143,7 +142,6 @@
                     {
                         "projects": [
                             "@tryghost/admin-x-framework",
-                            "@tryghost/admin-x-design-system",
                             "@tryghost/shade"
                         ],
                         "target": "build"

@@ -6,7 +6,7 @@ import type {InternalApiKey, InternalKeys} from '../internal-keys';
 // CJS-only modules — typed loosely below. models is the Bookshelf registry
 // without TS declarations; the rest are JS modules without types.
 const models = require('../../models');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 const events = require('../../lib/common/events');
 

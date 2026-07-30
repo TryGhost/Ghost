@@ -3,7 +3,7 @@ const {deferred} = require('../../../../utils/deferred')
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/config-utils');
-const urlUtils = require('../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const logging = require('@tryghost/logging');
 let mailer;
 const assert = require('node:assert/strict');

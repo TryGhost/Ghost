@@ -7,14 +7,14 @@ const models = require('../../models');
 const labs = require('../../../shared/labs');
 const limits = require('../limits');
 const config = require('../../../shared/config');
-const adapterManager = require('../adapter-manager');
+const adapterManager = require('../adapter-manager').default;
 const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./settings-bread-service');
 const {generatePrivateSiteAccessCode} = require('./private-site-access-code');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 const mail = require('../mail');
 const SingleUseTokenProvider = require('../members/single-use-token-provider');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 
 const ObjectId = require('bson-objectid').default;
 const settingsHelpers = require('../settings-helpers');

@@ -285,6 +285,108 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             });
         });
 
+        describe('legacy YAML coercions', function () {
+            it('coerces digit-only string limits to numbers in collections', function () {
+                const result = parse({
+                    collections: {'/': {permalink: '/{slug}/', template: 'index', limit: '100'}}
+                });
+
+                assert.deepEqual(result.collections, [
+                    {path: '/', permalink: '/{slug}/', templates: ['index'], limit: 100}
+                ]);
+            });
+
+            it('coerces digit-only string limits to numbers in channel routes', function () {
+                const result = parse({
+                    routes: {'/podcast/': {controller: 'channel', limit: '5'}}
+                });
+
+                assert.deepEqual(result.routes, [
+                    {type: 'channel', path: '/podcast/', templates: [], limit: 5}
+                ]);
+            });
+
+            it('coerces digit-only string limits to numbers in browse data entries', function () {
+                const result = parse({
+                    routes: {'/podcast/': {template: 'podcast', data: {episodes: {type: 'browse', resource: 'posts', limit: '15'}}}}
+                });
+
+                assert.deepEqual(result.routes, [{
+                    type: 'template',
+                    path: '/podcast/',
+                    templates: ['podcast'],
+                    data: {episodes: {type: 'browse', resource: 'posts', limit: 15}}
+                }]);
+            });
+
+            it('still rejects non-numeric string limits', function () {
+                assert.throws(() => {
+                    parse({collections: {'/': {permalink: '/{slug}/', limit: 'banana'}}});
+                }, /The following definition "collections\['\/'\]\.limit" is invalid: limit must be a number or "all" \(e\.g\. limit: 5\), but the text "banana" was provided\./);
+            });
+
+            it('still accepts the literal "all" limit', function () {
+                const result = parse({
+                    collections: {'/': {permalink: '/{slug}/', limit: 'all'}}
+                });
+
+                assert.equal(result.collections[0].limit, 'all');
+            });
+
+            it('treats empty optional scalars as unset in collections', function () {
+                const result = parse({
+                    collections: {'/': {permalink: '/{slug}/', template: 'index', filter: null, order: null, limit: null, rss: null}}
+                });
+
+                assert.deepEqual(result.collections, [
+                    {path: '/', permalink: '/{slug}/', templates: ['index']}
+                ]);
+            });
+
+            it('treats empty optional scalars as unset in routes', function () {
+                const result = parse({
+                    routes: {'/podcast/': {controller: 'channel', filter: null, order: null, limit: null, rss: null}}
+                });
+
+                assert.deepEqual(result.routes, [
+                    {type: 'channel', path: '/podcast/', templates: []}
+                ]);
+            });
+
+            it('treats empty optional scalars as unset in browse data entries', function () {
+                const result = parse({
+                    routes: {'/podcast/': {template: 'podcast', data: {episodes: {type: 'browse', resource: 'posts', filter: null, order: null, limit: null, include: null}}}}
+                });
+
+                assert.deepEqual(result.routes, [{
+                    type: 'template',
+                    path: '/podcast/',
+                    templates: ['podcast'],
+                    data: {episodes: {type: 'browse', resource: 'posts'}}
+                }]);
+            });
+
+            it('treats an empty template as unset in collections', function () {
+                const result = parse({
+                    collections: {'/anime/': {permalink: '/anime/{slug}/', template: null, filter: 'primary_tag:anime'}}
+                });
+
+                assert.deepEqual(result.collections, [
+                    {path: '/anime/', permalink: '/anime/{slug}/', templates: [], filter: 'primary_tag:anime'}
+                ]);
+            });
+
+            it('treats an empty content_type as unset', function () {
+                const result = parse({
+                    routes: {'/rss/': {template: 'rss', content_type: null}}
+                });
+
+                assert.deepEqual(result.routes, [
+                    {type: 'template', path: '/rss/', templates: ['rss']}
+                ]);
+            });
+        });
+
         describe('default-routes.yaml', function () {
             it('correctly parses the default routes.yaml content', function () {
                 const result = parse({
@@ -412,11 +514,15 @@ describe('UNIT: services/route-settings/route-settings-parser', function () {
             const original = buildRouteSettings({
                 routes: [
                     {type: 'template', path: '/about/', templates: ['about']},
-                    {type: 'channel', path: '/featured/', templates: ['featured'], filter: 'featured:true', rss: true, data: 'tag.featured'}
+                    {type: 'channel', path: '/featured/', templates: ['featured'], filter: 'featured:true', rss: true, data: 'tag.featured'},
+                    // A :param key becomes a YAML mapping key containing a colon,
+                    // which only became expressible once keys accepted :param.
+                    {type: 'channel', path: '/author/:slug/', templates: ['author'], data: 'author.%s'}
                 ],
                 collections: [
                     {path: '/', permalink: '/{slug}/', templates: ['index']},
-                    {path: '/podcast/', permalink: '/podcast/{slug}/', templates: ['podcast'], filter: 'tag:podcast'}
+                    {path: '/podcast/', permalink: '/podcast/{slug}/', templates: ['podcast'], filter: 'tag:podcast'},
+                    {path: '/locations/:location/', permalink: '/locations/{slug}/', templates: ['tag']}
                 ],
                 taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}
             });

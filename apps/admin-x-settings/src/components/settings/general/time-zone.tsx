@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Select, SettingGroupContent} from '@tryghost/admin-x-design-system';
+import {Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldLabel, MultiSelectCombobox} from '@tryghost/shade/components';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {getLocalTime} from '../../../utils/helpers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {timezoneDataWithGMTOffset} from '@tryghost/timezone-data';
@@ -36,6 +37,7 @@ const Hint: React.FC<HintProps> = ({timezone}) => {
 };
 
 const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const [timezoneOpen, setTimezoneOpen] = useState(false);
     const {
         localSettings,
         isEditing,
@@ -54,6 +56,7 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             label: tzOption.label
         };
     });
+    const selectedTimezone = timezoneOptions.find(option => option.value === publicationTimezone);
 
     const handleTimezoneChange = (value?: string) => {
         updateSetting('timezone', value || null);
@@ -75,15 +78,28 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             <SettingGroupContent columns={1}>
-                <Select
-                    hint={<Hint timezone={publicationTimezone} />}
-                    options={timezoneOptions}
-                    selectedOption={timezoneOptions.find(option => option.value === publicationTimezone)}
-                    testId='timezone-select'
-                    title="Site timezone"
-                    isSearchable
-                    onSelect={option => handleTimezoneChange(option?.value)}
-                />
+                <Field>
+                    <FieldLabel>Site timezone</FieldLabel>
+                    <Combobox open={timezoneOpen} onOpenChange={setTimezoneOpen}>
+                        <ComboboxTrigger aria-label='Site timezone' data-testid='timezone-select'><ComboboxValue>{selectedTimezone?.label}</ComboboxValue></ComboboxTrigger>
+                        <ComboboxContent>
+                            <MultiSelectCombobox
+                                i18n={{searchPlaceholder: 'Search timezones...'}}
+                                isMultiSelect={false}
+                                options={timezoneOptions}
+                                values={publicationTimezone ? [publicationTimezone] : []}
+                                autoCloseOnSelect
+                                onChange={(values) => {
+                                    if (values[0]) {
+                                        handleTimezoneChange(values[0]);
+                                    }
+                                }}
+                                onClose={() => setTimezoneOpen(false)}
+                            />
+                        </ComboboxContent>
+                    </Combobox>
+                    <FieldDescription><Hint timezone={publicationTimezone} /></FieldDescription>
+                </Field>
             </SettingGroupContent>
         </TopLevelGroup>
     );

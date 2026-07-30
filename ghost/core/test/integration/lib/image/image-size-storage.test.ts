@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import S3Storage from '../../../../core/server/adapters/storage/S3Storage';
+import * as storageUtils from '../../../../core/server/adapters/storage/utils';
+import urlUtils from '../../../../core/shared/url-utils';
 import {
     createTestS3Client,
     createTestBucket,
@@ -13,11 +15,8 @@ import {
     putObject
 } from '../../../utils/minio';
 
-// CJS Ghost libs — required (not imported) to preserve `this` binding on the
-// storageUtils namespace (isLocalImage calls this.getLocalImagesStoragePath).
+// CJS Ghost libs
 const ImageSize = require('../../../../core/server/lib/image/image-size');
-const storageUtils = require('../../../../core/server/adapters/storage/utils');
-const urlUtils = require('../../../../core/shared/url-utils');
 const config = require('../../../../core/shared/config');
 const validator = require('@tryghost/validator');
 const request = require('@tryghost/request');
@@ -51,8 +50,7 @@ describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: im
             ...overrides
         });
         // ImageSize asks the storage manager for the 'images' adapter.
-        const storage = {getStorage: () => s3};
-        return new ImageSize({config, storage, storageUtils, validator, urlUtils, request, probe});
+        return new ImageSize({config, imageStore: s3, storageUtils, validator, urlUtils, request, probe});
     };
 
     beforeAll(async function () {

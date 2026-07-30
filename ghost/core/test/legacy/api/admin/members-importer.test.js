@@ -341,6 +341,21 @@ describe('Members Importer API', function () {
             });
 
             assert.equal(receivedWebhookRequests.length, 1, 'Expected to receive webhook requests');
+
+            // The global label is applied to each member by the background job, which
+            // runs after the response. Earlier tests in this file reuse the same label,
+            // so this asserts a member from this batch specifically carries it rather
+            // than a shared count.
+            const imported = await request
+                .get(localUtils.API.getApiQuery(`members/?search=test1%40example.com&include=labels`))
+                .set('Origin', config.get('url'))
+                .expect(200);
+            const member = imported.body.members.find(m => m.email === 'test1@example.com');
+            assertExists(member);
+            assert.ok(
+                member.labels.some(label => label.name === 'new-global-label'),
+                `a queued member should carry the form label, got ${JSON.stringify(member.labels.map(l => l.name))}`
+            );
         } finally {
             await restoreEmailVerificationUtils();
         }

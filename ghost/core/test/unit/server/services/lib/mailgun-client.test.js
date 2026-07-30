@@ -43,19 +43,35 @@ describe('MailgunClient', function () {
         sinon.restore();
     });
 
-    it('exports a number for configurable batch size', function () {
-        const configStub = sinon.stub(config, 'get');
-        configStub.withArgs('bulkEmail').returns({
-            mailgun: {
-                apiKey: 'apiKey',
-                domain: 'domain.com',
-                baseUrl: 'https://api.mailgun.net/v3'
-            },
-            batchSize: 1000
+    describe('getBatchSize', function () {
+        it('reads the batch size from config if available', function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                },
+                batchSize: 1234
+            });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            assert.equal(mailgunClient.getBatchSize(), 1234);
         });
 
-        const mailgunClient = new MailgunClient({config, settings});
-        assert(typeof mailgunClient.getBatchSize() === 'number');
+        it('has a default batch size if missing from config', function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                }
+            });
+
+            const mailgunClient = new MailgunClient({config, settings});
+            assert.equal(mailgunClient.getBatchSize(), 1000);
+        });
     });
 
     it('exports a number for configurable target delivery window', function () {

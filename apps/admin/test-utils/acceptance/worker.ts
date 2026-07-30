@@ -26,6 +26,8 @@ const EXTERNAL_URL_BLOCKLIST: Array<{ pattern: string; isMatch: (url: string) =>
     { pattern: "https://ghost.org/*", isMatch: (url) => url.startsWith("https://ghost.org/") },
     // ActivityPub API root (admin-x-framework utils/helpers.ts)
     { pattern: "*/.ghost/activitypub/*", isMatch: (url) => url.includes("/.ghost/activitypub/") },
+    // Unsplash API (kg-unsplash-selector UnsplashProvider)
+    { pattern: "https://api.unsplash.com/*", isMatch: (url) => url.startsWith("https://api.unsplash.com/") },
 ];
 
 // Per-test preview URLs are arbitrary site origins, so they cannot live in

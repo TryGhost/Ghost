@@ -2,7 +2,7 @@ const debug = require('@tryghost/debug')('routing:taxonomy-router');
 const config = require('../../../shared/config');
 const ParentRouter = require('./parent-router');
 const RSSRouter = require('./rss-router');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const controllers = require('./controllers');
 const middleware = require('./middleware');
 

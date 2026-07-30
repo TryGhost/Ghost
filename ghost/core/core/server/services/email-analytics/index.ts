@@ -20,8 +20,7 @@ import domainEvents from '@tryghost/domain-events';
 import prometheusClient from '../../../shared/prometheus-client';
 // @ts-expect-error This module lacks type definitions.
 import queries from './lib/queries';
-// @ts-expect-error This module lacks type definitions.
-import StartEmailAnalyticsJobEvent from './events/start-email-analytics-job-event';
+import {StartEmailAnalyticsJobEvent} from './events/start-email-analytics-job-event';
 import {StartAutomationEmailAnalyticsJobEvent} from './events/start-automation-email-analytics-job-event';
 import {AUTOMATION_EMAIL_TAG} from '../member-welcome-emails/constants';
 import * as automationsApi from '../automations/automations-api';

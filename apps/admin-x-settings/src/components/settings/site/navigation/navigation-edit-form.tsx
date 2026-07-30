@@ -1,6 +1,8 @@
 import NavigationItemEditor from './navigation-item-editor';
 import React from 'react';
-import {Button, Icon, SortableList} from '@tryghost/admin-x-design-system';
+import {Button, SortableList} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {type NavigationEditor} from '../../../../hooks/site/use-navigation-editor';
 
 const NavigationEditForm: React.FC<{
@@ -9,11 +11,13 @@ const NavigationEditForm: React.FC<{
 }> = ({baseUrl, navigation}) => {
     return <div className="w-full pt-2">
         <SortableList
+            dragHandleClass='translate-y-0.5'
+            getDragHandleLabel={item => `Reorder ${item.label || 'navigation item'}`}
             items={navigation.items}
             itemSeparator={false}
             renderItem={item => (
                 <NavigationItemEditor
-                    action={<Button className='mt-1 self-center' icon="trash" iconColorClass='dark:text-white' size='sm' onClick={() => navigation.removeItem(item.id)} />}
+                    action={<Button aria-label='Delete navigation item' size='icon' type='button' variant='ghost' onClick={() => navigation.removeItem(item.id)}><LucideIcon.Trash2 /></Button>}
                     baseUrl={baseUrl}
                     clearError={key => navigation.clearError(item.id, key)}
                     item={item}
@@ -22,10 +26,12 @@ const NavigationEditForm: React.FC<{
             )}
             onMove={navigation.moveItem}
         />
-        <div className='flex items-center gap-3'>
-            <Icon colorClass='text-grey-300 dark:text-grey-900 mt-1' name='add' size='sm' />
+        <Inline align='start' gap='md'>
+            <Inline align='center' className='h-[calc(var(--control-height)+0.5rem)] shrink-0 translate-y-0.5 pt-2'>
+                <LucideIcon.Plus className='size-4 text-muted-foreground' />
+            </Inline>
             <NavigationItemEditor
-                action={<Button className='mx-2 mt-1 self-center rounded bg-green p-1' data-testid="add-button" icon="add" iconColorClass='text-white' size='sm' unstyled onClick={navigation.addItem} />}
+                action={<Button aria-label='Add navigation item' data-testid="add-button" size='icon' type='button' variant='ghost' onClick={navigation.addItem}><LucideIcon.Plus /></Button>}
                 addItem={navigation.addItem}
                 baseUrl={baseUrl}
                 className="mt-1"
@@ -35,7 +41,7 @@ const NavigationEditForm: React.FC<{
                 labelPlaceholder="New item label"
                 updateItem={navigation.setNewItem}
             />
-        </div>
+        </Inline>
     </div>;
 };
 

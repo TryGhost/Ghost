@@ -1,7 +1,9 @@
+import BrandIcon from '../../../icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {Form, Icon, Modal, TextField, Toggle} from '@tryghost/admin-x-design-system';
+import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -55,14 +57,14 @@ const FirstPromoterModal = NiceModal.create(() => {
     };
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('integrations');
             }}
             cancelLabel='Close'
             dirty={enabled !== firstPromoterEnabled || accountId !== firstPromoterId}
-            okColor={okLabel === 'Saved' ? 'green' : 'black'}
             okLabel={okLabel}
+            okVariant='default'
             testId='firstpromoter-modal'
             title=''
             onOk={async () => {
@@ -75,36 +77,38 @@ const FirstPromoterModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='Launch your own member referral program'
-                icon={<Icon className='-mt-2' name='firstpromoter' size={56} />}
+                icon={<BrandIcon className='-mt-2' name='firstpromoter' size={56} />}
                 title='FirstPromoter'
             />
             <div className='mt-7'>
-                <Form marginBottom={false} title='FirstPromoter configuration' grouped>
-                    <Toggle
-                        checked={enabled}
-                        direction='rtl'
-                        hint={<>Enable <a className='text-green' href="https://firstpromoter.com/?fpr=ghost&fp_sid=admin" rel="noopener noreferrer" target="_blank">FirstPromoter</a> for tracking referrals</>}
-                        label='Enable FirstPromoter'
-                        onChange={(e) => {
-                            setEnabled(e.target.checked);
-                        }}
-                    />
+                <FieldSet className='gap-0'>
+                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>FirstPromoter configuration</FieldLegend>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <Field orientation='horizontal'>
+                        <FieldContent>
+                            <FieldLabel htmlFor='firstpromoter-enabled'>Enable FirstPromoter</FieldLabel>
+                            <FieldDescription>Enable <a className='text-green' href="https://firstpromoter.com/?fpr=ghost&fp_sid=admin" rel="noopener noreferrer" target="_blank">FirstPromoter</a> for tracking referrals</FieldDescription>
+                        </FieldContent>
+                        <Switch checked={enabled} id='firstpromoter-enabled' onCheckedChange={setEnabled} />
+                    </Field>
                     {enabled && (
-                        <TextField
-                            hint={<>
+                        <Field>
+                            <FieldLabel htmlFor='firstpromoter-account-id'>FirstPromoter account ID</FieldLabel>
+                            <Input
+                                id='firstpromoter-account-id'
+                                placeholder='XXXXXXXX'
+                                value={accountId || ''}
+                                onChange={e => setAccountId(e.target.value)}
+                            />
+                            <FieldDescription><>
                                 Affiliate and referral tracking, find your ID  <a className='text-green' href="https://ghost.org/help/firstpromoter-id/" rel="noopener noreferrer" target="_blank">here</a>
-                            </>}
-                            placeholder='XXXXXXXX'
-                            title='FirstPromoter account ID'
-                            value={accountId || ''}
-                            onChange={(e) => {
-                                setAccountId(e.target.value);
-                            }}
-                        />
+                            </></FieldDescription>
+                        </Field>
                     )}
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

@@ -2,7 +2,7 @@ import FakeLogo from '../../../assets/images/portal-splash-default-logo.png';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import UserAddIcon from '../../../assets/images/portal-splash-user-add.png';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -37,7 +37,7 @@ const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button className='mt-[-5px]' color='clear' disabled={membersSignupAccess === 'none'} label='Customize' size='sm' onClick={openPreviewModal}/>}
+            customButtons={<Button className='mt-[-5px]' disabled={membersSignupAccess === 'none'} size='sm' type='button' variant='ghost' onClick={openPreviewModal}>Customize</Button>}
             description="Customize members modal signup flow"
             keywords={keywords}
             navid='portal'

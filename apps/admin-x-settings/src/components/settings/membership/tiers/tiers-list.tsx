@@ -1,7 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
-import {BadgeDollarSign} from 'lucide-react';
-import {Icon} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
 import {type Tier} from '@tryghost/admin-x-framework/api/tiers';
 import {TrialDaysLabel} from './tier-detail-preview';
@@ -64,7 +63,7 @@ const TiersList: React.FC<TiersListProps> = ({
     if (!tiers.length) {
         return (
             <NoValueLabel>
-                <NoValueLabelIcon><BadgeDollarSign /></NoValueLabelIcon>
+                <NoValueLabelIcon><LucideIcon.Banknote /></NoValueLabelIcon>
                 No {tab === 'active-tiers' ? 'active' : 'archived'} tiers found.
             </NoValueLabel>
         );
@@ -81,7 +80,7 @@ const TiersList: React.FC<TiersListProps> = ({
                 }}>
                     <div className='flex size-full flex-col items-center justify-center'>
                         <div className='flex flex-col items-center justify-center'>
-                            <div className='translate-y-[15px] transition-all group-hover:translate-y-0'><Icon colorClass='text-green' name='add' /></div>
+                            <div className='translate-y-[15px] transition-all group-hover:translate-y-0'><LucideIcon.Plus className='size-5 text-green' /></div>
                             <div className='mt-2 translate-y-[-10px] font-semibold text-green opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100'>Add tier</div>
                         </div>
                     </div>

@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {userEvent} from "vitest/browser";
+import {page} from "vitest/browser";
 
 import {configResponse, fakeAdminEndpoint, fakeSettingsScreens, renderAdminApp, settingsResponse} from "@test-utils/acceptance";
 import {settingsScreen} from "@/settings/settings.screen";
@@ -58,7 +58,6 @@ describe("Custom fields", () => {
         await expect(row).toHaveCount(1);
         await expect.element(row).toHaveTextContent("Company");
         await expect.element(row).toHaveTextContent("Short text");
-        await expect.element(row).toHaveTextContent("Aa");
     });
 
     it("validates and creates a short-text field without sending a key", async () => {
@@ -92,8 +91,8 @@ describe("Custom fields", () => {
         await settingsScreen.customFields().getByRole("button", {name: "Add custom field"}).click();
         const modal = settingsScreen.customFieldModal();
         await modal.getByLabelText("Name").fill("Bio");
-        modal.getByLabelText("Type").element().focus();
-        await userEvent.keyboard("[ArrowDown][ArrowDown][Enter]");
+        await modal.getByLabelText("Type").click();
+        await page.getByRole("option", {name: /Long text/}).click();
         await modal.getByRole("button", {name: "Save"}).click();
 
         await expect(modal).toHaveCount(0);
@@ -134,7 +133,7 @@ describe("Custom fields", () => {
         await settingsScreen.customFields().getByTestId("custom-field-list-item").click();
         const modal = settingsScreen.customFieldModal();
         await expect.element(modal.getByText("Type can’t be changed after creation")).toBeVisible();
-        await expect.element(modal.getByTestId("custom-field-type").getByRole("combobox")).toBeDisabled();
+        await expect.element(modal.getByTestId("custom-field-type")).toBeDisabled();
         await modal.getByLabelText("Name").fill("Employer");
         await modal.getByRole("button", {name: "Save"}).click();
 
@@ -194,7 +193,7 @@ describe("Custom fields", () => {
         await expect(rows).toHaveCount(7);
         await expect(settingsScreen.customFields().getByRole("button", {name: "Show all"})).toHaveCount(0);
 
-        // The reveal survives tab switches — TabView unmounts hidden tabs, so
+        // The reveal survives tab switches — Tabs unmount hidden panels, so
         // this pins the state living above them.
         await settingsScreen.customFields().getByRole("tab", {name: "Archived"}).click();
         await settingsScreen.customFields().getByRole("tab", {name: "Active"}).click();
@@ -248,7 +247,7 @@ describe("Custom fields", () => {
         // Deletion hides behind the modal's header menu — never a visible button.
         const modal = settingsScreen.customFieldModal();
         await modal.getByRole("button", {name: "Menu"}).click();
-        await modal.getByRole("button", {name: "Delete custom field"}).click();
+        await page.getByRole("menuitem", {name: "Delete custom field"}).click();
 
         const confirmation = settingsScreen.confirmationModal();
         await expect.element(confirmation).toHaveTextContent("Old hobby and every value collected from your members will be permanently deleted from the database. This can’t be undone.");

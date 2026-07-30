@@ -1,4 +1,8 @@
-import {type SelectOptionGroup} from '@tryghost/admin-x-design-system';
+export interface CurrencySelectOptionGroup {
+    key: string;
+    label: string;
+    options: Array<{label: string; value: string}>;
+}
 
 type CurrencyOption = {
     isoCode: string;
@@ -134,7 +138,7 @@ export function currencyGroups() {
     };
 }
 
-export function currencySelectGroups({showName = false} = {}): SelectOptionGroup[] {
+export function currencySelectGroups({showName = false} = {}): CurrencySelectOptionGroup[] {
     return Object.values(currencyGroups()).map((group, index) => ({
         label: '—',
         key: index.toString(),

@@ -139,12 +139,14 @@ describe("Advanced integrations", () => {
         await renderAdminApp("/settings/integrations");
 
         const modal = await openCustomIntegration();
+        const adminApiKey = modal.getByTestId("admin-api-key");
         await expect.element(modal).toHaveTextContent(/admin-api-secret/);
-        await modal.getByText("admin-api-secret").hover();
-        await modal.getByRole("button", {name: "Regenerate"}).click();
+        await adminApiKey.getByText("admin-api-secret").hover();
+        await adminApiKey.getByRole("button", {name: "Regenerate"}).click();
         await settingsScreen.confirmationModal().getByRole("button", {name: "Regenerate Admin API Key"}).click();
         await expect.element(modal).toHaveTextContent(/Admin API Key was successfully regenerated/);
         await expect.element(modal).toHaveTextContent(/new-api-key/);
+        await expect(adminApiKey.getByRole("button", {name: "Copy"})).toHaveCount(1);
         expect(refreshApi.requests).toHaveLength(1);
     });
 
@@ -197,6 +199,86 @@ describe("Advanced integrations", () => {
             await expect(section.getByTestId(id).getByText("Active", {exact: true})).toHaveCount(0);
         }
         await expect.element(section.getByTestId("unsplash-integration").getByText("Active", {exact: true})).toBeVisible();
+    });
+
+    it("toggles the Unsplash integration off and on again", async () => {
+        fakeSettingsScreens();
+        const settingsApi = fakeEditSettings();
+        await renderAdminApp("/settings/integrations");
+
+        const item = settingsScreen.section("integrations").getByTestId("unsplash-integration");
+        const badge = item.getByText("Active", {exact: true});
+        // The Active badge changes the title markup, so hover the card itself.
+        await item.hover();
+        await item.getByRole("button", {name: "Configure"}).click();
+        const modal = settingsScreen.section("unsplash-modal");
+        await modal.getByRole("switch").click();
+        await modal.getByRole("button", {name: "Save"}).click();
+        await expect(settingsApi).toHaveEditedSettings([{key: "unsplash", value: false}]);
+        await expect(badge).toHaveCount(0);
+
+        await modal.getByRole("switch").click();
+        await modal.getByRole("button", {name: "Save"}).click();
+        await expect(settingsApi).toHaveEditedSettings([{key: "unsplash", value: true}]);
+        await expect(badge).toHaveCount(1);
+        expect(settingsApi.requests).toHaveLength(2);
+    });
+
+    it("saves the Pintura enable toggle and hides the asset upload fields while disabled", async () => {
+        fakeSettingsScreens();
+        const settingsApi = fakeEditSettings();
+        await renderAdminApp("/settings/integrations");
+
+        await openIntegration("Pintura", "pintura-integration");
+        const modal = settingsScreen.section("pintura-modal");
+        await modal.getByRole("switch").click();
+        await expect.element(modal).toHaveTextContent(/Upload Pintura script/);
+        await expect.element(modal).toHaveTextContent(/Upload Pintura styles/);
+
+        await modal.getByRole("switch").click();
+        await expect(modal.getByText("Upload Pintura script")).toHaveCount(0);
+        await expect(modal.getByText("Upload Pintura styles")).toHaveCount(0);
+
+        await modal.getByRole("switch").click();
+        await modal.getByRole("button", {name: "Save"}).click();
+        await expect(settingsApi).toHaveEditedSettings([{key: "pintura", value: true}]);
+    });
+
+    it("shows the Active badge after enabling the Transistor integration", async () => {
+        fakeSettingsScreens();
+        const settingsApi = fakeEditSettings();
+        await renderAdminApp("/settings/integrations", {labs: {transistor: true}});
+
+        const item = settingsScreen.section("integrations").getByTestId("transistor-integration");
+        const badge = item.getByText("Active", {exact: true});
+        await expect(badge).toHaveCount(0);
+
+        await item.hover();
+        await item.getByRole("button", {name: "Configure"}).click();
+        const modal = settingsScreen.section("transistor-modal");
+        await modal.getByRole("switch").click();
+        await modal.getByRole("button", {name: "Save"}).click();
+        await expect(settingsApi).toHaveEditedSettings([{key: "transistor", value: true}]);
+        await expect(badge).toHaveCount(1);
+
+        await modal.getByRole("button", {name: "Close"}).click();
+        await expect(modal).toHaveCount(0);
+        await expect.element(badge).toBeVisible();
+    });
+
+    it("shows the upgrade CTA on host-limited integration cards", async () => {
+        fakeSettingsScreens();
+        await renderAdminApp("/settings/integrations", {boot: {browseConfig: {response: limitedConfig()}}});
+
+        const section = settingsScreen.section("integrations");
+        for (const id of ["zapier-integration", "transistor-integration"]) {
+            const card = section.getByTestId(id);
+            await expect.element(card.getByRole("button", {name: "Upgrade"})).toBeVisible();
+            await expect(card.getByRole("button", {name: "Configure"})).toHaveCount(0);
+        }
+
+        await section.getByTestId("zapier-integration").getByRole("button", {name: "Upgrade"}).click();
+        expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({route: "pro"});
     });
 
     it("saves FirstPromoter configuration and warns before discarding later changes", async () => {
@@ -326,15 +408,17 @@ describe("Advanced integrations", () => {
 
         await openIntegration("Zapier", "zapier-integration");
         const modal = settingsScreen.section("zapier-modal");
+        const adminApiKey = modal.getByTestId("admin-api-key");
         await expect.element(modal).toHaveTextContent(/zapier-api-secret/);
-        await modal.getByText("zapier-api-secret").hover();
-        await modal.getByRole("button", {name: "Copy"}).click();
-        await expect(modal.getByRole("button", {name: "Copied"})).toHaveCount(1);
+        await adminApiKey.getByText("zapier-api-secret").hover();
+        await adminApiKey.getByRole("button", {name: "Copy"}).click();
+        await expect(adminApiKey.getByRole("button", {name: "Copied"})).toHaveCount(1);
         expect(writeText).toHaveBeenCalledWith("zapier-api-secret");
-        await modal.getByRole("button", {name: "Regenerate"}).click();
+        await adminApiKey.getByRole("button", {name: "Regenerate"}).click();
         await settingsScreen.confirmationModal().getByRole("button", {name: "Regenerate Admin API Key"}).click();
         await expect.element(modal).toHaveTextContent(/Admin API Key was successfully regenerated/);
         await expect.element(modal).toHaveTextContent(/new-api-key/);
+        await expect(adminApiKey.getByRole("button", {name: "Copy"})).toHaveCount(1);
         expect(refreshApi.requests).toHaveLength(1);
         writeText.mockRestore();
     });

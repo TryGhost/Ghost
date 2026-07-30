@@ -16,6 +16,11 @@
       "source": "./src/index.ts",
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
+    },
+    "./csv": {
+      "source": "./src/csv.ts",
+      "types": "./build/csv.d.ts",
+      "default": "./build/csv.js"
     }
   },
   "main": "build/index.js",

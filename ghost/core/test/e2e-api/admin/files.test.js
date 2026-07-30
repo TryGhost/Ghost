@@ -6,7 +6,7 @@ const supertest = require('supertest');
 const sinon = require('sinon');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
-const storage = require('../../../core/server/adapters/storage');
+const adapterManager = require('../../../core/server/services/adapter-manager').default;
 
 describe('Files API', function () {
     const files = [];
@@ -43,7 +43,7 @@ describe('Files API', function () {
     });
 
     it('Passes the content type to the storage adapter when uploading a PDF', async function () {
-        const store = storage.getStorage('files');
+        const store = adapterManager.getAdapter('storage:files');
         const saveSpy = sinon.spy(store, 'save');
 
         const res = await request.post(localUtils.API.getApiQuery('files/upload'))
@@ -61,7 +61,7 @@ describe('Files API', function () {
     });
 
     it('Derives content type from file extension, ignoring client-provided MIME type', async function () {
-        const store = storage.getStorage('files');
+        const store = adapterManager.getAdapter('storage:files');
         const saveSpy = sinon.spy(store, 'save');
 
         const res = await request.post(localUtils.API.getApiQuery('files/upload'))
@@ -79,7 +79,7 @@ describe('Files API', function () {
     });
 
     it('Passes the content type to the storage adapter when uploading a JSON file', async function () {
-        const store = storage.getStorage('files');
+        const store = adapterManager.getAdapter('storage:files');
         const saveSpy = sinon.spy(store, 'save');
 
         const res = await request.post(localUtils.API.getApiQuery('files/upload'))
@@ -116,7 +116,7 @@ describe('Files API', function () {
     });
 
     it('Stores non-browser-renderable files with application/octet-stream', async function () {
-        const store = storage.getStorage('files');
+        const store = adapterManager.getAdapter('storage:files');
         const saveSpy = sinon.spy(store, 'save');
 
         const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-test-'));
@@ -142,7 +142,7 @@ describe('Files API', function () {
     });
 
     it('Stores HTML files with text/plain content type to prevent execution', async function () {
-        const store = storage.getStorage('files');
+        const store = adapterManager.getAdapter('storage:files');
         const saveSpy = sinon.spy(store, 'save');
 
         const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-test-'));

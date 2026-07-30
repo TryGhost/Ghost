@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {type ReactNode} from 'react';
-import {ConfirmationModalContent} from '@tryghost/admin-x-design-system';
+import {ConfirmationModalContent} from '../../../confirmation-modal';
 import {ErrorTextCard, type FatalErrors, ThemeValidationDetailsDisclosure, ValidationProblemCard, getIssuesFromFatalErrors} from './theme-validation-details';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 
@@ -23,8 +23,8 @@ const InvalidThemeModal: React.FC<{
 
     return <ConfirmationModalContent
         cancelLabel='Close'
-        okColor='black'
         okLabel={'Retry'}
+        okVariant='default'
         prompt={<>
             <div className='space-y-5'>
                 <div className='text-sm text-foreground'>{promptText}</div>

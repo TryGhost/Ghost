@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {fn} from 'storybook/test';
-import ColorPicker from './color-picker';
+import ColorPicker, {ColorPickerTrigger, ColorSwatchRow} from './color-picker';
 
 import {Popover, PopoverTrigger, PopoverContent} from '@/components/ui/popover';
 import {useState} from 'react';
@@ -22,11 +22,9 @@ function ColorPickerDemo(args: Story['args']) {
     const [value, setValue] = useState(args?.defaultValue);
     return <div style={{height: 600}}>
         <Popover>
-            <PopoverTrigger>
+            <PopoverTrigger asChild>
                 <div className="flex items-center gap-2">
-                    <div className="aspect-square size-9 flex-0 rounded-full p-1" style={{background: `conic-gradient(from 0deg, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))`}}>
-                        <div className="size-full rounded-full border-2 border-white" style={{background: String(value || '#ffffff')}} />
-                    </div>
+                    <ColorPickerTrigger value={String(value || '#ffffff')} />
                     <Input className="font-mono" size={8} type="text" value={value} onChange={e => setValue(e.target.value)} />
                 </div>
             </PopoverTrigger>
@@ -53,4 +51,22 @@ export const Standalone: Story = {
         defaultValue: '#FF6B35',
         onChange: fn()
     }
+};
+
+function ColorSwatchesDemo() {
+    const [value, setValue] = useState<string | null>('accent');
+    return <ColorSwatchRow
+        swatches={[
+            {title: 'Dark', hex: '#08090c', value: 'dark'},
+            {title: 'Light', hex: '#ffffff', value: 'light'},
+            {title: 'Accent', hex: '#30cf43', value: 'accent'},
+            {title: 'Transparent', hex: '#00000000', value: 'transparent'}
+        ]}
+        value={value}
+        onSelect={setValue}
+    />;
+}
+
+export const Swatches: Story = {
+    render: () => <ColorSwatchesDemo />
 };

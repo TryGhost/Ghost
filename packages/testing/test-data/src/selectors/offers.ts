@@ -6,6 +6,7 @@ export const offersSelectors = {
     testIds: {
         section: "offers",
         listModal: "offers-modal",
+        tableBody: "offers-table-body",
         listRow: "offer-item",
         retentionRow: "retention-offer-item",
         retentionRedemptionsLink: (cadence: "monthly" | "yearly") => `retention-redemptions-link-${cadence}`,

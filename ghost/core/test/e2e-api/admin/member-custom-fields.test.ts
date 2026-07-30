@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager, configUtils} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const events = require('../../../core/server/lib/common/events');
 
@@ -125,6 +125,70 @@ describe('Member Custom Fields Admin API', function () {
                 .expectStatus(422);
         });
 
+        // A key names a property on the plain objects carrying a member's values, so
+        // one naming a member of Object.prototype reads back as inherited rather than
+        // absent wherever it is indexed. Those keys are already taken, so the
+        // publisher keeps the name and the key takes a suffix. The match is on the
+        // slug rather than the name, which is what catches every spelling that
+        // collapses onto it.
+        const reservedSpellings = [
+            {name: 'Constructor', key: 'constructor-2'},
+            {name: 'constructor', key: 'constructor-2'},
+            {name: '__proto__', key: '__proto__-2'},
+            {name: '__PROTO__', key: '__proto__-2'},
+            {name: '＿＿ｐｒｏｔｏ＿＿', key: '__proto__-2'}
+        ];
+        for (const {name, key} of reservedSpellings) {
+            it(`mints ${key} for the name ${name}, and the value round-trips`, async function () {
+                const field = await createField({name});
+                assert.equal(field.key, key);
+
+                const memberId = await createMember();
+                await setValues(memberId, {[key]: 'Bex'});
+
+                assert.deepEqual(await readValues(memberId), {[key]: 'Bex'});
+            });
+        }
+
+        // A reserved key is claimed by whichever field takes the suffix first, so the
+        // next one along has to keep counting rather than collide with it.
+        it('keeps counting past a reserved key already claimed by another field', async function () {
+            const first = await createField({name: 'Constructor'});
+            const second = await createField({name: 'Constructor!'});
+
+            assert.equal(first.key, 'constructor-2');
+            assert.equal(second.key, 'constructor-3');
+        });
+
+        // The batch runs in one transaction, so mintKey sees the rows minted earlier
+        // in the same request — reserving a key must hold within a batch too, not
+        // just across separate requests.
+        it('mints distinct keys when two definitions in one batch both slug onto a reserved key', async function () {
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Constructor', type: 'short_text'},
+                    {name: 'Constructor!', type: 'short_text'}
+                ]})
+                .expectStatus(201);
+
+            assert.deepEqual(
+                body.members_custom_fields.map((f: {key: string}) => f.key),
+                ['constructor-2', 'constructor-3']
+            );
+        });
+
+        // A reserved slug must not take a whole prefix with it — only the exact key.
+        it('leaves a name that merely starts with a reserved word unsuffixed', async function () {
+            const field = await createField({name: 'Constructor role'});
+            assert.equal(field.key, 'constructor-role');
+
+            const memberId = await createMember();
+            await setValues(memberId, {[field.key]: 'Foreman'});
+
+            assert.deepEqual(await readValues(memberId), {'constructor-role': 'Foreman'});
+        });
+
         it('rejects a name that exceeds the maximum length', async function () {
             await agent
                 .post('members/custom_fields/')
@@ -141,7 +205,7 @@ describe('Member Custom Fields Admin API', function () {
 
         it('rejects a create with no root key', async function () {
             // The framework rejects an empty/malformed body before the query runs,
-            // which is the invariant the endpoint's `[0]` access relies on.
+            // so the service always receives a non-empty array to create from.
             await agent.post('members/custom_fields/').body({}).expectStatus(400);
         });
 
@@ -313,6 +377,358 @@ describe('Member Custom Fields Admin API', function () {
             // fresh field with the same name reclaims the original (unsuffixed) key.
             const fresh = await createField({name: 'Favourite topic'});
             assert.equal(fresh.key, 'favourite-topic');
+        });
+    });
+
+    describe('Creating several definitions at once', function () {
+        it('creates every definition in the request, in order', async function () {
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Company', type: 'short_text'},
+                    {name: 'Role', type: 'short_text'},
+                    {name: 'Bio', type: 'long_text'}
+                ]})
+                .expectStatus(201);
+
+            assert.deepEqual(
+                body.members_custom_fields.map((field: {key: string}) => field.key),
+                ['company', 'role', 'bio']
+            );
+            assert.equal(body.members_custom_fields[2].type, 'long_text');
+
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+            assert.equal(list.members_custom_fields.length, 3);
+        });
+
+        it('mints distinct keys when two definitions in the batch derive the same slug', async function () {
+            // Within a batch each insert is visible to the next, so slug collision
+            // resolves exactly as it would across two separate requests.
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Favourite topic', type: 'short_text'},
+                    {name: 'Favourite topic!', type: 'short_text'}
+                ]})
+                .expectStatus(201);
+
+            assert.deepEqual(
+                body.members_custom_fields.map((field: {key: string}) => field.key),
+                ['favourite-topic', 'favourite-topic-2']
+            );
+        });
+
+        it('writes nothing when any definition in the batch is invalid', async function () {
+            await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Company', type: 'short_text'},
+                    {name: 'Role', type: 'boolean'}
+                ]})
+                .expectStatus(422);
+
+            // The valid first item must not survive the rejected request.
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+            assert.deepEqual(list.members_custom_fields, []);
+        });
+
+        it('writes nothing when two definitions in the batch share a name', async function () {
+            await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Company', type: 'short_text'},
+                    {name: 'company', type: 'short_text'}
+                ]})
+                .expectStatus(422);
+
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+            assert.deepEqual(list.members_custom_fields, []);
+        });
+
+        it('names the offending field, and which one it was, when a batch item is invalid', async function () {
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Company', type: 'short_text'},
+                    {name: 'Role', type: 'short_text'},
+                    {name: 'Bio', type: 'boolean'}
+                ]})
+                .expectStatus(422);
+
+            // `property` stays the bare field name so a client can map it onto a
+            // form input; the item pointer rides alongside it in context, which is
+            // where the framework relocates the detail of a validation failure.
+            assert.equal(body.errors[0].property, 'type');
+            assert.match(body.errors[0].context, /Custom field 3 of 3\./);
+        });
+
+        it('does not point at an item when only one definition was sent', async function () {
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [{name: 'Bio', type: 'boolean'}]})
+                .expectStatus(422);
+
+            assert.equal(body.errors[0].property, 'type');
+            // context still carries the reason the item was rejected, just no
+            // pointer to which one. Asserted as a string first so that if the
+            // framework ever stops populating it this fails as an assertion
+            // rather than throwing inside doesNotMatch.
+            assert.equal(typeof body.errors[0].context, 'string');
+            assert.doesNotMatch(body.errors[0].context, /Custom field \d+ of \d+/);
+        });
+
+        it('rejects a batch larger than a single request may create', async function () {
+            // Work per request is bounded independently of the site ceiling: even
+            // with room to spare, one request cannot ask for unbounded work.
+            configUtils.set('members:customFields:maxDefinitions', 100000);
+            const oversized = Array.from({length: 101}, (_unused, index) => ({
+                name: `Field ${index}`,
+                type: 'short_text'
+            }));
+
+            await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: oversized})
+                .expectStatus(422);
+
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+            assert.deepEqual(list.members_custom_fields, []);
+            await configUtils.restore();
+        });
+
+        it('writes nothing when a definition in the batch clashes with an existing one', async function () {
+            await createField({name: 'Company'});
+
+            await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Role', type: 'short_text'},
+                    {name: 'Company', type: 'short_text'}
+                ]})
+                .expectStatus(422);
+
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body.members_custom_fields;
+            assert.deepEqual(list.map((field: {key: string}) => field.key), ['company']);
+        });
+    });
+
+    describe('Operational limit on the number of definitions', function () {
+        // The cap is an operator setting, not a release constant. Ghost containers
+        // are stateless, so it is read from config on every create: these tests set
+        // it directly and the very next request honours it, with no re-boot.
+        afterEach(async function () {
+            await configUtils.restore();
+        });
+
+        async function createFieldExpecting(name: string, status: number) {
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [{name, type: 'short_text'}]})
+                .expectStatus(status);
+            return body;
+        }
+
+        it('rejects a create once the site is at the limit', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 2);
+
+            await createField({name: 'Company'});
+            await createField({name: 'Role'});
+
+            const body = await createFieldExpecting('Bio', 403);
+            assert.equal(body.errors[0].code, 'CUSTOM_FIELDS_LIMIT_REACHED');
+            assert.deepEqual(body.errors[0].details, {limit: 2, total: 2, requested: 1});
+            // At the ceiling, freeing a slot is the only way forward.
+            assert.match(body.errors[0].context, /Delete a field you no longer need/);
+
+            // The rejected field was not written.
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+            assert.equal(list.members_custom_fields.length, 2);
+        });
+
+        it('applies a limit change to the very next request, with no restart', async function () {
+            // This is the behaviour that makes the cap operable: raising it must take
+            // effect immediately, which is only true if config is read per request.
+            configUtils.set('members:customFields:maxDefinitions', 1);
+            await createField({name: 'Company'});
+            await createFieldExpecting('Role', 403);
+
+            configUtils.set('members:customFields:maxDefinitions', 2);
+            const created = await createField({name: 'Role'});
+            assert.equal(created.key, 'role');
+
+            // ...and lowering it blocks the next create just as immediately.
+            configUtils.set('members:customFields:maxDefinitions', 1);
+            await createFieldExpecting('Bio', 403);
+        });
+
+        it('leaves definitions already over a lowered limit in place', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 3);
+            await createField({name: 'Company'});
+            await createField({name: 'Role'});
+            await createField({name: 'Bio'});
+
+            // Lowering the cap below the current count is a valid operator action.
+            // It stops new definitions; it never removes existing ones.
+            configUtils.set('members:customFields:maxDefinitions', 1);
+
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+            assert.equal(list.members_custom_fields.length, 3);
+
+            const body = await createFieldExpecting('Location', 403);
+            assert.deepEqual(body.errors[0].details, {limit: 1, total: 3, requested: 1});
+        });
+
+        it('counts archived definitions towards the limit, and frees a slot only on delete', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 2);
+            await createField({name: 'Company'});
+            const spare = await createField({name: 'Role'});
+
+            // Archiving is reversible and keeps the row (and its members' values),
+            // so it releases nothing.
+            await setStatus(spare.key, 'archived');
+            const body = await createFieldExpecting('Bio', 403);
+            assert.deepEqual(body.errors[0].details, {limit: 2, total: 2, requested: 1});
+
+            // Deleting the archived field is what actually frees the slot.
+            await agent.delete(`members/custom_fields/${spare.key}/`).expectStatus(204);
+            const created = await createField({name: 'Bio'});
+            assert.equal(created.key, 'bio');
+        });
+
+        it('restores an archived definition while at the limit', async function () {
+            // Restoring changes no row count, so the cap has nothing to say about it.
+            configUtils.set('members:customFields:maxDefinitions', 2);
+            await createField({name: 'Company'});
+            const archived = await createField({name: 'Role'});
+            await setStatus(archived.key, 'archived');
+
+            const restored = await setStatus(archived.key, 'active');
+            assert.equal(restored.status, 'active');
+        });
+
+        it('rejects a batch that would cross the limit, writing none of it', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 3);
+            await createField({name: 'Company'});
+
+            // Two slots remain, so a batch of three is refused outright rather than
+            // being applied up to the remaining space.
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Role', type: 'short_text'},
+                    {name: 'Bio', type: 'short_text'},
+                    {name: 'Location', type: 'short_text'}
+                ]})
+                .expectStatus(403);
+            assert.deepEqual(body.errors[0].details, {limit: 3, total: 1, requested: 3});
+
+            // The site still has room, just not for three. Telling this operator to
+            // delete something would be wrong, so the message says how much room
+            // is actually left.
+            assert.match(body.errors[0].context, /You can add 2 more\./);
+
+            const list = (await agent.get('members/custom_fields/').expectStatus(200)).body.members_custom_fields;
+            assert.deepEqual(list.map((field: {key: string}) => field.key), ['company']);
+        });
+
+        it('accepts a batch that exactly fills the remaining space', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 3);
+            await createField({name: 'Company'});
+
+            const {body} = await agent
+                .post('members/custom_fields/')
+                .body({members_custom_fields: [
+                    {name: 'Role', type: 'short_text'},
+                    {name: 'Bio', type: 'short_text'}
+                ]})
+                .expectStatus(201);
+            assert.equal(body.members_custom_fields.length, 2);
+        });
+
+        it('rejects every create when the limit is zero', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 0);
+            const body = await createFieldExpecting('Company', 403);
+            assert.deepEqual(body.errors[0].details, {limit: 0, total: 0, requested: 1});
+        });
+
+        // A setting that can't be read as a ceiling must neither disable the feature
+        // nor remove the safeguard. Several of these coerce to 0 through `Number()`,
+        // which would stop creation site-wide; treating them as "no limit" instead
+        // would mean a typo silently removes the protection. Both are wrong: they
+        // fall back to the default. Only an explicit 0 disables creation.
+        const unreadableSettings: [string, unknown][] = [
+            ['an unreadable string', 'not-a-number'],
+            ['false', false],
+            ['null', null],
+            ['an empty string', ''],
+            ['an array', []],
+            ['a negative number', -5],
+            ['a fraction', 2.5],
+            ['an unsafely large number', 1e21]
+        ];
+
+        unreadableSettings.forEach(([description, value]) => {
+            it(`falls back to the default ceiling when the setting is ${description}`, async function () {
+                configUtils.set('members:customFields:maxDefinitions', value);
+                await createField({name: 'Company'});
+
+                const list = (await agent.get('members/custom_fields/').expectStatus(200)).body;
+                assert.equal(list.members_custom_fields.length, 1);
+            });
+        });
+
+        it('enforces the shipped ceiling, not an absent one, when the setting is unreadable', async function () {
+            // The checks above only prove creation still works. This proves a
+            // ceiling is genuinely still in force: fill the shipped one exactly,
+            // then watch the next create be refused against it.
+            //
+            // The expected ceiling comes from the config provider rather than from
+            // the module that resolves it, so this asserts against what Ghost
+            // actually ships rather than against the implementation's own idea of
+            // it. Read before the override, which is what makes it unreadable.
+            const shipped = configUtils.config.get('members:customFields:maxDefinitions');
+            configUtils.set('members:customFields:maxDefinitions', 'not-a-number');
+
+            // Filled in batches rather than one create at a time: a hundred-odd
+            // sequential authenticated requests trip Ghost's spam prevention and
+            // leave later tests failing on 403s. The chunk sits comfortably under
+            // the per-request cap so this holds if the shipped ceiling moves.
+            const chunk = 50;
+            for (let created = 0; created < shipped; created += chunk) {
+                await agent
+                    .post('members/custom_fields/')
+                    .body({members_custom_fields: Array.from(
+                        {length: Math.min(chunk, shipped - created)},
+                        (_unused, index) => ({name: `Field ${created + index}`, type: 'short_text'})
+                    )})
+                    .expectStatus(201);
+            }
+
+            const body = await createFieldExpecting('One too many', 403);
+            assert.deepEqual(body.errors[0].details, {limit: shipped, total: shipped, requested: 1});
+        });
+
+        it('honours a numeric limit supplied as a string', async function () {
+            // Config set through an environment variable arrives as a string.
+            configUtils.set('members:customFields:maxDefinitions', '1');
+            await createField({name: 'Company'});
+            await createFieldExpecting('Role', 403);
+        });
+
+        it('does not record an activity-log entry for a create the limit rejected', async function () {
+            configUtils.set('members:customFields:maxDefinitions', 1);
+            await createField({name: 'Company'});
+            await createFieldExpecting('Role', 403);
+
+            // The key identifies the field publicly; it rides in the action's context
+            // because resource_id holds the row id.
+            const actions = await models.Base.knex('actions')
+                .where('resource_type', 'member_custom_field')
+                .select('context');
+            assert.deepEqual(
+                actions.map((action: {context: string | null}) => JSON.parse(action.context ?? '{}').key),
+                ['company']
+            );
         });
     });
 
@@ -490,6 +906,84 @@ describe('Member Custom Fields Admin API', function () {
                 .post('members/')
                 .body({members: [{email: 'create-with-values@example.com', custom_fields: {[field.key]: 'Ghosts'}}]})
                 .expectStatus(422);
+        });
+
+        it('rejects a key too long to name a field, without echoing it back', async function () {
+            // Keys are minted into a bounded column, so a longer one cannot name a
+            // field. Refused as input rather than looked up, so the response never
+            // carries it back — the unknown-key error names the key it was given.
+            const memberId = await createMember();
+            const hugeKey = 'k'.repeat(200000);
+
+            const body = await setValues(memberId, {[hugeKey]: 'v'}, 422);
+            assert.equal(body.errors[0].property, 'custom_fields');
+            assert.ok(body.errors[0].context.length < 1000, 'the key must not be echoed back');
+        });
+
+        it('rejects a write naming more fields than the site may define', async function () {
+            // The ceiling is the operator's configured definitions limit, so it moves
+            // with the setting rather than being fixed in the service.
+            configUtils.set('members:customFields:maxDefinitions', 3);
+            const memberId = await createMember();
+
+            const atCeiling = Object.fromEntries(Array.from({length: 3}, (_, i) => [`k${i}`, 'v']));
+            // At the ceiling it gets as far as resolving the keys, which is where an
+            // undefined field is the thing rejected — not the ceiling.
+            const allowed = await setValues(memberId, atCeiling, 422);
+            assert.match(allowed.errors[0].context ?? allowed.errors[0].message, /Unknown custom field/);
+
+            const overCeiling = Object.fromEntries(Array.from({length: 4}, (_, i) => [`k${i}`, 'v']));
+            const refused = await setValues(memberId, overCeiling, 422);
+            assert.equal(refused.errors[0].property, 'custom_fields');
+            assert.match(refused.errors[0].context ?? refused.errors[0].message, /limited to 3 fields/);
+        });
+
+        it('refuses a malformed custom_fields identically on create and on edit', async function () {
+            // The schema lets every shape through, so the service is the only thing
+            // judging it, and both verbs judge it the same way. A body too malformed
+            // to be a write is refused rather than accepted and dropped.
+            const memberId = await createMember();
+
+            for (const [index, malformed] of [null, 'not-an-object', 42, true, [], ['a']].entries()) {
+                const created = await agent
+                    .post('members/')
+                    .body({members: [{email: `create-malformed-${index}@example.com`, custom_fields: malformed}]})
+                    .expectStatus(422);
+                assert.equal(created.body.errors[0].property, 'custom_fields');
+
+                const edited = await setValues(memberId, malformed as unknown as Record<string, unknown>, 422);
+                assert.equal(edited.errors[0].property, 'custom_fields');
+            }
+        });
+
+        it('treats a create and an edit the same on what counts as setting values', async function () {
+            // An object carrying only a `__proto__` key names no value once parsed,
+            // so neither path should see it as a write. Create and edit resolve that
+            // question with the same schema, so they cannot drift on it.
+            const payload = JSON.parse('{"__proto__": {"polluted": true}}');
+
+            await agent
+                .post('members/')
+                .body({members: [{email: 'create-proto@example.com', custom_fields: payload}]})
+                .expectStatus(201);
+
+            const memberId = await createMember();
+            await agent
+                .put(`members/${memberId}/`)
+                .body({members: [{custom_fields: payload}]})
+                .expectStatus(200);
+
+            assert.deepEqual(await readValues(memberId), {});
+            assert.equal(({} as Record<string, unknown>).polluted, undefined, 'the prototype must not be polluted');
+        });
+
+        it('accepts an empty custom_fields when creating a member', async function () {
+            // `{}` asks for nothing, and an edit treats it as a no-op, so a client
+            // whose serializer always emits the key can still create members.
+            await agent
+                .post('members/')
+                .body({members: [{email: 'create-empty-values@example.com', custom_fields: {}}]})
+                .expectStatus(201);
         });
 
         it('clearing a value that was never set is a no-op', async function () {
@@ -766,6 +1260,10 @@ describe('Member Custom Fields Admin API', function () {
         });
 
         it('ignores custom_fields on a member edit and never returns them', async function () {
+            // The schema declares `custom_fields` on every site, so with the feature
+            // off the key reaches the service and is dropped there: the edit succeeds,
+            // the rest of it applies, and the values are ignored.
+            //
             // The field and value are set up with the flag on, then the flag goes
             // off for the request under test.
             mockManager.restore();
@@ -790,15 +1288,51 @@ describe('Member Custom Fields Admin API', function () {
             mockManager.mockLabsEnabled('membersCustomFields');
             assert.deepEqual(await readValues(memberId), {[field.key]: 'Ghosts'});
         });
+
+        it('ignores custom_fields on a member create', async function () {
+            // The not-supported-on-create refusal is gated behind the feature too:
+            // with it off, the key is dropped and the create succeeds.
+            const {body} = await agent
+                .post('members/')
+                .body({members: [{email: 'create-flag-off@example.com', custom_fields: {'favourite-topic': 'Ghosts'}}]})
+                .expectStatus(201);
+
+            assert.equal(body.members[0].custom_fields, undefined);
+        });
+
+        it('ignores a malformed custom_fields rather than rejecting it', async function () {
+            // The schema declares `custom_fields` on every site, so any shape it
+            // judged would be judged on sites without the feature too. Leaving it
+            // unconstrained is what keeps the flag the only thing that matters here.
+            const memberId = await createMember();
+
+            for (const malformed of [null, 'not-an-object', 42, []]) {
+                await agent
+                    .put(`members/${memberId}/`)
+                    .body({members: [{custom_fields: malformed}]})
+                    .expectStatus(200);
+            }
+
+            await agent
+                .post('members/')
+                .body({members: [{email: 'create-malformed@example.com', custom_fields: 'not-an-object'}]})
+                .expectStatus(201);
+        });
     });
 
     describe('records actions in the history (via the actions API)', function () {
         let actorId: string;
 
         const customFieldActions = async () => {
-            const {body} = await agent.get('actions/?filter=resource_type:member_custom_field').expectStatus(200);
+            const {body} = await agent.get('actions/?filter=resource_type:member_custom_field&include=actor,resource').expectStatus(200);
             return body.actions;
         };
+
+        // A field is addressed publicly by its key, and the key rides in the action's
+        // context rather than in resource_id, which holds the row id.
+        const contextOf = (a: {context: unknown}) =>
+            (typeof a.context === 'string' ? JSON.parse(a.context) : a.context) as
+                {primary_name?: string; key?: string; previous_name?: string};
 
         beforeAll(async function () {
             actorId = (await agent.get('users/me/').expectStatus(200)).body.users[0].id;
@@ -810,9 +1344,25 @@ describe('Member Custom Fields Admin API', function () {
             const actions = await customFieldActions();
             assert.equal(actions.length, 1);
             assert.equal(actions[0].event, 'added');
-            assert.equal(actions[0].resource_id, field.key);
+            assert.equal(contextOf(actions[0]).key, field.key);
             assert.equal(actions[0].actor_type, 'user');
             assert.equal(actions[0].actor_id, actorId);
+            assert.equal(actions[0].resource.name, field.name);
+        });
+
+        // `resource_id` holds 24 characters and a key derived from a publisher-chosen
+        // name can be far longer, so only the row id fits every field. The action
+        // write is best-effort, so a row that does not fit is dropped without error.
+        it('records an action for a field whose key is longer than resource_id allows', async function () {
+            const field = await createField({name: 'Favourite ice cream flavour'});
+            assert.ok(field.key.length > 24, 'the key needs to be longer than resource_id to be a regression test');
+
+            const actions = await customFieldActions();
+            assert.equal(actions.length, 1);
+            assert.equal(contextOf(actions[0]).key, field.key);
+
+            const row = await models.Base.knex('members_custom_fields').where('key', field.key).first();
+            assert.equal(actions[0].resource_id, row.id);
         });
 
         it('records an "edited" action when a field is renamed', async function () {
@@ -824,7 +1374,7 @@ describe('Member Custom Fields Admin API', function () {
 
             const edited = (await customFieldActions()).find((a: {event: string}) => a.event === 'edited');
             assert.ok(edited, 'an edited action should be recorded');
-            assert.equal(edited.resource_id, field.key);
+            assert.equal(contextOf(edited).key, field.key);
             assert.equal(edited.actor_id, actorId);
         });
 
@@ -845,7 +1395,7 @@ describe('Member Custom Fields Admin API', function () {
 
             const archived = (await customFieldActions()).find((a: {event: string}) => a.event === 'archived');
             assert.ok(archived, 'an archived action should be recorded');
-            assert.equal(archived.resource_id, field.key);
+            assert.equal(contextOf(archived).key, field.key);
             assert.equal(archived.actor_id, actorId);
         });
 
@@ -856,7 +1406,7 @@ describe('Member Custom Fields Admin API', function () {
 
             const restored = (await customFieldActions()).find((a: {event: string}) => a.event === 'restored');
             assert.ok(restored, 'a restored action should be recorded');
-            assert.equal(restored.resource_id, field.key);
+            assert.equal(contextOf(restored).key, field.key);
             assert.equal(restored.actor_id, actorId);
         });
 
@@ -877,8 +1427,9 @@ describe('Member Custom Fields Admin API', function () {
 
             const deleted = (await customFieldActions()).find((a: {event: string}) => a.event === 'deleted');
             assert.ok(deleted, 'a deleted action should be recorded');
-            assert.equal(deleted.resource_id, field.key);
+            assert.equal(contextOf(deleted).key, field.key);
             assert.equal(deleted.actor_id, actorId);
+            assert.deepEqual(deleted.resource, {});
         });
 
         it('records the whole lifecycle as an ordered, attributed, named timeline', async function () {
@@ -898,11 +1449,8 @@ describe('Member Custom Fields Admin API', function () {
             // creation order even for events that land in the same second (which
             // created_at ordering can't disambiguate).
             const timeline = (await customFieldActions())
-                .filter((a: {resource_id: string}) => a.resource_id === field.key)
+                .filter((a: {context: unknown}) => contextOf(a).key === field.key)
                 .sort((a: {id: string}, b: {id: string}) => (a.id < b.id ? -1 : 1));
-
-            const parseContext = (a: {context: unknown}) =>
-                (typeof a.context === 'string' ? JSON.parse(a.context) : a.context) as {primary_name?: string; previous_name?: string};
 
             // The full ordered story, including the repeated archive.
             assert.deepEqual(
@@ -914,14 +1462,15 @@ describe('Member Custom Fields Admin API', function () {
             // logs, and the delete still says what the field was after its row is gone.
             for (const a of timeline) {
                 assert.equal(a.actor_id, actorId, `the ${a.event} action is attributed`);
-                assert.ok(parseContext(a)?.primary_name, `the ${a.event} action names the field`);
+                assert.ok(contextOf(a)?.primary_name, `the ${a.event} action names the field`);
+                assert.deepEqual(a.resource, {}, `the ${a.event} action tolerates its deleted resource`);
             }
 
             // Names track the field at each point; the rename also records what it was.
-            assert.equal(parseContext(timeline[0]).primary_name, 'Delivery address');
-            assert.equal(parseContext(timeline[1]).primary_name, 'Shipping address');
-            assert.equal(parseContext(timeline[1]).previous_name, 'Delivery address');
-            assert.equal(parseContext(timeline[5]).primary_name, 'Shipping address');
+            assert.equal(contextOf(timeline[0]).primary_name, 'Delivery address');
+            assert.equal(contextOf(timeline[1]).primary_name, 'Shipping address');
+            assert.equal(contextOf(timeline[1]).previous_name, 'Delivery address');
+            assert.equal(contextOf(timeline[5]).primary_name, 'Shipping address');
         });
     });
 

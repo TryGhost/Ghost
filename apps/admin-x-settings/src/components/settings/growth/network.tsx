@@ -2,8 +2,10 @@ import React from 'react';
 import SettingImg from '../../../assets/images/network.png';
 import TopLevelGroup from '../../top-level-group';
 import validator from 'validator';
-import {Icon, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
+import {Switch} from '@tryghost/shade/components';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -42,9 +44,9 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const isChecked = !!socialWebSetting && !isDisabled;
 
     // Handle toggle change
-    const toggleSocialWebSetting = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const toggleSocialWebSetting = async (checked: boolean) => {
         const updatedSetting: Setting[] = [
-            {key: 'social_web', value: event.target.checked}
+            {key: 'social_web', value: checked}
         ];
 
         try {
@@ -56,12 +58,11 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (<TopLevelGroup
         customButtons={
-            <Toggle
-                key={`${isChecked}-${isDisabled}`}
+            <Switch
+                aria-label='Network'
                 checked={isChecked}
-                direction='rtl'
                 disabled={isDisabled}
-                onChange={toggleSocialWebSetting}
+                onCheckedChange={toggleSocialWebSetting}
             />
         }
         description='Distribute posts to the social web, so people can discover and follow your content across BlueSky, Threads, Mastodon, Flipboard, WordPress, and more.'
@@ -73,23 +74,19 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <>
             <SettingGroupContent
                 columns={1}
-                values={[
-                    {
-                        key: 'private',
-                        value:
-                        isDisabled &&
-                            <div className='flex w-full gap-1.5 rounded-md border border-grey-200 bg-grey-50 p-3 dark:border-grey-900 dark:bg-grey-900'>
-                                <Icon name='info' size={16} />
-                                <div className='-mt-0.5'>
-                                    {isDisabledByPrivateMode
-                                        ? <>Network is automatically disabled while your site is in <span className='cursor-pointer text-green' onClick={() => updateRoute('members')}>private mode</span></>
-                                        : <>You need to configure a supported custom domain to use this feature. <a className='text-green' href="https://ghost.org/help/social-web/#custom-domain-required" rel="noopener noreferrer" target="_blank">Help &rarr;</a></>
-                                    }
-                                </div>
-                            </div>
-                    }
-                ]}
-            />
+            >
+                {isDisabled &&
+                    <div className='flex w-full gap-1.5 rounded-md border border-border-default bg-muted p-3'>
+                        <LucideIcon.Info className='size-4' />
+                        <div className='-mt-0.5'>
+                            {isDisabledByPrivateMode
+                                ? <>Network is automatically disabled while your site is in <span className='cursor-pointer text-green' onClick={() => updateRoute('members')}>private mode</span></>
+                                : <>You need to configure a supported custom domain to use this feature. <a className='text-green' href="https://ghost.org/help/social-web/#custom-domain-required" rel="noopener noreferrer" target="_blank">Help &rarr;</a></>
+                            }
+                        </div>
+                    </div>
+                }
+            </SettingGroupContent>
             <div className='-mx-5 -mb-5 overflow-hidden rounded-b-xl md:-mx-7 md:-mb-7'>
                 <img className='dark:opacity-90' src={SettingImg} />
             </div>

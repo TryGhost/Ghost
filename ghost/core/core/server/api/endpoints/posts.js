@@ -1,4 +1,4 @@
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const models = require('../../models');
 const {getCSVExportFileName} = require('./utils/csv-export-filename');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
@@ -110,6 +110,22 @@ const controller = {
                 data: await postsService.export(frame),
                 filename: getCSVExportFileName('analytics')
             };
+        }
+    },
+
+    importCSV: {
+        statusCode: 202,
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            docName: 'content_imports',
+            method: 'importContent'
+        },
+        async query() {
+            // CSV processing lands in a later milestone — for now the endpoint
+            // only accepts the upload (gated by the csvContentImporter flag)
+            return {};
         }
     },
 

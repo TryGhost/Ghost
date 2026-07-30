@@ -1,9 +1,11 @@
 import GhostLogo from '../assets/images/orb-pink.png';
 import React, {useEffect, useRef} from 'react';
 import clsx from 'clsx';
-import {Badge} from '@tryghost/shade/components';
-import {Button, Icon, SettingNavItem, type SettingNavItemProps, SettingNavSection, TextField, useFocusContext} from '@tryghost/admin-x-design-system';
+import {Badge, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, Kbd, Separator, SidebarMenu} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {Search, X} from 'lucide-react';
+import {Text} from '@tryghost/shade/primitives';
+import {useFocusContext} from '@tryghost/shade/app';
 
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
@@ -21,7 +23,15 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext, useScrollSectionNav} from '../hooks/use-scroll-section';
 import {useSearch} from './providers/settings-app-provider';
 
-const NavItem: React.FC<Omit<SettingNavItemProps, 'isVisible' | 'isCurrent' | 'navid'> & {keywords: string[]; navid: string | string[]}> = ({keywords, navid, ...props}) => {
+interface NavItemProps {
+    icon?: React.ReactNode;
+    keywords: string[];
+    navid: string | string[];
+    onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+    title: React.ReactNode;
+}
+
+const NavItem: React.FC<NavItemProps> = ({icon, keywords, navid, onClick, title}) => {
     const {ref, props: scrollProps} = useScrollSectionNav(navid);
     const {currentSection} = useScrollSectionContext();
     const {checkVisible} = useSearch();
@@ -32,14 +42,49 @@ const NavItem: React.FC<Omit<SettingNavItemProps, 'isVisible' | 'isCurrent' | 'n
     // Check if any of the navids match the current section
     const isCurrent = navids.includes(currentSection || '');
 
-    return <SettingNavItem
-        ref={ref}
-        isCurrent={isCurrent}
-        isVisible={checkVisible(keywords)}
-        navid={Array.isArray(navid) ? navid[0] : navid} // Use first navid for backward compatibility
-        {...scrollProps}
-        {...props}
-    />;
+    return (
+        <li ref={ref} {...scrollProps}>
+            <a
+                aria-current={isCurrent ? 'page' : undefined}
+                className={clsx(
+                    'mt-px flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-control font-medium text-text-secondary transition-all hover:bg-tab-hover focus-visible:bg-tab-hover focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden [&>svg]:size-4 [&>svg]:shrink-0',
+                    isCurrent && 'bg-tab-active text-foreground',
+                    !checkVisible(keywords) && 'hidden'
+                )}
+                id={Array.isArray(navid) ? navid[0] : navid}
+                onClick={onClick}
+            >
+                {icon}
+                {title}
+            </a>
+        </li>
+    );
+};
+
+interface NavSectionProps {
+    children?: React.ReactNode;
+    isVisible: boolean;
+    title: string;
+}
+
+const NavSection: React.FC<NavSectionProps> = ({children, isVisible, title}) => {
+    if (!isVisible) {
+        return null;
+    }
+
+    return (
+        <>
+            <Text as='h2' className='mb-4 ml-2 tracking-normal' size='md' weight='semibold'>{title}</Text>
+            {children && (
+                <>
+                    <SidebarMenu className='-mt-1 mb-7 gap-0'>
+                        {children}
+                    </SidebarMenu>
+                    <Separator className='mx-2 mb-7 w-auto bg-border-default' />
+                </>
+            )}
+        </>
+    );
 };
 
 const PrivateBadge: React.FC = () => (
@@ -173,27 +218,30 @@ const Sidebar: React.FC = () => {
     return (
         <div className='ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]' data-testid="sidebar">
             <div className='sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-grey-50 xl:h-20 dark:bg-grey-950 dark:tablet:bg-[#101114]'>
-                <div className='relative w-full'>
-                    <Icon className='absolute top-2.5 left-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
-                    <TextField
+                <InputGroup className='mr-8 rounded-full border-control-border bg-surface-elevated-2 shadow-sm has-[[data-slot=input-group-control]:focus-visible]:border-green! has-[[data-slot=input-group-control]:focus-visible]:bg-surface-elevated-2! has-[[data-slot=input-group-control]:focus-visible]:ring-green/25! tablet:mr-0'>
+                    <InputGroupAddon align='inline-start'>
+                        <Search aria-hidden='true' className='size-4' />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                        ref={searchInputRef}
+                        aria-label='Search settings'
                         autoComplete="off"
                         autoCorrect="off"
-                        className='mr-8 flex h-9 w-full items-center rounded-full border border-transparent bg-white px-[33px] py-1.5 shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-colors hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] tablet:mr-0 dark:border-transparent dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950'
-                        containerClassName='w-100'
-                        inputRef={searchInputRef}
                         placeholder="Search settings"
-                        title="Search"
                         value={filter}
-                        clearBg
-                        hideTitle
-                        unstyled
                         onChange={updateSearch}
                     />
-                    {filter ? <Button className='absolute top-3 right-14 p-1 tablet:right-3' icon='close' iconColorClass='text-grey-700 w-[10px]! h-[10px]!' size='sm' unstyled onClick={() => {
-                        setFilter('');
-                        searchInputRef.current?.focus();
-                    }} /> : <div className='absolute top-[7px] -right-1/2 hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold tracking-wider text-grey-600 uppercase shadow-[0px_1px_#CED4D9] tablet:visible! tablet:right-3 tablet:block! dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79]'>/</div>}
-                </div>
+                    <InputGroupAddon align='inline-end'>
+                        {filter ? (
+                            <InputGroupButton aria-label='Clear query' size='icon-xs' onClick={() => {
+                                setFilter('');
+                                searchInputRef.current?.focus();
+                            }}>
+                                <X aria-hidden='true' />
+                            </InputGroupButton>
+                        ) : <Kbd className='hidden tablet:inline-flex'>/</Kbd>}
+                    </InputGroupAddon>
+                </InputGroup>
             </div>
             <nav className={navClasses} id='admin-x-settings-sidebar'>
                 {noResult &&
@@ -206,28 +254,28 @@ const Sidebar: React.FC = () => {
                 }
 
                 {/* General settings */}
-                <SettingNavSection isVisible={checkVisible(Object.values(generalSearchKeywords).flat())} title="General settings">
-                    <NavItem icon='textfield' keywords={generalSearchKeywords.titleAndDescription} navid='general' title="Title & description" onClick={handleSectionClick} />
-                    <NavItem icon='world-clock' keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
-                    <NavItem icon='language' keywords={generalSearchKeywords.publicationLanguage} navid='publication-language' title="Publication language" onClick={handleSectionClick} />
-                    <NavItem icon='user-pen' keywords={generalSearchKeywords.users} navid='staff' title="Staff" onClick={handleSectionClick} />
-                    <NavItem icon='layer' keywords={generalSearchKeywords.metadata} navid='metadata' title="Meta data" onClick={handleSectionClick} />
-                    <NavItem icon='like' keywords={generalSearchKeywords.socialAccounts} navid='social-accounts' title="Social accounts" onClick={handleSectionClick} />
-                    <NavItem icon='baseline-chart' keywords={generalSearchKeywords.analytics} navid='analytics' title="Analytics" onClick={handleSectionClick} />
-                </SettingNavSection>
+                <NavSection isVisible={checkVisible(Object.values(generalSearchKeywords).flat())} title="General settings">
+                    <NavItem icon={<LucideIcon.TextCursorInput />} keywords={generalSearchKeywords.titleAndDescription} navid='general' title="Title & description" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.Clock4 />} keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.Languages />} keywords={generalSearchKeywords.publicationLanguage} navid='publication-language' title="Publication language" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.UserPen />} keywords={generalSearchKeywords.users} navid='staff' title="Staff" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.Layers />} keywords={generalSearchKeywords.metadata} navid='metadata' title="Meta data" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.ThumbsUp />} keywords={generalSearchKeywords.socialAccounts} navid='social-accounts' title="Social accounts" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.TrendingUp />} keywords={generalSearchKeywords.analytics} navid='analytics' title="Analytics" onClick={handleSectionClick} />
+                </NavSection>
 
                 {/* Site settings */}
-                <SettingNavSection isVisible={checkVisible(Object.values(siteSearchKeywords).flat())} title="Site">
-                    <NavItem icon='palette' keywords={siteSearchKeywords.design} navid='design' title="Design & branding" onClick={handleSectionClick} />
-                    <NavItem icon='layout-2-col' keywords={siteSearchKeywords.theme} navid='theme' title="Theme" onClick={handleSectionClick} />
-                    <NavItem icon='navigation' keywords={siteSearchKeywords.navigation} navid='navigation' title="Navigation" onClick={handleSectionClick} />
-                    <NavItem icon='megaphone' keywords={siteSearchKeywords.announcementBar} navid='announcement-bar' title="Announcement bar" onClick={handleSectionClick} />
-                </SettingNavSection>
+                <NavSection isVisible={checkVisible(Object.values(siteSearchKeywords).flat())} title="Site">
+                    <NavItem icon={<LucideIcon.SwatchBook />} keywords={siteSearchKeywords.design} navid='design' title="Design & branding" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.PanelsTopLeft />} keywords={siteSearchKeywords.theme} navid='theme' title="Theme" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.SquareMenu />} keywords={siteSearchKeywords.navigation} navid='navigation' title="Navigation" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.Megaphone />} keywords={siteSearchKeywords.announcementBar} navid='announcement-bar' title="Announcement bar" onClick={handleSectionClick} />
+                </NavSection>
 
                 {/* Membership settings */}
-                <SettingNavSection isVisible={checkVisible([...visibleMembershipSearchKeywords, ...visibleEmailSearchKeywords])} title="Membership">
+                <NavSection isVisible={checkVisible([...visibleMembershipSearchKeywords, ...visibleEmailSearchKeywords])} title="Membership">
                     <NavItem
-                        icon='key'
+                        icon={<LucideIcon.KeyRound />}
                         keywords={membershipSearchKeywords.access}
                         navid={['members', 'spam-filters']}
                         title={(
@@ -238,35 +286,35 @@ const Sidebar: React.FC = () => {
                         )}
                         onClick={handleSectionClick}
                     />
-                    <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
-                    <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
-                    {paidMembersEnabled && <NavItem icon='gift' keywords={membershipSearchKeywords.giftSubscriptions} navid='gift-subscriptions' title="Gift subscriptions" onClick={handleSectionClick} />}
-                    {!hasAutomations && <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />}
-                    {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
-                    {hasCustomFields && <NavItem icon='textfield' keywords={membershipSearchKeywords.customFields} navid='custom-fields' title="Custom fields" onClick={handleSectionClick} />}
+                    <NavItem icon={<LucideIcon.Banknote />} keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.SquareUserRound />} keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
+                    {paidMembersEnabled && <NavItem icon={<LucideIcon.Gift />} keywords={membershipSearchKeywords.giftSubscriptions} navid='gift-subscriptions' title="Gift subscriptions" onClick={handleSectionClick} />}
+                    {!hasAutomations && <NavItem icon={<LucideIcon.MailPlus />} keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />}
+                    {hasTipsAndDonations && hasStripeEnabled && <NavItem icon={<LucideIcon.PiggyBank />} keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
+                    {hasCustomFields && <NavItem icon={<LucideIcon.TextCursorInput />} keywords={membershipSearchKeywords.customFields} navid='custom-fields' title="Custom fields" onClick={handleSectionClick} />}
                     {hasAutomations
-                        ? <NavItem icon='email' keywords={visibleEmailSearchKeywords} navid={['enable-newsletters', 'default-recipients', 'emails', 'mailgun']} title="Email" onClick={handleSectionClick} />
-                        : <NavItem icon='email' keywords={visibleEmailSearchKeywords} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
+                        ? <NavItem icon={<LucideIcon.Mail />} keywords={visibleEmailSearchKeywords} navid={['enable-newsletters', 'default-recipients', 'emails', 'mailgun']} title="Email" onClick={handleSectionClick} />
+                        : <NavItem icon={<LucideIcon.Mail />} keywords={visibleEmailSearchKeywords} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
                     }
-                </SettingNavSection>
+                </NavSection>
 
                 {/* Growth */}
-                <SettingNavSection isVisible={checkVisible(visibleGrowthSearchKeywords)} title="Growth">
-                    <NavItem icon='ap-network' keywords={growthSearchKeywords.network} navid='network' title="Network" onClick={handleSectionClick} />
-                    <NavItem icon='globe-simple' keywords={growthSearchKeywords.explore} navid='explore' title="Ghost Explore" onClick={handleSectionClick} />
-                    <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
-                    <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Signup forms" onClick={handleSectionClick} />
-                    {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
-                </SettingNavSection>
+                <NavSection isVisible={checkVisible(visibleGrowthSearchKeywords)} title="Growth">
+                    <NavItem icon={<LucideIcon.Waypoints />} keywords={growthSearchKeywords.network} navid='network' title="Network" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.Globe />} keywords={growthSearchKeywords.explore} navid='explore' title="Ghost Explore" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.Heart />} keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.ClipboardType />} keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Signup forms" onClick={handleSectionClick} />
+                    {hasStripeEnabled && <NavItem icon={<LucideIcon.Tag />} keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
+                </NavSection>
 
-                <SettingNavSection isVisible={checkVisible(Object.values(advancedSearchKeywords).flat())} title="Advanced">
-                    <NavItem icon='modules-3' keywords={advancedSearchKeywords.integrations} navid='integrations' title="Integrations" onClick={handleSectionClick} />
-                    <NavItem icon='download' keywords={advancedSearchKeywords.migrationtools} navid='migration' title="Import/Export" onClick={handleSectionClick} />
-                    <NavItem icon='brackets' keywords={advancedSearchKeywords.codeInjection} navid='code-injection' title="Code injection" onClick={handleSectionClick} />
-                    <NavItem icon='labs-flask' keywords={advancedSearchKeywords.labs} navid='labs' title="Labs" onClick={handleSectionClick} />
-                    <NavItem icon='time-back' keywords={advancedSearchKeywords.history} navid='history' title="History" onClick={handleSectionClick} />
-                    <NavItem icon='warning' keywords={advancedSearchKeywords.dangerzone} navid='dangerzone' title="Danger zone" onClick={handleSectionClick} />
-                </SettingNavSection>
+                <NavSection isVisible={checkVisible(Object.values(advancedSearchKeywords).flat())} title="Advanced">
+                    <NavItem icon={<LucideIcon.Blocks />} keywords={advancedSearchKeywords.integrations} navid='integrations' title="Integrations" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.Download />} keywords={advancedSearchKeywords.migrationtools} navid='migration' title="Import/Export" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.Code />} keywords={advancedSearchKeywords.codeInjection} navid='code-injection' title="Code injection" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.FlaskConical />} keywords={advancedSearchKeywords.labs} navid='labs' title="Labs" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.History />} keywords={advancedSearchKeywords.history} navid='history' title="History" onClick={handleSectionClick} />
+                    <NavItem icon={<LucideIcon.TriangleAlert />} keywords={advancedSearchKeywords.dangerzone} navid='dangerzone' title="Danger zone" onClick={handleSectionClick} />
+                </NavSection>
 
                 {!filter &&
                 <a className='mt-1 mb-10 flex h-[38px] w-100 cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-grey-800 transition-all hover:bg-grey-200 focus:bg-grey-100 dark:text-grey-600 dark:hover:bg-grey-950 dark:focus:bg-grey-900' onClick={() => {

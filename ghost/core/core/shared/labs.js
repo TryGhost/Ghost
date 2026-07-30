@@ -65,7 +65,8 @@ const PRIVATE_FEATURES = [
     'getHelperDeduplication',
     'memberDetailsReact',
     'membersCustomFields',
-    'previewByTier'
+    'previewByTier',
+    'paywallImprovements'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

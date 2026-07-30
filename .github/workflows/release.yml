@@ -24,6 +24,10 @@ on:
         description: 'Dry run (version bump without push)'
         type: boolean
         default: false
+      packages-only:
+        description: 'Packages-only: version pending changesets without releasing Ghost (does not publish — run the Publish Packages workflow after)'
+        type: boolean
+        default: false
 
 env:
   FORCE_COLOR: 1
@@ -75,38 +79,17 @@ jobs:
           git config user.name "Ghost CI"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Set up schedule defaults
-        if: github.event_name == 'schedule'
-        run: |
-          echo "RELEASE_BRANCH=main" >> "$GITHUB_ENV"
-          echo "RELEASE_BUMP_TYPE=auto" >> "$GITHUB_ENV"
-          echo "RELEASE_DRY_RUN=" >> "$GITHUB_ENV"
-          echo "RELEASE_SKIP_CHECKS=" >> "$GITHUB_ENV"
-
-      - name: Set up workflow_dispatch inputs
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          echo "RELEASE_BRANCH=${INPUT_BRANCH}" >> "$GITHUB_ENV"
-          echo "RELEASE_BUMP_TYPE=${INPUT_BUMP_TYPE}" >> "$GITHUB_ENV"
-          echo "RELEASE_DRY_RUN=${INPUT_DRY_RUN}" >> "$GITHUB_ENV"
-          echo "RELEASE_SKIP_CHECKS=${INPUT_SKIP_CHECKS}" >> "$GITHUB_ENV"
-        env:
-          INPUT_BRANCH: ${{ inputs.branch }}
-          INPUT_BUMP_TYPE: ${{ inputs.bump-type }}
-          INPUT_DRY_RUN: ${{ inputs.dry-run }}
-          INPUT_SKIP_CHECKS: ${{ inputs.skip-checks }}
-
       - name: Run release script
-        run: |
-          ARGS="--branch=${{ env.RELEASE_BRANCH }} --bump-type=${{ env.RELEASE_BUMP_TYPE }}"
-          if [ "${{ env.RELEASE_DRY_RUN }}" = "true" ]; then
-            ARGS="$ARGS --dry-run"
-          fi
-          if [ "${{ env.RELEASE_SKIP_CHECKS }}" = "true" ]; then
-            ARGS="$ARGS --skip-checks"
-          fi
-          node scripts/release.cjs $ARGS
+        run: node scripts/release.js
         env:
+          # release.js reads these RELEASE_* vars as its arg defaults. inputs.*
+          # are empty on the schedule trigger, so fall back to the
+          # scheduled-release defaults (main / auto / no flags).
+          RELEASE_BRANCH: ${{ inputs.branch || 'main' }}
+          RELEASE_BUMP_TYPE: ${{ inputs.bump-type || 'auto' }}
+          RELEASE_DRY_RUN: ${{ inputs.dry-run || 'false' }}
+          RELEASE_SKIP_CHECKS: ${{ inputs.skip-checks || 'false' }}
+          RELEASE_PACKAGES_ONLY: ${{ inputs.packages-only || 'false' }}
           GITHUB_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}  # PAT for GitHub API (check polling)
 
       - name: Notify Slack on release failure

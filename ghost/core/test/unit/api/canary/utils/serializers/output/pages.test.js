@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
@@ -24,6 +25,16 @@ describe('Unit: endpoints/utils/serializers/output/pages', function () {
     afterEach(function () {
         sinon.restore();
         tiersService.api = null;
+    });
+
+    it('destroy responds without serializing the destroyed model', async function () {
+        const frame = {options: {context: {}}};
+        const destroyedModel = pageModel({});
+
+        await serializers.output.pages.destroy(destroyedModel, {}, frame);
+
+        assert.deepEqual(frame.response, {pages: []});
+        sinon.assert.notCalled(mappers.pages);
     });
 
     it('calls the mapper', async function () {

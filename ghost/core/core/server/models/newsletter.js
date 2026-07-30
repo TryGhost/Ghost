@@ -1,7 +1,7 @@
 const ghostBookshelf = require('./base');
 const ObjectID = require('bson-objectid').default;
 const crypto = require('crypto');
-const urlUtils = require('../../shared/url-utils');
+const urlUtils = require('../../shared/url-utils').default;
 
 const Newsletter = ghostBookshelf.Model.extend({
     tableName: 'newsletters',

@@ -1,6 +1,5 @@
 import { App } from "@tryghost/admin-x-settings/src/app";
 import { createPortal } from "react-dom";
-import { fetchKoenigLexical } from "@/utils/fetch-koenig-lexical";
 
 export default function Settings() {
     return createPortal(
@@ -12,12 +11,7 @@ export default function Settings() {
                 zIndex: 20,
             }}
         >
-            <App
-                designSystem={{
-                    darkMode: false,
-                    fetchKoenigLexical,
-                }}
-            />
+            <App />
         </div>,
         document.body,
     );

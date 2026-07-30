@@ -3,8 +3,11 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './recommendation-description-form';
 import trackEvent from '../../../../utils/analytics';
+import {Button} from '@tryghost/shade/components';
 import {type EditOrAddRecommendation, useAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
-import {Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {SettingsModal} from '@tryghost/shade/patterns';
+import {toast} from 'sonner';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -26,10 +29,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         onSave: async (state) => {
             await addRecommendation(state);
             modal.remove();
-            showToast({
-                title: 'Recommendation added',
-                type: 'success'
-            });
+            toast.success('Recommendation added');
             trackEvent('Recommendation Added', {
                 oneClickSubscribe: state.one_click_subscribe
             });
@@ -51,13 +51,8 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         okLabel = 'Added';
     }
 
-    const leftButtonProps = {
-        label: 'Back',
-        icon: 'arrow-left',
-        iconColorClass: 'text-black dark:text-white',
-        link: true,
-        size: 'sm' as const,
-        onClick: () => {
+    const leftButton = (
+        <Button size='sm' type='button' variant='ghost' onClick={() => {
             if (saveState === 'saving') {
                 // Already saving
                 return;
@@ -72,10 +67,13 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
                     ...formState
                 }
             });
-        }
-    };
+        }}>
+            <LucideIcon.ArrowLeft />
+            Back
+        </Button>
+    );
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             // Closed without saving: reset route
             updateRoute('recommendations');
@@ -84,10 +82,10 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         backDropClick={false}
         cancelLabel={'Cancel'}
         dirty={true}
-        leftButtonProps={leftButtonProps}
-        okColor='black'
+        leftButton={leftButton}
         okLabel={okLabel}
         okLoading={loadingState}
+        okVariant='default'
         size='sm'
         testId='add-recommendation-modal'
         title={'Add recommendation'}
@@ -106,19 +104,16 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
                 return;
             }
 
-            dismissAllToasts();
+            toast.dismiss();
             try {
                 await handleSave({force: true});
             } catch {
-                showToast({
-                    type: 'error',
-                    title: 'Something went wrong when adding this recommendation, please try again.'
-                });
+                toast.error('Something went wrong when adding this recommendation, please try again.');
             }
         }}
     >
         <RecommendationDescriptionForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={false} updateForm={updateForm}/>
-    </Modal>;
+    </SettingsModal>;
 };
 
 export default NiceModal.create(AddRecommendationModalConfirm);

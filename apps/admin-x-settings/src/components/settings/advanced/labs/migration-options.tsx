@@ -1,8 +1,10 @@
+import ConfirmationModal from '../../../confirmation-modal';
 import LabItem from './lab-item';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {Button, ConfirmationModal, FileUpload, List, showToast} from '@tryghost/admin-x-design-system';
+import {ActionList, Button, Dropzone} from '@tryghost/shade/components';
 import {downloadAllContent, useDeleteAllContent, useImportContent} from '@tryghost/admin-x-framework/api/db';
+import {toast} from 'sonner';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
 
@@ -12,9 +14,10 @@ const ImportModalContent = () => {
     const [uploading, setUploading] = useState(false);
     const handleError = useHandleError();
 
-    return <FileUpload
-        id="import-file"
-        onUpload={async (file) => {
+    return <Dropzone
+        accept={{'application/json': ['.json'], 'application/zip': ['.zip']}}
+        inputId="import-file"
+        onDropAccepted={async ([file]) => {
             setUploading(true);
             try {
                 await importContent(file);
@@ -34,10 +37,10 @@ const ImportModalContent = () => {
             }
         }}
     >
-        <div className="cursor-pointer bg-grey-50 p-10 text-center dark:bg-grey-950">
+        <div className="text-center">
             {uploading ? 'Uploading ...' : 'Select a JSON or zip file'}
         </div>
-    </FileUpload>;
+    </Dropzone>;
 };
 
 const MigrationOptions: React.FC = () => {
@@ -58,15 +61,12 @@ const MigrationOptions: React.FC = () => {
         NiceModal.show(ConfirmationModal, {
             title: 'Would you really like to delete all content from your blog?',
             prompt: 'This is permanent! No backups, no restores, no magic undo button. We warned you, k?',
-            okColor: 'red',
+            okVariant: 'destructive',
             okLabel: 'Delete',
             onOk: async (modal) => {
                 try {
                     await deleteAllContent(null);
-                    showToast({
-                        type: 'success',
-                        title: 'All content deleted from database.'
-                    });
+                    toast.success('All content deleted from database.');
                     modal?.remove();
                     await client.refetchQueries();
                 } catch (e) {
@@ -77,20 +77,20 @@ const MigrationOptions: React.FC = () => {
     };
 
     return (
-        <List titleSeparator={false}>
+        <ActionList>
             <LabItem
-                action={<Button color='grey' label='Open importer' size='sm' onClick={handleImportContent} />}
+                action={<Button size='sm' type='button' variant='secondary' onClick={handleImportContent}>Open importer</Button>}
                 detail='Import posts from a JSON or zip file'
                 title='Import content' />
             <LabItem
-                action={<Button color='grey' label='Export' size='sm' onClick={() => downloadAllContent()} />}
+                action={<Button size='sm' type='button' variant='secondary' onClick={() => downloadAllContent()}>Export</Button>}
                 detail='Download all of your posts and settings in a single, glorious JSON file'
                 title='Export your content' />
             <LabItem
-                action={<Button color='red' label='Delete' size='sm' onClick={handleDeleteAllContent} />}
+                action={<Button size='sm' type='button' variant='destructive' onClick={handleDeleteAllContent}>Delete</Button>}
                 detail='Permanently delete all posts and tags from the database, a hard reset'
                 title='Delete all content' />
-        </List>
+        </ActionList>
     );
 };
 

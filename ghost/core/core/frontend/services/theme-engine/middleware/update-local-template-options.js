@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const hbs = require('../engine');
-const urlUtils = require('../../../../shared/url-utils');
+const urlUtils = require('../../../../shared/url-utils').default;
 const customThemeSettingsCache = require('../../../../shared/custom-theme-settings-cache');
 const preview = require('../preview');
 const labs = require('../../../../shared/labs');

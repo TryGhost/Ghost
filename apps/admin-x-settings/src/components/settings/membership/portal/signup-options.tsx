@@ -1,8 +1,18 @@
+import HtmlField from '../../../html-field';
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {CheckboxGroup, type CheckboxProps, Form, HtmlField, Select, type SelectOption, Toggle} from '@tryghost/admin-x-design-system';
+import {Checkbox, Field, FieldGroup, FieldLabel, FieldLegend, FieldSet, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch} from '@tryghost/shade/components';
 import {type Setting, type SettingValue, checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {type Tier, getPaidActiveTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../../providers/global-data-provider';
+
+type SignupCheckbox = {
+    checked: boolean;
+    disabled?: boolean;
+    label: string;
+    onChange: (checked: boolean) => void;
+    testId?: string;
+    value: string;
+};
 
 const SignupOptions: React.FC<{
     localSettings: Setting[]
@@ -65,7 +75,7 @@ const SignupOptions: React.FC<{
     const isFreeSignupAllowed = membersSignupAccess === 'all';
     const isStripeEnabled = checkStripeEnabled(localSettings, config!);
 
-    const tiersCheckboxes: CheckboxProps[] = [];
+    const tiersCheckboxes: SignupCheckbox[] = [];
 
     if (localTiers) {
         localTiers.forEach((tier) => {
@@ -96,7 +106,7 @@ const SignupOptions: React.FC<{
 
     const paidActiveTiers = getPaidActiveTiers(localTiers) || [];
 
-    const defaultPlanOptions: SelectOption[] = [
+    const defaultPlanOptions = [
         {value: 'yearly', label: 'Yearly'},
         {value: 'monthly', label: 'Monthly'}
     ];
@@ -114,54 +124,58 @@ const SignupOptions: React.FC<{
 
     const arePaidTiersVisible = isStripeEnabled && paidActiveTiers.length > 0 && paidActiveTiers.some(tier => tier.visibility === 'public');
 
-    return <div className='mt-7'><Form>
-        <Toggle
-            checked={Boolean(portalName)}
-            direction='rtl'
-            disabled={!isSignupAllowed}
-            label='Display name in signup form'
-            onChange={e => updateSetting('portal_name', e.target.checked)}
-        />
+    return <div className='mt-7'><FieldGroup className='mb-10 gap-8'>
+        <Field data-disabled={!isSignupAllowed || undefined} orientation='horizontal'>
+            <FieldLabel htmlFor='portal-display-name'>Display name in signup form</FieldLabel>
+            <Switch checked={Boolean(portalName)} disabled={!isSignupAllowed} id='portal-display-name' onCheckedChange={checked => updateSetting('portal_name', checked)} />
+        </Field>
 
-        <CheckboxGroup
-            checkboxes={tiersCheckboxes}
-            title='Available tiers'
-        />
+        <FieldSet>
+            <FieldLegend variant='label'>Available tiers</FieldLegend>
+            <FieldGroup data-slot='checkbox-group'>
+                {tiersCheckboxes.map(checkbox => (
+                    <Field key={checkbox.value} data-disabled={checkbox.disabled || undefined} orientation='horizontal'>
+                        <Checkbox
+                            checked={checkbox.checked}
+                            data-testid={checkbox.testId}
+                            disabled={checkbox.disabled}
+                            id={`portal-tier-${checkbox.value}`}
+                            onCheckedChange={checked => checkbox.onChange(checked === true)}
+                        />
+                        <FieldLabel htmlFor={`portal-tier-${checkbox.value}`}>{checkbox.label}</FieldLabel>
+                    </Field>
+                ))}
+            </FieldGroup>
+        </FieldSet>
 
         {arePaidTiersVisible && (
             <>
-                <CheckboxGroup
-                    checkboxes={[
-                        {
-                            checked: portalPlans.includes('monthly'),
-                            disabled: !isSignupAllowed,
-                            label: 'Monthly',
-                            value: 'monthly',
-                            onChange: () => {
-                                togglePlan('monthly');
-                            }
-                        },
-                        {
-                            checked: portalPlans.includes('yearly'),
-                            disabled: !isSignupAllowed,
-                            label: 'Yearly',
-                            value: 'yearly',
-                            onChange: () => {
-                                togglePlan('yearly');
-                            }
-                        }
-                    ]}
-                    title='Available prices'
-                />
+                <FieldSet>
+                    <FieldLegend variant='label'>Available prices</FieldLegend>
+                    <FieldGroup data-slot='checkbox-group'>
+                        {['monthly', 'yearly'].map(plan => (
+                            <Field key={plan} data-disabled={!isSignupAllowed || undefined} orientation='horizontal'>
+                                <Checkbox
+                                    checked={portalPlans.includes(plan)}
+                                    disabled={!isSignupAllowed}
+                                    id={`portal-plan-${plan}`}
+                                    onCheckedChange={() => togglePlan(plan)}
+                                />
+                                <FieldLabel className='capitalize' htmlFor={`portal-plan-${plan}`}>{plan}</FieldLabel>
+                            </Field>
+                        ))}
+                    </FieldGroup>
+                </FieldSet>
                 {(portalPlans.includes('yearly') && portalPlans.includes('monthly')) &&
-                    <Select
-                        options={defaultPlanOptions}
-                        selectedOption={defaultPlanOptions.find(option => option.value === portalDefaultPlan)}
-                        title='Default price at signup'
-                        onSelect={(option) => {
-                            updateSetting('portal_default_plan', option?.value ?? 'yearly');
-                        }}
-                    />
+                    <Field>
+                        <FieldLabel>Default price at signup</FieldLabel>
+                        <Select value={typeof portalDefaultPlan === 'string' ? portalDefaultPlan : ''} onValueChange={value => updateSetting('portal_default_plan', value)}>
+                            <SelectTrigger aria-label='Default price at signup'><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {defaultPlanOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </Field>
                 }
             </>
         )}
@@ -176,14 +190,11 @@ const SignupOptions: React.FC<{
             onChange={html => updateSetting('portal_signup_terms_html', html)}
         />
 
-        {portalSignupTermsHtml?.toString() && <Toggle
-            checked={Boolean(portalSignupCheckboxRequired)}
-            disabled={!isSignupAllowed}
-            label='Require agreement'
-            labelStyle='heading'
-            onChange={e => updateSetting('portal_signup_checkbox_required', e.target.checked)}
-        />}
-    </Form></div>;
+        {portalSignupTermsHtml?.toString() && <Field data-disabled={!isSignupAllowed || undefined} orientation='horizontal'>
+            <FieldLabel htmlFor='portal-require-agreement'>Require agreement</FieldLabel>
+            <Switch checked={Boolean(portalSignupCheckboxRequired)} disabled={!isSignupAllowed} id='portal-require-agreement' onCheckedChange={checked => updateSetting('portal_signup_checkbox_required', checked)} />
+        </Field>}
+    </FieldGroup></div>;
 };
 
 export default SignupOptions;

@@ -4,7 +4,7 @@ const configUtils = require('../../../../utils/config-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const logging = require('@tryghost/logging');
 const {Settings} = require('../../../../../core/server/models/settings');
-const adapterManager = require('../../../../../core/server/services/adapter-manager');
+const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const limits = require('../../../../../core/server/services/limits');
 
 describe('UNIT: Settings Service', function () {

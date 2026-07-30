@@ -67,8 +67,11 @@ const controller = {
         permissions(frame: Frame) {
             return canThis(frame).add.member_custom_field();
         },
+        // The whole array is passed through: create is a batch, applied
+        // all-or-nothing. A client sending a single definition (as Admin does)
+        // is just the one-item case and sees no change.
         query(frame: Frame) {
-            return definitions!.add(requestContextFromFrame(frame), frame.data.members_custom_fields[0]);
+            return definitions!.add(requestContextFromFrame(frame), frame.data.members_custom_fields);
         }
     },
 

@@ -9,7 +9,7 @@ module.exports = class IdentityTokenServiceWrapper {
             return;
         }
 
-        const urlUtils = require('../../../shared/url-utils');
+        const urlUtils = require('../../../shared/url-utils').default;
         const issuer = urlUtils.urlFor('admin', true);
 
         const settings = require('../../../shared/settings-cache');

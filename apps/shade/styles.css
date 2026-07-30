@@ -87,6 +87,17 @@
     filter: invert(100%);
 }
 
+/* Suppress transitions/animations during a light/dark mode swap so the
+   whole UI flips in a single paint instead of crossfading per element. */
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+    transition: none !important;
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+}
+
 .shade .no-scrollbar::-webkit-scrollbar {
     display: none; /* Chrome */
 }

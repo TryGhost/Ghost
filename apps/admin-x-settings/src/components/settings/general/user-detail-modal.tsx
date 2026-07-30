@@ -1,4 +1,6 @@
+import ConfirmationModal from '../../confirmation-modal';
 import EmailNotificationsTab from './users/email-notifications-tab';
+import LimitModal from '../../limit-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ProfileTab from './users/profile-tab';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
@@ -8,14 +10,19 @@ import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useStaffUsers from '../../../hooks/use-staff-users';
 import validator from 'validator';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Modal, TabView, showToast} from '@tryghost/admin-x-design-system';
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Dropzone, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {Pencil, Trash2} from 'lucide-react';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '../../../utils/social-urls/index';
+import {SettingsModal} from '@tryghost/shade/patterns';
+import {Text} from '@tryghost/shade/primitives';
 import {type User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useGetUserBySlug, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {toast} from 'sonner';
 import {useGlobalData} from '../../providers/global-data-provider';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
@@ -67,7 +74,7 @@ export interface UserDetailProps {
     clearError: (key: keyof User) => void;
 }
 
-const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
+const UserDetailModalContent: React.FC<{user: User; onDeletingUserChange: (isDeleting: boolean) => void}> = ({user, onDeletingUserChange}) => {
     const {updateRoute, route} = useRouting();
 
     const getTabFromPath = (path: string): string => {
@@ -189,7 +196,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             ),
             okLabel: _user.status === 'inactive' ? 'Un-suspend' : 'Suspend',
             okRunningLabel: _user.status === 'inactive' ? 'Un-suspending...' : 'Suspending...',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
                 const updatedUserData = {
                     ..._user,
@@ -199,10 +206,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     await updateUser(updatedUserData);
                     setFormState(() => updatedUserData);
                     modal?.remove();
-                    showToast({
-                        title: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
-                        type: 'success'
-                    });
+                    toast.success(_user.status === 'inactive' ? 'User un-suspended' : 'User suspended');
                 } catch (e) {
                     handleError(e);
                 }
@@ -220,18 +224,18 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 </>
             ),
             okLabel: 'Delete user',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
+                onDeletingUserChange(true);
                 try {
                     await deleteUser(_user?.id);
                     modal?.remove();
                     mainModal?.remove();
                     navigateOnClose();
-                    showToast({
-                        title: 'User deleted',
-                        type: 'success'
-                    });
+                    // Let the destination route mount its toaster before publishing the success state.
+                    setTimeout(() => toast.success('User deleted'), 100);
                 } catch (e) {
+                    onDeletingUserChange(false);
                     handleError(e);
                 }
             }
@@ -243,15 +247,12 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             title: 'Transfer Ownership',
             prompt: 'Are you sure you want to transfer the ownership of this blog? You will not be able to undo this action.',
             okLabel: 'Yep — I\'m sure',
-            okColor: 'red',
+            okVariant: 'destructive',
             onOk: async (modal) => {
                 try {
                     await makeOwner(user.id);
                     modal?.remove();
-                    showToast({
-                        title: 'Ownership transferred',
-                        type: 'success'
-                    });
+                    toast.success('Ownership transferred');
                 } catch (e) {
                     handleError(e);
                 }
@@ -307,9 +308,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     );
     const suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
-    const noCoverButtonClasses = 'rounded flex flex-nowrap items-center justify-center px-3 h-8 transition-all cursor-pointer font-medium border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white';
-
-    const coverButtonClasses = 'flex flex-nowrap items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 bg-[rgba(0,0,0,0.75)] rounded     text-white transition-all cursor-pointer font-medium nowrap';
+    const coverButtonClasses = 'h-8 bg-surface-inverse px-3 text-surface-inverse-foreground opacity-80 hover:bg-surface-inverse/90 hover:text-surface-inverse-foreground hover:opacity-100';
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 
@@ -324,7 +323,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     };
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={navigateOnClose}
             animate={canAccessSettings(currentUser)}
             backDrop={canAccessSettings(currentUser)}
@@ -332,8 +331,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             cancelLabel='Close'
             dirty={saveState === 'unsaved'}
             hideXOnMobile={true}
-            okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
+            okVariant={okProps.variant}
             size={canAccessSettings(currentUser) ? 'md' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
@@ -351,71 +350,34 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         <div className='flex w-full flex-col gap-2'>
                             <div className='flex flex-nowrap items-start justify-between gap-3'>
                                 <div>
-                                    <ImageUpload
-                                        deleteButtonClassName='md:invisible absolute -right-1 -top-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
-                                        deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
-                                        editButtonClassName='md:invisible absolute -left-1 -top-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
-                                        fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
-                                        fileUploadProps={{dragIndicatorClassName: 'rounded-full', inputTestId: 'profile-image-upload'}}
-                                        id='avatar'
-                                        imageClassName='w-full h-full object-cover rounded-full shrink-0'
-                                        imageContainerClassName='relative group bg-cover bg-center -ml-1 h-[80px] w-[80px] shrink-0'
-                                        imageTestId='profile-image-preview'
-                                        imageURL={formState.profile_image ?? undefined}
-                                        pintura={
-                                            {
-                                                isEnabled: editor.isEnabled,
-                                                openEditor: async () => editor.openEditor({
-                                                    image: formState.profile_image || '',
-                                                    handleSave: async (file:File) => {
-                                                        handleImageUpload('profile_image', file);
-                                                    }
-                                                })
-                                            }
-                                        }
-                                        unstyled={true}
-                                        width='80px'
-                                        onDelete={() => {
-                                            handleImageDelete('profile_image');
-                                        }}
-                                        onUpload={(file: File) => {
-                                            handleImageUpload('profile_image', file);
-                                        }}
-                                    >
-                                        <Icon colorClass='black' name='user-add' size='lg' />
+                                    <ImageUpload className='-ml-1 size-20 overflow-visible rounded-full'>
+                                        {formState.profile_image ? (
+                                            <ImageUploadPreview className='rounded-full'>
+                                                <ImageUploadImage data-testid='profile-image-preview' id='avatar' src={formState.profile_image} />
+                                                <ImageUploadActions className='top-1 right-1'>
+                                                    {editor.isEnabled && <ImageUploadAction aria-label='Edit profile image' className='rounded-full' onClick={() => editor.openEditor({
+                                                        image: formState.profile_image || '',
+                                                        handleSave: async (file: File) => handleImageUpload('profile_image', file)
+                                                    })}><Pencil /></ImageUploadAction>}
+                                                    <ImageUploadAction aria-label='Remove profile image' className='rounded-full' onClick={() => handleImageDelete('profile_image')}><Trash2 /></ImageUploadAction>
+                                                </ImageUploadActions>
+                                            </ImageUploadPreview>
+                                        ) : (
+                                            <ImageUploadDropzone className='rounded-full bg-surface-inverse text-surface-inverse-foreground opacity-80 hover:opacity-100' inputId='avatar' inputTestId='profile-image-upload' onDropAccepted={files => handleImageUpload('profile_image', files[0])}>
+                                                <LucideIcon.UserPlus className='size-8 text-surface-inverse-foreground' />
+                                            </ImageUploadDropzone>
+                                        )}
                                     </ImageUpload>
                                 </div>
                                 <div className='flex flex-nowrap items-start gap-3'>
-                                    <ImageUpload
-                                        buttonContainerClassName='flex items-end gap-4 justify-end flex-nowrap'
-                                        deleteButtonClassName={coverButtonClasses}
-                                        deleteButtonContent='Delete cover image'
-                                        editButtonClassName={coverButtonClasses}
-                                        fileUploadClassName={noCoverButtonClasses}
-                                        fileUploadProps={{inputTestId: 'cover-image-upload'}}
-                                        id='cover-image'
-                                        imageClassName='hidden'
-                                        imageTestId='cover-image-preview'
-                                        imageURL={formState.cover_image || ''}
-                                        pintura={
-                                            {
-                                                isEnabled: editor.isEnabled,
-                                                openEditor: async () => editor.openEditor({
-                                                    image: formState.cover_image || '',
-                                                    handleSave: async (file:File) => {
-                                                        handleImageUpload('cover_image', file);
-                                                    }
-                                                })
-                                            }
-                                        }
-                                        unstyled
-                                        onDelete={() => {
-                                            handleImageDelete('cover_image');
-                                        }}
-                                        onUpload={(file: File) => {
-                                            handleImageUpload('cover_image', file);
-                                        }}
-                                    >Upload cover image</ImageUpload>
+                                    {formState.cover_image ? <div className='flex flex-nowrap items-end justify-end gap-4'>
+                                        <img alt='' className='hidden' data-testid='cover-image-preview' src={formState.cover_image} />
+                                        {editor.isEnabled && <Button className={coverButtonClasses} type='button' onClick={() => editor.openEditor({
+                                            image: formState.cover_image || '',
+                                            handleSave: async (file: File) => handleImageUpload('cover_image', file)
+                                        })}>Edit cover image</Button>}
+                                        <Button className={coverButtonClasses} type='button' onClick={() => handleImageDelete('cover_image')}>Delete cover image</Button>
+                                    </div> : <Dropzone className='h-8' inputId='cover-image' inputTestId='cover-image-upload' variant='button' onDropAccepted={files => handleImageUpload('cover_image', files[0])}>Upload cover image</Dropzone>}
                                     {showMenu && <div className="z-10">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -429,14 +391,10 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                                     type='button'
                                                 >
                                                     <span className='sr-only'>Actions</span>
-                                                    <Icon
-                                                        colorClass={formState.cover_image ? 'text-white' : undefined}
-                                                        name='ellipsis'
-                                                        size='md'
-                                                    />
+                                                    <LucideIcon.Ellipsis className={clsx('size-5', formState.cover_image && 'text-white')} />
                                                 </button>
                                             </DropdownMenuTrigger>
-                                            {/* legacy Modal overlay is z-[1000]; keep the portalled menu above it */}
+                                            {/* legacy SettingsModal overlay is z-[1000]; keep the portalled menu above it */}
                                             <DropdownMenuContent align='end' className='z-[9999]'>
                                                 {canMakeOwner && (
                                                     <DropdownMenuItem onSelect={confirmMakeOwner}>
@@ -472,37 +430,26 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 </div>
                             </div>
                             <div>
-                                <Heading level={3} styles={clsx('break-words md:break-normal', formState.cover_image ? 'text-white' : 'text-black dark:text-white')}>{user.name}{suspendedText}</Heading>
+                                <Text as='h3' className={clsx('break-words md:text-2xl md:break-normal', formState.cover_image ? 'text-white' : 'text-foreground')} leading='heading' size='xl' weight='bold'>{user.name}{suspendedText}</Text>
                                 <span className={clsx('text-md font-medium capitalize', formState.cover_image ? 'text-white' : 'text-black dark:text-white')}>{user.roles[0].name.toLowerCase()}</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-[536px]'} mt-6 flex flex-col`}>
-                    <TabView
-                        selectedTab={selectedTab}
-                        tabs={[
-                            {
-                                id: 'profile',
-                                title: 'Profile',
-                                contents: <ProfileTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
-                            },
-                            {
-                                id: 'social-links',
-                                title: 'Social Links',
-                                contents: <SocialLinksTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
-                            },
-                            {
-                                id: 'email-notifications',
-                                title: 'Email Notifications',
-                                contents: <EmailNotificationsTab setUserData={setUserData} user={formState} />
-                            }
-                        ]}
-                        onTabChange={handleTabChange}
-                    />
+                    <Tabs value={selectedTab} variant='underline' onValueChange={handleTabChange}>
+                        <TabsList>
+                            <TabsTrigger title='Profile' value='profile'>Profile</TabsTrigger>
+                            <TabsTrigger title='Social Links' value='social-links'>Social Links</TabsTrigger>
+                            <TabsTrigger title='Email Notifications' value='email-notifications'>Email Notifications</TabsTrigger>
+                        </TabsList>
+                        <TabsContent className='pt-4' value='profile'><ProfileTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} /></TabsContent>
+                        <TabsContent className='pt-4' value='social-links'><SocialLinksTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} /></TabsContent>
+                        <TabsContent className='pt-4' value='email-notifications'><EmailNotificationsTab setUserData={setUserData} user={formState} /></TabsContent>
+                    </Tabs>
                 </div>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 };
 
@@ -510,6 +457,7 @@ const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     const {currentUser} = useGlobalData();
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
+    const [isDeletingUser, setIsDeletingUser] = useState(false);
 
     // Skip API call if it's the current user (we already have their data)
     const isCurrentUser = currentUser.slug === params?.slug;
@@ -549,15 +497,12 @@ const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     const notFoundHandledRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (!notFoundSlug || notFoundHandledRef.current === notFoundSlug) {
+        if (!notFoundSlug || isDeletingUser || notFoundHandledRef.current === notFoundSlug) {
             return;
         }
         notFoundHandledRef.current = notFoundSlug;
 
-        showToast({
-            type: 'error',
-            message: 'User not found'
-        });
+        toast.error('User not found');
 
         if (canAccessSettings(currentUser)) {
             // Replace the history entry so the back button doesn't return
@@ -566,9 +511,9 @@ const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
         } else {
             updateRoute({isExternal: true, route: ''});
         }
-    }, [notFoundSlug, currentUser, updateRoute]);
+    }, [notFoundSlug, isDeletingUser, currentUser, updateRoute]);
 
-    return displayUser ? <UserDetailModalContent user={displayUser} /> : null;
+    return displayUser ? <UserDetailModalContent user={displayUser} onDeletingUserChange={setIsDeletingUser} /> : null;
 };
 
 export default NiceModal.create(UserDetailModal);

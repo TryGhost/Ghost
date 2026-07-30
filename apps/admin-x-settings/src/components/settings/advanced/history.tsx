@@ -1,6 +1,6 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade/components';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {withErrorBoundary} from '../../error-boundary';
 
@@ -12,7 +12,7 @@ const History: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button className='mt-[-5px]' color='clear' label='View history' size='sm' onClick={openHistoryModal}/>}
+            customButtons={<Button className='mt-[-5px]' size='sm' type='button' variant='ghost' onClick={openHistoryModal}>View history</Button>}
             description="View system event log"
             keywords={keywords}
             navid='history'

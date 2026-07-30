@@ -1,9 +1,12 @@
+import BrandIcon from '../../../icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
 import pinturaScreenshot from '../../../../assets/images/pintura-screenshot.png';
-import {Button, Form, Icon, Modal, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Dropzone, Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {useEffect, useRef, useState} from 'react';
+import {SettingsModal} from '@tryghost/shade/patterns';
+import {toast} from 'sonner';
+import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -49,26 +52,9 @@ const PinturaModal = NiceModal.create(() => {
         }
     };
 
-    const jsUploadRef = useRef<HTMLInputElement>(null);
-    const cssUploadRef = useRef<HTMLInputElement>(null);
-    const triggerUpload = (form: string) => {
-        if (form === 'js') {
-            jsUploadRef.current?.click();
-        }
-
-        if (form === 'css') {
-            cssUploadRef.current?.click();
-        }
-    };
-
-    const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>, form: 'js' | 'css') => {
+    const handleUpload = async (file: File, form: 'js' | 'css') => {
         try {
             setUploadingState(prev => ({...prev, [form]: true}));
-
-            const file = event.target?.files?.[0];
-            if (!file) {
-                return;
-            }
 
             const {files} = await uploadFile({file});
             const url = files[0].url;
@@ -78,36 +64,32 @@ const PinturaModal = NiceModal.create(() => {
 
             await editSettings(updates);
 
-            setUploadingState(prev => ({...prev, [form]: false}));
-
-            showToast({
-                type: 'success',
-                title: `Pintura ${form} uploaded`
-            });
+            toast.success(`Pintura ${form} uploaded`);
         } catch (e) {
-            setUploadingState({js: false, css: false});
             handleError(e);
+        } finally {
+            setUploadingState(prev => ({...prev, [form]: false}));
         }
     };
 
     const isDirty = !(enabled === pinturaEnabled);
 
     return (
-        <Modal
+        <SettingsModal
             afterClose={() => {
                 updateRoute('integrations');
             }}
             cancelLabel='Close'
             dirty={isDirty}
-            okColor={okLabel === 'Saved' ? 'green' : 'black'}
             okLabel={okLabel}
+            okVariant='default'
             testId='pintura-modal'
             title=''
             onOk={handleToggleChange}
         >
             <IntegrationHeader
                 detail='Advanced image editing'
-                icon={<Icon name='pintura' size={48} />}
+                icon={<BrandIcon name='pintura' size={48} />}
                 title='Pintura'
             />
             <div className='mt-7'>
@@ -123,16 +105,16 @@ const PinturaModal = NiceModal.create(() => {
                     </div>
                 </div>}
 
-                <Form marginBottom={false} title='Pintura configuration' grouped>
-                    <Toggle
-                        checked={enabled}
-                        direction='rtl'
-                        hint={<>Enable <a className='text-green' href="https://pqina.nl/pintura/ghost/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Pintura</a> for editing your images in Ghost</>}
-                        label='Enable Pintura'
-                        onChange={(e) => {
-                            setEnabled(e.target.checked);
-                        }}
-                    />
+                <FieldSet className='gap-0'>
+                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Pintura configuration</FieldLegend>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7'>
+                    <Field orientation='horizontal'>
+                        <FieldContent>
+                            <FieldLabel htmlFor='pintura-enabled'>Enable Pintura</FieldLabel>
+                            <FieldDescription>Enable <a className='text-green' href="https://pqina.nl/pintura/ghost/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Pintura</a> for editing your images in Ghost</FieldDescription>
+                        </FieldContent>
+                        <Switch checked={enabled} id='pintura-enabled' onCheckedChange={setEnabled} />
+                    </Field>
                     {enabled && !config.pintura && (
                         <>
                             <div className='flex flex-col justify-between gap-1 md:flex-row md:items-center'>
@@ -140,30 +122,25 @@ const PinturaModal = NiceModal.create(() => {
                                     <div>Upload Pintura script</div>
                                     <div className='text-sm text-grey-600'>Upload the <code>pintura-umd.js</code> file from the Pintura package</div>
                                 </div>
-                                <input ref={jsUploadRef} accept='.js' type="file" hidden onChange={async (e) => {
-                                    await handleUpload(e, 'js');
-                                }} />
-                                <Button color='outline' disabled={uploadingState.js} label='Upload' onClick={() => {
-                                    triggerUpload('js');
-                                }} />
+                                <Dropzone accept={{'text/javascript': ['.js'], 'application/javascript': ['.js']}} disabled={uploadingState.js} variant='button' onDropAccepted={files => handleUpload(files[0], 'js')}>
+                                    {uploadingState.js ? 'Uploading...' : 'Upload'}
+                                </Dropzone>
                             </div>
                             <div className='flex flex-col justify-between gap-1 md:flex-row md:items-center'>
                                 <div>
                                     <div>Upload Pintura styles</div>
                                     <div className='text-sm text-grey-600'>Upload the <code>pintura.css</code> file from the Pintura package</div>
                                 </div>
-                                <input ref={cssUploadRef} accept='.css' type="file" hidden onChange={async (e) => {
-                                    await handleUpload(e, 'css');
-                                }} />
-                                <Button color='outline' disabled={uploadingState.css} label='Upload' onClick={() => {
-                                    triggerUpload('css');
-                                }} />
+                                <Dropzone accept={{'text/css': ['.css']}} disabled={uploadingState.css} variant='button' onDropAccepted={files => handleUpload(files[0], 'css')}>
+                                    {uploadingState.css ? 'Uploading...' : 'Upload'}
+                                </Dropzone>
                             </div>
                         </>
                     )}
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
             </div>
-        </Modal>
+        </SettingsModal>
     );
 });
 

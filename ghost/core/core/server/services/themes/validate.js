@@ -5,7 +5,7 @@ const config = require('../../../shared/config');
 const labs = require('../../../shared/labs');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const adapterManager = require('../adapter-manager');
+const adapterManager = require('../adapter-manager').default;
 const logging = require('@tryghost/logging');
 const list = require('./list');
 

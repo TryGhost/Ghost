@@ -8,7 +8,7 @@ const UrlGenerator = require('./url-generator');
 const Queue = require('./queue');
 const Urls = require('./urls');
 const Resources = require('./resources');
-const urlUtils = require('../../../shared/url-utils');
+const urlUtils = require('../../../shared/url-utils').default;
 const resourcesConfig = require('./config');
 
 /**

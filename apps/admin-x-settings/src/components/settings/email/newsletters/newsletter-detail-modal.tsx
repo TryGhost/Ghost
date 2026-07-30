@@ -1,21 +1,57 @@
+import ColorPickerField from '../../../color-picker-field';
+import ConfirmationModal from '../../../confirmation-modal';
+import HtmlField from '../../../html-field';
+import LimitModal from '../../../limit-modal';
 import NewsletterPreview from './newsletter-preview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, type SelectOption, type Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
+import {Button, Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipTrigger} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
+import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {PreviewModalContent} from '../../preview-modal';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {Separator} from '@tryghost/shade/components';
+import {Stack, Text} from '@tryghost/shade/primitives';
+import {Trash2} from 'lucide-react';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletter-emails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
+import {toast} from 'sonner';
 import {useGlobalData} from '../../../providers/global-data-provider';
+
+interface IconToggleOption {
+    value: string;
+    label: string;
+    icon: React.ReactNode;
+    disabled?: boolean;
+}
+
+const IconToggleGroup: React.FC<{
+    label: string;
+    value: string;
+    options: IconToggleOption[];
+    onValueChange: (value: string) => void;
+}> = ({label, value, options, onValueChange}) => (
+    <ToggleGroup aria-label={label} type='single' value={value} onValueChange={nextValue => nextValue && onValueChange(nextValue)}>
+        {options.map(option => (
+            <Tooltip key={option.value}>
+                <TooltipTrigger asChild>
+                    <ToggleGroupItem aria-label={option.label} disabled={option.disabled} value={option.value}>
+                        {option.icon}
+                    </ToggleGroupItem>
+                </TooltipTrigger>
+                <TooltipContent>{option.label}</TooltipContent>
+            </Tooltip>
+        ))}
+    </ToggleGroup>
+);
 
 const ReplyToEmailField: React.FC<{
     newsletter: Newsletter;
@@ -46,17 +82,11 @@ const ReplyToEmailField: React.FC<{
 
     // Pro users without custom sending domains
     return (
-        <TextField
-            error={Boolean(errors.sender_reply_to)}
-            hint={errors.sender_reply_to}
-            maxLength={191}
-            placeholder={newsletterAddress || ''}
-            title="Reply-to email"
-            value={senderReplyTo}
-            onBlur={onBlur}
-            onChange={onChange}
-            onKeyDown={() => clearError('sender_reply_to')}
-        />
+        <Field data-invalid={Boolean(errors.sender_reply_to) || undefined}>
+            <FieldLabel htmlFor='newsletter-reply-to'>Reply-to email</FieldLabel>
+            <Input aria-invalid={Boolean(errors.sender_reply_to) || undefined} id='newsletter-reply-to' maxLength={191} placeholder={newsletterAddress || ''} value={senderReplyTo} onBlur={onBlur} onChange={onChange} onKeyDown={() => clearError('sender_reply_to')} />
+            {errors.sender_reply_to && <FieldError>{errors.sender_reply_to}</FieldError>}
+        </Field>
     );
 };
 
@@ -68,6 +98,7 @@ const Sidebar: React.FC<{
     errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
+    type FontOption = {value: string; label: string; className?: string};
     const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
@@ -89,12 +120,12 @@ const Sidebar: React.FC<{
         setNewsletters(apiNewsletters || []);
     }, [apiNewsletters]);
 
-    const fontOptions: SelectOption[] = [
+    const fontOptions: FontOption[] = [
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
         {value: 'sans_serif', label: 'Clean sans-serif'}
     ];
 
-    const fontWeightOptions: Record<string, {options: SelectOption[], map?: Record<string, string>}> = {
+    const fontWeightOptions: Record<string, {options: FontOption[], map?: Record<string, string>}> = {
         sans_serif: {
             options: [
                 {value: 'normal', label: 'Regular', className: 'font-normal'},
@@ -131,15 +162,12 @@ const Sidebar: React.FC<{
                     <div>Existing posts previously sent as this newsletter will remain unchanged.</div>
                 </>,
                 okLabel: 'Archive',
-                okColor: 'red',
+                okVariant: 'destructive',
                 onOk: async (modal) => {
                     try {
                         await editNewsletter({...newsletter, status: 'archived'});
                         modal?.remove();
-                        showToast({
-                            type: 'success',
-                            message: 'Newsletter archived'
-                        });
+                        toast.success('Newsletter archived');
                     } catch (e) {
                         handleError(e);
                     }
@@ -169,10 +197,7 @@ const Sidebar: React.FC<{
                 onOk: async (modal) => {
                     await editNewsletter({...newsletter, status: 'active'});
                     modal?.remove();
-                    showToast({
-                        type: 'success',
-                        message: 'Newsletter reactivated'
-                    });
+                    toast.success('Newsletter reactivated');
                 }
             });
         }
@@ -182,33 +207,24 @@ const Sidebar: React.FC<{
         // Self-hosters
         if (!isManagedEmail(config)) {
             return (
-                <TextField
-                    error={Boolean(errors.sender_email)}
-                    hint={errors.sender_email}
-                    placeholder={newsletterAddress || ''}
-                    title="Sender email address"
-                    value={newsletter.sender_email || ''}
-                    onChange={e => updateNewsletter({sender_email: e.target.value})}
-                    onKeyDown={() => clearError('sender_email')}
-                />
+                <Field data-invalid={Boolean(errors.sender_email) || undefined}>
+                    <FieldLabel htmlFor='newsletter-sender-email'>Sender email address</FieldLabel>
+                    <Input aria-invalid={Boolean(errors.sender_email) || undefined} id='newsletter-sender-email' placeholder={newsletterAddress || ''} value={newsletter.sender_email || ''} onChange={e => updateNewsletter({sender_email: e.target.value})} onKeyDown={() => clearError('sender_email')} />
+                    {errors.sender_email && <FieldError>{errors.sender_email}</FieldError>}
+                </Field>
             );
         }
 
         // Pro users with custom sending domains
         if (hasSendingDomain(config)) {
             return (
-                <TextField
-                    error={Boolean(errors.sender_email)}
-                    hint={errors.sender_email}
-                    maxLength={191}
-                    placeholder={defaultEmailAddress}
-                    title="Sender email address"
-                    value={newsletter.sender_email || ''}
-                    onChange={(e) => {
+                <Field data-invalid={Boolean(errors.sender_email) || undefined}>
+                    <FieldLabel htmlFor='newsletter-sender-email'>Sender email address</FieldLabel>
+                    <Input aria-invalid={Boolean(errors.sender_email) || undefined} id='newsletter-sender-email' maxLength={191} placeholder={defaultEmailAddress} value={newsletter.sender_email || ''} onChange={(e) => {
                         updateNewsletter({sender_email: e.target.value});
-                    }}
-                    onKeyDown={() => clearError('sender_email')}
-                />
+                    }} onKeyDown={() => clearError('sender_email')} />
+                    {errors.sender_email && <FieldError>{errors.sender_email}</FieldError>}
+                </Field>
             );
         }
 
@@ -228,8 +244,7 @@ const Sidebar: React.FC<{
         return option || headingFontWeightOptions[0];
     };
     // changing font category changes available weights so we may need to map to the closest match
-    const changeSelectedTitleFont = (option: SelectOption | null) => {
-        const categoryValue = option?.value || 'sans_serif';
+    const changeSelectedTitleFont = (categoryValue: string) => {
 
         // ensure the weight is valid for the new font by switching to closest match
         const currentWeight = newsletter.title_font_weight;
@@ -244,41 +259,48 @@ const Sidebar: React.FC<{
         });
     };
 
-    const tabs: Tab[] = [
+    const tabs = [
         {
             id: 'generalSettings',
             title: 'General',
             contents:
             <>
-                <Form className='mt-6' gap='sm' margins='lg' title='Name and description'>
-                    <TextField
-                        error={Boolean(errors.name)}
-                        hint={errors.name}
-                        maxLength={191}
-                        placeholder="Weekly Roundup"
-                        title="Name"
-                        value={newsletter.name || ''}
-                        onChange={e => updateNewsletter({name: e.target.value})}
-                        onKeyDown={() => clearError('name')}
-                    />
-                    <TextArea maxLength={2000} rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
-                </Form>
-                <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
-                    <TextField maxLength={191} placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Name and description</FieldLegend>
+                    <FieldGroup className='mb-12 gap-6 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <Field data-invalid={Boolean(errors.name) || undefined}>
+                        <FieldLabel htmlFor='newsletter-detail-name'>Name</FieldLabel>
+                        <Input aria-invalid={Boolean(errors.name) || undefined} id='newsletter-detail-name' maxLength={191} placeholder='Weekly Roundup' value={newsletter.name || ''} onChange={e => updateNewsletter({name: e.target.value})} onKeyDown={() => clearError('name')} />
+                        {errors.name && <FieldError>{errors.name}</FieldError>}
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor='newsletter-description'>Description</FieldLabel>
+                        <Textarea className='border-transparent bg-muted' id='newsletter-description' maxLength={2000} rows={2} value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
+                    </Field>
+                    </FieldGroup>
+                </FieldSet>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Email info</FieldLegend>
+                    <FieldGroup className='mb-12 gap-6 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <Field>
+                        <FieldLabel htmlFor='newsletter-sender-name'>Sender name</FieldLabel>
+                        <Input id='newsletter-sender-name' maxLength={191} placeholder={siteTitle} value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
+                    </Field>
                     {renderSenderEmailField()}
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
-                </Form>
-                <Form className='mt-6' gap='sm' margins='lg' title='Member settings'>
-                    <Toggle
-                        checked={newsletter.subscribe_on_signup}
-                        direction='rtl'
-                        label='Subscribe new members on signup'
-                        labelStyle='value'
-                        onChange={e => updateNewsletter({subscribe_on_signup: e.target.checked})}
-                    />
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Member settings</FieldLegend>
+                    <FieldGroup className='mb-12 gap-6'>
+                    <Field orientation='horizontal'>
+                        <FieldLabel htmlFor='newsletter-subscribe-on-signup'>Subscribe new members on signup</FieldLabel>
+                        <Switch checked={Boolean(newsletter.subscribe_on_signup)} id='newsletter-subscribe-on-signup' onCheckedChange={checked => updateNewsletter({subscribe_on_signup: checked})} />
+                    </Field>
+                    </FieldGroup>
+                </FieldSet>
                 <div className='mt-10 mb-5'>
-                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' disabled={activeNewsletters.length === 1} label='Archive newsletter' link onClick={confirmStatusChange}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
+                    {newsletter.status === 'active' ? (!onlyOne && <Button className='text-destructive hover:text-destructive' disabled={activeNewsletters.length === 1} type='button' variant='ghost' onClick={confirmStatusChange}>Archive newsletter</Button>) : <Button className='text-green hover:text-green' type='button' variant='ghost' onClick={confirmStatusChange}>Reactivate newsletter</Button>}
                 </div>
             </>
         },
@@ -287,112 +309,102 @@ const Sidebar: React.FC<{
             title: 'Content',
             contents:
             <>
-                <Form className='mt-6' gap='sm' margins='lg' title='Header'>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Header</FieldLegend>
+                    <FieldGroup className='mb-12 gap-6'>
                     <div>
                         <div>
-                            <Heading className="mb-2" level={6}>Header image</Heading>
+                            <Text as='h6' className="mb-2 text-base" weight='semibold'>Header image</Text>
                         </div>
                         <div className='flex-column flex gap-1'>
-                            <ImageUpload
-                                deleteButtonClassName='top-1! right-1!'
-                                height={newsletter.header_image ? '66px' : '64px'}
-                                id='logo'
-                                imageURL={newsletter.header_image || undefined}
-                                onDelete={() => {
-                                    updateNewsletter({header_image: null});
-                                }}
-                                onUpload={async (file) => {
-                                    try {
-                                        const imageUrl = getImageUrl(await uploadImage({file}));
-                                        updateNewsletter({header_image: imageUrl});
-                                    } catch (e) {
-                                        handleError(e);
-                                    }
-                                }}
-                            >
-                                <Icon colorClass='text-grey-700 dark:text-grey-300' name='picture' />
+                            <ImageUpload className='h-16.5'>
+                                {newsletter.header_image ? (
+                                    <ImageUploadPreview>
+                                        <ImageUploadImage id='logo' src={newsletter.header_image} />
+                                        <ImageUploadActions>
+                                            <ImageUploadAction aria-label='Remove header image' onClick={() => updateNewsletter({header_image: null})}>
+                                                <Trash2 />
+                                            </ImageUploadAction>
+                                        </ImageUploadActions>
+                                    </ImageUploadPreview>
+                                ) : (
+                                    <ImageUploadDropzone inputId='logo' onDropAccepted={async ([file]) => {
+                                        try {
+                                            const imageUrl = getImageUrl(await uploadImage({file}));
+                                            updateNewsletter({header_image: imageUrl});
+                                        } catch (e) {
+                                            handleError(e);
+                                        }
+                                    }}>
+                                        <LucideIcon.Image className='size-5 text-grey-700 dark:text-grey-300' />
+                                    </ImageUploadDropzone>
+                                )}
                             </ImageUpload>
-                            <Hint>1200×600 recommended. Use a transparent PNG for best results on any background.</Hint>
+                            <FieldDescription>{formatNumber(1200)}×{formatNumber(600)} recommended. Use a transparent PNG for best results on any background.</FieldDescription>
                         </div>
                     </div>
-                    <ToggleGroup>
-                        {icon && <Toggle
-                            checked={newsletter.show_header_icon}
-                            direction="rtl"
-                            label='Publication icon'
-                            onChange={e => updateNewsletter({show_header_icon: e.target.checked})}
-                        />}
-                        <Toggle
-                            checked={newsletter.show_header_title}
-                            direction="rtl"
-                            label='Publication title'
-                            onChange={e => updateNewsletter({show_header_title: e.target.checked})}
-                        />
-                        <Toggle
-                            checked={newsletter.show_header_name}
-                            direction="rtl"
-                            label='Newsletter name'
-                            onChange={e => updateNewsletter({show_header_name: e.target.checked})}
-                        />
-                    </ToggleGroup>
-                </Form>
+                    <Stack gap='md'>
+                        {icon && <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-header-icon'>Publication icon</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_header_icon)} id='newsletter-show-header-icon' onCheckedChange={checked => updateNewsletter({show_header_icon: checked})} />
+                        </Field>}
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-header-title'>Publication title</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_header_title)} id='newsletter-show-header-title' onCheckedChange={checked => updateNewsletter({show_header_title: checked})} />
+                        </Field>
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-header-name'>Newsletter name</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_header_name)} id='newsletter-show-header-name' onCheckedChange={checked => updateNewsletter({show_header_name: checked})} />
+                        </Field>
+                    </Stack>
+                    </FieldGroup>
+                </FieldSet>
 
-                <Form className='mt-6' gap='xs' margins='lg' title='Title section'>
-                    <Toggle
-                        checked={newsletter.show_post_title_section}
-                        direction="rtl"
-                        label='Post title'
-                        onChange={e => updateNewsletter({show_post_title_section: e.target.checked})}
-                    />
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Title section</FieldLegend>
+                    <FieldGroup className='mb-12 gap-4'>
+                    <Field orientation='horizontal'>
+                        <FieldLabel htmlFor='newsletter-show-post-title'>Post title</FieldLabel>
+                        <Switch checked={Boolean(newsletter.show_post_title_section)} id='newsletter-show-post-title' onCheckedChange={checked => updateNewsletter({show_post_title_section: checked})} />
+                    </Field>
                     {newsletter.show_post_title_section &&
-                        <Toggle
-                            checked={newsletter.show_excerpt}
-                            direction="rtl"
-                            label="Post excerpt"
-                            onChange={e => updateNewsletter({show_excerpt: e.target.checked})}
-                        />
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-excerpt'>Post excerpt</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_excerpt)} id='newsletter-show-excerpt' onCheckedChange={checked => updateNewsletter({show_excerpt: checked})} />
+                        </Field>
                     }
-                    <Toggle
-                        checked={newsletter.show_feature_image}
-                        direction="rtl"
-                        label='Feature image'
-                        onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
-                    />
-                </Form>
+                    <Field orientation='horizontal'>
+                        <FieldLabel htmlFor='newsletter-show-feature-image'>Feature image</FieldLabel>
+                        <Switch checked={Boolean(newsletter.show_feature_image)} id='newsletter-show-feature-image' onCheckedChange={checked => updateNewsletter({show_feature_image: checked})} />
+                    </Field>
+                    </FieldGroup>
+                </FieldSet>
 
-                <Form className='mt-6' gap='sm' margins='lg' title='Footer'>
-                    <ToggleGroup gap='lg'>
-                        <Toggle
-                            checked={newsletter.feedback_enabled}
-                            direction="rtl"
-                            label='Ask your readers for feedback'
-                            onChange={e => updateNewsletter({feedback_enabled: e.target.checked})}
-                        />
-                        {commentsEnabled && <Toggle
-                            checked={newsletter.show_comment_cta}
-                            direction="rtl"
-                            label='Add a link to your comments'
-                            onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
-                        />}
-                        <Toggle
-                            checked={newsletter.show_share_button}
-                            direction="rtl"
-                            label='Show share button'
-                            onChange={e => updateNewsletter({show_share_button: e.target.checked})}
-                        />
-                        <Toggle
-                            checked={newsletter.show_latest_posts}
-                            direction="rtl"
-                            label='Share your latest posts'
-                            onChange={e => updateNewsletter({show_latest_posts: e.target.checked})}
-                        />
-                        <Toggle
-                            checked={newsletter.show_subscription_details}
-                            direction="rtl"
-                            label='Show subscription details'
-                            onChange={e => updateNewsletter({show_subscription_details: e.target.checked})}
-                        />
-                    </ToggleGroup>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Footer</FieldLegend>
+                    <FieldGroup className='mb-12 gap-6'>
+                    <Stack gap='lg'>
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-feedback-enabled'>Ask your readers for feedback</FieldLabel>
+                            <Switch checked={Boolean(newsletter.feedback_enabled)} id='newsletter-feedback-enabled' onCheckedChange={checked => updateNewsletter({feedback_enabled: checked})} />
+                        </Field>
+                        {commentsEnabled && <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-comment-cta'>Add a link to your comments</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_comment_cta)} id='newsletter-show-comment-cta' onCheckedChange={checked => updateNewsletter({show_comment_cta: checked})} />
+                        </Field>}
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-share-button'>Show share button</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_share_button)} id='newsletter-show-share-button' onCheckedChange={checked => updateNewsletter({show_share_button: checked})} />
+                        </Field>
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-latest-posts'>Share your latest posts</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_latest_posts)} id='newsletter-show-latest-posts' onCheckedChange={checked => updateNewsletter({show_latest_posts: checked})} />
+                        </Field>
+                        <Field orientation='horizontal'>
+                            <FieldLabel htmlFor='newsletter-show-subscription-details'>Show subscription details</FieldLabel>
+                            <Switch checked={Boolean(newsletter.show_subscription_details)} id='newsletter-show-subscription-details' onCheckedChange={checked => updateNewsletter({show_subscription_details: checked})} />
+                        </Field>
+                    </Stack>
                     <HtmlField
                         hint='Any extra information or legal text'
                         nodes='MINIMAL_NODES'
@@ -401,26 +413,22 @@ const Sidebar: React.FC<{
                         value={newsletter.footer_content || ''}
                         onChange={html => updateNewsletter({footer_content: html})}
                     />
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
                 <Separator />
                 <div className='my-5 flex w-full items-start'>
                     <span>
-                        <Icon className='mt-[-1px] mr-2' colorClass='text-red' name='heart'/>
+                        <LucideIcon.Heart className='mt-[-1px] mr-2 size-5 text-red'/>
                     </span>
-                    <Form marginBottom={false}>
-                        <Toggle
-                            checked={newsletter.show_badge}
-                            direction='rtl'
-                            label={
-                                <div className='flex flex-col gap-0.5'>
-                                    <span className='md:text-base'>Promote independent publishing</span>
-                                    <span className='text-[11px] leading-tight text-grey-700 md:text-sm md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
-                                </div>
-                            }
-                            labelStyle='value'
-                            onChange={e => updateNewsletter({show_badge: e.target.checked})}
-                        />
-                    </Form>
+                    <FieldGroup className='gap-8'>
+                        <Field orientation='horizontal'>
+                            <FieldContent>
+                                <FieldLabel htmlFor='newsletter-show-badge'>Promote independent publishing</FieldLabel>
+                                <FieldDescription>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</FieldDescription>
+                            </FieldContent>
+                            <Switch checked={Boolean(newsletter.show_badge)} id='newsletter-show-badge' onCheckedChange={checked => updateNewsletter({show_badge: checked})} />
+                        </Field>
+                    </FieldGroup>
                 </div>
             </>
         },
@@ -429,7 +437,9 @@ const Sidebar: React.FC<{
             title: 'Design',
             contents:
             <>
-                <Form className='mt-6' gap='xs' margins='lg' title='Global'>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Global</FieldLegend>
+                    <FieldGroup className='mb-12 gap-4'>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
@@ -448,34 +458,45 @@ const Sidebar: React.FC<{
                     </div>
                     <div className='flex w-full items-center justify-between gap-2'>
                         <div className='shrink-0'>Heading font</div>
-                        <Select
-                            containerClassName='max-w-[200px]'
-                            options={fontOptions}
-                            selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
-                            onSelect={changeSelectedTitleFont}
-                        />
+                        <Field className='max-w-[200px]'>
+                            <FieldLabel className='sr-only'>Heading font</FieldLabel>
+                            <Select value={newsletter.title_font_category} onValueChange={changeSelectedTitleFont}>
+                                <SelectTrigger aria-label='Heading font'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {fontOptions.map(option => <SelectItem key={option.value} value={option.value}><span className={option.className}>{option.label}</span></SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </Field>
                     </div>
                     <div className='flex w-full items-center justify-between gap-2'>
                         <div className='shrink-0'>Heading weight</div>
-                        <Select
-                            containerClassName='max-w-[200px]'
-                            options={headingFontWeightOptions}
-                            selectedOption={getSelectedFontWeightOption()}
-                            onSelect={option => updateNewsletter({title_font_weight: option?.value})}
-                        />
+                        <Field className='max-w-[200px]'>
+                            <FieldLabel className='sr-only'>Heading weight</FieldLabel>
+                            <Select value={getSelectedFontWeightOption().value} onValueChange={value => updateNewsletter({title_font_weight: value})}>
+                                <SelectTrigger aria-label='Heading weight'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {headingFontWeightOptions.map(option => <SelectItem key={option.value} value={option.value}><span className={option.className}>{option.label}</span></SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </Field>
                     </div>
                     <div className='flex w-full items-center justify-between gap-2'>
                         <div className='shrink-0'>Body font</div>
-                        <Select
-                            containerClassName='max-w-[200px]'
-                            options={fontOptions}
-                            selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
-                            testId='body-font-select'
-                            onSelect={option => updateNewsletter({body_font_category: option?.value})}
-                        />
+                        <Field className='max-w-[200px]'>
+                            <FieldLabel className='sr-only'>Body font</FieldLabel>
+                            <Select value={newsletter.body_font_category} onValueChange={value => updateNewsletter({body_font_category: value})}>
+                                <SelectTrigger aria-label='Body font' data-testid='body-font-select'><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {fontOptions.map(option => <SelectItem key={option.value} value={option.value}><span className={option.className}>{option.label}</span></SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </Field>
                     </div>
-                </Form>
-                <Form className='mt-6' gap='xs' margins='lg' title='Header'>
+                    </FieldGroup>
+                </FieldSet>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Header</FieldLegend>
+                    <FieldGroup className='mb-12 gap-4'>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
@@ -515,36 +536,22 @@ const Sidebar: React.FC<{
                     </div>
                     <div className='flex w-full justify-between'>
                         <div>Title alignment</div>
-                        <ButtonGroup activeKey={newsletter.title_alignment} buttons={[
-                            {
-                                key: 'left',
-                                icon: 'align-left',
-                                iconSize: 14,
-                                label: 'Align left',
-                                tooltip: 'Left',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({title_alignment: 'left'}),
-                                disabled: !newsletter.show_post_title_section
-                            },
-                            {
-                                key: 'center',
-                                icon: 'align-center',
-                                iconSize: 14,
-                                label: 'Align center',
-                                tooltip: 'Center',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({title_alignment: 'center'}),
-                                disabled: !newsletter.show_post_title_section
-                            }
-                        ]} clearBg={false} />
+                        <IconToggleGroup
+                            label='Title alignment'
+                            options={[
+                                {value: 'left', label: 'Left', icon: <LucideIcon.AlignLeft className='size-3.5!' />, disabled: !newsletter.show_post_title_section},
+                                {value: 'center', label: 'Center', icon: <LucideIcon.AlignCenter className='size-3.5!' />, disabled: !newsletter.show_post_title_section}
+                            ]}
+                            value={newsletter.title_alignment}
+                            onValueChange={titleAlignment => updateNewsletter({title_alignment: titleAlignment})}
+                        />
                     </div>
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
 
-                <Form className='mt-6' gap='xs' margins='lg' title='Body'>
+                <FieldSet className='mt-6 gap-0'>
+                    <FieldLegend className='mb-4 text-md! leading-supertight font-bold md:text-lg!'>Body</FieldLegend>
+                    <FieldGroup className='mb-12 gap-4'>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
@@ -589,68 +596,28 @@ const Sidebar: React.FC<{
                     </div>
                     <div className='flex w-full justify-between'>
                         <div>Button style</div>
-                        <ButtonGroup activeKey={newsletter.button_style || 'fill'} buttons={[
-                            {
-                                key: 'fill',
-                                icon: 'squircle-fill',
-                                iconSize: 14,
-                                label: 'Fill',
-                                tooltip: 'Fill',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({button_style: 'fill'})
-                            },
-                            {
-                                key: 'outline',
-                                icon: 'squircle',
-                                iconSize: 14,
-                                label: 'Outline',
-                                tooltip: 'Outline',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({button_style: 'outline'})
-                            }
-                        ]} clearBg={false} />
+                        <IconToggleGroup
+                            label='Button style'
+                            options={[
+                                {value: 'fill', label: 'Fill', icon: <LucideIcon.Squircle className='size-3.5!' fill='currentColor' />},
+                                {value: 'outline', label: 'Outline', icon: <LucideIcon.Squircle className='size-3.5!' />}
+                            ]}
+                            value={newsletter.button_style || 'fill'}
+                            onValueChange={buttonStyle => updateNewsletter({button_style: buttonStyle})}
+                        />
                     </div>
                     <div className='flex w-full justify-between'>
                         <div>Button corners</div>
-                        <ButtonGroup activeKey={newsletter.button_corners || 'rounded'} buttons={[
-                            {
-                                key: 'square',
-                                icon: 'square',
-                                iconSize: 14,
-                                label: 'Square',
-                                tooltip: 'Squared',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({button_corners: 'square'})
-                            },
-                            {
-                                key: 'rounded',
-                                icon: 'squircle',
-                                iconSize: 14,
-                                label: 'Rounded',
-                                tooltip: 'Rounded',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({button_corners: 'rounded'})
-                            },
-                            {
-                                key: 'pill',
-                                icon: 'circle',
-                                iconSize: 14,
-                                label: 'Pill',
-                                tooltip: 'Pill',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({button_corners: 'pill'})
-                            }
-                        ]} clearBg={false} />
+                        <IconToggleGroup
+                            label='Button corners'
+                            options={[
+                                {value: 'square', label: 'Squared', icon: <LucideIcon.Square className='size-3.5!' />},
+                                {value: 'rounded', label: 'Rounded', icon: <LucideIcon.Squircle className='size-3.5!' />},
+                                {value: 'pill', label: 'Pill', icon: <LucideIcon.Circle className='size-3.5!' />}
+                            ]}
+                            value={newsletter.button_corners || 'rounded'}
+                            onValueChange={buttonCorners => updateNewsletter({button_corners: buttonCorners})}
+                        />
                     </div>
                     <div className='mb-1'>
                         <ColorPickerField
@@ -675,68 +642,28 @@ const Sidebar: React.FC<{
                     </div>
                     <div className='flex w-full justify-between'>
                         <div>Link style</div>
-                        <ButtonGroup activeKey={newsletter.link_style || 'underline'} buttons={[
-                            {
-                                key: 'underline',
-                                icon: 'text-underline',
-                                iconSize: 14,
-                                label: 'Underline',
-                                tooltip: 'Underline',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({link_style: 'underline'})
-                            },
-                            {
-                                key: 'regular',
-                                icon: 'text-regular',
-                                iconSize: 14,
-                                label: 'Regular',
-                                tooltip: 'Regular',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({link_style: 'regular'})
-                            },
-                            {
-                                key: 'bold',
-                                icon: 'text-bold',
-                                iconSize: 14,
-                                label: 'Bold',
-                                tooltip: 'Bold',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({link_style: 'bold'})
-                            }
-                        ]} clearBg={false} />
+                        <IconToggleGroup
+                            label='Link style'
+                            options={[
+                                {value: 'underline', label: 'Underline', icon: <LucideIcon.Underline className='size-3.5!' />},
+                                {value: 'regular', label: 'Regular', icon: <LucideIcon.Type className='size-3.5!' />},
+                                {value: 'bold', label: 'Bold', icon: <LucideIcon.Bold className='size-3.5!' />}
+                            ]}
+                            value={newsletter.link_style || 'underline'}
+                            onValueChange={linkStyle => updateNewsletter({link_style: linkStyle})}
+                        />
                     </div>
                     <div className='flex w-full justify-between'>
                         <div>Image corners</div>
-                        <ButtonGroup activeKey={newsletter.image_corners || 'square'} buttons={[
-                            {
-                                key: 'square',
-                                icon: 'square',
-                                iconSize: 14,
-                                label: 'Square',
-                                tooltip: 'Squared',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({image_corners: 'square'})
-                            },
-                            {
-                                key: 'rounded',
-                                icon: 'squircle',
-                                iconSize: 14,
-                                label: 'Rounded',
-                                tooltip: 'Rounded',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({image_corners: 'rounded'})
-                            }
-                        ]} clearBg={false} />
+                        <IconToggleGroup
+                            label='Image corners'
+                            options={[
+                                {value: 'square', label: 'Squared', icon: <LucideIcon.Square className='size-3.5!' />},
+                                {value: 'rounded', label: 'Rounded', icon: <LucideIcon.Squircle className='size-3.5!' />}
+                            ]}
+                            value={newsletter.image_corners || 'square'}
+                            onValueChange={imageCorners => updateNewsletter({image_corners: imageCorners})}
+                        />
                     </div>
                     <div className='mb-1'>
                         <ColorPickerField
@@ -759,7 +686,8 @@ const Sidebar: React.FC<{
                             onChange={color => updateNewsletter({divider_color: color})}
                         />
                     </div>
-                </Form>
+                    </FieldGroup>
+                </FieldSet>
             </>
         }
     ];
@@ -771,7 +699,12 @@ const Sidebar: React.FC<{
     return (
         <div className='flex flex-col'>
             <div className='px-7 pt-0 pb-7'>
-                <TabView selectedTab={selectedTab} stickyHeader={true} tabs={tabs} onTabChange={handleTabChange} />
+                <Tabs value={selectedTab} variant='underline' onValueChange={handleTabChange}>
+                    <TabsList className='sticky top-0 z-50 bg-surface-elevated-2'>
+                        {tabs.map(tab => <TabsTrigger key={tab.id} value={tab.id}>{tab.title}</TabsTrigger>)}
+                    </TabsList>
+                    {tabs.map(tab => <TabsContent key={tab.id} value={tab.id}>{tab.contents}</TabsContent>)}
+                </Tabs>
             </div>
         </div>
     );
@@ -799,11 +732,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
             }
 
             if (toastMessage) {
-                showToast({
-                    icon: 'email',
-                    message: toastMessage,
-                    type: 'info'
-                });
+                toast.info(toastMessage);
             }
         },
         onSaveError: handleError,
@@ -843,10 +772,9 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         afterClose={() => updateRoute(returnRoute)}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
-        deviceSelector={false}
         dirty={saveState === 'unsaved'}
-        okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
+        okVariant={okProps.variant}
         preview={preview}
         previewBgColor={'grey'}
         previewToolbar={false}

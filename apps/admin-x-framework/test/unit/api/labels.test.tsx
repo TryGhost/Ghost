@@ -5,13 +5,8 @@ import {renderHookWithProviders} from '../../../src/test/test-utils';
 import {useCreateLabel, useEditLabel, useFindLabelByName} from '../../../src/api/labels';
 import {withMockFetch} from '../../utils/mock-fetch';
 
-const {mockShowToast, mockSonnerError} = vi.hoisted(() => ({
-    mockShowToast: vi.fn(),
+const {mockSonnerError} = vi.hoisted(() => ({
     mockSonnerError: vi.fn()
-}));
-
-vi.mock('../../../src/utils/toast', () => ({
-    showToast: mockShowToast
 }));
 
 vi.mock('sonner', () => ({
@@ -63,7 +58,6 @@ describe('labels api', () => {
                 await expect(result.current.mutateAsync({name: 'Existing label'})).rejects.toBeInstanceOf(ValidationError);
             });
 
-            expect(mockShowToast).not.toHaveBeenCalled();
             expect(mockSonnerError).not.toHaveBeenCalled();
         });
     });
@@ -130,7 +124,6 @@ describe('labels api', () => {
                 await expect(result.current.mutateAsync({id: 'label-1', name: 'Existing label'})).rejects.toBeInstanceOf(ValidationError);
             });
 
-            expect(mockShowToast).not.toHaveBeenCalled();
             expect(mockSonnerError).not.toHaveBeenCalled();
         });
     });

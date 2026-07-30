@@ -30,13 +30,17 @@ interface UseKoenigLinkSuggestionsProps {
     membersSignupAccess: string;
     donationsEnabled: boolean;
     recommendationsEnabled: boolean;
+    includeShareLink?: boolean;
+    shareLinkLabel?: string;
 }
 
 export const useKoenigLinkSuggestions = ({
     siteUrl,
     membersSignupAccess,
     donationsEnabled,
-    recommendationsEnabled
+    recommendationsEnabled,
+    includeShareLink = false,
+    shareLinkLabel = 'Share'
 }: UseKoenigLinkSuggestionsProps) => {
     const {data: offersData} = useBrowseOffers();
     const {data: latestPostsData} = useBrowsePosts({
@@ -80,6 +84,8 @@ export const useKoenigLinkSuggestions = ({
             {label: 'Free signup', value: '#/portal/signup/free'}
         ];
 
+        const shareLink = includeShareLink ? [{label: shareLinkLabel, value: '#/share'}] : [];
+
         const memberLinks = membersSignupAccess === 'all' ? [
             {label: 'Paid signup', value: '#/portal/signup'},
             {label: 'Upgrade or change plan', value: '#/portal/account/plans'}
@@ -94,8 +100,8 @@ export const useKoenigLinkSuggestions = ({
                 value: new URL(offer.code, siteUrl).toString()
             }));
 
-        return [...defaults, ...memberLinks, ...donationLink, ...recommendationLink, ...offersLinks];
-    }, [donationsEnabled, membersSignupAccess, offersData?.offers, recommendationsEnabled, siteUrl]);
+        return [...defaults, ...memberLinks, ...donationLink, ...shareLink, ...recommendationLink, ...offersLinks];
+    }, [donationsEnabled, includeShareLink, membersSignupAccess, offersData?.offers, recommendationsEnabled, shareLinkLabel, siteUrl]);
 
     const searchLinks = useCallback(async (term: string) => {
         if (!term) {

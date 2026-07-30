@@ -1,10 +1,10 @@
-import {Heading} from '@tryghost/admin-x-design-system';
+import {Text} from '@tryghost/shade/primitives';
 
 const CustomHeader: React.FC<{
     children?: React.ReactNode;
 }> = ({children}) => {
     return (
-        <Heading level={4}>{children}</Heading>
+        <Text as='h4' className='md:text-xl' leading='heading' size='lg' weight='bold'>{children}</Text>
     );
 };
 

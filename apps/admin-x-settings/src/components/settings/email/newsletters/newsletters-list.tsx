@@ -1,10 +1,8 @@
 import React from 'react';
-import {Button, DragIndicator, type SortableItemContainerProps, SortableList, Table, TableRow} from '@tryghost/admin-x-design-system';
+import {ActionList, ActionListItem, ActionListItemActions, ActionListItemContent, Button, DragIndicator, LoadingIndicator, NoValueLabel, NoValueLabelIcon, type SortableItemContainerProps, SortableList} from '@tryghost/shade/components';
 import {Inline} from '@tryghost/shade/primitives';
-import {MailX} from 'lucide-react';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
-import {NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
-import {formatNumber} from '@tryghost/shade/utils';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface NewslettersListProps {
@@ -32,54 +30,45 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
     };
 
     const container = (
-        <TableRow ref={setRef}
-            action={<Button color='green' data-testid="edit-newsletter-button" label='Edit' link onClick={showDetails} />}
-            className={isDragging ? 'opacity-75' : ''}
-            hideActions={false}
-            style={style}
-            onClick={showDetails}
-        >
-            <Inline className='w-full' gap='none'>
-                {(props.dragHandleAttributes || isDragging) && <div className='w-10 shrink-0'>
+        <ActionListItem ref={setRef} className={isDragging ? 'opacity-75' : ''} style={style}>
+            <ActionListItemContent className='flex'>
+                {(props.dragHandleAttributes || isDragging) && <Inline align='center' className='w-10 shrink-0'>
                     <DragIndicator className='h-10' isDragging={isDragging || false} {...props} />
-                </div>}
-                {children}
-            </Inline>
-        </TableRow>
+                </Inline>}
+                <button className='flex min-w-0 grow text-left' type='button' onClick={showDetails}>
+                    {children}
+                </button>
+            </ActionListItemContent>
+            <ActionListItemActions><Button className='h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline' data-testid='edit-newsletter-button' size='sm' type='button' variant='link' onClick={showDetails}>Edit</Button></ActionListItemActions>
+        </ActionListItem>
     );
 
     if (isDragging) {
-        return <Table>{container}</Table>;
+        return <ActionList>{container}</ActionList>;
     } else {
         return container;
     }
 };
 
 const NewsletterItem: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
-    const {updateRoute} = useRouting();
-
-    const showDetails = () => {
-        updateRoute({route: `newsletters/${newsletter.id}`});
-    };
-
     return (
         <>
-            <div className='grow py-3 pr-6' onClick={showDetails}>
+            <div className='grow py-3 pr-6'>
                 <div className={`flex grow flex-col`}>
                     <span className='font-medium'>{newsletter.name}</span>
-                    <span className='mt-0.5 text-sm leading-tight text-grey-700'>{newsletter.description || 'No description'}</span>
+                    <span className='mt-0.5 text-sm leading-tight text-muted-foreground'>{newsletter.description || 'No description'}</span>
                 </div>
             </div>
-            <div className='hidden py-3 pr-6 md:block md:min-w-[11rem]' onClick={showDetails}>
+            <div className='hidden py-3 pr-6 md:block md:min-w-[11rem]'>
                 <div className={`flex grow flex-col`}>
                     <span>{formatNumber(newsletter.count?.active_members || 0) }</span>
-                    <span className='mt-0.5 text-sm leading-tight whitespace-nowrap text-grey-700'>Subscribers</span>
+                    <span className='mt-0.5 text-sm leading-tight whitespace-nowrap text-muted-foreground'>Subscribers</span>
                 </div>
             </div>
-            <div className='hidden py-3 pr-6 md:block md:min-w-[11rem]' onClick={showDetails}>
+            <div className='hidden py-3 pr-6 md:block md:min-w-[11rem]'>
                 <div className={`flex grow flex-col`}>
                     <span>{formatNumber(newsletter.count?.posts || 0)}</span>
-                    <span className='mt-0.5 text-sm leading-tight whitespace-nowrap text-grey-700'>Delivered</span>
+                    <span className='mt-0.5 text-sm leading-tight whitespace-nowrap text-muted-foreground'>Delivered</span>
                 </div>
             </div>
         </>
@@ -88,26 +77,27 @@ const NewsletterItem: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
 
 const NewslettersList: React.FC<NewslettersListProps> = ({newsletters, isLoading, isSortable, onSort}) => {
     if (isLoading) {
-        return <Table isLoading />;
+        return <div className='flex justify-center p-5'><LoadingIndicator size='md' /></div>;
     } else if (newsletters.length && isSortable) {
         return <SortableList
             container={props => <NewsletterItemContainer {...props} />}
+            getDragHandleLabel={item => `Reorder ${item.name}`}
             items={newsletters}
             renderItem={item => <NewsletterItem newsletter={item} />}
-            wrapper={Table}
+            wrapper={ActionList}
             onMove={(id, overId) => onSort?.(id, overId)}
         />;
     } else if (newsletters.length) {
-        return <Table>
+        return <ActionList>
             {newsletters.map(newsletter => (
                 <NewsletterItemContainer key={newsletter.id} id={newsletter.id}>
                     <NewsletterItem newsletter={newsletter} />
                 </NewsletterItemContainer>
             ))}
-        </Table>;
+        </ActionList>;
     } else {
         return <NoValueLabel>
-            <NoValueLabelIcon><MailX /></NoValueLabelIcon>
+            <NoValueLabelIcon><LucideIcon.Mail /></NoValueLabelIcon>
             No newsletters found.
         </NoValueLabel>;
     }

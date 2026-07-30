@@ -2,15 +2,12 @@ import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
 import {z} from 'zod';
-import {type Knex} from 'knex';
 import {createDatabaseAutomationsRepository} from './database-automations-repository';
 import {parseFakeWaitHoursMultiplier} from './fake-wait-hours-multiplier';
 import type {
     AutomationsRepository,
     EditAutomationData
 } from './automations-repository';
-// @ts-expect-error Models currently lack type definitions.
-import {AutomatedEmailRecipient} from '../../models';
 
 const {knex} = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
@@ -42,8 +39,8 @@ const waitActionSchema = z.object({
     type: z.literal('wait'),
     data: z.object({
         wait_hours: z.number().int().positive()
-    }).strict()
-}).strict();
+    })
+});
 
 const sendEmailActionSchema = z.object({
     id: objectIdSchema,
@@ -52,13 +49,13 @@ const sendEmailActionSchema = z.object({
         email_subject: z.string(),
         email_lexical: z.string(),
         email_design_setting_id: z.string().min(1)
-    }).strict()
-}).strict();
+    })
+});
 
 const edgeSchema = z.object({
     source_action_id: objectIdSchema,
     target_action_id: objectIdSchema
-}).strict();
+});
 
 const editAutomationDataSchema = z.object({
     status: z.enum(['active', 'inactive']),
@@ -67,7 +64,7 @@ const editAutomationDataSchema = z.object({
         sendEmailActionSchema
     ])).min(1).max(MAX_AUTOMATION_ACTIONS),
     edges: z.array(edgeSchema)
-}).strict();
+});
 
 const repository = createDatabaseAutomationsRepository({
     knex,
@@ -363,34 +360,8 @@ export async function retryStep(...args: Parameters<AutomationsRepository['retry
     return await repository.retryStep(...args);
 }
 
-export type RecordEmailSentOptions = Readonly<{
-    automationActionRevisionId: string;
-    mailgunMessageId?: string;
-    memberEmail: string;
-    memberId: string;
-    memberName: string | null;
-    memberUuid: string;
-    trackOpens: boolean;
-}>;
-
-export async function recordEmailSent(options: RecordEmailSentOptions): Promise<void> {
-    await knex.transaction(async (transacting: Knex.Transaction) => {
-        await AutomatedEmailRecipient.add({
-            member_id: options.memberId,
-            member_uuid: options.memberUuid,
-            member_email: options.memberEmail,
-            member_name: options.memberName,
-            automation_action_revision_id: options.automationActionRevisionId,
-            ...(options.mailgunMessageId ? {mailgun_message_id: options.mailgunMessageId} : {}),
-            track_opens: options.trackOpens
-        }, {transacting});
-
-        await transacting('automation_action_revisions')
-            .where('id', options.automationActionRevisionId)
-            .update({
-                email_sent_count: transacting.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1])
-            });
-    });
+export async function recordEmailSent(...args: Parameters<AutomationsRepository['recordEmailSent']>) {
+    return await repository.recordEmailSent(...args);
 }
 
 export async function getAutomatedEmailRecipientsByMailgunIds(

@@ -41,7 +41,7 @@ class EmailServiceWrapper {
         const emailAddressService = require('../email-address');
         const i18nLib = require('@tryghost/i18n');
         const lexicalLib = require('../../lib/lexical');
-        const urlUtils = require('../../../shared/url-utils');
+        const urlUtils = require('../../../shared/url-utils').default;
         const memberAttribution = require('../member-attribution');
         const linkReplacer = require('../lib/link-replacer');
         const linkTracking = require('../link-tracking');

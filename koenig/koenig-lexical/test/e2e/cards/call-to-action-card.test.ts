@@ -177,6 +177,15 @@ test.describe('Call To Action Card', async () => {
         expect(currentUrl).toMatch(validUrlRegex);
     });
 
+    test('suggests the Share link', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+
+        await page.getByTestId('button-url').fill('Share');
+        await page.waitForSelector('[data-testid="button-url-listOption"]');
+        await expect(await page.getByTestId('button-url-listOption')).toContainText('Share post');
+    });
+
     test('button doesnt disappear when toggled, has text, has url and loses focus', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});

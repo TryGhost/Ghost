@@ -1,8 +1,8 @@
 import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
 import React, {useEffect, useState} from 'react';
+import {ActionList} from '@tryghost/shade/components';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
-import {List} from '@tryghost/admin-x-design-system';
 
 type Feature = {
     title: string;
@@ -83,6 +83,10 @@ const features: Feature[] = [{
     title: 'Preview by tier',
     description: 'Preview posts and emails as a member of a specific tier',
     flag: 'previewByTier'
+}, {
+    title: 'Paywall improvements',
+    description: 'Enables paywall usability, discoverability and email customization improvements',
+    flag: 'paywallImprovements'
 }];
 
 const AlphaFeatures: React.FC = () => {
@@ -113,7 +117,7 @@ const AlphaFeatures: React.FC = () => {
     }, [limiter]);
 
     return (
-        <List titleSeparator={false}>
+        <ActionList>
             {allowedFeatures.map(feature => (
                 <LabItem
                     key={feature.flag}
@@ -121,7 +125,7 @@ const AlphaFeatures: React.FC = () => {
                     detail={feature.description}
                     title={feature.title} />
             ))}
-        </List>
+        </ActionList>
     );
 };
 

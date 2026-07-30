@@ -28,13 +28,11 @@ function buildScheduler({
     emailAnalyticsEnabled = true,
     backgroundJobEnabled = true,
     emailCount = 1,
-    automationAnalyticsEnabled = false,
     automatedEmailRecipient = null
 }: {
     emailAnalyticsEnabled?: boolean;
     backgroundJobEnabled?: boolean;
     emailCount?: string | number;
-    automationAnalyticsEnabled?: boolean;
     automatedEmailRecipient?: unknown;
 } = {}) {
     const newsletterQuery = buildNewsletterQuery(emailCount);
@@ -53,11 +51,6 @@ function buildScheduler({
     config.get.withArgs('emailAnalytics:enabled').returns(emailAnalyticsEnabled);
     config.get.withArgs('backgroundJobs:emailAnalytics').returns(backgroundJobEnabled);
 
-    const labs = {
-        isSet: sinon.stub()
-    };
-    labs.isSet.withArgs('automationAnalytics').returns(automationAnalyticsEnabled);
-
     const jobManager = {
         addJob: sinon.stub()
     };
@@ -66,11 +59,9 @@ function buildScheduler({
         scheduler: new EmailAnalyticsJobScheduler({
             models,
             config,
-            labs,
             jobManager
         }),
         config,
-        labs,
         jobManager,
         newsletterQuery,
         automationsQuery,
@@ -150,7 +141,6 @@ describe('EmailAnalyticsJobScheduler', function () {
     it('does not add another automation job when called twice', async function () {
         const {scheduler, jobManager, automationsQuery} = buildScheduler({
             emailCount: 0,
-            automationAnalyticsEnabled: true,
             automatedEmailRecipient: {id: 'recipient-id'}
         });
 
@@ -164,7 +154,6 @@ describe('EmailAnalyticsJobScheduler', function () {
     it('does not add another automation job when called concurrently', async function () {
         const {scheduler, jobManager, automationsQuery} = buildScheduler({
             emailCount: 0,
-            automationAnalyticsEnabled: true
         });
         const automatedEmailRecipient = deferred();
         automationsQuery.first.returns(automatedEmailRecipient.promise.then(() => ({id: 'recipient-id'})));
@@ -211,14 +200,13 @@ describe('EmailAnalyticsJobScheduler', function () {
         sinon.assert.notCalled(newsletterQuery.count);
     });
 
-    it('adds an automation job when automation analytics is enabled and recipients exist', async function () {
+    it('adds an automation job when recipients exist', async function () {
         sinon.stub(Math, 'random')
             .onFirstCall().returns(0.2)
             .onSecondCall().returns(0.8);
 
-        const {scheduler, jobManager, newsletterQuery, automationsQuery, models} = buildScheduler({
+        const {scheduler, jobManager, automationsQuery, models} = buildScheduler({
             emailCount: 0,
-            automationAnalyticsEnabled: true,
             automatedEmailRecipient: {id: 'recipient-id'}
         });
 
@@ -241,7 +229,6 @@ describe('EmailAnalyticsJobScheduler', function () {
     it('can skip the automation email recipient lookup', async function () {
         const {scheduler, jobManager, automationsQuery} = buildScheduler({
             emailCount: 0,
-            automationAnalyticsEnabled: true,
             automatedEmailRecipient: null
         });
 
@@ -260,7 +247,6 @@ describe('EmailAnalyticsJobScheduler', function () {
     it('adds both newsletter and automation jobs when conditions are met', async function () {
         const {scheduler, jobManager} = buildScheduler({
             emailCount: 1,
-            automationAnalyticsEnabled: true,
             automatedEmailRecipient: {id: 'recipient-id'}
         });
 
@@ -284,24 +270,9 @@ describe('EmailAnalyticsJobScheduler', function () {
         });
     });
 
-    it('does not look for automation recipients when automation analytics is disabled', async function () {
-        const {scheduler, jobManager, automationsQuery, models} = buildScheduler({
-            emailCount: 0,
-            automationAnalyticsEnabled: false,
-            automatedEmailRecipient: {id: 'recipient-id'}
-        });
-
-        await scheduler.scheduleRecurringAutomationsJob();
-
-        sinon.assert.notCalled(jobManager.addJob);
-        sinon.assert.notCalled(models.AutomatedEmailRecipient.query);
-        sinon.assert.notCalled(automationsQuery.first);
-    });
-
     it('does not add an automation job when no automation recipients are found', async function () {
         const {scheduler, jobManager, automationsQuery} = buildScheduler({
             emailCount: 0,
-            automationAnalyticsEnabled: true,
             automatedEmailRecipient: null
         });
 

@@ -4,7 +4,7 @@ const _ = require('lodash');
 const moment = require('moment');
 const assert = require('node:assert/strict');
 const testUtils = require('../../../../utils');
-const urlUtils = require('../../../../../core/shared/url-utils');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const IndexGenerator = require('../../../../../core/frontend/services/sitemap/site-map-index-generator');
 const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-map-generator');
 const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-map-generator');
@@ -140,8 +140,7 @@ describe('Generators', function () {
                     page: false,
                     slug: 'some-cool-page',
                     canonical_url: 'https://myblog.com/test/'
-                }
-                ));
+                }), 'https://myblog.com/some-cool-page/');
                 assert.equal(isCanonical, true);
             });
             it('returns false if no canonical url', function () {
@@ -152,6 +151,36 @@ describe('Generators', function () {
                 }
                 ));
                 assert.equal(isCanonical, false);
+            });
+
+            it('returns false if the normalized canonical url matches the post url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: 'https://MYBLOG.com:443/some-cool-page'
+                }), 'https://myblog.com/some-cool-page/');
+
+                assert.equal(isCanonical, false);
+            });
+
+            it('returns false if the transform-ready canonical url matches the post url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: '__GHOST_URL__/some-cool-page'
+                }), urlUtils.urlJoin(urlUtils.urlFor('home', true), 'some-cool-page/'));
+
+                assert.equal(isCanonical, false);
+            });
+
+            it('returns true if the transform-ready canonical url points to a different path', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: '__GHOST_URL__/other-page'
+                }), urlUtils.urlJoin(urlUtils.urlFor('home', true), 'some-cool-page/'));
+
+                assert.equal(isCanonical, true);
             });
         });
 

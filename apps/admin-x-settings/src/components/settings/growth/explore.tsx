@@ -3,10 +3,11 @@ import React, {useEffect, useState} from 'react';
 import SettingImg from '../../../assets/images/ghost-explore.png';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Button, Icon, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
-import {Separator} from '@tryghost/shade/components';
+import {Button} from '@tryghost/shade/components';
+import {Field, FieldContent, FieldDescription, FieldLabel, Separator, Switch} from '@tryghost/shade/components';
+import {LucideIcon, abbreviateNumber} from '@tryghost/shade/utils';
 import {type Setting, getSettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {abbreviateNumber} from '@tryghost/shade/utils';
+import {SettingGroupContent} from '@tryghost/shade/patterns';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -46,9 +47,9 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const color = accentColor || '#F6414E';
 
     // Handle toggle change
-    const toggleSetting = async (key: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const toggleSetting = async (key: string, checked: boolean) => {
         const updatedSetting: Setting[] = [
-            {key, value: event.target.checked}
+            {key, value: checked}
         ];
 
         try {
@@ -60,11 +61,11 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (<TopLevelGroup
         customButtons={
-            <Toggle
+            <Switch
+                aria-label='Ghost Explore'
                 checked={exploreEnabled}
-                direction='rtl'
-                testId='explore-toggle'
-                onChange={event => toggleSetting('explore_ping', event)}
+                data-testid='explore-toggle'
+                onCheckedChange={checked => toggleSetting('explore_ping', checked)}
             />
         }
         description={`Promote your site across Ghost's website and publishing network`}
@@ -76,17 +77,18 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {exploreEnabled ?
             <SettingGroupContent columns={1}>
                 <Separator />
-                <Toggle
-                    checked={shareGrowthData}
-                    containerClasses='items-center!'
-                    direction='rtl'
-                    gap='gap-0'
-                    hint={'Enabling this will use your revenue/member growth data to rank your site more highly on Ghost Explore. Total member count will be displayed publicly, other data will be kept private.'}
-                    label='Share growth data to rank higher?'
-                    labelClasses='w-full'
-                    testId='explore-growth-toggle'
-                    onChange={event => toggleSetting('explore_ping_growth', event)}
-                />
+                <Field orientation='horizontal'>
+                    <FieldContent>
+                        <FieldLabel htmlFor='explore-growth-toggle'>Share growth data to rank higher?</FieldLabel>
+                        <FieldDescription>Enabling this will use your revenue/member growth data to rank your site more highly on Ghost Explore. Total member count will be displayed publicly, other data will be kept private.</FieldDescription>
+                    </FieldContent>
+                    <Switch
+                        checked={Boolean(shareGrowthData)}
+                        data-testid='explore-growth-toggle'
+                        id='explore-growth-toggle'
+                        onCheckedChange={checked => toggleSetting('explore_ping_growth', checked)}
+                    />
+                </Field>
                 <div className='-mx-5 -mb-5 flex flex-col items-center bg-grey-50 px-7 py-10 md:-mx-7 md:-mb-7' data-testid='explore-preview'>
                     <div className='relative w-full max-w-[320px] rounded-lg bg-white p-6 text-black shadow-lg'>
                         <div className='absolute top-2.5 right-3 text-sm text-grey-300 uppercase'>Preview</div>
@@ -113,7 +115,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 </span>
                                 :
                                 <span className='flex size-5 items-center justify-center rounded-full border border-black text-black group-hover:bg-black group-hover:text-white'>
-                                    <Icon name='arrow-right' size={10} />
+                                    <LucideIcon.ArrowRight className='size-2.5' />
                                 </span>
                             }
                         </a>
@@ -124,9 +126,12 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <span className='font-medium'>Get featured on the Ghost.org homepage</span>
                         <span className='text-pretty text-black/80 dark:text-white/80'>Send us a quote we can use to highlight your site</span>
                     </div>
-                    <Button className='border border-purple bg-white text-purple hover:bg-purple/5 hover:text-purple dark:bg-transparent' icon="send" label="Send testimonial" onClick={() => {
+                    <Button className='border border-purple bg-transparent text-purple hover:bg-purple/5 hover:text-purple' type='button' variant='outline' onClick={() => {
                         updateRoute('explore/testimonial');
-                    }} />
+                    }}>
+                        <LucideIcon.Send />
+                        Send testimonial
+                    </Button>
                 </div>
             </SettingGroupContent>
             :

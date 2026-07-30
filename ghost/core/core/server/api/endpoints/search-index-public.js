@@ -1,5 +1,6 @@
 const models = require('../../models');
 const urlService = require('../../services/url');
+const {requiredUrlColumns} = require('./utils/serializers/input/utils/url');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 
@@ -21,7 +22,7 @@ const controller = {
                 filter: 'type:post',
                 limit: '10000',
                 order: 'updated_at DESC',
-                columns: ['id', 'slug', 'title', 'excerpt', 'url', 'updated_at', 'visibility'],
+                columns: requiredUrlColumns('posts', ['id', 'slug', 'title', 'excerpt', 'url', 'updated_at', 'visibility']),
                 ...urlRelationsWhenLazyRouting()
             };
 
@@ -37,7 +38,7 @@ const controller = {
             const options = {
                 limit: '10000',
                 order: 'updated_at DESC',
-                columns: ['id', 'slug', 'name', 'url', 'profile_image']
+                columns: requiredUrlColumns('authors', ['id', 'slug', 'name', 'url', 'profile_image'])
             };
 
             return models.Author.findPage(options);
@@ -52,7 +53,7 @@ const controller = {
             const options = {
                 limit: '10000',
                 order: 'updated_at DESC',
-                columns: ['id', 'slug', 'name', 'url'],
+                columns: requiredUrlColumns('tags', ['id', 'slug', 'name', 'url']),
                 filter: 'visibility:public'
             };
 

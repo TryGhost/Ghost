@@ -1,6 +1,10 @@
 import React, {useState} from 'react';
-import {Breadcrumbs, Button, ButtonGroup, DesktopChrome, MobileChrome, PageHeader, Select, type SelectOption} from '@tryghost/admin-x-design-system';
+import SettingsBreadcrumbs from '../../settings-breadcrumbs';
+import {Button, Field, FieldLabel, PreviewChrome, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Inline} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {type OfficialTheme, type ThemeVariant} from '../../../providers/settings-app-provider';
+import {PageHeader} from '@tryghost/shade/patterns';
 import {type Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
 
 const hasVariants = (theme: OfficialTheme) => theme.variants && theme.variants.length > 0;
@@ -36,7 +40,7 @@ const ThemePreview: React.FC<{
     onInstall
 }) => {
     const [previewMode, setPreviewMode] = useState('desktop');
-    const [selectedVariant, setSelectedVariant] = useState<SelectOption | undefined>(undefined);
+    const [selectedVariant, setSelectedVariant] = useState<string | undefined>(undefined);
 
     if (!selectedTheme) {
         return null;
@@ -53,10 +57,10 @@ const ThemePreview: React.FC<{
 
     if (hasVariants(selectedTheme)) {
         if (selectedVariant === undefined) {
-            setSelectedVariant(variantOptions[0]);
+            setSelectedVariant(variantOptions[0].value);
         }
 
-        previewUrl = getAllVariants(selectedTheme).find(variant => generateVariantOptionValue(variant) === selectedVariant?.value)?.previewUrl || previewUrl;
+        previewUrl = getAllVariants(selectedTheme).find(variant => generateVariantOptionValue(variant) === selectedVariant)?.previewUrl || previewUrl;
     }
 
     let installButtonLabel = `Install ${selectedTheme.name}`;
@@ -76,88 +80,73 @@ const ThemePreview: React.FC<{
 
     const left =
         <div className='flex items-center gap-2'>
-            <Breadcrumbs
-                activeItemClassName='hidden md:!block md:!visible'
-                containerClassName='whitespace-nowrap'
-                itemClassName='hidden md:!block md:!visible'
-                items={[
-                    {label: 'Change theme', onClick: onBack},
-                    {label: selectedTheme.name}
-                ]}
-                separatorClassName='hidden md:!block md:!visible'
-                backIcon
+            <SettingsBreadcrumbs
+                current={selectedTheme.name}
+                label='Change theme'
                 onBack={onBack}
             />
             {hasVariants(selectedTheme) ?
                 <>
                     <span className='hidden md:!visible md:!block'>–</span>
-                    <Select
-                        border={false}
-                        controlClasses={{menu: 'min-w-max'}}
-                        fullWidth={false}
-                        options={variantOptions}
-                        selectedOption={selectedVariant}
-                        clearBg
-                        onSelect={(option) => {
-                            setSelectedVariant(option || undefined);
-                        }}
-                    />
+                    <Field className='w-auto'>
+                        <FieldLabel className='sr-only'>Theme variant</FieldLabel>
+                        <Select value={selectedVariant} onValueChange={setSelectedVariant}>
+                            <SelectTrigger aria-label='Theme variant' className='w-auto border-0 bg-transparent shadow-none'><SelectValue /></SelectTrigger>
+                            <SelectContent className='min-w-max'>
+                                {variantOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </Field>
                 </> : null
             }
         </div>;
 
     const right =
         <div className='flex justify-end gap-8'>
-            <ButtonGroup
-                buttons={[
-                    {
-                        icon: 'laptop',
-                        iconColorClass: (previewMode === 'desktop' ? 'text-black dark:text-green' : 'text-grey-500 dark:text-grey-600'),
-                        link: true,
-                        size: 'sm',
-                        onClick: () => {
-                            setPreviewMode('desktop');
-                        }
-                    },
-                    {
-                        icon: 'mobile',
-                        iconColorClass: (previewMode === 'mobile' ? 'text-black dark:text-green' : 'text-grey-500 dark:text-grey-600'),
-                        link: true,
-                        size: 'sm',
-                        onClick: () => {
-                            setPreviewMode('mobile');
-                        }
-                    }
-                ]}
-            />
+            <Inline gap='sm'>
+                <Button aria-label='Desktop preview' size='icon' type='button' variant='ghost' onClick={() => setPreviewMode('desktop')}>
+                    <LucideIcon.Laptop className={previewMode === 'desktop' ? 'text-foreground' : 'text-muted-foreground'} />
+                </Button>
+                <Button aria-label='Mobile preview' size='icon' type='button' variant='ghost' onClick={() => setPreviewMode('mobile')}>
+                    <LucideIcon.Smartphone className={previewMode === 'mobile' ? 'text-foreground' : 'text-muted-foreground'} />
+                </Button>
+            </Inline>
             <Button
-                color='green'
                 disabled={isInstalling}
-                label={isInstalling ? 'Installing...' : installButtonLabel}
+                type='button'
                 onClick={handleInstall}
-            />
+            >
+                {isInstalling ? 'Installing...' : installButtonLabel}
+            </Button>
         </div>;
 
     return (
         <div className='absolute inset-0 z-[100]'>
-            <PageHeader containerClassName='bg-grey-50 dark:bg-black z-[100]' left={left} right={right} sticky={false} />
-            <div className='flex h-[calc(100%-92px)] grow flex-col items-center justify-center bg-grey-50 dark:bg-black'>
+            <PageHeader blurredBackground={false} className='z-[100] h-22 min-h-[92px] bg-background p-8' sticky={false}>
+                <PageHeader.Left className='flex-auto'>
+                    {left}
+                </PageHeader.Left>
+                <PageHeader.Actions className='flex-auto justify-end'>
+                    {right}
+                </PageHeader.Actions>
+            </PageHeader>
+            <div className='flex h-[calc(100%-92px)] grow flex-col items-center justify-center bg-background'>
                 {previewMode === 'desktop' ?
-                    <DesktopChrome>
+                    <PreviewChrome device='desktop'>
                         <iframe
                             className='size-full'
                             src={previewUrl}
                             title='Theme preview'
                         />
-                    </DesktopChrome>
+                    </PreviewChrome>
                     :
-                    <MobileChrome>
+                    <PreviewChrome device='mobile'>
                         <iframe
                             className='size-full'
                             src={previewUrl}
                             title='Theme preview'
                         />
-                    </MobileChrome>
+                    </PreviewChrome>
                 }
             </div>
         </div>

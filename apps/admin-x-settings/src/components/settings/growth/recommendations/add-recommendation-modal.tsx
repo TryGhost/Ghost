@@ -4,10 +4,11 @@ import React, {useEffect, useState} from 'react';
 import {AlreadyExistsError} from '@tryghost/admin-x-framework/errors';
 import {type EditOrAddRecommendation, useCheckRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Form, Modal, TextField, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
-import {LoadingIndicator} from '@tryghost/shade/components';
+import {Field, FieldDescription, FieldError, FieldGroup, FieldLabel, Input, LoadingIndicator} from '@tryghost/shade/components';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SettingsModal} from '@tryghost/shade/patterns';
 import {formatUrl} from '../../../../utils/format-url';
+import {toast} from 'sonner';
 
 interface AddRecommendationModalProps {
     recommendation?: EditOrAddRecommendation,
@@ -124,17 +125,14 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             return;
         }
 
-        dismissAllToasts();
+        toast.dismiss();
         try {
             if (await handleSave({force: true})) {
                 return;
             }
         } catch (e) {
             const message = e instanceof AlreadyExistsError ? e.message : 'Something went wrong while checking this URL, please try again.';
-            showToast({
-                type: 'error',
-                title: message
-            });
+            toast.error(message);
         }
 
         // If we have errors: close direct submit view
@@ -159,7 +157,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
     }, [formState]);
 
     if (showLoadingView) {
-        return <Modal
+        return <SettingsModal
             afterClose={() => {
                 // Closed without saving: reset route
                 updateRoute('recommendations');
@@ -175,37 +173,35 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                     <LoadingIndicator size='lg' />
                 </div>
             </div>
-        </Modal>;
+        </SettingsModal>;
     }
 
-    return <Modal
+    return <SettingsModal
         afterClose={() => {
             // Closed without saving: reset route
             updateRoute('recommendations');
         }}
         animate={animate ?? true}
         backDropClick={false}
-        okColor='black'
         okLabel={'Next'}
         okLoading={saveState === 'saving'}
+        okVariant='default'
         size='sm'
         testId='add-recommendation-modal'
         title='Add recommendation'
         onOk={onOk}
     >
         <p className="mt-4">You can recommend <strong>any site</strong> your audience will find valuable, not just those published on Ghost.</p>
-        <Form
-            marginBottom={false}
-            marginTop
-        >
-            <TextField
-                autoFocus={true}
-                error={Boolean(errors.url)}
-                hint={errors.url || <>Need inspiration? <a className='text-green' href="https://www.ghost.org/explore" rel="noopener noreferrer" target='_blank'>Explore thousands of sites</a> to recommend</>}
-                maxLength={2000}
-                placeholder='https://www.example.com'
-                title='URL'
-                value={formState.url}
+        <FieldGroup className='mt-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <Field data-invalid={Boolean(errors.url) || undefined}>
+                <FieldLabel htmlFor='recommendation-url'>URL</FieldLabel>
+                <Input
+                    aria-invalid={Boolean(errors.url) || undefined}
+                    id='recommendation-url'
+                    maxLength={2000}
+                    placeholder='https://www.example.com'
+                    value={formState.url}
+                    autoFocus
                 onBlur={() => {
                     const url = doFormatUrl(formState.url);
                     updateForm(state => ({...state, url: url}));
@@ -221,9 +217,11 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                         setEnterPressed(true);
                     }
                 }}
-            />
-        </Form>
-    </Modal>;
+                />
+                {errors.url ? <FieldError>{errors.url}</FieldError> : <FieldDescription>Need inspiration? <a className='text-green' href="https://www.ghost.org/explore" rel="noopener noreferrer" target='_blank'>Explore thousands of sites</a> to recommend</FieldDescription>}
+            </Field>
+        </FieldGroup>
+    </SettingsModal>;
 };
 
 export default NiceModal.create(AddRecommendationModal);
