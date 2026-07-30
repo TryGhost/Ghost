@@ -3,6 +3,7 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 import {SHADE_APP_NAMESPACES} from '@/shade-app';
 
 import {cn} from '@/lib/utils';
+import {useOverlayEscape} from '@/hooks/use-overlay-escape';
 
 // Radix's Popover dismisses via DismissableLayer → useEscapeKeydown →
 // useCallbackRef. The callback ref is updated in a useEffect, so on the first
@@ -20,43 +21,16 @@ const Popover: React.FC<PopoverRootProps> = ({
     children,
     ...rest
 }) => {
-    const isControlled = controlledOpen !== undefined;
-    const [internalOpen, setInternalOpen] = React.useState(defaultOpen ?? false);
-    const open = isControlled ? controlledOpen : internalOpen;
-
-    const handleOpenChange = React.useCallback((next: boolean) => {
-        if (!isControlled) {
-            setInternalOpen(next);
-        }
-        onOpenChange?.(next);
-    }, [isControlled, onOpenChange]);
-
-    const handleOpenChangeRef = React.useRef(handleOpenChange);
-    React.useEffect(() => {
-        handleOpenChangeRef.current = handleOpenChange;
-    }, [handleOpenChange]);
-
-    React.useEffect(() => {
-        if (!open) {
-            return;
-        }
-        const handleEscape = (event: KeyboardEvent) => {
-            if (event.key !== 'Escape') {
-                return;
-            }
-            event.preventDefault();
-            event.stopPropagation();
-            handleOpenChangeRef.current(false);
-        };
-        document.addEventListener('keydown', handleEscape, {capture: true});
-        return () => document.removeEventListener('keydown', handleEscape, {capture: true});
-    }, [open]);
+    const overlayProps = useOverlayEscape({
+        open: controlledOpen,
+        defaultOpen,
+        onOpenChange
+    });
 
     return (
         <PopoverPrimitive.Root
             {...rest}
-            open={open}
-            onOpenChange={handleOpenChange}
+            {...overlayProps}
         >
             {children}
         </PopoverPrimitive.Root>

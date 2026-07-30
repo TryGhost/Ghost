@@ -4,8 +4,32 @@ import {Check, ChevronRight, Circle} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
 import {SHADE_APP_NAMESPACES} from '@/shade-app';
+import {useOverlayEscape} from '@/hooks/use-overlay-escape';
 
-const DropdownMenu = DropdownMenuPrimitive.Root;
+type DropdownMenuRootProps = React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Root>;
+
+const DropdownMenu: React.FC<DropdownMenuRootProps> = ({
+    open: controlledOpen,
+    defaultOpen,
+    onOpenChange,
+    children,
+    ...rest
+}) => {
+    const overlayProps = useOverlayEscape({
+        open: controlledOpen,
+        defaultOpen,
+        onOpenChange
+    });
+
+    return (
+        <DropdownMenuPrimitive.Root
+            {...rest}
+            {...overlayProps}
+        >
+            {children}
+        </DropdownMenuPrimitive.Root>
+    );
+};
 
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 

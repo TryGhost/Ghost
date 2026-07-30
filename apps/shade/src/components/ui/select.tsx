@@ -5,6 +5,7 @@ import {Check, ChevronDown, ChevronUp} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import {SHADE_APP_NAMESPACES} from '@/shade-app';
 import {inputSurface} from '@/components/ui/input-surface';
+import {useOverlayEscape} from '@/hooks/use-overlay-escape';
 
 // Radix's Select dismisses via a document-level Escape listener. Legacy Admin
 // modals also listen on document, and their listener can run first because the
@@ -19,43 +20,16 @@ const Select: React.FC<SelectRootProps> = ({
     children,
     ...rest
 }) => {
-    const isControlled = controlledOpen !== undefined;
-    const [internalOpen, setInternalOpen] = React.useState(defaultOpen ?? false);
-    const open = isControlled ? controlledOpen : internalOpen;
-
-    const handleOpenChange = React.useCallback((next: boolean) => {
-        if (!isControlled) {
-            setInternalOpen(next);
-        }
-        onOpenChange?.(next);
-    }, [isControlled, onOpenChange]);
-
-    const handleOpenChangeRef = React.useRef(handleOpenChange);
-    React.useEffect(() => {
-        handleOpenChangeRef.current = handleOpenChange;
-    }, [handleOpenChange]);
-
-    React.useEffect(() => {
-        if (!open) {
-            return;
-        }
-        const handleEscape = (event: KeyboardEvent) => {
-            if (event.key !== 'Escape') {
-                return;
-            }
-            event.preventDefault();
-            event.stopPropagation();
-            handleOpenChangeRef.current(false);
-        };
-        document.addEventListener('keydown', handleEscape, {capture: true});
-        return () => document.removeEventListener('keydown', handleEscape, {capture: true});
-    }, [open]);
+    const overlayProps = useOverlayEscape({
+        open: controlledOpen,
+        defaultOpen,
+        onOpenChange
+    });
 
     return (
         <SelectPrimitive.Root
             {...rest}
-            open={open}
-            onOpenChange={handleOpenChange}
+            {...overlayProps}
         >
             {children}
         </SelectPrimitive.Root>
