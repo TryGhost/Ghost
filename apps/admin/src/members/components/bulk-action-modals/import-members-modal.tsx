@@ -9,9 +9,8 @@ import {createInitialImportState, importReducer} from './import-members/reducer'
 import {isImportMembersCompleteResponse, useImportMembers} from '@tryghost/admin-x-framework/api/members';
 import {memberCustomFieldCsvColumns, useBrowseMemberCustomFields} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {parseCSV} from './import-members/csv';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useCallback, useEffect, useMemo, useReducer, useRef} from 'react';
-import {useFeatureFlag} from '@/hooks/use-feature-flag';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 import {useLabelPicker} from '@/members/hooks/use-label-picker';
 
 interface ImportMembersModalProps {
@@ -29,9 +28,8 @@ export function ImportMembersModal({
 }: ImportMembersModalProps) {
     const [state, dispatch] = useReducer(importReducer, undefined, createInitialImportState);
     const errorCsvUrlRef = useRef<string | null>(null);
-    const {data: configData} = useBrowseConfig();
     const {mutateAsync: importMembers} = useImportMembers();
-    const importMemberTier = configData?.config?.labs?.importMemberTier === true;
+    const importMemberTier = useFeatureFlag('importMemberTier');
 
     // Defined custom fields become mapping targets. Fetched only when the feature is on;
     // browse returns active fields only, which are the ones the importer writes to.
