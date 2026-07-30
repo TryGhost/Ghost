@@ -50,6 +50,22 @@ describe('Tag detail (tagDetailsReact on)', () => {
         expect(saved.visibility).toBe('public');
     });
 
+    it('guards edits made after a same-slug save', async () => {
+        const t = tag({name: 'News', slug: 'news', visibility: 'public'});
+        fakeTags([t]);
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByLabelText('Name', {exact: true}).fill('Renamed');
+        await page.getByRole('button', {name: 'Save'}).click();
+        await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+        await page.getByLabelText('Description', {exact: true}).fill('A later edit');
+        await page.getByTestId('tag-detail').getByRole('link', {name: 'Tags'}).click();
+
+        await expect.element(page.getByText('Are you sure you want to leave this page?')).toBeVisible();
+    });
+
     it('creates a tag from /tags/new, generating the slug from the name', async () => {
         const created = tag({name: 'Weekly News', slug: 'weekly-news'});
         const createApi = fakeAdminEndpoint('POST', new RegExp('^/tags/'), {tags: [created]});

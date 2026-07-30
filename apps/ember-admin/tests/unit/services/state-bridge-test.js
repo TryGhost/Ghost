@@ -291,6 +291,15 @@ describe('Unit: Service: state-bridge', function () {
             expect(store.unloadAll.calledWith('integration')).to.be.true;
         });
 
+        it('unloads all tags when tag queries are invalidated', function () {
+            run(() => {
+                service.onInvalidate('TagsResponseType');
+            });
+
+            expect(store.unloadAll.calledOnce).to.be.true;
+            expect(store.unloadAll.calledWith('tag')).to.be.true;
+        });
+
         it('reloads membersUtils when tiers are invalidated', function () {
             run(() => {
                 service.onInvalidate('TiersResponseType');

@@ -146,11 +146,13 @@ const TagDetail: React.FC = () => {
                 toast.error('Couldn’t save the tag.');
                 return;
             }
-            // Ember replaces the route with the saved tag's slug after every
-            // save (`controllers/tag.js` `saveTask`), which moves `/tags/new`
-            // to the new slug and follows slug renames.
-            bypassGuardRef.current = true;
-            navigate(`/tags/${saved.slug}`, {replace: true});
+            // Move `/tags/new` to the saved tag and follow slug renames. A
+            // same-slug save needs no navigation; setting the bypass in that
+            // case would leave the unsaved-changes guard disabled indefinitely.
+            if (saved.slug !== tagSlug) {
+                bypassGuardRef.current = true;
+                navigate(`/tags/${saved.slug}`, {replace: true});
+            }
         };
         const onError = (saveError: unknown) => {
             const apiMessage = (saveError as {data?: {errors?: {message?: string | null}[]}} | null)?.data?.errors?.[0]?.message;
@@ -176,7 +178,7 @@ const TagDetail: React.FC = () => {
             },
             onError
         });
-    }, [draft, errors.accentColor, isCreating, tag, activeMutation.isPending, addMutation, editMutation, navigate]);
+    }, [draft, errors.accentColor, isCreating, tag, tagSlug, activeMutation.isPending, addMutation, editMutation, navigate]);
 
     // Cmd/Ctrl+S saves, matching the `{{on-key "cmd+s"}}` binding on the
     // Ember save button.

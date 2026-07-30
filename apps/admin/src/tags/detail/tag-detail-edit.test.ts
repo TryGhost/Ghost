@@ -49,11 +49,27 @@ describe('getTagEditableSlice', () => {
 });
 
 describe('normalizeTagDraft', () => {
-    it('trims every field, matching Ember trimming values as they are set', () => {
-        const normalized = normalizeTagDraft(draft({name: '  News  ', description: ' about news '}));
+    it('trims ordinary fields while preserving code injection whitespace', () => {
+        const normalized = normalizeTagDraft(draft({
+            name: '  News  ',
+            description: ' about news ',
+            codeinjectionHead: '\n<script>head()</script>\n',
+            codeinjectionFoot: '  <script>foot()</script>  '
+        }));
 
         expect(normalized.name).toBe('News');
         expect(normalized.description).toBe('about news');
+        expect(normalized.codeinjectionHead).toBe('\n<script>head()</script>\n');
+        expect(normalized.codeinjectionFoot).toBe('  <script>foot()</script>  ');
+    });
+
+    it('does not mark existing code injection whitespace as a change', () => {
+        const serverSlice = getTagEditableSlice({
+            codeinjection_head: '\n<script>head()</script>\n',
+            codeinjection_foot: '  <script>foot()</script>  '
+        });
+
+        expect(normalizeTagDraft(serverSlice)).toEqual(serverSlice);
     });
 });
 
@@ -125,6 +141,16 @@ describe('buildTagSavePayload', () => {
         expect(payload.meta_title).toBe('Meta');
         expect(payload.canonical_url).toBeNull();
         expect(payload.accent_color).toBeNull();
+    });
+
+    it('preserves code injection whitespace in the save payload', () => {
+        const payload = buildTagSavePayload(draft({
+            codeinjectionHead: '\n<script>head()</script>\n',
+            codeinjectionFoot: '  <script>foot()</script>  '
+        }), 'News');
+
+        expect(payload.codeinjection_head).toBe('\n<script>head()</script>\n');
+        expect(payload.codeinjection_foot).toBe('  <script>foot()</script>  ');
     });
 
     it('derives visibility when the name changed, like Ember updateVisibility on save', () => {
