@@ -41,14 +41,14 @@ const HomeRedirect = () => {
     }
 
     if (hasAdminAccess(currentUser)) {
-        return <Navigate replace to="/analytics" />;
+        return <Navigate to="/analytics" replace />;
     }
 
     if (isContributorUser(currentUser)) {
-        return <Navigate replace to="/posts" />;
+        return <Navigate to="/posts" replace />;
     }
 
-    return <Navigate replace to="/site" />;
+    return <Navigate to="/site" replace />;
 };
 
 export default HomeRedirect;
