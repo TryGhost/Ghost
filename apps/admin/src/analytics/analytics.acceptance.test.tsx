@@ -148,6 +148,7 @@ describe("Analytics overview", () => {
 describe("Analytics web traffic", () => {
     it("renders the seeded KPIs, top content, sources and locations", async () => {
         seedAnalyticsWorld();
+        seedTopPostsViews();
         fakeAdminEndpoint("GET", /^\/stats\/top-content\//, {
             stats: [
                 {
