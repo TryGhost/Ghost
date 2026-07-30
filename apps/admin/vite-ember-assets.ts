@@ -13,6 +13,11 @@ function isAbsoluteUrl(url: string): boolean {
 }
 
 function prefixUrl(url: string, base: string): string {
+    // production ember builds reference assets with absolute /assets/... urls;
+    // re-root them under the dev server base so the sirv middleware serves them
+    if (url.startsWith('/assets/')) {
+        url = url.slice(1);
+    }
     if (isAbsoluteUrl(url)) {return url;}
     const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base;
     return `${normalizedBase}/${url}`;
@@ -30,10 +35,19 @@ export function emberAssetsPlugin() {
         transformIndexHtml: {
             order: 'post',
             handler() {
-                // Read from Ember's own build output (not the combined output
-                // in built/admin which gets overwritten by closeBundle and would
-                // accumulate duplicate path prefixes on repeated builds)
-                const indexPath = path.resolve(GHOST_ADMIN_DIST, 'index.html');
+                // In dev, read from built/admin — the same tree the sirv
+                // middleware serves. Ember's asset-delivery addon rewrites
+                // built/admin on every rebuild (including `ember serve`
+                // rebuilds, which never touch dist), so reading dist would
+                // reference chunk hashes that no longer exist. For production
+                // builds keep reading Ember's own build output (not the
+                // combined output in built/admin which gets overwritten by
+                // closeBundle and would accumulate duplicate path prefixes on
+                // repeated builds).
+                const candidates = config.command === 'serve'
+                    ? [path.resolve(GHOST_ADMIN_PATH, 'index.html'), path.resolve(GHOST_ADMIN_DIST, 'index.html')]
+                    : [path.resolve(GHOST_ADMIN_DIST, 'index.html')];
+                const indexPath = candidates.find(p => fs.existsSync(p)) ?? candidates[0];
                 try {
                     const indexContent = fs.readFileSync(indexPath, 'utf-8');
                     const base = config.base || '/';
