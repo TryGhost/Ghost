@@ -57,7 +57,7 @@ export function usePinturaEditor({disabled = false}: {disabled?: boolean} = {}) 
         document.head.appendChild(link);
     }, [config?.cssUrl]);
 
-    const isEnabled = !disabled && scriptLoaded && cssLoaded;
+    const isEnabled = !disabled && !!config && scriptLoaded && cssLoaded;
     const openEditor = useCallback(({image, handleSave}: OpenEditorParams) => {
         const pintura = window.pintura;
         if (!image || !isEnabled || !pintura) {

@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {page, userEvent} from 'vitest/browser';
 
+import {deferred} from '@/utils/deferred';
 import {configResponse, currentRoute, fakeAdminEndpoint, fakeEndpoint, fakeTags, renderAdminApp, tag, type Tag} from '@test-utils/acceptance';
 
 const FLAGS = {labs: {tagDetailsReact: true}};
@@ -120,6 +121,7 @@ describe('Tag detail (tagDetailsReact on)', () => {
 
         // Ember replaces `/tags/new` with the saved tag's route after creating.
         await expect.poll(currentRoute).toBe('/tags/weekly-news');
+        await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
         const sent = (createApi.lastRequest?.body as {tags: Array<Record<string, unknown>>}).tags[0];
         expect(sent.name).toBe('Weekly News');
         expect(sent.visibility).toBe('public');
@@ -133,8 +135,91 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await page.getByLabelText('Name', {exact: true}).fill('');
         await page.getByRole('button', {name: 'Save'}).click();
 
-        await expect.element(page.getByText('You must specify a name for the tag.').first()).toBeVisible();
+        const nameInput = page.getByLabelText('Name', {exact: true});
+        const fieldError = page.elementLocator(document.getElementById('tag-name-error')!);
+        await expect.element(fieldError).toHaveTextContent('You must specify a name for the tag.');
+        await expect.element(nameInput).toHaveAttribute('aria-describedby', 'tag-name-error');
         expect(saveApi.requests.length).toBe(0);
+    });
+
+    it('waits for an image upload before allowing the tag to save', async () => {
+        const t = tag({name: 'News', slug: 'news', feature_image: null});
+        const saveApi = fakeTagWorld(t);
+        const pendingUpload = deferred<{images: {url: string; ref: null}[]}>();
+        const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', () => pendingUpload.promise);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        const uploadInput = page.getByLabelText('Upload tag image');
+        await expect.element(uploadInput).toBeVisible();
+        await userEvent.upload(uploadInput.element(), new File(['image'], 'tag.png', {type: 'image/png'}));
+        await expect.poll(() => uploadApi.requests.length).toBe(1);
+        await expect.element(page.getByRole('button', {name: 'Save'})).toBeDisabled();
+        await expect.element(page.getByRole('button', {name: 'Delete tag'})).toBeDisabled();
+        await expect.element(page.getByRole('button', {name: 'Select tag image from Unsplash'})).toBeDisabled();
+
+        pendingUpload.resolve({images: [{url: 'https://example.com/tag.png', ref: null}]});
+        await expect.element(page.getByRole('button', {name: 'Save'})).toBeEnabled();
+        await page.getByRole('button', {name: 'Save'}).click();
+
+        await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
+        const saved = (saveApi.lastRequest?.body as {tags: Array<Record<string, unknown>>}).tags[0];
+        expect(saved.feature_image).toBe('https://example.com/tag.png');
+    });
+
+    it('rejects image formats that the legacy uploader does not support', async () => {
+        const t = tag({name: 'News', slug: 'news', feature_image: null});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByLabelText('Upload tag image').upload(new File(['image'], 'tag.bmp', {type: 'image/bmp'}));
+
+        await expect.element(page.getByText(/The image type you uploaded is not supported/)).toBeVisible();
+    });
+
+    it('shows the legacy message when an image exceeds the server limit', async () => {
+        const t = tag({name: 'News', slug: 'news', feature_image: null});
+        fakeTagWorld(t);
+        fakeAdminEndpoint('POST', '/images/upload/', null, {status: 413});
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByLabelText('Upload tag image').upload(new File(['image'], 'tag.png', {type: 'image/png'}));
+
+        await expect.element(page.getByText('The image you uploaded was larger than the maximum file size your server allows.')).toBeVisible();
+    });
+
+    it('clears save state when navigating to another tag', async () => {
+        const first = tag({name: 'First', slug: 'first'});
+        const second = tag({name: 'Second', slug: 'second'});
+        fakeTags([first, second]);
+        fakeTagWorld(first);
+        fakeTagWorld(second);
+        await renderAdminApp(`/tags/${first.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: 'Save'}).click();
+        await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
+        await page.getByTestId('tag-detail').getByRole('link', {name: 'Tags'}).click();
+        await page.getByRole('link', {name: 'Second', exact: true}).click();
+
+        await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('Second');
+        await expect.element(page.getByRole('button', {name: 'Save', exact: true})).toBeVisible();
+        expect(page.getByRole('button', {name: 'Saved'}).query()).toBeNull();
+    });
+
+    it('does not allow deletion while a tag save is pending', async () => {
+        const t = tag({name: 'News', slug: 'news'});
+        fakeAdminEndpoint('GET', new RegExp(`^/tags/slug/${t.slug}/`), {tags: [t]});
+        const pendingSave = deferred<{tags: Tag[]}>();
+        const saveApi = fakeAdminEndpoint('PUT', new RegExp(`^/tags/${t.id}/`), () => pendingSave.promise);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByLabelText('Name', {exact: true}).fill('Renamed');
+        await page.getByRole('button', {name: 'Save'}).click();
+        await expect.poll(() => saveApi.requests.length).toBe(1);
+
+        await expect.element(page.getByRole('button', {name: 'Delete tag'})).toBeDisabled();
+
+        pendingSave.resolve({tags: [{...t, name: 'Renamed'}]});
+        await expect.element(page.getByRole('button', {name: 'Delete tag'})).toBeEnabled();
     });
 
     it('deletes the tag after confirming, reporting the posts it is used on', async () => {
@@ -153,6 +238,17 @@ describe('Tag detail (tagDetailsReact on)', () => {
 
         await expect.poll(currentRoute).toBe('/tags');
         expect(deleteApi.requests.length).toBe(1);
+    });
+
+    it('uses the current draft name in the delete confirmation', async () => {
+        const t = tag({name: 'News', slug: 'news'});
+        fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByLabelText('Name', {exact: true}).fill('Draft name');
+        await page.getByRole('button', {name: 'Delete tag', exact: true}).click();
+
+        await expect.element(page.getByTestId('delete-tag-modal').getByText('Draft name', {exact: true})).toBeVisible();
     });
 
     it('guards leaving with unsaved edits via the breadcrumb', async () => {

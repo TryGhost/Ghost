@@ -8,7 +8,18 @@ import {createPortal} from 'react-dom';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useFramework} from '@tryghost/admin-x-framework';
 import {usePinturaEditor} from '@/hooks/use-pintura-editor';
+import {JSONError, RequestEntityTooLargeError, UnsupportedMediaTypeError} from '@tryghost/admin-x-framework/errors';
 import {toast} from 'sonner';
+
+const ACCEPTED_IMAGE_TYPES = {
+    'image/gif': ['.gif'],
+    'image/jpeg': ['.jpg', '.jpeg'],
+    'image/png': ['.png'],
+    'image/svg+xml': ['.svg', '.svgz'],
+    'image/webp': ['.webp']
+};
+
+const UNSUPPORTED_IMAGE_MESSAGE = 'The image type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP';
 
 interface TagImageFieldProps {
     id: string;
@@ -18,6 +29,7 @@ interface TagImageFieldProps {
     disabled?: boolean;
     unsplashEnabled?: boolean;
     onChange: (url: string) => void;
+    onPendingChange?: (pending: boolean) => void;
 }
 
 /**
@@ -25,20 +37,64 @@ interface TagImageFieldProps {
  * standing in for Ember's `GhImageUploaderWithPreview`: an upload dropzone
  * when empty, a preview with edit/remove actions when set.
  */
-const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, value, disabled, unsplashEnabled, onChange}) => {
+const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, value, disabled, unsplashEnabled, onChange, onPendingChange}) => {
     const {mutateAsync: uploadImage, isPending} = useUploadImage();
     const {unsplashConfig} = useFramework();
     const editor = usePinturaEditor({disabled});
     const [showUnsplash, setShowUnsplash] = React.useState(false);
+    const mountedRef = React.useRef(true);
+    const operationPendingRef = React.useRef(false);
+    const onPendingChangeRef = React.useRef(onPendingChange);
+    onPendingChangeRef.current = onPendingChange;
+
+    React.useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+            if (operationPendingRef.current) {
+                onPendingChangeRef.current?.(false);
+            }
+        };
+    }, []);
+
+    React.useEffect(() => {
+        if (isPending) {
+            setShowUnsplash(false);
+        }
+    }, [isPending]);
 
     const handleUpload = async (file: File) => {
+        if (operationPendingRef.current) {
+            return;
+        }
+        operationPendingRef.current = true;
+        onPendingChangeRef.current?.(true);
         try {
             const response = await uploadImage({file});
-            onChange(getImageUrl(response));
-        } catch {
-            toast.error('Couldn’t upload the image.');
+            if (mountedRef.current) {
+                onChange(getImageUrl(response));
+            }
+        } catch (error) {
+            let message = 'Couldn’t upload the image.';
+            if (error instanceof UnsupportedMediaTypeError) {
+                message = UNSUPPORTED_IMAGE_MESSAGE;
+            } else if (error instanceof RequestEntityTooLargeError) {
+                message = 'The image you uploaded was larger than the maximum file size your server allows.';
+            } else if (error instanceof JSONError && error.data?.errors[0]?.message) {
+                message = error.data.errors[0].message;
+            }
+            if (mountedRef.current) {
+                toast.error(message);
+            }
+        } finally {
+            operationPendingRef.current = false;
+            if (mountedRef.current) {
+                onPendingChangeRef.current?.(false);
+            }
         }
     };
+
+    const fieldDisabled = disabled || isPending;
 
     return (
         <Stack gap='sm'>
@@ -49,11 +105,11 @@ const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, val
                         <ImageUploadImage alt='' src={value} />
                         <ImageUploadActions>
                             {editor.isEnabled && (
-                                <ImageUploadAction aria-label={`Edit ${label.toLowerCase()}`} disabled={disabled} onClick={() => editor.openEditor({image: value, handleSave: handleUpload})}>
+                                <ImageUploadAction aria-label={`Edit ${label.toLowerCase()}`} disabled={fieldDisabled} onClick={() => editor.openEditor({image: value, handleSave: handleUpload})}>
                                     <LucideIcon.Pencil />
                                 </ImageUploadAction>
                             )}
-                            <ImageUploadAction aria-label={`Remove ${label.toLowerCase()}`} disabled={disabled} onClick={() => onChange('')}>
+                            <ImageUploadAction aria-label={`Remove ${label.toLowerCase()}`} disabled={fieldDisabled} onClick={() => onChange('')}>
                                 <LucideIcon.Trash2 />
                             </ImageUploadAction>
                         </ImageUploadActions>
@@ -61,8 +117,8 @@ const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, val
                 ) : (
                     <>
                         <ImageUploadDropzone
-                            accept={{'image/*': []}}
-                            disabled={disabled || isPending}
+                            accept={ACCEPTED_IMAGE_TYPES}
+                            disabled={fieldDisabled}
                             inputAriaLabel={uploadText}
                             inputId={id}
                             onDropAccepted={(files) => {
@@ -70,7 +126,7 @@ const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, val
                                     void handleUpload(files[0]);
                                 }
                             }}
-                            onDropRejected={() => toast.error('The image type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP')}
+                            onDropRejected={() => toast.error(UNSUPPORTED_IMAGE_MESSAGE)}
                         >
                             {isPending ? (
                                 <LoadingIndicator size='sm' />
@@ -80,7 +136,7 @@ const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, val
                         </ImageUploadDropzone>
                         {unsplashEnabled && (
                             <ImageUploadActions className='top-1 right-1 opacity-100'>
-                                <ImageUploadAction aria-label={`Select ${label.toLowerCase()} from Unsplash`} disabled={disabled} onClick={() => setShowUnsplash(true)}>
+                                <ImageUploadAction aria-label={`Select ${label.toLowerCase()} from Unsplash`} disabled={fieldDisabled} onClick={() => setShowUnsplash(true)}>
                                     <LucideIcon.Images />
                                 </ImageUploadAction>
                             </ImageUploadActions>

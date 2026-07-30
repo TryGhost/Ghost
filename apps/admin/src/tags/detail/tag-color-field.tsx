@@ -4,6 +4,7 @@ import {Input, Label} from '@tryghost/shade/components';
 interface TagColorFieldProps {
     value: string;
     disabled?: boolean;
+    errorId?: string;
     onChange: (color: string) => void;
     onError: (message: string | null) => void;
 }
@@ -17,7 +18,7 @@ const HEX_COLOR_REGEX = /#[0-9A-Fa-f]{6}$/;
  * debounce on input, immediate normalization on blur, and the same error
  * copy for a malformed hex value.
  */
-const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, onChange, onError}) => {
+const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, errorId, onChange, onError}) => {
     const [text, setText] = React.useState(value.replace(/^#/, ''));
     const lastValueRef = React.useRef(value);
     const debounceRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -71,6 +72,8 @@ const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, onChange,
             <Label htmlFor='tag-accent-color'>Color</Label>
             <div className='flex items-center gap-2'>
                 <Input
+                    aria-describedby={errorId}
+                    aria-invalid={!!errorId}
                     aria-label='Accent color hex value'
                     autoCorrect='off'
                     disabled={disabled}

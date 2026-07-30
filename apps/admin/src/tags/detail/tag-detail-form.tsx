@@ -1,7 +1,7 @@
 import React from 'react';
 import TagColorField from './tag-color-field';
 import TagImageField from './tag-image-field';
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Input, Label, Textarea} from '@tryghost/shade/components';
+import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, FieldError, Input, Label, Textarea} from '@tryghost/shade/components';
 import {DESCRIPTION_MAX_LENGTH, FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH, FACEBOOK_TITLE_RECOMMENDED_LENGTH, META_DESCRIPTION_RECOMMENDED_LENGTH, META_TITLE_RECOMMENDED_LENGTH, X_DESCRIPTION_RECOMMENDED_LENGTH, X_TITLE_RECOMMENDED_LENGTH, charLength, getBlogDomain, getSeoDescription, getSeoTitle, getSeoUrl, getSlugUrlPreview, validateTagField} from './tag-detail-edit';
 import {FacebookCardPreview, SeoPreview, XCardPreview} from './tag-detail-previews';
 import {cn, formatNumber} from '@tryghost/shade/utils';
@@ -15,14 +15,10 @@ interface TagDetailFormProps {
     disabled?: boolean;
     onChange: (patch: Partial<TagEditableFields>) => void;
     onFieldError: (field: TagFieldName, message: string | null) => void;
+    onImageUploadPendingChange: (field: 'featureImage' | 'twitterImage' | 'ogImage', pending: boolean) => void;
 }
 
-const FieldError: React.FC<{message?: string}> = ({message}) => {
-    if (!message) {
-        return null;
-    }
-    return <p className='text-sm text-destructive'>{message}</p>;
-};
+const errorId = (field: TagFieldName) => `tag-${field}-error`;
 
 /** Ember's `gh-count-down-characters`: the used count, red once past the limit. */
 const UsedCharacters: React.FC<{value: string; limit: number; prefix: 'Maximum' | 'Recommended'}> = ({value, limit, prefix}) => {
@@ -44,7 +40,7 @@ const SectionTrigger: React.FC<{title: string; description: string}> = ({title, 
     </AccordionTrigger>
 );
 
-const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, disabled, onChange, onFieldError}) => {
+const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, disabled, onChange, onFieldError, onImageUploadPendingChange}) => {
     const {data: settingsData} = useBrowseSettings({});
     const siteTitle = getSettingValue<string>(settingsData?.settings ?? [], 'title') ?? '';
     const siteMetaTitle = getSettingValue<string>(settingsData?.settings ?? [], 'meta_title') ?? '';
@@ -69,6 +65,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                         <div className='flex flex-1 flex-col gap-1.5'>
                             <Label htmlFor='tag-name'>Name</Label>
                             <Input
+                                aria-describedby={errors.name ? errorId('name') : undefined}
                                 aria-invalid={!!errors.name}
                                 disabled={disabled}
                                 id='tag-name'
@@ -79,14 +76,15 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                         </div>
                         <TagColorField
                             disabled={disabled}
+                            errorId={errors.accentColor ? errorId('accentColor') : undefined}
                             value={draft.accentColor}
                             onChange={accentColor => onChange({accentColor})}
                             onError={message => onFieldError('accentColor', message)}
                         />
                     </div>
                     <div className='-mt-4 flex flex-col gap-1'>
-                        <FieldError message={errors.name} />
-                        <FieldError message={errors.accentColor} />
+                        <FieldError className='text-sm' id={errorId('name')}>{errors.name}</FieldError>
+                        <FieldError className='text-sm' id={errorId('accentColor')}>{errors.accentColor}</FieldError>
                         <p className='text-sm text-muted-foreground'>
                             Start with # to create internal tags.{' '}
                             <a className='underline' href='https://ghost.org/help/organising-content/#private-tags' rel='noopener noreferrer' target='_blank'>Learn more</a>
@@ -96,6 +94,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                     <div className='flex flex-col gap-1.5'>
                         <Label htmlFor='tag-slug'>Slug</Label>
                         <Input
+                            aria-describedby={errors.slug ? errorId('slug') : undefined}
                             aria-invalid={!!errors.slug}
                             disabled={disabled}
                             id='tag-slug'
@@ -104,12 +103,13 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                             onChange={e => onChange({slug: e.target.value})}
                         />
                         <p className='text-sm text-muted-foreground' data-testid='tag-slug-preview'>{getSlugUrlPreview(draft.slug, blogUrl)}</p>
-                        <FieldError message={errors.slug} />
+                        <FieldError className='text-sm' id={errorId('slug')}>{errors.slug}</FieldError>
                     </div>
 
                     <div className='flex flex-col gap-1.5'>
                         <Label htmlFor='tag-description'>Description</Label>
                         <Textarea
+                            aria-describedby={errors.description ? errorId('description') : undefined}
                             aria-invalid={!!errors.description}
                             className='min-h-24'
                             disabled={disabled}
@@ -118,7 +118,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                             onBlur={() => validateOnBlur('description')}
                             onChange={e => onChange({description: e.target.value})}
                         />
-                        <FieldError message={errors.description} />
+                        <FieldError className='text-sm' id={errorId('description')}>{errors.description}</FieldError>
                         <UsedCharacters limit={DESCRIPTION_MAX_LENGTH} prefix='Maximum' value={draft.description} />
                     </div>
                 </div>
@@ -131,6 +131,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                     uploadText='Upload tag image'
                     value={draft.featureImage}
                     onChange={featureImage => onChange({featureImage})}
+                    onPendingChange={pending => onImageUploadPendingChange('featureImage', pending)}
                 />
             </div>
 
@@ -143,6 +144,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                 <div className='flex flex-col gap-1.5'>
                                     <Label htmlFor='meta-title'>Meta title</Label>
                                     <Input
+                                        aria-describedby={errors.metaTitle ? errorId('metaTitle') : undefined}
                                         aria-invalid={!!errors.metaTitle}
                                         disabled={disabled}
                                         id='meta-title'
@@ -151,12 +153,13 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         onBlur={() => validateOnBlur('metaTitle')}
                                         onChange={e => onChange({metaTitle: e.target.value})}
                                     />
-                                    <FieldError message={errors.metaTitle} />
+                                    <FieldError className='text-sm' id={errorId('metaTitle')}>{errors.metaTitle}</FieldError>
                                     <UsedCharacters limit={META_TITLE_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.metaTitle} />
                                 </div>
                                 <div className='flex flex-col gap-1.5'>
                                     <Label htmlFor='meta-description'>Meta description</Label>
                                     <Textarea
+                                        aria-describedby={errors.metaDescription ? errorId('metaDescription') : undefined}
                                         aria-invalid={!!errors.metaDescription}
                                         disabled={disabled}
                                         id='meta-description'
@@ -165,12 +168,13 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         onBlur={() => validateOnBlur('metaDescription')}
                                         onChange={e => onChange({metaDescription: e.target.value})}
                                     />
-                                    <FieldError message={errors.metaDescription} />
+                                    <FieldError className='text-sm' id={errorId('metaDescription')}>{errors.metaDescription}</FieldError>
                                     <UsedCharacters limit={META_DESCRIPTION_RECOMMENDED_LENGTH} prefix='Recommended' value={draft.metaDescription} />
                                 </div>
                                 <div className='flex flex-col gap-1.5'>
                                     <Label htmlFor='canonical-url'>Canonical URL</Label>
                                     <Input
+                                        aria-describedby={errors.canonicalUrl ? errorId('canonicalUrl') : undefined}
                                         aria-invalid={!!errors.canonicalUrl}
                                         disabled={disabled}
                                         id='canonical-url'
@@ -178,7 +182,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                         onBlur={() => validateOnBlur('canonicalUrl')}
                                         onChange={e => onChange({canonicalUrl: e.target.value})}
                                     />
-                                    <FieldError message={errors.canonicalUrl} />
+                                    <FieldError className='text-sm' id={errorId('canonicalUrl')}>{errors.canonicalUrl}</FieldError>
                                 </div>
                             </div>
                             <div className='flex flex-col gap-1.5'>
@@ -202,6 +206,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                     uploadText='Add X image'
                                     value={draft.twitterImage}
                                     onChange={twitterImage => onChange({twitterImage})}
+                                    onPendingChange={pending => onImageUploadPendingChange('twitterImage', pending)}
                                 />
                                 <div className='flex flex-col gap-1.5'>
                                     <Label htmlFor='twitter-title'>X title</Label>
@@ -253,6 +258,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                     uploadText='Add Facebook image'
                                     value={draft.ogImage}
                                     onChange={ogImage => onChange({ogImage})}
+                                    onPendingChange={pending => onImageUploadPendingChange('ogImage', pending)}
                                 />
                                 <div className='flex flex-col gap-1.5'>
                                     <Label htmlFor='og-title'>Facebook title</Label>

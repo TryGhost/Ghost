@@ -3,12 +3,15 @@ import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHe
 import {toast} from 'sonner';
 import {useDeleteTag} from '@tryghost/admin-x-framework/api/tags';
 import {useNavigate} from '@tryghost/admin-x-framework';
+import {formatNumber} from '@tryghost/shade/utils';
 import type {Tag} from '@tryghost/admin-x-framework/api/tags';
 
 interface TagDeleteModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     tag: Tag;
+    displayName: string;
+    onPendingChange: (pending: boolean) => void;
     /**
      * Invoked right before we `navigate('/tags')` so the parent's
      * unsaved-changes blocker doesn't intercept the redirect for a tag that
@@ -22,12 +25,13 @@ interface TagDeleteModalProps {
  * body names the tag, reports how many posts it will be removed from, and a
  * successful delete returns to the tags list.
  */
-const TagDeleteModal: React.FC<TagDeleteModalProps> = ({open, onOpenChange, tag, allowLeaveWithUnsavedChanges}) => {
+const TagDeleteModal: React.FC<TagDeleteModalProps> = ({open, onOpenChange, tag, displayName, onPendingChange, allowLeaveWithUnsavedChanges}) => {
     const navigate = useNavigate();
     const deleteTag = useDeleteTag();
     const postsCount = tag.count?.posts ?? 0;
 
     const onConfirm = async () => {
+        onPendingChange(true);
         try {
             await deleteTag.mutateAsync(tag.id);
             onOpenChange(false);
@@ -35,6 +39,8 @@ const TagDeleteModal: React.FC<TagDeleteModalProps> = ({open, onOpenChange, tag,
             navigate('/tags');
         } catch {
             toast.error('Couldn’t delete the tag. Please try again.');
+        } finally {
+            onPendingChange(false);
         }
     };
 
@@ -49,9 +55,9 @@ const TagDeleteModal: React.FC<TagDeleteModalProps> = ({open, onOpenChange, tag,
                 <DialogHeader>
                     <DialogTitle>Are you sure you want to delete this tag?</DialogTitle>
                     <DialogDescription>
-                        You’re about to delete the tag &quot;<strong>{tag.name}</strong>&quot;.{' '}
+                        You’re about to delete the tag &quot;<strong>{displayName}</strong>&quot;.{' '}
                         {postsCount > 0 && (
-                            <>It will be removed from <span data-testid='delete-tag-posts-count'>{postsCount} {postsCount === 1 ? 'post' : 'posts'}</span>.{' '}</>
+                            <>It will be removed from <span data-testid='delete-tag-posts-count'>{formatNumber(postsCount)} {postsCount === 1 ? 'post' : 'posts'}</span>.{' '}</>
                         )}
                         This is permanent! We warned you, k?
                     </DialogDescription>

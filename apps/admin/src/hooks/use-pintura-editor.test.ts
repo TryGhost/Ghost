@@ -54,4 +54,14 @@ describe('usePinturaEditor', () => {
         act(() => processHandler?.({dest: edited}));
         expect(handleSave).toHaveBeenCalledWith(edited);
     });
+
+    it('disables the editor when the integration is turned off', async () => {
+        const {result, rerender} = renderHook(() => usePinturaEditor());
+        await waitFor(() => expect(result.current.isEnabled).toBe(true));
+
+        mockUsePinturaConfig.mockReturnValue(null);
+        rerender();
+
+        expect(result.current.isEnabled).toBe(false);
+    });
 });
