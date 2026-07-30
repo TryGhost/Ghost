@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import Sources from '@/posts/analytics/Web/components/sources';
+import Sources from '@/posts/analytics/web/components/sources';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, Separator} from '@tryghost/shade/components';
 import {type BaseSourceData, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {GhAreaChart, type GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from '@tryghost/shade/patterns';

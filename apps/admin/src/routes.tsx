@@ -128,10 +128,10 @@ const appRoutes: RouteObject[] = [
             };
         },
         children: [
-            { path: "", lazy: lazyComponent(() => import("./posts/analytics/Overview/overview")) },
-            { path: "web", lazy: lazyComponent(() => import("./posts/analytics/Web/web")) },
-            { path: "growth", lazy: lazyComponent(() => import("./posts/analytics/Growth/growth")) },
-            { path: "newsletter", lazy: lazyComponent(() => import("./posts/analytics/Newsletter/newsletter")) },
+            { path: "", lazy: lazyComponent(() => import("./posts/analytics/overview/overview")) },
+            { path: "web", lazy: lazyComponent(() => import("./posts/analytics/web/web")) },
+            { path: "growth", lazy: lazyComponent(() => import("./posts/analytics/growth/growth")) },
+            { path: "newsletter", lazy: lazyComponent(() => import("./posts/analytics/newsletter/newsletter")) },
         ],
     },
     {

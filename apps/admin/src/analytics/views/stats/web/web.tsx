@@ -1,11 +1,11 @@
-import DateRangeSelect from '@/analytics/views/Stats/components/date-range-select';
-import LocationsCard from '@/analytics/views/Stats/Locations/components/locations-card';
+import DateRangeSelect from '@/analytics/views/stats/components/date-range-select';
+import LocationsCard from '@/analytics/views/stats/locations/components/locations-card';
 import React, {useCallback, useMemo, useRef} from 'react';
 import SourcesCard from './components/sources-card';
 import StatsFilter from '@/shared/analytics/stats-filter';
-import StatsHeader from '@/analytics/views/Stats/layout/stats-header';
-import StatsLayout from '@/analytics/views/Stats/layout/stats-layout';
-import StatsView from '@/analytics/views/Stats/layout/stats-view';
+import StatsHeader from '@/analytics/views/stats/layout/stats-header';
+import StatsLayout from '@/analytics/views/stats/layout/stats-layout';
+import StatsView from '@/analytics/views/stats/layout/stats-view';
 import TopContent from './components/top-content';
 import WebKPIs, {type KpiDataItem} from './components/web-kpis';
 import {Card, CardContent, NavbarActions} from '@tryghost/shade/components';

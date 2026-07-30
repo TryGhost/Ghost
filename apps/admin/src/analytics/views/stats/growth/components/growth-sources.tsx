@@ -1,6 +1,6 @@
 import DisabledSourcesIndicator from '@/shared/analytics/disabled-sources-indicator';
 import React, {useState} from 'react';
-import SortButton from '@/analytics/views/Stats/components/sort-button';
+import SortButton from '@/analytics/views/stats/components/sort-button';
 import SourceIcon from '@/shared/analytics/source-icon';
 import {Button, EmptyIndicator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Skeleton, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';

@@ -2,7 +2,7 @@ import moment from 'moment';
 import {describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
-import PaidMembersChangeChart from '@/analytics/views/Stats/Growth/components/paid-subscription-change-chart';
+import PaidMembersChangeChart from '@/analytics/views/stats/growth/components/paid-subscription-change-chart';
 
 // Mock dependencies from @tryghost/shade/app
 vi.mock('@tryghost/shade/app', async () => {

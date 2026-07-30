@@ -1,4 +1,4 @@
-import FeatureImagePlaceholder from '@/analytics/views/Stats/components/feature-image-placeholder';
+import FeatureImagePlaceholder from '@/analytics/views/stats/components/feature-image-placeholder';
 import React from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, SkeletonTable} from '@tryghost/shade/components';
 import {LucideIcon, abbreviateNumber, cn, formatDisplayDate, formatNumber} from '@tryghost/shade/utils';
