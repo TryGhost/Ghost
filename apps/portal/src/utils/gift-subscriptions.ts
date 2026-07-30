@@ -5,32 +5,38 @@ export const GIFT_DURATION_CATALOGUE = [1, 3, 6, 12] as const;
 
 export type GiftDuration = typeof GIFT_DURATION_CATALOGUE[number];
 
-interface GiftPrice {
+type PortalPlan = 'free' | 'monthly' | 'yearly';
+
+// portal_default_plan is server-validated to the paid plans only
+type PortalDefaultPlan = Exclude<PortalPlan, 'free'>;
+
+interface Price {
     amount?: unknown;
     currency?: unknown;
     [key: string]: unknown;
 }
 
-interface ValidGiftPrice extends GiftPrice {
+interface ValidPrice extends Price {
     amount: number;
     currency: string;
 }
 
-interface GiftProduct {
+interface Product {
     id: string;
     type?: string;
-    monthlyPrice?: GiftPrice | null;
-    yearlyPrice?: GiftPrice | null;
+    monthlyPrice?: Price | null;
+    yearlyPrice?: Price | null;
 }
 
-interface GiftSite {
+// the slice of Portal's site data that gift purchasing reads
+interface Site {
     paid_members_enabled?: boolean;
-    portal_plans?: string[];
+    portal_plans?: PortalPlan[];
     portal_products?: string[];
-    products?: GiftProduct[];
+    products?: Product[];
 }
 
-function getPriceForDuration(product: GiftProduct, duration: GiftDuration): GiftPrice | null | undefined {
+function getPriceForDuration(product: Product, duration: GiftDuration): Price | null | undefined {
     if (duration === 12) {
         return product.yearlyPrice;
     }
@@ -38,7 +44,7 @@ function getPriceForDuration(product: GiftProduct, duration: GiftDuration): Gift
     return product.monthlyPrice;
 }
 
-function hasValidPrice(price: GiftPrice | null | undefined): price is ValidGiftPrice {
+function hasValidPrice(price: Price | null | undefined): price is ValidPrice {
     return !!price
         && typeof price.amount === 'number'
         && Number.isSafeInteger(price.amount)
@@ -47,13 +53,13 @@ function hasValidPrice(price: GiftPrice | null | undefined): price is ValidGiftP
         && !!price.currency;
 }
 
-function isDurationEnabled({portalPlans, duration}: {portalPlans: string[]; duration: GiftDuration}): boolean {
+function isDurationEnabled({portalPlans, duration}: {portalPlans: PortalPlan[]; duration: GiftDuration}): boolean {
     return duration === 12
         ? portalPlans.includes('yearly')
         : portalPlans.includes('monthly');
 }
 
-export function getGiftPrice(product: GiftProduct, duration: GiftDuration): ValidGiftPrice | null {
+export function getGiftPrice(product: Product, duration: GiftDuration): ValidPrice | null {
     const price = getPriceForDuration(product, duration);
 
     if (!hasValidPrice(price)) {
@@ -66,7 +72,7 @@ export function getGiftPrice(product: GiftProduct, duration: GiftDuration): Vali
     };
 }
 
-export function getGiftProducts({site, duration}: {site?: GiftSite | null | undefined; duration: GiftDuration}): GiftProduct[] {
+export function getGiftProducts({site, duration}: {site?: Site | null | undefined; duration: GiftDuration}): Product[] {
     const {
         paid_members_enabled: paidMembersEnabled,
         portal_plans: portalPlans = [],
@@ -93,7 +99,7 @@ export function getGiftProducts({site, duration}: {site?: GiftSite | null | unde
     )).map(({product}) => product);
 }
 
-export function getAvailableGiftDurations({site}: {site?: GiftSite | null | undefined}): GiftDuration[] {
+export function getAvailableGiftDurations({site}: {site?: Site | null | undefined}): GiftDuration[] {
     return GIFT_DURATION_CATALOGUE.filter(duration => getGiftProducts({site, duration}).length > 0);
 }
 
@@ -103,7 +109,7 @@ export function getActiveGiftDuration({
     selectedDuration
 }: {
     availableDurations: readonly GiftDuration[];
-    portalDefaultPlan?: string | null;
+    portalDefaultPlan?: PortalDefaultPlan | null;
     selectedDuration?: GiftDuration | null;
 }): GiftDuration | null {
     if (selectedDuration && availableDurations.includes(selectedDuration)) {
