@@ -175,10 +175,11 @@ describe('Acceptance: Signup', function () {
             'password field error is removed after text input'
         ).to.equal('');
 
-        // submitting sends correct details and redirects to content screen
+        // submitting sends correct details and redirects to the root route,
+        // where the React shell picks the per-role landing view
         await click('[data-test-button="signup"]');
 
-        expect(currentRouteName()).to.equal('site');
+        expect(currentRouteName()).to.equal('index');
     });
 
     it('redirects if already logged in', async function () {
@@ -196,7 +197,7 @@ describe('Acceptance: Signup', function () {
         // "1470346017929|kevin+test2@ghost.org|2cDnQc3g7fQTj9nNK4iGPSGfvomkLdXf68FuWgS66Ug="
         await visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
-        expect(currentRouteName()).to.equal('site');
+        expect(currentRouteName()).to.equal('index');
         expect(find('.gh-alert-content').textContent).to.have.string('sign out to register');
     });
 
@@ -223,25 +224,27 @@ describe('Acceptance: Signup', function () {
     });
 
     describe('success routing', function () {
-        it('redirects admin user to analytics', async function () {
+        // The per-role landing view is picked by the React-owned root route;
+        // Ember's job ends at `/`
+        it('redirects admin user to the root route', async function () {
             await setupSignupFlow(this.server, {role: 'Administrator'});
             await click('[data-test-button="signup"]');
 
-            expect(currentURL()).to.equal('/analytics');
+            expect(currentURL()).to.equal('/');
         });
 
-        it('redirects contributor user to posts', async function () {
+        it('redirects contributor user to the root route', async function () {
             await setupSignupFlow(this.server, {role: 'Contributor'});
             await click('[data-test-button="signup"]');
 
-            expect(currentURL()).to.equal('/posts');
+            expect(currentURL()).to.equal('/');
         });
 
-        it('redirects author user to site', async function () {
+        it('redirects author user to the root route', async function () {
             await setupSignupFlow(this.server, {role: 'Author'});
             await click('[data-test-button="signup"]');
 
-            expect(currentURL()).to.equal('/site');
+            expect(currentURL()).to.equal('/');
         });
     });
 });

@@ -57,7 +57,7 @@ export default Route.extend(ShortcutsRoute, {
 
     shortcuts,
 
-    routeAfterAuthentication: 'home',
+    routeAfterAuthentication: 'index',
 
     init() {
         this._super(...arguments);
@@ -74,9 +74,10 @@ export default Route.extend(ShortcutsRoute, {
     async beforeModel(transition) {
         await this.session.setup();
 
-        // Intercept home route when unauthenticated to prevent decorator binding issues
+        // Intercept the root route when unauthenticated so `/` goes straight to
+        // signin without storing a `ghost-signin-redirect` back to `/`.
         // Check AFTER session setup to ensure isAuthenticated is accurate
-        if (transition.to?.name === 'home' && !this.session.isAuthenticated) {
+        if (transition.to?.name === 'index' && !this.session.isAuthenticated) {
             transition.abort();
             return this.transitionTo('signin');
         }

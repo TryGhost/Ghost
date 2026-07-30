@@ -15,7 +15,7 @@ export default class SetupRoute extends Route {
         super.beforeModel(...arguments);
 
         if (this.session.isAuthenticated) {
-            return this.transitionTo('home');
+            return this.transitionTo('index');
         }
 
         let authUrl = this.ghostPaths.url.api('authentication', 'setup');
