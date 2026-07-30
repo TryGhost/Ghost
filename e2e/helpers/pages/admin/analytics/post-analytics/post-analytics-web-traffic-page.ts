@@ -1,3 +1,4 @@
+import * as postAnalyticsSel from '@tryghost/test-data/selectors/post-analytics';
 import {AdminPage} from '@/admin-pages';
 import {Locator, Page} from '@playwright/test';
 
@@ -19,16 +20,16 @@ export class PostAnalyticsWebTrafficPage extends AdminPage {
         super(page);
         this.pageUrl = '/ghost/#/posts/analytics';
 
-        this.uniqueVisitorsKpi = page.getByTestId('unique-visitors-kpi');
-        this.totalViewsKpi = page.getByTestId('total-views-kpi');
+        this.uniqueVisitorsKpi = page.getByTestId(postAnalyticsSel.uniqueVisitorsKpi);
+        this.totalViewsKpi = page.getByTestId(postAnalyticsSel.totalViewsKpi);
 
-        this.topSourcesCard = page.getByTestId('top-sources-card');
-        this.locationsCard = page.getByTestId('locations-card');
+        this.topSourcesCard = page.getByTestId(postAnalyticsSel.topSourcesCard);
+        this.locationsCard = page.getByTestId(postAnalyticsSel.locationsCard);
 
         // Filter elements
-        this.filterContainer = page.getByTestId('stats-filter-container');
+        this.filterContainer = page.getByTestId(postAnalyticsSel.statsFilterContainer);
         this.filterButton = this.filterContainer.getByRole('button', {name: /Filter|Add filter/});
-        this.clearFiltersButton = page.getByTestId('stats-filter-clear-button');
+        this.clearFiltersButton = page.getByTestId(postAnalyticsSel.statsFilterClearButton);
     }
 
     setPostId(postId: string) {
@@ -86,12 +87,12 @@ export class PostAnalyticsWebTrafficPage extends AdminPage {
     }
 
     async clickSourceToFilter(sourceIdentifier: string) {
-        const row = this.page.getByTestId(`source-row-${sourceIdentifier}`);
+        const row = this.page.getByTestId(`${postAnalyticsSel.sourceRowPrefix}${sourceIdentifier}`);
         await row.click();
     }
 
     async clickLocationToFilter(locationCode: string) {
-        const row = this.page.getByTestId(`location-row-${locationCode}`);
+        const row = this.page.getByTestId(`${postAnalyticsSel.locationRowPrefix}${locationCode}`);
         await row.click();
     }
 
