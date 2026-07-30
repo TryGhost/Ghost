@@ -105,6 +105,7 @@ class PostsService {
     async bulkEdit(data, options) {
         const {
             PostsBulkAddTagsEvent,
+            PostsBulkRemoveTagsEvent,
             PostsBulkUnpublishedEvent,
             PostsBulkFeaturedEvent,
             PostsBulkUnfeaturedEvent,
@@ -183,6 +184,18 @@ class PostsService {
 
             return bulkResult;
         }
+        if (data.action === 'removeTag') {
+            if (!Array.isArray(data.meta.tags) || data.meta.tags.some(tag => typeof tag !== 'object' || !tag.id)) {
+                throw new errors.IncorrectUsageError({
+                    message: tpl(messages.invalidTags)
+                });
+            }
+
+            const bulkResult = await this.#bulkRemoveTags({tags: data.meta.tags}, {filter: options.filter, context: options.context});
+            DomainEvents.dispatch(PostsBulkRemoveTagsEvent.create(bulkResult.editIds));
+
+            return bulkResult;
+        }
         throw new errors.IncorrectUsageError({
             message: tpl(messages.unsupportedBulkAction)
         });
@@ -238,6 +251,47 @@ class PostsService {
         return {
             editIds: postRows.map(p => p.id),
             successful: postRows.length,
+            unsuccessful: 0
+        };
+    }
+
+    /**
+     * @param {object} data
+     * @param {{id: string}[]} data.tags - Tags to remove from the posts
+     * @param {object} options
+     * @param {string} options.filter - An NQL Filter
+     * @param {object} options.context
+     * @param {object} [options.transacting]
+     * @returns {Promise<{successful: number, unsuccessful: number, editIds: string[]}>}
+     */
+    async #bulkRemoveTags(data, options) {
+        if (!options.transacting) {
+            return await this.models.Post.transaction(async (transacting) => {
+                return await this.#bulkRemoveTags(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
+        const postRows = await this.models.Post.getFilteredCollectionQuery({
+            filter: options.filter,
+            status: 'all',
+            transacting: options.transacting
+        }).select('posts.id');
+        const editIds = postRows.map(post => post.id);
+
+        if (editIds.length > 0) {
+            await options.transacting('posts_tags')
+                .whereIn('post_id', editIds)
+                .whereIn('tag_id', data.tags.map(tag => tag.id))
+                .del();
+            await this.models.Post.addActions('edited', editIds, options);
+        }
+
+        return {
+            editIds,
+            successful: editIds.length,
             unsuccessful: 0
         };
     }

@@ -1,4 +1,5 @@
 const DomainEvents = require('@tryghost/domain-events');
+const ObjectId = require('bson-objectid').default;
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
@@ -269,6 +270,39 @@ describe('Posts Bulk API', function () {
                 // Check tag is in the list
                 assert(tags.find(t => t.id === tag.id), `Expect post ${post.id} to have tag ${tag.id}`);
                 assert(tags.find(t => t.id === newTagModel.id), `Expect post ${post.id} to have new tag ${newTagModel.id}`);
+            }
+        });
+
+        it('Can remove a tag from posts', async function () {
+            const filter = 'status:[published]';
+            const tag = await models.Tag.add({name: 'Bulk removal test tag'});
+
+            const changedPosts = await models.Post.findAll({filter, status: 'all'});
+            const editIds = changedPosts.map(post => post.id);
+            await models.Post.bulkAdd(editIds.map(postId => ({
+                id: ObjectId().toHexString(),
+                post_id: postId,
+                tag_id: tag.id,
+                sort_order: 1
+            })), 'posts_tags');
+
+            const response = await agent
+                .put('/posts/bulk/?filter=' + encodeURIComponent(filter))
+                .body({
+                    bulk: {
+                        action: 'removeTag',
+                        meta: {
+                            tags: [{id: tag.id}]
+                        }
+                    }
+                })
+                .expectStatus(200);
+
+            assert.equal(response.body.bulk.meta.stats.successful, changedPosts.length);
+
+            const posts = await models.Post.findAll({filter, status: 'all', withRelated: ['tags']});
+            for (const post of posts) {
+                assert(!post.related('tags').find(model => model.id === tag.id), `Expect post ${post.id} not to have tag ${tag.id}`);
             }
         });
 
