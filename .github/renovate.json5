@@ -1,6 +1,10 @@
 {
     "extends": [
-        "github>tryghost/renovate-config"
+        "github>tryghost/renovate-config",
+        // Track `# renovate:`-annotated `ARG/ENV *_VERSION` pins in Dockerfiles,
+        // for tool versions that no native manager sees (e.g. the Tinybird CLI
+        // installed via `uv tool install` in docker/tb-cli/Dockerfile).
+        "customManagers:dockerfileVersions"
     ],
     // Keep Renovate's own concurrency guardrails in place. The shared preset
     // extends :disableRateLimiting (prConcurrentLimit: 0, prHourlyLimit: 0),
@@ -282,6 +286,21 @@
                 "node"
             ],
             "enabled": false
+        },
+
+        // The Tinybird CLI declares `requires_python: >=3.10,<3.14`, so a 3.14
+        // base image would break `uv tool install tinybird` (or silently force
+        // uv to fetch a second, standalone interpreter). Cap rather than
+        // disable, so 3.13.x patches and digest re-pins still flow.
+        {
+            "description": "Cap the tb-cli base image below Python 3.14 (Tinybird CLI requires <3.14)",
+            "matchFileNames": [
+                "docker/tb-cli/Dockerfile"
+            ],
+            "matchPackageNames": [
+                "python"
+            ],
+            "allowedVersions": "<3.14"
         },
 
         // Keep `@types/*` aligned with the runtime major they describe. Type defs
