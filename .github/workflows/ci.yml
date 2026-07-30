@@ -176,6 +176,12 @@ jobs:
               - '!ghost/core/vitest.config.ts'
               - '!koenig/*/test/**'
               - *renovate_only
+            # The Analytics E2E shards normally pull a prebuilt tb-cli image
+            # from GHCR, which is only republished from main. Without this the
+            # PR that changes the Dockerfile is the one PR that never exercises
+            # it — the break lands on main and surfaces in someone else's PR.
+            tb-cli:
+              - 'docker/tb-cli/**'
 
       - name: Define Node test matrix
         id: node_matrix
@@ -254,6 +260,7 @@ jobs:
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
+      changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
       # Single gate for the build + browser-E2E lane. True for tags, or when a
       # changed file could affect a running Ghost instance (see the `e2e` path
       # filter above). A test-only / docs-only change keeps this false.
@@ -1608,10 +1615,17 @@ jobs:
 
       - name: Pull or build Tinybird CLI Image
         if: matrix.analytics == 'true'
+        env:
+          CHANGED_TB_CLI: ${{ needs.job_setup.outputs.changed_tb_cli }}
         run: |
           COMPOSE_IMAGE="${COMPOSE_PROJECT_NAME:-ghost-dev}-tb-cli"
-          # Try pulling pre-built image from GHCR first (fast path)
-          if docker pull ghcr.io/tryghost/tb-cli:latest 2>/dev/null; then
+          # GHCR's :latest is only republished from main, so it can't reflect a
+          # Dockerfile change under review — build from source when this PR
+          # touches it, otherwise take the prebuilt fast path.
+          if [[ "$CHANGED_TB_CLI" == 'true' ]]; then
+            echo "docker/tb-cli changed, building from source"
+            docker buildx build --load -t "$COMPOSE_IMAGE" -f docker/tb-cli/Dockerfile .
+          elif docker pull ghcr.io/tryghost/tb-cli:latest 2>/dev/null; then
             echo "Pulled tb-cli from GHCR"
             docker tag ghcr.io/tryghost/tb-cli:latest "$COMPOSE_IMAGE"
           else
