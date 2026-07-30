@@ -311,6 +311,13 @@ export function createDatabaseAutomationsRepository({
 
         async trackEmailClicked({automationActionRevisionId, memberId, clickedAt}, {transacting} = {}) {
             const trackClick = async (trx: Knex.Transaction) => {
+                // Match recordEmailSent's lock order to avoid deadlocks.
+                await trx('automation_action_revisions')
+                    .select('id')
+                    .where({id: automationActionRevisionId})
+                    .forUpdate()
+                    .first();
+
                 const recipient = await trx('automated_email_recipients')
                     .select('id', 'clicked_at')
                     .where({

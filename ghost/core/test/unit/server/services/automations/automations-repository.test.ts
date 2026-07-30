@@ -2164,6 +2164,29 @@ describe('automations repository', function () {
             assert.equal(await getClickedCount(firstRevisionId), 1);
         });
 
+        it('locks the action revision before selecting the recipient', async function () {
+            const queries: string[] = [];
+            const recordQuery = ({sql}: {sql: string}) => queries.push(sql);
+            knex.on('query', recordQuery);
+
+            try {
+                await trackClick();
+            } finally {
+                knex.off('query', recordQuery);
+            }
+
+            const revisionSelect = queries.findIndex(query => (
+                query.startsWith('select') && query.includes('automation_action_revisions')
+            ));
+            const recipientSelect = queries.findIndex(query => (
+                query.startsWith('select') && query.includes('automated_email_recipients')
+            ));
+
+            assert.notEqual(revisionSelect, -1);
+            assert.notEqual(recipientSelect, -1);
+            assert(revisionSelect < recipientSelect);
+        });
+
         it('does not update recipients for another member or revision', async function () {
             await insertRecipient({
                 id: 'other-member-recipient',
