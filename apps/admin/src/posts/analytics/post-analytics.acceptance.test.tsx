@@ -102,6 +102,8 @@ describe("Post analytics overview", () => {
         await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot: webAnalyticsBootOverrides() });
 
         await expect.element(postAnalyticsScreen.postTitle("Attack of the Clones")).toBeVisible();
+        await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent("250");
+        const overviewKpiRequestCount = kpisApi.requests.length;
 
         await postAnalyticsScreen.webTrafficTab().click();
 
@@ -109,6 +111,7 @@ describe("Post analytics overview", () => {
         await expect.element(postAnalyticsScreen.locationsCard()).toBeVisible();
         // Same routed post: the header stays, and the KPI queries stay scoped to it.
         await expect.element(postAnalyticsScreen.postTitle("Attack of the Clones")).toBeVisible();
+        await expect.poll(() => kpisApi.requests.length).toBeGreaterThan(overviewKpiRequestCount);
         await expect.poll(() => kpisApi.lastRequest?.params.get("post_uuid")).toBe(POST_UUID);
     });
 });

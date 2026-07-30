@@ -8,7 +8,7 @@ export const analyticsScreen = {
     uniqueVisitorsValue: () => page.getByTestId(sel.uniqueVisitors).getByTestId(sel.kpiCardHeaderValue),
     membersCard: () => page.getByTestId(sel.members),
     membersValue: () => page.getByTestId(sel.members).getByTestId(sel.kpiCardHeaderValue),
-    mrrCard: () => page.getByTestId(sel.mrr),
+    mrrValue: () => page.getByTestId(sel.mrr).getByTestId(sel.kpiCardHeaderValue),
     latestPost: () => page.getByTestId(sel.latestPost),
     topPostsCard: () => page.getByTestId(sel.topPostsCard),
 

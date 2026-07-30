@@ -115,7 +115,7 @@ describe("Analytics overview", () => {
         // the member-count totals, MRR from the mrr history.
         await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent("250");
         await expect.element(analyticsScreen.membersValue()).toHaveTextContent("175");
-        await expect.element(analyticsScreen.mrrCard()).toBeVisible();
+        await expect.element(analyticsScreen.mrrValue()).toHaveTextContent("$500");
 
         // Chart region inside the visitors KPI card.
         await expect.poll(() => analyticsScreen.uniqueVisitorsCard().element().querySelector("svg")).not.toBeNull();
