@@ -8,6 +8,7 @@ const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
 const hasActiveOffer = require('../utils/has-active-offer');
+const {resolveGiftDuration, validateGiftCheckoutOffer} = require('../utils/gift-checkout-offer');
 const {getInboxLinks} = require('../../../../lib/get-inbox-links');
 const {SIGNUP_CONTEXTS} = require('../../../lib/member-signup-contexts');
 /** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
@@ -849,12 +850,35 @@ module.exports = class RouterController {
                 });
             }
 
-            const data = await this._getSubscriptionCheckoutData(req.body);
+            let data;
+
+            if (this.labsService.isSet('giftSubCustomization')) {
+                const resolvedDuration = resolveGiftDuration(req.body);
+                const subscriptionData = await this._getSubscriptionCheckoutData({
+                    tierId: req.body.tierId,
+                    cadence: resolvedDuration.cadence
+                });
+                const giftOffer = validateGiftCheckoutOffer({
+                    tier: subscriptionData.tier,
+                    portalPlans: this._settingsCache.get('portal_plans'),
+                    duration: req.body.duration,
+                    cadence: req.body.cadence
+                });
+
+                data = {
+                    ...subscriptionData,
+                    ...giftOffer
+                };
+            } else {
+                data = {
+                    ...await this._getSubscriptionCheckoutData(req.body),
+                    duration: 1
+                };
+            }
 
             response = await this._createGiftCheckoutSession({
                 ...options,
                 ...data,
-                duration: 1, // gifts are currently 1 month or 1 year only
                 successUrl: siteUrl,
                 cancelUrl: options.cancelUrl || siteUrl
             });
