@@ -20,7 +20,7 @@ export const REACT_FLOW_THEME = '[--xy-background-color:var(--color-grey-50)] [-
 // the connector lines read as evenly spaced no matter how tall any individual node
 // is (an email node with a stats footer is much taller than a bare wait node).
 // Mirrors the real editor's automation-canvas layout.
-export const NODE_WIDTH = 320;
+export const NODE_WIDTH = 400;
 
 // Visible space between one node's bottom and the next node's top — constant
 // across every pair.

@@ -4,7 +4,7 @@ import React from 'react';
 // padding updates apply to every card state (read step, edit step, terminal pill).
 // Border COLOR, interaction, and inner structure stay per-variant.
 export const NODE_CARD_SURFACE = 'bg-surface-elevated-2';
-export const NODE_CARD_SHELL = `w-80 rounded-xl border shadow-sm ${NODE_CARD_SURFACE}`;
+export const NODE_CARD_SHELL = `w-[400px] rounded-xl border shadow-sm ${NODE_CARD_SURFACE}`;
 export const NODE_CARD_PADDING = 'p-6';
 
 interface StepNodeHeaderProps {

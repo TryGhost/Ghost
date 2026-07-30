@@ -31,7 +31,7 @@ const FlowStepNode: React.FC<NodeProps> = ({data}) => {
 
     if (d.kind === 'terminal') {
         return (
-            <div className={cn('flex w-80 items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-medium', NODE_CARD_SURFACE, borderClass, muted && 'opacity-60')}>
+            <div className={cn('flex w-[400px] items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-medium', NODE_CARD_SURFACE, borderClass, muted && 'opacity-60')}>
                 <Handle position={Position.Top} style={{opacity: 0}} type="target" />
                 {done && <LucideIcon.Check className="size-4 text-green" strokeWidth={2.5} />}
                 <span className={cn(done && 'text-green', muted && 'text-muted-foreground')}>{d.title}</span>

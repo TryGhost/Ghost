@@ -213,7 +213,7 @@ const AutomationFloat: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-background" data-testid="float-detail">
             {/* Canvas is full-bleed; the performance card + header float over its
                 top-left (below) and the lifecycle chrome over its top-right. */}
-            <div className="absolute inset-0 overflow-hidden bg-muted/30">
+            <div className="absolute inset-0 overflow-hidden bg-muted">
                 {showEditCanvas ? (
                     <FloatEditCanvas draft={activeDraft} onChange={handleDraftChange} />
                 ) : (

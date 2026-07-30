@@ -60,7 +60,6 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
     const d = data as StepNodeData;
     const clickable = d.kind !== 'trigger';
     const isEmail = d.kind === 'email';
-    const [menuOpen, setMenuOpen] = useState(false);
     const wait = splitWait(d.waitHours ?? 24);
     const changeWait = (amount: number, unit: 'days' | 'hours') => {
         const hours = waitToHours(amount, unit);
@@ -69,18 +68,18 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
         }
     };
     return (
-        <div className={cn('group transition-colors', NODE_CARD_SHELL, clickable && 'cursor-pointer', d.selected ? 'border-blue ring-1 ring-blue' : 'border-border-default', clickable && !d.selected && 'hover:border-blue/50')}>
+        <div className={cn('transition-colors', NODE_CARD_SHELL, clickable && 'cursor-pointer', d.selected ? 'border-blue ring-1 ring-blue' : 'border-border-default', clickable && !d.selected && 'hover:border-blue/50')}>
             <Handle position={Position.Top} style={{opacity: 0}} type="target" />
-            <div className={cn('relative', NODE_CARD_PADDING)}>
-                <StepNodeHeader icon={stepKindIcon[d.kind]} title={d.title} />
+            <div className={cn('flex items-center gap-2', NODE_CARD_PADDING)}>
+                <div className="min-w-0 flex-1">
+                    <StepNodeHeader icon={stepKindIcon[d.kind]} title={d.title} />
+                </div>
                 {clickable && (
-                    // Overflow menu — revealed on node hover, kept visible while its menu
-                    // is open. nodrag/nopan + stopPropagation so it doesn't pan or re-select.
-                    <div
-                        className={cn('nodrag nopan absolute top-2 right-2 transition-opacity', menuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100')}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+                    // Persistent overflow at the far right of the header row, vertically
+                    // centred with it. nodrag/nopan + stopPropagation so it doesn't pan
+                    // the canvas or re-fire node selection.
+                    <div className="nodrag nopan shrink-0" onClick={e => e.stopPropagation()}>
+                        <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button aria-label="Step actions" size="icon" variant="ghost">
                                     <LucideIcon.MoreHorizontal />
@@ -98,7 +97,7 @@ const StepNode: React.FC<NodeProps> = ({data}) => {
             {clickable && (
                 // Always-visible inline edit form. nodrag/nopan + stopPropagation so typing
                 // and selecting don't pan the canvas or re-fire node selection.
-                <div className={cn('nodrag nopan cursor-default border-t border-border-default', NODE_CARD_PADDING)} onClick={e => e.stopPropagation()}>
+                <div className={cn('nodrag nopan cursor-default', NODE_CARD_PADDING, 'pt-0')} onClick={e => e.stopPropagation()}>
                     {isEmail ? (
                         <Stack gap="md">
                             <Stack gap="sm">
@@ -145,10 +144,10 @@ const TailNode: React.FC<NodeProps> = ({data}) => {
     const {onPick} = data as TailNodeData;
     const [open, setOpen] = useState(false);
     return (
-        <div className="flex w-80">
+        <div className="flex w-[400px]">
             <Handle position={Position.Top} style={{opacity: 0}} type="target" />
             <AddStepPopover open={open} onOpenChange={setOpen} onPick={onPick}>
-                <button aria-label="Add step" className="flex h-12 w-80 items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page text-text-secondary transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none" type="button">
+                <button aria-label="Add step" className="flex h-12 w-[400px] items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page text-text-secondary transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none" type="button">
                     <LucideIcon.Plus className="size-5" strokeWidth={1.5} />
                 </button>
             </AddStepPopover>
