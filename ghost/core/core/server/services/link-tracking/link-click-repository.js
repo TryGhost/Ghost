@@ -92,7 +92,11 @@ module.exports = class LinkClickRepository {
 
         if (options.transacting) {
             options.transacting.executionPromise.then(() => {
-                this.#DomainEvents.dispatch(event);
+                try {
+                    this.#DomainEvents.dispatch(event);
+                } catch (error) {
+                    sentry.captureException(error);
+                }
             }, () => undefined);
         } else {
             this.#DomainEvents.dispatch(event);

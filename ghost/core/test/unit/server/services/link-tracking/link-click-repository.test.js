@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const ObjectID = require('bson-objectid').default;
 const createKnex = require('knex');
 const configUtils = require('../../../../utils/config-utils');
+const sentry = require('../../../../../core/shared/sentry');
 
 const LinkClickRepository = require('../../../../../core/server/services/link-tracking/link-click-repository');
 const LinkClick = require('../../../../../core/server/services/link-tracking/click-event');
@@ -188,6 +189,20 @@ describe('UNIT: LinkClickRepository class', function () {
             sinon.assert.calledOnceWithExactly(domainEventsStub.dispatch, event);
         });
 
+        it('should report dispatch failures after its transaction commits', async function () {
+            const error = new Error('dispatch failed');
+            const execution = deferred();
+            const transacting = {executionPromise: execution.promise};
+            const captureException = sinon.stub(sentry, 'captureException');
+            domainEventsStub.dispatch.throws(error);
+
+            await linkClickRepository.save(linkClicks[0], {transacting});
+            execution.resolve();
+            await execution.promise;
+
+            sinon.assert.calledOnceWithExactly(captureException, error);
+        });
+
         it('should not dispatch a member click event when its transaction rolls back', async function () {
             const error = new Error('transaction rolled back');
             const execution = deferred();
@@ -198,6 +213,13 @@ describe('UNIT: LinkClickRepository class', function () {
             await assert.rejects(execution.promise, error);
 
             sinon.assert.notCalled(domainEventsStub.dispatch);
+        });
+
+        it('should propagate dispatch failures without a transaction', async function () {
+            const error = new Error('dispatch failed');
+            domainEventsStub.dispatch.throws(error);
+
+            await assert.rejects(linkClickRepository.save(linkClicks[0]), error);
         });
 
         it('should not dispatch when saving the click fails', async function () {
