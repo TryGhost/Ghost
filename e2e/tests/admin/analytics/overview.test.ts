@@ -4,9 +4,18 @@ import {
     AnalyticsWebTrafficPage
 } from '@/admin-pages';
 import {HomePage} from '@/public-pages';
+import {createPostFactory} from '@/data-factory';
 import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Analytics Overview', () => {
+    test.beforeEach(async ({page}) => {
+        const postFactory = createPostFactory(page.request);
+        await postFactory.create({
+            title: 'Analytics overview test post',
+            status: 'published'
+        });
+    });
+
     test('records visitor when homepage is visited', async ({page, browser, baseURL}) => {
         await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
             const homePage = new HomePage(publicPage);
@@ -68,4 +77,3 @@ test.describe('Ghost Admin - Analytics Overview', () => {
         await expect(analyticsGrowthPage.totalMembersCard).toBeVisible();
     });
 });
-

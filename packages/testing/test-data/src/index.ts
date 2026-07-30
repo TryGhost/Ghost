@@ -27,6 +27,55 @@ export {staffInvite, staffRole, staffUser} from "./builders/staff-user";
 export type {StaffInvite, StaffRole, StaffRoleName, StaffUser} from "./builders/staff-user";
 export {changelogEntry} from "./builders/changelog";
 export type {ChangelogEntry} from "./builders/changelog";
+export {
+    analyticsActiveVisitors,
+    analyticsDevice,
+    analyticsGiftLinkVisits,
+    analyticsKpi,
+    analyticsLocation,
+    analyticsSource,
+    analyticsUtmCampaign,
+    analyticsUtmContent,
+    analyticsUtmMedium,
+    analyticsUtmSource,
+    analyticsUtmTerm,
+    memberStatusStat,
+    mrrHistoryStat,
+    newsletterStat,
+    newsletterSubscriberStat,
+    postGrowthStat,
+    postReferrerStat,
+    postStats,
+    topContentStat,
+    topPostStat,
+    topPostViewsStat
+} from "./builders/analytics";
+export type {
+    AnalyticsActiveVisitors,
+    AnalyticsDevice,
+    AnalyticsGiftLinkVisits,
+    AnalyticsKpi,
+    AnalyticsLocation,
+    AnalyticsSource,
+    AnalyticsUtmCampaign,
+    AnalyticsUtmContent,
+    AnalyticsUtmMedium,
+    AnalyticsUtmSource,
+    AnalyticsUtmTerm,
+    MemberStatusStat,
+    MrrHistoryStat,
+    NewsletterStat,
+    NewsletterSubscriberStat,
+    NewsletterSubscriberValue,
+    PostGrowthStat,
+    PostReferrerStat,
+    PostStats,
+    TinybirdPipeName,
+    TinybirdPipeRows,
+    TopContentStat,
+    TopPostStat,
+    TopPostViewsStat
+} from "./builders/analytics";
 export {buildLexical, buildLexicalParagraph} from "./builders/lexical";
 export type {CardSpec} from "./builders/lexical";
 

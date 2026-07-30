@@ -1,4 +1,4 @@
-import {automation, buildLexical, buildLexicalParagraph, comment, commentThread, defaultThemesResponse, label, member, post, reply, tag, theme, tier} from "../src/index";
+import {analyticsKpi, analyticsLocation, automation, buildLexical, buildLexicalParagraph, comment, commentThread, defaultThemesResponse, label, member, newsletterStat, post, postGrowthStat, reply, tag, theme, tier} from "../src/index";
 import {describe, expect, it} from "vitest";
 
 describe("builders", () => {
@@ -75,6 +75,21 @@ describe("builders", () => {
     it("builds automations", () => {
         expect(automation({status: "active"}).status).toBe("active");
         expect(automation().slug).toBeTruthy();
+    });
+
+    it("builds typed analytics rows with overrides", () => {
+        const kpis = analyticsKpi.many([
+            {date: "2026-07-28", visits: 100},
+            {date: "2026-07-29", visits: 150}
+        ]);
+
+        expect(kpis).toMatchObject([
+            {date: "2026-07-28", visits: 100, pageviews: 0},
+            {date: "2026-07-29", visits: 150, pageviews: 0}
+        ]);
+        expect(analyticsLocation({location: "GB", visits: 42})).toEqual({location: "GB", visits: 42});
+        expect(postGrowthStat({post_id: "post-id", free_members: 3})).toMatchObject({post_id: "post-id", free_members: 3, paid_members: 0});
+        expect(newsletterStat({post_title: "Weekly digest", sent_to: 1000})).toMatchObject({post_title: "Weekly digest", sent_to: 1000, total_opens: 0});
     });
 
     it("builds comments with linked member and post embeds", () => {

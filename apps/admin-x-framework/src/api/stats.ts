@@ -152,7 +152,7 @@ export type TopPostViewsStats = {
     post_id: string;
     title: string;
     published_at: string;
-    feature_image: string;
+    feature_image: string | null;
     status: string;
     authors: string;
     views: number;

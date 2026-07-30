@@ -2,14 +2,26 @@ import { describe, expect, it } from "vitest";
 
 import {
     TINYBIRD_SITE_UUID,
+    analyticsActiveVisitors,
+    analyticsKpi,
+    analyticsLocation,
+    analyticsSource,
     fakeAdminEndpoint,
     fakeNewsletters,
     fakePosts,
     fakeTinybirdPipe,
     fakeTinybirdToken,
+    memberStatusStat,
+    mrrHistoryStat,
     newsletter,
+    newsletterStat,
+    newsletterSubscriberStat,
     post,
+    postStats,
     renderAdminApp,
+    topContentStat,
+    topPostStat,
+    topPostViewsStat,
     webAnalyticsBootOverrides,
 } from "@test-utils/acceptance";
 import { analyticsScreen } from "./analytics.screen";
@@ -29,17 +41,17 @@ function daysAgo(days: number): string {
  */
 function seedAnalyticsWorld() {
     fakeAdminEndpoint("GET", /^\/stats\/member_count\//, {
-        stats: [
-            { date: daysAgo(2), free: 100, paid: 40, comped: 5, gift: 0, paid_subscribed: 2, paid_canceled: 0 },
-            { date: daysAgo(1), free: 120, paid: 50, comped: 5, gift: 0, paid_subscribed: 3, paid_canceled: 1 },
-        ],
+        stats: memberStatusStat.many([
+            { date: daysAgo(2), free: 100, paid: 40, comped: 5, paid_subscribed: 2 },
+            { date: daysAgo(1), free: 120, paid: 50, comped: 5, paid_subscribed: 3, paid_canceled: 1 },
+        ]),
         meta: { totals: { free: 120, paid: 50, comped: 5, gift: 0 } },
     });
     fakeAdminEndpoint("GET", /^\/stats\/mrr\//, {
-        stats: [
-            { date: daysAgo(2), mrr: 40000, currency: "usd" },
-            { date: daysAgo(1), mrr: 50000, currency: "usd" },
-        ],
+        stats: mrrHistoryStat.many([
+            { date: daysAgo(2), mrr: 40000 },
+            { date: daysAgo(1), mrr: 50000 },
+        ]),
         meta: { totals: [{ currency: "usd", mrr: 50000 }] },
     });
     fakeAdminEndpoint("GET", /^\/stats\/subscriptions\//, {
@@ -58,51 +70,39 @@ function seedAnalyticsWorld() {
         }),
     ]);
     fakeAdminEndpoint("GET", new RegExp(`^/stats/posts/${LATEST_POST_ID}/stats/`), {
-        stats: [
-            {
-                id: LATEST_POST_ID,
-                recipient_count: 1000,
-                opened_count: 400,
-                open_rate: 40,
-                member_delta: 12,
-                free_members: 10,
-                paid_members: 2,
-                visitors: 300,
-            },
-        ],
+        stats: [postStats({
+            id: LATEST_POST_ID,
+            recipient_count: 1000,
+            opened_count: 400,
+            open_rate: 40,
+            member_delta: 12,
+            free_members: 10,
+            paid_members: 2,
+            visitors: 300,
+        })],
     });
     fakeTinybirdToken();
-    fakeTinybirdPipe("api_active_visitors", [{ active_visitors: 12 }]);
+    fakeTinybirdPipe("api_active_visitors", [analyticsActiveVisitors({ active_visitors: 12 })]);
     return {
         postsApi,
-        kpisApi: fakeTinybirdPipe("api_kpis", [
+        kpisApi: fakeTinybirdPipe("api_kpis", analyticsKpi.many([
             { date: daysAgo(2), visits: 100, pageviews: 240, bounce_rate: 0.4, avg_session_sec: 30 },
             { date: daysAgo(1), visits: 150, pageviews: 320, bounce_rate: 0.5, avg_session_sec: 40 },
-        ]),
+        ])),
     };
 }
 
 function seedTopPostsViews() {
     fakeAdminEndpoint("GET", /^\/stats\/top-posts-views\//, {
-        stats: [
-            {
-                post_id: LATEST_POST_ID,
-                title: "A Popular Post",
-                published_at: `${daysAgo(5)}T10:00:00.000Z`,
-                feature_image: null,
-                status: "published",
-                authors: "Ann Author",
-                views: 240,
-                sent_count: null,
-                opened_count: null,
-                open_rate: null,
-                clicked_count: 0,
-                click_rate: null,
-                members: 12,
-                free_members: 12,
-                paid_members: 0,
-            },
-        ],
+        stats: [topPostViewsStat({
+            post_id: LATEST_POST_ID,
+            title: "A Popular Post",
+            published_at: `${daysAgo(5)}T10:00:00.000Z`,
+            authors: "Ann Author",
+            views: 240,
+            members: 12,
+            free_members: 12,
+        })],
     });
 }
 
@@ -153,19 +153,17 @@ describe("Analytics web traffic", () => {
         seedAnalyticsWorld();
         seedTopPostsViews();
         fakeAdminEndpoint("GET", /^\/stats\/top-content\//, {
-            stats: [
-                {
-                    pathname: "/attack-of-the-clones/",
-                    title: "Attack of the Clones",
-                    visits: 240,
-                    post_id: LATEST_POST_ID,
-                    post_type: "post",
-                },
-            ],
+            stats: [topContentStat({
+                pathname: "/attack-of-the-clones/",
+                title: "Attack of the Clones",
+                visits: 240,
+                post_id: LATEST_POST_ID,
+                post_type: "post",
+            })],
             meta: {},
         });
-        fakeTinybirdPipe("api_top_sources", [{ source: "google.com", visits: 170 }]);
-        fakeTinybirdPipe("api_top_locations", [{ location: "US", visits: 200 }]);
+        fakeTinybirdPipe("api_top_sources", [analyticsSource({ source: "google.com", visits: 170 })]);
+        fakeTinybirdPipe("api_top_locations", [analyticsLocation({ location: "US", visits: 200 })]);
         await renderAdminApp("/analytics/web", { boot: webAnalyticsBootOverrides() });
 
         await expect.element(analyticsScreen.webGraph()).toBeVisible();
@@ -181,19 +179,16 @@ describe("Analytics growth", () => {
     it("renders the seeded member growth and top content", async () => {
         seedAnalyticsWorld();
         fakeAdminEndpoint("GET", /^\/stats\/top-posts\//, {
-            stats: [
-                {
-                    post_id: LATEST_POST_ID,
-                    attribution_url: "/attack-of-the-clones/",
-                    attribution_type: "post",
-                    attribution_id: LATEST_POST_ID,
-                    title: "Attack of the Clones",
-                    free_members: 30,
-                    paid_members: 5,
-                    mrr: 500,
-                    published_at: `${daysAgo(3)}T10:00:00.000Z`,
-                },
-            ],
+            stats: [topPostStat({
+                post_id: LATEST_POST_ID,
+                attribution_url: "/attack-of-the-clones/",
+                attribution_id: LATEST_POST_ID,
+                title: "Attack of the Clones",
+                free_members: 30,
+                paid_members: 5,
+                mrr: 500,
+                published_at: `${daysAgo(3)}T10:00:00.000Z`,
+            })],
             meta: {},
         });
         await renderAdminApp("/analytics/growth", { boot: webAnalyticsBootOverrides() });
@@ -211,44 +206,36 @@ describe("Analytics newsletters", () => {
             newsletter({ name: "Weekly Digest", status: "active", sort_order: 0, count: { posts: 3, active_members: 543 } }),
         ]);
         fakeAdminEndpoint("GET", /^\/stats\/subscriber-count\//, {
-            stats: [
-                {
-                    total: 543,
-                    values: [
-                        { date: daysAgo(2), value: 520 },
-                        { date: daysAgo(1), value: 543 },
-                    ],
-                },
-            ],
+            stats: [newsletterSubscriberStat({
+                total: 543,
+                values: [
+                    { date: daysAgo(2), value: 520 },
+                    { date: daysAgo(1), value: 543 },
+                ],
+            })],
         });
         fakeAdminEndpoint("GET", /^\/stats\/newsletter-basic-stats\//, {
-            stats: [
-                {
-                    post_id: LATEST_POST_ID,
-                    post_title: "Weekly Digest Issue #1",
-                    send_date: `${daysAgo(3)}T10:00:00.000Z`,
-                    sent_to: 1000,
-                    total_opens: 300,
-                    open_rate: 0.3,
-                    total_clicks: 0,
-                    click_rate: 0,
-                },
-            ],
+            stats: [newsletterStat({
+                post_id: LATEST_POST_ID,
+                post_title: "Weekly Digest Issue #1",
+                send_date: `${daysAgo(3)}T10:00:00.000Z`,
+                sent_to: 1000,
+                total_opens: 300,
+                open_rate: 0.3,
+            })],
             meta: {},
         });
         fakeAdminEndpoint("GET", /^\/stats\/newsletter-click-stats\//, {
-            stats: [
-                {
-                    post_id: LATEST_POST_ID,
-                    post_title: "Weekly Digest Issue #1",
-                    send_date: `${daysAgo(3)}T10:00:00.000Z`,
-                    sent_to: 1000,
-                    total_opens: 300,
-                    open_rate: 0.3,
-                    total_clicks: 50,
-                    click_rate: 0.05,
-                },
-            ],
+            stats: [newsletterStat({
+                post_id: LATEST_POST_ID,
+                post_title: "Weekly Digest Issue #1",
+                send_date: `${daysAgo(3)}T10:00:00.000Z`,
+                sent_to: 1000,
+                total_opens: 300,
+                open_rate: 0.3,
+                total_clicks: 50,
+                click_rate: 0.05,
+            })],
             meta: {},
         });
         await renderAdminApp("/analytics/newsletters", { boot: webAnalyticsBootOverrides() });
