@@ -641,7 +641,7 @@ describe('AutomationEditor', () => {
         mockUseBrowseAutomationActionLinks.mockReturnValue({data: {automation_action_links: []}, isLoading: false, isError: false});
         renderEditor();
         fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
-        expect(screen.getByText('No click data yet.')).toBeInTheDocument();
+        expect(screen.getByText('No link data to show.')).toBeInTheDocument();
     });
 
     it('disables the links request and shows a no-sends state when no emails were sent', () => {

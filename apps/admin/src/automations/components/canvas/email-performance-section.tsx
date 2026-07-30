@@ -166,7 +166,7 @@ const TopClickedLinksContent: React.FC<{
     }
 
     if (links.length === 0) {
-        return <Text className='py-6 text-center' size='sm' tone='secondary'>No click data yet.</Text>;
+        return <Text className='py-6 text-center' size='sm' tone='secondary'>No link data to show.</Text>;
     }
 
     return (
