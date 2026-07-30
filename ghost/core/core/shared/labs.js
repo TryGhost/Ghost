@@ -65,7 +65,8 @@ const PRIVATE_FEATURES = [
     'memberDetailsReact',
     'membersCustomFields',
     'paywallImprovements',
-    'giftSubCustomization'
+    'giftSubCustomization',
+    'tagDetailsReact'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
