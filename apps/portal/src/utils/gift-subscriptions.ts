@@ -84,8 +84,7 @@ export function getGiftProducts({site, duration}: {site: Site | null; duration: 
         return [];
     }
 
-    // portal_products is only respected on multi-tier sites, matching getAvailableProducts
-    const portalProductIds = Array.isArray(portalProducts) && products.length > 1 ? portalProducts : null;
+    const portalProductIds = Array.isArray(portalProducts) ? portalProducts : null;
 
     return products.filter(product => (
         product?.type === 'paid'
