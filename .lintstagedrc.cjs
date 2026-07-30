@@ -108,6 +108,6 @@ module.exports = {
     },
     'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': (files) =>
         buildBoundaryCommand(files),
-    'apps/{shade,admin-x-design-system,admin-x-framework,activitypub,posts,admin-x-settings,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}': (files) =>
+    'apps/{shade,admin-x-framework,activitypub,admin-x-settings,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}': (files) =>
         buildBoundaryCommand(files)
 };
