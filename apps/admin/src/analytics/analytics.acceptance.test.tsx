@@ -46,7 +46,7 @@ function seedAnalyticsWorld() {
         stats: [],
         meta: { tiers: [], cadences: [], totals: [] },
     });
-    fakePosts([
+    const postsApi = fakePosts([
         post({
             id: LATEST_POST_ID,
             title: "Attack of the Clones",
@@ -74,6 +74,7 @@ function seedAnalyticsWorld() {
     fakeTinybirdToken();
     fakeTinybirdPipe("api_active_visitors", [{ active_visitors: 12 }]);
     return {
+        postsApi,
         kpisApi: fakeTinybirdPipe("api_kpis", [
             { date: daysAgo(2), visits: 100, pageviews: 240, bounce_rate: 0.4, avg_session_sec: 30 },
             { date: daysAgo(1), visits: 150, pageviews: 320, bounce_rate: 0.5, avg_session_sec: 40 },
@@ -107,7 +108,7 @@ function seedTopPostsViews() {
 
 describe("Analytics overview", () => {
     it("renders the seeded KPIs, latest post and top posts", async () => {
-        seedAnalyticsWorld();
+        const { postsApi } = seedAnalyticsWorld();
         seedTopPostsViews();
         await renderAdminApp("/analytics", { boot: webAnalyticsBootOverrides() });
 
@@ -121,6 +122,8 @@ describe("Analytics overview", () => {
         await expect.poll(() => analyticsScreen.uniqueVisitorsCard().element().querySelector("svg")).not.toBeNull();
 
         await expect.element(analyticsScreen.latestPost()).toHaveTextContent("Attack of the Clones");
+        await expect(postsApi).toHaveSentFilter("status:[published,sent]");
+        expect(postsApi.lastRequest).toMatchObject({ order: "published_at DESC", limit: 1 });
         await expect.element(analyticsScreen.topPostsCard()).toHaveTextContent("A Popular Post");
 
         // The header's active-visitors probe (Tinybird) resolved.

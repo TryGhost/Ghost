@@ -46,7 +46,7 @@ function seededPost() {
  * declared per test.
  */
 function seedPostAnalyticsWorld() {
-    fakePosts([seededPost()]);
+    const postsApi = fakePosts([seededPost()]);
     fakeAdminEndpoint("GET", new RegExp(`^/stats/posts/${POST_ID}/top-referrers`), {
         stats: [{ source: "Google", referrer_url: "https://google.com", free_members: 80, paid_members: 20, mrr: 1000 }],
         meta: {},
@@ -71,9 +71,12 @@ function seedPostAnalyticsWorld() {
     });
     fakeTinybirdToken();
     fakeTinybirdPipe("api_active_visitors", [{ active_visitors: 3 }]);
-    fakeTinybirdPipe("api_top_sources", [{ source: "google.com", visits: 170 }]);
-    fakeTinybirdPipe("api_top_locations", [{ location: "US", visits: 200 }]);
+    const topSourcesApi = fakeTinybirdPipe("api_top_sources", [{ source: "google.com", visits: 170 }]);
+    const topLocationsApi = fakeTinybirdPipe("api_top_locations", [{ location: "US", visits: 200 }]);
     return {
+        postsApi,
+        topSourcesApi,
+        topLocationsApi,
         kpisApi: fakeTinybirdPipe("api_kpis", [
             { date: daysAgo(2), visits: 100, pageviews: 240, bounce_rate: 0.4, avg_session_sec: 30 },
             { date: daysAgo(1), visits: 150, pageviews: 320, bounce_rate: 0.5, avg_session_sec: 40 },
@@ -83,10 +86,11 @@ function seedPostAnalyticsWorld() {
 
 describe("Post analytics overview", () => {
     it("renders the seeded post with web and growth sections", async () => {
-        seedPostAnalyticsWorld();
+        const { postsApi } = seedPostAnalyticsWorld();
         await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot: webAnalyticsBootOverrides() });
 
         await expect.element(postAnalyticsScreen.postTitle("Attack of the Clones")).toBeVisible();
+        await expect(postsApi).toHaveSentFilter(`id:${POST_ID}`);
 
         // Web performance: visitors summed from the Tinybird rows.
         await expect.element(postAnalyticsScreen.webPerformanceCard()).toBeVisible();
@@ -118,13 +122,15 @@ describe("Post analytics overview", () => {
 
 describe("Post analytics web", () => {
     it("renders the seeded KPIs, locations and sources", async () => {
-        seedPostAnalyticsWorld();
+        const { topSourcesApi, topLocationsApi } = seedPostAnalyticsWorld();
         await renderAdminApp(`/posts/analytics/${POST_ID}/web`, { boot: webAnalyticsBootOverrides() });
 
         await expect.element(postAnalyticsScreen.postTitle("Attack of the Clones")).toBeVisible();
         await expect.element(page.getByRole("tab", { name: "Unique visitors" })).toHaveTextContent("250");
         await expect.element(postAnalyticsScreen.locationRow("US")).toHaveTextContent("United States");
         await expect.element(postAnalyticsScreen.sourceRow("google.com")).toHaveTextContent("170");
+        await expect.poll(() => topLocationsApi.lastRequest?.params.get("post_uuid")).toBe(POST_UUID);
+        await expect.poll(() => topSourcesApi.lastRequest?.params.get("post_uuid")).toBe(POST_UUID);
     });
 });
 
