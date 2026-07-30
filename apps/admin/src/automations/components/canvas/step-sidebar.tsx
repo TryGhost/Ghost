@@ -7,7 +7,7 @@ import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {MemberTier, StepSidebarDetail} from '@/automations/components/types';
 import {TRIGGER_CANVAS_ID} from './nodes';
 import {formatWait} from './format-wait';
-import {useFeatureFlag} from '@/hooks/use-feature-flag';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 
 const MAX_WAIT_DAYS = 30;
 const WHOLE_NUMBER_PATTERN = /^\d+$/;
