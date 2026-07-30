@@ -1,4 +1,4 @@
-import EmptyStatView from './empty-stat-view';
+import EmptyStatView from '@/shared/analytics/empty-stat-view';
 import React from 'react';
 import StatsContent from './stats-content';
 import {BarChartLoadingIndicator} from '@tryghost/shade/components';
@@ -16,7 +16,7 @@ const StatsView = <T,>({
     data,
     children,
     loadingComponent = <BarChartLoadingIndicator />,
-    emptyComponent = <EmptyStatView />
+    emptyComponent = <EmptyStatView className='-mt-10' />
 }: StatsViewProps<T>) => {
     return (
         <StatsContent>
