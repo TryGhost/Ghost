@@ -32,6 +32,7 @@ export default class StateBridgeService extends Service.extend(Evented) {
     @service feature;
     @service membersUtils;
     @service router;
+    @service search;
     @service session;
     @service settings;
     @service store;
@@ -166,6 +167,11 @@ export default class StateBridgeService extends Service.extend(Evented) {
         if (dataType === 'TiersResponseType') {
             // membersUtils has local state which needs to be updated
             this.membersUtils.reload();
+        }
+
+        if (dataType === 'TagsResponseType') {
+            // Ember's tag model expires global search after create/update/delete.
+            this.search.expireContent();
         }
     }
 

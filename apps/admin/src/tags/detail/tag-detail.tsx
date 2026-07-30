@@ -52,6 +52,7 @@ const TagDetail: React.FC = () => {
     const [errors, setErrors] = React.useState<TagFieldErrors>({});
     const draftTagIdRef = React.useRef<string | undefined>(undefined);
     const lastServerSliceRef = React.useRef<TagEditableFields | undefined>(undefined);
+    const touchedFieldsRef = React.useRef<Set<TagFieldName>>(new Set());
     // Whether the user has manually edited the slug on the create screen —
     // once they have, name changes stop regenerating it (Ember `tag-form.js`
     // `hasChangedSlug`). Clearing the slug re-enables regeneration.
@@ -64,6 +65,7 @@ const TagDetail: React.FC = () => {
             if (draftTagIdRef.current !== CREATE_SLUG) {
                 draftTagIdRef.current = CREATE_SLUG;
                 hasChangedSlugRef.current = false;
+                touchedFieldsRef.current.clear();
                 const empty = getTagEditableSlice({});
                 lastServerSliceRef.current = empty;
                 setDraft(empty);
@@ -77,6 +79,7 @@ const TagDetail: React.FC = () => {
         const nextServerSlice = getTagEditableSlice(tag);
         if (draftTagIdRef.current !== tag.id) {
             draftTagIdRef.current = tag.id;
+            touchedFieldsRef.current.clear();
             lastServerSliceRef.current = nextServerSlice;
             setDraft(nextServerSlice);
             setErrors({});
@@ -85,7 +88,7 @@ const TagDetail: React.FC = () => {
         // Same tag, fresh server data: adopt it only if the user hasn't edited.
         const previousServerSlice = lastServerSliceRef.current;
         lastServerSliceRef.current = nextServerSlice;
-        setDraft(prev => ((!prev || (previousServerSlice && dequal(normalizeTagDraft(prev), previousServerSlice))) ? nextServerSlice : prev));
+        setDraft(prev => ((!prev || (previousServerSlice && dequal(normalizeTagDraft(prev, touchedFieldsRef.current), previousServerSlice))) ? nextServerSlice : prev));
     }, [tag, isCreating]);
 
     // Reset the post-save redirect bypass whenever the route target changes.
@@ -94,16 +97,20 @@ const TagDetail: React.FC = () => {
     }, [tagSlug]);
 
     const serverSlice = isCreating ? lastServerSliceRef.current : (tag ? getTagEditableSlice(tag) : undefined);
-    const hasUnsavedChanges = !!draft && !!serverSlice && !dequal(normalizeTagDraft(draft), serverSlice);
+    const hasUnsavedChanges = !!draft && !!serverSlice && !dequal(normalizeTagDraft(draft, touchedFieldsRef.current), serverSlice);
 
     const onFieldChange = (patch: Partial<TagEditableFields>) => {
         if (activeMutation.isError) {
             activeMutation.reset();
         }
+        const manuallyChangedSlug = patch.slug !== undefined;
+        for (const field of Object.keys(patch) as TagFieldName[]) {
+            touchedFieldsRef.current.add(field);
+        }
         if (isCreating && patch.name !== undefined && !hasChangedSlugRef.current) {
             patch = {...patch, slug: generateSlugFromName(patch.name)};
         }
-        if (patch.slug !== undefined) {
+        if (manuallyChangedSlug) {
             hasChangedSlugRef.current = !!patch.slug;
         }
         setDraft(prev => (prev ? {...prev, ...patch} : prev));
@@ -146,6 +153,7 @@ const TagDetail: React.FC = () => {
                 toast.error('Couldn’t save the tag.');
                 return;
             }
+            touchedFieldsRef.current.clear();
             // Move `/tags/new` to the saved tag and follow slug renames. A
             // same-slug save needs no navigation; setting the bypass in that
             // case would leave the unsaved-changes guard disabled indefinitely.
@@ -160,13 +168,13 @@ const TagDetail: React.FC = () => {
         };
 
         if (isCreating) {
-            addMutation.mutate(buildTagSavePayload(draft, null), {onSuccess, onError});
+            addMutation.mutate(buildTagSavePayload(draft, null, touchedFieldsRef.current), {onSuccess, onError});
             return;
         }
         if (!tag || draftTagIdRef.current !== tag.id) {
             return;
         }
-        editMutation.mutate({id: tag.id, ...buildTagSavePayload(draft, getTagEditableSlice(tag).name)}, {
+        editMutation.mutate({id: tag.id, ...buildTagSavePayload(draft, getTagEditableSlice(tag).name, touchedFieldsRef.current)}, {
             onSuccess: (response) => {
                 const saved = response.tags?.[0];
                 if (saved) {

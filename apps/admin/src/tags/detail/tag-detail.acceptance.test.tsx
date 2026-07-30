@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
-import {page} from 'vitest/browser';
+import {page, userEvent} from 'vitest/browser';
 
-import {currentRoute, fakeAdminEndpoint, fakeTags, renderAdminApp, tag, type Tag} from '@test-utils/acceptance';
+import {configResponse, currentRoute, fakeAdminEndpoint, fakeEndpoint, fakeTags, renderAdminApp, tag, type Tag} from '@test-utils/acceptance';
 
 const FLAGS = {labs: {tagDetailsReact: true}};
 
@@ -33,6 +33,32 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.element(page.getByRole('button', {name: 'Delete tag', exact: true})).toBeVisible();
     });
 
+    it('remains accessible during a force upgrade', async () => {
+        const t = tag({name: 'News', slug: 'news'});
+        const config = configResponse(FLAGS);
+        config.config.hostSettings = {forceUpgrade: true};
+        fakeTagWorld(t);
+
+        await renderAdminApp(`/tags/${t.slug}`, {
+            ...FLAGS,
+            boot: {browseConfig: {response: config}}
+        });
+
+        await expect.poll(currentRoute).toBe('/tags/news');
+        await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('News');
+    });
+
+    it('offers Unsplash for an empty tag image', async () => {
+        const t = tag({name: 'News', slug: 'news', feature_image: null});
+        fakeTagWorld(t);
+        fakeEndpoint('GET', 'https://api.unsplash.com/photos', []);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: 'Select tag image from Unsplash'}).click();
+
+        await expect.element(page.getByRole('heading', {name: 'Unsplash'})).toBeVisible();
+    });
+
     it('saves edits and reports the saved state', async () => {
         const t = tag({name: 'News', slug: 'news', visibility: 'public'});
         const saveApi = fakeTagWorld(t);
@@ -48,6 +74,19 @@ describe('Tag detail (tagDetailsReact on)', () => {
         // The name changed, so the payload re-derives visibility (Ember
         // `models/tag.js` recomputes it in `save()` whenever the name changed).
         expect(saved.visibility).toBe('public');
+    });
+
+    it('preserves whitespace in untouched fields on a clean save', async () => {
+        const t = tag({name: 'News', slug: 'news', description: '\nImportant\n', meta_title: ' Meta title '});
+        const saveApi = fakeTagWorld(t);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: 'Save'}).click();
+
+        await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
+        const saved = (saveApi.lastRequest?.body as {tags: Array<Record<string, unknown>>}).tags[0];
+        expect(saved.description).toBe('\nImportant\n');
+        expect(saved.meta_title).toBe(' Meta title ');
     });
 
     it('guards edits made after a same-slug save', async () => {
@@ -73,7 +112,8 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp('/tags/new', FLAGS);
 
         await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('New tag');
-        await page.getByLabelText('Name', {exact: true}).fill('Weekly News');
+        const nameInput = page.getByLabelText('Name', {exact: true});
+        await userEvent.type(nameInput.element(), 'Weekly News');
         await expect.element(page.getByLabelText('Slug', {exact: true})).toHaveValue('weekly-news');
 
         await page.getByRole('button', {name: 'Save'}).click();

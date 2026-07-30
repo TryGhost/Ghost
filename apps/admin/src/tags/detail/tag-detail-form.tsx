@@ -4,7 +4,7 @@ import TagImageField from './tag-image-field';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger, Input, Label, Textarea} from '@tryghost/shade/components';
 import {DESCRIPTION_MAX_LENGTH, FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH, FACEBOOK_TITLE_RECOMMENDED_LENGTH, META_DESCRIPTION_RECOMMENDED_LENGTH, META_TITLE_RECOMMENDED_LENGTH, X_DESCRIPTION_RECOMMENDED_LENGTH, X_TITLE_RECOMMENDED_LENGTH, charLength, getBlogDomain, getSeoDescription, getSeoTitle, getSeoUrl, getSlugUrlPreview, validateTagField} from './tag-detail-edit';
 import {FacebookCardPreview, SeoPreview, XCardPreview} from './tag-detail-previews';
-import {cn} from '@tryghost/shade/utils';
+import {cn, formatNumber} from '@tryghost/shade/utils';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import type {TagEditableFields, TagFieldName} from './tag-detail-edit';
 
@@ -29,8 +29,8 @@ const UsedCharacters: React.FC<{value: string; limit: number; prefix: 'Maximum' 
     const used = charLength(value);
     return (
         <p className='text-sm text-muted-foreground'>
-            {prefix}: <span className='font-semibold text-foreground'>{limit}</span> characters. You’ve used{' '}
-            <span className={cn('font-semibold', used > limit ? 'text-destructive' : 'text-state-success')}>{used}</span>
+            {prefix}: <span className='font-semibold text-foreground'>{formatNumber(limit)}</span> characters. You’ve used{' '}
+            <span className={cn('font-semibold', used > limit ? 'text-destructive' : 'text-state-success')}>{formatNumber(used)}</span>
         </p>
     );
 };
@@ -49,6 +49,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
     const siteTitle = getSettingValue<string>(settingsData?.settings ?? [], 'title') ?? '';
     const siteMetaTitle = getSettingValue<string>(settingsData?.settings ?? [], 'meta_title') ?? '';
     const siteMetaDescription = getSettingValue<string>(settingsData?.settings ?? [], 'meta_description') ?? '';
+    const unsplashEnabled = getSettingValue<boolean>(settingsData?.settings ?? [], 'unsplash') ?? false;
 
     const validateOnBlur = (field: TagFieldName) => {
         onFieldError(field, validateTagField(field, draft));
@@ -126,6 +127,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                     disabled={disabled}
                     id='tag-image'
                     label='Tag image'
+                    unsplashEnabled={unsplashEnabled}
                     uploadText='Upload tag image'
                     value={draft.featureImage}
                     onChange={featureImage => onChange({featureImage})}
@@ -196,6 +198,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                     disabled={disabled}
                                     id='twitter-image'
                                     label='X image'
+                                    unsplashEnabled={unsplashEnabled}
                                     uploadText='Add X image'
                                     value={draft.twitterImage}
                                     onChange={twitterImage => onChange({twitterImage})}
@@ -246,6 +249,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                     disabled={disabled}
                                     id='og-image'
                                     label='Facebook image'
+                                    unsplashEnabled={unsplashEnabled}
                                     uploadText='Add Facebook image'
                                     value={draft.ogImage}
                                     onChange={ogImage => onChange({ogImage})}

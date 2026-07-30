@@ -119,7 +119,7 @@ const appRoutes: RouteObject[] = [
         // `tagDetailsReact` Labs flag.
         path: "/tags/:tagSlug",
         Component: TagDetailGate,
-        handle: { requiresAccess: canManageTags } satisfies AccessRouteHandle,
+        handle: { ...emberFallbackHandle, requiresAccess: canManageTags } satisfies RouteHandle & AccessRouteHandle,
     },
     membersRoute,
     {

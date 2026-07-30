@@ -1,4 +1,5 @@
 import EmberObject from '@ember/object';
+import Service from '@ember/service';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -22,14 +23,21 @@ const buildMockModelCollection = (models) => {
 describe('Unit: Service: state-bridge', function () {
     setupTest();
 
-    let service, store, config, settings, membersUtils, themeManagement, ui;
+    let service, store, config, settings, membersUtils, search, themeManagement, ui;
 
     beforeEach(function () {
+        this.owner.register('service:search', Service.extend({
+            isContentStale: false,
+            expireContent() {
+                this.set('isContentStale', true);
+            }
+        }));
         service = this.owner.lookup('service:state-bridge');
         store = this.owner.lookup('service:store');
         config = this.owner.lookup('config:main');
         settings = this.owner.lookup('service:settings');
         membersUtils = this.owner.lookup('service:members-utils');
+        search = this.owner.lookup('service:search');
         themeManagement = this.owner.lookup('service:theme-management');
         ui = this.owner.lookup('service:ui');
 
@@ -39,6 +47,7 @@ describe('Unit: Service: state-bridge', function () {
         sinon.spy(store, 'unloadAll');
         sinon.spy(settings, 'reload');
         sinon.spy(membersUtils, 'reload');
+        search.isContentStale = false;
     });
 
     afterEach(function () {
@@ -298,6 +307,7 @@ describe('Unit: Service: state-bridge', function () {
 
             expect(store.unloadAll.calledOnce).to.be.true;
             expect(store.unloadAll.calledWith('tag')).to.be.true;
+            expect(search.isContentStale).to.be.true;
         });
 
         it('reloads membersUtils when tiers are invalidated', function () {

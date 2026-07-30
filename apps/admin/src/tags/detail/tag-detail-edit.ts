@@ -46,34 +46,35 @@ export const FACEBOOK_DESCRIPTION_RECOMMENDED_LENGTH = 65;
 
 export function getTagEditableSlice(tag: Partial<Tag>): TagEditableFields {
     return {
-        name: (tag.name ?? '').trim(),
-        slug: (tag.slug ?? '').trim(),
-        description: (tag.description ?? '').trim(),
-        featureImage: (tag.feature_image ?? '').trim(),
-        metaTitle: (tag.meta_title ?? '').trim(),
-        metaDescription: (tag.meta_description ?? '').trim(),
-        canonicalUrl: (tag.canonical_url ?? '').trim(),
-        twitterImage: (tag.twitter_image ?? '').trim(),
-        twitterTitle: (tag.twitter_title ?? '').trim(),
-        twitterDescription: (tag.twitter_description ?? '').trim(),
-        ogImage: (tag.og_image ?? '').trim(),
-        ogTitle: (tag.og_title ?? '').trim(),
-        ogDescription: (tag.og_description ?? '').trim(),
+        name: tag.name ?? '',
+        slug: tag.slug ?? '',
+        description: tag.description ?? '',
+        featureImage: tag.feature_image ?? '',
+        metaTitle: tag.meta_title ?? '',
+        metaDescription: tag.meta_description ?? '',
+        canonicalUrl: tag.canonical_url ?? '',
+        twitterImage: tag.twitter_image ?? '',
+        twitterTitle: tag.twitter_title ?? '',
+        twitterDescription: tag.twitter_description ?? '',
+        ogImage: tag.og_image ?? '',
+        ogTitle: tag.og_title ?? '',
+        ogDescription: tag.og_description ?? '',
         codeinjectionHead: tag.codeinjection_head ?? '',
         codeinjectionFoot: tag.codeinjection_foot ?? '',
-        accentColor: (tag.accent_color ?? '').trim()
+        accentColor: tag.accent_color ?? ''
     };
 }
 
 /**
- * Normalize a draft for dirty comparison and saving. Ember trims ordinary
- * form values as they are set on the model (`tag-form.js` `setTagProperty`),
- * but its code editors preserve code injection verbatim.
+ * Normalize a draft for dirty comparison and saving. Ember trims an ordinary
+ * form value when that field is edited (`tag-form.js` `setTagProperty`) but
+ * preserves untouched server data and code injection verbatim.
  */
-export function normalizeTagDraft(draft: TagEditableFields): TagEditableFields {
+export function normalizeTagDraft(draft: TagEditableFields, touchedFields?: ReadonlySet<TagFieldName>): TagEditableFields {
     const normalized = {} as TagEditableFields;
     for (const key of Object.keys(draft) as TagFieldName[]) {
-        normalized[key] = key === 'codeinjectionHead' || key === 'codeinjectionFoot' ? draft[key] : draft[key].trim();
+        const shouldTrim = key !== 'codeinjectionHead' && key !== 'codeinjectionFoot' && (!touchedFields || touchedFields.has(key));
+        normalized[key] = shouldTrim ? draft[key].trim() : draft[key];
     }
     return normalized;
 }
@@ -168,8 +169,8 @@ export function validateTagDraft(draft: TagEditableFields): Partial<Record<TagFi
  * from the name in exactly that case, and the server only ever forces
  * internal, never back to public, so the client value matters on renames.
  */
-export function buildTagSavePayload(draft: TagEditableFields, serverName: string | null): TagEditableData {
-    const normalized = normalizeTagDraft(draft);
+export function buildTagSavePayload(draft: TagEditableFields, serverName: string | null, touchedFields?: ReadonlySet<TagFieldName>): TagEditableData {
+    const normalized = normalizeTagDraft(draft, touchedFields);
     const payload: TagEditableData = {
         name: normalized.name,
         slug: normalized.slug,

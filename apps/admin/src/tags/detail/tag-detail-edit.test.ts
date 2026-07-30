@@ -26,7 +26,7 @@ const draft = (overrides: Partial<TagEditableFields> = {}): TagEditableFields =>
 });
 
 describe('getTagEditableSlice', () => {
-    it('maps snake_case API fields and normalizes null to empty strings', () => {
+    it('maps snake_case API fields, preserves values and normalizes null to empty strings', () => {
         const slice = getTagEditableSlice({
             name: ' News ',
             slug: 'news',
@@ -38,7 +38,7 @@ describe('getTagEditableSlice', () => {
             codeinjection_head: null
         });
 
-        expect(slice.name).toBe('News');
+        expect(slice.name).toBe(' News ');
         expect(slice.description).toBe('');
         expect(slice.featureImage).toBe('https://example.com/img.png');
         expect(slice.metaTitle).toBe('Meta');
@@ -70,6 +70,16 @@ describe('normalizeTagDraft', () => {
         });
 
         expect(normalizeTagDraft(serverSlice)).toEqual(serverSlice);
+    });
+
+    it('preserves whitespace in untouched ordinary fields', () => {
+        const draftWithWhitespace = draft({description: '\nImportant\n', metaTitle: ' Meta title '});
+
+        expect(normalizeTagDraft(draftWithWhitespace, new Set())).toEqual(draftWithWhitespace);
+        expect(normalizeTagDraft(draftWithWhitespace, new Set(['description']))).toMatchObject({
+            description: 'Important',
+            metaTitle: ' Meta title '
+        });
     });
 });
 
@@ -151,6 +161,16 @@ describe('buildTagSavePayload', () => {
 
         expect(payload.codeinjection_head).toBe('\n<script>head()</script>\n');
         expect(payload.codeinjection_foot).toBe('  <script>foot()</script>  ');
+    });
+
+    it('preserves untouched server whitespace in the save payload', () => {
+        const payload = buildTagSavePayload(draft({
+            description: '\nImportant\n',
+            metaTitle: ' Meta title '
+        }), 'News', new Set());
+
+        expect(payload.description).toBe('\nImportant\n');
+        expect(payload.meta_title).toBe(' Meta title ');
     });
 
     it('derives visibility when the name changed, like Ember updateVisibility on save', () => {
