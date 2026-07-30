@@ -1,8 +1,7 @@
 import React from 'react';
 import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, LoadingIndicator} from '@tryghost/shade/components';
-import {toast} from 'sonner';
 import {useDeleteTag} from '@tryghost/admin-x-framework/api/tags';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useHandleError, useNavigate} from '@tryghost/admin-x-framework';
 import {formatNumber} from '@tryghost/shade/utils';
 import type {Tag} from '@tryghost/admin-x-framework/api/tags';
 
@@ -27,20 +26,36 @@ interface TagDeleteModalProps {
  */
 const TagDeleteModal: React.FC<TagDeleteModalProps> = ({open, onOpenChange, tag, displayName, onPendingChange, allowLeaveWithUnsavedChanges}) => {
     const navigate = useNavigate();
+    const handleError = useHandleError();
     const deleteTag = useDeleteTag();
     const postsCount = tag.count?.posts ?? 0;
+    const mountedRef = React.useRef(true);
+
+    React.useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+        };
+    }, []);
 
     const onConfirm = async () => {
         onPendingChange(true);
         try {
             await deleteTag.mutateAsync(tag.id);
+            if (!mountedRef.current) {
+                return;
+            }
             onOpenChange(false);
             allowLeaveWithUnsavedChanges();
             navigate('/tags');
-        } catch {
-            toast.error('Couldn’t delete the tag. Please try again.');
+        } catch (error) {
+            if (mountedRef.current) {
+                handleError(error);
+            }
         } finally {
-            onPendingChange(false);
+            if (mountedRef.current) {
+                onPendingChange(false);
+            }
         }
     };
 

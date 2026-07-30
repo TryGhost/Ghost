@@ -41,6 +41,21 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @inject config;
 
+    /**
+     * Gives React the same synchronous Labs route-ownership decision Ember
+     * uses. Both routers must share one authority or they can each defer to
+     * the other while state is loading.
+     */
+    @action
+    isFeatureEnabled(name) {
+        return this.feature[name] === true;
+    }
+
+    @action
+    triggerFeatureFlagsChange() {
+        this.trigger('featureFlagsChange');
+    }
+
     constructor() {
         super(...arguments);
         this.router.on('routeDidChange', this, this.handleRouteDidChange);
@@ -119,9 +134,10 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
             // TODO: Reloading settings does not trigger a re-fetch of the
             // feature flags. We should maybe find a better way to do this.
-            this.settings.reload().then(() => {
-                this.feature.fetch();
-            });
+            this.triggerFeatureFlagsChange();
+            this.settings.reload()
+                .then(() => this.feature.fetch())
+                .finally(() => this.triggerFeatureFlagsChange());
         }
 
         if (dataType === 'TiersResponseType') {

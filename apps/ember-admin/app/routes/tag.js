@@ -25,7 +25,7 @@ export default class TagRoute extends AuthenticatedRoute {
 
         // React owns this URL when the flag is on. Keep the Ember route from
         // loading and rendering a second tag editor behind the React screen.
-        if (this.feature.tagDetailsReact) {
+        if (this.feature.tagDetailsReact === true) {
             transition.abort();
         }
     }

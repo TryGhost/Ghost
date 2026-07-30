@@ -5,7 +5,7 @@ import {Box, Container} from '@tryghost/shade/primitives';
 import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, type ButtonProps, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {DetailPage} from '@tryghost/shade/page-templates';
 import {DirtyConfirmDialog, PageHeader} from '@tryghost/shade/patterns';
-import {Link, useConfirmUnload, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {Link, useConfirmUnload, useHandleError, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {NotFound} from '@/not-found';
 import {buildTagSavePayload, generateSlugFromName, getTagEditableSlice, getTagUrl, normalizeTagDraft, validateTagDraft} from './tag-detail-edit';
@@ -15,6 +15,7 @@ import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useHashLinkNavigationGuard} from '@/hooks/use-hash-link-navigation-guard';
+import type {TagsResponseType} from '@tryghost/admin-x-framework/api/tags';
 import type {TagEditableFields, TagFieldName} from './tag-detail-edit';
 
 // The create screen reuses this route with the sentinel slug "new". Safe
@@ -29,6 +30,7 @@ type SaveStatus = 'idle' | 'pending' | 'success' | 'error';
 const TagDetail: React.FC = () => {
     const {tagSlug = ''} = useParams<{tagSlug: string}>();
     const navigate = useNavigate();
+    const handleError = useHandleError();
     const isCreating = tagSlug === CREATE_SLUG;
 
     // `include=count.posts` mirrors the Ember route so the delete modal can
@@ -64,10 +66,13 @@ const TagDetail: React.FC = () => {
     const hasChangedSlugRef = React.useRef(false);
     // Lets our own post-save redirect through the unsaved-changes blocker.
     const bypassGuardRef = React.useRef(false);
+    const blockedNavigationRef = React.useRef(false);
+    const proceedBlockedNavigationRef = React.useRef<() => void>(() => {});
     const [saveStatus, setSaveStatus] = React.useState<SaveStatus>('idle');
     const [showDelete, setShowDelete] = React.useState(false);
     const [isDeleting, setIsDeleting] = React.useState(false);
-    const [pendingImageUploads, setPendingImageUploads] = React.useState<Set<TagImageFieldName>>(new Set());
+    const [busyImageFields, setBusyImageFields] = React.useState<Set<TagImageFieldName>>(new Set());
+    const [uploadingImageFields, setUploadingImageFields] = React.useState<Set<TagImageFieldName>>(new Set());
 
     React.useEffect(() => {
         if (isCreating) {
@@ -104,22 +109,40 @@ const TagDetail: React.FC = () => {
     // Preserve the successful state only across our own post-save slug redirect.
     React.useEffect(() => {
         bypassGuardRef.current = false;
+        blockedNavigationRef.current = false;
         setShowDelete(false);
         setIsDeleting(false);
-        setPendingImageUploads(new Set());
+        setBusyImageFields(new Set());
+        setUploadingImageFields(new Set());
         setSaveStatus(savedRouteRef.current === tagSlug ? 'success' : 'idle');
         savedRouteRef.current = null;
         addMutation.reset();
         editMutation.reset();
     }, [tagSlug]);
 
-    const serverSlice = isCreating ? lastServerSliceRef.current : (tag ? getTagEditableSlice(tag) : undefined);
+    const serverSlice = lastServerSliceRef.current;
     const hasUnsavedChanges = !!draft && !!serverSlice && !dequal(normalizeTagDraft(draft, touchedFieldsRef.current), serverSlice);
-    const hasPendingImageUpload = pendingImageUploads.size > 0;
-    const isBusy = activeMutation.isPending || hasPendingImageUpload || isDeleting || showDelete;
+    const hasBusyImageField = busyImageFields.size > 0;
+    const hasPendingImageUpload = uploadingImageFields.size > 0;
+    const isBusy = activeMutation.isPending || hasBusyImageField || isDeleting || showDelete;
+
+    const onImageBusyChange = React.useCallback((field: TagImageFieldName, busy: boolean) => {
+        setBusyImageFields((current) => {
+            if (current.has(field) === busy) {
+                return current;
+            }
+            const next = new Set(current);
+            if (busy) {
+                next.add(field);
+            } else {
+                next.delete(field);
+            }
+            return next;
+        });
+    }, []);
 
     const onImageUploadPendingChange = React.useCallback((field: TagImageFieldName, pending: boolean) => {
-        setPendingImageUploads((current) => {
+        setUploadingImageFields((current) => {
             if (current.has(field) === pending) {
                 return current;
             }
@@ -186,7 +209,7 @@ const TagDetail: React.FC = () => {
         const submittedRoute = tagSlug;
         const submittedTagId = tag?.id;
         setSaveStatus('pending');
-        const onSuccess = (response: {tags?: {slug: string}[]}) => {
+        const onSuccess = (response: TagsResponseType) => {
             if (routeKeyRef.current !== submittedRoute) {
                 return;
             }
@@ -196,8 +219,15 @@ const TagDetail: React.FC = () => {
                 toast.error('Couldn’t save the tag.');
                 return;
             }
+            const savedSlice = getTagEditableSlice(saved);
+            lastServerSliceRef.current = savedSlice;
+            setDraft(savedSlice);
             touchedFieldsRef.current.clear();
             setSaveStatus('success');
+            if (blockedNavigationRef.current) {
+                proceedBlockedNavigationRef.current();
+                return;
+            }
             // Move `/tags/new` to the saved tag and follow slug renames. A
             // same-slug save needs no navigation; setting the bypass in that
             // case would leave the unsaved-changes guard disabled indefinitely.
@@ -212,8 +242,7 @@ const TagDetail: React.FC = () => {
                 return;
             }
             setSaveStatus('error');
-            const apiMessage = (saveError as {data?: {errors?: {message?: string | null}[]}} | null)?.data?.errors?.[0]?.message;
-            toast.error(apiMessage || 'Couldn’t save the tag.');
+            handleError(saveError);
         };
 
         if (isCreating) {
@@ -228,17 +257,11 @@ const TagDetail: React.FC = () => {
                 if (routeKeyRef.current !== submittedRoute || draftTagIdRef.current !== submittedTagId) {
                     return;
                 }
-                const saved = response.tags?.[0];
-                if (saved) {
-                    const savedSlice = getTagEditableSlice(saved);
-                    lastServerSliceRef.current = savedSlice;
-                    setDraft(savedSlice);
-                }
                 onSuccess(response);
             },
             onError
         });
-    }, [draft, errors.accentColor, isCreating, tag, tagSlug, isBusy, addMutation, editMutation, navigate]);
+    }, [draft, errors.accentColor, isCreating, tag, tagSlug, isBusy, addMutation, editMutation, navigate, handleError]);
 
     // Cmd/Ctrl+S saves, matching the `{{on-key "cmd+s"}}` binding on the
     // Ember save button.
@@ -262,6 +285,14 @@ const TagDetail: React.FC = () => {
     // route aborts and never registers into the `unsaved-changes` service.
     const anchorGuard = useHashLinkNavigationGuard(shouldGuardNavigation);
     const isBlocked = blocker.state === 'blocked' || anchorGuard.isBlocked;
+    blockedNavigationRef.current = isBlocked;
+    proceedBlockedNavigationRef.current = () => {
+        if (anchorGuard.isBlocked) {
+            anchorGuard.proceed();
+        } else {
+            blocker.proceed?.();
+        }
+    };
     // DirtyConfirmDialog's confirm action auto-closes the dialog, firing
     // onOpenChange(false) while the blocker still reads as blocked; without
     // this flag the close handler would reset the very navigation the user
@@ -358,11 +389,12 @@ const TagDetail: React.FC = () => {
                                 errors={errors}
                                 onChange={onFieldChange}
                                 onFieldError={onFieldError}
+                                onImageBusyChange={onImageBusyChange}
                                 onImageUploadPendingChange={onImageUploadPendingChange}
                             />
                             {!isCreating && tag && (
                                 <div>
-                                    <Button disabled={activeMutation.isPending || hasPendingImageUpload} variant='destructive' onClick={() => setShowDelete(true)}>Delete tag</Button>
+                                    <Button disabled={activeMutation.isPending || hasBusyImageField} variant='destructive' onClick={() => setShowDelete(true)}>Delete tag</Button>
                                 </div>
                             )}
                         </div>
@@ -371,6 +403,7 @@ const TagDetail: React.FC = () => {
 
                 {!isCreating && tag && (
                     <TagDeleteModal
+                        key={tag.id}
                         allowLeaveWithUnsavedChanges={() => {
                             bypassGuardRef.current = true;
                         }}
@@ -383,7 +416,7 @@ const TagDetail: React.FC = () => {
                 )}
 
                 <DirtyConfirmDialog
-                    open={isBlocked}
+                    open={isBlocked && !activeMutation.isPending}
                     onConfirm={() => {
                         leaveConfirmedRef.current = true;
                         if (anchorGuard.isBlocked) {

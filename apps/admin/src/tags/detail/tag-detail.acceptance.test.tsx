@@ -60,6 +60,24 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.element(page.getByRole('heading', {name: 'Unsplash'})).toBeVisible();
     });
 
+    it('does not treat an open image picker as a dirty tag', async () => {
+        const t = tag({name: 'News', slug: 'news', feature_image: null});
+        fakeTags([t]);
+        fakeTagWorld(t);
+        fakeEndpoint('GET', 'https://api.unsplash.com/photos', []);
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByRole('button', {name: 'Select tag image from Unsplash'}).click();
+        await expect.element(page.getByRole('heading', {name: 'Unsplash'})).toBeVisible();
+
+        const backLink = document.querySelector<HTMLAnchorElement>('[data-test-link="tags-back"]');
+        expect(backLink).not.toBeNull();
+        backLink?.click();
+
+        await expect.poll(currentRoute).toBe('/tags');
+        expect(page.getByText('Are you sure you want to leave this page?').query()).toBeNull();
+    });
+
     it('saves edits and reports the saved state', async () => {
         const t = tag({name: 'News', slug: 'news', visibility: 'public'});
         const saveApi = fakeTagWorld(t);
@@ -220,6 +238,93 @@ describe('Tag detail (tagDetailsReact on)', () => {
 
         pendingSave.resolve({tags: [{...t, name: 'Renamed'}]});
         await expect.element(page.getByRole('button', {name: 'Delete tag'})).toBeEnabled();
+    });
+
+    it('includes an immediately typed accent color in a keyboard save', async () => {
+        let current = tag({name: 'News', slug: 'news', accent_color: '#112233'});
+        fakeAdminEndpoint('GET', new RegExp(`^/tags/slug/${current.slug}/`), () => ({tags: [current]}));
+        const pendingSave = deferred<{tags: Tag[]}>();
+        const saveApi = fakeAdminEndpoint('PUT', new RegExp(`^/tags/${current.id}/`), async () => {
+            const response = await pendingSave.promise;
+            current = response.tags[0];
+            return response;
+        });
+        await renderAdminApp(`/tags/${current.slug}`, FLAGS);
+
+        await page.getByLabelText('Accent color hex value').fill('AABBCC');
+        await userEvent.keyboard('{Meta>}s{/Meta}');
+        await expect.poll(() => saveApi.requests.length).toBe(1);
+
+        const savedPayload = (saveApi.lastRequest?.body as {tags: Array<Record<string, unknown>>}).tags[0];
+        expect(savedPayload.accent_color).toBe('#AABBCC');
+        pendingSave.resolve({tags: [{...current, accent_color: '#AABBCC'}]});
+        await expect.element(page.getByRole('button', {name: 'Saved'})).toBeVisible();
+    });
+
+    it('waits for a pending save before continuing navigation', async () => {
+        let current = tag({name: 'News', slug: 'news'});
+        fakeTags([current]);
+        fakeAdminEndpoint('GET', new RegExp(`^/tags/slug/${current.slug}/`), () => ({tags: [current]}));
+        const pendingSave = deferred<{tags: Tag[]}>();
+        const saveApi = fakeAdminEndpoint('PUT', new RegExp(`^/tags/${current.id}/`), async () => {
+            const response = await pendingSave.promise;
+            current = response.tags[0];
+            return response;
+        });
+        await renderAdminApp(`/tags/${current.slug}`, FLAGS);
+
+        await page.getByLabelText('Name', {exact: true}).fill('Renamed');
+        await page.getByRole('button', {name: 'Save'}).click();
+        await expect.poll(() => saveApi.requests.length).toBe(1);
+        await page.getByTestId('tag-detail').getByRole('link', {name: 'Tags'}).click();
+
+        expect(page.getByText('Are you sure you want to leave this page?').query()).toBeNull();
+        await expect.poll(currentRoute).toBe('/tags/news');
+
+        pendingSave.resolve({tags: [{...current, name: 'Renamed'}]});
+        await expect.poll(currentRoute).toBe('/tags');
+    });
+
+    it('keeps the requested destination when a pending create resolves', async () => {
+        const created = tag({name: 'Weekly News', slug: 'weekly-news'});
+        fakeTags([]);
+        const pendingCreate = deferred<{tags: Tag[]}>();
+        const createApi = fakeAdminEndpoint('POST', new RegExp('^/tags/'), () => pendingCreate.promise);
+        await renderAdminApp('/tags/new', FLAGS);
+
+        await page.getByLabelText('Name', {exact: true}).fill('Weekly News');
+        await page.getByRole('button', {name: 'Save'}).click();
+        await expect.poll(() => createApi.requests.length).toBe(1);
+        await page.getByTestId('tag-detail').getByRole('link', {name: 'Tags'}).click();
+
+        expect(page.getByText('Are you sure you want to leave this page?').query()).toBeNull();
+        pendingCreate.resolve({tags: [created]});
+        await expect.poll(currentRoute).toBe('/tags');
+    });
+
+    it('shows the corrective API context when saving fails validation', async () => {
+        const t = tag({name: 'News', slug: 'news'});
+        fakeAdminEndpoint('GET', new RegExp(`^/tags/slug/${t.slug}/`), {tags: [t]});
+        fakeAdminEndpoint('PUT', new RegExp(`^/tags/${t.id}/`), {
+            errors: [{
+                code: null,
+                context: 'X title cannot be longer than 300 characters.',
+                details: null,
+                ghostErrorCode: null,
+                help: '',
+                id: 'validation-error',
+                message: 'Validation error, cannot edit tag.',
+                property: 'twitter_title',
+                type: 'ValidationError'
+            }]
+        }, {status: 422});
+        await renderAdminApp(`/tags/${t.slug}`, FLAGS);
+
+        await page.getByLabelText('Name', {exact: true}).fill('Renamed');
+        await page.getByRole('button', {name: 'Save'}).click();
+
+        await expect.element(page.getByText('X title cannot be longer than 300 characters.')).toBeVisible();
+        await expect.element(page.getByRole('button', {name: 'Retry'})).toBeVisible();
     });
 
     it('deletes the tag after confirming, reporting the posts it is used on', async () => {

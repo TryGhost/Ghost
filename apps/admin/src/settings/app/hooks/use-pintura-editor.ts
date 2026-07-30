@@ -39,6 +39,7 @@ declare global {
                 willClose: () => boolean;
             }) => {
                 on: (event: string, callback: (result: { dest: File }) => void) => void;
+                destroy: () => void;
             };
         }
     }

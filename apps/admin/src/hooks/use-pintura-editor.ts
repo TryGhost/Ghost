@@ -1,9 +1,10 @@
 import {usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
+import {trackEvent} from '@tryghost/admin-x-framework';
 import {useCallback, useEffect, useRef, useState} from 'react';
 
 interface OpenEditorParams {
     image: string;
-    handleSave: (file: File) => void | Promise<void>;
+    handleSave: (file: File) => void | boolean | Promise<void | boolean>;
 }
 
 /** Loads Ghost's configured Pintura editor and exposes the legacy image-edit action. */
@@ -13,6 +14,7 @@ export function usePinturaEditor({disabled = false}: {disabled?: boolean} = {}) 
     const [cssLoaded, setCssLoaded] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const allowClose = useRef(false);
+    const editorRef = useRef<{destroy: () => void} | null>(null);
 
     useEffect(() => {
         const jsUrl = config?.jsUrl;
@@ -60,7 +62,7 @@ export function usePinturaEditor({disabled = false}: {disabled?: boolean} = {}) 
     const isEnabled = !disabled && !!config && scriptLoaded && cssLoaded;
     const openEditor = useCallback(({image, handleSave}: OpenEditorParams) => {
         const pintura = window.pintura;
-        if (!image || !isEnabled || !pintura) {
+        if (!image || !isEnabled || !pintura || editorRef.current) {
             return;
         }
 
@@ -70,6 +72,7 @@ export function usePinturaEditor({disabled = false}: {disabled?: boolean} = {}) 
             imageUrl.searchParams.set('v', Date.now().toString());
         }
 
+        trackEvent('Image Edit Button Clicked', {location: 'admin'});
         const editor = pintura.openDefaultEditor({
             src: imageUrl.href,
             enableTransparencyGrid: true,
@@ -92,15 +95,44 @@ export function usePinturaEditor({disabled = false}: {disabled?: boolean} = {}) 
             previewPad: true,
             willClose: () => {
                 if (allowClose.current) {
+                    editorRef.current = null;
                     setIsOpen(false);
                     return true;
                 }
                 return false;
             }
         });
-        editor.on('process', result => void handleSave(result.dest));
+        editorRef.current = editor;
+        editor.on('process', (result) => {
+            void Promise.resolve().then(() => handleSave(result.dest)).then((saved) => {
+                if (saved !== false) {
+                    trackEvent('Image Edit Saved', {location: 'admin'});
+                }
+            }).catch(() => {});
+        });
+        editor.on('destroy', () => {
+            if (editorRef.current === editor) {
+                editorRef.current = null;
+                setIsOpen(false);
+            }
+        });
         setIsOpen(true);
     }, [isEnabled]);
+
+    useEffect(() => {
+        if (!isEnabled && editorRef.current) {
+            const editor = editorRef.current;
+            editorRef.current = null;
+            editor.destroy();
+            setIsOpen(false);
+        }
+    }, [isEnabled]);
+
+    useEffect(() => () => {
+        const editor = editorRef.current;
+        editorRef.current = null;
+        editor?.destroy();
+    }, []);
 
     useEffect(() => {
         if (!isOpen) {
@@ -125,5 +157,5 @@ export function usePinturaEditor({disabled = false}: {disabled?: boolean} = {}) 
         };
     }, [isOpen]);
 
-    return {isEnabled, openEditor};
+    return {isEnabled, isOpen, openEditor};
 }

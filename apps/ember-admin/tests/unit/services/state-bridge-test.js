@@ -23,7 +23,7 @@ const buildMockModelCollection = (models) => {
 describe('Unit: Service: state-bridge', function () {
     setupTest();
 
-    let service, store, config, settings, membersUtils, search, themeManagement, ui;
+    let service, store, config, feature, settings, membersUtils, search, themeManagement, ui;
 
     beforeEach(function () {
         this.owner.register('service:search', Service.extend({
@@ -35,6 +35,7 @@ describe('Unit: Service: state-bridge', function () {
         service = this.owner.lookup('service:state-bridge');
         store = this.owner.lookup('service:store');
         config = this.owner.lookup('config:main');
+        feature = this.owner.lookup('service:feature');
         settings = this.owner.lookup('service:settings');
         membersUtils = this.owner.lookup('service:members-utils');
         search = this.owner.lookup('service:search');
@@ -52,6 +53,17 @@ describe('Unit: Service: state-bridge', function () {
 
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('#isFeatureEnabled', function () {
+        it('exposes the same strict Labs state used by Ember routes', function () {
+            sinon.stub(feature, 'tagDetailsReact').get(() => true);
+            sinon.stub(feature, 'memberDetailsReact').get(() => 'true');
+
+            expect(service.isFeatureEnabled('tagDetailsReact')).to.be.true;
+            expect(service.isFeatureEnabled('memberDetailsReact')).to.be.false;
+            expect(service.isFeatureEnabled('missingFlag')).to.be.false;
+        });
     });
 
     describe('#onUpdate', function () {

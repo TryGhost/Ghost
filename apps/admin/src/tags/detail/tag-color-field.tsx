@@ -14,14 +14,12 @@ const HEX_COLOR_REGEX = /#[0-9A-Fa-f]{6}$/;
 /**
  * The tag accent colour control: a hex text input (no leading `#`) plus a
  * native colour picker swatch, porting Ember `tag-form.js`
- * `updateAccentColor` / `debounceUpdateAccentColorTask` — the same 10ms
- * debounce on input, immediate normalization on blur, and the same error
- * copy for a malformed hex value.
+ * `updateAccentColor` — immediate normalization keeps the form draft in sync
+ * before keyboard saves, with the same error copy for a malformed hex value.
  */
 const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, errorId, onChange, onError}) => {
     const [text, setText] = React.useState(value.replace(/^#/, ''));
     const lastValueRef = React.useRef(value);
-    const debounceRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     // Adopt external changes (initial load, a background refetch) without
     // clobbering in-progress typing on unrelated re-renders.
@@ -31,8 +29,6 @@ const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, errorId, 
             setText(value.replace(/^#/, ''));
         }
     }, [value]);
-
-    React.useEffect(() => () => clearTimeout(debounceRef.current), []);
 
     const applyColor = (input: string) => {
         onError(null);
@@ -62,11 +58,6 @@ const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, errorId, 
         }
     };
 
-    const scheduleApply = (input: string) => {
-        clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => applyColor(input), 10);
-    };
-
     return (
         <div className='flex flex-col gap-1.5'>
             <Label htmlFor='tag-accent-color'>Color</Label>
@@ -84,7 +75,7 @@ const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, errorId, 
                     onBlur={e => applyColor(e.target.value)}
                     onChange={(e) => {
                         setText(e.target.value);
-                        scheduleApply(e.target.value);
+                        applyColor(e.target.value);
                     }}
                 />
                 <div
@@ -99,7 +90,7 @@ const TagColorField: React.FC<TagColorFieldProps> = ({value, disabled, errorId, 
                         value={value || '#ffffff'}
                         onChange={(e) => {
                             setText(e.target.value.replace(/^#/, ''));
-                            scheduleApply(e.target.value);
+                            applyColor(e.target.value);
                         }}
                     />
                 </div>

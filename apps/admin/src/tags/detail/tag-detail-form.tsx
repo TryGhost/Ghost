@@ -15,6 +15,7 @@ interface TagDetailFormProps {
     disabled?: boolean;
     onChange: (patch: Partial<TagEditableFields>) => void;
     onFieldError: (field: TagFieldName, message: string | null) => void;
+    onImageBusyChange: (field: 'featureImage' | 'twitterImage' | 'ogImage', busy: boolean) => void;
     onImageUploadPendingChange: (field: 'featureImage' | 'twitterImage' | 'ogImage', pending: boolean) => void;
 }
 
@@ -40,7 +41,7 @@ const SectionTrigger: React.FC<{title: string; description: string}> = ({title, 
     </AccordionTrigger>
 );
 
-const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, disabled, onChange, onFieldError, onImageUploadPendingChange}) => {
+const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, disabled, onChange, onFieldError, onImageBusyChange, onImageUploadPendingChange}) => {
     const {data: settingsData} = useBrowseSettings({});
     const siteTitle = getSettingValue<string>(settingsData?.settings ?? [], 'title') ?? '';
     const siteMetaTitle = getSettingValue<string>(settingsData?.settings ?? [], 'meta_title') ?? '';
@@ -130,8 +131,9 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                     unsplashEnabled={unsplashEnabled}
                     uploadText='Upload tag image'
                     value={draft.featureImage}
+                    onBusyChange={busy => onImageBusyChange('featureImage', busy)}
                     onChange={featureImage => onChange({featureImage})}
-                    onPendingChange={pending => onImageUploadPendingChange('featureImage', pending)}
+                    onUploadPendingChange={pending => onImageUploadPendingChange('featureImage', pending)}
                 />
             </div>
 
@@ -205,8 +207,9 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                     unsplashEnabled={unsplashEnabled}
                                     uploadText='Add X image'
                                     value={draft.twitterImage}
+                                    onBusyChange={busy => onImageBusyChange('twitterImage', busy)}
                                     onChange={twitterImage => onChange({twitterImage})}
-                                    onPendingChange={pending => onImageUploadPendingChange('twitterImage', pending)}
+                                    onUploadPendingChange={pending => onImageUploadPendingChange('twitterImage', pending)}
                                 />
                                 <div className='flex flex-col gap-1.5'>
                                     <Label htmlFor='twitter-title'>X title</Label>
@@ -257,8 +260,9 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({draft, errors, blogUrl, di
                                     unsplashEnabled={unsplashEnabled}
                                     uploadText='Add Facebook image'
                                     value={draft.ogImage}
+                                    onBusyChange={busy => onImageBusyChange('ogImage', busy)}
                                     onChange={ogImage => onChange({ogImage})}
-                                    onPendingChange={pending => onImageUploadPendingChange('ogImage', pending)}
+                                    onUploadPendingChange={pending => onImageUploadPendingChange('ogImage', pending)}
                                 />
                                 <div className='flex flex-col gap-1.5'>
                                     <Label htmlFor='og-title'>Facebook title</Label>

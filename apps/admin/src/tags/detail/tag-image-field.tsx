@@ -29,7 +29,8 @@ interface TagImageFieldProps {
     disabled?: boolean;
     unsplashEnabled?: boolean;
     onChange: (url: string) => void;
-    onPendingChange?: (pending: boolean) => void;
+    onBusyChange?: (busy: boolean) => void;
+    onUploadPendingChange?: (pending: boolean) => void;
 }
 
 /**
@@ -37,25 +38,36 @@ interface TagImageFieldProps {
  * standing in for Ember's `GhImageUploaderWithPreview`: an upload dropzone
  * when empty, a preview with edit/remove actions when set.
  */
-const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, value, disabled, unsplashEnabled, onChange, onPendingChange}) => {
+const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, value, disabled, unsplashEnabled, onChange, onBusyChange, onUploadPendingChange}) => {
     const {mutateAsync: uploadImage, isPending} = useUploadImage();
     const {unsplashConfig} = useFramework();
     const editor = usePinturaEditor({disabled});
     const [showUnsplash, setShowUnsplash] = React.useState(false);
+    const [operationPending, setOperationPending] = React.useState(false);
     const mountedRef = React.useRef(true);
     const operationPendingRef = React.useRef(false);
-    const onPendingChangeRef = React.useRef(onPendingChange);
-    onPendingChangeRef.current = onPendingChange;
+    const onBusyChangeRef = React.useRef(onBusyChange);
+    onBusyChangeRef.current = onBusyChange;
+    const onUploadPendingChangeRef = React.useRef(onUploadPendingChange);
+    onUploadPendingChangeRef.current = onUploadPendingChange;
 
     React.useEffect(() => {
         mountedRef.current = true;
         return () => {
             mountedRef.current = false;
-            if (operationPendingRef.current) {
-                onPendingChangeRef.current?.(false);
-            }
+            onBusyChangeRef.current?.(false);
+            onUploadPendingChangeRef.current?.(false);
         };
     }, []);
+
+    const isBusy = operationPending || showUnsplash || editor.isOpen;
+    React.useEffect(() => {
+        onBusyChangeRef.current?.(isBusy);
+    }, [isBusy]);
+
+    React.useEffect(() => {
+        onUploadPendingChangeRef.current?.(operationPending);
+    }, [operationPending]);
 
     React.useEffect(() => {
         if (isPending) {
@@ -65,15 +77,16 @@ const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, val
 
     const handleUpload = async (file: File) => {
         if (operationPendingRef.current) {
-            return;
+            return false;
         }
         operationPendingRef.current = true;
-        onPendingChangeRef.current?.(true);
+        setOperationPending(true);
         try {
             const response = await uploadImage({file});
             if (mountedRef.current) {
                 onChange(getImageUrl(response));
             }
+            return true;
         } catch (error) {
             let message = 'Couldn’t upload the image.';
             if (error instanceof UnsupportedMediaTypeError) {
@@ -86,15 +99,16 @@ const TagImageField: React.FC<TagImageFieldProps> = ({id, label, uploadText, val
             if (mountedRef.current) {
                 toast.error(message);
             }
+            return false;
         } finally {
             operationPendingRef.current = false;
             if (mountedRef.current) {
-                onPendingChangeRef.current?.(false);
+                setOperationPending(false);
             }
         }
     };
 
-    const fieldDisabled = disabled || isPending;
+    const fieldDisabled = disabled || operationPending || isPending;
 
     return (
         <Stack gap='sm'>

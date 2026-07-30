@@ -12,7 +12,8 @@ vi.mock('@tryghost/admin-x-framework/api/config', () => ({
 }));
 
 vi.mock('./ember-bridge', () => ({
-    EmberFallback: () => React.createElement('div', {'data-testid': 'ember-fallback'})
+    EmberFallback: () => React.createElement('div', {'data-testid': 'ember-fallback'}),
+    useEmberFeatureFlag: (flag: string) => window.EmberBridge?.state.isFeatureEnabled?.(flag)
 }));
 
 vi.mock('./tags/detail/tag-detail', () => ({
@@ -31,6 +32,7 @@ const withLabs = (labs: Record<string, boolean>) => configResult({data: {config:
 describe('TagDetailGate', () => {
     beforeEach(() => {
         mockUseBrowseConfig.mockReset();
+        delete window.EmberBridge;
     });
 
     it('renders Ember while the flag is off', () => {
@@ -69,6 +71,22 @@ describe('TagDetailGate', () => {
         render(<TagDetailGate />);
 
         expect(screen.getByTestId('ember-fallback')).toBeInTheDocument();
+    });
+
+    it('keeps React ownership when its config query fails but Ember has the flag', async () => {
+        mockUseBrowseConfig.mockReturnValue(configResult({isError: true, data: undefined}));
+        window.EmberBridge = {
+            state: {
+                isFeatureEnabled: (flag: string) => flag === 'tagDetailsReact'
+            }
+        } as unknown as typeof window.EmberBridge;
+
+        render(<TagDetailGate />);
+
+        await waitFor(() => {
+            expect(screen.getByTestId('react-tag-detail')).toBeInTheDocument();
+        });
+        expect(screen.queryByTestId('ember-fallback')).not.toBeInTheDocument();
     });
 
     it('renders Ember when the config query resolves with no data', () => {
