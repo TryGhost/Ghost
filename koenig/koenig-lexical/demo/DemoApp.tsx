@@ -306,6 +306,11 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         };
     }, [editorAPI]);
 
+    // expose the external control API for Playwright tests
+    React.useEffect(() => {
+        window.editorAPI = editorAPI;
+    }, [editorAPI]);
+
     const showTitle = !isMultiplayer && !['basic', 'minimal', 'email'].includes(editorType);
     const isEmailEditor = editorType === 'email';
 

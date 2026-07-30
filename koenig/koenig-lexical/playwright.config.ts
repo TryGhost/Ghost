@@ -15,7 +15,8 @@ dns.setDefaultResultOrder('verbatim');
 // "request for X is not in cache"). The async loader path handles it fine.
 // Fixed in Node 24.x — drop the flag when the workspace moves off Node 22.
 
-export const E2E_PORT = 5174;
+// overridable so e2e runs don't collide with the apps/admin dev server (also 5174)
+export const E2E_PORT = Number(process.env.E2E_PORT) || 5174;
 export default defineConfig({
     outputDir: path.resolve(__dirname, 'test-results'),
     testDir: './test/e2e',
