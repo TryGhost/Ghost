@@ -1,6 +1,7 @@
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const ObjectID = require('bson-objectid').default;
+const createKnex = require('knex');
 const configUtils = require('../../../../utils/config-utils');
 
 const LinkClickRepository = require('../../../../../core/server/services/link-tracking/link-click-repository');
@@ -113,10 +114,64 @@ describe('UNIT: LinkClickRepository class', function () {
             const memberId = await linkClickRepository.save(linkClicks[0], {transacting});
 
             assert.equal(memberId, 'member-id');
+            sinon.assert.calledOnceWithExactly(memberStub.findOne, {
+                uuid: linkClicks[0].member_uuid
+            }, {transacting});
             sinon.assert.calledOnceWithExactly(memberLinkClickEventModelStub.add, {
                 redirect_id: linkClicks[0].link_id.toHexString(),
                 member_id: 'member-id'
             }, {transacting});
+        });
+
+        it('should reuse the transaction connection for the member lookup', async function () {
+            const database = createKnex({
+                client: 'better-sqlite3',
+                connection: {
+                    filename: ':memory:'
+                },
+                pool: {
+                    min: 1,
+                    max: 1
+                },
+                acquireConnectionTimeout: 100,
+                useNullAsDefault: true
+            });
+
+            try {
+                await database.schema.createTable('members', (table) => {
+                    table.text('id').primary();
+                    table.text('uuid').notNullable();
+                    table.text('last_seen_at');
+                });
+                await database('members').insert({
+                    id: 'member-id',
+                    uuid: linkClicks[0].member_uuid,
+                    last_seen_at: 'last-seen-at'
+                });
+
+                const Member = {
+                    async findOne(query, options = {}) {
+                        const queryBuilder = options.transacting || database;
+                        const row = await queryBuilder('members').where(query).first();
+                        return row ? {
+                            id: row.id,
+                            get: key => row[key]
+                        } : null;
+                    }
+                };
+                const repository = new LinkClickRepository({
+                    MemberLinkClickEventModel: memberLinkClickEventModelStub,
+                    Member,
+                    MemberLinkClickEvent: memberLinkClickEventStub,
+                    DomainEvents: domainEventsStub
+                });
+
+                await database.transaction(async (transacting) => {
+                    await repository.save(linkClicks[0], {transacting});
+                });
+            } finally {
+                await database.destroy();
+            }
         });
 
         it('should dispatch a member click event after its transaction commits', async function () {
@@ -165,10 +220,14 @@ describe('UNIT: LinkClickRepository class', function () {
 
         it('should use memoized findOne when cacheMemberUuidLinkClick is true', async function () {
             configUtils.set('linkClickTrackingCacheMemberUuid', true);
-            await linkClickRepository.save(linkClicks[0]);
-            sinon.assert.calledOnce(memberStub.findOne);
-            await linkClickRepository.save(linkClicks[1]);
-            sinon.assert.calledOnce(memberStub.findOne);
+            const transacting = {executionPromise: Promise.resolve()};
+
+            await linkClickRepository.save(linkClicks[0], {transacting});
+            await linkClickRepository.save(linkClicks[1], {transacting});
+
+            sinon.assert.calledOnceWithExactly(memberStub.findOne, {
+                uuid: linkClicks[0].member_uuid
+            }, {transacting});
         });
     });
 });
