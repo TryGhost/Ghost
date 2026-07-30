@@ -20,7 +20,10 @@ export class TagDetailsPage extends AdminPage {
         this.saveButtonSuccess = page.getByRole('button', {name: 'Saved'});
         this.deleteButton = page.getByRole('button', {name: 'Delete tag'});
 
-        this.backLink = page.locator('[data-test-link="tags-back"]');
+        // Both the Ember and React trees can be in the DOM at once, and the
+        // React screen reuses the same data-test attribute — the visibility
+        // filter picks whichever implementation is active.
+        this.backLink = page.locator('[data-test-link="tags-back"]').filter({visible: true});
     }
 
     async fillTagName(name: string) {
@@ -44,4 +47,3 @@ export class TagDetailsPage extends AdminPage {
         await this.backLink.click();
     }
 }
-
