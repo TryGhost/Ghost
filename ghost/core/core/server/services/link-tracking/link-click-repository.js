@@ -31,8 +31,8 @@ module.exports = class LinkClickRepository {
         this.#DomainEvents = deps.DomainEvents;
 
         // Memoize the findOne function
-        this.memoizedFindOne = _.memoize(async (uuid) => {
-            return await this.#Member.findOne({uuid});
+        this.memoizedFindOne = _.memoize(async (uuid, options) => {
+            return await this.#Member.findOne({uuid}, options);
         });
     }
 
@@ -54,15 +54,18 @@ module.exports = class LinkClickRepository {
 
     /**
      * @param {LinkClick} linkClick
-     * @returns {Promise<void>}
+     * @param {object} [options]
+     * @param {object} [options.transacting]
+     * @returns {Promise<string | undefined>}
      */
-    async save(linkClick) {
+    async save(linkClick, options = {}) {
         let member;
+        const memberLookupOptions = options.transacting ? {transacting: options.transacting} : undefined;
 
         if (config && config.get('linkClickTrackingCacheMemberUuid')) {
-            member = await this.memoizedFindOne(linkClick.member_uuid);
+            member = await this.memoizedFindOne(linkClick.member_uuid, memberLookupOptions);
         } else {
-            member = await this.#Member.findOne({uuid: linkClick.member_uuid});
+            member = await this.#Member.findOne({uuid: linkClick.member_uuid}, memberLookupOptions);
         }
 
         if (!member) {
@@ -76,11 +79,29 @@ module.exports = class LinkClickRepository {
             // Only store the pathname (no support for variable query strings)
             redirect_id: linkClick.link_id.toHexString(),
             member_id: member.id
-        }, {});
+        }, options);
 
         linkClick.event_id = ObjectID.createFromHexString(model.id);
+        const timestamp = linkClick.timestamp ?? new Date();
 
-        // Dispatch event
-        this.#DomainEvents.dispatch(this.#MemberLinkClickEvent.create({memberId: member.id, memberLastSeenAt: member.get('last_seen_at'), linkId: linkClick.link_id.toHexString()}, new Date()));
+        const event = this.#MemberLinkClickEvent.create({
+            memberId: member.id,
+            memberLastSeenAt: member.get('last_seen_at'),
+            linkId: linkClick.link_id.toHexString()
+        }, timestamp);
+
+        if (options.transacting) {
+            options.transacting.executionPromise.then(() => {
+                try {
+                    this.#DomainEvents.dispatch(event);
+                } catch (error) {
+                    sentry.captureException(error);
+                }
+            }, () => undefined);
+        } else {
+            this.#DomainEvents.dispatch(event);
+        }
+
+        return member.id;
     }
 };
