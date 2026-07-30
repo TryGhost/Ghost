@@ -12,10 +12,7 @@ import {useAppContext} from '@tryghost/admin-x-framework';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '@/posts/analytics/hooks/use-post-referrers';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface postAnalyticsProps {}
-
-const Growth: React.FC<postAnalyticsProps> = () => {
+const Growth: React.FC = () => {
     const {site} = useAnalyticsData();
     const {postId} = useParams();
     const {stats: postReferrers, totals, isLoading, currencySymbol} = usePostReferrers(postId || '');

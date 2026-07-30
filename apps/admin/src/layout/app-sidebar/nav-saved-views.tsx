@@ -23,17 +23,17 @@ export function NavSavedViews({views}: NavSavedViewsProps) {
             {views.map((view) => (
                 <NavMenuItem.SubmenuItem
                     key={view.key}
-                    to={view.to}
                     isActive={view.isActive}
                     title={view.name}
+                    to={view.to}
                 >
                     <NavMenuItem.Label className={view.color ? 'grow' : undefined}>{view.name}</NavMenuItem.Label>
                     {view.color && (
                         <span
-                            className="size-2 shrink-0 rounded-full"
-                            style={{backgroundColor: getColorHex(view.color)}}
-                            data-color={view.color}
                             aria-hidden="true"
+                            className="size-2 shrink-0 rounded-full"
+                            data-color={view.color}
+                            style={{backgroundColor: getColorHex(view.color)}}
                         />
                     )}
                 </NavMenuItem.SubmenuItem>

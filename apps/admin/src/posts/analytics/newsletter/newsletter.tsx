@@ -16,9 +16,6 @@ import {useEffect, useMemo, useRef, useState} from 'react';
 import {usePostNewsletterStats} from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import {useResponsiveChartSize} from '@/posts/analytics/hooks/use-responsive-chart-size';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface postAnalyticsProps {}
-
 const FunnelArrow: React.FC = () => {
     return (
         <div className='absolute top-1/2 -right-4 z-10 hidden size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground md:visible! md:flex!'>
@@ -66,7 +63,7 @@ const BlockTooltip:React.FC<BlockTooltipProps> = ({
     );
 };
 
-const Newsletter: React.FC<postAnalyticsProps> = () => {
+const Newsletter: React.FC = () => {
     const navigate = useNavigate();
     const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
     const [editedUrl, setEditedUrl] = useState('');

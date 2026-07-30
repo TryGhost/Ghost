@@ -26,10 +26,7 @@ interface ProcessedLocationData {
     percentage: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface postAnalyticsProps {}
-
-const Web: React.FC<postAnalyticsProps> = () => {
+const Web: React.FC = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
     const {statsConfig, isLoading: isConfigLoading, site} = useAnalyticsData();

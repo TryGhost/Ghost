@@ -35,15 +35,15 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
             <div className="flex flex-col items-stretch gap-5">
                 <div className="flex items-center justify-between">
                     <div className="flex w-full min-w-0 items-center gap-2">
-                        <div className="h-8 w-8 flex-shrink-0 rounded-md border-0 bg-transparent">
+                        <div className="size-8 flex-shrink-0 rounded-md border-0 bg-transparent">
                             <img
-                                src={siteIcon}
                                 alt="Site icon"
-                                className="h-full w-full rounded-md object-cover"
+                                className="size-full rounded-md object-cover"
+                                src={siteIcon}
                                 />
                         </div>
                         <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                            <div className="min-w-0 overflow-hidden text-lg font-semibold text-ellipsis whitespace-nowrap text-foreground">
+                            <div className="min-w-0 truncate text-lg font-semibold text-foreground">
                                 {title}
                             </div>
                             {isPrivate && (
@@ -59,8 +59,8 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                 </div>
                 {showSearch && (
                     <Button
-                        variant="outline"
                         className="flex h-(--control-height) items-center justify-between rounded-full border-transparent bg-white pr-2 text-base text-muted-foreground shadow-xs hover:bg-background hover:text-gray-700 hover:shadow-sm dark:border-gray-900/50 dark:bg-gray-900/30 dark:hover:border-gray-900/80 dark:hover:text-gray-400 [&_svg]:stroke-2"
+                        variant="outline"
                         onClick={openSearchModal}
                     >
                         <div className="flex items-center gap-2">
