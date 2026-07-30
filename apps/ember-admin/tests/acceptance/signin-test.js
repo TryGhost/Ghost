@@ -5,7 +5,6 @@ import {
     describe,
     it
 } from 'mocha';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -15,14 +14,6 @@ import {visit} from '../helpers/visit';
 describe('Acceptance: Signin', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
-
-    beforeEach(function () {
-        mockAnalyticsApps();
-    });
-
-    afterEach(function () {
-        cleanupMockAnalyticsApps();
-    });
 
     async function setupSigninFlow(server, {role = 'Administrator', fillForm = true} = {}) {
         if (!server.schema.configs.all().length) {
@@ -134,8 +125,6 @@ describe('Acceptance: Signin', function () {
         });
 
         it('submits successfully', async function () {
-            mockAnalyticsApps();
-            
             invalidateSession();
 
             await visit('/signin');
@@ -145,8 +134,6 @@ describe('Acceptance: Signin', function () {
             await fillIn('[name="password"]', 'thisissupersafe');
             await click('[data-test-button="sign-in"]');
             expect(currentURL(), 'currentURL').to.equal('/analytics');
-            
-            cleanupMockAnalyticsApps();
         });
     });
 

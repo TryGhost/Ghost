@@ -11,7 +11,7 @@ import {buildMembersUrl} from '@/members/member-route';
 import {getLinkById} from '@/posts/analytics/utils/link-helpers';
 import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@tryghost/admin-x-framework';
-import {useEditLinks} from '@/posts/analytics/hooks/use-edit-links';
+import {useBulkEditLinks} from '@tryghost/admin-x-framework/api/links';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {usePostNewsletterStats} from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import {useResponsiveChartSize} from '@/posts/analytics/hooks/use-responsive-chart-size';
@@ -92,7 +92,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     }, [navigate, postId, isPostLoading, showNewsletterSection]);
 
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId);
-    const {editLinks} = useEditLinks();
+    const {mutateAsync: editLinks} = useBulkEditLinks();
 
     // Calculate feedback stats from the post data
     const feedbackStats = useMemo(() => {

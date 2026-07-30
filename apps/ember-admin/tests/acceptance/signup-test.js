@@ -1,6 +1,5 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentRouteName, currentURL, fillIn, find, focus} from '@ember/test-helpers';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -10,14 +9,6 @@ import {visit} from '../helpers/visit';
 describe('Acceptance: Signup', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
-
-    beforeEach(function () {
-        mockAnalyticsApps();
-    });
-
-    afterEach(function () {
-        cleanupMockAnalyticsApps();
-    });
 
     // Helper function to setup signup flow
     async function setupSignupFlow(server, {fillForm = true, role = 'Author'} = {}) {
