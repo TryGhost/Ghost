@@ -1,5 +1,6 @@
 import {Fragment} from "react";
 import {Banner, Button} from "@tryghost/shade/components"
+import {formatNumber} from "@tryghost/shade/utils";
 import {useBrowseConfig} from "@tryghost/admin-x-framework/api/config";
 
 import ghostProLogo from "@/assets/images/ghost-pro-logo.png";
@@ -32,8 +33,10 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
             <div className="mt-3 text-base font-semibold">{bannerConfig?.title || DEFAULT_TITLE}</div>
             <div className="mt-2 mb-4 text-sm text-gray-700">
                 {messageParts.map((part, index) => (
-                    <Fragment key={part}>
-                        {index > 0 && <span className="font-semibold text-foreground">{trialDaysRemaining} days</span>}
+                    // These fragments are positional interpolation segments and never reorder.
+                    // eslint-disable-next-line react/no-array-index-key
+                    <Fragment key={index}>
+                        {index > 0 && <span className="font-semibold text-foreground">{formatNumber(trialDaysRemaining)} days</span>}
                         {part}
                     </Fragment>
                 ))}
