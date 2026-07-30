@@ -40,6 +40,7 @@ const keyGroupMapping = {
     twitter_image: 'site',
     twitter_title: 'site',
     twitter_description: 'site',
+    slug_separator: 'site',
     active_theme: 'theme',
     is_private: 'private',
     password: 'private',

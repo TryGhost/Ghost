@@ -196,6 +196,33 @@ describe('Unit - frontend/data/entry-lookup', function () {
                 assert.equal(lookup.isEditURL, false);
             });
         });
+
+        it('can access unicode based slugs, even if NFD normalization is used', function () {
+            const sectionRouterOptions = {
+                permalinks: '/articles/:section-:slug/:options(edit)?/',
+                query: {controller: 'posts', resource: 'posts'}
+            };
+
+            const nfcNormalizedSlug = 'sample-smörgåstårta-スモルゴストータ'.normalize('NFC');
+            const nfdNormalizedSlug = 'sample-smörgåstårta-スモルゴストータ'.normalize('NFD');
+            assert.notEqual(nfcNormalizedSlug, nfdNormalizedSlug);
+
+            postsReadStub.resolves({
+                posts: [
+                    testUtils.DataGenerator.forKnex.createPost({
+                        url: '/articles/news-' + nfcNormalizedSlug + '/',
+                        slug: nfcNormalizedSlug
+                    })
+                ]
+            });
+
+            return data.entryLookup('http://127.0.0.1:2369/articles/news-' + nfdNormalizedSlug + '/', sectionRouterOptions, locals).then(function (lookup) {
+                sinon.assert.calledOnce(postsReadStub);
+                assert.strictEqual(postsReadStub.firstCall.args[0].slug, nfcNormalizedSlug);
+                assertExists(lookup.entry);
+                assert.equal(lookup.isEditURL, false);
+            });
+        });
     });
 
     describe('permalink param matching', function () {

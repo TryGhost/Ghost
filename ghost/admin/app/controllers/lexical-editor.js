@@ -956,7 +956,7 @@ export default class LexicalEditorController extends Controller {
 
         // Update the slug unless the slug looks to be a custom slug or the title is a default/has been cleared out
         if (
-            (currentSlug && slugify(currentTitle) !== currentSlug)
+            (currentSlug && slugify(currentTitle, {unicodeSlugs: this.feature.unicodeSlugs, slugSeparator: (this.feature.unicodeSlugs ? this.settings.slugSeparator : undefined)}) !== currentSlug)
             && !(currentTitle === DEFAULT_TITLE || currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX))
         ) {
             return;

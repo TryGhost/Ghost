@@ -89,6 +89,11 @@ async function fetchData(pathOptions, routerOptions, locals) {
         postQuery.options.limit = pathOptions.limit;
     }
 
+    // In case this is a slug we normalize it to make sure it matches the form that the database uses
+    if (pathOptions.slug) {
+        pathOptions.slug = pathOptions.slug.normalize('NFC');
+    }
+
     // CASE: always fetch post entries
     // The filter can in theory contain a "%s" e.g. filter="primary_tag:%s"
     promises.push(processQuery(postQuery, pathOptions.slug, locals));

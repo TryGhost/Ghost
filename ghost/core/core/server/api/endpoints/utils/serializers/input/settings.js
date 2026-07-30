@@ -88,6 +88,7 @@ const EDITABLE_SETTINGS = [
     'explore_ping',
     'explore_ping_growth',
     'indexnow_api_key',
+    'slug_separator',
     'transistor',
     'transistor_portal_enabled',
     'transistor_portal_heading',

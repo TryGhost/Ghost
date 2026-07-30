@@ -32,6 +32,7 @@ const keyTypeMapping = {
     twitter_image: 'string',
     twitter_title: 'string',
     twitter_description: 'string',
+    slug_separator: 'string',
     active_theme: 'string',
     password: 'string',
     public_hash: 'string',

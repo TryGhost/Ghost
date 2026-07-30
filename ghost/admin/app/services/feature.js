@@ -82,6 +82,7 @@ export default class FeatureService extends Service {
     @feature('adminUIRefresh') adminUIRefresh;
     @feature('lexicalIndicators') lexicalIndicators;
     @feature('editorExcerpt') editorExcerpt;
+    @feature('unicodeSlugs') unicodeSlugs;
     @feature('tagsX') tagsX;
     @feature('commentModeration') commentModeration;
     @feature('memberDetailsReact') memberDetailsReact;

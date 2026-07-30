@@ -22,7 +22,9 @@ const controller = {
         options: [
             'include',
             'type',
-            'id'
+            'id',
+            'unicodeSlugs',
+            'slugSeparator'
         ],
         data: [
             'name'
@@ -36,6 +38,12 @@ const controller = {
                 },
                 id: {
                     required: false
+                },
+                unicodeSlugs: {
+                    required: false
+                },
+                slugSeparator: {
+                    required: false
                 }
             },
             data: {
@@ -45,7 +53,7 @@ const controller = {
             }
         },
         async query(frame) {
-            const slug = await models.Base.Model.generateSlug(allowedTypes[frame.options.type], frame.data.name, {status: 'all', modelId: frame.options.id});
+            const slug = await models.Base.Model.generateSlug(allowedTypes[frame.options.type], frame.data.name, {status: 'all', modelId: frame.options.id, unicodeSlugs: frame.options.unicodeSlugs, slugSeparator: frame.options.slugSeparator});
             if (!slug) {
                 throw new errors.InternalServerError({
                     message: tpl(messages.couldNotGenerateSlug)

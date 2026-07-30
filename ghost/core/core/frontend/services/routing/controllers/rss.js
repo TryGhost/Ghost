@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:routing:controllers:rss');
 const url = require('url');
-const security = require('@tryghost/security');
 const settingsCache = require('../../../../shared/settings-cache');
 const rssService = require('../../rss');
 const renderer = require('../../rendering');
@@ -29,7 +28,7 @@ module.exports = function rssController(req, res, next) {
 
     const pathOptions = {
         page: 1, // required for fetchData
-        slug: req.params.slug ? security.string.safe(req.params.slug) : undefined
+        slug: req.params.slug
     };
 
     // CASE: Ghost is using an rss cache - normalize the URL for use as a key

@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const security = require('@tryghost/security');
+const {slugify} = require('@tryghost/string');
 const models = require('../../models');
 
 const modelOptions = {context: {internal: true}};
@@ -21,7 +21,7 @@ const exportFileName = async function exportFileName(options) {
         const settingsTitle = await models.Settings.findOne({key: 'title'}, _.merge({}, modelOptions, _.pick(options, 'transacting')));
 
         if (settingsTitle) {
-            title = security.string.safe(settingsTitle.get('value')) + '.';
+            title = slugify(settingsTitle.get('value')) + '.';
         }
 
         return title + 'ghost.' + datetime + '.json';

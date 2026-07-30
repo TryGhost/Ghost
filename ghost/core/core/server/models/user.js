@@ -2,6 +2,8 @@ const validator = require('@tryghost/validator');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
 const baseUtils = require('./base/utils');
+const settingsCache = require('../../shared/settings-cache');
+const labs = require('../../shared/labs');
 const limitService = require('../services/limits');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
@@ -226,6 +228,8 @@ User = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
+        const slugSeparator = settingsCache.get('slug_separator');
+    
         /**
          * Bookshelf call order:
          *   - onSaving
@@ -265,7 +269,9 @@ User = ghostBookshelf.Model.extend({
                     {
                         status: 'all',
                         transacting: options.transacting,
-                        shortSlug: !self.get('slug')
+                        shortSlug: !self.get('slug'),
+                        unicodeSlugs: labs.isSet('unicodeSlugs'),
+                        slugSeparator: (labs.isSet('unicodeSlugs') ? slugSeparator : undefined)
                     })
                     .then(function then(slug) {
                         self.set({slug: slug});

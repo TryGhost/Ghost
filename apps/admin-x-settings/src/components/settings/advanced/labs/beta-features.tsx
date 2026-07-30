@@ -1,24 +1,44 @@
 import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
 import React, {useState} from 'react';
-import {Button, FileUpload, List, showToast} from '@tryghost/admin-x-design-system';
+import {Button, FileUpload, List, Select, showToast} from '@tryghost/admin-x-design-system';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
-import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
+import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const IS_AUTOMATIONS_BETA_ACTIVE = true;
 
+const SLUG_SEPARATORS = [
+    {
+        value: '-',
+        label: 'Dashes [-]',
+        hint: 'The default mode (e.g. /example-ghost-post/).'
+    },
+    {
+        value: '_',
+        label: 'Underscores [_]',
+        hint: 'A mode with better readability and clearer distinction (e.g. /example_ghost_post/).'
+    },
+    {
+        value: ' ',
+        label: 'Spaces [ ]',
+        hint: 'A natural mode, but might look foreign in URL:s (eg. /example ghost post/). Also, many browsers will show spaces as %20 in the URL:s.'
+    }
+];
+
 const BetaFeatures: React.FC = () => {
     const {settings} = useGlobalData();
     const {mutateAsync: uploadRedirects} = useUploadRedirects();
     const {mutateAsync: uploadRoutes} = useUploadRoutes();
+    const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
     const [redirectsUploading, setRedirectsUploading] = useState<boolean>(false);
     const [routesUploading, setRoutesUploading] = useState<boolean>(false);
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
     const isAutomationsEnabled = !!labs.automations;
+    const slugSeparator = getSettingValue<string>(settings, 'slug_separator') || '-';
 
     return (
         <List titleSeparator={false}>
@@ -45,6 +65,24 @@ const BetaFeatures: React.FC = () => {
                 action={<FeatureToggle flag="editorExcerpt" />}
                 detail={<>Adds the excerpt input below the post title in the editor</>}
                 title='Show post excerpt inline' />
+            <LabItem
+                action={<div className='flex w-full max-w-none min-w-[160px] flex-col items-end gap-3 md:w-2/3 md:max-w-[320px]'>
+                    <FeatureToggle flag="unicodeSlugs" />
+                    <Select
+                        containerClassName='w-full md:flex-1'
+                        disabled={!labs.unicodeSlugs}
+                        options={SLUG_SEPARATORS}
+                        selectedOption={SLUG_SEPARATORS.find(option => option.value === slugSeparator)}
+                        onSelect={async (option) => {
+                            await editSettings([{
+                                key: 'slug_separator',
+                                value: option?.value || '-'
+                            }]);
+                        }}
+                    />
+                </div>}
+                detail={<>Use Unicode letters and numbers in URL slugs instead of transliterating them (e.g /smörgåsbord/ instead of /smorgasbord/), which may add benefits for SEO. You can also select another slug separator to adjust the look of the URL:s.</>}
+                title='International slugs' />
             <LabItem
                 action={<FeatureToggle flag="additionalPaymentMethods" />}
                 detail={<>Enable support for CashApp, iDEAL, Bancontact, and others. <a className='text-green' href="https://ghost.org/help/payment-methods" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}

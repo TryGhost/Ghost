@@ -10,6 +10,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const ghostBookshelf = require('./base');
 const config = require('../../shared/config');
 const settingsCache = require('../../shared/settings-cache');
+const labs = require('../../shared/labs');
 const limitService = require('../services/limits');
 const mobiledocLib = require('../lib/mobiledoc');
 const lexicalLib = require('../lib/lexical');
@@ -552,6 +553,7 @@ Post = ghostBookshelf.Model.extend({
         const publishedAt = this.get('published_at');
         const publishedAtHasChanged = this.hasDateChanged('published_at', {beforeWrite: true});
         const generatedFields = ['html', 'plaintext'];
+        const slugSeparator = settingsCache.get('slug_separator');
         let tagsToSave;
         const ops = [];
 
@@ -627,7 +629,7 @@ Post = ghostBookshelf.Model.extend({
                     tag.slug = await ghostBookshelf.Model.generateSlug(
                         Tag,
                         tag.slug,
-                        {skipDuplicateChecks: true}
+                        {skipDuplicateChecks: true, unicodeSlugs: labs.isSet('unicodeSlugs'), slugSeparator: (labs.isSet('unicodeSlugs') ? slugSeparator : undefined)}
                     );
                 }
 
@@ -846,14 +848,16 @@ Post = ghostBookshelf.Model.extend({
             ops.push(function updateSlug() {
                 // Pass the new slug through the generator to strip illegal characters, detect duplicates
                 return ghostBookshelf.Model.generateSlug(Post, self.get('title'),
-                    {status: 'all', transacting: options.transacting, importing: options.importing})
+                    {status: 'all', transacting: options.transacting, importing: options.importing, unicodeSlugs: labs.isSet('unicodeSlugs'), slugSeparator: (labs.isSet('unicodeSlugs') ? slugSeparator : undefined)})
                     .then(function then(slug) {
                         // After the new slug is found, do another generate for the old title to compare it to the old slug
                         return ghostBookshelf.Model.generateSlug(Post, prevTitle,
-                            {status: 'all', transacting: options.transacting, importing: options.importing}
+                            {status: 'all', transacting: options.transacting, importing: options.importing, unicodeSlugs: labs.isSet('unicodeSlugs'), slugSeparator: (labs.isSet('unicodeSlugs') ? slugSeparator : undefined)}
                         ).then(function prevTitleSlugGenerated(prevTitleSlug) {
                             // If the old slug is the same as the slug that was generated from the old title
-                            // then set a new slug. If it is not the same, means was set by the user
+                            // then set a new slug. If it is not the same, means was set by the user or that
+                            // it was created with older or different options for the slug generator. In
+                            // these cases, the old slug should be kept.
                             if (prevTitleSlug === prevSlug) {
                                 self.set({slug: slug});
                             }
@@ -866,7 +870,7 @@ Post = ghostBookshelf.Model.extend({
                 if (self.hasChanged('slug') || !self.get('slug')) {
                     // Pass the new slug through the generator to strip illegal characters, detect duplicates
                     return ghostBookshelf.Model.generateSlug(Post, self.get('slug') || self.get('title'),
-                        {status: 'all', transacting: options.transacting, importing: options.importing})
+                        {status: 'all', transacting: options.transacting, importing: options.importing, unicodeSlugs: labs.isSet('unicodeSlugs'), slugSeparator: (labs.isSet('unicodeSlugs') ? slugSeparator : undefined)})
                         .then(function then(slug) {
                             self.set({slug: slug});
                         });

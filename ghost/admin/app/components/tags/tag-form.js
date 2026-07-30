@@ -136,7 +136,7 @@ export default class TagForm extends Component {
 
         // Generate slug based on name for new tag when empty
         if (property === 'name' && tag.isNew && !this.hasChangedSlug) {
-            let slugValue = slugify(newValue);
+            let slugValue = slugify(newValue, {unicodeSlugs: this.feature.unicodeSlugs, slugSeparator: (this.feature.unicodeSlugs ? this.settings.slugSeparator : undefined)});
             if (/^#/.test(newValue)) {
                 slugValue = 'hash-' + slugValue;
             }

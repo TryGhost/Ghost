@@ -269,6 +269,15 @@
                 }
             },
             "type": "string"
+        },
+        "slug_separator": {
+            "defaultValue": "-",
+            "validations": {
+                "isLength": {
+                    "max": 1
+                }
+            },
+            "type": "string"
         }
     },
     "theme": {

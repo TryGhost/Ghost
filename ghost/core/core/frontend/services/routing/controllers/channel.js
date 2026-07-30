@@ -1,7 +1,6 @@
 const debug = require('@tryghost/debug')('services:routing:controllers:channel');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const security = require('@tryghost/security');
 const themeEngine = require('../../theme-engine');
 const dataService = require('../../data');
 const renderer = require('../../rendering');
@@ -25,7 +24,7 @@ module.exports = function channelController(req, res, next) {
 
     const pathOptions = {
         page: req.params.page !== undefined ? req.params.page : 1,
-        slug: req.params.slug ? security.string.safe(req.params.slug) : undefined
+        slug: req.params.slug
     };
 
     if (pathOptions.page) {

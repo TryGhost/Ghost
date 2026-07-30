@@ -7,6 +7,8 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const {slugify} = require('@tryghost/string');
 const _ = require('lodash');
+const labs = require('../../shared/labs');
+const {settingsCache} = require('../services/proxy');
 
 const messages = {
     invalidData: 'navigation data is not an object or is a function',
@@ -75,7 +77,7 @@ module.exports = function navigation(options) {
         const out = {};
         out.current = _isCurrentUrl(e.url, currentUrl);
         out.label = e.label;
-        out.slug = slugify(e.label);
+        out.slug = slugify(e.label, {unicodeSlugs: labs.isSet('unicodeSlugs'), slugSeparator: (labs.isSet('unicodeSlugs') ? settingsCache.get('slug_separator') : undefined)});
         out.url = e.url;
         return out;
     });

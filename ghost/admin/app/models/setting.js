@@ -132,6 +132,11 @@ export default Model.extend(ValidationEngine, {
      */
     transistor: attr('boolean'),
 
+    /**
+     * Settings for Labs options
+     */
+    slugSeparator: attr('string'),
+
     // HACK - not a real model attribute but a workaround for Ember Data not
     //        exposing meta from save responses
     _meta: attr()

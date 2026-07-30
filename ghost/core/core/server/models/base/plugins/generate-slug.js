@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const security = require('@tryghost/security');
+const {slugify} = require('@tryghost/string');
 
 const urlUtils = require('../../../../shared/url-utils');
 
@@ -70,7 +70,7 @@ module.exports = function (Bookshelf) {
                 });
             };
 
-            slug = security.string.safe(base, options);
+            slug = slugify(base, { requiredChangesOnly: options.importing, unicodeSlugs: options.unicodeSlugs, slugSeparator: options.slugSeparator });
 
             // the slug may never be longer than the allowed limit of 191 chars, but should also
             // take the counter into count. We reduce a too long slug to 185 so we're always on the
@@ -125,4 +125,6 @@ module.exports = function (Bookshelf) {
  * @property {boolean} [importing] Set to true to don't cut the slug on import
  * @property {boolean} [shortSlug] If it's a user, let's try to cut it down (unless this is a human request)
  * @property {boolean} [skipDuplicateChecks] Don't append unique identifiers when the slug is not unique (this prevents any database queries)
+ * @property {boolean} [unicodeSlugs] Don't perform optional transliteration, e.g. keep smörgåsbord as it is instead of turning it into smorgasbord
+ * @property {string} [slugSeparator] Separator to be used for the slugs, can be ` `, `_` or `-`, defaults to `-`
  */

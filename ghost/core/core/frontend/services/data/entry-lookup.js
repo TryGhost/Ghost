@@ -48,6 +48,11 @@ function entryLookup(postUrl, routerOptions, locals, {giftToken} = {}) {
         options.context.giftToken = giftToken;
     }
 
+    // In case this is a slug we normalize it to make sure it matches the form that the database uses
+    if (params.slug) {
+        params.slug = params.slug.normalize('NFC');
+    }
+
     return (api[routerOptions.query.controller] || api[routerOptions.query.resource])
         .read(_.extend(_.pick(params, 'slug', 'id'), options))
         .then(function then(result) {

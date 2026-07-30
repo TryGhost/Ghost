@@ -2,6 +2,8 @@ const ghostBookshelf = require('./base');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../shared/url-utils');
+const settingsCache = require('../../shared/settings-cache');
+const labs = require('../../shared/labs');
 
 const messages = {
     tagNotFound: 'Tag not found.'
@@ -109,6 +111,8 @@ Tag = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
+        const slugSeparator = settingsCache.get('slug_separator');
+
         // Support tag creation with `posts: [{..., tags: [{slug: 'new'}]}]`
         // In that situation we have a slug but no name so validation will fail
         // unless we set one automatically. Re-using slug for name matches our
@@ -125,7 +129,11 @@ Tag = ghostBookshelf.Model.extend({
         if (this.hasChanged('slug') || (!this.get('slug') && this.get('name'))) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
             return ghostBookshelf.Model.generateSlug(Tag, this.get('slug') || this.get('name'),
-                {transacting: options.transacting})
+                {
+                    transacting: options.transacting,
+                    unicodeSlugs: labs.isSet('unicodeSlugs'),
+                    slugSeparator: (labs.isSet('unicodeSlugs') ? slugSeparator : undefined)
+                })
                 .then(function then(slug) {
                     self.set({slug: slug});
                 });

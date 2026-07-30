@@ -2,7 +2,6 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:routing:controllers:collection');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const security = require('@tryghost/security');
 const {routerManager} = require('../');
 const themeEngine = require('../../theme-engine');
 const renderer = require('../../rendering');
@@ -24,7 +23,7 @@ module.exports = function collectionController(req, res, next) {
 
     const pathOptions = {
         page: req.params.page !== undefined ? req.params.page : 1,
-        slug: req.params.slug ? security.string.safe(req.params.slug) : undefined
+        slug: req.params.slug
     };
 
     if (pathOptions.page) {
