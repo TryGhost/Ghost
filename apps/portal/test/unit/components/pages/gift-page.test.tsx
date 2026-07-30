@@ -2,7 +2,9 @@ import {fireEvent, render} from '../../../utils/test-utils';
 import GiftPage from '../../../../src/components/pages/gift-page';
 import {getPriceData, getProductData, getSiteData} from '../../../../src/utils/fixtures-generator';
 
-function buildSite(overrides = {}) {
+type SiteData = ReturnType<typeof getSiteData>;
+
+function buildSite(overrides: Partial<Parameters<typeof getSiteData>[0]> = {}) {
     const product = getProductData({
         id: 'tier_123',
         name: 'Premium',
@@ -18,7 +20,7 @@ function buildSite(overrides = {}) {
     });
 }
 
-function setup(site) {
+function setup(site: SiteData) {
     return render(<GiftPage />, {
         overrideContext: {
             site,

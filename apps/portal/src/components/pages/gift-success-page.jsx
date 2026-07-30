@@ -6,6 +6,7 @@ import GiftDetailsToggle from '../common/gift-details-toggle';
 import copyTextToClipboard from '../../utils/copy-to-clipboard';
 import {getAvailableProducts} from '../../utils/helpers';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
+import {getGiftPrice} from '../../utils/gift-subscriptions';
 import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
 import {formatGiftValue} from './gift-page';
@@ -147,8 +148,8 @@ const GiftSuccessPage = () => {
                                     }) : null}
                                     tierName={tier && cadence ? tier.name : null}
                                     giftValue={tier && cadence ? formatGiftValue(
-                                        cadence === 'month' && duration
-                                            ? {...tier.monthlyPrice, amount: tier.monthlyPrice.amount * duration}
+                                        duration
+                                            ? getGiftPrice(tier, duration)
                                             : cadence === 'month' ? tier.monthlyPrice : tier.yearlyPrice
                                     ) : null}
                                     siteIcon={siteIcon}

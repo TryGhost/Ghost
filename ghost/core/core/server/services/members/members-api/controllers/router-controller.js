@@ -853,16 +853,15 @@ module.exports = class RouterController {
             let data;
 
             if (this.labsService.isSet('giftSubCustomization')) {
-                const resolvedDuration = resolveGiftDuration(req.body);
+                const resolvedOffer = resolveGiftDuration(req.body);
                 const subscriptionData = await this._getSubscriptionCheckoutData({
                     tierId: req.body.tierId,
-                    cadence: resolvedDuration.cadence
+                    cadence: resolvedOffer.cadence
                 });
                 const giftOffer = validateGiftCheckoutOffer({
                     tier: subscriptionData.tier,
                     portalPlans: this._settingsCache.get('portal_plans'),
-                    duration: req.body.duration,
-                    cadence: req.body.cadence
+                    offer: resolvedOffer
                 });
 
                 data = {

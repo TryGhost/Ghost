@@ -23,7 +23,8 @@ describe('gift checkout offer', function () {
                 portalPlan: 'monthly',
                 priceProperty: 'monthlyPrice',
                 multiplier: 1,
-                totalMonths: 1
+                totalMonths: 1,
+                isCadenceOnly: false
             });
             assert.deepEqual(resolveGiftDuration({duration: 3}), {
                 cadence: 'month',
@@ -31,7 +32,8 @@ describe('gift checkout offer', function () {
                 portalPlan: 'monthly',
                 priceProperty: 'monthlyPrice',
                 multiplier: 3,
-                totalMonths: 3
+                totalMonths: 3,
+                isCadenceOnly: false
             });
             assert.deepEqual(resolveGiftDuration({duration: 6}), {
                 cadence: 'month',
@@ -39,7 +41,8 @@ describe('gift checkout offer', function () {
                 portalPlan: 'monthly',
                 priceProperty: 'monthlyPrice',
                 multiplier: 6,
-                totalMonths: 6
+                totalMonths: 6,
+                isCadenceOnly: false
             });
             assert.deepEqual(resolveGiftDuration({duration: 12}), {
                 cadence: 'year',
@@ -47,13 +50,15 @@ describe('gift checkout offer', function () {
                 portalPlan: 'yearly',
                 priceProperty: 'yearlyPrice',
                 multiplier: 1,
-                totalMonths: 12
+                totalMonths: 12,
+                isCadenceOnly: false
             });
         });
 
         it('maps legacy cadence-only requests', function () {
             assert.equal(resolveGiftDuration({cadence: 'month'}).totalMonths, 1);
             assert.equal(resolveGiftDuration({cadence: 'year'}).totalMonths, 12);
+            assert.equal(resolveGiftDuration({cadence: 'year'}).isCadenceOnly, true);
         });
 
         it('accepts matching cadence and duration', function () {
@@ -81,7 +86,7 @@ describe('gift checkout offer', function () {
             assert.deepEqual(validateGiftCheckoutOffer({
                 tier,
                 portalPlans: ['monthly', 'yearly'],
-                duration: 3
+                offer: resolveGiftDuration({duration: 3})
             }), {
                 cadence: 'month',
                 duration: 3,
@@ -92,7 +97,7 @@ describe('gift checkout offer', function () {
             assert.deepEqual(validateGiftCheckoutOffer({
                 tier,
                 portalPlans: ['monthly', 'yearly'],
-                duration: 12
+                offer: resolveGiftDuration({duration: 12})
             }), {
                 cadence: 'year',
                 duration: 1,
@@ -110,7 +115,7 @@ describe('gift checkout offer', function () {
                 assert.throws(() => validateGiftCheckoutOffer({
                     tier: unavailableTier,
                     portalPlans: ['monthly', 'yearly'],
-                    duration: 3
+                    offer: resolveGiftDuration({duration: 3})
                 }), BadRequestError);
             }
         });
@@ -119,13 +124,26 @@ describe('gift checkout offer', function () {
             assert.throws(() => validateGiftCheckoutOffer({
                 tier,
                 portalPlans: ['yearly'],
-                duration: 3
+                offer: resolveGiftDuration({duration: 3})
             }), BadRequestError);
             assert.throws(() => validateGiftCheckoutOffer({
                 tier,
                 portalPlans: ['monthly'],
-                duration: 12
+                offer: resolveGiftDuration({duration: 12})
             }), BadRequestError);
+        });
+
+        it('exempts legacy cadence-only requests from the Portal plan gate', function () {
+            assert.deepEqual(validateGiftCheckoutOffer({
+                tier,
+                portalPlans: ['monthly'],
+                offer: resolveGiftDuration({cadence: 'year'})
+            }), {
+                cadence: 'year',
+                duration: 1,
+                totalMonths: 12,
+                amount: 5000
+            });
         });
 
         it('rejects missing or invalid prices and currency', function () {
@@ -138,7 +156,7 @@ describe('gift checkout offer', function () {
                 assert.throws(() => validateGiftCheckoutOffer({
                     tier: invalidTier,
                     portalPlans: ['monthly'],
-                    duration: 3
+                    offer: resolveGiftDuration({duration: 3})
                 }), BadRequestError);
             }
         });

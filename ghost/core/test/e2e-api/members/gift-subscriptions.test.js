@@ -391,7 +391,9 @@ describe('Gift Subscriptions', function () {
         });
 
         it('keeps legacy cadence-only gift checkout compatible when customization is enabled', async function () {
-            enableGiftCustomization();
+            mockManager.mockLabsEnabled('giftSubCustomization');
+            // legacy clients predate the Portal plan gate, so a disabled yearly plan must not block them
+            mockManager.mockSetting('portal_plans', ['free', 'monthly']);
             const paidTier = await getPaidTier();
 
             await membersAgent.post('/api/create-stripe-checkout-session/')

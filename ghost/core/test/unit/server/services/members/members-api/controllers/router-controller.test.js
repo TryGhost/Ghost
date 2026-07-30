@@ -875,6 +875,42 @@ describe('RouterController', function () {
                 }));
             });
 
+            it('exempts legacy cadence-only clients from the Portal plan gate', async function () {
+                const controller = customizedGiftController({
+                    settingsCache: {
+                        get: sinon.stub().callsFake(key => (key === 'portal_plans' ? ['monthly'] : undefined))
+                    }
+                });
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'year', metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    cadence: 'year',
+                    duration: 1,
+                    totalMonths: 12,
+                    amount: 50000
+                }));
+            });
+
+            it('rejects explicit durations disabled in Portal', async function () {
+                const controller = customizedGiftController({
+                    settingsCache: {
+                        get: sinon.stub().callsFake(key => (key === 'portal_plans' ? ['monthly'] : undefined))
+                    }
+                });
+
+                await assert.rejects(
+                    () => controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', duration: 12, metadata: {}}
+                    }, mockRes),
+                    errors.BadRequestError
+                );
+
+                sinon.assert.notCalled(getGiftLinkSpy);
+            });
+
             it('rejects conflicting cadence and duration before creating checkout', async function () {
                 const controller = customizedGiftController();
 

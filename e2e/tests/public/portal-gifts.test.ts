@@ -32,7 +32,7 @@ test.describe('Ghost Public - Portal Gifts', () => {
         await portalGiftPage.continueButton.click();
 
         const checkoutPage = new FakeStripeCheckoutPage(page);
-        await checkoutPage.waitUntilDonationReady();
+        await checkoutPage.waitUntilPaymentReady();
         await expect(checkoutPage.totalAmount).toHaveText('$15.00');
         await checkoutPage.submitPayment();
         await stripe!.completeLatestGiftCheckout({

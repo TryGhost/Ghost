@@ -36,7 +36,7 @@ export function getSiteData({
     portalProducts = products.map(p => p.id),
     accentColor: accent_color = '#45C32E',
     portalPlans: portal_plans = ['free', 'monthly', 'yearly'],
-    portalDefaultPlan: portal_default_plan,
+    portalDefaultPlan: portal_default_plan = '',
     membersSignupAccess: members_signup_access = 'all',
     freePriceName: free_price_name = 'Free',
     freePriceDescription: free_price_description = 'Free preview',

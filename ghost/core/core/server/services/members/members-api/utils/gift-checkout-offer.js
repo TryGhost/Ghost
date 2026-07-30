@@ -1,5 +1,7 @@
 const {BadRequestError} = require('@tryghost/errors');
 
+// Mirrored by the Portal catalogue in apps/portal/src/utils/gift-subscriptions.ts
+// until later customization work makes durations server-provided
 const GIFT_DURATION_CATALOGUE = new Map([
     [1, {cadence: 'month', billingDuration: 1, portalPlan: 'monthly', priceProperty: 'monthlyPrice', multiplier: 1}],
     [3, {cadence: 'month', billingDuration: 3, portalPlan: 'monthly', priceProperty: 'monthlyPrice', multiplier: 3}],
@@ -39,18 +41,18 @@ function resolveGiftDuration({duration, cadence}) {
 
     return {
         ...offer,
-        totalMonths
+        totalMonths,
+        isCadenceOnly: duration === undefined
     };
 }
 
-function validateGiftCheckoutOffer({tier, portalPlans, duration, cadence}) {
-    const offer = resolveGiftDuration({duration, cadence});
-
+function validateGiftCheckoutOffer({tier, portalPlans, offer}) {
     if (tier.status !== 'active' || tier.visibility !== 'public' || tier.type !== 'paid') {
         throw invalidGiftOffer('The requested tier is not available for gift purchases');
     }
 
-    if (!Array.isArray(portalPlans) || !portalPlans.includes(offer.portalPlan)) {
+    // legacy cadence-only requests predate the Portal plan gate, keep them working
+    if (!offer.isCadenceOnly && (!Array.isArray(portalPlans) || !portalPlans.includes(offer.portalPlan))) {
         throw invalidGiftOffer(`The ${offer.portalPlan} Portal plan is not available`);
     }
 

@@ -1,3 +1,6 @@
+// Must match the server-owned catalogue in
+// ghost/core/core/server/services/members/members-api/utils/gift-checkout-offer.js
+// until later customization work makes durations server-provided
 export const GIFT_DURATION_CATALOGUE = [1, 3, 6, 12] as const;
 
 export type GiftDuration = typeof GIFT_DURATION_CATALOGUE[number];
@@ -75,13 +78,19 @@ export function getGiftProducts({site, duration}: {site?: GiftSite | null | unde
         return [];
     }
 
+    // portal_products is only respected on multi-tier sites, matching getAvailableProducts
+    const portalProductIds = Array.isArray(portalProducts) && products.length > 1 ? portalProducts : null;
+
     return products.filter(product => (
         product?.type === 'paid'
-        && (!Array.isArray(portalProducts) || portalProducts.includes(product.id))
+        && (!portalProductIds || portalProductIds.includes(product.id))
         && !!getGiftPrice(product, duration)
-    )).sort((productA, productB) => (
-        (getGiftPrice(productA, duration)?.amount ?? 0) - (getGiftPrice(productB, duration)?.amount ?? 0)
-    ));
+    )).map(product => ({
+        product,
+        amount: getGiftPrice(product, duration)?.amount ?? 0
+    })).sort((productA, productB) => (
+        productA.amount - productB.amount
+    )).map(({product}) => product);
 }
 
 export function getAvailableGiftDurations({site}: {site?: GiftSite | null | undefined}): GiftDuration[] {
