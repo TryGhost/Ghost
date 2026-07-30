@@ -1524,9 +1524,9 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
 
             return {id};
         },
-        onSuccess: (activity: Activity, variables) => {
-            if (activity.id === undefined) {
-                throw new Error('Activity returned from API has no id');
+        onSuccess: (post: Post, variables) => {
+            if (typeof post.id !== 'string' || post.id.length === 0) {
+                throw new Error('Post returned from API has no id');
             }
 
             // Invalidate reply chain cache to refetch with new reply

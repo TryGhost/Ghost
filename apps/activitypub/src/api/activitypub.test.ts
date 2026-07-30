@@ -1,4 +1,5 @@
 import {ActivityPubAPI} from './activitypub';
+import type {JSONValue} from '@tryghost/admin-x-framework/api/config';
 
 function NotFound() {
     return new Response(null, {
@@ -6,8 +7,7 @@ function NotFound() {
     });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function JSONResponse(data: any, contentType = 'application/json', status = 200) {
+function JSONResponse(data: JSONValue, contentType = 'application/json', status = 200) {
     return new Response(JSON.stringify(data), {
         status,
         headers: {

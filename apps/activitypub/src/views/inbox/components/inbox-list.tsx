@@ -2,7 +2,7 @@ import FeedItem from '@src/components/feed/feed-item';
 import Layout from '@src/components/layout';
 import Reader from './reader';
 import TopicFilter, {Topic} from '@src/components/topic-filter';
-import {Activity} from '@src/api/activitypub';
+import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, EmptyIndicator, LoadingIndicator, Separator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {isPendingActivity} from '@src/utils/pending-activity';

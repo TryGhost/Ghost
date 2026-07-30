@@ -1,5 +1,5 @@
-import {Activity, Post, PostType} from '../api/activitypub';
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Post, PostType} from '../api/activitypub';
 
 /**
  * Map a Post to an ActivityPub activity

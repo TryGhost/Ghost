@@ -4,7 +4,8 @@ import Likes from './components/likes';
 import Posts from './components/posts';
 import ProfilePage from './components/profile-page';
 import React, {useEffect} from 'react';
-import {Activity, isApiError} from '@src/api/activitypub';
+import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
+import {isApiError} from '@src/api/activitypub';
 import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount, usePostsLikedByAccount} from '@hooks/use-activity-pub-queries';
 import {useParams} from '@tryghost/admin-x-framework';
 

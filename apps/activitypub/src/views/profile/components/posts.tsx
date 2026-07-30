@@ -1,5 +1,5 @@
 import FeedItem from '@src/components/feed/feed-item';
-import {Activity} from '@src/api/activitypub';
+import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
 import {LoadingIndicator, NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {useEffect, useRef} from 'react';

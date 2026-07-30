@@ -1,10 +1,11 @@
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import type {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Actor = any;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Activity = any;
+export type Actor = {
+    actor: ActorProperties;
+    isFollowing: boolean;
+    blockedByMe?: boolean;
+    domainBlockedByMe?: boolean;
+};
 
 export interface Account {
     id: string;
@@ -78,18 +79,12 @@ export interface ReplyChainResponse {
 export type ActivityPubCollectionResponse<T> = {data: T[], next: string | null};
 
 export interface GetProfileFollowersResponse {
-    followers: {
-        actor: Actor;
-        isFollowing: boolean;
-    }[];
+    followers: Actor[];
     next: string | null;
 }
 
 export interface GetProfileFollowingResponse {
-    following: {
-        actor: Actor;
-        isFollowing: boolean;
-    }[];
+    following: Actor[];
     next: string | null;
 }
 
@@ -311,7 +306,7 @@ export class ActivityPubAPI {
         }
     }
 
-    private async fetchJSON(url: URL, method: 'DELETE' | 'GET' | 'POST' | 'PUT' = 'GET', body?: object): Promise<object | null> {
+    private async fetchJSON<T extends object = object>(url: URL, method: 'DELETE' | 'GET' | 'POST' | 'PUT' = 'GET', body?: object): Promise<T | null> {
         const token = await this.getToken();
         const options: RequestInit = {
             method,
@@ -354,7 +349,7 @@ export class ActivityPubAPI {
             throw error;
         }
 
-        return await response.json();
+        return await response.json() as T;
     }
 
     async blockDomain(domain: URL): Promise<boolean> {
@@ -425,13 +420,16 @@ export class ActivityPubAPI {
         await this.fetchJSON(url, 'POST');
     }
 
-    async reply(id: string, content: string, image?: {url: string, altText?: string}): Promise<Activity> {
+    async reply(id: string, content: string, image?: {url: string, altText?: string}): Promise<Post> {
         const url = new URL(`.ghost/activitypub/v1/actions/reply/${encodeURIComponent(id)}`, this.apiUrl);
         const body: {content: string, image?: {url: string, altText?: string}} = {content};
         if (image) {
             body.image = image;
         }
-        const response = await this.fetchJSON(url, 'POST', body);
+        const response = await this.fetchJSON<Post>(url, 'POST', body);
+        if (response === null) {
+            throw new Error('Reply returned no post');
+        }
         return response;
     }
 
