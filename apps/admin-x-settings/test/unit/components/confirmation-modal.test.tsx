@@ -28,6 +28,8 @@ describe('ConfirmationModal', () => {
 
         expect(await screen.findByRole('heading', {name: 'Delete newsletter?'})).toBeInTheDocument();
         expect(screen.getByText('This cannot be undone.')).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Keep it'})).toHaveClass('border-control-border', 'bg-transparent');
+        expect(screen.getByRole('button', {name: 'Delete'})).not.toHaveClass('min-w-20');
 
         fireEvent.click(screen.getByRole('button', {name: 'Delete'}));
 

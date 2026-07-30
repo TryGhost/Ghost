@@ -76,12 +76,12 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     const defaultFooter = (
         <AlertDialogFooter>
             {cancelLabel && (
-                <Button className='font-semibold' data-testid='cancel-modal' disabled={isRunning} type='button' variant='ghost' onClick={handleCancel}>
+                <Button data-testid='cancel-modal' disabled={isRunning} type='button' variant='outline' onClick={handleCancel}>
                     {cancelLabel}
                 </Button>
             )}
             {okLabel && (
-                <Button className='min-w-20' data-testid='ok-modal' disabled={isRunning} type='button' variant={okVariant} onClick={handleConfirm}>
+                <Button data-testid='ok-modal' disabled={isRunning} type='button' variant={okVariant} onClick={handleConfirm}>
                     {isRunning ? okRunningLabel : okLabel}
                 </Button>
             )}

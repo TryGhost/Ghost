@@ -281,12 +281,12 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(({
                 <Box>{leftButton}</Box>
                 <Inline gap='md'>
                     {cancelLabel && (
-                        <Button className='font-semibold' data-testid='cancel-modal' disabled={buttonsDisabled} type='button' variant='ghost' onClick={onCancel || removeModal}>
+                        <Button data-testid='cancel-modal' disabled={buttonsDisabled} type='button' variant='outline' onClick={onCancel || removeModal}>
                             {cancelLabel}
                         </Button>
                     )}
                     {okLabel && (
-                        <Button className='min-w-20' data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={onOk}>
+                        <Button data-testid='ok-modal' disabled={buttonsDisabled || okDisabled || okLoading} type='button' variant={okVariant} onClick={onOk}>
                             {okLoading && <LoadingIndicator size='sm' />}
                             {okLabel}
                         </Button>

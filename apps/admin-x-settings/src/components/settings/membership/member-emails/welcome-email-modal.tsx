@@ -234,7 +234,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 className='dark:bg-[#151719]'
                 headerActions={
                     <>
-                        <Button className='font-semibold' type='button' variant='ghost' onClick={handleClose}>Close</Button>
+                        <Button type='button' variant='outline' onClick={handleClose}>Close</Button>
                         <Button
                             disabled={okProps.disabled}
                             type='button'

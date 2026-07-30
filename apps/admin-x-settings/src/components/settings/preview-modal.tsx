@@ -228,7 +228,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                                 </Text>
                                 {sidebarButtons || (
                                     <Inline gap='md'>
-                                        <Button className='font-semibold' disabled={buttonsDisabled} type='button' variant='ghost' onClick={handleCancel}>{cancelLabel}</Button>
+                                        <Button disabled={buttonsDisabled} type='button' variant='outline' onClick={handleCancel}>{cancelLabel}</Button>
                                         <Button disabled={buttonsDisabled} type='button' variant={okVariant} onClick={onOk}>{okLabel}</Button>
                                     </Inline>
                                 )}

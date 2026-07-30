@@ -249,7 +249,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const right =
         <div className='flex items-center gap-14'>
             <div className='flex items-center gap-3'>
-                <Button className='font-semibold' type='button' variant='ghost' onClick={() => {
+                <Button type='button' variant='outline' onClick={() => {
                     modal.remove();
                     onClose();
                 }}>Close</Button>

@@ -18,7 +18,7 @@ const UniversalImportModal: React.FC = () => {
             footer={
                 <div className='flex w-full items-center justify-between p-8'>
                     <a className='text-green hover:text-green-400' href="https://docs.ghost.org/migration/ghost" rel='noopener noreferrer' target="_blank">Learn about importing</a>
-                    <Button className='font-semibold' disabled={uploading} type='button' variant='ghost' onClick={() => modal.remove()}>Cancel</Button>
+                    <Button disabled={uploading} type='button' variant='outline' onClick={() => modal.remove()}>Cancel</Button>
                 </div>
             }
             okLabel=''

@@ -329,7 +329,7 @@ export const OffersIndexModal: React.FC = () => {
 
     const actions = (
         <Inline gap='md'>
-            <Button className='font-semibold' type='button' variant='ghost' onClick={() => {
+            <Button type='button' variant='outline' onClick={() => {
                 modal.remove();
                 updateRoute('offers');
             }}>Close</Button>
