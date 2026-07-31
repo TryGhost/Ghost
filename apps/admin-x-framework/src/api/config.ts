@@ -90,9 +90,10 @@ export type Config = {
                 logoDark?: string // Logo shown in dark mode, falls back to logo
                 logoAlt?: string // Alt text for the logo
             }
-            // Search palette group for billing actions. Managed hosting providers
-            // can rename the group and replace its entries; Ghost(Pro)'s
-            // defaults are used otherwise, and an empty items list removes the group.
+            // Search palette group for billing actions — opt-in: the group only
+            // appears when this is configured. Hosts can rename the group and
+            // replace its entries; Ghost(Pro)'s defaults fill anything left unset
+            // (so `search: {}` opts in with the defaults).
             search?: {
                 groupName?: string
                 items?: {

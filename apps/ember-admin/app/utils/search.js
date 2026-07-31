@@ -119,17 +119,17 @@ export const SEARCHABLES = [
     }
 ];
 
-// The billing group's entries are Ghost(Pro)-specific, so managed hosting
-// providers other than Ghost(Pro) can rename the group and replace its actions
-// via hostSettings.billing.search — Ghost(Pro)'s defaults are used otherwise,
-// and an empty items list removes the group. Custom entries need an id, a
-// title, and a path deep-linking into the billing app (/pro/...); anything
-// else is dropped
+// The billing group's entries are host-specific, so the group is opt-in: it
+// only appears when hostSettings.billing.search is configured. Hosts can
+// rename the group via groupName and replace its actions via items —
+// Ghost(Pro)'s defaults fill anything left unset, so Ghost(Pro) opts in with
+// an empty object. Custom entries need an id, a title, and a path
+// deep-linking into the billing app (/pro/...); anything else is dropped
 export function getSearchables(hostSettings) {
     const searchConfig = hostSettings?.billing?.search;
 
     if (!searchConfig) {
-        return SEARCHABLES;
+        return SEARCHABLES.filter(searchable => searchable.key !== BILLING_SEARCH_GROUP_KEY);
     }
 
     return SEARCHABLES.map((searchable) => {

@@ -149,7 +149,7 @@ suites.forEach((suite) => {
         describe('Ghost(Pro) results', function () {
             beforeEach(function () {
                 const config = this.owner.lookup('config:main');
-                config.hostSettings = {billing: {enabled: true}};
+                config.hostSettings = {billing: {enabled: true, search: {}}};
 
                 const session = this.owner.lookup('service:session');
                 session.user = {isOwnerOnly: true};
@@ -228,12 +228,20 @@ suites.forEach((suite) => {
             });
 
             it('includes Ghost(Pro) results for non-owner users in a force upgrade state', async function () {
-                this.owner.lookup('config:main').hostSettings = {billing: {enabled: true}, forceUpgrade: true};
+                this.owner.lookup('config:main').hostSettings = {billing: {enabled: true, search: {}}, forceUpgrade: true};
                 this.owner.lookup('service:session').user = {isOwnerOnly: false};
 
                 const results = await search.searchTask.perform('backup');
 
                 expect(results.map(group => group.groupName)).to.include('Ghost(Pro)');
+            });
+
+            it('excludes the billing group when hostSettings does not configure search', async function () {
+                this.owner.lookup('config:main').hostSettings = {billing: {enabled: true}};
+
+                const results = await search.searchTask.perform('backup');
+
+                expect(results).to.have.length(0);
             });
 
             it('renames the billing group when configured via hostSettings', async function () {

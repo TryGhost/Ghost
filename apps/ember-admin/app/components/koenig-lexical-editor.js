@@ -51,9 +51,6 @@ export function decoratePostSearchResult(item, settings) {
     }
 }
 
-// Filters search results down to linkable site content for the editor's link
-// search: drops admin-only groups, unpublished posts/pages, and staff without
-// URLs, and decorates post/page items with metadata
 export function filterLinkSearchResults(results, settings) {
     const filteredResults = [];
 

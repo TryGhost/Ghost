@@ -366,7 +366,9 @@ describe('Acceptance: Search', function () {
                     hostSettings: {
                         billing: {
                             enabled: true,
-                            url: 'http://localhost:4200/billing-app'
+                            url: 'http://localhost:4200/billing-app',
+                            // opts in to the billing search group with Ghost(Pro)'s defaults
+                            search: {}
                         }
                     }
                 });
