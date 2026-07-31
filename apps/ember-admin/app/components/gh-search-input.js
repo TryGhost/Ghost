@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import {GHOST_PRO_GROUP_NAME} from 'ghost-admin/utils/search';
+import {BILLING_SEARCH_GROUP_KEY} from 'ghost-admin/utils/search';
 import {action} from '@ember/object';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -37,7 +37,7 @@ export default class GhSearchInputComponent extends Component {
             this.router.transitionTo('tag', id);
         }
 
-        if (selected.groupName === GHOST_PRO_GROUP_NAME) {
+        if (selected.groupKey === BILLING_SEARCH_GROUP_KEY) {
             if (this.router.currentURL === selected.path) {
                 // Ember treats the transition as a no-op (eg. after the BMA
                 // rewrote the hash itself via history.replaceState), so the

@@ -90,6 +90,18 @@ export type Config = {
                 logoDark?: string // Logo shown in dark mode, falls back to logo
                 logoAlt?: string // Alt text for the logo
             }
+            // Search palette group for billing actions. Managed hosting providers
+            // can rename the group and replace its entries; Ghost(Pro)'s
+            // defaults are used otherwise, and an empty items list removes the group.
+            search?: {
+                groupName?: string
+                items?: {
+                    id?: string
+                    title?: string
+                    path?: string
+                    keywords?: string
+                }[]
+            }
         },
         pintura?: {
             js?: string

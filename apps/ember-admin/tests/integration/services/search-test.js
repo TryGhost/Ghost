@@ -235,6 +235,53 @@ suites.forEach((suite) => {
 
                 expect(results.map(group => group.groupName)).to.include('Ghost(Pro)');
             });
+
+            it('renames the billing group when configured via hostSettings', async function () {
+                this.owner.lookup('config:main').hostSettings = {
+                    billing: {enabled: true, search: {groupName: 'Acme Hosting'}}
+                };
+
+                const results = await search.searchTask.perform('backup');
+
+                expect(results[0].groupName).to.equal('Acme Hosting');
+                expect(results[0].options.map(option => option.title)).to.include('Request backup');
+            });
+
+            it('replaces the billing actions when configured via hostSettings', async function () {
+                this.owner.lookup('config:main').hostSettings = {
+                    billing: {
+                        enabled: true,
+                        search: {
+                            groupName: 'Acme Hosting',
+                            items: [
+                                {id: 'manage-subscription', title: 'Manage subscription', path: '/pro/subscription', keywords: 'billing plan'},
+                                {id: 'external-link', title: 'Externally hosted', path: 'https://example.com', keywords: 'billing'}
+                            ]
+                        }
+                    }
+                };
+
+                const results = await search.searchTask.perform('billing');
+
+                expect(results).to.have.length(1);
+                expect(results[0].groupName).to.equal('Acme Hosting');
+                // the item without a /pro path is dropped
+                expect(results[0].options.map(option => option.title)).to.deep.equal(['Manage subscription']);
+                expect(results[0].options[0].path).to.equal('/pro/subscription');
+
+                const defaultItemResults = await search.searchTask.perform('backup');
+                expect(defaultItemResults).to.have.length(0);
+            });
+
+            it('removes the billing group when hostSettings configures no items', async function () {
+                this.owner.lookup('config:main').hostSettings = {
+                    billing: {enabled: true, search: {items: []}}
+                };
+
+                const results = await search.searchTask.perform('backup');
+
+                expect(results).to.have.length(0);
+            });
         });
     });
 });

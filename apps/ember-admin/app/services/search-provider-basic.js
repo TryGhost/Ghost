@@ -1,6 +1,7 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
-import {SEARCHABLES, createSearchResult, sortSearchResultsByStatus} from '../utils/search';
+import {createSearchResult, getSearchables, sortSearchResultsByStatus} from '../utils/search';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
@@ -11,6 +12,8 @@ export default class SearchProviderBasicService extends Service {
     @service notifications;
     @service ghostPaths;
 
+    @inject config;
+
     content = [];
 
     /* eslint-disable require-yield */
@@ -19,7 +22,7 @@ export default class SearchProviderBasicService extends Service {
         const normalizedTerm = term.toString().toLowerCase();
         const results = [];
 
-        SEARCHABLES.forEach((searchable) => {
+        getSearchables(this.config.hostSettings).forEach((searchable) => {
             let matchedContent = this.content.filter((item) => {
                 if (item.groupName !== searchable.name) {
                     return false;
@@ -44,6 +47,7 @@ export default class SearchProviderBasicService extends Service {
             if (!isEmpty(matchedContent)) {
                 results.push({
                     groupName: searchable.name,
+                    groupKey: searchable.key,
                     options: matchedContent
                 });
             }
@@ -56,7 +60,7 @@ export default class SearchProviderBasicService extends Service {
     @task
     *refreshContentTask() {
         const content = [];
-        const promises = SEARCHABLES.map(searchable => this._loadSearchable(searchable, content));
+        const promises = getSearchables(this.config.hostSettings).map(searchable => this._loadSearchable(searchable, content));
 
         try {
             yield RSVP.all(promises);

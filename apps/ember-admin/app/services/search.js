@@ -1,5 +1,5 @@
 import Service from '@ember/service';
-import {GHOST_PRO_GROUP_NAME} from '../utils/search';
+import {BILLING_SEARCH_GROUP_KEY} from '../utils/search';
 import {action} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
@@ -46,10 +46,10 @@ export default class SearchService extends Service {
 
         const results = yield this.provider.searchTask.perform(term);
 
-        // Ghost(Pro) results deep-link into the billing app, so they're only
+        // billing results deep-link into the billing app, so they're only
         // shown to users who may open it (the billing service owns the rule)
         if (!this.billing.canAccessBilling) {
-            return results.filter(group => group.groupName !== GHOST_PRO_GROUP_NAME);
+            return results.filter(group => group.groupKey !== BILLING_SEARCH_GROUP_KEY);
         }
 
         return results;

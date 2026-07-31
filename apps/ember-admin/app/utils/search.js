@@ -1,6 +1,11 @@
-export const GHOST_PRO_GROUP_NAME = 'Ghost(Pro)';
+// Stable identifier for the billing search group — the display name is
+// host-configurable (see getSearchables), so consumers must dispatch on this
+// key rather than on the group name
+export const BILLING_SEARCH_GROUP_KEY = 'billing';
 
-// Static list of Ghost(Pro) billing pages/actions, indexed client-side rather
+export const DEFAULT_BILLING_GROUP_NAME = 'Ghost(Pro)';
+
+// Default list of Ghost(Pro) billing pages/actions, indexed client-side rather
 // than fetched from the search-index API. Every entry shares the ghost/pro
 // keywords appended below so searching the product name lists the whole group.
 export const GHOST_PRO_SEARCH_ITEMS = [
@@ -87,7 +92,8 @@ export const SEARCHABLES = [
         index: ['name']
     },
     {
-        name: GHOST_PRO_GROUP_NAME,
+        name: DEFAULT_BILLING_GROUP_NAME,
+        key: BILLING_SEARCH_GROUP_KEY,
         model: 'pro-page',
         pathField: 'id',
         idField: 'id',
@@ -112,6 +118,49 @@ export const SEARCHABLES = [
         index: ['title']
     }
 ];
+
+// The billing group's entries are Ghost(Pro)-specific, so managed hosting
+// providers other than Ghost(Pro) can rename the group and replace its actions
+// via hostSettings.billing.search — Ghost(Pro)'s defaults are used otherwise,
+// and an empty items list removes the group. Custom entries need an id, a
+// title, and a path deep-linking into the billing app (/pro/...); anything
+// else is dropped
+export function getSearchables(hostSettings) {
+    const searchConfig = hostSettings?.billing?.search;
+
+    if (!searchConfig) {
+        return SEARCHABLES;
+    }
+
+    return SEARCHABLES.map((searchable) => {
+        if (searchable.key !== BILLING_SEARCH_GROUP_KEY) {
+            return searchable;
+        }
+
+        const customized = {...searchable};
+
+        if (typeof searchConfig.groupName === 'string' && searchConfig.groupName.trim()) {
+            customized.name = searchConfig.groupName.trim();
+        }
+
+        if (Array.isArray(searchConfig.items)) {
+            customized.staticItems = searchConfig.items
+                .filter(item => (
+                    typeof item?.id === 'string' && item.id
+                    && typeof item.title === 'string' && item.title
+                    && typeof item.path === 'string' && /^\/pro(?:\/|$)/.test(item.path)
+                ))
+                .map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    path: item.path,
+                    keywords: typeof item.keywords === 'string' ? item.keywords : ''
+                }));
+        }
+
+        return customized;
+    });
+}
 
 const STATUS_PRIORITY = {
     scheduled: 1,
@@ -141,6 +190,7 @@ export function createSearchResult(searchable, item) {
         title: item[searchable.titleField],
         keywords: item.keywords,
         groupName: searchable.name,
+        groupKey: searchable.key,
         status: item.status,
         visibility: item.visibility,
         publishedAt: item.published_at

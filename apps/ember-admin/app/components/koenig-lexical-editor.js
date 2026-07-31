@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import moment from 'moment-timezone';
-import {GHOST_PRO_GROUP_NAME} from 'ghost-admin/utils/search';
+import {BILLING_SEARCH_GROUP_KEY} from 'ghost-admin/utils/search';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -60,8 +60,8 @@ export function filterLinkSearchResults(results, settings) {
     results.forEach((group) => {
         let items = group.options;
 
-        // Ghost(Pro) results are admin billing pages, not linkable site content
-        if (group.groupName === GHOST_PRO_GROUP_NAME) {
+        // billing results are admin pages, not linkable site content
+        if (group.groupKey === BILLING_SEARCH_GROUP_KEY) {
             return;
         }
 
