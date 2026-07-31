@@ -4,7 +4,7 @@ import {Check, ChevronDown, ChevronUp} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
 import {SHADE_APP_NAMESPACES} from '@/shade-app';
-import {inputSurface} from '@/components/ui/input-surface';
+import {inputSurface, inputSurfaceClasses} from '@/components/ui/input-surface';
 import {useOverlayEscape} from '@/hooks/use-overlay-escape';
 
 // Radix's Select dismisses via a document-level Escape listener. Legacy Admin
@@ -48,6 +48,7 @@ const SelectTrigger = React.forwardRef<
         ref={ref}
         className={cn(
             inputSurface('self'),
+            inputSurfaceClasses.disabledFieldSelf,
             'flex h-(--control-height) w-full items-center justify-between px-3 py-2 text-control whitespace-nowrap hover:bg-button-hover data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1',
             className
         )}

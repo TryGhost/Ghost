@@ -38,7 +38,8 @@ describe('Input Component', () => {
         const input = screen.getByTestId('input');
         
         assert.ok(input.hasAttribute('disabled'), 'Input should be disabled');
-        assert.ok(input.className.includes('disabled:opacity-50'), 'Should have disabled styling');
+        assert.ok(input.className.includes('disabled:bg-control-disabled-surface'), 'Should have a disabled surface');
+        assert.ok(input.className.includes('disabled:text-muted-foreground'), 'Should keep disabled values readable');
     });
 
     it('passes type attribute correctly', () => {
