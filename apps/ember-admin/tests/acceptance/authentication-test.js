@@ -3,7 +3,6 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentRouteName, currentURL, fillIn, find, findAll, triggerKeyEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
@@ -59,12 +58,7 @@ describe('Acceptance: Authentication', function () {
     setupMirage(hooks);
 
     beforeEach(async function () {
-        mockAnalyticsApps();
         this.server.loadFixtures('configs');
-    });
-
-    afterEach(function () {
-        cleanupMockAnalyticsApps();
     });
 
     describe('setup redirect', function () {
@@ -195,7 +189,7 @@ describe('Acceptance: Authentication', function () {
             await completeSignIn();
             expect(currentURL(), 'url after email+password submit').to.equal('/signin/verify');
             await completeVerification();
-            expect(currentURL()).to.equal('/analytics');
+            expect(currentURL()).to.equal('/');
         });
 
         it('handles 2fa code verification failure', async function () {
@@ -285,7 +279,7 @@ describe('Acceptance: Authentication', function () {
             // can correctly submit after failed attempts
             await fillIn(codeInput, '123456');
             await click(verifyButton);
-            expect(currentURL()).to.equal('/analytics');
+            expect(currentURL()).to.equal('/');
         });
 
         it('can resend verification code', async function () {

@@ -44,6 +44,18 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
             assert.deepEqual(options, {absolute: true});
         });
 
+        it('passes the api endpoint identity (serializerContext) for compare diagnostics', function () {
+            // The compare-log caller stack truncates at the async api-framework
+            // boundary, so the api-framework Frame's endpoint identity is
+            // threaded to the URL service to pin producers in production.
+            const post = pageModel(testUtils.DataGenerator.forKnex.createPost({id: 'id1', mobiledoc: '{}', html: 'html'}));
+
+            urlUtil.forPost(post.id, post, {options: {}, apiType: 'admin', docName: 'posts', method: 'read'});
+
+            const [, options] = getUrlForResourceStub.firstCall.args;
+            assert.deepEqual(options.serializerContext, {apiType: 'admin', docName: 'posts', method: 'read'});
+        });
+
         it('still passes id when attrs has been stripped (e.g. fields=url)', function () {
             // Content API request like `?fields=url` runs jsonModel through a
             // serializer that strips every attribute except `url`. The mapper

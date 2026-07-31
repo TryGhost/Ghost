@@ -401,6 +401,31 @@ describe('RouterController', function () {
                 }
             });
 
+            it('returns a BadRequestError if offer is not active', async function () {
+                offersAPI = {
+                    getOffer: sinon.stub().resolves({id: 'archived_offer_123', duration: 'forever', status: 'archived'})
+                };
+
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    settingsHelpers
+                });
+
+                try {
+                    await routerController._getSubscriptionCheckoutData({offerId: 'archived_offer_123'});
+
+                    assert.fail('Expected function to throw BadRequestError');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
+                    assert.equal(error.context, 'Offer with id "archived_offer_123" is no longer active');
+                }
+            });
+
             it('returns a BadRequestError if tier is not found by tierId', async function () {
                 tiersService = {
                     api: {

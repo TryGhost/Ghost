@@ -52,6 +52,39 @@ export const Default: Story = {
     }
 };
 
+export const StableSelectionWidth: Story = {
+    args: {
+        defaultValue: 'signup',
+        variant: 'button',
+        children: [
+            <TabsList key="list">
+                <TabsTrigger value="signup">Signup options</TabsTrigger>
+                <TabsTrigger value="appearance">Look &amp; feel</TabsTrigger>
+                <TabsTrigger value="account">Account page</TabsTrigger>
+            </TabsList>,
+
+            <TabsContent key="signup" value="signup">
+                Signup options
+            </TabsContent>,
+
+            <TabsContent key="appearance" value="appearance">
+                Appearance options
+            </TabsContent>,
+
+            <TabsContent key="account" value="account">
+                Account page options
+            </TabsContent>
+        ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Button tabs keep the same font weight and width when the active tab changes.'
+            }
+        }
+    }
+};
+
 export const Segmented: Story = {
     args: {
         defaultValue: 'overview',

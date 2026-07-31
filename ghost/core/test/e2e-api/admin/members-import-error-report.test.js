@@ -8,12 +8,11 @@ const config = require('../../../core/shared/config');
 const jobsService = require('../../../core/server/services/jobs');
 const {mockManager} = require('../../utils/e2e-framework');
 
-// The error report a failed import emails back to the manager. Pinned against
-// origin/main's behaviour so the refactored importer keeps emitting the same CSV:
-// one importable row (so the run reports as a completion), then rows failing for
-// the distinct reasons a manager sees. The header row carries a formula-shaped
-// name and an unknown column, to hold the line on escaping and on which columns
-// the report echoes.
+// The error report a failed import emails back to the manager: one importable row (so
+// the run reports as a completion), then rows failing for the distinct reasons a manager
+// sees. The header row carries a formula-shaped name (to hold the line on escaping), an
+// import-only column that is not echoed (import_tier), and a custom field column that is
+// echoed so a manager can fix and re-upload the values they mapped (custom_fields.color).
 const CSV = [
     'email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,labels,import_tier,gift_id,custom_fields.color',
     'valid+ok@example.com,Good Member,,false,,,,,,,',
@@ -22,9 +21,13 @@ const CSV = [
     'bad-tier@example.com,Tier Person,,true,,,,,Nonexistent Tier,,'
 ].join('\n');
 
+// The fixed member vocabulary, then the submitted custom field columns, then the error
+// column last. custom_fields.* columns are threaded in before error so a re-upload of the
+// fixed rows carries their values back; import_tier and other input columns are not.
 const EXPECTED_COLUMNS = [
     'id', 'email', 'name', 'note', 'subscribed_to_emails', 'complimentary_plan',
-    'stripe_customer_id', 'created_at', 'deleted_at', 'labels', 'tiers', 'gift_id', 'error'
+    'stripe_customer_id', 'created_at', 'deleted_at', 'labels', 'tiers', 'gift_id',
+    'custom_fields.color', 'error'
 ];
 
 describe('Members import error report', function () {
@@ -71,15 +74,17 @@ describe('Members import error report', function () {
 
     const rowFor = email => rows.find(row => row.email === email);
 
-    it('emits the fixed member-vocabulary columns', function () {
+    it('emits the member-vocabulary columns and the submitted custom field columns', function () {
         assert.deepEqual(columns, EXPECTED_COLUMNS);
     });
 
-    it('does not carry import-only or unknown columns', function () {
-        // The report echoes the member vocabulary, not the raw submitted columns:
-        // import_tier and any unmapped column (custom_fields.*) are not emitted.
+    it('carries submitted custom field columns but not other input columns', function () {
+        // The report echoes the member vocabulary and the custom field columns a row
+        // carried, so a manager can fix the failed rows and re-upload their values.
+        // import_tier is an input the report resolves rather than echoes, so it is not.
         assert.ok(!columns.includes('import_tier'), 'no import_tier column');
-        assert.ok(!columns.includes('custom_fields.color'), 'no unmapped custom column');
+        assert.ok(columns.includes('custom_fields.color'), 'the submitted custom field column is echoed');
+        assert.equal(rowFor('not-a-valid-email')['custom_fields.color'], 'blue', 'its value is echoed on the failed row');
     });
 
     it('keeps the tiers column present but empty', function () {

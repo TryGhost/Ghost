@@ -57,6 +57,7 @@
                         placeholder="Add alt text to the feature image"
                         class="gh-editor-feature-image-alttext {{if @isHidden "faded"}}"
                         name="alt"
+                        maxlength="191"
                         value={{@alt}}
                         {{autofocus}}
                         {{on "input" this.onAltInput}}

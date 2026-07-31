@@ -19,7 +19,7 @@ export default class TagRoute extends AuthenticatedRoute {
         super.beforeModel(...arguments);
 
         if (this.session.user.isAuthorOrContributor) {
-            return this.transitionTo('home');
+            return this.transitionTo('index');
         }
     }
 

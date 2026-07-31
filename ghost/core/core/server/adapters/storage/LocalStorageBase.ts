@@ -141,6 +141,13 @@ class LocalStorageBase extends StorageBase {
         const filename = await this.getUniqueFileName(file, targetDir);
 
         targetFilename = filename;
+
+        // Verify that we are saving directly under `targetDir` and not outside of it.
+        const expectedPrefix = path.join(path.resolve(targetDir), '/');
+        if (!path.resolve(targetFilename).startsWith(expectedPrefix)) {
+            throw new errors.BadRequestError({message: 'Cannot save to the given filename'});
+        }
+
         await fs.mkdirs(targetDir);
 
         try {

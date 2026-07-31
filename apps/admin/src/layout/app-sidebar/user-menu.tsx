@@ -54,9 +54,9 @@ function UserMenuAppearance() {
                 {THEME_OPTIONS.map(({value, label, Icon}) => (
                     <DropdownMenuItem
                         key={value}
-                        disabled={isSettingTheme}
                         aria-label={`${label} appearance`}
                         data-test-theme-option={value}
+                        disabled={isSettingTheme}
                         onSelect={() => {
                             void setTheme(value);
                         }}
@@ -112,19 +112,19 @@ function UserMenu(props: UserMenuProps) {
         <DropdownMenu {...props}>
             <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
-                    size="lg"
-                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                     aria-label="User menu"
+                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                    size="lg"
                 >
                     <div className="relative">
                         <UserMenuAvatar />
                         {whatsNewData?.hasNew && (
                             <span className="absolute -top-0.5 -right-0.5">
                                 <Indicator
-                                    variant="success"
-                                    size="sm"
-                                    label="New updates available"
                                     data-testid="whats-new-avatar-badge"
+                                    label="New updates available"
+                                    size="sm"
+                                    variant="success"
                                 />
                             </span>
                         )}
@@ -140,19 +140,19 @@ function UserMenu(props: UserMenuProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="start"
-                sideOffset={10}
                 className={`w-[var(--radix-dropdown-menu-trigger-width)] dark:bg-surface-elevated-2 ${showUpgradeBanner ? 'shadow-[0_18px_80px_0_rgba(0,0,0,0.07),0_7.52px_33.422px_0_rgba(0,0,0,0.05),0_4.021px_17.869px_0_rgba(0,0,0,0.04),0_2.254px_10.017px_0_rgba(0,0,0,0.04),0_1.197px_5.32px_0_rgba(0,0,0,0.03),0_0.498px_2.214px_0_rgba(0,0,0,0.02)]' : ''}`}
+                sideOffset={10}
             >
                 <UserMenuHeader
-                    name={currentUser.data?.name}
                     email={currentUser.data?.email}
+                    name={currentUser.data?.name}
                 >
                     <UserMenuAvatar />
                 </UserMenuHeader>
                 <DropdownMenuSeparator />
                 <UserMenuItem
-                    data-test-nav="whatsnew"
                     asChild={false}
+                    data-test-nav="whatsnew"
                     onSelect={() => {
                         props.onOpenWhatsNew?.();
                     }}
@@ -162,10 +162,10 @@ function UserMenu(props: UserMenuProps) {
                     {whatsNewData?.hasNew && (
                         <div className="flex flex-1 justify-end">
                             <Indicator
-                                variant="success"
-                                size="sm"
-                                label="New updates available"
                                 data-testid="whats-new-menu-badge"
+                                label="New updates available"
+                                size="sm"
+                                variant="success"
                                 />
                         </div>
                     )}
@@ -175,8 +175,8 @@ function UserMenu(props: UserMenuProps) {
                 <UserMenuItem>
                     <a
                         href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources"
-                        target="_blank"
                         rel="noopener noreferrer"
+                        target="_blank"
                     >
                         <LucideIcon.Book />
                         <UserMenuItem.Label>Resources & guides</UserMenuItem.Label>
@@ -215,21 +215,22 @@ function ContributorUserMenu() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <button
-                    className="flex items-center justify-center rounded-full border border-border bg-background p-0.5 shadow-lg transition-shadow hover:shadow-xl focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-muted"
                     aria-label="Open user menu"
+                    className="flex items-center justify-center rounded-full border border-border bg-background p-0.5 shadow-lg transition-shadow hover:shadow-xl focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-muted"
+                    type="button"
                 >
-                    <UserMenuAvatar className="h-11 w-11" />
+                    <UserMenuAvatar className="size-11" />
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="start"
+                className="mb-2 min-w-56"
                 side="top"
                 sideOffset={10}
-                className="mb-2 min-w-56"
             >
                 <UserMenuHeader
-                    name={currentUser.data?.name}
                     email={currentUser.data?.email}
+                    name={currentUser.data?.name}
                 >
                     <UserMenuAvatar />
                 </UserMenuHeader>
@@ -241,7 +242,7 @@ function ContributorUserMenu() {
                     </Link>
                 </UserMenuItem>
                 <UserMenuItem>
-                    <a href={siteUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={siteUrl} rel="noopener noreferrer" target="_blank">
                         <LucideIcon.ExternalLink />
                         <UserMenuItem.Label>View site</UserMenuItem.Label>
                     </a>

@@ -21,7 +21,7 @@ import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useFeatureFlag} from '@/hooks/use-feature-flag';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 import {useHashLinkNavigationGuard} from '@/hooks/use-hash-link-navigation-guard';
 import type {MemberEditableFields} from './member-detail-edit';
 

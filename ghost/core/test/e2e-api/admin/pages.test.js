@@ -37,6 +37,17 @@ describe('Pages API', function () {
         mockManager.restore();
     });
 
+    describe('Browse', function () {
+        it('Can browse with restricted filter fields', async function () {
+            await agent
+                .get('/pages/?filter=authors.password:abcd&limit=1')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    pages: new Array(1).fill(matchPageShallowIncludes)
+                });
+        });
+    });
+
     describe('Create', function () {
         it('Can create a page with html', async function () {
             const page = {

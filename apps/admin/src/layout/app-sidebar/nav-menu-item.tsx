@@ -64,14 +64,14 @@ function NavMenuCollapsibleItem({ariaLabel, children}: NavMenuCollapsibleItemPro
                 aria-controls={id}
                 aria-expanded={expanded}
                 aria-label={ariaLabel}
-                variant="ghost"
-                size="icon"
                 className="hover:text-gray-black absolute top-0 left-3 h-(--control-height) w-auto p-0 text-md text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
+                size="icon"
+                variant="ghost"
                 onClick={() => void onExpandedChange(!expanded)}
             >
                 <LucideIcon.ChevronRight
-                    size={16}
                     className={`transition-all ${expanded ? 'rotate-[90deg]' : ''}`}
+                    size={16}
                 />
             </Button>
             {children}
@@ -88,8 +88,8 @@ function NavMenuCollapsibleMenu({children}: NavMenuCollapsibleMenuProps) {
 
     return (
         <div
-            id={id}
             className={`grid transition-all duration-200 ease-out ${expanded ? 'grid-rows-[1fr]' : '-mb-px grid-rows-[0fr]'}`}
+            id={id}
         >
             <div className="flex flex-col gap-px overflow-hidden">
                 {expanded ? children : null}
@@ -127,14 +127,14 @@ function NavMenuLink({
 
     return (
         <SidebarMenuButton
-            asChild
             isActive={isActive}
+            asChild
             {...props}>
             <a
+                aria-current={isActive ? 'page' : undefined}
                 href={target === '_blank' ? to : href}
                 rel={target === '_blank' ? rel ?? 'noopener noreferrer' : rel}
                 target={target}
-                aria-current={isActive ? 'page' : undefined}
                 onClick={handleClick}
             >
                 {children}

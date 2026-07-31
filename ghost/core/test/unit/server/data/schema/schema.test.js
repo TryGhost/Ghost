@@ -8,6 +8,11 @@ const VALID_KEYS = {
     bigInteger: [
         'nullable'
     ],
+    binary: [
+        'maxlength',
+        'nullable',
+        'index'
+    ],
     boolean: [
         'nullable',
         'defaultTo'

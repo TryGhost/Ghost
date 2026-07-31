@@ -135,7 +135,22 @@ pnpm test:single test/unit/path/to/test.test.js   # routes test/unit/* → unit 
 # Watch a single DB-backed file (integration/e2e) — the default test:watch only
 # covers unit tests, so point it at the DB config explicitly:
 pnpm exec vitest -c vitest.config.db.ts test/integration/path/to/test.test.js
+
+# Ember Admin tests (from the repository root)
+pnpm nx run ghost-admin:test
+
+# Run one Ember Admin test file. Paths are relative to apps/ember-admin.
+# The explicit `1` supplies the numeric value required by the test script's
+# trailing `--parallel` option before additional Ember Exam arguments.
+pnpm nx run ghost-admin:test -- 1 --file-path=tests/acceptance/editor/publish-flow-test.js
 ```
+
+> **Always run Ember Admin tests through Nx.** Running `ember test` or
+> `ember exam` directly from `apps/ember-admin` skips the dependency build
+> graph and commonly fails in fresh worktrees with missing outputs such as
+> `koenig-lexical.umd.js`, `@tryghost/admin-x-framework/hooks`, or
+> `@tryghost/kg-converters`. For focused runs, use Ember Exam's `--file-path`
+> as shown above rather than appending `--filter` to the package script.
 
 ### Linting
 ```bash
@@ -331,7 +346,7 @@ export default reactAppConfig({
 Conventions:
 - **Rules are `'error'` or `'off'` — never `'warn'`.** Warnings get ignored and pollute output. Applies to every workspace covered by the factories above + the standalones; `e2e/` has its own setup (see [e2e/CLAUDE.md](e2e/CLAUDE.md)) and currently still uses warn-level Playwright rules — a separate cleanup.
 - **Params prefixed `legacy*`** (`legacyTailwindV3ConfigPath`, `legacyJsTsSplit`) are escape hatches for migrations that haven't shipped yet. Intentional and visible — PRs to remove them are scoped.
-- **Standalone configs** (`ghost/core`, `apps/ember-admin`, `apps/admin`, `apps/admin-toolbar`) exist because their rule sets genuinely don't fit a factory — read the file directly. They import shared atoms (`correctnessRules`, `nodeLibRules`, `localFilenamesPlugin`, `strictLinterOptions`) from `@internal/cfg-eslint`.
+- **Standalone configs** (`ghost/core`, `apps/ember-admin`, `apps/admin-toolbar`) exist because their rule sets genuinely don't fit a factory — read the file directly. They import shared atoms (`correctnessRules`, `nodeLibRules`, `localFilenamesPlugin`, `strictLinterOptions`) from `@internal/cfg-eslint`.
 - **Plugin deps**: a workspace must declare every eslint plugin its config resolves. Two cases:
   - *Factory consumers* only import a factory, which supplies its plugins as objects from the config package — so they need just the config package (`@internal/cfg-eslint` / `@internal/cfg-eslint-react`) as a `workspace:*` devDependency, not the individual plugins.
   - *Hand-rolled configs* (the standalones above, plus the inline configs in `koenig/kg-*` and `e2e/`) `import` plugins directly, so each must list those plugins in its own `devDependencies` — most commonly `eslint-plugin-ghost: catalog:`. Don't rely on the root hoisting a plugin for you; there are no eslint plugins left in the root `package.json` (only `eslint` itself and `globals`, which the root config uses).

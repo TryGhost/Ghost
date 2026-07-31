@@ -8,10 +8,6 @@
             "defaultValue": null,
             "type": "string"
         },
-        "routes_hash": {
-            "defaultValue": null,
-            "type": "string"
-        },
         "next_update_check": {
             "defaultValue": null,
             "type": "number"

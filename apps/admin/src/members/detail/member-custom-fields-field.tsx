@@ -5,7 +5,7 @@ import {dequal} from 'dequal';
 import {ADDRESS_SUBFIELD_KEYS, buildCustomFieldSavePayload, getCustomFieldValidationErrors, getEditableCustomFieldValues, parseCustomFieldServerErrors} from './member-detail-edit';
 import {formatAddressValue} from './member-detail-format';
 import {toast} from 'sonner';
-import {useBrowseMemberCustomFields, userTypeForField} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {useBrowseMemberCustomFields, userTypeForField, userTypeForFieldType} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {useEditMember} from '@tryghost/admin-x-framework/api/members';
 import type {EditableAddressValue, EditableCustomFieldValue} from './member-detail-edit';
 import type {MemberCustomField} from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -19,14 +19,8 @@ interface MemberCustomFieldsFieldProps {
     disabled?: boolean;
 }
 
-const ADDRESS_SUBFIELD_LABELS: Record<typeof ADDRESS_SUBFIELD_KEYS[number], string> = {
-    line1: 'Address line 1',
-    line2: 'Address line 2',
-    city: 'City',
-    state: 'State',
-    postal_code: 'Postal code',
-    country: 'Country'
-};
+// Shared with the CSV import mapping so a sub-field reads the same on every surface.
+const ADDRESS_SUBFIELD_LABELS = userTypeForFieldType('address').subFields ?? {};
 
 // role='alert': after a save-attempt these render while focus stays on the Save
 // button, so an assertive live region is the only way a screen reader hears the
@@ -54,7 +48,7 @@ const AddressInput: React.FC<{
                 const error = errors?.[subfield];
                 return (
                     <div key={subfield} className='flex flex-col gap-1.5'>
-                        <Label htmlFor={subfieldId}>{ADDRESS_SUBFIELD_LABELS[subfield]}</Label>
+                        <Label htmlFor={subfieldId}>{ADDRESS_SUBFIELD_LABELS[subfield] ?? subfield}</Label>
                         <Input
                             aria-invalid={error ? true : undefined}
                             disabled={disabled}
@@ -288,7 +282,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({member
                                         // -mx/px + calc width: the hover tint bleeds past the text
                                         // column like the settings rows, while the row text (and the
                                         // li dividers) stay aligned with the rest of the card.
-                                        className='group -mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-4 rounded-md px-3 py-3 text-left transition-colors hover:bg-table-row-hover disabled:cursor-not-allowed disabled:opacity-50'
+                                        className='group -mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-4 rounded-md p-3 text-left transition-colors hover:bg-table-row-hover disabled:cursor-not-allowed disabled:opacity-50'
                                         disabled={disabled}
                                         type='button'
                                         onClick={() => {

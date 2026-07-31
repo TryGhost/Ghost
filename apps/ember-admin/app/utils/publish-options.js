@@ -1,5 +1,6 @@
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
+import {getPublicPreviewWarning} from 'ghost-admin/utils/public-preview-warning';
 import {htmlSafe} from '@ember/template';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -44,6 +45,10 @@ export default class PublishOptions {
 
     get willOnlyEmail() {
         return this.publishType === 'send';
+    }
+
+    get publicPreviewWarning() {
+        return getPublicPreviewWarning(this.post);
     }
 
     // publish date ------------------------------------------------------------

@@ -1,14 +1,11 @@
 const path = require('path');
 const fs = require('fs');
+const {quote: shellQuote} = require('shell-quote');
 
 const ROOT = process.cwd();
 
 function normalize(p) {
     return p.split(path.sep).join('/');
-}
-
-function shellQuote(value) {
-    return `'${value.replace(/'/g, `'\\''`)}'`;
 }
 
 // Parse the `packages:` list from pnpm-workspace.yaml. We only need the simple
@@ -83,19 +80,15 @@ function findWorkspace(file) {
 function buildCommand(workspace, files) {
     const base = workspace ? path.join(ROOT, workspace) : ROOT;
     const relativeFiles = files
-        .map(file => normalize(path.relative(base, file)))
-        .map(shellQuote)
-        .join(' ');
-    const dirArg = workspace ? `--dir ${shellQuote(workspace)} ` : '';
-    return `pnpm ${dirArg}exec eslint --cache -- ${relativeFiles}`;
+        .map(file => normalize(path.relative(base, file)));
+    const dirArg = workspace ? `--dir ${shellQuote([workspace])} ` : '';
+    return `pnpm ${dirArg}exec eslint --cache -- ${shellQuote(relativeFiles)}`;
 }
 
 function buildBoundaryCommand(files) {
     const relativeFiles = files
-        .map(file => normalize(path.relative(ROOT, file)))
-        .map(shellQuote)
-        .join(' ');
-    return `pnpm exec depcruise --config .dependency-cruiser.cjs -- ${relativeFiles}`;
+        .map(file => normalize(path.relative(ROOT, file)));
+    return `pnpm exec depcruise --config .dependency-cruiser.cjs -- ${shellQuote(relativeFiles)}`;
 }
 
 module.exports = {
@@ -115,6 +108,6 @@ module.exports = {
     },
     'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': (files) =>
         buildBoundaryCommand(files),
-    'apps/{shade,admin-x-design-system,admin-x-framework,activitypub,posts,admin-x-settings,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}': (files) =>
+    'apps/{shade,admin-x-framework,activitypub,admin-x-settings,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}': (files) =>
         buildBoundaryCommand(files)
 };
