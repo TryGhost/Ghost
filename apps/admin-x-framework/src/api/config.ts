@@ -90,10 +90,10 @@ export type Config = {
                 logoDark?: string // Logo shown in dark mode, falls back to logo
                 logoAlt?: string // Alt text for the logo
             }
-            // Search palette group for billing actions — opt-in: the group only
-            // appears when this is configured. Hosts can rename the group and
-            // replace its entries; Ghost(Pro)'s defaults fill anything left unset
-            // (so `search: {}` opts in with the defaults).
+            // Search palette group for billing actions, defined entirely by host
+            // config: the group only appears when a groupName and at least one
+            // valid item are provided. Item paths are routes within the host's
+            // own billing app (eg. '/plans').
             search?: {
                 groupName?: string
                 items?: {

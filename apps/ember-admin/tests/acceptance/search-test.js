@@ -360,21 +360,28 @@ describe('Acceptance: Search', function () {
             expect(currentURL()).to.equal(`/settings/staff/${testData.user.slug}`);
         });
 
-        describe('Ghost(Pro) results', function () {
+        describe('billing results', function () {
             const enableBilling = (server) => {
                 server.db.configs.update(1, {
                     hostSettings: {
                         billing: {
                             enabled: true,
                             url: 'http://localhost:4200/billing-app',
-                            // opts in to the billing search group with Ghost(Pro)'s defaults
-                            search: {}
+                            // the group is defined entirely by host config — this
+                            // stands in for a host's search group configuration
+                            search: {
+                                groupName: 'Ghost(Pro)',
+                                items: [
+                                    {id: 'request-backup', title: 'Request backup', path: '/backups', keywords: 'backup restore data'},
+                                    {id: 'contact-support', title: 'Contact support', path: '/support', keywords: 'support help contact'}
+                                ]
+                            }
                         }
                     }
                 });
             };
 
-            it('shows Ghost(Pro) results before content results', async function () {
+            it('shows billing results before content results', async function () {
                 enableBilling(this.server);
                 this.server.create('post', {title: 'Backup post', slug: 'backup-post'});
 
@@ -389,7 +396,7 @@ describe('Acceptance: Search', function () {
                 expect(titles).to.include('Request backup');
             });
 
-            it('navigates to the billing page when selecting a Ghost(Pro) result', async function () {
+            it('navigates to the billing page when selecting a billing result', async function () {
                 enableBilling(this.server);
 
                 await visit('/analytics');
@@ -401,7 +408,7 @@ describe('Acceptance: Search', function () {
                 expect(currentURL()).to.equal('/pro/support');
             });
 
-            it('does not show Ghost(Pro) results when billing is not enabled', async function () {
+            it('does not show billing results when billing is not enabled', async function () {
                 await visit('/analytics');
                 await openSearch(this.owner);
                 await searchFor('backup');

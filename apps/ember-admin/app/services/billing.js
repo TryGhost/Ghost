@@ -84,6 +84,13 @@ export default class BillingService extends Service {
         return billingEnabled && userCanAccessBilling;
     }
 
+    // The Admin route that shows the billing app at the given sub-route
+    // (eg. '/domain' -> '/pro/domain'). Admin's mounting point for the billing
+    // app is owned here — callers work with billing app sub-routes only
+    getAdminRouteForSubRoute(subRoute) {
+        return this.billingRouteRoot.replace(/^#/, '') + (subRoute === '/' ? '' : subRoute);
+    }
+
     // The billing route in the current URL hash ('/pro', or a child route like
     // '/pro/domain'), or null when the hash points elsewhere. Anchored so
     // hashes that merely start with the same characters (eg. '#/products')

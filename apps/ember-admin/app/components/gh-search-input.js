@@ -38,16 +38,20 @@ export default class GhSearchInputComponent extends Component {
         }
 
         if (selected.groupKey === BILLING_SEARCH_GROUP_KEY) {
-            if (this.router.currentURL === selected.path) {
+            // billing results carry a route within the billing app — the
+            // billing service maps it onto the Admin route hosting the iframe
+            const adminRoute = this.billing.getAdminRouteForSubRoute(selected.path);
+
+            if (this.router.currentURL === adminRoute) {
                 // Ember treats the transition as a no-op (eg. after the BMA
                 // rewrote the hash itself via history.replaceState), so the
                 // pro-sub route hook won't run — tell the iframe directly
-                this.billing.navigateToSubRoute(selected.path.replace(/^\/pro/, ''));
+                this.billing.navigateToSubRoute(selected.path);
             } else {
                 // the pro-sub route forwards the destination to the BMA iframe
                 // once the transition succeeds, so an aborted transition (eg.
                 // unsaved changes) leaves the billing app untouched
-                this.router.transitionTo(selected.path);
+                this.router.transitionTo(adminRoute);
             }
         }
     }

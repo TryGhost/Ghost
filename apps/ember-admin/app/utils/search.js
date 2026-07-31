@@ -1,78 +1,4 @@
-// Stable identifier for the billing search group — the display name is
-// host-configurable (see getSearchables), so consumers must dispatch on this
-// key rather than on the group name
 export const BILLING_SEARCH_GROUP_KEY = 'billing';
-
-export const DEFAULT_BILLING_GROUP_NAME = 'Ghost(Pro)';
-
-// Default list of Ghost(Pro) billing pages/actions, indexed client-side rather
-// than fetched from the search-index API. Every entry shares the ghost/pro
-// keywords appended below so searching the product name lists the whole group.
-export const GHOST_PRO_SEARCH_ITEMS = [
-    {
-        id: 'start-subscription',
-        title: 'Start subscription',
-        path: '/pro/plans',
-        keywords: 'billing subscription plan upgrade payment pricing price cost trial'
-    },
-    {
-        id: 'change-plan',
-        title: 'Change plan',
-        path: '/pro/plans',
-        keywords: 'billing subscription plan upgrade downgrade payment pricing price cost annual yearly monthly discount limit renew renewal'
-    },
-    {
-        id: 'cancel-subscription',
-        title: 'Cancel subscription',
-        path: '/pro/plans',
-        keywords: 'billing subscription plan cancel close delete account'
-    },
-    {
-        id: 'view-invoices',
-        title: 'View invoices',
-        path: '/pro/billing',
-        keywords: 'billing invoice receipt tax vat contact'
-    },
-    {
-        id: 'update-payment-method',
-        title: 'Update payment method',
-        path: '/pro/billing',
-        keywords: 'billing payment method credit card expired declined failed'
-    },
-    {
-        id: 'setup-custom-domain',
-        title: 'Set up a custom domain',
-        path: '/pro/domain',
-        keywords: 'domain custom dns cname ssl url address'
-    },
-    {
-        id: 'change-ghost-io-domain',
-        title: 'Change ghost.io domain',
-        path: '/pro/domain',
-        keywords: 'domain subdomain ghost.io url address'
-    },
-    {
-        id: 'buy-new-domain',
-        title: 'Buy a new domain',
-        path: '/pro/domain',
-        keywords: 'domain buy purchase register new'
-    },
-    {
-        id: 'request-backup',
-        title: 'Request backup',
-        path: '/pro/backups',
-        keywords: 'backup request restore data'
-    },
-    {
-        id: 'contact-support',
-        title: 'Contact support',
-        path: '/pro/support',
-        keywords: 'support help contact email refund'
-    }
-].map(item => ({
-    ...item,
-    keywords: `ghost(pro) ghost pro ${item.keywords}`
-}));
 
 export const SEARCHABLES = [
     {
@@ -92,14 +18,44 @@ export const SEARCHABLES = [
         index: ['name']
     },
     {
-        name: DEFAULT_BILLING_GROUP_NAME,
         key: BILLING_SEARCH_GROUP_KEY,
         model: 'pro-page',
         pathField: 'id',
         idField: 'id',
         titleField: 'title',
         index: ['title', 'keywords'],
-        staticItems: GHOST_PRO_SEARCH_ITEMS
+        // the billing group is defined entirely in config: it only resolves
+        // when hostSettings.billing.search provides a groupName and at least
+        // one valid item — an id, a title, and a path within the host's own
+        // billing app (eg. '/plans'). Anything else is dropped
+        configure(hostSettings) {
+            const searchConfig = hostSettings?.billing?.search;
+
+            const groupName = typeof searchConfig?.groupName === 'string' ? searchConfig.groupName.trim() : '';
+            const staticItems = Array.isArray(searchConfig?.items)
+                ? searchConfig.items
+                    .filter(item => (
+                        typeof item?.id === 'string' && item.id
+                        && typeof item.title === 'string' && item.title
+                        && typeof item.path === 'string' && item.path.startsWith('/')
+                    ))
+                    .map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        path: item.path,
+                        keywords: typeof item.keywords === 'string' ? item.keywords : ''
+                    }))
+                : [];
+
+            if (!groupName || staticItems.length === 0) {
+                return null;
+            }
+
+            const searchable = {...this, name: groupName, staticItems};
+            delete searchable.configure;
+
+            return searchable;
+        }
     },
     {
         name: 'Posts',
@@ -119,47 +75,13 @@ export const SEARCHABLES = [
     }
 ];
 
-// The billing group's entries are host-specific, so the group is opt-in: it
-// only appears when hostSettings.billing.search is configured. Hosts can
-// rename the group via groupName and replace its actions via items —
-// Ghost(Pro)'s defaults fill anything left unset, so Ghost(Pro) opts in with
-// an empty object. Custom entries need an id, a title, and a path
-// deep-linking into the billing app (/pro/...); anything else is dropped
+// Resolves the searchable list for a host: entries that declare configure()
+// resolve themselves against hostSettings and are omitted when they resolve
+// to null. Static entries pass through untouched
 export function getSearchables(hostSettings) {
-    const searchConfig = hostSettings?.billing?.search;
-
-    if (!searchConfig) {
-        return SEARCHABLES.filter(searchable => searchable.key !== BILLING_SEARCH_GROUP_KEY);
-    }
-
-    return SEARCHABLES.map((searchable) => {
-        if (searchable.key !== BILLING_SEARCH_GROUP_KEY) {
-            return searchable;
-        }
-
-        const customized = {...searchable};
-
-        if (typeof searchConfig.groupName === 'string' && searchConfig.groupName.trim()) {
-            customized.name = searchConfig.groupName.trim();
-        }
-
-        if (Array.isArray(searchConfig.items)) {
-            customized.staticItems = searchConfig.items
-                .filter(item => (
-                    typeof item?.id === 'string' && item.id
-                    && typeof item.title === 'string' && item.title
-                    && typeof item.path === 'string' && /^\/pro(?:\/|$)/.test(item.path)
-                ))
-                .map(item => ({
-                    id: item.id,
-                    title: item.title,
-                    path: item.path,
-                    keywords: typeof item.keywords === 'string' ? item.keywords : ''
-                }));
-        }
-
-        return customized;
-    });
+    return SEARCHABLES
+        .map(searchable => (searchable.configure ? searchable.configure(hostSettings) : searchable))
+        .filter(Boolean);
 }
 
 const STATUS_PRIORITY = {
