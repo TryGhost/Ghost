@@ -12,6 +12,7 @@ export default class PostsListTagEditor extends Component {
     @tracked visibleTagCount = 0;
 
     resizeObserver;
+    measureFrame;
     openedAtUpdatedAt;
 
     get tags() {
@@ -41,14 +42,29 @@ export default class PostsListTagEditor extends Component {
     @action
     setupOverflow(element) {
         this.tagListElement = element;
-        this.resizeObserver = new ResizeObserver(() => this.measureOverflow());
+        this.resizeObserver = new ResizeObserver(() => this.scheduleOverflowMeasurement());
         this.resizeObserver.observe(element);
-        requestAnimationFrame(() => this.measureOverflow());
+        this.scheduleOverflowMeasurement();
+    }
+
+    @action
+    tagsChanged() {
+        this.scheduleOverflowMeasurement();
     }
 
     @action
     teardownOverflow() {
         this.resizeObserver?.disconnect();
+        cancelAnimationFrame(this.measureFrame);
+        this.tagListElement = undefined;
+    }
+
+    scheduleOverflowMeasurement() {
+        cancelAnimationFrame(this.measureFrame);
+        this.measureFrame = requestAnimationFrame(() => {
+            this.measureFrame = undefined;
+            this.measureOverflow();
+        });
     }
 
     measureOverflow() {

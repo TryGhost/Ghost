@@ -98,6 +98,20 @@ describe('Integration: Component: posts-list/tag-editor', function () {
         expect(findAll('.gh-post-list-tags-order li')).to.have.length(2);
     });
 
+    it('shows the first tag inline after adding it to an untagged post', async function () {
+        await assignPostWithTags(this, {tags: []});
+        await render(hbs`<PostsList::TagEditor @post={{post}} style="width: 600px; max-width: 600px" />`);
+
+        await click('[data-test-edit-post-tags]');
+        await clickTrigger();
+        await selectChoose('.gh-post-list-tags-popover', 'Primary tag');
+        await click('[data-test-button="save-tags"]');
+        await waitFor('[data-test-post-tag="one"]');
+
+        expect(find('[data-test-post-tag="one"]')).to.have.class('primary');
+        expect(find('[data-test-post-tags-overflow]')).to.not.exist;
+    });
+
     it('supports internal tags without incorrectly marking them as primary', async function () {
         await assignPostWithTags(this, {tags: ['internal', 'one']});
         await render(hbs`<PostsList::TagEditor @post={{post}} style="width: 600px; max-width: 600px" />`);

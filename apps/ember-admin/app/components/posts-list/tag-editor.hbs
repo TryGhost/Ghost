@@ -2,6 +2,7 @@
     class="gh-post-list-tags"
     data-ignore-select
     {{did-insert this.setupOverflow}}
+    {{did-update this.tagsChanged this.tags.length}}
     {{will-destroy this.teardownOverflow}}
     ...attributes
 >
