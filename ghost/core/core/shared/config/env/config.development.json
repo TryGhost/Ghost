@@ -1,5 +1,5 @@
 {
-    "url": "http://localhost:2368",
+    "url": "http://127.0.0.1:2368",
     "mail": {
         "from": "test@example.com",
         "transport": "SMTP",
