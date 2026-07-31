@@ -6,7 +6,7 @@ import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 const {Errors} = DS;
 
-export default class AddTag extends Component {
+export default class BulkTags extends Component {
     @service store;
 
     @tracked selectedTags = [];

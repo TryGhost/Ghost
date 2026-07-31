@@ -1,4 +1,4 @@
-import AddPostTagsModal from './modals/add-tag';
+import BulkTagsModal from './modals/bulk-tags';
 import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
 import EditPostsAccessModal from './modals/edit-posts-access';
@@ -158,7 +158,7 @@ export default class PostsContextMenu extends Component {
 
     @action
     async addTagToPosts() {
-        await this.menu.openModal(AddPostTagsModal, {
+        await this.menu.openModal(BulkTagsModal, {
             action: 'add',
             type: this.type,
             selectionList: this.selectionList,
@@ -168,7 +168,7 @@ export default class PostsContextMenu extends Component {
 
     @action
     async removeTagFromPosts() {
-        await this.menu.openModal(AddPostTagsModal, {
+        await this.menu.openModal(BulkTagsModal, {
             action: 'remove',
             type: this.type,
             selectionList: this.selectionList,
