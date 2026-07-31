@@ -566,6 +566,18 @@
     cursor: pointer;
 }
 
+.gh-post-list-tags-order-actions button:hover:not(:disabled),
+.gh-post-list-tags-order-actions button:focus-visible {
+    border-radius: 4px;
+    background: var(--whitegrey-d1);
+    color: var(--darkgrey);
+}
+
+.gh-post-list-tags-order-actions button:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 1px;
+}
+
 .gh-post-list-tags-order-actions button:disabled {
     opacity: 0.25;
     cursor: default;

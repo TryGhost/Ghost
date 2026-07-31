@@ -2,7 +2,7 @@ import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
 import mockPosts from '../../../mirage/config/posts';
 import mockTags from '../../../mirage/config/themes';
-import {click, find, findAll, render, settled, triggerKeyEvent, waitFor} from '@ember/test-helpers';
+import {click, find, findAll, focus, render, settled, triggerKeyEvent, waitFor} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -100,7 +100,7 @@ describe('Integration: Component: posts-list/tag-editor', function () {
 
     it('supports internal tags without incorrectly marking them as primary', async function () {
         await assignPostWithTags(this, {tags: ['internal', 'one']});
-        await render(hbs`<PostsList::TagEditor @post={{post}} />`);
+        await render(hbs`<PostsList::TagEditor @post={{post}} style="width: 600px; max-width: 600px" />`);
 
         const renderedTags = findAll('[data-test-post-tag]');
         expect(renderedTags[0]).to.have.attribute('data-test-post-tag', 'internal');
@@ -195,5 +195,18 @@ describe('Integration: Component: posts-list/tag-editor', function () {
 
         expect(find('[data-test-post-tags-popover]')).to.not.exist;
         expect(document.activeElement).to.equal(editButton);
+    });
+
+    it('allows keyboard focus on enabled tag ordering controls', async function () {
+        await assignPostWithTags(this);
+        await render(hbs`<PostsList::TagEditor @post={{post}} />`);
+
+        await click('[data-test-edit-post-tags]');
+        const moveEarlierButton = find('[aria-label="Move Second tag earlier"]');
+        expect(moveEarlierButton).to.not.have.attribute('disabled');
+        expect(moveEarlierButton.tabIndex).to.equal(0);
+
+        await focus(moveEarlierButton);
+        expect(document.activeElement).to.equal(moveEarlierButton);
     });
 });
