@@ -367,8 +367,6 @@ describe('Acceptance: Search', function () {
                         billing: {
                             enabled: true,
                             url: 'http://localhost:4200/billing-app',
-                            // the group is defined entirely by host config — this
-                            // stands in for a host's search group configuration
                             search: {
                                 groupName: 'Ghost(Pro)',
                                 items: [

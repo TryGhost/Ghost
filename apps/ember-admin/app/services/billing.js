@@ -73,10 +73,9 @@ export default class BillingService extends Service {
         this.clearBillingAppLoadMonitor();
     }
 
-    // Whether the current user may open the billing app: billing must be
-    // enabled for the site, and the user must be the owner — or anyone while
-    // the site is in a force-upgrade state. This is the canonical access rule
-    // consumers should share (the `pro` route enforces the user half of it)
+    // Whether the current user may open the billing app:
+    // - billing must be enabled for the site
+    // - user must be the owner, except when the site is in a force-upgrade state
     get canAccessBilling() {
         const billingEnabled = Boolean(this.config.hostSettings?.billing?.enabled);
         const userCanAccessBilling = Boolean(this.session.user?.isOwnerOnly) || Boolean(this.config.hostSettings?.forceUpgrade);
@@ -215,8 +214,6 @@ export default class BillingService extends Service {
         this.billingAppIframeSrcSetAt = Date.now();
         this.resetBillingAppLoadDiagnostics();
         iframe.src = this.getIframeURL();
-        // the pending sub route is now part of the iframe URL — no post-load
-        // route update needed
         this.pendingSubRoute = null;
     }
 
@@ -366,9 +363,6 @@ export default class BillingService extends Service {
                 reloadReason = 'visible_open_after_load_failure';
             }
 
-            // reloading with a pending sub route boots the billing app directly
-            // on the destination, avoiding a race with the app's own initial
-            // redirects that a post-load route update message can lose
             this.reloadBillingIframe({
                 source: BILLING_APP_ATTEMPT_SOURCE_USER_OPEN,
                 reloadReason
@@ -558,11 +552,6 @@ export default class BillingService extends Service {
         return this.ownerUser;
     }
 
-    // Navigates the BMA iframe to a child route (eg. '/domain'). The iframe is
-    // preloaded when Admin boots, so in-app deep links (eg. search results)
-    // can't rely on the initial iframe URL — the loaded app is told to navigate
-    // via postMessage instead. If the app isn't ready yet the route is kept and
-    // sent once it reports ready (see markBillingAppLoaded)
     navigateToSubRoute(destinationRoute) {
         if (!destinationRoute) {
             return;
@@ -588,9 +577,6 @@ export default class BillingService extends Service {
         }
     }
 
-    // Sends the checkout deep link (`?action=checkout`) to the BMA. Delivery
-    // goes through navigateToSubRoute so it's origin-pinned and queued until
-    // the app is ready instead of being dropped
     sendRouteUpdate() {
         const action = this.action;
 

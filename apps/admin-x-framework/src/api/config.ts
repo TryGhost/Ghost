@@ -90,10 +90,7 @@ export type Config = {
                 logoDark?: string // Logo shown in dark mode, falls back to logo
                 logoAlt?: string // Alt text for the logo
             }
-            // Search palette group for billing actions, defined entirely by host
-            // config: the group only appears when a groupName and at least one
-            // valid item are provided. Item paths are routes within the host's
-            // own billing app (eg. '/plans').
+            // Search entries for billing paths, defined in host config (hostSettings.billing.search: {})
             search?: {
                 groupName?: string
                 items?: {

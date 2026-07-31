@@ -147,8 +147,6 @@ suites.forEach((suite) => {
         });
 
         describe('billing results', function () {
-            // the group is defined entirely by host config — this fixture
-            // stands in for a host's hostSettings.billing.search
             const billingSearch = {
                 groupName: 'Acme Hosting',
                 items: [

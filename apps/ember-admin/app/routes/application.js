@@ -216,10 +216,7 @@ export default Route.extend(ShortcutsRoute, {
         }
 
         if (this.config.hostSettings?.forceUpgrade) {
-            // enforce opening the BMA in a force upgrade state, keeping any
-            // /pro child route from the URL (eg. a reloaded /pro/domain);
-            // openBillingWindow falls back to the billing root when the hash
-            // points elsewhere
+            // enforce opening the billing app in a force upgrade state
             this.billing.openBillingWindow(this.router.currentURL, this.billing.getBillingRouteFromHash());
         }
 

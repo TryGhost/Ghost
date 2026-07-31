@@ -46,8 +46,6 @@ export default class SearchService extends Service {
 
         const results = yield this.provider.searchTask.perform(term);
 
-        // billing results deep-link into the billing app, so they're only
-        // shown to users who may open it (the billing service owns the rule)
         if (!this.billing.canAccessBilling) {
             return results.filter(group => group.groupKey !== BILLING_SEARCH_GROUP_KEY);
         }

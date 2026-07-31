@@ -17,9 +17,6 @@ export default class SearchProviderFlexService extends Service {
 
     @inject config;
 
-    // indexes are keyed by model with static field config, neither of which
-    // hostSettings can change, so the config-resolved searchable list isn't
-    // needed here
     indexes = SEARCHABLES.reduce((indexes, searchable) => {
         indexes[searchable.model] = new Document({
             tokenize: 'forward',

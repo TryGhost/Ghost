@@ -75,9 +75,6 @@ export const SEARCHABLES = [
     }
 ];
 
-// Resolves the searchable list for a host: entries that declare configure()
-// resolve themselves against hostSettings and are omitted when they resolve
-// to null. Static entries pass through untouched
 export function getSearchables(hostSettings) {
     return SEARCHABLES
         .map(searchable => (searchable.configure ? searchable.configure(hostSettings) : searchable))
