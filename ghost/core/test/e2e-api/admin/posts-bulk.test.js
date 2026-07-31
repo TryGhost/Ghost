@@ -306,6 +306,23 @@ describe('Posts Bulk API', function () {
             }
         });
 
+        it('Rejects invalid remove tag payloads', async function () {
+            const filter = 'status:[published]';
+            const invalidPayloads = [
+                {action: 'removeTag'},
+                {action: 'removeTag', meta: {tags: [null]}}
+            ];
+
+            for (const bulk of invalidPayloads) {
+                const response = await agent
+                    .put('/posts/bulk/?filter=' + encodeURIComponent(filter))
+                    .body({bulk})
+                    .expectStatus(400);
+
+                assert.equal(response.body.errors[0].type, 'IncorrectUsageError');
+            }
+        });
+
         it('Can unpublish posts', async function () {
             const filter = 'status:[published]';
             const changedPosts = await models.Post.findPage({filter, status: 'published'});

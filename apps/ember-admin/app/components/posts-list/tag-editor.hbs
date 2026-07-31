@@ -2,7 +2,7 @@
     class="gh-post-list-tags"
     data-ignore-select
     {{did-insert this.setupOverflow}}
-    {{did-update this.tagsChanged this.tags.length}}
+    {{did-update this.tagsChanged this.tagSignature}}
     {{will-destroy this.teardownOverflow}}
     ...attributes
 >
@@ -70,12 +70,17 @@
                 <span>Edit tags</span>
             </dropdown.Trigger>
 
-            <dropdown.Content class="gh-post-list-tags-popover dropdown-menu" data-test-post-tags-popover>
-                <h3>Edit tags</h3>
+            <dropdown.Content
+                class="gh-post-list-tags-popover dropdown-menu"
+                data-test-post-tags-popover
+                {{on "keydown" (fn this.handleEditorKeydown dropdown)}}
+            >
+                <h3 id="post-{{@post.id}}-tags-heading">Edit tags</h3>
                 <p>The first tag is primary when it is a public tag.</p>
 
                 <GhTagsTokenInput
                     @allowCreation={{true}}
+                    @ariaLabelledBy="post-{{@post.id}}-tags-heading"
                     @onChange={{this.updateTags}}
                     @renderInPlace={{true}}
                     @selected={{this.draftTags}}

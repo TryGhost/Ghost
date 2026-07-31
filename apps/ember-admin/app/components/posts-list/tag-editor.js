@@ -19,6 +19,10 @@ export default class PostsListTagEditor extends Component {
         return this.args.post.tags?.toArray() || [];
     }
 
+    get tagSignature() {
+        return this.tags.map(tag => tag.name).join('\u0000');
+    }
+
     get canEdit() {
         return !this.session.user.isContributor || this.args.post.isDraft;
     }
@@ -127,6 +131,15 @@ export default class PostsListTagEditor extends Component {
         tags.splice(currentIndex, 1);
         tags.splice(nextIndex, 0, tag);
         this.draftTags = tags;
+    }
+
+    @action
+    handleEditorKeydown(dropdown, event) {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopPropagation();
+            dropdown.actions.close();
+        }
     }
 
     @action

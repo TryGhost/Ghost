@@ -185,7 +185,7 @@ class PostsService {
             return bulkResult;
         }
         if (data.action === 'removeTag') {
-            if (!Array.isArray(data.meta.tags) || data.meta.tags.some(tag => typeof tag !== 'object' || !tag.id)) {
+            if (!Array.isArray(data.meta?.tags) || data.meta.tags.some(tag => !tag || typeof tag !== 'object' || !tag.id)) {
                 throw new errors.IncorrectUsageError({
                     message: tpl(messages.invalidTags)
                 });

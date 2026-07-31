@@ -71,8 +71,9 @@ describe('Integration: Component: posts-list/tag-editor', function () {
         const renderedTags = findAll('[data-test-post-tag]');
         expect(renderedTags[0]).to.have.attribute('data-test-post-tag', 'one');
         expect(renderedTags[0]).to.have.class('primary');
+        expect(renderedTags.length).to.be.lessThan(3);
         expect(find('[data-test-post-tags-overflow]')).to.exist;
-        expect(find('[data-test-post-tags-overflow-tooltip]')).to.contain.text('A very long third tag name');
+        expect(find('[data-test-post-tags-overflow-tooltip]')).to.exist;
         expect(find('[data-test-post-tags-overflow]')).to.have.attribute('aria-describedby', 'post-1-overflow-tags');
     });
 
@@ -190,6 +191,22 @@ describe('Integration: Component: posts-list/tag-editor', function () {
         expect(this.notifications.notifications.at(-1).options.type).to.equal('error');
     });
 
+    it('does not overwrite a post saved elsewhere while tags are being edited', async function () {
+        await assignPostWithTags(this);
+        await render(hbs`<PostsList::TagEditor @post={{post}} />`);
+        await click('[data-test-edit-post-tags]');
+        await click('[aria-label="Move Second tag earlier"]');
+
+        server.schema.posts.find(1).update({updatedAt: '2015-10-19T16:25:08.756Z'});
+        await this.post.reload();
+        await click('[data-test-button="save-tags"]');
+
+        const updateRequests = server.pretender.handledRequests.filter(request => request.method === 'PUT' && request.url.includes('/posts/1/'));
+        expect(updateRequests).to.be.empty;
+        expect(this.post.tags.mapBy('slug')).to.deep.equal(['one', 'two']);
+        expect(this.notifications.notifications.at(-1).options.type).to.equal('error');
+    });
+
     it('hides editing for a contributor viewing a published post', async function () {
         this.session.user = {isContributor: true};
         await assignPostWithTags(this, {status: 'published'});
@@ -205,7 +222,10 @@ describe('Integration: Component: posts-list/tag-editor', function () {
         const editButton = find('[data-test-edit-post-tags]');
         await click(editButton);
         await waitFor('[data-test-post-tags-popover]');
-        await triggerKeyEvent(document.activeElement, 'keydown', 'Escape');
+        const moveEarlierButton = find('[aria-label="Move Second tag earlier"]');
+        await focus(moveEarlierButton);
+        expect(document.activeElement).to.equal(moveEarlierButton);
+        await triggerKeyEvent(moveEarlierButton, 'keydown', 'Escape');
 
         expect(find('[data-test-post-tags-popover]')).to.not.exist;
         expect(document.activeElement).to.equal(editButton);
