@@ -14,7 +14,7 @@ export const GHOST_PRO_SEARCH_ITEMS = [
         id: 'change-plan',
         title: 'Change plan',
         path: '/pro/plans',
-        keywords: 'billing subscription plan upgrade downgrade payment pricing price cost annual yearly monthly discount limit limits renew renewal'
+        keywords: 'billing subscription plan upgrade downgrade payment pricing price cost annual yearly monthly discount limit renew renewal'
     },
     {
         id: 'cancel-subscription',
@@ -26,7 +26,7 @@ export const GHOST_PRO_SEARCH_ITEMS = [
         id: 'view-invoices',
         title: 'View invoices',
         path: '/pro/billing',
-        keywords: 'billing invoice invoices receipt tax vat billing contact'
+        keywords: 'billing invoice receipt tax vat contact'
     },
     {
         id: 'update-payment-method',
@@ -52,8 +52,6 @@ export const GHOST_PRO_SEARCH_ITEMS = [
         path: '/pro/domain',
         keywords: 'domain buy purchase register new'
     },
-    // note: 'export' is deliberately not a keyword for backups to avoid
-    // colliding with content export (Settings → Import/Export)
     {
         id: 'request-backup',
         title: 'Request backup',
