@@ -16,20 +16,29 @@ export default class SearchProviderBasicService extends Service {
 
     content = [];
 
+    constructor() {
+        super(...arguments);
+
+        this.searchables = getSearchables(this.config.hostSettings);
+    }
+
     /* eslint-disable require-yield */
     @task
     *searchTask(term) {
         const normalizedTerm = term.toString().toLowerCase();
         const results = [];
 
-        getSearchables(this.config.hostSettings).forEach((searchable) => {
+        this.searchables.forEach((searchable) => {
+            // only match fields the searchable declares in its index
+            const keywordsIndexed = Boolean(searchable.index?.includes('keywords'));
+
             let matchedContent = this.content.filter((item) => {
                 if (item.groupName !== searchable.name) {
                     return false;
                 }
 
                 const normalizedTitle = item.title.toString().toLowerCase();
-                const normalizedKeywords = item.keywords ? item.keywords.toString().toLowerCase() : '';
+                const normalizedKeywords = keywordsIndexed && item.keywords ? item.keywords.toString().toLowerCase() : '';
 
                 return (
                     normalizedTitle.indexOf(normalizedTerm) >= 0 ||
@@ -55,7 +64,7 @@ export default class SearchProviderBasicService extends Service {
     @task
     *refreshContentTask() {
         const content = [];
-        const promises = getSearchables(this.config.hostSettings).map(searchable => this._loadSearchable(searchable, content));
+        const promises = this.searchables.map(searchable => this._loadSearchable(searchable, content));
 
         try {
             yield RSVP.all(promises);

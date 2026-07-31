@@ -2,7 +2,6 @@ import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import moment from 'moment-timezone';
-import {BILLING_SEARCH_GROUP_KEY} from 'ghost-admin/utils/search';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -55,12 +54,9 @@ export function filterLinkSearchResults(results, settings) {
     const filteredResults = [];
 
     results.forEach((group) => {
-        let items = group.options;
-
-        // billing results are admin pages, not linkable site content
-        if (group.groupKey === BILLING_SEARCH_GROUP_KEY) {
-            return;
-        }
+        // only content with a public URL is linkable — this also drops
+        // admin-only groups like billing pages, which have a path but no url
+        let items = group.options.filter(i => i.url);
 
         if (group.groupName === 'Posts' || group.groupName === 'Pages') {
             items = items.filter(i => i.status === 'published');

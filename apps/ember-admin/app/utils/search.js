@@ -20,14 +20,19 @@ export const SEARCHABLES = [
     {
         key: BILLING_SEARCH_GROUP_KEY,
         model: 'pro-page',
-        pathField: 'id',
         idField: 'id',
         titleField: 'title',
         index: ['title', 'keywords'],
-        // the billing group is defined entirely in config: it only resolves
-        // when hostSettings.billing.search provides a groupName and at least
-        // one valid item — an id, a title, and a path within the host's own
-        // billing app (eg. '/plans'). Anything else is dropped
+        // the billing group is defined entirely in config (hostSettings.billing.search: {})
+        //
+        // Example:
+        // search: {
+        //   "groupName": "Ghost(Pro)",
+        //   "items": [
+        //      {"id": "change-plan", "title": "Change plan", "path": "/plans", "keywords": "billing subscription plan upgrade"},
+        //      {"id": "contact-support", "title": "Contact support", "path": "/support", "keywords": "support help contact"}
+        //   ]
+        // }
         configure(hostSettings) {
             const searchConfig = hostSettings?.billing?.search;
 
@@ -37,7 +42,9 @@ export const SEARCHABLES = [
                     .filter(item => (
                         typeof item?.id === 'string' && item.id
                         && typeof item.title === 'string' && item.title
-                        && typeof item.path === 'string' && item.path.startsWith('/')
+                        && typeof item.path === 'string'
+                        && /^\/[^?#\s]*$/.test(item.path)
+                        && (item.path === '/' || !item.path.endsWith('/'))
                     ))
                     .map(item => ({
                         id: item.id,
@@ -47,7 +54,12 @@ export const SEARCHABLES = [
                     }))
                 : [];
 
-            if (!groupName || staticItems.length === 0) {
+            // a groupName colliding with a built-in group would route
+            // selections into the wrong openSelected branch and cross-match
+            // items between the two same-named groups
+            const groupNameIsReserved = SEARCHABLES.some(builtIn => builtIn.name === groupName);
+
+            if (!groupName || groupNameIsReserved || staticItems.length === 0) {
                 return null;
             }
 

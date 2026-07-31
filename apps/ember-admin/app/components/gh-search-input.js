@@ -17,6 +17,26 @@ export default class GhSearchInputComponent extends Component {
 
         this.args.onSelected?.(selected);
 
+        if (selected.groupKey === BILLING_SEARCH_GROUP_KEY) {
+            const adminRoute = this.billing.getAdminRouteForSubRoute(selected.path);
+
+            if (this.router.currentURL === adminRoute) {
+                // Ember treats the transition as a no-op (eg. after the billing app
+                // rewrote the hash itself via history.replaceState), so the
+                // pro-sub route hook won't run — tell the iframe directly
+                this.billing.navigateToSubRoute(selected.path);
+            } else {
+                // the pro route hooks forward the destination to the billing app
+                // once the transition succeeds, so an aborted transition (eg.
+                // unsaved changes) leaves the billing app untouched
+                this.router.transitionTo(adminRoute);
+            }
+
+            // billing groups are config-named — never fall through to the
+            // groupName-keyed content branches below
+            return;
+        }
+
         if (selected.groupName === 'Posts') {
             let id = selected.id.replace('post.', '');
             this.router.transitionTo('lexical-editor.edit', 'post', id);
@@ -35,22 +55,6 @@ export default class GhSearchInputComponent extends Component {
         if (selected.groupName === 'Tags') {
             let id = selected.id.replace('tag.', '');
             this.router.transitionTo('tag', id);
-        }
-
-        if (selected.groupKey === BILLING_SEARCH_GROUP_KEY) {
-            const adminRoute = this.billing.getAdminRouteForSubRoute(selected.path);
-
-            if (this.router.currentURL === adminRoute) {
-                // Ember treats the transition as a no-op (eg. after the billing app
-                // rewrote the hash itself via history.replaceState), so the
-                // pro-sub route hook won't run — tell the iframe directly
-                this.billing.navigateToSubRoute(selected.path);
-            } else {
-                // the pro-sub route forwards the destination to the billing app
-                // once the transition succeeds, so an aborted transition (eg.
-                // unsaved changes) leaves the billing app untouched
-                this.router.transitionTo(adminRoute);
-            }
         }
     }
 

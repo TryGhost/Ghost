@@ -206,7 +206,9 @@ suites.forEach((suite) => {
                             groupName: 'Acme Hosting',
                             items: [
                                 {id: 'manage-subscription', title: 'Manage subscription', path: '/subscription', keywords: 'billing'},
-                                {id: 'external-link', title: 'Externally hosted', path: 'https://example.com', keywords: 'billing'}
+                                {id: 'external-link', title: 'Externally hosted', path: 'https://example.com', keywords: 'billing'},
+                                {id: 'query-string', title: 'Upgrade plan', path: '/plans?intent=upgrade', keywords: 'billing'},
+                                {id: 'trailing-slash', title: 'Support', path: '/support/', keywords: 'billing'}
                             ]
                         }
                     }

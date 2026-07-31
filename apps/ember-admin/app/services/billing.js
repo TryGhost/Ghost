@@ -63,6 +63,7 @@ export default class BillingService extends Service {
     billingAppLoadAttemptSequence = 0;
     billingAppIframeSrcSetAt = null;
     billingAppIframeLoadFired = false;
+    billingAppIframeSrcSubRoute = null;
 
     pendingSubRoute = null;
 
@@ -74,13 +75,16 @@ export default class BillingService extends Service {
     }
 
     // Whether the current user may open the billing app:
-    // - billing must be enabled for the site
-    // - user must be the owner, except when the site is in a force-upgrade state
+    // - a force-upgrade state always has access — the billing app is the only
+    //   way out of it, for any signed-in user
+    // - otherwise billing must be enabled for the site and the user must be
+    //   the owner
     get canAccessBilling() {
-        const billingEnabled = Boolean(this.config.hostSettings?.billing?.enabled);
-        const userCanAccessBilling = Boolean(this.session.user?.isOwnerOnly) || Boolean(this.config.hostSettings?.forceUpgrade);
+        if (this.config.hostSettings?.forceUpgrade) {
+            return true;
+        }
 
-        return billingEnabled && userCanAccessBilling;
+        return Boolean(this.config.hostSettings?.billing?.enabled) && Boolean(this.session.user?.isOwnerOnly);
     }
 
     // The Admin route that shows the billing app at the given sub-route
@@ -143,10 +147,6 @@ export default class BillingService extends Service {
         }
 
         return ADMIN_DESTINATION_ROUTES[destination] ?? null;
-    }
-
-    _isBillingIframeLoaded() {
-        return this.getBillingIframe() !== null && this.getBillingIframe().contentWindow;
     }
 
     startBillingAppLoadMonitor(options = {}) {
@@ -214,6 +214,7 @@ export default class BillingService extends Service {
         this.billingAppIframeSrcSetAt = Date.now();
         this.resetBillingAppLoadDiagnostics();
         iframe.src = this.getIframeURL();
+        this.billingAppIframeSrcSubRoute = this.getIframeDestinationRoute();
         this.pendingSubRoute = null;
     }
 
@@ -354,7 +355,13 @@ export default class BillingService extends Service {
         this.clearBillingAppLoadMonitor();
         this.billingAppLoadAttempts = 0;
 
-        if (hadPreloadFailure || hadVisibleFailure || this.pendingSubRoute) {
+        // '/' and no destination both load the billing app root
+        const normalizeSubRoute = subRoute => (subRoute === '/' ? null : subRoute);
+
+        const pendingSubRouteNeedsReload = Boolean(this.pendingSubRoute)
+            && normalizeSubRoute(this.pendingSubRoute) !== normalizeSubRoute(this.billingAppIframeSrcSubRoute);
+
+        if (hadPreloadFailure || hadVisibleFailure || pendingSubRouteNeedsReload) {
             let reloadReason = 'visible_open_with_destination_route';
 
             if (hadPreloadFailure) {
@@ -491,19 +498,7 @@ export default class BillingService extends Service {
         });
     }
 
-    getIframeURL(options = {}) {
-        const {fetchOwner = true} = options;
-
-        // initiate getting owner user in the background
-        if (fetchOwner) {
-            this.getOwnerUser();
-        }
-
-        let url = this.config.hostSettings?.billing?.url;
-
-        // a pending sub route takes precedence over the URL hash — Ember model
-        // hooks run before the browser URL updates, so during an in-app
-        // transition to /pro/* the hash still points at the previous route
+    getIframeDestinationRoute() {
         let destinationRoute = this.pendingSubRoute;
 
         if (!destinationRoute) {
@@ -515,6 +510,20 @@ export default class BillingService extends Service {
                 destinationRoute = hashRoute.slice(this.billingRouteRoot.length - 1);
             }
         }
+
+        return destinationRoute || null;
+    }
+
+    getIframeURL(options = {}) {
+        const {fetchOwner = true} = options;
+
+        // initiate getting owner user in the background
+        if (fetchOwner) {
+            this.getOwnerUser();
+        }
+
+        let url = this.config.hostSettings?.billing?.url;
+        const destinationRoute = this.getIframeDestinationRoute();
 
         if (url && destinationRoute) {
             url = url.replace(/\/$/, '') + destinationRoute;
@@ -552,28 +561,35 @@ export default class BillingService extends Service {
         return this.ownerUser;
     }
 
+    postMessageToBillingApp(message) {
+        const billingIframeWindow = this.getBillingIframe()?.contentWindow;
+        const billingAppOrigin = this.getBillingAppOrigin();
+
+        if (!billingIframeWindow || !billingAppOrigin) {
+            return false;
+        }
+
+        billingIframeWindow.postMessage(message, billingAppOrigin);
+        return true;
+    }
+
     navigateToSubRoute(destinationRoute) {
         if (!destinationRoute) {
             return;
         }
 
-        const billingAppOrigin = this.getBillingAppOrigin();
+        if (this.billingAppLoaded && this.postMessageToBillingApp({query: 'routeUpdate', response: destinationRoute})) {
+            return;
+        }
 
-        if (this.billingAppLoaded && this._isBillingIframeLoaded() && billingAppOrigin) {
-            this.getBillingIframe().contentWindow.postMessage({
-                query: 'routeUpdate',
-                response: destinationRoute
-            }, billingAppOrigin);
-        } else {
-            this.pendingSubRoute = destinationRoute;
+        this.pendingSubRoute = destinationRoute;
 
-            // when the window is already visible while the app is still
-            // loading, bake the destination into the iframe URL now — a
-            // post-load route update message can lose a race with the app's
-            // own initial redirects
-            if (this.billingWindowOpen && !this.billingAppLoaded) {
-                this.ensureBillingAppReadyForVisibleUse();
-            }
+        // when the window is already visible while the app is still
+        // loading, bake the destination into the iframe URL now — a
+        // post-load route update message can lose a race with the app's
+        // own initial redirects
+        if (this.billingWindowOpen && !this.billingAppLoaded) {
+            this.ensureBillingAppReadyForVisibleUse();
         }
     }
 
@@ -590,14 +606,8 @@ export default class BillingService extends Service {
     }
 
     sendUpdateLimits() {
-        if (!this._isBillingIframeLoaded()) {
-            return;
-        }
-
         // Send Billing app message to fetch fresh limit usage
-        this.getBillingIframe().contentWindow.postMessage({
-            query: 'limitUpdate'
-        }, '*');
+        this.postMessageToBillingApp({query: 'limitUpdate'});
     }
 
     // Controls billing window modal visibility and sync of the URL visible in browser

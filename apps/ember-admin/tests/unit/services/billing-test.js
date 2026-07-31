@@ -462,7 +462,7 @@ describe('Unit: Service: billing', function () {
 
         const calls = limitUpdateCalls(postMessage);
         expect(calls).to.have.lengthOf(1);
-        expect(calls[0].args).to.deep.equal([{query: 'limitUpdate'}, '*']);
+        expect(calls[0].args).to.deep.equal([{query: 'limitUpdate'}, 'https://billing.example.test']);
     });
 
     it('does not send limitUpdate when the billing overlay is hidden', function () {

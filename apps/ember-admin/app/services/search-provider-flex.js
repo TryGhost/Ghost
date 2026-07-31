@@ -1,7 +1,7 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
 import {default as Flexsearch} from 'flexsearch';
-import {SEARCHABLES, createSearchResult, getSearchables, sortSearchResultsByStatus} from '../utils/search';
+import {createSearchResult, getSearchables, sortSearchResultsByStatus} from '../utils/search';
 import {inject} from 'ghost-admin/decorators/inject';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
@@ -17,25 +17,30 @@ export default class SearchProviderFlexService extends Service {
 
     @inject config;
 
-    indexes = SEARCHABLES.reduce((indexes, searchable) => {
-        indexes[searchable.model] = new Document({
-            tokenize: 'forward',
-            document: {
-                id: 'id',
-                index: searchable.index,
-                store: true
-            }
-        });
+    constructor() {
+        super(...arguments);
 
-        return indexes;
-    }, {});
+        this.searchables = getSearchables(this.config.hostSettings);
+        this.indexes = this.searchables.reduce((indexes, searchable) => {
+            indexes[searchable.model] = new Document({
+                tokenize: 'forward',
+                document: {
+                    id: 'id',
+                    index: searchable.index,
+                    store: true
+                }
+            });
+
+            return indexes;
+        }, {});
+    }
 
     /* eslint-disable require-yield */
     @task
     *searchTask(term) {
         const results = [];
 
-        getSearchables(this.config.hostSettings).forEach((searchable) => {
+        this.searchables.forEach((searchable) => {
             const searchResults = this.indexes[searchable.model].search(term, {enrich: true});
             const usedIds = new Set();
             let groupResults = [];
@@ -72,7 +77,7 @@ export default class SearchProviderFlexService extends Service {
     @task
     *refreshContentTask() {
         try {
-            const promises = getSearchables(this.config.hostSettings).map(searchable => this.#loadSearchable(searchable));
+            const promises = this.searchables.map(searchable => this.#loadSearchable(searchable));
             yield RSVP.all(promises);
         } catch (error) {
             // eslint-disable-next-line
