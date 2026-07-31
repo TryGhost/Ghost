@@ -51,6 +51,7 @@ describe('Integration: Component: posts-list/tag-editor', function () {
         server.create('tag', {name: 'Primary tag', slug: 'one'});
         server.create('tag', {name: 'Second tag', slug: 'two'});
         server.create('tag', {name: 'A very long third tag name', slug: 'three'});
+        server.create('tag', {name: '#Internal tag', slug: 'internal', visibility: 'internal'});
 
         this.owner.register('service:notifications', NotificationsStub);
         this.notifications = this.owner.lookup('service:notifications');
@@ -95,6 +96,30 @@ describe('Integration: Component: posts-list/tag-editor', function () {
 
         await click('.ember-power-select-multiple-remove-btn');
         expect(findAll('.gh-post-list-tags-order li')).to.have.length(2);
+    });
+
+    it('supports internal tags without incorrectly marking them as primary', async function () {
+        await assignPostWithTags(this, {tags: ['internal', 'one']});
+        await render(hbs`<PostsList::TagEditor @post={{post}} />`);
+
+        const renderedTags = findAll('[data-test-post-tag]');
+        expect(renderedTags[0]).to.have.attribute('data-test-post-tag', 'internal');
+        expect(renderedTags[0]).to.not.have.class('primary');
+        expect(renderedTags[0]).to.have.attribute('aria-label', '#Internal tag');
+        expect(renderedTags[1]).to.not.have.class('primary');
+
+        await click('[data-test-edit-post-tags]');
+        expect(find('[data-test-post-tags-popover]')).to.contain.text('The first tag is primary when it is a public tag.');
+        expect(find('.gh-post-list-tags-order li:first-child')).to.contain.text('#Internal tag');
+        expect(find('.gh-post-list-tags-order li:first-child')).to.not.contain.text('Primary');
+
+        await click('[aria-label="Move Primary tag earlier"]');
+        expect(find('.gh-post-list-tags-order li:first-child')).to.contain.text('Primary tag');
+        expect(find('.gh-post-list-tags-order li:first-child')).to.contain.text('Primary');
+
+        const internalToken = findAll('.ember-power-select-multiple-option').find(token => token.textContent.includes('#Internal tag'));
+        await click(internalToken.querySelector('.ember-power-select-multiple-remove-btn'));
+        expect(find('.gh-post-list-tags-order')).to.not.contain.text('#Internal tag');
     });
 
     it('saves ordered tags once and shows success', async function () {

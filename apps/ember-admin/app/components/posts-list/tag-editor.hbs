@@ -9,9 +9,9 @@
         {{#each this.tags as |tag index|}}
             {{#if (lt index this.visibleTagCount)}}
                 <span
-                    class="gh-post-list-tag {{if (eq index 0) "primary"}}"
+                    class="gh-post-list-tag {{if (and (eq index 0) tag.isPublic) "primary"}}"
                     title={{tag.name}}
-                    aria-label="{{tag.name}}{{if (eq index 0) ", primary tag"}}"
+                    aria-label="{{tag.name}}{{if (and (eq index 0) tag.isPublic) ", primary tag"}}"
                     data-test-post-tag={{tag.slug}}
                 >
                     {{tag.name}}
@@ -71,7 +71,7 @@
 
             <dropdown.Content class="gh-post-list-tags-popover dropdown-menu" data-test-post-tags-popover>
                 <h3>Edit tags</h3>
-                <p>The first tag is the primary tag.</p>
+                <p>The first tag is primary when it is a public tag.</p>
 
                 <GhTagsTokenInput
                     @allowCreation={{true}}
@@ -88,7 +88,7 @@
                             <li>
                                 <span title={{tag.name}}>
                                     {{tag.name}}
-                                    {{#if (eq index 0)}}<em>Primary</em>{{/if}}
+                                    {{#if (and (eq index 0) tag.isPublic)}}<em>Primary</em>{{/if}}
                                 </span>
                                 <span class="gh-post-list-tags-order-actions">
                                     <button
