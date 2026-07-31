@@ -181,7 +181,7 @@ const DesignModal: React.FC = () => {
         <PreviewChrome data-testid='preview-mobile' device='mobile'>{rawPreviewContent}</PreviewChrome>
     );
     const previewTabs = latestPost ? (
-        <Tabs value={selectedPreviewTab} variant='button-sm' onValueChange={onSelectURL}>
+        <Tabs value={selectedPreviewTab} variant='button' onValueChange={onSelectURL}>
             <TabsList>
                 <TabsTrigger value='homepage'>Homepage</TabsTrigger>
                 <TabsTrigger value='post'>Post</TabsTrigger>

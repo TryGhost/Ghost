@@ -216,7 +216,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
     const left =
     <div className='hidden md:!visible md:!block'>
-        <Tabs value={currentTab} variant='button-sm' onValueChange={setCurrentTab}>
+        <Tabs value={currentTab} variant='button' onValueChange={setCurrentTab}>
             <TabsList>
                 <TabsTrigger value='official'>Official themes</TabsTrigger>
                 <TabsTrigger value='installed'>Installed</TabsTrigger>
@@ -267,7 +267,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             </PageHeader.Actions>
         </PageHeader>
         <div className='px-[8vmin] md:hidden'>
-            <Tabs value={currentTab} variant='button-sm' onValueChange={setCurrentTab}>
+            <Tabs value={currentTab} variant='button' onValueChange={setCurrentTab}>
                 <TabsList>
                     <TabsTrigger value='official'>Official themes</TabsTrigger>
                     <TabsTrigger value='installed'>Installed</TabsTrigger>
