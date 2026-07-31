@@ -201,7 +201,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             <div className='flex grow flex-col gap-8'>
                 <FieldSet className='gap-0'>
                     <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Basic</FieldLegend>
-                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7'>
                     <Field data-invalid={Boolean(errors.name) || undefined}>
                         <FieldLabel htmlFor='tier-name'>Name</FieldLabel>
                         <Input aria-invalid={Boolean(errors.name) || undefined} autoComplete='off' id='tier-name' maxLength={191} placeholder={isFreeTier ? 'Free' : 'Bronze'} value={formState.name || ''} autoFocus onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
@@ -248,7 +248,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 <div className='flex flex-col gap-2'>
                                     <Field data-invalid={Boolean(errors.monthly_price) || undefined}>
                                         <FieldLabel className='sr-only' htmlFor='tier-monthly-price'>Monthly price</FieldLabel>
-                                        <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.monthly_price) || undefined}>
+                                        <InputGroup data-invalid={Boolean(errors.monthly_price) || undefined}>
                                             <InputGroupInput
                                                 aria-invalid={Boolean(errors.monthly_price) || undefined}
                                                 id='tier-monthly-price'
@@ -270,7 +270,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     </Field>
                                     <Field data-invalid={Boolean(errors.yearly_price) || undefined}>
                                         <FieldLabel className='sr-only' htmlFor='tier-yearly-price'>Yearly price</FieldLabel>
-                                        <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.yearly_price) || undefined}>
+                                        <InputGroup data-invalid={Boolean(errors.yearly_price) || undefined}>
                                             <InputGroupInput
                                                 aria-invalid={Boolean(errors.yearly_price) || undefined}
                                                 id='tier-yearly-price'
@@ -301,7 +301,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 </div>
                                 <Field data-disabled={!hasFreeTrial || undefined}>
                                     <FieldLabel className='sr-only' htmlFor='tier-trial-days'>Trial days</FieldLabel>
-                                    <InputGroup className='h-[var(--control-height)] border-transparent bg-muted'>
+                                    <InputGroup>
                                         <InputGroupInput disabled={!hasFreeTrial} id='tier-trial-days' placeholder='0' value={formState.trial_days} onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/[^\d]/, '')}))} />
                                         <InputGroupAddon align='inline-end'><InputGroupText>days</InputGroupText></InputGroupAddon>
                                     </InputGroup>
@@ -315,7 +315,6 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     <Field>
                         <FieldLabel htmlFor='tier-welcome-page'>Welcome page</FieldLabel>
                         <Input
-                            className='border-transparent bg-muted'
                             id='tier-welcome-page'
                             maxLength={2000}
                             placeholder={siteData?.url}
@@ -332,7 +331,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
 
                 <FieldSet className='gap-0'>
                     <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Benefits</FieldLegend>
-                    <FieldGroup className='mb-10 gap-0 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <FieldGroup className='mb-10 gap-0 rounded-sm border border-border-default p-4 md:p-7'>
                         <SortableList
                             getDragHandleLabel={({item}) => `Reorder benefit${item ? `: ${item}` : ''}`}
                             items={benefits.items}

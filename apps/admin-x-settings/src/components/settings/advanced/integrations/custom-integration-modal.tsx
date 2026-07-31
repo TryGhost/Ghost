@@ -128,7 +128,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                 </ImageUpload>
             </div>
             <div className='flex min-w-0 grow flex-col'>
-                <FieldGroup className='mb-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                <FieldGroup className='mb-10 gap-8'>
                     <Field data-invalid={Boolean(errors.name) || undefined}>
                         <FieldLabel htmlFor='integration-title'>Title</FieldLabel>
                         <Input aria-invalid={Boolean(errors.name) || undefined} id='integration-title' maxLength={191} value={formState.name} onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />

@@ -78,7 +78,7 @@ const LookAndFeel: React.FC<{
         {value: 'text-only', label: 'Text only'}
     ];
 
-    return <div className='mt-7'><FieldGroup className='mb-10 gap-8 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+    return <div className='mt-7'><FieldGroup className='mb-10 gap-8'>
         <Field orientation='horizontal'>
             <FieldLabel htmlFor='show-portal-button'>Show portal button</FieldLabel>
             <Switch checked={Boolean(portalButton)} id='show-portal-button' onCheckedChange={checked => updateSetting('portal_button', checked)} />

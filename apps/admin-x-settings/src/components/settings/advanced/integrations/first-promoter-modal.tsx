@@ -83,7 +83,7 @@ const FirstPromoterModal = NiceModal.create(() => {
             <div className='mt-7'>
                 <FieldSet className='gap-0'>
                     <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>FirstPromoter configuration</FieldLegend>
-                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7'>
                     <Field orientation='horizontal'>
                         <FieldContent>
                             <FieldLabel htmlFor='firstpromoter-enabled'>Enable FirstPromoter</FieldLabel>

@@ -280,7 +280,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                     <div className='w-20 shrink-0 font-semibold'>Subject:</div>
                                     <div className='grow'>
                                         <Input
-                                            className='w-full border-transparent bg-muted'
                                             data-testid='welcome-email-preview-subject'
                                             value={previewSubjectOverride ?? formState.subject}
                                             onChange={(e) => {
