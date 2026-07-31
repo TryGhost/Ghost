@@ -3,7 +3,7 @@ import LabItem from './lab-item';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import YamlFileEditorModal from './yaml-file-editor-modal';
-import {ActionList, Button, Dropzone, Select} from '@tryghost/shade/components';
+import {ActionList, Button, Dropzone, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {Inline, Stack} from '@tryghost/shade/primitives';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
@@ -31,6 +31,22 @@ const SLUG_SEPARATORS = [
         hint: 'A natural mode, but might look foreign in URL:s (eg. /example ghost post/). Also, many browsers will show spaces as %20 in the URL:s.'
     }
 ];
+
+const renderSlugSeparatorOptions = () => {
+    return SLUG_SEPARATORS.map(option => (
+        <SelectItem key={option.value} value={option.value}>
+            <span className='flex flex-col'>
+                <span>{option.label}</span>
+                <span className='text-sm text-muted-foreground'>
+                    {option.hint}
+                </span>
+            </span>
+        </SelectItem>
+    ));
+};
+    
+const getSlugSeparatorOptionLabel = (value: string) =>
+    SLUG_SEPARATORS.find(option => option.value === value)?.label;
 
 const BetaFeatures: React.FC = () => {
     const {settings} = useGlobalData();
@@ -94,20 +110,21 @@ const BetaFeatures: React.FC = () => {
                 detail={<>Adds the excerpt input below the post title in the editor</>}
                 title='Show post excerpt inline' />
             <LabItem
-                action={<div className='flex w-full max-w-none min-w-[160px] flex-col items-end gap-3 md:w-2/3 md:max-w-[320px]'>
+                action={<div className='flex w-full max-w-none min-w-[160px] flex-col items-end gap-3 md:w-2/3 md:max-w-[320px] md:flex-1'>
                     <FeatureToggle flag="unicodeSlugs" />
                     <Select
-                        containerClassName='w-full md:flex-1'
                         disabled={!labs.unicodeSlugs}
-                        options={SLUG_SEPARATORS}
-                        selectedOption={SLUG_SEPARATORS.find(option => option.value === slugSeparator)}
-                        onSelect={async (option) => {
-                            await editSettings([{
-                                key: 'slug_separator',
-                                value: option?.value || '-'
-                            }]);
-                        }}
-                    />
+                        value={slugSeparator ?? '-'}
+                        onValueChange={async (value) => {
+                                await editSettings([{
+                                    key: 'slug_separator', value
+                                }]);
+                        }}>
+                        <SelectTrigger aria-label='Use Unicode letters and numbers in URL slugs instead of transliterating them' className='w-full border-transparent bg-muted hover:bg-muted'>
+                            <SelectValue>{getSlugSeparatorOptionLabel(slugSeparator)}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>{renderSlugSeparatorOptions()}</SelectContent>
+                    </Select>
                 </div>}
                 detail={<>Use Unicode letters and numbers in URL slugs instead of transliterating them (e.g /smörgåsbord/ instead of /smorgasbord/), which may add benefits for SEO. You can also select another slug separator to adjust the look of the URL:s.</>}
                 title='International slugs' />
