@@ -209,7 +209,7 @@ const AnnouncementBarModal: React.FC = () => {
         </Tabs>
     ) : undefined;
     const deviceSelector = (
-        <ToggleGroup type='single' value={previewDevice} onValueChange={(value) => {
+        <ToggleGroup size='default' type='single' value={previewDevice} onValueChange={(value) => {
             if (value === 'desktop' || value === 'mobile') {
                 setPreviewDevice(value);
             }
