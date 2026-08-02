@@ -356,12 +356,19 @@ class MembersCSVImporter {
                 };
                 // An explicit newsletters column restores the member's actual
                 // subscriptions; names with no matching active newsletter are dropped,
-                // since newsletters cannot be created from an import.
+                // since newsletters cannot be created from an import. A cell whose names
+                // all failed to resolve carries no usable instruction though - treating
+                // it as an explicit empty list would wipe subscriptions over a renamed
+                // newsletter - so only an actually-empty cell unsubscribes.
                 if (row.newsletters !== undefined) {
-                    memberValues.newsletters = row.newsletters
+                    const resolvedNewsletters = row.newsletters
                         .map(newsletter => newsletterIdByName.get(newsletter.name))
                         .filter((id): id is string => !!id)
                         .map(id => ({id}));
+
+                    if (resolvedNewsletters.length > 0 || row.newsletters.length === 0) {
+                        memberValues.newsletters = resolvedNewsletters;
+                    }
                 }
                 const existingMember = row.email
                     ? await this._members.get({email: row.email}, {...options, withRelated: ['labels', 'newsletters']})
