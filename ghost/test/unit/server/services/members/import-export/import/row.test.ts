@@ -56,6 +56,16 @@ describe('member import row schema', function () {
       'a space after the comma is not part of the name',
     );
     assert.deepEqual(
+      memberImportRowSchema.parse({ newsletters: 'Daily News,Daily News' }).newsletters,
+      [{ name: 'Daily News' }],
+      'a name repeated in the cell resolves to one subscription',
+    );
+    assert.deepEqual(
+      memberImportRowSchema.parse({ newsletters: ' , ' }).newsletters,
+      [],
+      'a cell of separators and spaces is an explicit empty list',
+    );
+    assert.deepEqual(
       memberImportRowSchema.parse({ newsletters: '' }).newsletters,
       [],
       'an empty cell in a present column is an explicit empty list',
