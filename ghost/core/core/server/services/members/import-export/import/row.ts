@@ -10,9 +10,15 @@ function splitLabels(cell: string): Label[] {
 }
 
 // Newsletter names are matched against existing newsletters rather than created, so
-// the space after a comma a person types in a cell must not become part of the name.
+// the space after a comma a person types in a cell must not become part of the name,
+// and a name repeated in the cell must resolve to one subscription, not a duplicate
+// row the unique constraint would reject.
 function splitNewsletterNames(cell: string): Label[] {
-    return cell ? cell.split(',').map(name => name.trim()).filter(Boolean).map(name => ({name})) : [];
+    if (!cell) {
+        return [];
+    }
+    const names = cell.split(',').map(name => name.trim()).filter(Boolean);
+    return [...new Set(names)].map(name => ({name}));
 }
 
 // An empty cell (or the literal 'undefined') reads as absent, not as a value -- so an
