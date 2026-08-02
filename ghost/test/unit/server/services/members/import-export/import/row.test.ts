@@ -51,6 +51,11 @@ describe('member import row schema', function () {
       [{ name: 'Daily News' }, { name: 'Weekly Digest' }],
     );
     assert.deepEqual(
+      memberImportRowSchema.parse({ newsletters: 'Daily News, Weekly Digest' }).newsletters,
+      [{ name: 'Daily News' }, { name: 'Weekly Digest' }],
+      'a space after the comma is not part of the name',
+    );
+    assert.deepEqual(
       memberImportRowSchema.parse({ newsletters: '' }).newsletters,
       [],
       'an empty cell in a present column is an explicit empty list',

@@ -121,12 +121,12 @@ describe('members import completion email', function () {
     const [header, row] = report.split('\r\n');
     assert.equal(
       header,
-      'id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id,error',
+      'id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,newsletters,gift_id,error',
     );
     // subscribed -> subscribed_to_emails, labels joined, gift_id echoed, error humanised
     assert.equal(
       row,
-      ',x@example.com,Sam,a note,false,true,cus_1,,,"vip,gold",,gift_1,Invalid email address',
+      ',x@example.com,Sam,a note,false,true,cus_1,,,"vip,gold",,,gift_1,Invalid email address',
     );
   });
 
