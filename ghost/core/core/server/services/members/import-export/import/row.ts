@@ -35,6 +35,7 @@ export const memberImportRowSchema = z.object({
     created_at: optionalCell,
     import_tier: optionalCell,
     gift_id: optionalCell,
+    newsletters: z.string().transform(splitLabels).optional(),
     labels: z.string().default('').transform(splitLabels)
 }).loose();
 

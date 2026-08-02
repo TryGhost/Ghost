@@ -43,7 +43,7 @@ interface BatchRelatedData {
     tiersMap: Map<string, string>;
     labelsMap: Map<string, string>;
     stripeCustomerMap: Map<string, string>;
-    subscribedSet: Set<string>;
+    newslettersMap: Map<string, string>;
     giftIdMap: Map<string, string>;
     customFieldValuesMap: Map<string, Record<string, unknown>>;
 }
@@ -52,6 +52,7 @@ interface BatchRelatedData {
 interface ReferenceData {
     allProducts: Record<string, string>;
     allLabels: Record<string, string>;
+    allNewsletters: Record<string, string>;
     activeCustomFields: CustomFieldDefinition[];
 }
 
@@ -79,6 +80,7 @@ interface MemberExportRow extends MemberDbRow {
     created_at: string;
     tiers: Array<{name: string}>;
     labels: Array<{name: string}>;
+    newsletters: Array<{name: string}>;
     subscribed: boolean;
     comped: boolean;
     gift_id: string | null;
@@ -102,6 +104,7 @@ type ExportCsvRow = {
     deleted_at: null;
     labels: string;
     tiers: string;
+    newsletters: string;
     gift_id: string;
 } & Record<string, unknown>;
 
@@ -125,6 +128,7 @@ export function toExportCsvRow(row: MemberExportRow): ExportCsvRow {
         deleted_at: null,
         labels: namesToCsv(row.labels),
         tiers: namesToCsv(row.tiers),
+        newsletters: namesToCsv(row.newsletters),
         gift_id: row.gift_id || '',
         ...row.custom_field_cells
     };
@@ -195,11 +199,16 @@ export default class MembersCSVExporter {
             return acc;
         }, {}));
 
+        const allNewsletters = await this._knex('newsletters').select('id', 'name').then(rows => rows.reduce((acc: Record<string, string>, newsletter: {id: string; name: string}) => {
+            acc[newsletter.id] = newsletter.name;
+            return acc;
+        }, {}));
+
         logging.info('[MembersExporter] Fetched products and labels in ' + (Date.now() - start) + 'ms');
 
         const activeCustomFields = await this._customFields.activeDefinitions();
 
-        return {allProducts, allLabels, activeCustomFields};
+        return {allProducts, allLabels, allNewsletters, activeCustomFields};
     }
 
     // Group the member stream into batches so the related-data reads are one query per
@@ -272,8 +281,9 @@ export default class MembersCSVExporter {
                 .groupBy('member_id'),
 
             knex('members_newsletters')
-                .distinct('member_id')
-                .whereIn('member_id', memberIds),
+                .select('member_id', knex.raw('GROUP_CONCAT(newsletter_id) as newsletters'))
+                .whereIn('member_id', memberIds)
+                .groupBy('member_id'),
 
             knex('gifts')
                 .select('id', 'redeemer_member_id')
@@ -289,31 +299,34 @@ export default class MembersCSVExporter {
             tiersMap: new Map(tiers.map((row: {member_id: string; tiers: string}) => [row.member_id, row.tiers])),
             labelsMap: new Map(labels.map((row: {member_id: string; labels: string}) => [row.member_id, row.labels])),
             stripeCustomerMap: new Map(stripeCustomers.map((row: {member_id: string; stripe_customer_id: string}) => [row.member_id, row.stripe_customer_id])),
-            subscribedSet: new Set(subscriptions.map((row: {member_id: string}) => row.member_id)),
+            newslettersMap: new Map(subscriptions.map((row: {member_id: string; newsletters: string}) => [row.member_id, row.newsletters])),
             giftIdMap: new Map(gifts.map((row: {id: string; redeemer_member_id: string}) => [row.redeemer_member_id, row.id])),
             customFieldValuesMap
         };
     }
 
     private flattenBatch(members: MemberDbRow[], related: BatchRelatedData, reference: ReferenceData): MemberExportRow[] {
-        const {tiersMap, labelsMap, stripeCustomerMap, subscribedSet, giftIdMap, customFieldValuesMap} = related;
-        const {allProducts, allLabels, activeCustomFields} = reference;
+        const {tiersMap, labelsMap, stripeCustomerMap, newslettersMap, giftIdMap, customFieldValuesMap} = related;
+        const {allProducts, allLabels, allNewsletters, activeCustomFields} = reference;
 
         return members.map((row) => {
             const tierConcat = tiersMap.get(row.id);
             const tierIds = tierConcat ? tierConcat.split(',') : [];
             const labelConcat = labelsMap.get(row.id);
             const labelIds = labelConcat ? labelConcat.split(',') : [];
+            const newsletterConcat = newslettersMap.get(row.id);
+            const newsletterIds = newsletterConcat ? newsletterConcat.split(',') : [];
 
             return {
                 ...row,
-                subscribed: subscribedSet.has(row.id),
+                subscribed: newslettersMap.has(row.id),
                 comped: row.status === 'comped',
                 gift_id: giftIdMap.get(row.id) || null,
                 stripe_customer_id: stripeCustomerMap.get(row.id) || null,
                 created_at: moment(row.created_at).toISOString(),
                 tiers: tierIds.map(id => ({name: allProducts[id]})),
                 labels: labelIds.map(id => ({name: allLabels[id]})),
+                newsletters: newsletterIds.map(id => ({name: allNewsletters[id]})).filter(newsletter => newsletter.name),
                 // Flattened here rather than in the serializer because the column set is
                 // only knowable from the database. Every member carries a cell for every
                 // active field's column, so a member with no values still contributes the
