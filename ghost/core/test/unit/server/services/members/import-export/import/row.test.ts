@@ -30,6 +30,7 @@ describe('member import row schema', function () {
 
     it('splits the newsletters cell into name objects, and leaves it undefined when the column is absent', function () {
         assert.deepEqual(memberImportRowSchema.parse({newsletters: 'Daily News,Weekly Digest'}).newsletters, [{name: 'Daily News'}, {name: 'Weekly Digest'}]);
+        assert.deepEqual(memberImportRowSchema.parse({newsletters: 'Daily News, Weekly Digest'}).newsletters, [{name: 'Daily News'}, {name: 'Weekly Digest'}], 'a space after the comma is not part of the name');
         assert.deepEqual(memberImportRowSchema.parse({newsletters: ''}).newsletters, [], 'an empty cell in a present column is an explicit empty list');
         assert.equal(memberImportRowSchema.parse({}).newsletters, undefined, 'omitted newsletters leaves subscription state untouched');
     });

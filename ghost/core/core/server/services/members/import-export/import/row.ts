@@ -9,6 +9,12 @@ function splitLabels(cell: string): Label[] {
     return cell ? cell.split(',').map(name => ({name})) : [];
 }
 
+// Newsletter names are matched against existing newsletters rather than created, so
+// the space after a comma a person types in a cell must not become part of the name.
+function splitNewsletterNames(cell: string): Label[] {
+    return cell ? cell.split(',').map(name => name.trim()).filter(Boolean).map(name => ({name})) : [];
+}
+
 // An empty cell (or the literal 'undefined') reads as absent, not as a value -- so an
 // empty created_at is a missing date, not the invalid empty string.
 const optionalCell = z.string()
@@ -35,7 +41,7 @@ export const memberImportRowSchema = z.object({
     created_at: optionalCell,
     import_tier: optionalCell,
     gift_id: optionalCell,
-    newsletters: z.string().transform(splitLabels).optional(),
+    newsletters: z.string().transform(splitNewsletterNames).optional(),
     labels: z.string().default('').transform(splitLabels)
 }).loose();
 

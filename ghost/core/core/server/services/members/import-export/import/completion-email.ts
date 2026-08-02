@@ -62,6 +62,7 @@ type ErrorReportRow = {
     deleted_at: undefined;
     labels: string;
     tiers: '';
+    newsletters: string;
     gift_id: string | null;
     error: string;
 };
@@ -92,6 +93,7 @@ function toErrorReportRow(row: ImportErrorRow): ErrorReportRow {
         deleted_at: undefined,
         labels: stringifyLabels(row.labels),
         tiers: '',
+        newsletters: stringifyLabels(row.newsletters ?? []),
         gift_id: row.gift_id || null,
         error: humaniseError(row.error)
     };
