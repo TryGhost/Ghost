@@ -28,7 +28,7 @@ function fakeUnreadNotifications(count: number): void {
 
 describe("Sidebar navigation", () => {
     it("renders the navigation for the current user", async () => {
-        await renderAdminApp("/");
+        await renderAdminApp("/site");
 
         await expect.element(sidebarScreen.navLink("Analytics")).toBeVisible();
         await expect.element(sidebarScreen.navLink("View site")).toBeVisible();
@@ -44,7 +44,7 @@ describe("Sidebar navigation", () => {
 
     it("clicking a nav item navigates and updates the active state", async () => {
         fakeTags([]);
-        await renderAdminApp("/");
+        await renderAdminApp("/site");
 
         await sidebarScreen.navLink("Tags").click();
         await expect.poll(currentRoute).toBe("/tags");
@@ -58,7 +58,7 @@ describe("Sidebar navigation", () => {
 
     it("clicking Posts and Pages navigates to the Ember-owned lists", async () => {
         // Posts/Pages active states come from the Ember routing bridge, absent in this tier.
-        await renderAdminApp("/");
+        await renderAdminApp("/site");
 
         await sidebarScreen.navLink("Posts").click();
         await expect.poll(currentRoute).toBe("/posts");
@@ -93,7 +93,7 @@ describe("Sidebar navigation", () => {
     it("navigates to settings from the sidebar footer and hides the shell nav", async () => {
         // The settings app owns its request graph; this spec asserts only the shell navigation.
         allowUnhandledRequests();
-        await renderAdminApp("/");
+        await renderAdminApp("/site");
 
         await expect.element(sidebarScreen.shellNav()).toBeVisible();
         await sidebarScreen.navLink("Settings").click();
@@ -117,7 +117,7 @@ describe("Sidebar navigation", () => {
 
 describe("Sidebar user menu", () => {
     it("opens the user menu with profile, appearance and sign-out items", async () => {
-        await renderAdminApp("/");
+        await renderAdminApp("/site");
 
         await sidebarScreen.userMenuTrigger().click();
 
@@ -129,7 +129,7 @@ describe("Sidebar user menu", () => {
     it("navigates to the profile settings from the user menu", async () => {
         // The settings app owns its request graph; this spec asserts only the shell navigation.
         allowUnhandledRequests();
-        await renderAdminApp("/");
+        await renderAdminApp("/site");
 
         await sidebarScreen.userMenuTrigger().click();
         await sidebarScreen.profileMenuItem().click();
@@ -140,7 +140,7 @@ describe("Sidebar user menu", () => {
     it("switches the appearance and shows the current choice", async () => {
         // Without the Ember bridge the app itself toggles the root dark class.
         const isDarkMode = () => document.documentElement.classList.contains("dark");
-        await renderAdminApp("/");
+        await renderAdminApp("/site");
 
         await sidebarScreen.selectAppearance("dark");
         await expect.poll(isDarkMode).toBe(true);
@@ -165,7 +165,7 @@ describe("Sidebar user menu", () => {
 describe("Network notification badge", () => {
     it("shows the unread notifications count on the Network nav item", async () => {
         fakeUnreadNotifications(5);
-        await renderAdminApp("/", socialWebEnabled());
+        await renderAdminApp("/site", socialWebEnabled());
 
         await expect.element(sidebarScreen.navLink("Network")).toBeVisible();
         await expect.element(sidebarScreen.networkBadge()).toHaveTextContent("5");
@@ -173,7 +173,7 @@ describe("Network notification badge", () => {
 
     it("does not show a badge when there are no unread notifications", async () => {
         fakeUnreadNotifications(0);
-        await renderAdminApp("/", socialWebEnabled());
+        await renderAdminApp("/site", socialWebEnabled());
 
         await expect.element(sidebarScreen.navLink("Network")).toBeVisible();
         await expect.element(sidebarScreen.networkBadge()).not.toBeInTheDocument();
@@ -184,7 +184,7 @@ describe("Network notification badge", () => {
         allowUnhandledRequests();
         fakeUnreadNotifications(5);
         fakeAdminEndpoint("GET", "/users/?limit=100&include=roles", currentUserResponse());
-        await renderAdminApp("/", socialWebEnabled());
+        await renderAdminApp("/site", socialWebEnabled());
 
         await expect.element(sidebarScreen.networkBadge()).toBeVisible();
 
@@ -219,7 +219,7 @@ describe("Theme error notification", () => {
     };
 
     it("shows a banner when the active theme has errors", async () => {
-        await renderAdminApp("/", {
+        await renderAdminApp("/site", {
             boot: { browseActiveTheme: { response: activeThemeResponse({ errors: [DEPRECATED_HELPER_ERROR] }) } },
         });
 
@@ -227,7 +227,7 @@ describe("Theme error notification", () => {
     });
 
     it("opens the theme errors dialog when the banner is clicked", async () => {
-        await renderAdminApp("/", {
+        await renderAdminApp("/site", {
             boot: { browseActiveTheme: { response: activeThemeResponse({ errors: [DEPRECATED_HELPER_ERROR] }) } },
         });
 
@@ -239,14 +239,14 @@ describe("Theme error notification", () => {
 
     it("shows no banner when the active theme has no errors", async () => {
         // The default boot serves an error-free active theme.
-        await renderAdminApp("/");
+        await renderAdminApp("/site");
 
         await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
         await expect.element(sidebarScreen.themeErrorsBanner()).not.toBeInTheDocument();
     });
 
     it("does not show a banner for page-builder errors handled inline in design settings", async () => {
-        await renderAdminApp("/", {
+        await renderAdminApp("/site", {
             boot: { browseActiveTheme: { response: activeThemeResponse({ errors: [PAGE_BUILDER_ERROR] }) } },
         });
 

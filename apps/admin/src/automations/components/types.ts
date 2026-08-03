@@ -25,6 +25,7 @@ type WaitStepSidebarDetail = ActionStepSidebarDetail<AutomationWaitAction, 'Wait
 };
 
 type SendEmailStepSidebarDetail = ActionStepSidebarDetail<AutomationSendEmailAction, 'Send email'> & {
+  automationId: string;
   onUpdateSubject: (subject: string) => void;
   onEditEmail: () => void;
 };

@@ -43,7 +43,7 @@ export default function OnboardingRoute() {
     }
 
     if (!shouldShowChecklist) {
-        return <Navigate replace to={returnTo} />;
+        return <Navigate to={returnTo} replace />;
     }
 
     const navigateAfterUpdate = async (update: () => Promise<unknown>) => {

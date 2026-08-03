@@ -17,6 +17,9 @@ function toAdminApiPath(url: string): string {
     return url.replace(ADMIN_API_PREFIX, "");
 }
 
+/** The fake Tinybird API origin the tinybird helpers serve into `config.stats` (see tinybird.ts). */
+export const TINYBIRD_ORIGIN = "https://tinybird.test";
+
 /**
  * External origins the app calls at runtime: 418 unless declared with
  * `fakeEndpoint`. `isMatch` mirrors `pattern` for the in-flight ledger.
@@ -28,6 +31,8 @@ const EXTERNAL_URL_BLOCKLIST: Array<{ pattern: string; isMatch: (url: string) =>
     { pattern: "*/.ghost/activitypub/*", isMatch: (url) => url.includes("/.ghost/activitypub/") },
     // Unsplash API (kg-unsplash-selector UnsplashProvider)
     { pattern: "https://api.unsplash.com/*", isMatch: (url) => url.startsWith("https://api.unsplash.com/") },
+    // Tinybird pipes (analytics); declare per test with fakeTinybirdPipe (tinybird.ts)
+    { pattern: `${TINYBIRD_ORIGIN}/*`, isMatch: (url) => url.startsWith(`${TINYBIRD_ORIGIN}/`) },
 ];
 
 // Per-test preview URLs are arbitrary site origins, so they cannot live in

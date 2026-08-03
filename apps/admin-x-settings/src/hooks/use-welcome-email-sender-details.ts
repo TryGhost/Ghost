@@ -1,4 +1,4 @@
-// NOTE: duplicated in apps/admin/src/automations/hooks/use-welcome-email-sender-details.ts — the email design modal needs it in both apps until Automations GAs; keep in sync
+// NOTE: counterpart lives in apps/admin/src/automations/components/email-modal/use-sender-details.ts — the email design modal needs equivalent sender-detail behavior in both apps until Automations GAs; keep in sync
 import {resolveWelcomeEmailSenderDetails} from '../utils/welcome-email-sender-details';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useMemo} from 'react';

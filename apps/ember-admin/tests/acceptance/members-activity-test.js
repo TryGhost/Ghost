@@ -25,7 +25,7 @@ describe('Acceptance: Members activity', function () {
 
         await authenticateSession();
         await visit('/members-activity');
-        expect(currentURL()).to.equal('/site');
+        expect(currentURL()).to.equal('/');
     });
 
     describe('as admin', function () {

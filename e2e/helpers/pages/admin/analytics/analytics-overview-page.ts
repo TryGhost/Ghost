@@ -1,3 +1,4 @@
+import * as analyticsSel from '@tryghost/test-data/selectors/analytics';
 import {AdminPage} from '@/admin-pages';
 import {BasePage} from '@/helpers/pages';
 import {Locator, Page} from '@playwright/test';
@@ -9,8 +10,8 @@ class UniqueVisitorsGraph extends BasePage {
 
     constructor(page: Page) {
         super(page);
-        this.graph = page.getByTestId('Unique visitors');
-        this.value = this.graph.getByTestId('kpi-card-header-value');
+        this.graph = page.getByTestId(analyticsSel.uniqueVisitors);
+        this.value = this.graph.getByTestId(analyticsSel.kpiCardHeaderValue);
         this.viewMoreButton = this.graph.getByRole('button', {name: 'View more'});
     }
 
@@ -28,12 +29,12 @@ class LatestPost extends BasePage {
 
     constructor(page: Page) {
         super(page);
-        this.post = page.getByTestId('latest-post');
+        this.post = page.getByTestId(analyticsSel.latestPost);
         this.shareButton = this.post.getByRole('button', {name: 'Share post'});
         this.analyticsButton = this.post.getByRole('button', {name: 'Analytics'});
 
-        this.visitors = this.post.getByTestId('latest-post-visitors');
-        this.members = this.post.getByTestId('latest-post-members');
+        this.visitors = this.post.getByTestId(analyticsSel.latestPostVisitors);
+        this.members = this.post.getByTestId(analyticsSel.latestPostMembers);
     }
 
     async postText() {
@@ -54,15 +55,15 @@ class TopPosts extends BasePage {
 
     constructor(page: Page) {
         super(page);
-        this.post = page.getByTestId('top-posts-card');
+        this.post = page.getByTestId(analyticsSel.topPostsCard);
     }
 
     async uniqueVisitorsStatistics() {
-        return await this.post.getByTestId('statistics-visitors').textContent();
+        return await this.post.getByTestId(analyticsSel.statisticsVisitors).textContent();
     }
 
     async membersStatistics() {
-        return await this.post.getByTestId('statistics-members').textContent();
+        return await this.post.getByTestId(analyticsSel.statisticsMembers).textContent();
     }
 }
 
@@ -81,7 +82,7 @@ export class AnalyticsOverviewPage extends AdminPage {
         this.pageUrl = '/ghost/#/analytics';
         this.header = page.getByRole('heading', {name: 'Analytics'});
 
-        this.membersGraph = page.getByTestId('Members');
+        this.membersGraph = page.getByTestId(analyticsSel.members);
         this.membersViewMoreButton = this.membersGraph.getByRole('button', {name: 'View more'});
 
         this.uniqueVisitors = new UniqueVisitorsGraph(page);

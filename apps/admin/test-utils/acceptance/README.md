@@ -66,6 +66,10 @@ For a **browse endpoint** (`GET /<resource>/`), add a resource fake in `resource
 
 For a **one-off endpoint** (stats subpaths, settings chrome, a mutation the spec asserts on), use `fakeAdminEndpoint(method, apiPath, response)` — it enters the route listing, returns a capture, and `response` may be a function of the captured request (`({body}) => body` is an honest echo).
 
+## Faking Tinybird (web analytics)
+
+The analytics views fetch a JWT from the Admin API (`GET /tinybird/token/`) and then query Tinybird pipe endpoints on an external origin directly — both legs are faked (`tinybird.ts`). Boot with `renderAdminApp(route, {boot: webAnalyticsBootOverrides()})` to switch web analytics on (`config.stats` + the `web_analytics_enabled` setting move in lockstep, like the `labs` sugar), declare the token with `fakeTinybirdToken()` and each pipe the view queries with `fakeTinybirdPipe("api_kpis", rows)`. The pipe capture exposes each request's query params (`site_uuid`, `date_from`, filters) for outgoing-query assertions; THE RULE applies — pipes serve the declared rows unfiltered. Undeclared pipes 418 via the `TINYBIRD_ORIGIN` blocklist entry.
+
 ## Screen helpers
 
 Per-area locator vocabulary lives in `src/<area>/<area>.screen.ts` (e.g. `membersScreen`): locator factories + multi-step gestures, **no assertions**. Selector strings come from the shared per-area registry modules — flat named constants imported via `@tryghost/test-data/selectors/<area>` (e.g. `import {repliesMetric} from "@tryghost/test-data/selectors/comments"`, or `import * as sel from ...` when a file uses many) — the same strings the e2e page objects use, so both tiers break together when the UI changes. Testid constants are the camelCase of the testid string itself (`"replies-metric"` → `repliesMetric`); accessible-name constants carry their element kind or a `Label` suffix (`newTagLink`, `searchLabel`); bare text fragments end in `Text`. The modules are deliberately not re-exported from the package root — flat names collide across surfaces.

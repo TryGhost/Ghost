@@ -16,7 +16,7 @@ import {type StepPickerType} from './step-picker';
 import {StepSidebar} from './step-sidebar';
 import {formatWait} from './format-wait';
 import {isEmptyEmailLexical} from '@/automations/utils';
-import {useFeatureFlag} from '@/hooks/use-feature-flag';
+import {useFeatureFlag} from '@tryghost/admin-x-framework/hooks';
 import {useLocation, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import type {EmailModalMode} from '@/automations/components/types';
 

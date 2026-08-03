@@ -1,5 +1,4 @@
 import {authenticateSession} from 'ember-simple-auth/test-support';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../../helpers/mock-analytics-apps';
 import {click, fillIn, find, waitFor, waitUntil} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {enableLabsFlag} from '../../helpers/labs-flag';
@@ -31,7 +30,6 @@ describe('Acceptance: Editor / Visibility', function () {
     let author;
 
     beforeEach(async function () {
-        mockAnalyticsApps();
         this.server.loadFixtures();
 
         let role = this.server.create('role', {name: 'Administrator'});
@@ -40,10 +38,6 @@ describe('Acceptance: Editor / Visibility', function () {
         enableMembers(this.server);
 
         await authenticateSession();
-    });
-
-    afterEach(function () {
-        cleanupMockAnalyticsApps();
     });
 
     it('can change visibility to members only', async function () {

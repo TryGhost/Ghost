@@ -11,6 +11,7 @@ import MyProfileRedirect from "./my-profile-redirect";
 // Ember
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
+import HomeRedirect from "./home-redirect";
 import { EmberListWithGiftLinks } from "./gift-link-modal-host";
 import { MemberDetailGate } from "./member-detail-gate";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
@@ -23,17 +24,13 @@ import { NotFound } from "./not-found";
 // Routes handled by the Ember admin app. React delegates these to Ember via
 // EmberFallback. When migrating a route to React, remove its entry from here.
 const EMBER_ROUTES: string[] = [
-    "/",
-    "/dashboard",
     "/site",
-    "/launch",
     "/setup",
     "/signin/*",
     "/signout",
     "/signup/*",
     "/reset/*",
     "/pro/*",
-    "/posts/analytics/:postId/mentions",
     "/posts/analytics/:postId/debug",
     "/restore",
     "/editor/*",
@@ -41,8 +38,6 @@ const EMBER_ROUTES: string[] = [
     "/explore/*",
     "/migrate/*",
     "/members-activity",
-    "/designsandbox",
-    "/mentions",
 ];
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies RouteHandle;
@@ -81,6 +76,18 @@ const membersRoute: RouteObject = {
 };
 
 const appRoutes: RouteObject[] = [
+    {
+        // Role-based landing dispatch, including the hosted-signup
+        // `/?firstStart=true` onboarding entry.
+        path: "/",
+        Component: HomeRedirect,
+        handle: { allowInForceUpgrade: true } satisfies RouteHandle,
+    },
+    {
+        // The dashboard screen is retired; the URL redirects for old links.
+        path: "dashboard",
+        loader: () => redirect("/analytics"),
+    },
     {
         path: "/tags",
         handle: { requiresAccess: canManageTags } satisfies AccessRouteHandle,
@@ -128,10 +135,10 @@ const appRoutes: RouteObject[] = [
             };
         },
         children: [
-            { path: "", lazy: lazyComponent(() => import("./posts/analytics/Overview/overview")) },
-            { path: "web", lazy: lazyComponent(() => import("./posts/analytics/Web/web")) },
-            { path: "growth", lazy: lazyComponent(() => import("./posts/analytics/Growth/growth")) },
-            { path: "newsletter", lazy: lazyComponent(() => import("./posts/analytics/Newsletter/newsletter")) },
+            { path: "", lazy: lazyComponent(() => import("./posts/analytics/overview/overview")) },
+            { path: "web", lazy: lazyComponent(() => import("./posts/analytics/web/web")) },
+            { path: "growth", lazy: lazyComponent(() => import("./posts/analytics/growth/growth")) },
+            { path: "newsletter", lazy: lazyComponent(() => import("./posts/analytics/newsletter/newsletter")) },
         ],
     },
     {

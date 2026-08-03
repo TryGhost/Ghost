@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import createKnex, {type Knex} from 'knex';
@@ -25,6 +26,7 @@ const linkLexical = (url: string): string => JSON.stringify({
         }]
     }
 });
+const hashRedirectDestination = (url: string): Buffer => createHash('sha256').update(url).digest();
 
 const addHours = (dateCol: unknown, hours: number): Date => {
     assert(typeof dateCol === 'string', 'Expected date column to be a string');
@@ -102,6 +104,21 @@ const createDatabase = async (): Promise<Knex> => {
         table.integer('email_opened_count');
         table.integer('email_clicked_count');
         table.unique(['created_at', 'action_id']);
+    });
+
+    await database.schema.createTable('redirects', (table) => {
+        table.text('id').primary();
+        table.text('automation_action_revision_id').references('id').inTable('automation_action_revisions');
+        table.text('to').notNullable();
+        table.binary('to_hash');
+        table.unique(['automation_action_revision_id', 'to_hash']);
+    });
+
+    await database.schema.createTable('members_click_events', (table) => {
+        table.text('id').primary();
+        table.text('member_id').notNullable();
+        table.text('redirect_id').notNullable().references('id').inTable('redirects');
+        table.text('created_at').notNullable();
     });
 
     await database.schema.createTable('automation_action_edges', (table) => {
@@ -854,6 +871,90 @@ describe('automations repository', function () {
             assert(action?.type === 'send_email');
             assert.equal(action.stats?.email_clicked_count, 3);
             assert.equal(action.stats?.clicked_rate, 38);
+        });
+    });
+
+    describe('getAutomationActionLinks', function () {
+        it('returns stored transform-ready destinations as absolute URLs', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = automation.actions.find(candidate => candidate.type === 'send_email');
+            assert(action);
+            const revision = await getLatestActionRevisionByActionId(action.id);
+            const absoluteUrl = `${ghostConfig.get('url')}/archive/`;
+
+            await knex('redirects').insert({
+                id: ObjectId().toHexString(),
+                automation_action_revision_id: revision.revision_id,
+                to: '__GHOST_URL__/archive/',
+                to_hash: hashRedirectDestination(absoluteUrl)
+            });
+
+            assert.deepEqual(await repo.getAutomationActionLinks(automation.id, action.id), [{
+                url: absoluteUrl,
+                clicked_count: 0
+            }]);
+        });
+
+        it('aggregates unique member clicks by destination hash across action revisions', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = automation.actions.find(candidate => candidate.type === 'send_email');
+            assert(action);
+            const existingRevision = await getLatestActionRevisionByActionId(action.id);
+            const secondRevisionId = ObjectId().toHexString();
+            await knex('automation_action_revisions').insert({
+                id: secondRevisionId,
+                action_id: action.id,
+                created_at: '2026-07-22 12:00:00',
+                email_subject: 'A later revision',
+                email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+                email_design_setting_id: existingRevision.email_design_setting_id
+            });
+
+            const redirects = [
+                {id: ObjectId().toHexString(), automation_action_revision_id: existingRevision.revision_id, to: 'https://example.com/alpha', to_hash: hashRedirectDestination('https://example.com/alpha')},
+                {id: ObjectId().toHexString(), automation_action_revision_id: secondRevisionId, to: 'https://example.com/alpha', to_hash: hashRedirectDestination('https://example.com/alpha')},
+                {id: ObjectId().toHexString(), automation_action_revision_id: secondRevisionId, to: 'https://example.com/beta', to_hash: hashRedirectDestination('https://example.com/beta')},
+                {id: ObjectId().toHexString(), automation_action_revision_id: secondRevisionId, to: 'https://example.com/zero', to_hash: hashRedirectDestination('https://example.com/zero')},
+                {id: ObjectId().toHexString(), automation_action_revision_id: secondRevisionId, to: 'https://example.com/aaa-zero', to_hash: hashRedirectDestination('https://example.com/aaa-zero')},
+                {id: ObjectId().toHexString(), automation_action_revision_id: secondRevisionId, to: 'https://example.com/alpha', to_hash: null}
+            ];
+            await knex('redirects').insert(redirects);
+            await knex('members_click_events').insert([
+                {id: ObjectId().toHexString(), member_id: 'member-1', redirect_id: redirects[0].id, created_at: '2026-07-22 13:00:00'},
+                {id: ObjectId().toHexString(), member_id: 'member-1', redirect_id: redirects[1].id, created_at: '2026-07-22 13:01:00'},
+                {id: ObjectId().toHexString(), member_id: 'member-2', redirect_id: redirects[1].id, created_at: '2026-07-22 13:02:00'},
+                {id: ObjectId().toHexString(), member_id: 'member-3', redirect_id: redirects[2].id, created_at: '2026-07-22 13:03:00'},
+                {id: ObjectId().toHexString(), member_id: 'member-4', redirect_id: redirects[5].id, created_at: '2026-07-22 13:04:00'}
+            ]);
+
+            assert.deepEqual(await repo.getAutomationActionLinks(automation.id, action.id), [{
+                url: 'https://example.com/alpha',
+                clicked_count: 2
+            }, {
+                url: 'https://example.com/beta',
+                clicked_count: 1
+            }, {
+                url: 'https://example.com/aaa-zero',
+                clicked_count: 0
+            }, {
+                url: 'https://example.com/zero',
+                clicked_count: 0
+            }]);
+        });
+
+        it('returns an empty list for a valid action without links', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            assert.deepEqual(await repo.getAutomationActionLinks(automation.id, automation.actions[0].id), []);
+        });
+
+        it('returns null when the action does not belong to the automation or is deleted', async function () {
+            const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+            const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+            const actionId = freeAutomation.actions[0].id;
+
+            assert.equal(await repo.getAutomationActionLinks(paidAutomation.id, actionId), null);
+            await knex('automation_actions').where('id', actionId).update({deleted_at: '2026-07-22 14:00:00'});
+            assert.equal(await repo.getAutomationActionLinks(freeAutomation.id, actionId), null);
         });
     });
 
@@ -2077,6 +2178,212 @@ describe('automations repository', function () {
                 automation_action_revision_id: secondRevision.id,
                 mailgun_message_id: 'matching-message-2'
             }]);
+        });
+    });
+
+    describe('trackEmailClicked', function () {
+        const FIRST_CLICK = new Date('2026-01-01T00:00:00.000Z');
+        const LATER_CLICK = new Date('2026-02-02T00:00:00.000Z');
+        const EARLIER_DELIVERY = new Date('2025-11-01T00:00:00.000Z');
+        const LATER_DELIVERY = new Date('2025-12-01T00:00:00.000Z');
+
+        let firstRevisionId: string;
+        let secondRevisionId: string;
+
+        const insertRecipient = async ({
+            id,
+            revisionId = firstRevisionId,
+            memberId = 'member-id',
+            trackClicks = true,
+            createdAt = EARLIER_DELIVERY
+        }: {
+            id: string;
+            revisionId?: string;
+            memberId?: string;
+            trackClicks?: boolean;
+            createdAt?: Date;
+        }): Promise<void> => {
+            await knex('automated_email_recipients').insert({
+                id,
+                automation_action_revision_id: revisionId,
+                member_id: memberId,
+                track_clicks: trackClicks,
+                created_at: toDatabaseDate(createdAt)
+            });
+        };
+
+        const trackClick = async ({
+            memberId = 'member-id',
+            clickedAt = FIRST_CLICK
+        }: {
+            memberId?: string;
+            clickedAt?: Date;
+        } = {}): Promise<void> => {
+            await repo.trackEmailClicked({
+                automationActionRevisionId: firstRevisionId,
+                memberId,
+                clickedAt
+            });
+        };
+
+        const getClickedAt = async (id: string): Promise<Date | null> => {
+            const row = await knex('automated_email_recipients')
+                .select('clicked_at')
+                .where({id})
+                .first();
+            assert(row, 'Expected recipient to exist');
+            return row.clicked_at === null ? null : new Date(row.clicked_at as number);
+        };
+
+        const getClickedCount = async (revisionId: string): Promise<number | null> => {
+            const row = await knex('automation_action_revisions')
+                .select('email_clicked_count')
+                .where({id: revisionId})
+                .first();
+            assert(row, 'Expected revision to exist');
+            return row.email_clicked_count;
+        };
+
+        beforeEach(async function () {
+            const revisions = await knex('automation_action_revisions')
+                .select('id')
+                .orderBy('id')
+                .limit(2);
+            const [firstRevision, secondRevision] = revisions;
+            assert(firstRevision);
+            assert(secondRevision);
+            firstRevisionId = firstRevision.id;
+            secondRevisionId = secondRevision.id;
+
+            await insertRecipient({id: 'tracked-recipient'});
+        });
+
+        it('records the first click and increments the click count', async function () {
+            await trackClick();
+
+            assert.deepEqual(await getClickedAt('tracked-recipient'), FIRST_CLICK);
+            assert.equal(await getClickedCount(firstRevisionId), 1);
+        });
+
+        it('locks the action revision before selecting the recipient', async function () {
+            const queries: string[] = [];
+            const recordQuery = ({sql}: {sql: string}) => queries.push(sql);
+            knex.on('query', recordQuery);
+
+            try {
+                await trackClick();
+            } finally {
+                knex.off('query', recordQuery);
+            }
+
+            const revisionSelect = queries.findIndex(query => (
+                query.startsWith('select') && query.includes('automation_action_revisions')
+            ));
+            const recipientSelect = queries.findIndex(query => (
+                query.startsWith('select') && query.includes('automated_email_recipients')
+            ));
+
+            assert.notEqual(revisionSelect, -1);
+            assert.notEqual(recipientSelect, -1);
+            assert(revisionSelect < recipientSelect);
+        });
+
+        it('does not update recipients for another member or revision', async function () {
+            await insertRecipient({
+                id: 'other-member-recipient',
+                memberId: 'other-member-id'
+            });
+            await insertRecipient({
+                id: 'other-revision-recipient',
+                revisionId: secondRevisionId
+            });
+
+            await trackClick();
+
+            assert.deepEqual(await getClickedAt('tracked-recipient'), FIRST_CLICK);
+            assert.equal(await getClickedAt('other-member-recipient'), null);
+            assert.equal(await getClickedAt('other-revision-recipient'), null);
+            assert.equal(await getClickedCount(secondRevisionId), null);
+        });
+
+        it('keeps the first click timestamp on subsequent clicks', async function () {
+            await trackClick();
+            await trackClick({clickedAt: LATER_CLICK});
+
+            assert.deepEqual(await getClickedAt('tracked-recipient'), FIRST_CLICK);
+            assert.equal(await getClickedCount(firstRevisionId), 1);
+        });
+
+        it('increments an existing click count', async function () {
+            await knex('automation_action_revisions')
+                .where({id: firstRevisionId})
+                .update({email_clicked_count: 5});
+
+            await trackClick();
+
+            assert.equal(await getClickedCount(firstRevisionId), 6);
+        });
+
+        it('only tracks the most recent recipient when a member received the same revision more than once', async function () {
+            await insertRecipient({
+                id: 'other-delivery-recipient',
+                createdAt: LATER_DELIVERY
+            });
+
+            await trackClick();
+            await trackClick({clickedAt: LATER_CLICK});
+
+            assert.equal(await getClickedAt('tracked-recipient'), null);
+            assert.deepEqual(await getClickedAt('other-delivery-recipient'), FIRST_CLICK);
+            assert.equal(await getClickedCount(firstRevisionId), 1);
+        });
+
+        it('does not track clicks for recipients with tracking disabled', async function () {
+            await insertRecipient({
+                id: 'tracking-disabled-recipient',
+                memberId: 'disabled-member-id',
+                trackClicks: false
+            });
+            await trackClick({memberId: 'disabled-member-id'});
+
+            assert.equal(await getClickedAt('tracking-disabled-recipient'), null);
+            assert.equal(await getClickedCount(firstRevisionId), null);
+        });
+
+        it('rolls back the timestamp when incrementing the count fails', async function () {
+            await knex.raw(`
+                CREATE TRIGGER fail_email_clicked_count
+                BEFORE UPDATE OF email_clicked_count ON automation_action_revisions
+                BEGIN
+                    SELECT RAISE(FAIL, 'click count update failed');
+                END
+            `);
+
+            try {
+                await assert.rejects(trackClick(), /click count update failed/);
+            } finally {
+                await knex.raw('DROP TRIGGER fail_email_clicked_count');
+            }
+
+            assert.equal(await getClickedAt('tracked-recipient'), null);
+            assert.equal(await getClickedCount(firstRevisionId), null);
+        });
+
+        it('joins an existing transaction and rolls back both analytics updates with it', async function () {
+            const error = new Error('outer transaction failed');
+
+            await assert.rejects(knex.transaction(async (transacting) => {
+                await repo.trackEmailClicked({
+                    automationActionRevisionId: firstRevisionId,
+                    memberId: 'member-id',
+                    clickedAt: FIRST_CLICK
+                }, {transacting});
+
+                throw error;
+            }), error);
+
+            assert.equal(await getClickedAt('tracked-recipient'), null);
+            assert.equal(await getClickedCount(firstRevisionId), null);
         });
     });
 

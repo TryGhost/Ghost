@@ -4,7 +4,7 @@ export default class MembersManagementRoute extends AuthenticatedRoute {
         super.beforeModel(...arguments);
 
         if (!this.session.user || !this.session.user.canManageMembers) {
-            return this.transitionTo('home');
+            return this.transitionTo('index');
         }
     }
 }

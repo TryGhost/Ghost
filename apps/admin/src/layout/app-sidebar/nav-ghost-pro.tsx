@@ -38,7 +38,7 @@ function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     )}
                     {showFeedback && (
                         <NavMenuItem>
-                            <NavMenuItem.Button onClick={openFeedbackWidget} onMouseEnter={preloadFeedbackWidget} onFocus={preloadFeedbackWidget}>
+                            <NavMenuItem.Button onClick={openFeedbackWidget} onFocus={preloadFeedbackWidget} onMouseEnter={preloadFeedbackWidget}>
                                 <LucideIcon.MessageCircle />
                                 <NavMenuItem.Label>Feedback</NavMenuItem.Label>
                             </NavMenuItem.Button>
