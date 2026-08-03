@@ -313,9 +313,9 @@ describe('HeaderNode', function () {
         describe('importDOM', function () {
             it('parses a header card V2', editorTest(function () {
                 const htmlstring = `
-                    <div class="kg-card kg-header-card kg-v2 kg-style-accent" data-background-color="#abcdef">
-                        <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" alt="" /></picture>
+                    <div class="kg-card kg-header-card kg-v2 kg-style-accent kg-layout-split kg-width-full" data-background-color="#abcdef">
                         <div class="kg-header-card-content">
+                            <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" alt="" /></picture>
                             <div class="kg-header-card-text kg-align-center">
                                 <h2 class="kg-header-card-heading" data-text-color="#abcdef">Header</h2>
                                 <p class="kg-header-card-subheading" data-text-color="#abcdef">Subheader</p>
@@ -339,6 +339,25 @@ describe('HeaderNode', function () {
                 expect(node.buttonUrl).toBe('https://example.com');
                 expect(node.buttonText).toBe('Button');
                 expect(node.buttonTextColor).toBe('#abcdef');
+            }));
+
+            it('preserves a full layout when parsing a header card with a background image', editorTest(function () {
+                const htmlstring = `
+                    <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide" data-background-color="#000000">
+                        <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" alt="" /></picture>
+                        <div class="kg-header-card-content">
+                            <div class="kg-header-card-text kg-align-center">
+                                <h2 class="kg-header-card-heading" data-text-color="#ffffff">Header</h2>
+                                <p class="kg-header-card-subheading" data-text-color="#ffffff">Subheader</p>
+                            </div>
+                        </div>
+                    </div>`;
+                const document = createDocument(htmlstring);
+                const nodes = $generateNodesFromDOM(editor, document) as HeaderNode[];
+
+                expect(nodes.length).toBe(1);
+                expect(nodes[0].backgroundImageSrc).toBe('https://example.com/image.jpg');
+                expect(nodes[0].layout).toBe('full');
             }));
 
             it('does not parse a v1 header as v2', editorTest(function () {

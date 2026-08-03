@@ -53,7 +53,14 @@ export function parseHeaderNode(HeaderNode: new (data: Record<string, unknown>) 
                         const buttonElement = div.querySelector('.kg-header-card-button');
                         const alignment = div.classList.contains('kg-align-center') ? 'center' : '';
                         const backgroundImageSrc = div.querySelector('.kg-header-card-image')?.getAttribute('src');
-                        const layout = backgroundImageSrc ? 'split' : '';
+                        let layout = '';
+                        if (div.classList.contains('kg-layout-split')) {
+                            layout = 'split';
+                        } else if (div.classList.contains('kg-width-full')) {
+                            layout = 'full';
+                        } else if (div.classList.contains('kg-width-wide')) {
+                            layout = 'wide';
+                        }
                         const backgroundColor = div.classList.contains('kg-style-accent') ? 'accent' : div.getAttribute('data-background-color');
                         const buttonColor = buttonElement?.getAttribute('data-button-color') || '';
                         const textColor = headerElement?.getAttribute('data-text-color') || '';
