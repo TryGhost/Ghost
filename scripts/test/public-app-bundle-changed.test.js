@@ -88,4 +88,27 @@ describe('hashPackage', () => {
 
         assert.strictEqual(hashPackage(a, '1.0.0'), hashPackage(b, '1.0.0'));
     });
+
+    it('matches when the manifests differ only by the version being released', () => {
+        const manifest = version => JSON.stringify({name: '@tryghost/x', version, dependencies: {}});
+        const a = bundle('manifest-version-a', {'package.json': manifest('1.8.233')});
+        const b = bundle('manifest-version-b', {'package.json': manifest('1.8.232')});
+
+        assert.strictEqual(hashPackage(a, '1.8.233'), hashPackage(b, '1.8.232'));
+    });
+
+    // The app's own version is "0.0.0" outside the publish job, and
+    // @tryghost/i18n normalizes to "0.0.0" in the packed manifest. Masking the
+    // version as a raw string would rewrite the dependency on one side only.
+    it('does not let a version equal to a dependency version corrupt the manifest', () => {
+        const manifest = version => JSON.stringify({
+            name: '@tryghost/x',
+            version,
+            dependencies: {'@tryghost/i18n': '0.0.0'}
+        });
+        const a = bundle('manifest-collide-a', {'package.json': manifest('0.0.0')});
+        const b = bundle('manifest-collide-b', {'package.json': manifest('1.8.232')});
+
+        assert.strictEqual(hashPackage(a, '0.0.0'), hashPackage(b, '1.8.232'));
+    });
 });

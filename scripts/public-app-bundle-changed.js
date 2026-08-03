@@ -7,10 +7,12 @@
 // bundle, so gating on "affected" alone burns a patch version per dependency
 // bump anywhere in the monorepo.
 //
-// Compare packed packages rather than source package.json files so pnpm's
-// catalog/workspace dependency normalization is included. LICENSE and README.md
-// ship in the tarball too but never reach a rendered site, and a change to either
-// is not worth a CDN purge.
+// Both sides are compared as packed packages rather than as built umd/
+// directories, so a manifest-only release still counts as a change — pnpm
+// rewrites `catalog:` and `workspace:` specifiers into real ranges at pack time,
+// and none of that shows up in the bundle. LICENSE and README.md ship in the
+// tarball too but never reach a rendered site, and a change to either is not
+// worth a CDN purge.
 //
 // Sourcemaps are excluded: they are derived from the bundle they accompany, so
 // they carry no signal the bundle itself doesn't, and their mappings shift with
@@ -37,7 +39,8 @@ const VERSION_PLACEHOLDER = '\0version\0';
  * Sentry release tag), and the publish job sets that version immediately before
  * building — so the two sides are always one patch apart on a string that says
  * nothing about the bundle's behaviour. Masking it is what makes them
- * comparable at all.
+ * comparable at all. The manifest is handled structurally instead — see
+ * normalizeForHash.
  *
  * @param {string} dir
  * @param {string} version - the version baked into this copy, masked before hashing
@@ -49,11 +52,33 @@ export function hashPackage(dir, version) {
     for (const file of listFiles(dir).sort()) {
         hash.update(file);
         hash.update('\0');
-        hash.update(maskVersion(readFileSync(join(dir, file)), version));
+        hash.update(normalizeForHash(file, readFileSync(join(dir, file)), version));
         hash.update('\0');
     }
 
     return hash.digest('hex');
+}
+
+/**
+ * @param {string} file - path relative to the package root
+ * @param {Buffer} contents
+ * @param {string} version
+ * @returns {Buffer}
+ */
+function normalizeForHash(file, contents, version) {
+    // The manifest differs from the published one by exactly the version being
+    // released, so drop the field outright. Masking the string here would also
+    // rewrite any dependency pinned to the same value — @tryghost/i18n
+    // normalizes to "0.0.0", which is also what an app's own version field
+    // holds outside the publish job.
+    if (file === 'package.json') {
+        const manifest = JSON.parse(contents.toString('utf8'));
+        delete manifest.version;
+
+        return Buffer.from(JSON.stringify(manifest));
+    }
+
+    return maskVersion(contents, version);
 }
 
 /**
