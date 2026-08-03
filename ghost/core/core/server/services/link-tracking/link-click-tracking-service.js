@@ -281,6 +281,12 @@ class LinkClickTrackingService {
                 return;
             }
 
+            const automationRunStepId = event.data.url.searchParams.get('step');
+            if (!automationRunStepId) {
+                await this.#linkClickRepository.save(click);
+                return;
+            }
+
             await this.#runInTransaction(async (transacting) => {
                 const memberId = await this.#linkClickRepository.save(click, {transacting});
                 if (!memberId) {
@@ -289,6 +295,7 @@ class LinkClickTrackingService {
 
                 await this.#automationsApi.trackEmailClicked({
                     automationActionRevisionId,
+                    automationRunStepId,
                     memberId,
                     clickedAt: event.timestamp
                 }, {transacting});
