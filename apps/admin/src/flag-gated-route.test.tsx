@@ -13,7 +13,13 @@ vi.mock('@tryghost/admin-x-framework/api/config', () => ({
 
 vi.mock('./ember-bridge', () => ({
     EmberFallback: () => React.createElement('div', {'data-testid': 'ember-fallback'}),
-    useEmberFeatureFlag: (flag: string) => window.EmberBridge?.state.isFeatureEnabled?.(flag)
+    useEmberFeatureFlag: (flag: string) => {
+        const stateBridge = window.EmberBridge?.state;
+        if (!stateBridge?.isFeatureEnabled) {
+            return undefined;
+        }
+        return stateBridge.isFeatureEnabled(flag) ?? null;
+    }
 }));
 
 const ReactScreen = lazy(() => Promise.resolve({
@@ -76,7 +82,7 @@ describe('FlagGatedRoute', () => {
         expect(screen.queryByTestId('ember-fallback')).not.toBeInTheDocument();
     });
 
-    it('uses config ownership while Ember feature state is loading', async () => {
+    it('renders nothing while Ember feature state is loading', () => {
         mockUseBrowseConfig.mockReturnValue(withLabs({someFlag: true}));
         window.EmberBridge = {
             state: {
@@ -84,12 +90,11 @@ describe('FlagGatedRoute', () => {
             }
         } as unknown as typeof window.EmberBridge;
 
-        render(<FlagGatedRoute component={ReactScreen} flag="someFlag" />);
+        const {container} = render(<FlagGatedRoute component={ReactScreen} flag="someFlag" />);
 
-        await waitFor(() => {
-            expect(screen.getByTestId('react-screen')).toBeInTheDocument();
-        });
+        expect(container).toBeEmptyDOMElement();
         expect(screen.queryByTestId('ember-fallback')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('react-screen')).not.toBeInTheDocument();
     });
 
     it('uses Ember ownership while the two flag sources disagree', async () => {

@@ -220,13 +220,21 @@ export function useSubscriptionStatus() {
     return subscriptionStatus;
 }
 
-/** Reads Ember's authoritative Labs state and updates when it changes. */
-export function useEmberFeatureFlag(flag: string): boolean | undefined {
+/**
+ * Reads Ember's authoritative Labs state and updates when it changes.
+ * `null` means Ember is present but its settings are still loading;
+ * `undefined` means there is no Ember feature reader (standalone React).
+ */
+export function useEmberFeatureFlag(flag: string): boolean | null | undefined {
     const subscribe = useCallback((callback: () => void) => {
         return onEmberStateBridgeEvent('featureFlagsChange', callback, callback);
     }, []);
     const getSnapshot = useCallback(() => {
-        return window.EmberBridge?.state.isFeatureEnabled?.(flag);
+        const stateBridge = window.EmberBridge?.state;
+        if (!stateBridge?.isFeatureEnabled) {
+            return undefined;
+        }
+        return stateBridge.isFeatureEnabled(flag) ?? null;
     }, [flag]);
 
     return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);

@@ -11,7 +11,9 @@ import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
  * In the integrated admin, Ember's synchronously exposed feature state is the
  * ownership authority for both routers. This prevents brief split-brain states
  * while a Labs setting propagates between the Ember service and React cache.
- * Standalone React/test environments fall back to the config query.
+ * While Ember is present but its Labs settings are still loading, React does
+ * not claim the route. Standalone React/test environments (where there is no
+ * Ember feature reader) fall back to the config query.
  *
  * The one case that is NOT safe to default to Ember is config still loading.
  * Falling back there would un-hide the Ember shell and flash the Ember screen
@@ -37,6 +39,10 @@ export function FlagGatedRoute({ flag, component: Component }: {
 
     if (typeof emberFlag === 'boolean') {
         return emberFlag ? renderReact() : <EmberFallback />;
+    }
+
+    if (emberFlag === null) {
+        return null;
     }
 
     if (isLoading) {

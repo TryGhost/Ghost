@@ -13,7 +13,13 @@ vi.mock('@tryghost/admin-x-framework/api/config', () => ({
 
 vi.mock('./ember-bridge', () => ({
     EmberFallback: () => React.createElement('div', {'data-testid': 'ember-fallback'}),
-    useEmberFeatureFlag: (flag: string) => window.EmberBridge?.state.isFeatureEnabled?.(flag)
+    useEmberFeatureFlag: (flag: string) => {
+        const stateBridge = window.EmberBridge?.state;
+        if (!stateBridge?.isFeatureEnabled) {
+            return undefined;
+        }
+        return stateBridge.isFeatureEnabled(flag) ?? null;
+    }
 }));
 
 vi.mock('./members/detail/member-detail', () => ({

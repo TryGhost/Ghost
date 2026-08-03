@@ -112,6 +112,16 @@ describe('useEmberFeatureFlag', () => {
         expect(mock.onSpy).toHaveBeenCalledWith('featureFlagsChange', expect.any(Function));
         expect(result.current).toBe(true);
     });
+
+    test('distinguishes loading Ember settings from an unavailable bridge', () => {
+        const mock = createMockStateBridge();
+        mock.stateBridge.isFeatureEnabled = vi.fn(() => undefined);
+        window.EmberBridge = {state: mock.stateBridge};
+
+        const {result} = renderHook(() => useEmberFeatureFlag('tagDetailsReact'));
+
+        expect(result.current).toBeNull();
+    });
 });
 
 describe('useEmberDataSync', () => {
