@@ -199,8 +199,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     >
         <div className='mt-8 -mb-8 flex items-start gap-8'>
             <div className='flex grow flex-col gap-8'>
-                <FieldSet className='gap-0'>
-                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Basic</FieldLegend>
+                <FieldSet>
+                    <FieldLegend>Basic</FieldLegend>
                     <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7'>
                     <Field data-invalid={Boolean(errors.name) || undefined}>
                         <FieldLabel htmlFor='tier-name'>Name</FieldLabel>
@@ -329,8 +329,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     </FieldGroup>
                 </FieldSet>
 
-                <FieldSet className='gap-0'>
-                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Benefits</FieldLegend>
+                <FieldSet>
+                    <FieldLegend>Benefits</FieldLegend>
                     <FieldGroup className='mb-10 gap-0 rounded-sm border border-border-default p-4 md:p-7'>
                         <SortableList
                             getDragHandleLabel={({item}) => `Reorder benefit${item ? `: ${item}` : ''}`}
