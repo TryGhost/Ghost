@@ -45,4 +45,25 @@ test.describe('Main form', async () => {
         await page.locator('body').click();
         await expect(frame.locator('[data-testid="main-form"] [data-testid="form-header"]')).toBeVisible();
     });
+
+    test('allows keyboard focus to leave an empty comments frame', async ({page}) => {
+        const {frame} = await initializeTest(page);
+        await page.evaluate(() => {
+            const button = document.createElement('button');
+            button.id = 'after-comments';
+            button.textContent = 'After comments';
+            document.body.append(button);
+        });
+
+        const editor = frame.getByTestId('editor');
+        const expertiseButton = frame.getByTestId('expertise-button');
+
+        await editor.focus();
+        await page.keyboard.press('Tab');
+        await page.waitForTimeout(200);
+        await expect(expertiseButton).toBeFocused();
+
+        await page.keyboard.press('Tab');
+        await expect(page.locator('#after-comments')).toBeFocused();
+    });
 });
