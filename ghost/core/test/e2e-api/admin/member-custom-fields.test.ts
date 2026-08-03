@@ -1094,6 +1094,18 @@ describe('Member Custom Fields Admin API', function () {
             assert.deepEqual(await readValues(memberId), {[field.key]: {city: 'Bristol', country: 'GB'}});
         });
 
+        it('drops a part sent as an empty string rather than storing it as one', async function () {
+            const field = await createField({name: 'Home address', type: 'address'});
+            const memberId = await createMember();
+
+            // A part with nothing in it gets no row, so it reads back absent rather than
+            // present-and-empty. That is the whole point of a row per part: there is no
+            // place to record "this part is empty" separately from "this part is unset".
+            await setValues(memberId, {[field.key]: {line1: '62 Ghost Lane', city: ''}});
+
+            assert.deepEqual(await readValues(memberId), {[field.key]: {line1: '62 Ghost Lane'}});
+        });
+
         it('rejects an address with nothing in it', async function () {
             const field = await createField({name: 'Home address', type: 'address'});
             const memberId = await createMember();
