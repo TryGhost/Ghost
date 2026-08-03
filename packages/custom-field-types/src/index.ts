@@ -119,3 +119,18 @@ export const FIELD_TYPES = {
     },
     address: {storageType: 'json', value: AddressValue}
 } as const satisfies Record<FieldType, FieldTypeDefinition>;
+
+/**
+ * The sub-fields of a composite type in declaration order, or null for a scalar.
+ *
+ * Derived from the value schema rather than declared alongside it, so the two cannot
+ * drift: adding a sub-field is one edit and every consumer sees it. It is also the
+ * only honest test of what "composite" means here — a value is composite when it has
+ * parts, which is a fact about its shape and not about the column it happens to be
+ * stored in. Two field types can share a storage type and disagree about this, so
+ * anything asking "does this value have parts?" has to ask the shape.
+ */
+export function subFieldsOf(type: FieldType): string[] | null {
+    const {value} = FIELD_TYPES[type];
+    return value instanceof z.ZodObject ? Object.keys(value.shape) : null;
+}

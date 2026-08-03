@@ -44,6 +44,14 @@ export const DbCustomFieldValue = z.object({
 
 type CustomFieldValueRow = z.infer<typeof DbCustomFieldValue>;
 
+// A composite value once decoded: sub-field keys to values, and no narrower. Which
+// sub-fields a composite has is its field type's business, not the row's.
+//
+// It doubles as the guard on a stored blob. A JSON column can just as easily hold an
+// array, a null or a bare number, and a record rejects all three — so parsing against
+// this is what narrows the type, with no assertion needed.
+export const StoredCompositeValue = z.record(z.string(), z.unknown());
+
 // The value join a read needs: the field's identity and type travel with the
 // stored columns, so a row can be decoded without a second lookup. `type` is
 // parsed as the field-type enum, which narrows it with no cast.

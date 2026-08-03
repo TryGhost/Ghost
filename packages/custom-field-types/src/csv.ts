@@ -1,5 +1,4 @@
-import {z} from 'zod';
-import {FIELD_TYPES, type FieldType} from './index.ts';
+import {subFieldsOf, type FieldType} from './index.ts';
 
 /**
  * How a field's value maps onto CSV columns.
@@ -32,11 +31,6 @@ const NAMESPACE = 'custom_fields';
 export interface CsvField {
     key: string;
     type: FieldType;
-}
-
-function subFieldsOf(type: FieldType): string[] | null {
-    const {value} = FIELD_TYPES[type];
-    return value instanceof z.ZodObject ? Object.keys(value.shape) : null;
 }
 
 function toCell(value: unknown): string {
