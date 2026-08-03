@@ -66,24 +66,45 @@ const byteLength = (value: string): number => new TextEncoder().encode(value).le
 
 /**
  * The address value — a composite type, modelled on Stripe's Address object.
- * line2 and state are optional. Because it is one zod object, invalid sub-fields
- * surface per path (the caller can point at `postal_code` specifically) with no
- * bespoke composite handling.
+ * Because it is one zod object, invalid sub-fields surface per path (the caller
+ * can point at `postal_code` specifically) with no bespoke composite handling.
+ *
+ * Every sub-field is optional, because none of them exists everywhere: there is
+ * no postal code in Ireland or Hong Kong, and no city in an Irish townland
+ * address. Which sub-fields a particular address needs is a per-country question,
+ * and only the collection form knows the country — so requiring any of them here
+ * would leave a correctly-shaped form unable to produce a valid value.
+ *
+ * What holds instead is that an address must say something. An object with
+ * nothing filled in is not an empty address, it is no address, and a value is
+ * cleared by omitting it rather than by emptying it.
  *
  * Every sub-field is bounded. An address is a delivery address, so the bounds are
  * set by what a courier will accept, not by what the column could hold — and a
  * composite with unbounded members is a composite with no bound at all.
  */
 export const AddressValue = z.object({
-    line1: z.string().min(1).max(255),
-    line2: z.string().max(255).optional(),
-    city: z.string().min(1).max(255),
-    state: z.string().max(255).optional(),
-    postal_code: z.string().min(1).max(32),
+    line1: z.string().trim().max(255).optional(),
+    line2: z.string().trim().max(255).optional(),
+    city: z.string().trim().max(255).optional(),
+    state: z.string().trim().max(255).optional(),
+    postal_code: z.string().trim().max(32).optional(),
     // Two characters only — the shape of an ISO 3166-1 alpha-2 code, not validated
     // against the actual country list.
-    country: z.string().length(2)
-});
+    country: z.string().trim().length(2).optional()
+}).refine(
+    // Every sub-field is trimmed above, so whitespace has already become the empty
+    // string by the time this runs. Trimming is what stops `{line1: '   '}` being
+    // stored: admin trims a sub-field away before rendering it, so an address of
+    // spaces would be one no screen could show, and none could clear either.
+    //
+    // The type check is load-bearing, not defensive. A sub-field that is optional
+    // and explicitly undefined survives parsing as a key holding undefined, and
+    // `undefined !== ''` on its own would let `{line1: undefined}` satisfy a rule
+    // whose whole purpose is to reject an address with nothing in it.
+    address => Object.values(address).some(value => typeof value === 'string' && value !== ''),
+    {message: 'An address must have at least one part filled in.'}
+);
 export type Address = z.infer<typeof AddressValue>;
 
 export const FIELD_TYPES = {

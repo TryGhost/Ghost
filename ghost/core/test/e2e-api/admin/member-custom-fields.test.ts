@@ -1054,11 +1054,31 @@ describe('Member Custom Fields Admin API', function () {
 
             const body = await setValues(
                 memberId,
-                {[field.key]: {line1: '62 Ghost Lane', city: 'Dublin', country: 'IE'}},
+                {[field.key]: {line1: '62 Ghost Lane', city: 'Dublin', country: 'IRL'}},
                 422
             );
 
-            assert.equal(body.errors[0].property, `custom_fields.${field.key}.postal_code`);
+            assert.equal(body.errors[0].property, `custom_fields.${field.key}.country`);
+        });
+
+        it('round-trips an address that omits the sub-fields its country has no use for', async function () {
+            const field = await createField({name: 'Home address', type: 'address'});
+            const memberId = await createMember();
+            // Hong Kong has no postal code, so an address without one is complete.
+            const address = {line1: 'Flat 3, 8 Wan Chai Road', city: 'Hong Kong', country: 'HK'};
+
+            await setValues(memberId, {[field.key]: address});
+
+            assert.deepEqual(await readValues(memberId), {[field.key]: address});
+        });
+
+        it('rejects an address with nothing in it', async function () {
+            const field = await createField({name: 'Home address', type: 'address'});
+            const memberId = await createMember();
+
+            const body = await setValues(memberId, {[field.key]: {}}, 422);
+
+            assert.equal(body.errors[0].property, `custom_fields.${field.key}`);
         });
 
         it('strips unknown sub-fields of a composite value', async function () {

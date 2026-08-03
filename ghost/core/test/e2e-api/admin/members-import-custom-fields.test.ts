@@ -129,13 +129,40 @@ describe('Members import — custom fields', function () {
         assert.deepEqual(member.custom_fields?.[key], {line1: '1 High Street', city: 'London', postal_code: 'E1 6AN', country: 'GB'});
     });
 
-    // A partial composite is an invalid value, so the whole row fails like any other.
-    it('fails a row whose address is missing a required sub-field', async function () {
+    // No sub-field is required, so a spreadsheet carrying only part of an address
+    // imports the part it has instead of failing the row.
+    it('imports a row whose address fills only some sub-fields', async function () {
         const key = await createField('Shipping Address', 'address');
         const email = 'cf-partial-address@example.com';
 
-        // city alone, no line1/postal_code/country.
         const res = await importCSV(`email,custom_fields.${key}.city\n${email},London\n`);
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1);
+
+        const member = await findMember(email);
+        assert.deepEqual(member.custom_fields?.[key], {city: 'London'});
+    });
+
+    // A stray space is not data. Read as a value it would make this address all-whitespace,
+    // fail its "at least one part" rule, and take the member's name and email down with it.
+    it('reads a whitespace-only address cell as blank rather than failing the row', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-address-space@example.com';
+
+        const res = await importCSV(`email,custom_fields.${key}.city\n${email},"   "\n`);
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1);
+
+        const member = await findMember(email);
+        assert.equal(member.custom_fields?.[key], undefined, 'the whitespace cell set no address');
+    });
+
+    // A composite can still be invalid, and when it is the whole row fails like any other.
+    it('fails a row whose address has a malformed sub-field', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-bad-address@example.com';
+
+        const res = await importCSV(`email,custom_fields.${key}.country\n${email},IRL\n`);
         assert.equal(res.status, 201);
         assert.equal(res.body.meta.stats.imported, 0);
         assert.equal(res.body.meta.stats.invalid.length, 1);
