@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {DbDate} from '../../lib/db-date';
+import type {CamelKeys} from '../../lib/case-keys';
 
 export const GiftCadenceSchema = z.enum(['month', 'year']);
 export const GiftStatusSchema = z.enum(['purchased', 'redeemed', 'consumed', 'expired', 'refunded']);
@@ -35,3 +36,4 @@ export const DbGift = z.object({
 });
 
 export type GiftRow = z.output<typeof DbGift>;
+export type GiftData = CamelKeys<GiftRow>;
