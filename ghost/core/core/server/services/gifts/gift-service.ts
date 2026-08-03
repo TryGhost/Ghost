@@ -1,9 +1,10 @@
 import crypto from 'node:crypto';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
+import type {Knex} from 'knex';
 import {z} from 'zod';
 import {Gift} from './gift';
-import type {GiftEventPage, GiftRepository} from './gift-bookshelf-repository';
+import type {GiftEventBrowseOptions, GiftEventPage, GiftRepository} from './gift-bookshelf-repository';
 import type {GiftReminderScheduler} from './gift-reminder-scheduler';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
@@ -492,7 +493,7 @@ export class GiftService {
     async redeem(input: {
         token: string;
         memberId: string;
-        transacting?: {executionPromise: Promise<unknown>};
+        transacting?: Knex.Transaction;
         newMember?: boolean;
     }): Promise<GiftRedemption> {
         const gift = await this.redeemGift(input.token, input.memberId, {
@@ -503,8 +504,8 @@ export class GiftService {
         return this.serializeRedemption(gift);
     }
 
-    private async redeemGift(token: string, memberId: string, options: {transacting?: {executionPromise: Promise<unknown>}; newMember?: boolean} = {}): Promise<Gift> {
-        const run = async (transacting: unknown) => {
+    private async redeemGift(token: string, memberId: string, options: {transacting?: Knex.Transaction; newMember?: boolean} = {}): Promise<Gift> {
+        const run = async (transacting: Knex.Transaction) => {
             const member = await this.deps.memberRepository.get({id: memberId}, {transacting, forUpdate: true});
             if (!member) {
                 throw new errors.NotFoundError({message: `Member not found: ${memberId}`});
@@ -582,14 +583,14 @@ export class GiftService {
         return redeemed;
     }
 
-    private async getActiveByMember(memberId: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
+    private async getActiveByMember(memberId: string, options: {transacting?: Knex.Transaction} = {}): Promise<Gift | null> {
         if (!memberId) {
             return null;
         }
         return this.deps.giftRepository.getActiveByMember(memberId, options);
     }
 
-    private async getActiveByMembers(memberIds: string[], options: {transacting?: unknown} = {}): Promise<Map<string, Gift>> {
+    private async getActiveByMembers(memberIds: string[], options: {transacting?: Knex.Transaction} = {}): Promise<Map<string, Gift>> {
         if (!memberIds || memberIds.length === 0) {
             return new Map();
         }
@@ -678,17 +679,17 @@ export class GiftService {
         };
     }
 
-    browsePurchaseEvents(options?: Record<string, unknown>, filter?: unknown): Promise<GiftEventPage> {
+    browsePurchaseEvents(options?: GiftEventBrowseOptions, filter?: unknown): Promise<GiftEventPage> {
         return this.deps.giftRepository.browsePurchaseEvents(options, filter);
     }
 
-    browseRedemptionEvents(options?: Record<string, unknown>, filter?: unknown): Promise<GiftEventPage> {
+    browseRedemptionEvents(options?: GiftEventBrowseOptions, filter?: unknown): Promise<GiftEventPage> {
         return this.deps.giftRepository.browseRedemptionEvents(options, filter);
     }
 
-    async reassignRedeemer(input: {giftId: string; memberId: string; transacting?: unknown}): Promise<void> {
+    async reassignRedeemer(input: {giftId: string; memberId: string; transacting?: Knex.Transaction}): Promise<void> {
         const {giftId, memberId} = input;
-        const run = async (transacting: unknown): Promise<Gift> => {
+        const run = async (transacting: Knex.Transaction): Promise<Gift> => {
             const gift = await this.deps.giftRepository.getById(giftId, {transacting, forUpdate: true});
 
             if (!gift) {
@@ -802,8 +803,8 @@ export class GiftService {
         return Boolean(await this.consume(gift.token));
     }
 
-    private async consume(token: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
-        const run = async (transacting: unknown) => {
+    private async consume(token: string, options: {transacting?: Knex.Transaction} = {}): Promise<Gift | null> {
+        const run = async (transacting: Knex.Transaction) => {
             // Fetch with a row lock to prevent race conditions under concurrency
             const gift = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
 

@@ -1,10 +1,18 @@
 import assert from 'node:assert/strict';
 import errors from '@tryghost/errors';
 import sinon from 'sinon';
+import type {Knex} from 'knex';
 import {GiftService, type GiftPurchaseData} from '../../../../../core/server/services/gifts/gift-service';
 import {Gift} from '../../../../../core/server/services/gifts/gift';
 import type {FindPendingReminderOptions, GiftRepository} from '../../../../../core/server/services/gifts/gift-bookshelf-repository';
 import {buildGift} from './utils';
+
+const transacting = 'trx' as unknown as Knex.Transaction;
+const outerTransacting = 'outer_trx' as unknown as Knex.Transaction;
+
+function transactionWithExecutionPromise(executionPromise: Promise<unknown>): Knex.Transaction {
+    return {executionPromise} as unknown as Knex.Transaction;
+}
 
 function buildRedeemedGift(overrides: Parameters<typeof buildGift>[0] = {}) {
     return buildGift({
@@ -95,7 +103,7 @@ describe('GiftService', function () {
             create: sinon.stub(),
             update: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
-                return await callback('trx');
+                return await callback(transacting);
             })
         };
         memberRepository = {
@@ -480,11 +488,11 @@ describe('GiftService', function () {
             assert.equal(result.updatedMemberCount, 1);
 
             sinon.assert.calledOnce(giftRepository.transaction);
-            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, gift.token, {transacting: 'trx', forUpdate: true});
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, gift.token, {transacting, forUpdate: true});
             sinon.assert.calledOnceWithExactly(memberRepository.update, {
                 products: [],
                 status: 'free'
-            }, {id: 'member_1', transacting: 'trx'});
+            }, {id: 'member_1', transacting});
 
             sinon.assert.calledOnce(giftRepository.update);
             const savedGift = giftRepository.update.getCall(0).args[0];
@@ -578,14 +586,14 @@ describe('GiftService', function () {
 
             giftRepository.findPendingConsumption.resolves([gift1, gift2]);
             giftRepository.getByToken
-                .withArgs('gift-1', {transacting: 'trx', forUpdate: true}).resolves(gift1)
-                .withArgs('gift-2', {transacting: 'trx', forUpdate: true}).resolves(gift2);
+                .withArgs('gift-1', {transacting, forUpdate: true}).resolves(gift1)
+                .withArgs('gift-2', {transacting, forUpdate: true}).resolves(gift2);
             memberRepository.get
-                .withArgs({id: 'member_1'}, {transacting: 'trx', forUpdate: true}).resolves({
+                .withArgs({id: 'member_1'}, {transacting, forUpdate: true}).resolves({
                     id: 'member_1',
                     get: sinon.stub().withArgs('status').returns('gift')
                 })
-                .withArgs({id: 'member_2'}, {transacting: 'trx', forUpdate: true}).resolves({
+                .withArgs({id: 'member_2'}, {transacting, forUpdate: true}).resolves({
                     id: 'member_2',
                     get: sinon.stub().withArgs('status').returns('gift')
                 });
@@ -626,7 +634,7 @@ describe('GiftService', function () {
             assert.equal(result.expiredCount, 1);
 
             sinon.assert.calledOnce(giftRepository.transaction);
-            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, gift.token, {transacting: 'trx', forUpdate: true});
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, gift.token, {transacting, forUpdate: true});
 
             sinon.assert.calledOnce(giftRepository.update);
             const savedGift = giftRepository.update.getCall(0).args[0];
@@ -669,8 +677,8 @@ describe('GiftService', function () {
 
             giftRepository.findPendingExpiration.resolves([gift1, gift2]);
             giftRepository.getByToken
-                .withArgs('gift-1', {transacting: 'trx', forUpdate: true}).resolves(gift1)
-                .withArgs('gift-2', {transacting: 'trx', forUpdate: true}).resolves(gift2);
+                .withArgs('gift-1', {transacting, forUpdate: true}).resolves(gift1)
+                .withArgs('gift-2', {transacting, forUpdate: true}).resolves(gift2);
 
             const service = createService();
             const result = await service.processExpired();
@@ -732,9 +740,9 @@ describe('GiftService', function () {
             // once locked (inside the transaction).
             assert.equal(giftRepository.getByToken.callCount, 2);
             sinon.assert.calledWithExactly(giftRepository.getByToken.firstCall, gift.token);
-            sinon.assert.calledWithExactly(giftRepository.getByToken.secondCall, gift.token, {transacting: 'trx', forUpdate: true});
+            sinon.assert.calledWithExactly(giftRepository.getByToken.secondCall, gift.token, {transacting, forUpdate: true});
 
-            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'member_1'}, {transacting: 'trx', forUpdate: true});
+            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'member_1'}, {transacting, forUpdate: true});
 
             sinon.assert.calledOnce(giftEmailService.sendReminder);
 
@@ -963,8 +971,8 @@ describe('GiftService', function () {
             const redeemed = giftRepository.update.firstCall.firstArg;
 
             sinon.assert.calledOnce(giftRepository.transaction);
-            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token', {transacting: 'trx', forUpdate: true});
-            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'member_1'}, {transacting: 'trx', forUpdate: true});
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token', {transacting, forUpdate: true});
+            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'member_1'}, {transacting, forUpdate: true});
             sinon.assert.calledOnceWithExactly(memberRepository.update, {
                 products: [{
                     id: 'tier_1',
@@ -973,9 +981,9 @@ describe('GiftService', function () {
                 status: 'gift'
             }, {
                 id: 'member_1',
-                transacting: 'trx'
+                transacting
             });
-            sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting: 'trx'});
+            sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting});
             sinon.assert.calledTwice(tiersService.api.read);
             sinon.assert.alwaysCalledWithExactly(tiersService.api.read, 'tier_1');
             sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyGiftSubscriptionStarted, {
@@ -1026,7 +1034,7 @@ describe('GiftService', function () {
             });
 
             const service = createService();
-            const externalTrx = {executionPromise: Promise.resolve()};
+            const externalTrx = transactionWithExecutionPromise(Promise.resolve());
             const redemption = await service.redeem({token: 'gift-token', memberId: 'member_1', transacting: externalTrx});
             const redeemed = giftRepository.update.firstCall.firstArg;
 
@@ -1061,8 +1069,8 @@ describe('GiftService', function () {
             const redeemed = giftRepository.update.firstCall.firstArg;
 
             sinon.assert.calledOnce(giftRepository.transaction);
-            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'member_1'}, {transacting: 'trx', forUpdate: true});
-            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token', {transacting: 'trx', forUpdate: true});
+            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'member_1'}, {transacting, forUpdate: true});
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token', {transacting, forUpdate: true});
             sinon.assert.calledOnceWithExactly(memberRepository.update, {
                 products: [{
                     id: 'tier_1',
@@ -1071,9 +1079,9 @@ describe('GiftService', function () {
                 status: 'gift'
             }, {
                 id: 'member_1',
-                transacting: 'trx'
+                transacting
             });
-            sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting: 'trx'});
+            sinon.assert.calledOnceWithExactly(giftRepository.update, redeemed, {transacting});
             assert.equal(redemption.token, 'gift-token');
         });
 
@@ -1153,7 +1161,7 @@ describe('GiftService', function () {
                 'member_1',
                 'member@example.com',
                 'paid',
-                {transacting: 'trx'}
+                {transacting}
             );
         });
 
@@ -1175,7 +1183,7 @@ describe('GiftService', function () {
                 'member_1',
                 'member@example.com',
                 'paid',
-                {transacting: 'trx'}
+                {transacting}
             );
         });
 
@@ -1190,7 +1198,7 @@ describe('GiftService', function () {
             memberRepository.get.resolves({id: 'member_1', get: memberGet});
 
             const service = createService();
-            const externalTrx = {executionPromise: Promise.resolve()};
+            const externalTrx = transactionWithExecutionPromise(Promise.resolve());
             await service.redeem({token: 'gift-token', memberId: 'member_1', transacting: externalTrx});
 
             sinon.assert.calledOnceWithExactly(
@@ -1239,7 +1247,7 @@ describe('GiftService', function () {
             giftRepository.getByToken.resolves(buildGift());
 
             const service = createService();
-            const externalTrx = {executionPromise: Promise.resolve()};
+            const externalTrx = transactionWithExecutionPromise(Promise.resolve());
             await service.redeem({token: 'gift-token', memberId: 'member_1', transacting: externalTrx});
 
             await externalTrx.executionPromise;
@@ -1257,7 +1265,7 @@ describe('GiftService', function () {
             const service = createService();
             const rejection = Promise.reject(new Error('rolled back'));
             rejection.catch(() => {});
-            const externalTrx = {executionPromise: rejection};
+            const externalTrx = transactionWithExecutionPromise(rejection);
             await service.redeem({token: 'gift-token', memberId: 'member_1', transacting: externalTrx});
 
             await new Promise((resolve) => {
@@ -1285,7 +1293,7 @@ describe('GiftService', function () {
             assert.equal(saved.status, 'refunded');
             assert.ok(saved.refundedAt);
             assert.notEqual(saved, gift);
-            assert.deepEqual(options, {transacting: 'trx'});
+            assert.deepEqual(options, {transacting});
         });
 
         it('returns false when no gift matches the payment intent', async function () {
@@ -1318,11 +1326,11 @@ describe('GiftService', function () {
             assert.equal(result, true);
             sinon.assert.calledOnce(giftRepository.update);
             sinon.assert.calledOnce(giftRepository.transaction);
-            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'redeemer_1'}, {transacting: 'trx'});
+            sinon.assert.calledOnceWithExactly(memberRepository.get, {id: 'redeemer_1'}, {transacting});
             sinon.assert.calledOnceWithExactly(memberRepository.update, {
                 products: [],
                 status: 'free'
-            }, {id: 'redeemer_1', transacting: 'trx'});
+            }, {id: 'redeemer_1', transacting});
         });
 
         it('does not downgrade when the gift was not redeemed', async function () {
@@ -1531,7 +1539,7 @@ describe('GiftService', function () {
             giftRepository.getById.resolves(buildOrphanedGift());
 
             const service = createService();
-            await service.reassignRedeemer({giftId: 'gift_id_1', memberId: 'member_new', transacting: 'outer_trx'});
+            await service.reassignRedeemer({giftId: 'gift_id_1', memberId: 'member_new', transacting: outerTransacting});
 
             sinon.assert.notCalled(giftRepository.transaction);
             const getByIdOptions = giftRepository.getById.getCall(0).args[1];

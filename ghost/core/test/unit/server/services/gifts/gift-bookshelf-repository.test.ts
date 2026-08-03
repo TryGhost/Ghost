@@ -1,9 +1,24 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import type {Knex} from 'knex';
 import {GiftBookshelfRepository} from '../../../../../core/server/services/gifts/gift-bookshelf-repository';
 import {Gift} from '../../../../../core/server/services/gifts/gift';
 
+type GiftBookshelfModel = ConstructorParameters<typeof GiftBookshelfRepository>[0]['GiftModel'];
+type TestGiftBookshelfModel = Omit<GiftBookshelfModel, 'findPage'> & Partial<Pick<GiftBookshelfModel, 'findPage'>>;
+
+const transacting = 'trx' as unknown as Knex.Transaction;
+
 describe('GiftBookshelfRepository', function () {
+    function createRepository(GiftModel: TestGiftBookshelfModel): GiftBookshelfRepository {
+        return new GiftBookshelfRepository({
+            GiftModel: {
+                findPage: sinon.stub(),
+                ...GiftModel
+            }
+        });
+    }
+
     function buildBaseGiftRow(overrides: Record<string, unknown> = {}) {
         return {
             token: 'gift-token',
@@ -67,7 +82,7 @@ describe('GiftBookshelfRepository', function () {
             }),
             findAll: sinon.stub()
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
 
         const gift = await repository.getByToken('gift-token');
 
@@ -93,7 +108,7 @@ describe('GiftBookshelfRepository', function () {
             }),
             findAll: sinon.stub()
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
 
         const gift = await repository.getByToken('gift-token');
 
@@ -114,7 +129,7 @@ describe('GiftBookshelfRepository', function () {
             }),
             findAll: sinon.stub()
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
 
         await assert.rejects(() => repository.getByToken('gift-token'), {
             name: 'ZodError'
@@ -128,9 +143,9 @@ describe('GiftBookshelfRepository', function () {
             findOne: sinon.stub().resolves(null),
             findAll: sinon.stub()
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
 
-        await repository.getByToken('gift-token', {transacting: 'trx', forUpdate: true});
+        await repository.getByToken('gift-token', {transacting, forUpdate: true});
 
         sinon.assert.calledOnceWithExactly(GiftModel.findOne, {
             token: 'gift-token'
@@ -144,7 +159,7 @@ describe('GiftBookshelfRepository', function () {
             findOne: sinon.stub().resolves(null),
             findAll: sinon.stub()
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
 
         const gift = await repository.getByToken('missing-token');
 
@@ -185,7 +200,7 @@ describe('GiftBookshelfRepository', function () {
             findOne: sinon.stub().resolves(existing),
             findAll: sinon.stub()
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
         const gift = new Gift({
             token: 'gift-token',
             buyerEmail: 'buyer@example.com',
@@ -209,7 +224,7 @@ describe('GiftBookshelfRepository', function () {
             consumesSoonReminderSentAt: null
         });
 
-        await repository.update(gift, {transacting: 'trx'});
+        await repository.update(gift, {transacting});
 
         sinon.assert.calledOnceWithExactly(GiftModel.findOne, {
             token: 'gift-token'
@@ -229,7 +244,7 @@ describe('GiftBookshelfRepository', function () {
             findOne: sinon.stub().resolves(null),
             findAll: sinon.stub()
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
         const gift = new Gift({
             token: 'gift-token',
             buyerEmail: 'buyer@example.com',
@@ -254,7 +269,7 @@ describe('GiftBookshelfRepository', function () {
         });
 
         await assert.rejects(
-            () => repository.update(gift, {transacting: 'trx'}),
+            () => repository.update(gift, {transacting}),
             (err: any) => {
                 assert.equal(err.errorType, 'InternalServerError');
                 assert.equal(err.message, 'Gift not found: gift-token');
@@ -267,15 +282,15 @@ describe('GiftBookshelfRepository', function () {
         const GiftModel = {
             add: sinon.stub(),
             transaction: sinon.stub().callsFake(async (callback) => {
-                return await callback('trx');
+                return await callback(transacting);
             }),
             findOne: sinon.stub(),
             findAll: sinon.stub()
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
 
-        const result = await repository.transaction(async (transacting) => {
-            assert.equal(transacting, 'trx');
+        const result = await repository.transaction(async (transaction) => {
+            assert.equal(transaction, 'trx');
             return 'done';
         });
 
@@ -307,7 +322,7 @@ describe('GiftBookshelfRepository', function () {
                 meta: {pagination: {page: 1}}
             })
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
 
         const result = await repository.browsePurchaseEvents({
             order: 'created_at desc, id desc'
@@ -333,7 +348,7 @@ describe('GiftBookshelfRepository', function () {
                 created_at: '2026-07-30T00:00:00.000Z'
             }
         }]);
-        assert.equal(result.data[0].data.token, undefined);
+        assert.equal('token' in result.data[0].data, false);
     });
 
     it('maps redemption rows to gift redemption events', async function () {
@@ -359,7 +374,7 @@ describe('GiftBookshelfRepository', function () {
                 meta: {}
             })
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
 
         const result = await repository.browseRedemptionEvents({
             order: 'created_at asc'
@@ -422,7 +437,7 @@ describe('GiftBookshelfRepository', function () {
                 }]
             })
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
 
         const gifts = await repository.findPendingConsumption();
 
@@ -478,7 +493,7 @@ describe('GiftBookshelfRepository', function () {
                 }]
             })
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
 
         const now = new Date('2026-04-16T00:00:00.000Z');
         const reminderLeadMs = 7 * 24 * 60 * 60 * 1000;
@@ -488,7 +503,7 @@ describe('GiftBookshelfRepository', function () {
             now,
             reminderLeadMs,
             reminderFloorMs,
-            transacting: 'trx'
+            transacting
         });
 
         assert.equal(gifts.length, 1);
@@ -545,7 +560,7 @@ describe('GiftBookshelfRepository', function () {
             }),
             findAll: sinon.stub()
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
 
         const gift = await repository.getByToken('gift-token');
 
@@ -588,7 +603,7 @@ describe('GiftBookshelfRepository', function () {
             findOne: sinon.stub().resolves(existing),
             findAll: sinon.stub()
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
         const reminderSentAt = new Date('2026-04-13T00:00:00.000Z');
         const gift = new Gift({
             token: 'gift-token',
@@ -613,7 +628,7 @@ describe('GiftBookshelfRepository', function () {
             consumesSoonReminderSentAt: reminderSentAt
         });
 
-        await repository.update(gift, {transacting: 'trx'});
+        await repository.update(gift, {transacting});
 
         sinon.assert.calledOnce(existing.save);
 
@@ -657,7 +672,7 @@ describe('GiftBookshelfRepository', function () {
                 }]
             })
         };
-        const repository = new GiftBookshelfRepository({GiftModel});
+        const repository = createRepository(GiftModel);
 
         const gifts = await repository.findPendingExpiration();
 
@@ -728,7 +743,7 @@ describe('GiftBookshelfRepository', function () {
             const GiftModel = stubGiftModel({
                 model: {toJSON: () => buildGiftRow()}
             });
-            const repository = new GiftBookshelfRepository({GiftModel});
+            const repository = createRepository(GiftModel);
 
             const gift = await repository.getActiveByMember('member_2');
 
@@ -745,7 +760,7 @@ describe('GiftBookshelfRepository', function () {
 
         it('returns null when no redeemed gift exists for the member', async function () {
             const GiftModel = stubGiftModel({model: null});
-            const repository = new GiftBookshelfRepository({GiftModel});
+            const repository = createRepository(GiftModel);
 
             const gift = await repository.getActiveByMember('member_without_gift');
 
@@ -761,7 +776,7 @@ describe('GiftBookshelfRepository', function () {
                     })
                 }
             });
-            const repository = new GiftBookshelfRepository({GiftModel});
+            const repository = createRepository(GiftModel);
 
             const gift = await repository.getActiveByMember('member_2');
 
@@ -777,7 +792,7 @@ describe('GiftBookshelfRepository', function () {
                     })
                 }
             });
-            const repository = new GiftBookshelfRepository({GiftModel});
+            const repository = createRepository(GiftModel);
 
             const gift = await repository.getActiveByMember('member_2');
 
@@ -818,7 +833,7 @@ describe('GiftBookshelfRepository', function () {
                 findOne: sinon.stub(),
                 findAll: sinon.stub()
             };
-            const repository = new GiftBookshelfRepository({GiftModel});
+            const repository = createRepository(GiftModel);
 
             const result = await repository.getActiveByMembers([]);
 
@@ -833,7 +848,7 @@ describe('GiftBookshelfRepository', function () {
                 findOne: sinon.stub(),
                 findAll: sinon.stub().resolves({models: []})
             };
-            const repository = new GiftBookshelfRepository({GiftModel});
+            const repository = createRepository(GiftModel);
 
             await repository.getActiveByMembers(['member_1', 'member_2']);
 
@@ -857,7 +872,7 @@ describe('GiftBookshelfRepository', function () {
                     ]
                 })
             };
-            const repository = new GiftBookshelfRepository({GiftModel});
+            const repository = createRepository(GiftModel);
 
             const result = await repository.getActiveByMembers(['member_1', 'member_2']);
 
@@ -878,7 +893,7 @@ describe('GiftBookshelfRepository', function () {
                     ]
                 })
             };
-            const repository = new GiftBookshelfRepository({GiftModel});
+            const repository = createRepository(GiftModel);
 
             const result = await repository.getActiveByMembers(['member_1']);
 
@@ -893,9 +908,9 @@ describe('GiftBookshelfRepository', function () {
                 findOne: sinon.stub(),
                 findAll: sinon.stub().resolves({models: []})
             };
-            const repository = new GiftBookshelfRepository({GiftModel});
+            const repository = createRepository(GiftModel);
 
-            await repository.getActiveByMembers(['member_1'], {transacting: 'trx'});
+            await repository.getActiveByMembers(['member_1'], {transacting});
 
             const callArg = GiftModel.findAll.firstCall.args[0];
             assert.equal(callArg.transacting, 'trx');

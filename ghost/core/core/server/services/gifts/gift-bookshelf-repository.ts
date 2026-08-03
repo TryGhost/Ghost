@@ -1,19 +1,52 @@
 import errors from '@tryghost/errors';
 import {chainTransformers, mapKeys, replaceFilters} from '@tryghost/mongo-utils';
+import type {Knex} from 'knex';
 import {Gift} from './gift';
 import {decodeGiftRow, encodeGift} from './gift-codec';
-import type {GiftRow} from './gift-schema';
+import type {GiftCadence, GiftRow} from './gift-schema';
+
+type MongoFilter = unknown;
+
+export interface GiftEventBrowseOptions {
+    filter?: string;
+    limit?: number | 'all';
+    order?: string;
+    page?: number;
+}
+
+export interface GiftEventPagination {
+    page: number;
+    pages: number;
+    limit: number | 'all';
+    total: number;
+    prev: number | null;
+    next: number | null;
+}
+
+export interface GiftEventData {
+    id: string;
+    member: Record<string, unknown> | null;
+    member_id: string | null;
+    tier_name?: string;
+    cadence: GiftCadence;
+    duration: number;
+    amount: number;
+    currency: string;
+    created_at: Date | string | null;
+}
 
 export interface GiftEventPage {
     data: Array<{
         type: 'gift_purchase_event' | 'gift_redemption_event';
-        data: Record<string, unknown>;
+        data: GiftEventData;
     }>;
-    meta: unknown;
+    meta: {
+        pagination?: GiftEventPagination;
+    };
 }
 
 export interface RepositoryTransactionOptions {
-    transacting?: unknown;
+    transacting?: Knex.Transaction;
     forUpdate?: boolean;
 }
 
@@ -21,7 +54,7 @@ export interface FindPendingReminderOptions {
     now: Date;
     reminderLeadMs: number;
     reminderFloorMs: number;
-    transacting?: unknown;
+    transacting?: Knex.Transaction;
 }
 
 export interface GiftRepository {
@@ -35,16 +68,33 @@ export interface GiftRepository {
     findUnsentReminders(): Promise<Gift[]>;
     getActiveByMember(memberId: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
     getActiveByMembers(memberIds: string[], options?: RepositoryTransactionOptions): Promise<Map<string, Gift>>;
-    browsePurchaseEvents(options?: Record<string, unknown>, filter?: unknown): Promise<GiftEventPage>;
-    browseRedemptionEvents(options?: Record<string, unknown>, filter?: unknown): Promise<GiftEventPage>;
+    browsePurchaseEvents(options?: GiftEventBrowseOptions, filter?: MongoFilter): Promise<GiftEventPage>;
+    browseRedemptionEvents(options?: GiftEventBrowseOptions, filter?: MongoFilter): Promise<GiftEventPage>;
     create(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
     update(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
-    transaction<T>(callback: (transacting: unknown) => Promise<T>): Promise<T>;
+    transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T>;
 }
 
+type BookshelfSaveOptions = RepositoryTransactionOptions & {
+    autoRefresh?: boolean;
+    method?: 'update';
+    patch?: boolean;
+};
+
+type GiftEventQueryOptions = GiftEventBrowseOptions & {
+    withRelated: Array<'buyer' | 'redeemer' | 'tier'>;
+    filter: string;
+    useBasicCount: boolean;
+    mongoTransformer: (filter: MongoFilter) => MongoFilter;
+};
+
+type BookshelfFindOptions = RepositoryTransactionOptions & {
+    filter?: string;
+    require?: boolean;
+};
+
 type BookshelfDocument<T> = {
-    save(data: Partial<T>, options?: unknown): Promise<unknown>;
-    set(data: Partial<T>): void;
+    save(data: Partial<T>, options?: BookshelfSaveOptions): Promise<BookshelfDocument<T>>;
     toJSON(): T;
 };
 
@@ -53,25 +103,30 @@ type BookshelfCollection<T> = {
 };
 
 type GiftEventBookshelfRow = {
-    [key: string]: unknown;
     id: string;
-    tier?: {name?: string};
-    cadence: unknown;
-    duration: unknown;
-    amount: unknown;
-    currency: unknown;
+    buyer_member_id: string | null;
+    redeemer_member_id: string | null;
+    buyer?: Record<string, unknown> | null;
+    redeemer?: Record<string, unknown> | null;
+    tier?: {name?: string} | null;
+    cadence: GiftCadence;
+    duration: number;
+    amount: number;
+    currency: string;
+    purchased_at: Date | string;
+    redeemed_at: Date | string | null;
 };
 
 type GiftEventBookshelfDocument = {
-    toJSON(options?: unknown): GiftEventBookshelfRow;
+    toJSON(options?: GiftEventQueryOptions): GiftEventBookshelfRow;
 };
 
 type BookshelfModel<T> = {
-    add(data: Partial<T>, unfilteredOptions?: unknown): Promise<T>;
-    transaction<R>(callback: (transacting: unknown) => Promise<R>): Promise<R>;
-    findOne(data: Record<string, unknown>, unfilteredOptions?: unknown): Promise<BookshelfDocument<T> | null>;
-    findAll(unfilteredOptions?: unknown): Promise<BookshelfCollection<T>>;
-    findPage?(unfilteredOptions?: unknown): Promise<{data: GiftEventBookshelfDocument[]; meta: unknown}>;
+    add(data: Partial<T>, options?: RepositoryTransactionOptions): Promise<BookshelfDocument<T>>;
+    transaction<R>(callback: (transacting: Knex.Transaction) => Promise<R>): Promise<R>;
+    findOne(data: Partial<T> & {id?: string}, options?: BookshelfFindOptions): Promise<BookshelfDocument<T> | null>;
+    findAll(options?: BookshelfFindOptions): Promise<BookshelfCollection<T>>;
+    findPage(options: GiftEventQueryOptions): Promise<{data: GiftEventBookshelfDocument[]; meta: GiftEventPage['meta']}>;
 };
 
 type GiftBookshelfModel = BookshelfModel<GiftRow>;
@@ -147,7 +202,7 @@ export class GiftBookshelfRepository implements GiftRepository {
         return map;
     }
 
-    browsePurchaseEvents(options: Record<string, unknown> = {}, filter?: unknown): Promise<GiftEventPage> {
+    browsePurchaseEvents(options: GiftEventBrowseOptions = {}, filter?: MongoFilter): Promise<GiftEventPage> {
         return this.browseEvents({
             options,
             filter,
@@ -158,7 +213,7 @@ export class GiftBookshelfRepository implements GiftRepository {
         });
     }
 
-    browseRedemptionEvents(options: Record<string, unknown> = {}, filter?: unknown): Promise<GiftEventPage> {
+    browseRedemptionEvents(options: GiftEventBrowseOptions = {}, filter?: MongoFilter): Promise<GiftEventPage> {
         return this.browseEvents({
             options,
             filter,
@@ -232,7 +287,7 @@ export class GiftBookshelfRepository implements GiftRepository {
         });
     }
 
-    async transaction<T>(callback: (transacting: unknown) => Promise<T>): Promise<T> {
+    async transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T> {
         return await this.model.transaction(callback);
     }
 
@@ -252,17 +307,17 @@ export class GiftBookshelfRepository implements GiftRepository {
         memberIdColumn,
         dateColumn
     }: {
-        options: Record<string, unknown>;
-        filter?: unknown;
+        options: GiftEventBrowseOptions;
+        filter?: MongoFilter;
         type: 'gift_purchase_event' | 'gift_redemption_event';
         relation: 'buyer' | 'redeemer';
         memberIdColumn: 'buyer_member_id' | 'redeemer_member_id';
         dateColumn: 'purchased_at' | 'redeemed_at';
     }): Promise<GiftEventPage> {
-        const replaceCustomFilter = (existingFilter: unknown) => replaceFilters(existingFilter, {
+        const replaceCustomFilter = (existingFilter: MongoFilter): MongoFilter => replaceFilters(existingFilter, {
             custom: filter
         });
-        const queryOptions: Record<string, unknown> = {
+        const queryOptions: GiftEventQueryOptions = {
             ...options,
             withRelated: [relation, 'tier'],
             filter: `${memberIdColumn}:-null+custom:true`,

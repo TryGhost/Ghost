@@ -19,7 +19,7 @@ interface ImporterServices {
     getDefaultTier(): Promise<Tier>;
     getTierByName(name: string): Promise<Tier | null>;
     getGiftService(): {
-        reassignRedeemer(input: {giftId: string; memberId: string; transacting?: unknown}): Promise<void>;
+        reassignRedeemer(input: {giftId: string; memberId: string; transacting?: Knex.Transaction}): Promise<void>;
     };
     sendEmail: EmailNotifications['send'];
     urlFor: EmailNotifications['urlFor'];
