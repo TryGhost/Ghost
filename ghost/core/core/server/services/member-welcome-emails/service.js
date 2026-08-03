@@ -46,7 +46,7 @@ const getSenderDetails = (designSettingsJson) => {
 };
 
 class MemberWelcomeEmailService {
-    #mailer;
+    #transactionalMailer;
     #renderer;
     #magicLinkService;
     #memberWelcomeEmails = {free: null, paid: null};
@@ -54,7 +54,7 @@ class MemberWelcomeEmailService {
 
     constructor({t, dir, singleUseTokenProvider}) {
         emailAddressService.init();
-        this.#mailer = new mail.GhostMailer();
+        this.#transactionalMailer = new mail.GhostMailer();
         this.#renderer = new MemberWelcomeEmailRenderer({t, dir});
 
         const getSigninURL = (token) => {
@@ -306,7 +306,7 @@ class MemberWelcomeEmailService {
                     logging.warn(message.text);
                 }
 
-                return this.#mailer.send({
+                return this.#transactionalMailer.send({
                     from: fromEmail,
                     subject: 'Verify email address',
                     forceTextContent: true,
@@ -428,7 +428,7 @@ class MemberWelcomeEmailService {
         }
         }
 
-        return await this.#mailer.send({
+        return await this.#transactionalMailer.send({
             to: member.email,
             subject,
             html,
@@ -647,7 +647,7 @@ class MemberWelcomeEmailService {
             getSenderDetails(designSettingsJson)
         );
 
-        await this.#mailer.send({
+        await this.#transactionalMailer.send({
             to: email,
             subject: `[Test] ${renderedSubject}`,
             html,
