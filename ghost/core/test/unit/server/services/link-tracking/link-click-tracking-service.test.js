@@ -131,10 +131,11 @@ describe('LinkClickTrackingService', function () {
             const updatedUrl = await service.addAutomationTrackingToUrl(
                 new URL('https://example.com/destination'),
                 'revision-id',
+                'run-step-id',
                 '00000000-0000-4000-8000-000000000001'
             );
 
-            assert.equal(updatedUrl.href, 'https://example.com/r/uniqueslug?m=00000000-0000-4000-8000-000000000001');
+            assert.equal(updatedUrl.href, 'https://example.com/r/uniqueslug?m=00000000-0000-4000-8000-000000000001&step=run-step-id');
             sinon.assert.calledOnceWithExactly(
                 getOrAddAutomationRedirect,
                 'revision-id',
