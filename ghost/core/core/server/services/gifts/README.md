@@ -18,7 +18,7 @@ transactions, or Stripe objects.
 - `handlePaidSubscriptionActivation(memberId)` consumes gift time when a paid
   subscription takes over.
 - `getMemberPresentations(memberIds)`, `getPreview(token)`,
-  `browsePurchaseActivity(...)`, and `browseRedemptionActivity(...)` expose
+  `browsePurchaseEvents(...)`, and `browseRedemptionEvents(...)` expose
   stable read models.
 - `processReminders()`, `processConsumed()`, and `processExpired()` own due
   lifecycle work; scheduler and HTTP triggers remain adapters.

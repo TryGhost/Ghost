@@ -39,6 +39,8 @@ describe('GiftService', function () {
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
         findUnsentReminders: sinon.SinonStub<[], Promise<Gift[]>>;
+        browsePurchaseEvents: sinon.SinonStub<Parameters<GiftRepository['browsePurchaseEvents']>, ReturnType<GiftRepository['browsePurchaseEvents']>>;
+        browseRedemptionEvents: sinon.SinonStub<Parameters<GiftRepository['browseRedemptionEvents']>, ReturnType<GiftRepository['browseRedemptionEvents']>>;
         create: sinon.SinonStub;
         update: sinon.SinonStub;
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
@@ -88,6 +90,8 @@ describe('GiftService', function () {
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
             findUnsentReminders: sinon.stub<[], Promise<Gift[]>>().resolves([]),
+            browsePurchaseEvents: sinon.stub<Parameters<GiftRepository['browsePurchaseEvents']>, ReturnType<GiftRepository['browsePurchaseEvents']>>().resolves({data: [], meta: {}}),
+            browseRedemptionEvents: sinon.stub<Parameters<GiftRepository['browseRedemptionEvents']>, ReturnType<GiftRepository['browseRedemptionEvents']>>().resolves({data: [], meta: {}}),
             create: sinon.stub(),
             update: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
@@ -158,10 +162,6 @@ describe('GiftService', function () {
             checkoutAdapter: {
                 getCustomerId: sinon.stub().resolves(null),
                 createSession: sinon.stub().resolves('https://checkout.example/')
-            },
-            activityRepository: {
-                browsePurchases: sinon.stub().resolves({data: [], meta: {}}),
-                browseRedemptions: sinon.stub().resolves({data: [], meta: {}})
             },
             labsService: {
                 isSet: sinon.stub().returns(false)

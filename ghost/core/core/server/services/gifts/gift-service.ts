@@ -3,7 +3,7 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import {z} from 'zod';
 import {Gift} from './gift';
-import type {GiftRepository} from './gift-repository';
+import type {GiftEventPage, GiftRepository} from './gift-repository';
 import type {GiftReminderScheduler} from './gift-reminder-scheduler';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
@@ -139,10 +139,6 @@ interface GiftServiceDeps {
         getCustomerId(buyer: GiftCheckoutBuyer): Promise<string | null>;
         createSession(data: GiftCheckoutSession): Promise<string>;
     };
-    activityRepository: {
-        browsePurchases(options?: Record<string, unknown>, filter?: unknown): Promise<GiftActivityPage>;
-        browseRedemptions(options?: Record<string, unknown>, filter?: unknown): Promise<GiftActivityPage>;
-    };
     labsService: {
         isSet(flag: string): boolean;
     };
@@ -223,11 +219,6 @@ export interface GiftPreview {
         id: string;
         name: string;
     };
-}
-
-export interface GiftActivityPage {
-    data: Array<Record<string, unknown>>;
-    meta: unknown;
 }
 
 export class GiftService {
@@ -687,12 +678,12 @@ export class GiftService {
         };
     }
 
-    browsePurchaseActivity(options?: Record<string, unknown>, filter?: unknown): Promise<GiftActivityPage> {
-        return this.deps.activityRepository.browsePurchases(options, filter);
+    browsePurchaseEvents(options?: Record<string, unknown>, filter?: unknown): Promise<GiftEventPage> {
+        return this.deps.giftRepository.browsePurchaseEvents(options, filter);
     }
 
-    browseRedemptionActivity(options?: Record<string, unknown>, filter?: unknown): Promise<GiftActivityPage> {
-        return this.deps.activityRepository.browseRedemptions(options, filter);
+    browseRedemptionEvents(options?: Record<string, unknown>, filter?: unknown): Promise<GiftEventPage> {
+        return this.deps.giftRepository.browseRedemptionEvents(options, filter);
     }
 
     async reassignRedeemer(input: {giftId: string; memberId: string; transacting?: unknown}): Promise<void> {

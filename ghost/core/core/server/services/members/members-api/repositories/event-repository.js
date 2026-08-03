@@ -462,29 +462,11 @@ module.exports = class EventRepository {
     }
 
     async getGiftPurchaseEvents(options = {}, filter) {
-        const {data: facts, meta} = await this._giftSubscriptions.service.browsePurchaseActivity(options, filter);
-        const data = facts.map(fact => ({
-            type: 'gift_purchase_event',
-            data: fact
-        }));
-
-        return {
-            data,
-            meta
-        };
+        return this._giftSubscriptions.service.browsePurchaseEvents(options, filter);
     }
 
     async getGiftRedemptionEvents(options = {}, filter) {
-        const {data: facts, meta} = await this._giftSubscriptions.service.browseRedemptionActivity(options, filter);
-        const data = facts.map(fact => ({
-            type: 'gift_redemption_event',
-            data: fact
-        }));
-
-        return {
-            data,
-            meta
-        };
+        return this._giftSubscriptions.service.browseRedemptionEvents(options, filter);
     }
 
     async getGiftEndedEvents(options = {}, filter) {

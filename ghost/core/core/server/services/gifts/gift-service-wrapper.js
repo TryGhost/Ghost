@@ -30,7 +30,6 @@ class GiftServiceWrapper {
         const {GiftEmailService} = require('./gift-email-service');
         const {GiftController} = require('./gift-controller');
         const GiftCheckoutAdapter = require('./gift-checkout-adapter');
-        const GiftActivityBookshelfRepository = require('./gift-activity-bookshelf-repository');
         const membersService = require('../members');
         const tiersService = require('../tiers');
         const staffService = require('../staff');
@@ -51,9 +50,6 @@ class GiftServiceWrapper {
         const {t} = require('../i18n');
 
         const repository = new GiftBookshelfRepository({
-            GiftModel
-        });
-        const activityRepository = new GiftActivityBookshelfRepository({
             GiftModel
         });
         const checkoutAdapter = new GiftCheckoutAdapter({
@@ -89,7 +85,6 @@ class GiftServiceWrapper {
             },
             giftReminderScheduler,
             checkoutAdapter,
-            activityRepository,
             labsService,
             settingsCache
         });

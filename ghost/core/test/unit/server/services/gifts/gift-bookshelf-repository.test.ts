@@ -283,6 +283,110 @@ describe('GiftBookshelfRepository', function () {
         assert.equal(result, 'done');
     });
 
+    it('maps purchase rows to gift purchase events', async function () {
+        const GiftModel = {
+            add: sinon.stub(),
+            transaction: sinon.stub(),
+            findOne: sinon.stub(),
+            findAll: sinon.stub(),
+            findPage: sinon.stub().resolves({
+                data: [{
+                    toJSON: () => ({
+                        id: 'gift_1',
+                        buyer_member_id: 'member_1',
+                        buyer: {id: 'member_1', email: 'buyer@example.com'},
+                        tier: {name: 'Gold'},
+                        cadence: 'year',
+                        duration: 1,
+                        amount: 12000,
+                        currency: 'usd',
+                        purchased_at: '2026-07-30T00:00:00.000Z',
+                        token: 'private-token'
+                    })
+                }],
+                meta: {pagination: {page: 1}}
+            })
+        };
+        const repository = new GiftBookshelfRepository({GiftModel});
+
+        const result = await repository.browsePurchaseEvents({
+            order: 'created_at desc, id desc'
+        }, {type: 'unused'});
+
+        sinon.assert.calledOnceWithMatch(GiftModel.findPage, {
+            withRelated: ['buyer', 'tier'],
+            filter: 'buyer_member_id:-null+custom:true',
+            order: 'purchased_at desc, id desc',
+            useBasicCount: true
+        });
+        assert.deepEqual(result.data, [{
+            type: 'gift_purchase_event',
+            data: {
+                id: 'gift_1',
+                member: {id: 'member_1', email: 'buyer@example.com'},
+                member_id: 'member_1',
+                tier_name: 'Gold',
+                cadence: 'year',
+                duration: 1,
+                amount: 12000,
+                currency: 'usd',
+                created_at: '2026-07-30T00:00:00.000Z'
+            }
+        }]);
+        assert.equal(result.data[0].data.token, undefined);
+    });
+
+    it('maps redemption rows to gift redemption events', async function () {
+        const GiftModel = {
+            add: sinon.stub(),
+            transaction: sinon.stub(),
+            findOne: sinon.stub(),
+            findAll: sinon.stub(),
+            findPage: sinon.stub().resolves({
+                data: [{
+                    toJSON: () => ({
+                        id: 'gift_1',
+                        redeemer_member_id: 'member_2',
+                        redeemer: {id: 'member_2', email: 'recipient@example.com'},
+                        tier: {name: 'Gold'},
+                        cadence: 'month',
+                        duration: 3,
+                        amount: 3000,
+                        currency: 'eur',
+                        redeemed_at: '2026-08-01T00:00:00.000Z'
+                    })
+                }],
+                meta: {}
+            })
+        };
+        const repository = new GiftBookshelfRepository({GiftModel});
+
+        const result = await repository.browseRedemptionEvents({
+            order: 'created_at asc'
+        }, {});
+
+        sinon.assert.calledOnceWithMatch(GiftModel.findPage, {
+            withRelated: ['redeemer', 'tier'],
+            filter: 'redeemer_member_id:-null+custom:true',
+            order: 'redeemed_at asc',
+            useBasicCount: true
+        });
+        assert.deepEqual(result.data[0], {
+            type: 'gift_redemption_event',
+            data: {
+                id: 'gift_1',
+                member: {id: 'member_2', email: 'recipient@example.com'},
+                member_id: 'member_2',
+                tier_name: 'Gold',
+                cadence: 'month',
+                duration: 3,
+                amount: 3000,
+                currency: 'eur',
+                created_at: '2026-08-01T00:00:00.000Z'
+            }
+        });
+    });
+
     it('finds gifts pending consumption using current time', async function () {
         const before = new Date();
 

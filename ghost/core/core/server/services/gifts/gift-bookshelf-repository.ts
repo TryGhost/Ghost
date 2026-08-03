@@ -1,8 +1,9 @@
 import errors from '@tryghost/errors';
+import {chainTransformers, mapKeys, replaceFilters} from '@tryghost/mongo-utils';
 import {Gift} from './gift';
 import {decodeGiftRow, encodeGift} from './gift-codec';
 import type {GiftRow} from './gift-schema';
-import type {FindPendingReminderOptions, GiftRepository, RepositoryTransactionOptions} from './gift-repository';
+import type {FindPendingReminderOptions, GiftEventPage, GiftRepository, RepositoryTransactionOptions} from './gift-repository';
 
 type BookshelfDocument<T> = {
     save(data: Partial<T>, options?: unknown): Promise<unknown>;
@@ -14,11 +15,26 @@ type BookshelfCollection<T> = {
     models: BookshelfDocument<T>[];
 };
 
+type GiftEventBookshelfRow = {
+    [key: string]: unknown;
+    id: string;
+    tier?: {name?: string};
+    cadence: unknown;
+    duration: unknown;
+    amount: unknown;
+    currency: unknown;
+};
+
+type GiftEventBookshelfDocument = {
+    toJSON(options?: unknown): GiftEventBookshelfRow;
+};
+
 type BookshelfModel<T> = {
     add(data: Partial<T>, unfilteredOptions?: unknown): Promise<T>;
     transaction<R>(callback: (transacting: unknown) => Promise<R>): Promise<R>;
     findOne(data: Record<string, unknown>, unfilteredOptions?: unknown): Promise<BookshelfDocument<T> | null>;
     findAll(unfilteredOptions?: unknown): Promise<BookshelfCollection<T>>;
+    findPage?(unfilteredOptions?: unknown): Promise<{data: GiftEventBookshelfDocument[]; meta: unknown}>;
 };
 
 type GiftBookshelfModel = BookshelfModel<GiftRow>;
@@ -94,6 +110,28 @@ export class GiftBookshelfRepository implements GiftRepository {
         return map;
     }
 
+    browsePurchaseEvents(options: Record<string, unknown> = {}, filter?: unknown): Promise<GiftEventPage> {
+        return this.browseEvents({
+            options,
+            filter,
+            type: 'gift_purchase_event',
+            relation: 'buyer',
+            memberIdColumn: 'buyer_member_id',
+            dateColumn: 'purchased_at'
+        });
+    }
+
+    browseRedemptionEvents(options: Record<string, unknown> = {}, filter?: unknown): Promise<GiftEventPage> {
+        return this.browseEvents({
+            options,
+            filter,
+            type: 'gift_redemption_event',
+            relation: 'redeemer',
+            memberIdColumn: 'redeemer_member_id',
+            dateColumn: 'redeemed_at'
+        });
+    }
+
     async findPendingConsumption(): Promise<Gift[]> {
         const now = new Date();
 
@@ -167,5 +205,70 @@ export class GiftBookshelfRepository implements GiftRepository {
 
     private toGift(model: BookshelfDocument<GiftRow>): Gift {
         return decodeGiftRow(model.toJSON());
+    }
+
+    private async browseEvents({
+        options,
+        filter,
+        type,
+        relation,
+        memberIdColumn,
+        dateColumn
+    }: {
+        options: Record<string, unknown>;
+        filter?: unknown;
+        type: 'gift_purchase_event' | 'gift_redemption_event';
+        relation: 'buyer' | 'redeemer';
+        memberIdColumn: 'buyer_member_id' | 'redeemer_member_id';
+        dateColumn: 'purchased_at' | 'redeemed_at';
+    }): Promise<GiftEventPage> {
+        const replaceCustomFilter = (existingFilter: unknown) => replaceFilters(existingFilter, {
+            custom: filter
+        });
+        const queryOptions: Record<string, unknown> = {
+            ...options,
+            withRelated: [relation, 'tier'],
+            filter: `${memberIdColumn}:-null+custom:true`,
+            useBasicCount: true,
+            mongoTransformer: chainTransformers(
+                replaceCustomFilter,
+                ...mapKeys({
+                    'data.created_at': dateColumn,
+                    'data.member_id': memberIdColumn
+                })
+            )
+        };
+
+        if (typeof queryOptions.order === 'string') {
+            queryOptions.order = queryOptions.order.replace(/created_at/g, dateColumn);
+        }
+
+        if (!this.model.findPage) {
+            throw new errors.InternalServerError({message: 'Gift model does not support paginated event queries.'});
+        }
+
+        const {data: models, meta} = await this.model.findPage(queryOptions);
+
+        return {
+            data: models.map((model) => {
+                const json = model.toJSON(queryOptions);
+
+                return {
+                    type,
+                    data: {
+                        id: json.id,
+                        member: json[relation] || null,
+                        member_id: json[memberIdColumn],
+                        tier_name: json.tier?.name,
+                        cadence: json.cadence,
+                        duration: json.duration,
+                        amount: json.amount,
+                        currency: json.currency,
+                        created_at: json[dateColumn]
+                    }
+                };
+            }),
+            meta
+        };
     }
 }

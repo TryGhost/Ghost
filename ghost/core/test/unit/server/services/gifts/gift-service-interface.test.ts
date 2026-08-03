@@ -35,15 +35,13 @@ describe('GiftService interface', function () {
             getByToken: sinon.stub().resolves(null),
             getActiveByMember: sinon.stub().resolves(null),
             getActiveByMembers: sinon.stub().resolves(new Map()),
+            browsePurchaseEvents: sinon.stub().resolves({data: [], meta: {pagination: {page: 1}}}),
+            browseRedemptionEvents: sinon.stub().resolves({data: [], meta: {pagination: {page: 1}}}),
             transaction: sinon.stub().callsFake(async callback => callback('trx'))
         };
         const checkoutAdapter = {
             getCustomerId: sinon.stub().resolves('cus_123'),
             createSession: sinon.stub().resolves('https://checkout.stripe.test/session')
-        };
-        const activityRepository = {
-            browsePurchases: sinon.stub().resolves({data: [], meta: {pagination: {page: 1}}}),
-            browseRedemptions: sinon.stub().resolves({data: [], meta: {pagination: {page: 1}}})
         };
         const service = new GiftService({
             giftRepository,
@@ -57,7 +55,6 @@ describe('GiftService interface', function () {
             staffServiceEmails: {},
             giftReminderScheduler: {},
             checkoutAdapter,
-            activityRepository,
             labsService: {
                 isSet: sinon.stub().withArgs('giftSubCustomization').returns(customizationEnabled)
             },
@@ -70,8 +67,7 @@ describe('GiftService interface', function () {
             service,
             tier,
             giftRepository,
-            checkoutAdapter,
-            activityRepository
+            checkoutAdapter
         };
     }
 
@@ -341,26 +337,29 @@ describe('GiftService interface', function () {
         });
     });
 
-    it('exposes stable activity facts through the same module', async function () {
-        const {service, activityRepository} = createService();
+    it('exposes gift events through the same module', async function () {
+        const {service, giftRepository} = createService();
         const page = {
             data: [{
-                id: 'gift_1',
-                member_id: 'member_1',
-                tier_name: 'Gold',
-                created_at: '2026-07-30T00:00:00.000Z'
+                type: 'gift_purchase_event' as const,
+                data: {
+                    id: 'gift_1',
+                    member_id: 'member_1',
+                    tier_name: 'Gold',
+                    created_at: '2026-07-30T00:00:00.000Z'
+                }
             }],
             meta: {pagination: {page: 1}}
         };
-        activityRepository.browsePurchases.resolves(page);
+        giftRepository.browsePurchaseEvents.resolves(page);
 
-        const result = await service.browsePurchaseActivity({
+        const result = await service.browsePurchaseEvents({
             order: 'created_at desc'
         }, {type: 'unused'});
 
         assert.deepEqual(result, page);
         sinon.assert.calledOnceWithExactly(
-            activityRepository.browsePurchases,
+            giftRepository.browsePurchaseEvents,
             {order: 'created_at desc'},
             {type: 'unused'}
         );
