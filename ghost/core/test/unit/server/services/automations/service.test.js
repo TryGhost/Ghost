@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {randomUUID} = require('node:crypto');
 const {setImmediate: flushEventLoop} = require('node:timers/promises');
@@ -189,7 +190,8 @@ describe('automations service', function () {
                         new URL(value).searchParams.has('token')
                     )),
                     extra: {
-                        httpMethod: 'PUT'
+                        httpMethod: 'PUT',
+                        idempotencyKey: sinon.match.string
                     }
                 })
             );
@@ -198,6 +200,19 @@ describe('automations service', function () {
                 domainEvents.dispatch,
                 sinon.match.instanceOf(StartAutomationsPollEvent)
             );
+        });
+
+        it('uses the same idempotency key when requesting the same time', async function () {
+            const future = new Date(Date.now() + 10_000);
+
+            await automations.__testOnlyEnqueuePollAt(future);
+            await automations.__testOnlyEnqueuePollAt(future);
+            await automations.__testOnlyEnqueuePollAt(future);
+
+            sinon.assert.calledThrice(schedulerAdapter.schedule);
+
+            const idempotencyKeys = schedulerAdapter.schedule.getCalls().map(call => call.args[0].extra.idempotencyKey);
+            assert.equal(new Set(idempotencyKeys).size, 1);
         });
     });
 

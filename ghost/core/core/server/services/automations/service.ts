@@ -6,6 +6,7 @@ import type DomainEvents from '@tryghost/domain-events';
 import {oneAtATime} from '../../../shared/one-at-a-time';
 import {poll} from './poll';
 import * as automationsApi from './automations-api';
+import {getSchedulerIdempotencyKey} from './get-scheduler-idempotency-key';
 import {setImmediate as flushEventLoop} from 'node:timers/promises';
 import {SoonestTimer} from '../../lib/soonest-timer';
 import {getSchedulerPollTime} from './scheduler-poll-time';
@@ -85,7 +86,10 @@ export class AutomationsService {
                 schedulerAdapter.schedule({
                     time: schedulerPollTime.getTime(),
                     url: url.toString(),
-                    extra: {httpMethod: 'PUT'}
+                    extra: {
+                        httpMethod: 'PUT',
+                        idempotencyKey: getSchedulerIdempotencyKey(date, url)
+                    }
                 });
             } catch (err) {
                 logging.error({event: {name: 'automations.enqueue-poll.error'}, err, at: date.toISOString()}, 'Failed to enqueue automations poll');
