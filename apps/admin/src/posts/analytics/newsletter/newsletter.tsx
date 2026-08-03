@@ -90,7 +90,7 @@ const Newsletter: React.FC = () => {
     }, [navigate, postId, isPostLoading, showNewsletterSection]);
 
     const {stats, averageStats, topLinks, isLoading: isNewsletterStatsLoading, refetchTopLinks} = usePostNewsletterStats(postId);
-    const {mutateAsync: editLinks} = useBulkEditLinks();
+    const {mutate: editLinks} = useBulkEditLinks();
 
     // Calculate feedback stats from the post data
     const feedbackStats = useMemo(() => {
@@ -151,7 +151,7 @@ const Newsletter: React.FC = () => {
             setEditedUrl('');
             return;
         }
-        void editLinks({
+        editLinks({
             originalUrl: link.link.originalTo,
             editedUrl: editedUrl,
             postId: postId
