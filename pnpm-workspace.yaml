@@ -144,7 +144,7 @@ catalog:
   moment-timezone: 0.5.45
   msw: 2.14.6
   node-html-markdown: 2.0.0
-  postcss: 8.5.16
+  postcss: 8.5.18
   preact: ^10.29.2
   react: 18.3.1
   react-dom: 18.3.1
@@ -274,6 +274,8 @@ minimumReleaseAgeExclude:
   - 'knex-migrator'
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+  # Renovate security update: postcss@8.5.18
+  - postcss@8.5.18
 
 # configuration for pnpm's changeset functionality
 versioning:
