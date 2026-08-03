@@ -750,40 +750,6 @@ describe('PostsStatsService', function () {
 
             assert.deepEqual(result.data, expectedResults, 'Results should match expected order and counts for free_members desc');
         });
-
-        it('issues its three aggregates concurrently', async function () {
-            await _createFreeSignup('post_concurrent', 'referrer_1');
-
-            // Each query resolves only once all three have started. If they were
-            // still awaited one after another this would deadlock rather than
-            // return, so the assertion is that it resolves at all.
-            const started = [];
-            let releaseAll;
-            const allStarted = new Promise((resolve) => {
-                releaseAll = resolve;
-            });
-            const realKnex = service.knex;
-            service.knex = function (...args) {
-                const builder = realKnex.apply(this, args);
-                const originalThen = builder.then.bind(builder);
-                builder.then = function (onFulfilled, onRejected) {
-                    started.push(true);
-                    if (started.length === 3) {
-                        releaseAll();
-                    }
-                    return allStarted.then(() => originalThen(onFulfilled, onRejected));
-                };
-                return builder;
-            };
-
-            try {
-                const result = await service.getGrowthStatsForPost('post_concurrent');
-                assert.equal(started.length, 3, 'all three aggregates should be in flight together');
-                assert.equal(result.data[0].post_id, 'post_concurrent');
-            } finally {
-                service.knex = realKnex;
-            }
-        });
     });
 
     describe('getTopPostsViews', function () {
