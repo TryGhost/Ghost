@@ -89,6 +89,9 @@ module.exports = class MailgunClient {
             if (bulkEmailConfig?.mailgun?.tag) {
                 tags.push(bulkEmailConfig.mailgun.tag);
             }
+            if (Array.isArray(message.tags)) {
+                tags.push(...message.tags);
+            }
             messageData['o:tag'] = tags;
 
             if (bulkEmailConfig?.mailgun?.testmode) {

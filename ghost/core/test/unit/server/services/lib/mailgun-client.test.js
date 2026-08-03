@@ -258,7 +258,8 @@ describe('MailgunClient', function () {
                 from: 'from@example.com',
                 replyTo: 'replyTo@example.com',
                 html: '<p>Test Content</p>',
-                plaintext: 'Test Content'
+                plaintext: 'Test Content',
+                tags: ['automation-email']
             };
             const recipientData = {
                 'test@example.com': {
@@ -279,7 +280,8 @@ describe('MailgunClient', function () {
                         /form-data; name="to"[^]*test@example.com/m,
                         /form-data; name="recipient-variables"[^]*\{"test@example.com":\{"name":"Test User"\}\}/m,
                         /form-data; name="o:tag"[^]*bulk-email/m,
-                        /form-data; name="o:tag"[^]*ghost-email/m
+                        /form-data; name="o:tag"[^]*ghost-email/m,
+                        /form-data; name="o:tag"[^]*automation-email/m
                     ];
                     return regexList.every(regex => regex.test(body));
                 })
