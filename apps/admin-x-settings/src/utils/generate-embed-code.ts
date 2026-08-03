@@ -1,5 +1,8 @@
 import {escapeHtml} from './escape-html';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
+
+export type EmbedSignupLayout = 'all-in-one' | 'minimal';
+
 export type GenerateCodeOptions = {
     preview: boolean;
     config: {
@@ -18,7 +21,7 @@ export type GenerateCodeOptions = {
     };
     labels: Array<{ name: string }>;
     backgroundColor: string;
-    layout: string;
+    layout: EmbedSignupLayout;
 };
 
 type OptionsType = {
@@ -28,6 +31,8 @@ type OptionsType = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any; // This allows for computed properties like 'label-1', 'label-2', etc.
 };
+
+export const getEmbedPreviewLayoutMarker = (layout: EmbedSignupLayout) => `data-preview-layout="${escapeHtml(layout)}"`;
 
 export const generateCode = ({
     preview,
@@ -93,7 +98,7 @@ export const generateCode = ({
         dataOptionsString += ` data-${key}="${escapeHtml(value)}"`;
     }
 
-    const previewLayoutAttribute = preview ? ` data-preview-layout="${escapeHtml(layout)}"` : '';
+    const previewLayoutAttribute = preview ? ` ${getEmbedPreviewLayoutMarker(layout)}` : '';
     const code = `<div${previewLayoutAttribute} style="${escapeHtml(style)}"><script src="${encodeURI(scriptUrl)}"${dataOptionsString} async></script></div>`;
 
     if (preview && layout === 'minimal') {

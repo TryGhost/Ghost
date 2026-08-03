@@ -1,6 +1,7 @@
 import ColorPickerField from '../../../color-picker-field';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Button, Combobox, ComboboxContent, ComboboxTrigger, ComboboxValue, Field, FieldDescription, FieldGroup, FieldLabel, MultiSelectCombobox, Textarea, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
+import {type EmbedSignupLayout} from '../../../../utils/generate-embed-code';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {type Label} from '@tryghost/admin-x-framework/api/labels';
 import {Plus} from 'lucide-react';
@@ -18,8 +19,8 @@ type SidebarProps = {
     handleLabelClick: (selected: string[]) => void;
     selectedLabels?: SelectedLabelTypes[];
     embedScript: string;
-    handleLayoutSelect: React.Dispatch<React.SetStateAction<string>>;
-    selectedLayout : string;
+    handleLayoutSelect: React.Dispatch<React.SetStateAction<EmbedSignupLayout>>;
+    selectedLayout: EmbedSignupLayout;
     handleCopyClick: () => void;
     isCopied: boolean;
     setCustomColor?: React.Dispatch<React.SetStateAction<{active: boolean}>>;
@@ -101,7 +102,11 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                 <FieldGroup className='gap-6'>
                     <div className='flex w-full items-center justify-between'>
                         <div>Layout</div>
-                        <ToggleGroup type='single' value={selectedLayout} onValueChange={value => value && handleLayoutSelect(value)}>
+                        <ToggleGroup type='single' value={selectedLayout} onValueChange={(value) => {
+                            if (value === 'all-in-one' || value === 'minimal') {
+                                handleLayoutSelect(value);
+                            }
+                        }}>
                             <ToggleGroupItem value='all-in-one'>Branded</ToggleGroupItem>
                             <ToggleGroupItem value='minimal'>Minimal</ToggleGroupItem>
                         </ToggleGroup>

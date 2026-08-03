@@ -37,4 +37,16 @@ describe('EmbedSignupPreview', () => {
         });
     });
 
+    it('does not rebuild when preview markup contains a stale or unknown layout', async () => {
+        const staleHtml = '<div data-preview-layout="legacy"><script src="/signup-form.js"></script></div>';
+        const {container} = render(
+            <EmbedSignupPreview backgroundColor="#08090c" html={staleHtml} style="minimal" />
+        );
+
+        await waitFor(() => {
+            const frames = Array.from(container.querySelectorAll('iframe'));
+            expect(frames.every(frame => !frame.contentDocument?.querySelector('script[src="/signup-form.js"]'))).toBe(true);
+        });
+    });
+
 });

@@ -1,16 +1,17 @@
 import IframeBuffering from '../../../../utils/iframe-buffering';
 import React, {useCallback, useRef} from 'react';
+import {type EmbedSignupLayout, getEmbedPreviewLayoutMarker} from '../../../../utils/generate-embed-code';
 
 type EmbedSignupPreviewProps = {
     backgroundColor: string;
     html: string;
-    style: string;
+    style: EmbedSignupLayout;
 };
 
 const EmbedSignupPreview: React.FC<EmbedSignupPreviewProps> = ({backgroundColor, html, style}) => {
     const backgroundColorRef = useRef(backgroundColor);
     const htmlRef = useRef(html);
-    const hasMatchingLayout = html.includes(`data-preview-layout="${style}"`);
+    const hasMatchingLayout = html.includes(getEmbedPreviewLayoutMarker(style));
     backgroundColorRef.current = backgroundColor;
     htmlRef.current = html;
 
