@@ -1,7 +1,7 @@
 import {GIFT_EXPIRY_DAYS} from './constants';
+import type {GiftCadence, GiftStatus} from './gift-schema';
 
-export type GiftStatus = 'purchased' | 'redeemed' | 'consumed' | 'expired' | 'refunded';
-export type GiftCadence = 'month' | 'year';
+export type {GiftCadence, GiftStatus} from './gift-schema';
 
 export type RedeemableCheckFailureReason = 'redeemed' | 'consumed' | 'expired' | 'refunded' | 'paid-member';
 export type RedeemableCheckResult =

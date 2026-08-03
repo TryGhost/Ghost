@@ -653,7 +653,7 @@ describe('CheckoutSessionEventService', function () {
             assert.equal(purchaseData.stripeCustomerId, 'cust_123');
             assert.equal(purchaseData.tierId, 'tier_456');
             assert.equal(purchaseData.cadence, 'year');
-            assert.equal(purchaseData.duration, '1');
+            assert.equal(purchaseData.duration, 1);
             assert.equal(purchaseData.currency, 'usd');
             assert.equal(purchaseData.amount, 5000);
             assert.equal(purchaseData.stripeCheckoutSessionId, 'cs_test_123');
@@ -686,6 +686,31 @@ describe('CheckoutSessionEventService', function () {
             const purchaseData = giftService.completePurchase.getCall(0).args[0];
 
             assert.equal(purchaseData.stripeCustomerId, null);
+        });
+
+        it('normalizes expanded Stripe resources to IDs', async function () {
+            const service = createService();
+            const session = {
+                id: 'cs_test_123',
+                amount_total: 5000,
+                currency: 'usd',
+                customer: {id: 'cust_123'},
+                payment_intent: {id: 'pi_test_456'},
+                customer_details: {email: 'buyer@example.com'},
+                metadata: {
+                    gift_token: 'abc-123-token',
+                    tier_id: 'tier_456',
+                    cadence: 'year',
+                    duration: '1'
+                }
+            };
+
+            await service.handleGiftEvent(session);
+
+            sinon.assert.calledOnceWithExactly(giftService.completePurchase, sinon.match({
+                stripeCustomerId: 'cust_123',
+                stripePaymentIntentId: 'pi_test_456'
+            }));
         });
     });
 

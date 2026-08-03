@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
+import {z} from 'zod';
 import {Gift} from './gift';
 import type {GiftRepository} from './gift-repository';
 import type {GiftReminderScheduler} from './gift-reminder-scheduler';
@@ -112,18 +113,20 @@ interface StaffServiceEmails {
     }): Promise<void>;
 }
 
-export interface GiftPurchaseData {
-    token: string;
-    buyerEmail: string;
-    stripeCustomerId: string | null;
-    tierId: string;
-    cadence: 'month' | 'year';
-    duration: string;
-    currency: string;
-    amount: number;
-    stripeCheckoutSessionId: string;
-    stripePaymentIntentId: string;
-}
+const GiftPurchaseDataSchema = z.object({
+    token: z.string().min(1),
+    buyerEmail: z.string().min(1),
+    stripeCustomerId: z.string().min(1).nullable(),
+    tierId: z.string().min(1),
+    cadence: z.enum(['month', 'year']),
+    duration: z.number().int().positive(),
+    currency: z.string().min(1),
+    amount: z.number().int().nonnegative(),
+    stripeCheckoutSessionId: z.string().min(1),
+    stripePaymentIntentId: z.string().min(1)
+});
+
+export type GiftPurchaseData = z.infer<typeof GiftPurchaseDataSchema>;
 
 interface GiftServiceDeps {
     giftRepository: GiftRepository;
@@ -353,8 +356,7 @@ export class GiftService {
         return {url};
     }
 
-    /** @internal */
-    generateToken(): string {
+    private generateToken(): string {
         /**
          * Combinations: 62^12 ≈ 3.23 × 10^21 (~3.23 sextillion)
          * Entropy:      12 × log2(62) ≈ 71.45 bits
@@ -369,12 +371,17 @@ export class GiftService {
         return token;
     }
 
-    async completePurchase(data: GiftPurchaseData): Promise<boolean> {
-        const duration = Number.parseInt(data.duration);
-
-        if (Number.isNaN(duration)) {
-            throw new errors.ValidationError({message: `Invalid gift duration: ${data.duration}`});
+    async completePurchase(input: GiftPurchaseData): Promise<boolean> {
+        const parsed = GiftPurchaseDataSchema.safeParse(input);
+        if (!parsed.success) {
+            const issue = parsed.error.issues[0];
+            throw new errors.ValidationError({
+                message: 'Invalid gift purchase data.',
+                property: issue.path.join('.'),
+                context: issue.message
+            });
         }
+        const data = parsed.data;
 
         if (await this.deps.giftRepository.existsByCheckoutSessionId(data.stripeCheckoutSessionId)) {
             return false;
@@ -390,7 +397,7 @@ export class GiftService {
             buyerMemberId: member?.id ?? null,
             tierId: data.tierId,
             cadence: data.cadence,
-            duration,
+            duration: data.duration,
             currency: data.currency,
             amount: data.amount,
             stripeCheckoutSessionId: data.stripeCheckoutSessionId,
@@ -414,7 +421,7 @@ export class GiftService {
                 currency: data.currency,
                 tierName: tier.name,
                 cadence: data.cadence,
-                duration
+                duration: data.duration
             });
         } catch (err) {
             logging.error('Failed to notify staff of gift purchase', err);
@@ -426,7 +433,7 @@ export class GiftService {
                 token: data.token,
                 tierName: tier.name,
                 cadence: data.cadence,
-                duration,
+                duration: data.duration,
                 expiresAt: gift.expiresAt
             });
         } catch (err) {
@@ -436,19 +443,7 @@ export class GiftService {
         return true;
     }
 
-    private async getGiftByToken(token: string): Promise<Gift | null> {
-        return this.deps.giftRepository.getByToken(token);
-    }
-
-    /**
-     * Internal implementation test hook. Runtime callers use stable read models.
-     */
-    async getByToken(token: string): Promise<Gift | null> {
-        return this.getGiftByToken(token);
-    }
-
-    /** @internal */
-    async assertRedeemable(gift: Gift, memberStatus: string | null): Promise<Gift> {
+    private assertRedeemable(gift: Gift, memberStatus: string | null): Gift {
         const redeemableCheck = gift.checkRedeemable(memberStatus);
 
         if (!redeemableCheck.redeemable) {
@@ -491,25 +486,16 @@ export class GiftService {
         return gift;
     }
 
-    async getRedeemable(input: {token: string; memberStatus: string | null}): Promise<GiftRedemption>;
-    /** @internal */
-    async getRedeemable(input: string, legacyMemberStatus?: string | null): Promise<Gift>;
-    async getRedeemable(
-        input: {token: string; memberStatus: string | null} | string,
-        legacyMemberStatus?: string | null
-    ): Promise<GiftRedemption | Gift> {
-        const legacyCall = typeof input === 'string';
-        const token = legacyCall ? input : input.token;
-        const memberStatus = legacyCall ? legacyMemberStatus ?? null : input.memberStatus;
-        const gift = await this.deps.giftRepository.getByToken(token);
+    async getRedeemable(input: {token: string; memberStatus: string | null}): Promise<GiftRedemption> {
+        const gift = await this.deps.giftRepository.getByToken(input.token);
 
         if (!gift) {
             throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
         }
 
-        await this.assertRedeemable(gift, memberStatus);
+        this.assertRedeemable(gift, input.memberStatus);
 
-        return legacyCall ? gift : this.serializeRedemption(gift);
+        return this.serializeRedemption(gift);
     }
 
     async redeem(input: {
@@ -517,35 +503,13 @@ export class GiftService {
         memberId: string;
         transacting?: {executionPromise: Promise<unknown>};
         newMember?: boolean;
-    }): Promise<GiftRedemption>;
-    /** @internal */
-    async redeem(input: string, legacyMemberId: string, legacyOptions?: {
-        transacting?: {executionPromise: Promise<unknown>};
-        newMember?: boolean;
-    }): Promise<Gift>;
-    async redeem(input: {
-        token: string;
-        memberId: string;
-        transacting?: {executionPromise: Promise<unknown>};
-        newMember?: boolean;
-    } | string, legacyMemberId?: string, legacyOptions: {
-        transacting?: {executionPromise: Promise<unknown>};
-        newMember?: boolean;
-    } = {}): Promise<GiftRedemption | Gift> {
-        const legacyCall = typeof input === 'string';
-        const {
-            token,
-            memberId,
-            transacting,
-            newMember
-        } = legacyCall ? {
-            token: input,
-            memberId: legacyMemberId as string,
-            ...legacyOptions
-        } : input;
-        const gift = await this.redeemGift(token, memberId, {transacting, newMember});
+    }): Promise<GiftRedemption> {
+        const gift = await this.redeemGift(input.token, input.memberId, {
+            transacting: input.transacting,
+            newMember: input.newMember
+        });
 
-        return legacyCall ? gift : this.serializeRedemption(gift);
+        return this.serializeRedemption(gift);
     }
 
     private async redeemGift(token: string, memberId: string, options: {transacting?: {executionPromise: Promise<unknown>}; newMember?: boolean} = {}): Promise<Gift> {
@@ -561,9 +525,9 @@ export class GiftService {
             }
 
             if (options.newMember) {
-                await this.assertRedeemable(gift, null);
+                this.assertRedeemable(gift, null);
             } else {
-                await this.assertRedeemable(gift, member.get('status'));
+                this.assertRedeemable(gift, member.get('status'));
             }
 
             const redeemed = gift.redeem({memberId});
@@ -627,24 +591,21 @@ export class GiftService {
         return redeemed;
     }
 
-    /** @internal */
-    async getActiveByMember(memberId: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
+    private async getActiveByMember(memberId: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
         if (!memberId) {
             return null;
         }
         return this.deps.giftRepository.getActiveByMember(memberId, options);
     }
 
-    /** @internal */
-    async getActiveByMembers(memberIds: string[], options: {transacting?: unknown} = {}): Promise<Map<string, Gift>> {
+    private async getActiveByMembers(memberIds: string[], options: {transacting?: unknown} = {}): Promise<Map<string, Gift>> {
         if (!memberIds || memberIds.length === 0) {
             return new Map();
         }
         return this.deps.giftRepository.getActiveByMembers(memberIds, options);
     }
 
-    /** @internal */
-    getRemainingActiveDays(gift: Gift, now: Date = new Date()): number {
+    private getRemainingActiveDays(gift: Gift, now: Date = new Date()): number {
         if (!gift.isRedeemed() || !gift.consumesAt || gift.isConsumed()) {
             return 0;
         }
@@ -702,7 +663,7 @@ export class GiftService {
     }
 
     async getPreview(token: string): Promise<GiftPreview | null> {
-        const gift = await this.getGiftByToken(token);
+        const gift = await this.deps.giftRepository.getByToken(token);
 
         if (!gift) {
             return null;
@@ -734,24 +695,8 @@ export class GiftService {
         return this.deps.activityRepository.browseRedemptions(options, filter);
     }
 
-    async reassignRedeemer(
-        input: {giftId: string; memberId: string; transacting?: unknown}
-    ): Promise<void>;
-    /** @internal */
-    async reassignRedeemer(
-        input: string,
-        legacyMemberId: string,
-        legacyOptions?: {transacting?: unknown}
-    ): Promise<Gift>;
-    async reassignRedeemer(
-        input: {giftId: string; memberId: string; transacting?: unknown} | string,
-        legacyMemberId?: string,
-        legacyOptions: {transacting?: unknown} = {}
-    ): Promise<Gift | void> {
-        const legacyCall = typeof input === 'string';
-        const giftId = legacyCall ? input : input.giftId;
-        const memberId = legacyCall ? legacyMemberId as string : input.memberId;
-        const options = legacyCall ? legacyOptions : {transacting: input.transacting};
+    async reassignRedeemer(input: {giftId: string; memberId: string; transacting?: unknown}): Promise<void> {
+        const {giftId, memberId} = input;
         const run = async (transacting: unknown): Promise<Gift> => {
             const gift = await this.deps.giftRepository.getById(giftId, {transacting, forUpdate: true});
 
@@ -820,11 +765,9 @@ export class GiftService {
             return reassignedGift;
         };
 
-        const reassigned = await (options.transacting
-            ? run(options.transacting)
+        await (input.transacting
+            ? run(input.transacting)
             : this.deps.giftRepository.transaction(run));
-
-        return legacyCall ? reassigned : undefined;
     }
 
     async handlePaymentRefund({paymentIntentId}: {paymentIntentId: string}): Promise<boolean> {
@@ -868,8 +811,7 @@ export class GiftService {
         return Boolean(await this.consume(gift.token));
     }
 
-    /** @internal */
-    async consume(token: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
+    private async consume(token: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
         const run = async (transacting: unknown) => {
             // Fetch with a row lock to prevent race conditions under concurrency
             const gift = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
