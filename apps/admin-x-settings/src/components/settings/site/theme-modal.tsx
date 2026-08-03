@@ -37,7 +37,7 @@ interface ThemeModalContentProps {
 const UploadModalContent: React.FC<{onUpload: (file: File) => void}> = ({onUpload}) => {
     const modal = useModal();
 
-    return <div className="-mb-6">
+    return (
         <Dropzone
             accept={{'application/zip': ['.zip']}}
             inputId="theme-upload"
@@ -48,7 +48,7 @@ const UploadModalContent: React.FC<{onUpload: (file: File) => void}> = ({onUploa
         >
             Click to select or drag & drop zip file
         </Dropzone>
-    </div>;
+    );
 };
 
 const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
