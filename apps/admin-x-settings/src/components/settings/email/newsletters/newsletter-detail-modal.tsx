@@ -1,5 +1,6 @@
 import ColorPickerField from '../../../color-picker-field';
 import ConfirmationModal from '../../../confirmation-modal';
+import HeaderImageField from '../../email-design/header-image-field';
 import HtmlField from '../../../html-field';
 import LimitModal from '../../../limit-modal';
 import NewsletterPreview from './newsletter-preview';
@@ -11,14 +12,11 @@ import validator from 'validator';
 import {Button, Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipTrigger} from '@tryghost/shade/components';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
-import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
-import {Inline, Stack, Text} from '@tryghost/shade/primitives';
-import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
+import {Inline, Stack} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {type Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {PreviewModalContent} from '../../preview-modal';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {Trash2} from 'lucide-react';
-import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletter-emails';
@@ -104,7 +102,6 @@ const Sidebar: React.FC<{
     const limiter = useLimiter();
     const {settings, config, siteData} = useGlobalData();
     const [icon, defaultEmailAddress] = getSettingValues<string>(settings, ['icon', 'default_email_address']);
-    const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
@@ -312,37 +309,12 @@ const Sidebar: React.FC<{
                 <FieldSet className='mt-8'>
                     <FieldLegend className='text-lg! font-semibold'>Header</FieldLegend>
                     <FieldGroup>
-                    <div>
-                        <div>
-                            <Text as='h6' className="mb-2 text-base" weight='semibold'>Header image</Text>
-                        </div>
-                        <div className='flex-column flex gap-1'>
-                            <ImageUpload className='h-16.5'>
-                                {newsletter.header_image ? (
-                                    <ImageUploadPreview>
-                                        <ImageUploadImage id='logo' src={newsletter.header_image} />
-                                        <ImageUploadActions>
-                                            <ImageUploadAction aria-label='Remove header image' onClick={() => updateNewsletter({header_image: null})}>
-                                                <Trash2 />
-                                            </ImageUploadAction>
-                                        </ImageUploadActions>
-                                    </ImageUploadPreview>
-                                ) : (
-                                    <ImageUploadDropzone inputId='logo' onDropAccepted={async ([file]) => {
-                                        try {
-                                            const imageUrl = getImageUrl(await uploadImage({file}));
-                                            updateNewsletter({header_image: imageUrl});
-                                        } catch (e) {
-                                            handleError(e);
-                                        }
-                                    }}>
-                                        <LucideIcon.Image className='size-5 text-muted-foreground' />
-                                    </ImageUploadDropzone>
-                                )}
-                            </ImageUpload>
-                            <FieldDescription>{formatNumber(1200)}×{formatNumber(600)} recommended. Use a transparent PNG for best results on any background.</FieldDescription>
-                        </div>
-                    </div>
+                    <HeaderImageField
+                        inputId='newsletter-header-image'
+                        value={newsletter.header_image || ''}
+                        onChange={headerImage => updateNewsletter({header_image: headerImage || null})}
+                        onUploadError={handleError}
+                    />
                     <Stack gap='md'>
                         {icon && <Field orientation='horizontal'>
                             <FieldLabel htmlFor='newsletter-show-header-icon'>Publication icon</FieldLabel>
