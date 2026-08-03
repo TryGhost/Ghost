@@ -3,39 +3,7 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 import {SHADE_APP_NAMESPACES} from '@/shade-app';
 
 import {cn} from '@/lib/utils';
-import {useOverlayEscape} from '@/hooks/use-overlay-escape';
-
-// Radix's Popover dismisses via DismissableLayer → useEscapeKeydown →
-// useCallbackRef. The callback ref is updated in a useEffect, so on the first
-// render after PopoverContent mounts the document-level Escape listener still
-// invokes the prior closure with a stale layer index. isHighestLayer returns
-// false, Radix bails out, and Escape propagates to ancestor layers (e.g.
-// closing the wrong modal). Attach our own capture-phase Escape handler while
-// the popover is open so dismissal is deterministic regardless of effect order.
-type PopoverRootProps = React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Root>;
-
-const Popover: React.FC<PopoverRootProps> = ({
-    open: controlledOpen,
-    defaultOpen,
-    onOpenChange,
-    children,
-    ...rest
-}) => {
-    const overlayProps = useOverlayEscape({
-        open: controlledOpen,
-        defaultOpen,
-        onOpenChange
-    });
-
-    return (
-        <PopoverPrimitive.Root
-            {...rest}
-            {...overlayProps}
-        >
-            {children}
-        </PopoverPrimitive.Root>
-    );
-};
+const Popover = PopoverPrimitive.Root;
 
 const PopoverTrigger = PopoverPrimitive.Trigger;
 

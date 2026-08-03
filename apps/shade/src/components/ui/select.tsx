@@ -5,36 +5,7 @@ import {Check, ChevronDown, ChevronUp} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import {SHADE_APP_NAMESPACES} from '@/shade-app';
 import {inputSurface, inputSurfaceClasses} from '@/components/ui/input-surface';
-import {useOverlayEscape} from '@/hooks/use-overlay-escape';
-
-// Radix's Select dismisses via a document-level Escape listener. Legacy Admin
-// modals also listen on document, and their listener can run first because the
-// modal mounts before the Select content. Capture Escape while the Select is
-// open, close only the Select, and prevent the event reaching ancestor layers.
-type SelectRootProps = React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>;
-
-const Select: React.FC<SelectRootProps> = ({
-    open: controlledOpen,
-    defaultOpen,
-    onOpenChange,
-    children,
-    ...rest
-}) => {
-    const overlayProps = useOverlayEscape({
-        open: controlledOpen,
-        defaultOpen,
-        onOpenChange
-    });
-
-    return (
-        <SelectPrimitive.Root
-            {...rest}
-            {...overlayProps}
-        >
-            {children}
-        </SelectPrimitive.Root>
-    );
-};
+const Select = SelectPrimitive.Root;
 
 const SelectGroup = SelectPrimitive.Group;
 
