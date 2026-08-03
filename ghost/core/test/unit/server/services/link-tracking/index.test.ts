@@ -100,7 +100,7 @@ describe('LinkTrackingServiceWrapper', function () {
         const clickedAt = new Date('2026-07-29T12:34:56.000Z');
         const linkId = ObjectID();
         await subscriber(RedirectEvent.create({
-            url: new URL('https://example.com/destination?m=memberUuid'),
+            url: new URL('https://example.com/destination?m=memberUuid&step=run-step-id'),
             link: {
                 link_id: linkId,
                 automationActionRevisionId: 'revision-id'
@@ -114,6 +114,7 @@ describe('LinkTrackingServiceWrapper', function () {
         }, {transacting});
         sinon.assert.calledOnceWithExactly(trackEmailClicked, {
             automationActionRevisionId: 'revision-id',
+            automationRunStepId: 'run-step-id',
             memberId: 'member-id',
             clickedAt
         }, {transacting});
