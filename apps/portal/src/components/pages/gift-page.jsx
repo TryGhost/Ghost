@@ -269,7 +269,12 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
     margin-bottom: 8px;
 }
 
+/* The label runs at 1.4rem and the error beside it at 1.3rem with its own
+   line-height, so stretching them to equal heights left the two sitting at
+   different levels. Baseline alignment lands them on the same line regardless
+   of the size difference. */
 .gh-portal-gift-checkout .gh-portal-input-labelcontainer {
+    align-items: baseline;
     margin-bottom: 8px;
 }
 
@@ -751,31 +756,41 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
    Shown in place of the gift card while the buyer is composing an emailed
    gift. This is a faithful preview rather than a stylised one: the sheet
    reproduces the delivery template's palette (#15212A headings, #3A464C
-   body, #F4F5F6 message block, #738A94 muted) and its accent-coloured
-   redeem button — a real email sheet resting on the brand panel, rather
-   than a stylised version of one. Motion follows the same tips as the form
-   reveals: strong custom ease-out, under 300ms, no scaling from zero. */
-/* The 32px shaved off the width is what keeps the overlapping card visible.
-   The panel scrolls vertically, which forces overflow-x to compute to auto
-   too, so anything past its content box is clipped rather than allowed to
-   hang over the padding. Left to fill the full width, the sheet's edge meets
-   the content box exactly and the card's 16px right overhang is cut off — the
-   card then reads as overlapping only the bottom. Staying 32px narrower leaves
-   16px either side of the centred stack, which is exactly the overhang. */
+   body, the note's panel and attribution tinted from the accent) and its
+   order, so what fills in here is what the recipient opens.
+
+   Three things the email carries are left out, all of them the recipient's
+   business rather than the buyer's: the redeem button, the expiry line and
+   the sent-from footer. The decorative quote mark goes the other way — it's
+   here only, because email clients can't render the SVG and the typographic
+   glyph is the squared-off one this design moved away from.
+
+   Motion follows the same tips as the form reveals: strong custom ease-out,
+   under 300ms, no scaling from zero. */
+/* Scaled rather than restyled: the message previews something with fixed
+   proportions, so shrinking type and padding independently would drift it away
+   from the email it's showing. zoom, not a transform, because it takes the
+   layout down with it — a transform would leave the full-size box behind as
+   dead space around it.
+
+   It belongs on this element rather than the preview inside it, because this is
+   where the width is pinned. Zooming the child instead left the width alone —
+   its width of 100% resolved against this box and then divided by the zoom, so
+   it laid out at 600px and rendered back to the same 480 — while every fixed
+   pixel inside it shrank. The result was a box the same width as before with
+   smaller contents, which is exactly the wrong shape. */
 .gh-portal-gift-checkout-email-stack {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
     max-width: min(480px, 100% - 32px);
+    zoom: 0.9;
     flex-shrink: 0;
 }
 
-/* A degree off square, so the preview reads as something laid down rather than
-   pinned to the grid. The overlapping card counter-rotates against this. */
 .gh-portal-gift-email {
     width: 100%;
-    transform: rotate(1deg);
 }
 
 @keyframes gh-portal-gift-email-fade {
@@ -829,13 +844,7 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
     padding-left: 12px;
 }
 
-.gh-portal-gift-email-from-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    min-width: 0;
-}
+
 
 /* Sender name on the left, send date at the container's end. */
 /* Anchors the gift card that overlaps the sheet's bottom-right corner. */
@@ -849,19 +858,30 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
 
 /* The addressing line sits directly on the brand background above the sheet,
    carrying nothing but its own type. */
+/* flex-end, so the date lines up with whatever the last line of the block
+   beside it happens to be: the publisher on its own to begin with, then the
+   "To" line once that opens. The date never moves — the publisher rises past
+   it. */
 .gh-portal-gift-email-meta {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 12px;
     padding: 2px 10px 6px;
 }
 
+/* Holds room for both lines from the outset and packs them to the bottom, so
+   the "To" line opening lifts the publisher within this box rather than pushing
+   the message below it down. The date, aligned to the same bottom edge, doesn't
+   move at all — it starts level with the publisher and ends level with the
+   recipient. 43px is the two lines plus their gap at this type size. */
 .gh-portal-gift-email-meta-text {
     display: flex;
     flex: 1;
     flex-direction: column;
+    justify-content: flex-end;
     gap: 2px;
     min-width: 0;
+    min-height: 43px;
 }
 
 /* Sender name then a labelled "To:" row, the way a message detail view lists
@@ -907,9 +927,8 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
     font-weight: 400;
 }
 
-/* A plain white sheet again. The gift card overlaps its bottom-right corner
-   (see .gh-portal-gift-email-card), so the padding on those two sides leaves
-   room for it to sit over without landing on the text. */
+/* A plain white sheet with even padding, so the message sits in its own space
+   the way it does in a mail client. */
 .gh-portal-gift-email-body {
     position: relative;
     z-index: 1;
@@ -923,57 +942,26 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
         0 3px 8px rgba(var(--blackrgb), 0.06);
 }
 
-/* The step-1 card, laid over the email so the two read as a stack rather than
-   two separate previews. It juts 16px past the sheet on the bottom and right,
-   which is what makes the overlap legible as depth.
-
-   Shrunk with a single transform rather than by restyling its parts. Overriding
-   sizes piecemeal produced a card that was recognisably a different object —
-   different type ratios, different notch, and a footer that floated mid-card
-   because the details block it normally sits under was missing. Scaling renders
-   the identical card at 60%, so every proportion holds by construction. It is
-   given the same props as step 1 for the same reason.
-
-   transform-origin pins the scale to the bottom-right, so the card lands on the
-   corner the offsets place it at regardless of the scale factor. No pointer
-   tilt — no cardRef is passed, so useCardTilt never binds to it. The frame's
-   sticky positioning is the checkout layout's, so it's undone. */
-.gh-portal-gift-email-card {
-    position: absolute;
-    right: -8px;
-    bottom: -24px;
-    z-index: 2;
-    width: 280px;
-    /* Rotation composes with the scale on one property — declaring transform
-       twice would drop the first. +3deg is its own tilt, so against the
-       sheet's +1deg it lands 2deg off square on screen, leaning the same
-       way. The origin keeps the pivot on the corner it overlaps. */
-    transform: scale(0.72) rotate(3deg);
-    transform-origin: bottom right;
-    pointer-events: none;
+/* The publication's mark, set above the subject exactly as the template places
+   it. 48px is the width the email requests of the icon. flex-start rather than
+   left so an RTL locale starts it on the right, as the message's own text does. */
+.gh-portal-gift-email-lockup {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 22px;
 }
 
-.gh-portal-gift-email-card .gh-portal-gift-checkout-card-frame {
-    position: static;
+.gh-portal-gift-email-lockup-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    object-fit: cover;
 }
 
-/* Below 880px the checkout narrows the standalone card to 240px. This one is
-   sized by its wrapper and shrunk by the transform, so inheriting that cap
-   just left it 40px short of the wrapper's right edge — 27px once scaled —
-   which turned the 16px overhang into an 11px inset and made the card look
-   like it only overlapped the bottom. It keeps its full width at every size.
-
-   Step 1's shadow in the same two-layer shape — a wide ambient one and a
-   tight contact one — but deeper, and with bigger raw values: the wrapper's
-   scale(0.68) shrinks blur and offset along with everything else, so 32/64
-   lands at roughly the 22/43 the card reads at on step 1. The extra depth is
-   what makes it sit on the sheet rather than in it. */
-.gh-portal-gift-email-card .gh-portal-gift-checkout-card {
-    max-width: 280px;
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.4),
-        0 32px 64px rgba(var(--blackrgb), 0.18),
-        0 8px 20px rgba(var(--blackrgb), 0.12);
+.gh-portal-gift-email-lockup-title {
+    color: var(--brandcolor);
+    font-size: 1.7rem;
+    font-weight: 700;
 }
 
 .gh-portal-gift-email-subject {
@@ -1013,14 +1001,48 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
    template's own colour rather than falling through to nothing. (The card's
    notch already relies on color-mix, so it's established here.) */
 .gh-portal-gift-email-message {
-    margin: 20px 0 0;
+    position: relative;
+    /* Matches the gap the benefits leave below it, so the note sits evenly
+       between the lede and "What's included". */
+    margin: 24px 0 0;
     padding: 16px 18px;
     border-radius: 8px;
+    overflow: hidden;
     background: #F4F5F6;
     background: color-mix(in srgb, var(--brandcolor) 7%, var(--white));
 }
 
+/* A darker shade of the accent the container is tinted with, rather than a
+   neutral grey — the attribution then belongs to the block it sits in. The
+   grey stays as the fallback for browsers without color-mix. */
+.gh-portal-gift-email-message-from {
+    position: relative;
+    margin: 10px 0 0;
+    color: #738A94;
+    color: color-mix(in srgb, var(--brandcolor) 72%, #15212A);
+    font-size: 1.35rem;
+    line-height: 1.4;
+}
+
+/* Sits behind the note at low opacity so the words run over it, rather than
+   being punctuation the reader has to step around. Only the opening mark: the
+   panel already ends the quote, so a closing one just adds clutter. */
+.gh-portal-gift-email-message-mark {
+    position: absolute;
+    /* Anchored off the panel's top-left corner and clipped by it, so what
+       shows is the lower part of the mark running into the corner rather than
+       a whole glyph parked inside the box. */
+    top: -22px;
+    inset-inline-start: -10px;
+    width: 98px;
+    height: auto;
+    color: var(--brandcolor);
+    opacity: 0.04;
+    pointer-events: none;
+}
+
 .gh-portal-gift-email-message-text {
+    position: relative;
     margin: 0;
     color: #15212A;
     font-size: 1.55rem;
@@ -1030,26 +1052,20 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
     word-break: break-word;
 }
 
-/* A darker shade of the accent the container is tinted with, rather than a
-   neutral grey — the attribution then belongs to the block it sits in. The
-   grey stays as the fallback for browsers without color-mix. */
 .gh-portal-gift-email-benefits {
     margin-top: 24px;
 }
 
-/* Rows measure ~32px: 15.5px text at 1.45 line-height plus 5px padding top and
-   bottom. Rows one and two run to 65px, row three to 97px.
-   The cap lands at 96px — the end of row three — so no invisible row is left
-   holding space. An earlier version reserved room for a fourth row that the
-   mask had already erased, which read as an awkward gap above the button.
-   The fade runs 68px to 96px — starting just a few pixels into row three — so
-   the third perk is only briefly legible before trailing off, and the fourth
-   never appears. */
-.gh-portal-gift-email-benefits-list[data-truncated='true'] {
-    max-height: 96px;
-    overflow: hidden;
-    mask-image: linear-gradient(to bottom, #000 0, #000 68px, transparent 96px);
-    -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 68px, transparent 96px);
+/* The template's small uppercase "What's included" heading. */
+/* Sentence case, normal weight, body colour, and the same size as the perks it
+   introduces. Uppercased and semibold it was the heaviest thing on the sheet,
+   and at its own size it read as a third kind of type in a short list. */
+.gh-portal-gift-email-benefits-label {
+    margin: 0 0 6px;
+    color: #3A464C;
+    font-size: 1.55rem;
+    font-weight: 400;
+    line-height: 1.45;
 }
 
 .gh-portal-gift-email-benefit {
@@ -1072,23 +1088,6 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
 /* The checkmark hard-codes its stroke, so it can't be themed via color. */
 .gh-portal-gift-email-benefit svg path {
     stroke: var(--brandcolor);
-}
-
-/* Mirrors the email's CTA: 5px radius and normal weight from the house
-   pattern (services/members/emails), full width like the template. It runs the
-   full width of the sheet and centres its label deliberately, even though the
-   card overlaps its right end — the button belongs to the email, so it's laid
-   out as the email would lay it out. */
-.gh-portal-gift-email-cta {
-    margin-top: 26px;
-    padding: 9px 22px 10px;
-    border-radius: 5px;
-    background: var(--brandcolor);
-    color: var(--white);
-    font-size: 1.55rem;
-    font-weight: normal;
-    line-height: 1.3;
-    text-align: center;
 }
 
 .gh-portal-gift-checkout-card-stack[data-revealing="true"] .gh-portal-gift-checkout-card-frame {
@@ -2087,7 +2086,6 @@ const GiftPage = () => {
                                         <GiftEmailPreview
                                             benefits={activeProduct.benefits || []}
                                             buyerName={buyerName}
-                                            cardDurationLabel={getGiftDurationLabel(getGiftCadenceParts(activeDuration))}
                                             // Only a date after today counts as scheduled — today is
                                             // "send it now", which the preview words as landing today.
                                             deliveryDate={deliveryDate > minDeliveryDate ? deliveryDate : ''}

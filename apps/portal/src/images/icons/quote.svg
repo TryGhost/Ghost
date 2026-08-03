@@ -1,0 +1,10 @@
+<svg width="39" height="27" viewBox="0 0 39 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g fill="currentColor">
+        <path d="M9 0a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"/>
+        <path d="M18 7c0 10-4.8 17.2-13.4 20L3 22.4C9.4 20.2 13 15.6 13 8Z"/>
+    </g>
+    <g fill="currentColor" transform="translate(21 0)">
+        <path d="M9 0a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"/>
+        <path d="M18 7c0 10-4.8 17.2-13.4 20L3 22.4C9.4 20.2 13 15.6 13 8Z"/>
+    </g>
+</svg>

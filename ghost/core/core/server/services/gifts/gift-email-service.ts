@@ -3,6 +3,34 @@ import {GiftEmailRenderer, Translate} from './gift-email-renderer';
 const DEFAULT_DATE_LOCALE = 'en-gb';
 const DEFAULT_ACCENT_COLOR = '#15212A';
 
+// Portal's preview of the delivery email derives two accent-based colours with
+// CSS color-mix, which no email client supports. They're blended here instead
+// and passed in as flat hex so both surfaces land on the same colour.
+// An accent that isn't a hex colour falls back to the flat colour the template
+// carried before these existed, rather than to the blend target — mixing
+// towards white would otherwise leave the note's panel invisible.
+function mixHex(from: string, to: string, weight: number, fallback: string): string {
+    const channels = (hex: string): number[] | null => {
+        const value = hex.trim().replace('#', '');
+        const full = value.length === 3 ? value.split('').map(c => c + c).join('') : value;
+        if (!/^[0-9a-f]{6}$/i.test(full)) {
+            return null;
+        }
+        return [0, 2, 4].map(i => parseInt(full.slice(i, i + 2), 16));
+    };
+
+    const a = channels(from);
+    const b = channels(to);
+    if (!a || !b) {
+        return fallback;
+    }
+
+    return '#' + a
+        .map((channel, i) => Math.round(channel * weight + b[i] * (1 - weight)))
+        .map(channel => channel.toString(16).padStart(2, '0'))
+        .join('');
+}
+
 interface Mailer {
     send(message: {
         to: string;
@@ -102,6 +130,17 @@ export class GiftEmailService {
         return this.settingsCache.get('accent_color') || DEFAULT_ACCENT_COLOR;
     }
 
+    // The panel the buyer's note sits on: the accent barely tinting white.
+    private get accentTint(): string {
+        return mixHex(this.accentColor, '#FFFFFF', 0.07, '#F4F5F6');
+    }
+
+    // The buyer's name under that note — the accent darkened towards the body
+    // text colour, so it belongs to the panel rather than floating on it.
+    private get accentShade(): string {
+        return mixHex(this.accentColor, '#15212A', 0.72, '#738A94');
+    }
+
     // Every use of this label is attributive — it always sits in front of
     // "{tierName} membership" — so English takes the singular unit: "a 6 month
     // Gold membership", not "a 6 months Gold membership". Portal's
@@ -193,6 +232,8 @@ export class GiftEmailService {
             siteIconUrl: this.blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
             siteDomain,
             accentColor: this.accentColor,
+            accentTint: this.accentTint,
+            accentShade: this.accentShade,
             toEmail: recipientEmail,
             buyerName,
             recipientName,

@@ -306,6 +306,48 @@ describe('GiftEmailService', function () {
         });
     });
 
+    // Portal's live preview of this email tints the note's panel and the
+    // buyer's name from the accent with CSS color-mix. Email clients have none,
+    // so the service blends them and passes flat hex — these keep the two
+    // surfaces landing on the same colour.
+    describe('accent-derived colours in the delivery email', function () {
+        const deliveryData = {
+            recipientEmail: 'taylor@example.com',
+            buyerName: 'Jamie Larson',
+            recipientName: 'Taylor Reid',
+            message: 'Thought of you.',
+            token: 'abc-123',
+            tierName: 'Gold',
+            benefits: ['Everything we publish'],
+            cadence: 'year',
+            duration: 1,
+            expiresAt: new Date('2027-04-07')
+        };
+
+        it('tints the note panel and the buyer name from the accent colour', async function () {
+            await service.sendGiftDelivery(deliveryData);
+
+            const {html} = mailer.send.getCall(0).args[0];
+
+            // #ff5500 at 7% over white, and at 72% towards the body colour.
+            sinon.assert.match(html, sinon.match('#fff3ed'));
+            sinon.assert.match(html, sinon.match('#bd460c'));
+        });
+
+        it('keeps the flat colours when the accent is not a hex value', async function () {
+            const namedAccent = {get: key => (key === 'accent_color' ? 'rebeccapurple' : settingsCache.get(key))};
+            const namedService = new GiftEmailService({mailer, settingsCache: namedAccent, urlUtils, getFromAddress, blogIcon, t: translate()});
+
+            await namedService.sendGiftDelivery(deliveryData);
+
+            const {html} = mailer.send.getCall(0).args[0];
+
+            // Mixing towards white would have left the panel invisible.
+            sinon.assert.match(html, sinon.match('#F4F5F6'));
+            sinon.assert.match(html, sinon.match('#738A94'));
+        });
+    });
+
     describe('purchase confirmation with a recipient', function () {
         it('mentions the recipient when the gift was sent immediately', async function () {
             await service.sendPurchaseConfirmation({

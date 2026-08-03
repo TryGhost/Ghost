@@ -1,5 +1,4 @@
 import AppContext from '../../../../app-context';
-import GiftIcon from '../../../../images/icons/gift.svg?react';
 import {useContext} from 'react';
 import {hasGiftableOffering, isAccountGiftOptionEnabled, isGiftMember, isPaidMember} from '../../../../utils/helpers';
 import {t} from '../../../../utils/i18n';
@@ -18,8 +17,7 @@ function canGiveGift({site, member}) {
 
 // A card of its own below the account list rather than a row in it: the rows
 // above are settings to manage, and this is the one thing on the screen
-// that's an offer. The row itself is shaped exactly like those rows — the
-// gift icon by the title is what marks it apart.
+// that's an offer.
 function GiveGiftCard() {
     const {member, site, doAction} = useContext(AppContext);
 
@@ -52,10 +50,7 @@ function GiveGiftCard() {
                 }}
             >
                 <div className='gh-portal-list-detail'>
-                    <h3 className='gh-portal-gift-card-title'>
-                        <GiftIcon />
-                        {t('Gift membership')}
-                    </h3>
+                    <h3>{t('Gift membership')}</h3>
                     <p>{t('For a friend or colleague')}</p>
                 </div>
                 <span

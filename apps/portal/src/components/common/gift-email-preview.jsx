@@ -1,7 +1,7 @@
 import {useRef} from 'react';
 import Interpolate from '@doist/react-interpolate';
 import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
-import GiftCard from './gift-card';
+import QuoteIcon from '../../images/icons/quote.svg?react';
 import {getDateString} from '../../utils/date-time';
 import {t} from '../../utils/i18n';
 
@@ -15,18 +15,18 @@ import {t} from '../../utils/i18n';
 // same as the account area. 'YYYY-MM-DD' from the date input is parsed
 // component-wise first: handing the raw string to `new Date()` would read it as
 // UTC midnight and render the previous day west of UTC.
-const formatDeliveryDate = (value) => {
-    const [year, month, day] = value.split('-').map(Number);
+const parseLocalDate = (value) => {
+    const [year, month, day] = (value || '').split('-').map(Number);
     if (!year || !month || !day) {
-        return '';
+        return null;
     }
-    return getDateString(new Date(year, month - 1, day));
+    return new Date(year, month - 1, day);
 };
 
-// Perks shown in full before the list fades out. Kept in step with the
-// max-height on .gh-portal-gift-email-benefits-list, which is measured from the
-// row metrics rather than counted.
-const VISIBLE_BENEFITS = 3;
+const formatDeliveryDate = (value) => {
+    const date = parseLocalDate(value);
+    return date ? getDateString(date) : '';
+};
 
 const GiftEmailPreview = ({
     recipientName,
@@ -35,7 +35,6 @@ const GiftEmailPreview = ({
     giftMessage,
     deliveryDate,
     durationLabel,
-    cardDurationLabel,
     tierName,
     benefits = [],
     siteTitle,
@@ -73,8 +72,8 @@ const GiftEmailPreview = ({
     // the redemption page do, reusing their strings rather than new ones.
     const emphasis = {strong: <strong />};
     const lede = fromName
-        ? t('<strong>{buyerName}</strong> has gifted you a <strong>{duration} {tierName}</strong> membership to {siteTitle}', {buyerName: fromName, duration: durationLabel, tierName, siteTitle})
-        : t('You\'ve been gifted a <strong>{duration} {tierName}</strong> membership to {siteTitle}', {duration: durationLabel, tierName, siteTitle});
+        ? t('<strong>{buyerName}</strong> has gifted you a <strong>{duration} {tierName}</strong> membership to {siteTitle}.', {buyerName: fromName, duration: durationLabel, tierName, siteTitle})
+        : t('You\'ve been gifted a <strong>{duration} {tierName}</strong> membership to {siteTitle}.', {duration: durationLabel, tierName, siteTitle});
 
     return (
         <div className='gh-portal-gift-email'>
@@ -86,22 +85,11 @@ const GiftEmailPreview = ({
                     <div className='gh-portal-gift-email-meta-text'>
                         {/* The email really is sent by the publication, so
                             that's the sender; the buyer is named in the body. */}
-                        {/* Publisher and date always share the top line. */}
-                        <div className='gh-portal-gift-email-from-row'>
-                            <div className='gh-portal-gift-email-from'>{siteTitle}</div>
-                            <div className='gh-portal-gift-email-date-stack'>
-                                <div aria-hidden={isScheduled} className='gh-portal-gift-email-date' data-active={!isScheduled}>
-                                    {todayDate}
-                                </div>
-                                <div aria-hidden={!isScheduled} className='gh-portal-gift-email-date' data-active={isScheduled}>
-                                    {scheduledLabel}
-                                </div>
-                            </div>
-                        </div>
+                        <div className='gh-portal-gift-email-from'>{siteTitle}</div>
                         {/* Absent until there's a recipient, rather than sitting
-                            there as a placeholder. The preview is centred in the
-                            panel, so the block growing a second line lifts the
-                            publisher row to its final position as it opens. */}
+                            there as a placeholder. The block beside it already
+                            reserves both lines, so this opening lifts the
+                            publisher rather than pushing the message down. */}
                         <div aria-hidden={!recipientLabel} className='gh-portal-gift-checkout-reveal' data-open={!!recipientLabel}>
                             <div className='gh-portal-gift-checkout-reveal-inner'>
                                 <div className='gh-portal-gift-email-to'>
@@ -111,13 +99,29 @@ const GiftEmailPreview = ({
                             </div>
                         </div>
                     </div>
+                    {/* Pinned to the foot of the block beside it rather than to
+                        either line, so it starts out level with the publisher
+                        and stays put as the "To" line opens underneath — the
+                        publisher rises past it instead of the date moving. */}
+                    <div className='gh-portal-gift-email-date-stack'>
+                        <div aria-hidden={isScheduled} className='gh-portal-gift-email-date' data-active={!isScheduled}>
+                            {todayDate}
+                        </div>
+                        <div aria-hidden={!isScheduled} className='gh-portal-gift-email-date' data-active={isScheduled}>
+                            {scheduledLabel}
+                        </div>
+                    </div>
                 </div>
 
                 <div className='gh-portal-gift-email-body'>
-                    {/* The real template leads with the publication's icon or
-                        name; the preview drops it. The addressing line above
-                        already names the sender, and the card alongside carries
-                        the lockup, so repeating it here was the third mention. */}
+                    {/* The template leads with the publication's icon, falling
+                        back to its name, above the subject. */}
+                    <div className='gh-portal-gift-email-lockup'>
+                        {siteIcon
+                            ? <img alt={siteTitle} className='gh-portal-gift-email-lockup-icon' src={siteIcon} />
+                            : <span className='gh-portal-gift-email-lockup-title'>{siteTitle}</span>}
+                    </div>
+
                     <h1 className='gh-portal-gift-email-subject'>{t('A gift, just for you')}</h1>
 
                     <div aria-hidden={!toName} className='gh-portal-gift-checkout-reveal' data-open={!!toName}>
@@ -133,20 +137,27 @@ const GiftEmailPreview = ({
                     <div aria-hidden={!message} className='gh-portal-gift-checkout-reveal' data-open={!!message}>
                         <div className='gh-portal-gift-checkout-reveal-inner'>
                             <blockquote className='gh-portal-gift-email-message'>
-                                <p className='gh-portal-gift-email-message-text'>&ldquo;{message}&rdquo;</p>
+                                {/* Drawn rather than typed: the quote glyphs in
+                                    the system stack are squared off, and this
+                                    wants the round, stylised mark. One mark, no
+                                    closing pair, set behind the text so it reads
+                                    as part of the panel the note sits on. */}
+                                <QuoteIcon aria-hidden='true' className='gh-portal-gift-email-message-mark' focusable='false' />
+                                <p className='gh-portal-gift-email-message-text'>{message}</p>
+                                {/* No dash before the name — the note above it
+                                    leaves no doubt whose it is. */}
+                                {fromName && (
+                                    <p className='gh-portal-gift-email-message-from'>{fromName}</p>
+                                )}
                             </blockquote>
                         </div>
                     </div>
 
                     {benefits.length > 0 && (
                         <div className='gh-portal-gift-email-benefits'>
-                            {/* Capped at three visible perks, with the rest fading
-                                out — a tier with a long list would otherwise push
-                                the sheet far taller than the card beside it. The
-                                flag drives the cap rather than a bare max-height,
-                                so three or fewer render at full opacity with no
-                                fade hanging off the last row. */}
-                            <div className='gh-portal-gift-email-benefits-list' data-truncated={benefits.length > VISIBLE_BENEFITS}>
+                            <p className='gh-portal-gift-email-benefits-label'>{t('What\'s included')}</p>
+                            {/* Every perk, as the email sends them. */}
+                            <div>
                                 {benefits.map((benefit, idx) => (
                                     <div key={benefit?.id || `benefit-${idx}`} className='gh-portal-gift-email-benefit'>
                                         <CheckmarkIcon aria-hidden='true' focusable='false' />
@@ -157,26 +168,11 @@ const GiftEmailPreview = ({
                         </div>
                     )}
 
-                    <div aria-hidden='true' className='gh-portal-gift-email-cta'>{t('Redeem your gift')}</div>
-                </div>
-
-                {/* The same card the buyer configured on step 1, laid over the
-                    sheet's bottom-right corner so the two read as a stack.
-                    Decorative here — the sheet already states everything on it —
-                    so it's hidden from assistive tech. No cardRef is passed, so
-                    useCardTilt never binds to it and it stays completely still.
-
-                    Sender and value are deliberately left off: at this size they
-                    are the card's smallest type, and the sheet behind already
-                    names the buyer in its opening line. The card keeps what only
-                    it says — the duration, the tier and the publication. */}
-                <div aria-hidden='true' className='gh-portal-gift-email-card'>
-                    <GiftCard
-                        duration={cardDurationLabel}
-                        siteIcon={siteIcon}
-                        siteTitle={siteTitle}
-                        tierName={tierName}
-                    />
+                    {/* The email closes with a redeem button, an expiry line
+                        and a sent-from footer. All three are left out here:
+                        they're the recipient's business, not the buyer's, and
+                        they pushed the parts actually being composed off the
+                        panel. */}
                 </div>
             </div>
         </div>

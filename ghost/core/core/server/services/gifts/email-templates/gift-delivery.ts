@@ -6,6 +6,10 @@ export interface GiftDeliveryData {
     siteIconUrl: string | null;
     siteDomain: string;
     accentColor: string | undefined;
+    // Accent-derived panel and text colours for the buyer's note, blended in
+    // the service because email clients have no color-mix.
+    accentTint: string;
+    accentShade: string;
     toEmail: string;
     buyerName: string | null;
     recipientName: string | null;
