@@ -98,6 +98,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
                 updateRoute('embed-signup-form');
             }}
             cancelLabel=''
+            className='max-lg:h-auto!'
             footer={false}
             height={645}
             padding={false}

@@ -67,7 +67,7 @@ export const generateCode = ({
 
     if (preview) {
         if (layout === 'minimal') {
-            style = 'min-height: 58px; max-width: 440px;width: 100%;position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);';
+            style = 'min-height:58px;width:calc(100% - 48px);position:absolute;left:50%;top:50%;transform:translate(-50%, -50%)';
         } else {
             style = 'height: 100vh';
         }
@@ -93,7 +93,8 @@ export const generateCode = ({
         dataOptionsString += ` data-${key}="${escapeHtml(value)}"`;
     }
 
-    const code = `<div style="${escapeHtml(style)}"><script src="${encodeURI(scriptUrl)}"${dataOptionsString} async></script></div>`;
+    const previewLayoutAttribute = preview ? ` data-preview-layout="${escapeHtml(layout)}"` : '';
+    const code = `<div${previewLayoutAttribute} style="${escapeHtml(style)}"><script src="${encodeURI(scriptUrl)}"${dataOptionsString} async></script></div>`;
 
     if (preview && layout === 'minimal') {
         return `<div style="position: absolute; z-index: -1; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%), linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%);background-size: 16px 16px;background-position: 0 0, 8px 8px;;"></div>${code}`;
