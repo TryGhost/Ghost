@@ -209,6 +209,7 @@ export interface AutomationsRepository {
      */
     trackEmailClicked(options: {
         automationActionRevisionId: string;
+        automationRunStepId: string;
         memberId: string;
         clickedAt: Readonly<Date>;
     }, transactionOptions?: {

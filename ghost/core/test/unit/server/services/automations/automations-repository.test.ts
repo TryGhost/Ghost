@@ -2242,38 +2242,47 @@ describe('automations repository', function () {
 
         let firstRevisionId: string;
         let secondRevisionId: string;
+        let trackedRunStepId: string;
 
         const insertRecipient = async ({
             id,
             revisionId = firstRevisionId,
             memberId = 'member-id',
             trackClicks = true,
-            createdAt = EARLIER_DELIVERY
+            createdAt = EARLIER_DELIVERY,
+            automationRunStepId
         }: {
             id: string;
             revisionId?: string;
             memberId?: string;
             trackClicks?: boolean;
             createdAt?: Date;
-        }): Promise<void> => {
+            automationRunStepId?: string;
+        }): Promise<string> => {
+            const runStepId = automationRunStepId ?? (await insertStepForRevision(revisionId)).id;
             await knex('automated_email_recipients').insert({
                 id,
                 automation_action_revision_id: revisionId,
+                automation_run_step_id: runStepId,
                 member_id: memberId,
                 track_clicks: trackClicks,
                 created_at: toDatabaseDate(createdAt)
             });
+            return runStepId;
         };
 
         const trackClick = async ({
             memberId = 'member-id',
-            clickedAt = FIRST_CLICK
+            clickedAt = FIRST_CLICK,
+            automationRunStepId = trackedRunStepId
         }: {
             memberId?: string;
             clickedAt?: Date;
+            automationRunStepId?: string;
         } = {}): Promise<void> => {
             await repo.trackEmailClicked({
                 automationActionRevisionId: firstRevisionId,
+                automationRunStepId,
                 memberId,
                 clickedAt
             });
@@ -2308,7 +2317,7 @@ describe('automations repository', function () {
             firstRevisionId = firstRevision.id;
             secondRevisionId = secondRevision.id;
 
-            await insertRecipient({id: 'tracked-recipient'});
+            trackedRunStepId = await insertRecipient({id: 'tracked-recipient'});
         });
 
         it('records the first click and increments the click count', async function () {
@@ -2343,21 +2352,23 @@ describe('automations repository', function () {
             assert(revisionSelect < recipientSelect);
         });
 
-        it('does not update recipients for another member or revision', async function () {
-            await insertRecipient({
+        it('does not update a run step that belongs to another member or revision', async function () {
+            const otherMemberRunStepId = await insertRecipient({
                 id: 'other-member-recipient',
                 memberId: 'other-member-id'
             });
-            await insertRecipient({
+            const otherRevisionRunStepId = await insertRecipient({
                 id: 'other-revision-recipient',
                 revisionId: secondRevisionId
             });
 
-            await trackClick();
+            await trackClick({automationRunStepId: otherMemberRunStepId});
+            await trackClick({automationRunStepId: otherRevisionRunStepId});
 
-            assert.deepEqual(await getClickedAt('tracked-recipient'), FIRST_CLICK);
+            assert.equal(await getClickedAt('tracked-recipient'), null);
             assert.equal(await getClickedAt('other-member-recipient'), null);
             assert.equal(await getClickedAt('other-revision-recipient'), null);
+            assert.equal(await getClickedCount(firstRevisionId), null);
             assert.equal(await getClickedCount(secondRevisionId), null);
         });
 
@@ -2379,7 +2390,7 @@ describe('automations repository', function () {
             assert.equal(await getClickedCount(firstRevisionId), 6);
         });
 
-        it('only tracks the most recent recipient when a member received the same revision more than once', async function () {
+        it('tracks the recipient identified by the run step when a member received the same revision more than once', async function () {
             await insertRecipient({
                 id: 'other-delivery-recipient',
                 createdAt: LATER_DELIVERY
@@ -2388,18 +2399,21 @@ describe('automations repository', function () {
             await trackClick();
             await trackClick({clickedAt: LATER_CLICK});
 
-            assert.equal(await getClickedAt('tracked-recipient'), null);
-            assert.deepEqual(await getClickedAt('other-delivery-recipient'), FIRST_CLICK);
+            assert.deepEqual(await getClickedAt('tracked-recipient'), FIRST_CLICK);
+            assert.equal(await getClickedAt('other-delivery-recipient'), null);
             assert.equal(await getClickedCount(firstRevisionId), 1);
         });
 
         it('does not track clicks for recipients with tracking disabled', async function () {
-            await insertRecipient({
+            const disabledRunStepId = await insertRecipient({
                 id: 'tracking-disabled-recipient',
                 memberId: 'disabled-member-id',
                 trackClicks: false
             });
-            await trackClick({memberId: 'disabled-member-id'});
+            await trackClick({
+                automationRunStepId: disabledRunStepId,
+                memberId: 'disabled-member-id'
+            });
 
             assert.equal(await getClickedAt('tracking-disabled-recipient'), null);
             assert.equal(await getClickedCount(firstRevisionId), null);
@@ -2430,6 +2444,7 @@ describe('automations repository', function () {
             await assert.rejects(knex.transaction(async (transacting) => {
                 await repo.trackEmailClicked({
                     automationActionRevisionId: firstRevisionId,
+                    automationRunStepId: trackedRunStepId,
                     memberId: 'member-id',
                     clickedAt: FIRST_CLICK
                 }, {transacting});
