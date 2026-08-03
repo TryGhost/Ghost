@@ -83,7 +83,7 @@ module.exports = class CheckoutSessionEventService {
      * @param {import('stripe').Stripe.Checkout.Session} session
      */
     async handleGiftEvent(session) {
-        await this.deps.giftService.recordPurchase({
+        await this.deps.giftService.completePurchase({
             token: session.metadata?.gift_token,
             buyerEmail: session.customer_details?.email,
             stripeCustomerId: session.customer ?? null,

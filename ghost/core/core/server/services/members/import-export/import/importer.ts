@@ -82,7 +82,7 @@ interface StripeSubscriptions {
 
 // Gifts: reassigning a redeemed gift to the imported member.
 export interface GiftService {
-    reassignRedeemer(giftId: string, memberId: string, options: object): Promise<void>;
+    reassignRedeemer(giftId: string, memberId: string, options: {transacting?: unknown}): Promise<void>;
 }
 
 // The completion email concern: who it goes to, the links it carries, and sending

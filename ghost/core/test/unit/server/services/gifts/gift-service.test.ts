@@ -144,7 +144,21 @@ describe('GiftService', function () {
             tiersService,
             giftEmailService,
             staffServiceEmails,
-            giftReminderScheduler
+            giftReminderScheduler,
+            checkoutAdapter: {
+                getCustomerId: sinon.stub().resolves(null),
+                createSession: sinon.stub().resolves('https://checkout.example/')
+            },
+            activityRepository: {
+                browsePurchases: sinon.stub().resolves({data: [], meta: {}}),
+                browseRedemptions: sinon.stub().resolves({data: [], meta: {}})
+            },
+            labsService: {
+                isSet: sinon.stub().returns(false)
+            },
+            settingsCache: {
+                get: sinon.stub()
+            }
         });
     }
 
@@ -170,11 +184,11 @@ describe('GiftService', function () {
         });
     });
 
-    describe('recordPurchase', function () {
+    describe('completePurchase', function () {
         it('creates a Gift entity and saves it', async function () {
             const service = createService();
 
-            const result = await service.recordPurchase(purchaseData);
+            const result = await service.completePurchase(purchaseData);
 
             assert.equal(result, true);
             sinon.assert.calledOnce(giftRepository.create);
@@ -190,7 +204,7 @@ describe('GiftService', function () {
             giftRepository.existsByCheckoutSessionId.resolves(true);
 
             const service = createService();
-            const result = await service.recordPurchase(purchaseData);
+            const result = await service.completePurchase(purchaseData);
 
             assert.equal(result, false);
 
@@ -207,7 +221,7 @@ describe('GiftService', function () {
 
             const service = createService();
 
-            await service.recordPurchase(purchaseData);
+            await service.completePurchase(purchaseData);
 
             sinon.assert.calledWith(memberRepository.get, {customer_id: 'cust_123'});
 
@@ -219,7 +233,7 @@ describe('GiftService', function () {
         it('sets buyerMemberId to null when stripeCustomerId is null', async function () {
             const service = createService();
 
-            await service.recordPurchase({...purchaseData, stripeCustomerId: null});
+            await service.completePurchase({...purchaseData, stripeCustomerId: null});
 
             sinon.assert.notCalled(memberRepository.get);
 
@@ -233,7 +247,7 @@ describe('GiftService', function () {
 
             const service = createService();
 
-            await service.recordPurchase(purchaseData);
+            await service.completePurchase(purchaseData);
 
             const gift = giftRepository.create.getCall(0).args[0];
 
@@ -243,7 +257,7 @@ describe('GiftService', function () {
         it('parses duration from string to number', async function () {
             const service = createService();
 
-            await service.recordPurchase({...purchaseData, duration: '3'});
+            await service.completePurchase({...purchaseData, duration: '3'});
 
             const gift = giftRepository.create.getCall(0).args[0];
 
@@ -254,7 +268,7 @@ describe('GiftService', function () {
             const service = createService();
 
             await assert.rejects(
-                () => service.recordPurchase({...purchaseData, duration: 'invalid'}),
+                () => service.completePurchase({...purchaseData, duration: 'invalid'}),
                 (err: any) => {
                     assert.equal(err.errorType, 'ValidationError');
 
@@ -277,7 +291,7 @@ describe('GiftService', function () {
 
             const service = createService();
 
-            await service.recordPurchase(purchaseData);
+            await service.completePurchase(purchaseData);
 
             sinon.assert.calledOnce(staffServiceEmails.notifyGiftPurchased);
 
@@ -299,7 +313,7 @@ describe('GiftService', function () {
             const service = createService();
 
             await assert.rejects(
-                () => service.recordPurchase(purchaseData),
+                () => service.completePurchase(purchaseData),
                 {message: 'Tier not found: tier_1'}
             );
 
@@ -310,7 +324,7 @@ describe('GiftService', function () {
         it('uses buyerEmail and null name when buyer is not a member', async function () {
             const service = createService();
 
-            await service.recordPurchase({...purchaseData, stripeCustomerId: null});
+            await service.completePurchase({...purchaseData, stripeCustomerId: null});
 
             sinon.assert.calledOnce(staffServiceEmails.notifyGiftPurchased);
 
@@ -324,7 +338,7 @@ describe('GiftService', function () {
         it('sends buyer confirmation email', async function () {
             const service = createService();
 
-            await service.recordPurchase(purchaseData);
+            await service.completePurchase(purchaseData);
 
             sinon.assert.calledOnce(tiersService.api.read);
             sinon.assert.calledWith(tiersService.api.read, 'tier_1');
@@ -345,7 +359,7 @@ describe('GiftService', function () {
 
             const service = createService();
 
-            const result = await service.recordPurchase(purchaseData);
+            const result = await service.completePurchase(purchaseData);
 
             assert.equal(result, true);
             sinon.assert.calledOnce(giftRepository.create);
@@ -1397,14 +1411,14 @@ describe('GiftService', function () {
         });
     });
 
-    describe('refund', function () {
+    describe('handlePaymentRefund', function () {
         it('saves a refunded gift and returns true', async function () {
             const gift = buildGift();
 
             giftRepository.getByPaymentIntentId.resolves(gift);
 
             const service = createService();
-            const result = await service.refund('pi_456');
+            const result = await service.handlePaymentRefund({paymentIntentId: 'pi_456'});
 
             assert.equal(result, true);
             sinon.assert.calledOnce(giftRepository.update);
@@ -1421,7 +1435,7 @@ describe('GiftService', function () {
             giftRepository.getByPaymentIntentId.resolves(null);
 
             const service = createService();
-            const result = await service.refund('pi_unknown');
+            const result = await service.handlePaymentRefund({paymentIntentId: 'pi_unknown'});
 
             assert.equal(result, false);
             sinon.assert.notCalled(giftRepository.update);
@@ -1442,7 +1456,7 @@ describe('GiftService', function () {
             });
 
             const service = createService();
-            const result = await service.refund('pi_456');
+            const result = await service.handlePaymentRefund({paymentIntentId: 'pi_456'});
 
             assert.equal(result, true);
             sinon.assert.calledOnce(giftRepository.update);
@@ -1460,7 +1474,7 @@ describe('GiftService', function () {
             giftRepository.getByPaymentIntentId.resolves(gift);
 
             const service = createService();
-            await service.refund('pi_456');
+            await service.handlePaymentRefund({paymentIntentId: 'pi_456'});
 
             sinon.assert.notCalled(memberRepository.get);
             sinon.assert.notCalled(memberRepository.update);
@@ -1481,7 +1495,7 @@ describe('GiftService', function () {
             });
 
             const service = createService();
-            const result = await service.refund('pi_456');
+            const result = await service.handlePaymentRefund({paymentIntentId: 'pi_456'});
 
             assert.equal(result, true);
             sinon.assert.calledOnce(giftRepository.update);
@@ -1505,7 +1519,7 @@ describe('GiftService', function () {
 
             const service = createService();
             await assert.rejects(
-                () => service.refund('pi_456'),
+                () => service.handlePaymentRefund({paymentIntentId: 'pi_456'}),
                 {message: 'Cannot remove product with active subscription'}
             );
 
@@ -1521,7 +1535,7 @@ describe('GiftService', function () {
             giftRepository.getByPaymentIntentId.resolves(gift);
 
             const service = createService();
-            const result = await service.refund('pi_456');
+            const result = await service.handlePaymentRefund({paymentIntentId: 'pi_456'});
 
             assert.equal(result, true);
             sinon.assert.notCalled(giftRepository.update);

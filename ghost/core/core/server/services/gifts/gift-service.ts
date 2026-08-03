@@ -6,6 +6,13 @@ import type {GiftRepository} from './gift-repository';
 import type {GiftReminderScheduler} from './gift-reminder-scheduler';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
+import {
+    resolveGiftDuration,
+    validateGiftCheckoutOffer,
+    type GiftCadence,
+    type GiftCheckoutTier,
+    type ResolvedGiftDuration
+} from './gift-checkout-offer';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
@@ -45,12 +52,14 @@ interface MemberRepository {
     ): Promise<unknown>;
 }
 
-type Tier = {
+type Tier = Omit<GiftCheckoutTier, 'currency'> & {
+    id: string | {
+        toHexString(): string;
+    };
     name: string;
-    currency: string | null;
-    monthlyPrice: number | null;
-    yearlyPrice: number | null;
-    toJSON?: () => {
+    currency: string;
+    getPrice(cadence: GiftCadence): number;
+    toJSON(): {
         id: string;
         name: string;
         description: string | null;
@@ -123,12 +132,99 @@ interface GiftServiceDeps {
     giftEmailService: GiftEmailService;
     staffServiceEmails: StaffServiceEmails;
     giftReminderScheduler: Pick<GiftReminderScheduler, 'scheduleFor'>;
+    checkoutAdapter: {
+        getCustomerId(buyer: GiftCheckoutBuyer): Promise<string | null>;
+        createSession(data: GiftCheckoutSession): Promise<string>;
+    };
+    activityRepository: {
+        browsePurchases(options?: Record<string, unknown>, filter?: unknown): Promise<GiftActivityPage>;
+        browseRedemptions(options?: Record<string, unknown>, filter?: unknown): Promise<GiftActivityPage>;
+    };
+    labsService: {
+        isSet(flag: string): boolean;
+    };
+    settingsCache: {
+        get(key: string): unknown;
+    };
 }
 
 interface ReminderSend {
     memberEmail: string;
     memberName: string | null;
     consumesAt: Date;
+}
+
+export interface GiftCheckoutBuyer {
+    memberId: string | null;
+    email: string | null;
+    name: string | null;
+    isAuthenticated: boolean;
+}
+
+export interface StartGiftCheckoutInput {
+    tierId?: string;
+    offerId?: string;
+    cadence?: string;
+    duration?: number;
+    metadata: Record<string, unknown>;
+    successUrl: string;
+    cancelUrl?: string;
+    buyer: GiftCheckoutBuyer;
+}
+
+interface GiftCheckoutSession {
+    amount: number;
+    currency: string;
+    tierName: string;
+    cadence: GiftCadence;
+    duration: number;
+    metadata: Record<string, unknown>;
+    successUrl: string;
+    cancelUrl?: string;
+    customerId: string | null;
+    customerEmail: string | null;
+}
+
+export interface GiftRedemption {
+    token: string;
+    cadence: GiftCadence;
+    duration: number;
+    currency: string;
+    amount: number;
+    expires_at: Date;
+    consumes_at: Date | null;
+    tier: {
+        id: string;
+        name: string;
+        description: string | null;
+        benefits: string[];
+    };
+}
+
+export interface GiftContinuation {
+    tierId: string;
+    cadence: GiftCadence;
+    trialDays: number | null;
+}
+
+export interface GiftMemberPresentation {
+    cadence: GiftCadence;
+    currency: string;
+    amount: number;
+}
+
+export interface GiftPreview {
+    cadence: GiftCadence;
+    duration: number;
+    tier: {
+        id: string;
+        name: string;
+    };
+}
+
+export interface GiftActivityPage {
+    data: Array<Record<string, unknown>>;
+    meta: unknown;
 }
 
 export class GiftService {
@@ -138,6 +234,126 @@ export class GiftService {
         this.deps = deps;
     }
 
+    async startCheckout(input: StartGiftCheckoutInput): Promise<{url: string}> {
+        if (input.offerId) {
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: 'Offers cannot be applied to gift subscriptions'
+            });
+        }
+
+        if (!input.tierId) {
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: 'Expected offerId or tierId, received none'
+            });
+        }
+
+        let resolvedDuration: ResolvedGiftDuration | null = null;
+        let cadence: GiftCadence;
+
+        if (this.deps.labsService.isSet('giftSubCustomization')) {
+            resolvedDuration = resolveGiftDuration(input);
+            cadence = resolvedDuration.cadence;
+        } else {
+            if (!input.cadence) {
+                throw new errors.BadRequestError({
+                    message: 'Bad Request.',
+                    context: `Expected cadence to be "month" or "year", received ${input.cadence}`
+                });
+            }
+
+            if (input.cadence !== 'month' && input.cadence !== 'year') {
+                throw new errors.BadRequestError({
+                    message: 'Bad Request.',
+                    context: `Expected cadence to be "month" or "year", received "${input.cadence}"`
+                });
+            }
+
+            cadence = input.cadence;
+        }
+
+        let tier: Tier | null;
+        try {
+            tier = await this.deps.tiersService.api.read(input.tierId);
+        } catch (err) {
+            logging.error(err);
+            throw new errors.BadRequestError({
+                message: 'This tier does not exist.',
+                context: `Tier with id "${input.tierId}" not found`
+            });
+        }
+
+        if (!tier) {
+            throw new errors.BadRequestError({
+                message: 'This tier does not exist.',
+                context: `Tier with id "${input.tierId}" not found`
+            });
+        }
+
+        if (tier.status === 'archived') {
+            throw new errors.NoPermissionError({
+                message: 'This tier is archived.'
+            });
+        }
+
+        let duration = 1;
+        let totalMonths: number | undefined;
+        let amount = tier.getPrice(cadence);
+
+        if (resolvedDuration) {
+            const plan = validateGiftCheckoutOffer({
+                tier,
+                portalPlans: this.deps.settingsCache.get('portal_plans'),
+                offer: resolvedDuration
+            });
+
+            cadence = plan.cadence;
+            duration = plan.duration;
+            totalMonths = plan.totalMonths;
+            amount = plan.amount;
+        }
+
+        const tierId = typeof tier.id === 'string' ? tier.id : tier.id.toHexString();
+        const token = this.generateToken();
+        const successUrl = new URL(input.successUrl);
+
+        successUrl.searchParams.set('stripe', 'gift-purchase-success');
+        successUrl.searchParams.set('gift_token', token);
+        successUrl.searchParams.set('gift_tier', tierId);
+        successUrl.searchParams.set('gift_cadence', cadence);
+        if (totalMonths !== undefined) {
+            successUrl.searchParams.set('gift_duration', String(totalMonths));
+        }
+
+        const customerId = input.buyer.isAuthenticated
+            ? await this.deps.checkoutAdapter.getCustomerId(input.buyer)
+            : null;
+
+        const url = await this.deps.checkoutAdapter.createSession({
+            amount,
+            currency: tier.currency.toLowerCase(),
+            tierName: tier.name,
+            cadence,
+            duration,
+            metadata: {
+                ...input.metadata,
+                ghost_gift: 'true',
+                gift_token: token,
+                tier_id: tierId,
+                cadence,
+                duration: String(duration)
+            },
+            successUrl: successUrl.toString(),
+            cancelUrl: input.cancelUrl,
+            customerId,
+            customerEmail: customerId ? null : input.buyer.email
+        });
+
+        return {url};
+    }
+
+    /** @internal */
     generateToken(): string {
         /**
          * Combinations: 62^12 ≈ 3.23 × 10^21 (~3.23 sextillion)
@@ -153,7 +369,7 @@ export class GiftService {
         return token;
     }
 
-    async recordPurchase(data: GiftPurchaseData): Promise<boolean> {
+    async completePurchase(data: GiftPurchaseData): Promise<boolean> {
         const duration = Number.parseInt(data.duration);
 
         if (Number.isNaN(duration)) {
@@ -220,10 +436,18 @@ export class GiftService {
         return true;
     }
 
-    async getByToken(token: string): Promise<Gift | null> {
+    private async getGiftByToken(token: string): Promise<Gift | null> {
         return this.deps.giftRepository.getByToken(token);
     }
 
+    /**
+     * Internal implementation test hook. Runtime callers use stable read models.
+     */
+    async getByToken(token: string): Promise<Gift | null> {
+        return this.getGiftByToken(token);
+    }
+
+    /** @internal */
     async assertRedeemable(gift: Gift, memberStatus: string | null): Promise<Gift> {
         const redeemableCheck = gift.checkRedeemable(memberStatus);
 
@@ -267,7 +491,16 @@ export class GiftService {
         return gift;
     }
 
-    async getRedeemable(token: string, memberStatus: string | null): Promise<Gift> {
+    async getRedeemable(input: {token: string; memberStatus: string | null}): Promise<GiftRedemption>;
+    /** @internal */
+    async getRedeemable(input: string, legacyMemberStatus?: string | null): Promise<Gift>;
+    async getRedeemable(
+        input: {token: string; memberStatus: string | null} | string,
+        legacyMemberStatus?: string | null
+    ): Promise<GiftRedemption | Gift> {
+        const legacyCall = typeof input === 'string';
+        const token = legacyCall ? input : input.token;
+        const memberStatus = legacyCall ? legacyMemberStatus ?? null : input.memberStatus;
         const gift = await this.deps.giftRepository.getByToken(token);
 
         if (!gift) {
@@ -276,10 +509,46 @@ export class GiftService {
 
         await this.assertRedeemable(gift, memberStatus);
 
-        return gift;
+        return legacyCall ? gift : this.serializeRedemption(gift);
     }
 
-    async redeem(token: string, memberId: string, options: {transacting?: {executionPromise: Promise<unknown>}; newMember?: boolean} = {}): Promise<Gift> {
+    async redeem(input: {
+        token: string;
+        memberId: string;
+        transacting?: {executionPromise: Promise<unknown>};
+        newMember?: boolean;
+    }): Promise<GiftRedemption>;
+    /** @internal */
+    async redeem(input: string, legacyMemberId: string, legacyOptions?: {
+        transacting?: {executionPromise: Promise<unknown>};
+        newMember?: boolean;
+    }): Promise<Gift>;
+    async redeem(input: {
+        token: string;
+        memberId: string;
+        transacting?: {executionPromise: Promise<unknown>};
+        newMember?: boolean;
+    } | string, legacyMemberId?: string, legacyOptions: {
+        transacting?: {executionPromise: Promise<unknown>};
+        newMember?: boolean;
+    } = {}): Promise<GiftRedemption | Gift> {
+        const legacyCall = typeof input === 'string';
+        const {
+            token,
+            memberId,
+            transacting,
+            newMember
+        } = legacyCall ? {
+            token: input,
+            memberId: legacyMemberId as string,
+            ...legacyOptions
+        } : input;
+        const gift = await this.redeemGift(token, memberId, {transacting, newMember});
+
+        return legacyCall ? gift : this.serializeRedemption(gift);
+    }
+
+    private async redeemGift(token: string, memberId: string, options: {transacting?: {executionPromise: Promise<unknown>}; newMember?: boolean} = {}): Promise<Gift> {
         const run = async (transacting: unknown) => {
             const member = await this.deps.memberRepository.get({id: memberId}, {transacting, forUpdate: true});
             if (!member) {
@@ -358,6 +627,7 @@ export class GiftService {
         return redeemed;
     }
 
+    /** @internal */
     async getActiveByMember(memberId: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
         if (!memberId) {
             return null;
@@ -365,6 +635,7 @@ export class GiftService {
         return this.deps.giftRepository.getActiveByMember(memberId, options);
     }
 
+    /** @internal */
     async getActiveByMembers(memberIds: string[], options: {transacting?: unknown} = {}): Promise<Map<string, Gift>> {
         if (!memberIds || memberIds.length === 0) {
             return new Map();
@@ -372,6 +643,7 @@ export class GiftService {
         return this.deps.giftRepository.getActiveByMembers(memberIds, options);
     }
 
+    /** @internal */
     getRemainingActiveDays(gift: Gift, now: Date = new Date()): number {
         if (!gift.isRedeemed() || !gift.consumesAt || gift.isConsumed()) {
             return 0;
@@ -382,11 +654,104 @@ export class GiftService {
         return Math.max(0, diffDays);
     }
 
+    async preparePaidContinuation({
+        memberId,
+        memberStatus
+    }: {
+        memberId: string;
+        memberStatus: string;
+    }): Promise<GiftContinuation> {
+        if (memberStatus !== 'gift') {
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: 'Member does not have an active gift subscription'
+            });
+        }
+
+        const gift = await this.getActiveByMember(memberId);
+
+        if (!gift) {
+            throw new errors.BadRequestError({
+                message: 'Bad Request.',
+                context: 'No active gift subscription found for member'
+            });
+        }
+
+        const remainingDays = this.getRemainingActiveDays(gift);
+
+        return {
+            tierId: gift.tierId,
+            cadence: gift.cadence,
+            trialDays: remainingDays > 0 ? Math.min(remainingDays, 730) : null
+        };
+    }
+
+    async getMemberPresentations(memberIds: string[]): Promise<Map<string, GiftMemberPresentation>> {
+        const gifts = await this.getActiveByMembers(memberIds);
+        const presentations = new Map<string, GiftMemberPresentation>();
+
+        for (const [memberId, gift] of gifts) {
+            presentations.set(memberId, {
+                cadence: gift.cadence,
+                currency: gift.currency,
+                amount: gift.amount
+            });
+        }
+
+        return presentations;
+    }
+
+    async getPreview(token: string): Promise<GiftPreview | null> {
+        const gift = await this.getGiftByToken(token);
+
+        if (!gift) {
+            return null;
+        }
+
+        const tier = await this.deps.tiersService.api.read(gift.tierId);
+
+        if (!tier) {
+            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.token}`});
+        }
+
+        const tierJSON = tier.toJSON();
+
+        return {
+            cadence: gift.cadence,
+            duration: gift.duration,
+            tier: {
+                id: tierJSON.id,
+                name: tierJSON.name
+            }
+        };
+    }
+
+    browsePurchaseActivity(options?: Record<string, unknown>, filter?: unknown): Promise<GiftActivityPage> {
+        return this.deps.activityRepository.browsePurchases(options, filter);
+    }
+
+    browseRedemptionActivity(options?: Record<string, unknown>, filter?: unknown): Promise<GiftActivityPage> {
+        return this.deps.activityRepository.browseRedemptions(options, filter);
+    }
+
     async reassignRedeemer(
-        giftId: string,
-        memberId: string,
-        options: {transacting?: unknown} = {}
-    ): Promise<Gift> {
+        input: {giftId: string; memberId: string; transacting?: unknown}
+    ): Promise<void>;
+    /** @internal */
+    async reassignRedeemer(
+        input: string,
+        legacyMemberId: string,
+        legacyOptions?: {transacting?: unknown}
+    ): Promise<Gift>;
+    async reassignRedeemer(
+        input: {giftId: string; memberId: string; transacting?: unknown} | string,
+        legacyMemberId?: string,
+        legacyOptions: {transacting?: unknown} = {}
+    ): Promise<Gift | void> {
+        const legacyCall = typeof input === 'string';
+        const giftId = legacyCall ? input : input.giftId;
+        const memberId = legacyCall ? legacyMemberId as string : input.memberId;
+        const options = legacyCall ? legacyOptions : {transacting: input.transacting};
         const run = async (transacting: unknown): Promise<Gift> => {
             const gift = await this.deps.giftRepository.getById(giftId, {transacting, forUpdate: true});
 
@@ -455,12 +820,14 @@ export class GiftService {
             return reassignedGift;
         };
 
-        return options.transacting
+        const reassigned = await (options.transacting
             ? run(options.transacting)
-            : this.deps.giftRepository.transaction(run);
+            : this.deps.giftRepository.transaction(run));
+
+        return legacyCall ? reassigned : undefined;
     }
 
-    async refund(paymentIntentId: string): Promise<boolean> {
+    async handlePaymentRefund({paymentIntentId}: {paymentIntentId: string}): Promise<boolean> {
         const gift = await this.deps.giftRepository.getByPaymentIntentId(paymentIntentId);
 
         if (!gift) {
@@ -491,6 +858,17 @@ export class GiftService {
         return true;
     }
 
+    async handlePaidSubscriptionActivation(memberId: string): Promise<boolean> {
+        const gift = await this.getActiveByMember(memberId);
+
+        if (!gift) {
+            return false;
+        }
+
+        return Boolean(await this.consume(gift.token));
+    }
+
+    /** @internal */
     async consume(token: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
         const run = async (transacting: unknown) => {
             // Fetch with a row lock to prevent race conditions under concurrency
@@ -696,5 +1074,33 @@ export class GiftService {
         });
 
         return true;
+    }
+
+    private async serializeRedemption(gift: Gift): Promise<GiftRedemption> {
+        const tier = await this.deps.tiersService.api.read(gift.tierId);
+
+        if (!tier) {
+            throw new errors.InternalServerError({
+                message: `Tier ${gift.tierId} not found for gift: ${gift.token}`
+            });
+        }
+
+        const tierJSON = tier.toJSON();
+
+        return {
+            token: gift.token,
+            cadence: gift.cadence,
+            duration: gift.duration,
+            currency: gift.currency,
+            amount: gift.amount,
+            expires_at: gift.expiresAt,
+            consumes_at: gift.consumesAt,
+            tier: {
+                id: tierJSON.id,
+                name: tierJSON.name,
+                description: tierJSON.description,
+                benefits: tierJSON.benefits
+            }
+        };
     }
 }

@@ -32,7 +32,7 @@ describe('CheckoutSessionEventService', function () {
         };
 
         giftService = {
-            recordPurchase: sinon.stub().resolves(true)
+            completePurchase: sinon.stub().resolves(true)
         };
 
         staffServiceEmails = {
@@ -621,7 +621,7 @@ describe('CheckoutSessionEventService', function () {
     });
 
     describe('handleGiftEvent', function () {
-        it('calls giftService.recordPurchase with session data', async function () {
+        it('calls giftService.completePurchase with session data', async function () {
             const service = createService();
             const session = {
                 id: 'cs_test_123',
@@ -644,9 +644,9 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleGiftEvent(session);
 
-            sinon.assert.calledOnce(giftService.recordPurchase);
+            sinon.assert.calledOnce(giftService.completePurchase);
 
-            const purchaseData = giftService.recordPurchase.getCall(0).args[0];
+            const purchaseData = giftService.completePurchase.getCall(0).args[0];
 
             assert.equal(purchaseData.token, 'abc-123-token');
             assert.equal(purchaseData.buyerEmail, 'buyer@example.com');
@@ -683,7 +683,7 @@ describe('CheckoutSessionEventService', function () {
 
             await service.handleGiftEvent(session);
 
-            const purchaseData = giftService.recordPurchase.getCall(0).args[0];
+            const purchaseData = giftService.completePurchase.getCall(0).args[0];
 
             assert.equal(purchaseData.stripeCustomerId, null);
         });
