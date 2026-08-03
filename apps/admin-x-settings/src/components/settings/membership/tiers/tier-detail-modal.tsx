@@ -122,6 +122,31 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         blank: '',
         canAddNewItem: item => !!item
     });
+    const modalRef = useRef<HTMLElement>(null);
+    const newBenefitInputRef = useRef<HTMLInputElement>(null);
+
+    const addBenefit = () => {
+        if (!benefits.newItem) {
+            return;
+        }
+
+        const previousInputTop = newBenefitInputRef.current?.getBoundingClientRect().top;
+        benefits.addItem();
+
+        window.requestAnimationFrame(() => {
+            const input = newBenefitInputRef.current;
+            const modalElement = modalRef.current;
+            if (!input || !modalElement || previousInputTop === undefined) {
+                return;
+            }
+
+            input.focus({preventScroll: true});
+            modalElement.scrollBy({
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+                top: input.getBoundingClientRect().top - previousInputTop
+            });
+        });
+    };
 
     const toggleFreeTrial = (checked: boolean) => {
         if (checked) {
@@ -180,6 +205,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     }
 
     return <SettingsModal
+        ref={modalRef}
         afterClose={() => {
             updateRoute('tiers');
         }}
@@ -350,6 +376,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             <Field className='w-100'>
                                 <FieldLabel className='sr-only' htmlFor='new-tier-benefit'>New benefit</FieldLabel>
                                 <Input
+                                    ref={newBenefitInputRef}
                                     className='grow'
                                     id='new-tier-benefit'
                                     maxLength={191}
@@ -358,7 +385,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     onChange={e => benefits.setNewItem(e.target.value)}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
-                                            benefits.addItem();
+                                            e.preventDefault();
+                                            addBenefit();
                                         }
                                     }} />
                             </Field>
@@ -367,7 +395,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 className='absolute top-1/2 right-1 z-10 size-[22px]! -translate-y-1/2 p-0!'
                                 size='icon'
                                 type='button'
-                                onClick={() => benefits.addItem()}
+                                onClick={addBenefit}
                             >
                                 <LucideIcon.Plus />
                             </Button>
