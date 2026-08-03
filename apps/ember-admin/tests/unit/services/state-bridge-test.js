@@ -56,7 +56,14 @@ describe('Unit: Service: state-bridge', function () {
     });
 
     describe('#isFeatureEnabled', function () {
+        it('does not claim route ownership before Labs settings load', function () {
+            settings.settingsModel = null;
+
+            expect(service.isFeatureEnabled('tagDetailsReact')).to.be.undefined;
+        });
+
         it('exposes the same strict Labs state used by Ember routes', function () {
+            settings.settingsModel = {};
             sinon.stub(feature, 'tagDetailsReact').get(() => true);
             sinon.stub(feature, 'memberDetailsReact').get(() => 'true');
 

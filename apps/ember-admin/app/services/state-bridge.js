@@ -48,6 +48,10 @@ export default class StateBridgeService extends Service.extend(Evented) {
      */
     @action
     isFeatureEnabled(name) {
+        if (!this.settings.settingsModel) {
+            return undefined;
+        }
+
         return this.feature[name] === true;
     }
 

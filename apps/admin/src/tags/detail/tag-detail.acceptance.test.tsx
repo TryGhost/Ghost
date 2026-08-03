@@ -34,19 +34,17 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await expect.element(page.getByRole('button', {name: 'Delete tag', exact: true})).toBeVisible();
     });
 
-    it('remains accessible during a force upgrade', async () => {
-        const t = tag({name: 'News', slug: 'news'});
+    it('redirects to billing during a force upgrade', async () => {
         const config = configResponse(FLAGS);
         config.config.hostSettings = {forceUpgrade: true};
-        fakeTagWorld(t);
 
-        await renderAdminApp(`/tags/${t.slug}`, {
+        await renderAdminApp('/tags/news', {
             ...FLAGS,
             boot: {browseConfig: {response: config}}
         });
 
-        await expect.poll(currentRoute).toBe('/tags/news');
-        await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('News');
+        await expect.poll(currentRoute).toBe('/pro');
+        expect(page.getByTestId('tag-detail').query()).toBeNull();
     });
 
     it('offers Unsplash for an empty tag image', async () => {

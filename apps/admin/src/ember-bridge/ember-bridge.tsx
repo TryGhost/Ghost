@@ -20,7 +20,7 @@ export interface StateBridge {
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
-    isFeatureEnabled?: (name: string) => boolean;
+    isFeatureEnabled?: (name: string) => boolean | undefined;
     preloadAdminThemeStylesheet?: () => Promise<void>;
     applyAdminThemePreference?: (mode: 'light' | 'dark' | 'system') => Promise<void> | void;
     on<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;

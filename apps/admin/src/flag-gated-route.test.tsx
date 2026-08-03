@@ -76,6 +76,22 @@ describe('FlagGatedRoute', () => {
         expect(screen.queryByTestId('ember-fallback')).not.toBeInTheDocument();
     });
 
+    it('uses config ownership while Ember feature state is loading', async () => {
+        mockUseBrowseConfig.mockReturnValue(withLabs({someFlag: true}));
+        window.EmberBridge = {
+            state: {
+                isFeatureEnabled: () => undefined
+            }
+        } as unknown as typeof window.EmberBridge;
+
+        render(<FlagGatedRoute component={ReactScreen} flag="someFlag" />);
+
+        await waitFor(() => {
+            expect(screen.getByTestId('react-screen')).toBeInTheDocument();
+        });
+        expect(screen.queryByTestId('ember-fallback')).not.toBeInTheDocument();
+    });
+
     it('uses Ember ownership while the two flag sources disagree', async () => {
         mockUseBrowseConfig.mockReturnValue(withLabs({someFlag: false}));
         window.EmberBridge = {
