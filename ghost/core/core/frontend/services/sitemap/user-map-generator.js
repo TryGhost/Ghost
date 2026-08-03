@@ -11,7 +11,19 @@ class UserMapGenerator extends BaseMapGenerator {
     }
 
     validateImageUrl(imageUrl) {
-        return imageUrl && validator.isURL(imageUrl, {protocols: ['http', 'https'], require_protocol: true});
+        /** @type {Partial<Parameters<typeof validator.isURL>[0]>} */
+        const isUrlOptions = {
+            protocols: ['http', 'https'],
+            require_protocol: true
+        };
+        return (
+            typeof imageUrl === 'string' &&
+            (
+                // `validator.isURL` doesn't let us express "any TLD or localhost", so we do two checks.
+                validator.isURL(imageUrl, isUrlOptions) ||
+                validator.isURL(imageUrl, {...isUrlOptions, host_whitelist: ['localhost']})
+            )
+        );
     }
 }
 
