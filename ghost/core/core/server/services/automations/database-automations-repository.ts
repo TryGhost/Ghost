@@ -276,6 +276,7 @@ export function createDatabaseAutomationsRepository({
                     member_email: options.memberEmail,
                     member_name: options.memberName,
                     automation_action_revision_id: options.automationActionRevisionId,
+                    automation_run_step_id: options.automationRunStepId,
                     ...(options.mailgunMessageId ? {mailgun_message_id: options.mailgunMessageId} : {}),
                     track_clicks: options.trackClicks,
                     track_opens: options.trackOpens,
