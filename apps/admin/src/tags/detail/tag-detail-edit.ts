@@ -66,9 +66,9 @@ export function getTagEditableSlice(tag: Partial<Tag>): TagEditableFields {
 }
 
 /**
- * Normalize a draft for dirty comparison and saving. Ember trims an ordinary
- * form value when that field is edited (`tag-form.js` `setTagProperty`) but
- * preserves untouched server data and code injection verbatim.
+ * Normalize a draft for dirty comparison and saving. Ember trims every edited
+ * value (`tag-form.js` `setTagProperty`), code injection included; we trim only
+ * touched ordinary fields and deliberately keep code injection verbatim.
  */
 export function normalizeTagDraft(draft: TagEditableFields, touchedFields?: ReadonlySet<TagFieldName>): TagEditableFields {
     const normalized = {} as TagEditableFields;
