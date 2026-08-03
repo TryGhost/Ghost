@@ -366,6 +366,24 @@ describe('HeaderNode', function () {
                 });
             }));
 
+            it('round-trips every layout with and without a background image', editorTest(function () {
+                const layouts = ['regular', 'wide', 'full', 'split'];
+                const backgroundImages = ['', 'https://example.com/image.jpg'];
+
+                layouts.forEach((layout) => {
+                    backgroundImages.forEach((backgroundImageSrc) => {
+                        const headerNode = $createHeaderNode({...dataset, layout, backgroundImageSrc});
+                        const {element} = headerNode.exportDOM(editor, exportOptions);
+                        const document = createDocument((element as HTMLElement).outerHTML);
+                        const nodes = $generateNodesFromDOM(editor, document) as HeaderNode[];
+
+                        expect(nodes.length).toBe(1);
+                        expect(nodes[0].layout).toBe(layout);
+                        expect(nodes[0].backgroundImageSrc).toBe(backgroundImageSrc);
+                    });
+                });
+            }));
+
             it('does not force split layout when a full-width card has a background image', editorTest(function () {
                 const htmlstring = `
                     <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide" data-background-color="#000000">
