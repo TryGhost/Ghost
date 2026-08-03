@@ -383,7 +383,7 @@ describe('PaymentsService', function () {
             assert.equal(args.metadata.gift_token, 'AbCdEfGhIjKl');
         });
 
-        it('appends gift token, tier and cadence to success URL', async function () {
+        it('appends gift token, tier and cadence to legacy success URLs', async function () {
             const tier = await createTier({monthlyPrice: 5000, yearlyPrice: 50000});
 
             await service.getGiftPaymentLink({...defaultGiftOptions, tier, cadence: 'year'});
@@ -395,6 +395,26 @@ describe('PaymentsService', function () {
             assert.equal(successUrl.searchParams.get('gift_token'), args.metadata.gift_token);
             assert.equal(successUrl.searchParams.get('gift_tier'), tier.id.toHexString());
             assert.equal(successUrl.searchParams.get('gift_cadence'), 'year');
+            assert.equal(successUrl.searchParams.get('gift_duration'), null);
+        });
+
+        it('uses an authoritative requested amount for fixed-duration gifts', async function () {
+            const tier = await createTier();
+
+            await service.getGiftPaymentLink({
+                ...defaultGiftOptions,
+                tier,
+                cadence: 'month',
+                duration: 3,
+                totalMonths: 3,
+                amount: 3000
+            });
+
+            const args = getStripeArgs();
+            const successUrl = new URL(args.successUrl);
+            assert.equal(args.amount, 3000);
+            assert.equal(args.metadata.duration, '3');
+            assert.equal(successUrl.searchParams.get('gift_duration'), '3');
         });
 
         it('prevents caller metadata from overwriting gift-specific keys', async function () {

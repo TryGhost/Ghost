@@ -78,7 +78,7 @@ describe('RouterController', function () {
             configured: true
         };
         labsService = {
-            isSet: sinon.stub().returns(true)
+            isSet: sinon.stub().callsFake(flag => flag !== 'giftSubCustomization')
         };
         settingsCache = {
             get: sinon.stub().withArgs('all_blocked_email_domains').returns(['spam.xyz'])
@@ -794,10 +794,28 @@ describe('RouterController', function () {
                         read: sinon.stub().resolves({
                             id: {toHexString: () => 'tier_123'},
                             status: 'active',
+                            visibility: 'public',
+                            type: 'paid',
+                            currency: 'USD',
+                            monthlyPrice: price,
+                            yearlyPrice: price * 10,
                             getPrice: sinon.stub().returns(price)
                         })
                     }
                 };
+            }
+
+            function customizedGiftController(overrides = {}) {
+                return createGiftController({
+                    tiersService: paidTierService(),
+                    labsService: {
+                        isSet: sinon.stub().callsFake(flag => flag === 'giftSubCustomization')
+                    },
+                    settingsCache: {
+                        get: sinon.stub().callsFake(key => key === 'portal_plans' ? ['monthly', 'yearly'] : undefined)
+                    },
+                    ...overrides
+                });
             }
 
             it('calls getGiftPaymentLink with correct options', async function () {
@@ -812,6 +830,98 @@ describe('RouterController', function () {
                     successUrl: 'https://example.com/',
                     cancelUrl: 'https://example.com/'
                 }));
+            });
+
+            it('keeps the legacy cadence-only path when customization is disabled', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'year', duration: 3, metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    cadence: 'year',
+                    duration: 1
+                }));
+            });
+
+            it('derives cadence, billing duration and amount for a customized multi-month gift', async function () {
+                const controller = customizedGiftController();
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', duration: 3, metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    cadence: 'month',
+                    duration: 3,
+                    totalMonths: 3,
+                    amount: 15000
+                }));
+            });
+
+            it('keeps legacy cadence-only clients compatible when customization is enabled', async function () {
+                const controller = customizedGiftController();
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'year', metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    cadence: 'year',
+                    duration: 1,
+                    totalMonths: 12,
+                    amount: 50000
+                }));
+            });
+
+            it('exempts legacy cadence-only clients from the Portal plan gate', async function () {
+                const controller = customizedGiftController({
+                    settingsCache: {
+                        get: sinon.stub().callsFake(key => (key === 'portal_plans' ? ['monthly'] : undefined))
+                    }
+                });
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'year', metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    cadence: 'year',
+                    duration: 1,
+                    totalMonths: 12,
+                    amount: 50000
+                }));
+            });
+
+            it('rejects explicit durations disabled in Portal', async function () {
+                const controller = customizedGiftController({
+                    settingsCache: {
+                        get: sinon.stub().callsFake(key => (key === 'portal_plans' ? ['monthly'] : undefined))
+                    }
+                });
+
+                await assert.rejects(
+                    () => controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', duration: 12, metadata: {}}
+                    }, mockRes),
+                    errors.BadRequestError
+                );
+
+                sinon.assert.notCalled(getGiftLinkSpy);
+            });
+
+            it('rejects conflicting cadence and duration before creating checkout', async function () {
+                const controller = customizedGiftController();
+
+                await assert.rejects(
+                    () => controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', cadence: 'year', duration: 3, metadata: {}}
+                    }, mockRes),
+                    errors.BadRequestError
+                );
+
+                sinon.assert.notCalled(getGiftLinkSpy);
             });
 
             it('uses cancelUrl from the request body when provided', async function () {

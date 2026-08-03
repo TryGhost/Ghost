@@ -168,6 +168,8 @@ class PaymentsService {
      * @param {import('../../../tiers/tier')} params.tier
      * @param {'month'|'year'} params.cadence
      * @param {number} params.duration
+     * @param {number} [params.totalMonths]
+     * @param {number} [params.amount]
      * @param {string} params.successUrl
      * @param {string} params.cancelUrl
      * @param {object} params.metadata
@@ -177,13 +179,13 @@ class PaymentsService {
      *
      * @returns {Promise<string>}
      */
-    async getGiftPaymentLink({tier, cadence, duration, metadata, successUrl, cancelUrl, member, isAuthenticated, email}) {
+    async getGiftPaymentLink({tier, cadence, duration, totalMonths, amount: requestedAmount, metadata, successUrl, cancelUrl, member, isAuthenticated, email}) {
         let customer = null;
         if (member && isAuthenticated) {
             customer = await this.getCustomerForMember(member);
         }
 
-        const amount = tier.getPrice(cadence);
+        const amount = requestedAmount ?? tier.getPrice(cadence);
         const currency = tier.currency.toLowerCase();
 
         const token = this.giftService.service.generateToken();
@@ -193,6 +195,9 @@ class PaymentsService {
         successUrlObj.searchParams.set('gift_token', token);
         successUrlObj.searchParams.set('gift_tier', tier.id.toHexString());
         successUrlObj.searchParams.set('gift_cadence', cadence);
+        if (totalMonths !== undefined) {
+            successUrlObj.searchParams.set('gift_duration', String(totalMonths));
+        }
 
         const data = {
             amount,
