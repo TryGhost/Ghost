@@ -8,11 +8,27 @@ import {
     CopyFieldActions,
     CopyFieldContent,
     CopyFieldCopyButton,
+    CopyFieldLabel,
     CopyFieldValue
 } from '../../../../src/components/ui/copy-field';
 import {render} from '../../utils/test-utils';
 
 describe('CopyField Components', () => {
+    it('uses standard field label typography', () => {
+        render(
+            <CopyField value='https://example.com'>
+                <CopyFieldLabel data-testid='copy-field-label'>Shareable link</CopyFieldLabel>
+            </CopyField>
+        );
+
+        const label = screen.getByTestId('copy-field-label');
+
+        assert.match(label.className, /text-control!/);
+        assert.match(label.className, /font-medium/);
+        assert.match(label.className, /leading-snug/);
+        assert.doesNotMatch(label.className, /font-semibold/);
+    });
+
     it('uses the standard input surface and shared control height', () => {
         render(
             <CopyField value='https://example.com'>

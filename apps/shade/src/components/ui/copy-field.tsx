@@ -92,11 +92,9 @@ const CopyFieldLabel = React.forwardRef<HTMLElement, React.ComponentProps<typeof
     <Text
         ref={ref}
         as="div"
-        className={cn('group-data-[disabled=true]/copy-field:opacity-50', className)}
+        className={cn('text-control! font-medium group-data-[disabled=true]/copy-field:opacity-50', className)}
         data-slot="copy-field-label"
         leading="snug"
-        size="sm"
-        weight="semibold"
         {...props}
     />
 ));
