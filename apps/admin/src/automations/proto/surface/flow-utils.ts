@@ -96,6 +96,10 @@ export const orderActions = (automation: AutomationDetail): AutomationAction[] =
 // column is centred in the area BESIDE it, never underneath. Also tracks the canvas
 // size so panTranslateExtent can bound panning to a real viewport. Returns the ref
 // for the ReactFlow wrapper, the onInit handler, and the current canvas size.
+// Fixed screen-space Y for the top of the first node, shared by every canvas/state so
+// the flow doesn't bob vertically as you move between read / run / edit.
+export const INITIAL_VIEWPORT_Y = 48;
+
 export function useCenteredColumn(leftInset = 0) {
     const canvasRef = useRef<HTMLDivElement>(null);
     const flowRef = useRef<ReactFlowInstance | null>(null);
@@ -107,9 +111,11 @@ export function useCenteredColumn(leftInset = 0) {
         if (!instance || !el) {
             return;
         }
-        const {y, zoom} = instance.getViewport();
+        const {zoom} = instance.getViewport();
         const x = Math.round(leftInset + (el.clientWidth - leftInset - NODE_WIDTH * zoom) / 2);
-        void instance.setViewport({x, y, zoom});
+        // Re-anchor Y to the shared default (not the drifted value) so state transitions
+        // keep the first node at the same height instead of jumping.
+        void instance.setViewport({x, y: INITIAL_VIEWPORT_Y, zoom});
     }, [leftInset]);
 
     useEffect(() => {
@@ -131,7 +137,7 @@ export function useCenteredColumn(leftInset = 0) {
         const width = el?.clientWidth ?? 800;
         setSize({width, height: el?.clientHeight ?? 600});
         const x = Math.round(leftInset + (width - leftInset - NODE_WIDTH) / 2);
-        void instance.setViewport({x, y: 48, zoom: 1});
+        void instance.setViewport({x, y: INITIAL_VIEWPORT_Y, zoom: 1});
     }, [leftInset]);
 
     return {canvasRef, onInit, size};

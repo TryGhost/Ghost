@@ -216,18 +216,23 @@ const AutomationFloat: React.FC = () => {
                 grows leftward to fill. Always mounted so the transition can animate; the
                 canvas's ResizeObserver re-centres the flow as it grows. pt-16 clears the
                 title overlay that persists at the screen's top-left. */}
-            <aside className={cn('flex w-[480px] shrink-0 flex-col overflow-hidden bg-sidebar pt-16 transition-[margin] duration-300 ease-out', showEditCanvas ? '-ml-[480px]' : 'ml-0')}>
+            <aside className={cn('flex w-[480px] shrink-0 flex-col overflow-hidden bg-sidebar pt-16 transition-[margin] duration-150 ease-out', showEditCanvas ? '-ml-[480px]' : 'ml-0')}>
                 <CanvasSidePanel scenario={scenario} selectedMemberId={selectedMemberId} onSelectMember={setSelectedMemberId} />
             </aside>
 
             {/* Canvas fills the remaining viewport (bounded, not full-bleed), so the flow
                 centres within its own region — no left-inset hack needed. */}
-            <div className="relative min-w-0 flex-1 overflow-hidden bg-muted">
-                {showEditCanvas ? (
-                    <FloatEditCanvas draft={activeDraft} onChange={handleDraftChange} />
-                ) : (
+            <div className="relative min-w-0 flex-1 overflow-hidden bg-background">
+                {/* Both canvases stay mounted and crossfade on mode change. No remount
+                    means the incoming flow is already centred — no first-frame node flash.
+                    The inactive one is opacity-0 + pointer-events-none so clicks fall to
+                    the active canvas beneath/above it. */}
+                <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'pointer-events-none opacity-0' : 'opacity-100')}>
                     <FloatFlowCanvas automation={automation} selectedRun={selectedRun} />
-                )}
+                </div>
+                <div className={cn('absolute inset-0 transition-opacity duration-150', showEditCanvas ? 'opacity-100' : 'pointer-events-none opacity-0')}>
+                    <FloatEditCanvas draft={activeDraft} onChange={handleDraftChange} />
+                </div>
 
                 {/* Editing a live automation: you can explore/edit freely, but changes
                     can't be applied until it's stopped. Surface that as a plain banner
