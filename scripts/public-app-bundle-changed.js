@@ -1,4 +1,4 @@
-// Whether a public app's freshly built bundle differs from the one already
+// Whether a public app's freshly built package differs from the one already
 // published on its major.minor line.
 //
 // The publish job fires on every merge to main where nx marks the app affected,
@@ -7,9 +7,10 @@
 // bundle, so gating on "affected" alone burns a patch version per dependency
 // bump anywhere in the monorepo.
 //
-// What sites actually receive is umd/, so that is what this compares. LICENSE
-// and README.md ship in the tarball too but never reach a rendered site, and a
-// change to either is not worth a CDN purge.
+// Compare packed packages rather than source package.json files so pnpm's
+// catalog/workspace dependency normalization is included. LICENSE and README.md
+// ship in the tarball too but never reach a rendered site, and a change to either
+// is not worth a CDN purge.
 //
 // Sourcemaps are excluded: they are derived from the bundle they accompany, so
 // they carry no signal the bundle itself doesn't, and their mappings shift with
@@ -17,7 +18,7 @@
 
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {existsSync, mkdtempSync, readdirSync, readFileSync, rmSync} from 'node:fs';
+import {existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, relative} from 'node:path';
 
@@ -28,9 +29,9 @@ import {readJson} from './lib/utils.js';
 const VERSION_PLACEHOLDER = '\0version\0';
 
 /**
- * A content hash over a directory tree — every file's path and bytes, in a
+ * A content hash over the publish-relevant files in a packed package, in a
  * stable order. Deliberately ignores mtimes and modes, which differ between a
- * fresh build and an extracted tarball without the bundle differing.
+ * fresh pack and an extracted published tarball without the package differing.
  *
  * Portal bakes its own version into its bundle (REACT_APP_VERSION, for its
  * Sentry release tag), and the publish job sets that version immediately before
@@ -42,7 +43,7 @@ const VERSION_PLACEHOLDER = '\0version\0';
  * @param {string} version - the version baked into this copy, masked before hashing
  * @returns {string}
  */
-export function hashBundle(dir, version) {
+export function hashPackage(dir, version) {
     const hash = createHash('sha256');
 
     for (const file of listFiles(dir).sort()) {
@@ -69,15 +70,18 @@ export function maskVersion(contents, version) {
 }
 
 /**
- * Every file under `dir` worth comparing, as paths relative to it.
+ * Every file under `dir` worth comparing, as paths relative to it. README and
+ * LICENSE changes do not affect sites, and sourcemaps are derived from the
+ * bundle they accompany.
  *
  * @param {string} dir
  * @returns {string[]}
  */
 function listFiles(dir) {
     return readdirSync(dir, {recursive: true, withFileTypes: true})
-        .filter(entry => entry.isFile() && !entry.name.endsWith('.map'))
-        .map(entry => relative(dir, join(entry.parentPath, entry.name)));
+        .filter(entry => entry.isFile())
+        .map(entry => relative(dir, join(entry.parentPath, entry.name)))
+        .filter(file => file !== 'LICENSE' && file !== 'README.md' && !file.endsWith('.map'));
 }
 
 /**
@@ -114,6 +118,31 @@ function fetchPublishedPackage(packageName, versionLine, destination) {
     return join(destination, 'package');
 }
 
+/**
+ * Packs the local app exactly as pnpm will normalize it for publication, then
+ * extracts it for comparison.
+ *
+ * @param {string} appDir
+ * @param {string} destination
+ * @returns {string} the extracted package directory
+ */
+function packLocalPackage(appDir, destination) {
+    const output = execFileSync('pnpm', ['pack', '--pack-destination', destination, '--json'], {
+        cwd: appDir,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe']
+    });
+    const result = JSON.parse(output);
+
+    if (typeof result.filename !== 'string') {
+        throw new Error(`Failed to pack ${appDir}: ${result.error?.message || output}`);
+    }
+
+    execFileSync('tar', ['-xzf', result.filename, '-C', destination]);
+
+    return join(destination, 'package');
+}
+
 async function main() {
     const packageName = process.argv[2];
 
@@ -140,20 +169,25 @@ async function main() {
     const workDir = mkdtempSync(join(tmpdir(), 'public-app-bundle-'));
 
     try {
-        const publishedDir = fetchPublishedPackage(packageName, versionLine, workDir);
+        const publishedWorkDir = join(workDir, 'published');
+        const localWorkDir = join(workDir, 'local');
+        mkdirSync(publishedWorkDir);
+        mkdirSync(localWorkDir);
+
+        const publishedDir = fetchPublishedPackage(packageName, versionLine, publishedWorkDir);
 
         if (!publishedDir) {
             report(true, `Nothing published on the ${versionLine} line yet`);
             return;
         }
 
-        const publishedBundle = join(publishedDir, 'umd');
+        const localDir = packLocalPackage(appDir, localWorkDir);
         const publishedVersion = (await readJson(join(publishedDir, 'package.json'))).version;
+        const localVersion = (await readJson(join(localDir, 'package.json'))).version;
 
-        const changed = !existsSync(publishedBundle)
-            || hashBundle(publishedBundle, publishedVersion) !== hashBundle(builtBundle, (await readJson(join(appDir, 'package.json'))).version);
+        const changed = hashPackage(publishedDir, publishedVersion) !== hashPackage(localDir, localVersion);
 
-        report(changed, `${changed ? 'Bundle differs from' : 'Bundle is identical to'} ${packageName}@${publishedVersion}`);
+        report(changed, `${changed ? 'Package differs from' : 'Package is identical to'} ${packageName}@${publishedVersion}`);
     } finally {
         rmSync(workDir, {recursive: true, force: true});
     }
