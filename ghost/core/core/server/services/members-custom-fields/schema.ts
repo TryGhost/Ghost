@@ -29,38 +29,39 @@ export const DbCustomField = z.object({
 
 type CustomFieldRow = z.infer<typeof DbCustomField>;
 
-// A member's stored value for one field. `value_text`/`value_json` are the raw
-// columns — which one carries the value, and how it decodes, is the storage
-// codec's business (see storage.ts), so they're plain nullable strings here.
+// One part of a member's value for one field. `path` says which part: empty for a
+// scalar, which has one, and the sub-field's key for a composite, which has a row per
+// part it fills. What those paths mean is the storage module's business (see
+// storage.ts), so the row itself carries them as plain strings.
 export const DbCustomFieldValue = z.object({
     id: z.string(),
     custom_field_id: z.string(),
     member_id: z.string(),
+    path: z.string(),
+    // Mirrors the column, which is nullable. Nothing here writes a null — a part with
+    // no value has no row — but the row type describes the table rather than the
+    // subset of it this service produces.
     value_text: z.string().nullable(),
-    value_json: z.string().nullable(),
     created_at: DbDate,
     updated_at: DbDate.nullable()
 });
 
 type CustomFieldValueRow = z.infer<typeof DbCustomFieldValue>;
 
-// A composite value once decoded: sub-field keys to values, and no narrower. Which
-// sub-fields a composite has is its field type's business, not the row's.
+// The leaf join a read needs: the field's key travels with the row so a value can be
+// assembled without a second lookup.
 //
-// It doubles as the guard on a stored blob. A JSON column can just as easily hold an
-// array, a null or a bare number, and a record rejects all three — so parsing against
-// this is what narrows the type, with no assertion needed.
-export const StoredCompositeValue = z.record(z.string(), z.unknown());
-
-// The value join a read needs: the field's identity and type travel with the
-// stored columns, so a row can be decoded without a second lookup. `type` is
-// parsed as the field-type enum, which narrows it with no cast.
-export const DbCustomFieldValueWithField = z.object({
+// `type` is parsed as the field-type enum but takes no part in the assembly — which
+// shape to rebuild is read from the paths themselves, so a row survives its type
+// changing shape. It is here as a gate: a value whose type has left the catalog is one
+// the definitions list no longer returns either, and handing it out under a contract
+// nothing can interpret helps nobody. Failing to parse is what drops it.
+export const DbCustomFieldLeaf = z.object({
     member_id: z.string(),
     key: z.string(),
     type: FieldTypeSchema,
-    value_text: z.string().nullable(),
-    value_json: z.string().nullable()
+    path: z.string(),
+    value_text: z.string()
 });
 
 declare module 'knex/types/tables' {

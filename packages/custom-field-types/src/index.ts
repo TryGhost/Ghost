@@ -24,13 +24,6 @@ import {z} from 'zod';
  */
 
 /**
- * Storage types: the small, closed set of database columns a value can live in.
- * The backend owns the column and its serialize/deserialize per storage type;
- * everything here only needs to know which one a field type routes to.
- */
-export type StorageType = 'text' | 'json';
-
-/**
  * Field types: the open, growing set a publisher picks. Many field types share
  * one storage type (short_text and long_text both store as text), yet each
  * carries its own validation even when the storage is identical — which is why
@@ -42,8 +35,6 @@ export type FieldType = typeof FIELD_TYPE_IDS[number];
 export const FieldTypeSchema = z.enum(FIELD_TYPE_IDS);
 
 export interface FieldTypeDefinition {
-    /** The storage column a value of this type is persisted in (backend concern). */
-    storageType: StorageType;
     /**
      * The authoritative validation for a value of this type. The backend runs it
      * as the gate; the frontend runs the same schema for instant feedback.
@@ -129,14 +120,13 @@ export type Address = z.infer<typeof AddressValue>;
 export const FIELD_TYPES = {
     // Characters, not bytes: 255 of anything fits the column with room to spare,
     // and a character count is the limit a publisher can reason about.
-    short_text: {storageType: 'text', value: z.string().max(255)},
+    short_text: {value: z.string().max(255)},
     long_text: {
-        storageType: 'text',
         value: z.string().refine(value => byteLength(value) <= MAX_LONG_TEXT_BYTES, {
             message: `Value must be at most ${MAX_LONG_TEXT_BYTES} bytes.`
         })
     },
-    address: {storageType: 'json', value: AddressValue}
+    address: {value: AddressValue}
 } as const satisfies Record<FieldType, FieldTypeDefinition>;
 
 /**
