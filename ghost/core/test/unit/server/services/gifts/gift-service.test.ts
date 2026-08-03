@@ -3,7 +3,7 @@ import errors from '@tryghost/errors';
 import sinon from 'sinon';
 import {GiftService, type GiftPurchaseData} from '../../../../../core/server/services/gifts/gift-service';
 import {Gift} from '../../../../../core/server/services/gifts/gift';
-import type {FindPendingReminderOptions, GiftRepository} from '../../../../../core/server/services/gifts/gift-repository';
+import type {FindPendingReminderOptions, GiftRepository} from '../../../../../core/server/services/gifts/gift-bookshelf-repository';
 import {buildGift} from './utils';
 
 function buildRedeemedGift(overrides: Parameters<typeof buildGift>[0] = {}) {

@@ -3,7 +3,7 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import {z} from 'zod';
 import {Gift} from './gift';
-import type {GiftEventPage, GiftRepository} from './gift-repository';
+import type {GiftEventPage, GiftRepository} from './gift-bookshelf-repository';
 import type {GiftReminderScheduler} from './gift-reminder-scheduler';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
