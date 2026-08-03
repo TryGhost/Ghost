@@ -1949,6 +1949,10 @@ jobs:
       # shared input changes (the lockfile, a workflow file) — so most runs
       # rebuild a bundle byte-identical to the published one. Publishing those
       # burns a patch version and a jsDelivr purge for no change on any site.
+      #
+      # The steps below gate on `!= 'false'` rather than `== 'true'`: publishing
+      # an identical bundle is harmless, silently skipping a real change is not,
+      # so anything other than a definite "unchanged" publishes.
       - name: Check whether the bundle changed
         id: bundle
         run: |
@@ -1956,21 +1960,21 @@ jobs:
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
       - name: Configure .npmrc
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.bundle.outputs.changed != 'false'
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       # --provenance is explicit rather than relying on pnpm's auto-detection,
       # which degrades to a warning if it can't confirm visibility.
       - name: Publish to npm
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.bundle.outputs.changed != 'false'
         working-directory: ${{ matrix.package_path }}
         run: |
           pnpm publish --access public --provenance --no-git-checks
 
       - name: Replace version placeholders in cdn-paths
         id: cdn_paths
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.bundle.outputs.changed != 'false'
         run: |
           cdn_paths="${{ matrix.cdn_paths }}"
           echo "cdn_paths<<EOF" >> $GITHUB_OUTPUT
@@ -1978,11 +1982,11 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print cdn_paths
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.bundle.outputs.changed != 'false'
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
       - name: Purge jsDelivr cache
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.bundle.outputs.changed != 'false'
         uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
