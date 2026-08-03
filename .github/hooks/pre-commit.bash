@@ -108,8 +108,8 @@ echo -e "Checking for changesets ${grey}(pre-commit hook)${no_color} "
 
 # Compare the branch against main (same check CI runs on the PR). Non-blocking on
 # purpose: the changeset is often added in a later commit, so failing here would
-# block work-in-progress commits. CI's "Check app version bump" job is the hard
-# gate — this is only a reminder.
+# block work-in-progress commits. CI's "Check for missing changesets" job is the
+# hard gate — this is only a reminder.
 CHANGESET_BASE=$(git merge-base main HEAD 2>/dev/null || git merge-base origin/main HEAD 2>/dev/null || true)
 # Write the staged index to a tree so the check sees the commit being created,
 # not just what's already in HEAD. change-check.js accepts any tree-ish as head.

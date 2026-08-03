@@ -207,7 +207,7 @@
         // Auto-generate a changeset when an npm/package.json update (or a pnpm
         // catalog bump — the npm manager handles both) touches a publishable
         // package (koenig/*, packages/*), directly or via a catalog entry it
-        // references, so the PR clears the "Check app version bump" gate without
+        // references, so the PR clears the "Check for missing changesets" gate without
         // a human authoring one. Scoped to `npm` so Docker/GitHub-Actions updates
         // never run it. Runs once per branch after the update is applied (working
         // tree, pre-commit): the script diffs the working tree against the base,
