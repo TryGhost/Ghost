@@ -1,5 +1,5 @@
 import {Meta, createQuery, createMutation} from '../utils/api/hooks';
-import {escapeNqlString} from '../utils/nql';
+import {escapeNqlString} from '@tryghost/nql-string';
 
 export type LinkResponseType = {
     links: LinkItem[];

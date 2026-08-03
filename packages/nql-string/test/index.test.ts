@@ -39,13 +39,19 @@ describe('escapeNqlString', function () {
         '25" monitor'
     ].forEach(function (value) {
         it(`round-trips ${JSON.stringify(value)} without injection`, function () {
-            const parsed = nql(`post_id:'abc'+to:${escapeNqlString(value)}`).parse();
+            const query = nql(`post_id:'abc'+to:${escapeNqlString(value)}`);
+            const parsed = query.parse();
 
             assert.ok(parsed.$and, 'parsed into a conjunction');
             assert.equal(parsed.$and.length, 2, 'no extra conditions');
 
             const [, toCondition] = parsed.$and;
             assert.equal(toCondition?.to, value, 'selects the exact value');
+
+            // and the filter actually matches the value it was built from,
+            // rather than merely parsing into the right shape
+            assert.equal(query.queryJSON({post_id: 'abc', to: value}), true, 'matches the exact value');
+            assert.equal(query.queryJSON({post_id: 'abc', to: `${value}x`}), false, 'does not match other values');
         });
     });
 

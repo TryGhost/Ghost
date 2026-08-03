@@ -653,6 +653,9 @@ importers:
       '@tryghost/nql-lang':
         specifier: 'catalog:'
         version: 0.6.6
+      '@tryghost/nql-string':
+        specifier: workspace:*
+        version: link:../../packages/nql-string
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade

@@ -1,7 +1,7 @@
 import {useRef} from 'react';
 import {apiUrl, useFetchApi} from '../utils/api/fetch-api';
 import {Meta} from '../utils/api/hooks';
-import {escapeNqlString} from '../utils/nql';
+import {escapeNqlString} from '@tryghost/nql-string';
 
 const filterData = <
     Data extends {[k in FilterKey]: string},

@@ -3,6 +3,7 @@
 declare module '@tryghost/nql' {
     interface NqlQuery {
         parse(): Record<string, unknown> & {$and?: Record<string, unknown>[]};
+        queryJSON(obj: Record<string, unknown>): boolean;
     }
 
     export default function nql(filter: string): NqlQuery;

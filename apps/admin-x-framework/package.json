@@ -41,11 +41,6 @@
             "import": "./dist/utils/post-utils.js",
             "require": "./dist/utils/post-utils.cjs"
         },
-        "./utils/nql": {
-            "types": "./types/utils/nql.d.ts",
-            "import": "./dist/utils/nql.js",
-            "require": "./dist/utils/nql.cjs"
-        },
         "./utils/get-site-timezone": {
             "types": "./types/utils/get-site-timezone.d.ts",
             "import": "./dist/utils/get-site-timezone.js",
