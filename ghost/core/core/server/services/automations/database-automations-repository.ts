@@ -301,14 +301,14 @@ export function createDatabaseAutomationsRepository({
             }
 
             await knex.transaction(async (trx) => {
-                const revisionIds: string[] = [];
+                const revisionIds = new Set<string>();
                 for (const {openedAt, automationActionRevisionId} of eventsByAutomatedEmailRecipientId.values()) {
                     if (openedAt) {
-                        revisionIds.push(automationActionRevisionId);
+                        revisionIds.add(automationActionRevisionId);
                     }
                 }
 
-                const sortedRevisionIds = await lockActionRevisions(trx, revisionIds);
+                const orderedRevisionIds = await lockActionRevisions(trx, revisionIds);
 
                 const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
                 const newOpensPerRevision = new Map<string, number>();
@@ -336,7 +336,7 @@ export function createDatabaseAutomationsRepository({
                     }
                 }
 
-                for (const id of sortedRevisionIds) {
+                for (const id of orderedRevisionIds) {
                     const opens = newOpensPerRevision.get(id);
                     if (!opens) {
                         continue;
@@ -399,12 +399,14 @@ export function createDatabaseAutomationsRepository({
 }
 
 /**
- * Transactions that touch action revisions and automated email recipients must
- * lock revisions first. Keep multi-revision lock acquisition deterministic.
+ * Lock revisions before recipients because inserting a recipient takes a shared
+ * foreign-key lock on its revision. Updating that revision later can deadlock
+ * with another transaction that has already locked the revision and is waiting
+ * for the recipient. Keep multi-revision lock acquisition deterministic.
  */
 async function lockActionRevisions(
     trx: Knex.Transaction,
-    revisionIds: ReadonlyArray<string>
+    revisionIds: Iterable<string>
 ): Promise<string[]> {
     const sortedRevisionIds = [...new Set(revisionIds)]
         .sort((left, right) => left.localeCompare(right));
