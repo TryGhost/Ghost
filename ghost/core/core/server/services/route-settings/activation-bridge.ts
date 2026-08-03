@@ -117,14 +117,11 @@ function expandRouteData(routeData: RouteData | undefined): ExpandedData {
     return merged;
 }
 
-function convertSlugsToColons(value: string): string {
-    return value.replace(/{(\w+)}/g, ':$1');
-}
-
 /**
- * Router-facing shapes. RouterManager consumes the domain model after the two
- * conversions the bridge still applies: `data` expanded to `{query, router}`,
- * and collection/taxonomy permalinks rewritten to `:slug`.
+ * Router-facing shapes. RouterManager consumes the domain model after the one
+ * conversion the bridge still applies: `data` expanded to `{query, router}`.
+ * Collection/taxonomy permalinks are left in domain `{slug}` form — the routers
+ * translate them to `:slug` at their boundary via the permalink adapter.
  *
  * Routes and collections are written as their domain counterpart with just
  * `data` overridden to the expanded shape — `Omit<…, 'data'> & {data?}` rather
@@ -132,7 +129,8 @@ function convertSlugsToColons(value: string): string {
  * extension can only add fields, not retype them). That keeps the delta from
  * the domain model explicit: `data` is the only structural difference. When the
  * bridge is removed (HKG-1898) the override falls away and these collapse back
- * to `Route` / `CollectionConfig`.
+ * to `Route` / `CollectionConfig`. The remaining `data` conversion peels off in
+ * HKG-1897.
  */
 type RouterChannelRoute = Omit<ChannelRoute, 'data'> & {data?: ExpandedData};
 type RouterTemplateRoute = Omit<TemplateRoute, 'data'> & {data?: ExpandedData};
@@ -202,7 +200,7 @@ function buildRouterRoute(route: Route): RouterRoute {
 function buildRouterCollection(collection: CollectionConfig): RouterCollection {
     const result: RouterCollection = {
         path: collection.path,
-        permalink: convertSlugsToColons(collection.permalink),
+        permalink: collection.permalink,
         templates: collection.templates || []
     };
 
@@ -238,7 +236,7 @@ export function buildRouterSettings(settings: RouteSettings): RouterSettings {
     const taxonomies: RouterTaxonomy[] = [];
     for (const [key, value] of Object.entries(settings.taxonomies)) {
         if (value) {
-            taxonomies.push({key, permalink: convertSlugsToColons(value)});
+            taxonomies.push({key, permalink: value});
         }
     }
 

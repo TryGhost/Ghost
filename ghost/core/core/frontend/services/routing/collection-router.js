@@ -5,6 +5,7 @@ const ParentRouter = require('./parent-router');
 const controllers = require('./controllers');
 const middleware = require('./middleware');
 const RSSRouter = require('./rss-router');
+const {toExpressNotation} = require('./permalink-adapter');
 
 /**
  * @description Collection Router for post resource.
@@ -26,8 +27,9 @@ class CollectionRouter extends ParentRouter {
 
         this.rss = object.rss !== false;
 
+        // convert domain `{slug}` -> Express/URL-service `:slug` at this boundary
         this.permalinks = {
-            value: object.permalink
+            value: toExpressNotation(object.permalink)
         };
 
         // @NOTE: see renderer/templates - we use unshift to prepend the templates
