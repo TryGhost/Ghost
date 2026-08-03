@@ -44,14 +44,21 @@ export function cdnPathsFor(configEntry) {
  * Reads defaults.json from a previous git revision so version-line releases can
  * select their app even though Nx associates defaults.json with Ghost core.
  *
+ * Returns null when that revision can't be read — a base force-pushed away, or a
+ * blob the treeless clone can't fetch. This runs in job_setup, which every other
+ * job depends on, so a git failure must not take the whole run down with it:
+ * without a base to compare against we select on the Nx affected set alone,
+ * which is what this script did before version lines were considered.
+ *
  * @param {string} revision
- * @returns {object}
+ * @returns {Promise<object|null>}
  */
-async function defaultsAtRevision(revision) {
+export async function defaultsAtRevision(revision) {
     try {
         return JSON.parse(await getFileFromCommit(revision, DEFAULTS_REPO_PATH));
     } catch (error) {
-        throw new Error(`Unable to read ${DEFAULTS_REPO_PATH} at ${revision}: ${error.message}`);
+        console.error(`Unable to read ${DEFAULTS_REPO_PATH} at ${revision} — selecting on affected projects alone: ${error.message}`);
+        return null;
     }
 }
 
@@ -110,8 +117,12 @@ async function main() {
         throw new Error('affected-projects argument must be a JSON array');
     }
 
+    // No base revision (tag builds skip nx-set-shas) or an unreadable one both
+    // mean "nothing to compare against", which buildMatrix reads as no version
+    // line having moved.
+    const previousDefaults = (baseRevision && await defaultsAtRevision(baseRevision)) || DEFAULTS;
+
     // Stdout is the contract — the workflow captures this into a job output.
-    const previousDefaults = baseRevision ? await defaultsAtRevision(baseRevision) : DEFAULTS;
     process.stdout.write(JSON.stringify(buildMatrix(affectedProjects, previousDefaults)));
 }
 

@@ -2,7 +2,7 @@ import {describe, it} from 'node:test';
 import assert from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
-import {buildMatrix, cdnPathsFor} from '../build-public-apps-matrix.js';
+import {buildMatrix, cdnPathsFor, defaultsAtRevision} from '../build-public-apps-matrix.js';
 import {PUBLIC_APPS} from '../lib/public-apps.js';
 
 const DEFAULTS = JSON.parse(await readFile(
@@ -67,6 +67,29 @@ describe('buildMatrix', () => {
             'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js',
             'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css'
         ]);
+    });
+});
+
+describe('defaultsAtRevision', () => {
+    it('reads defaults.json at a revision', async () => {
+        const defaults = await defaultsAtRevision('HEAD');
+
+        assert.strictEqual(defaults.sodoSearch.version, DEFAULTS.sodoSearch.version);
+    });
+
+    // This runs in job_setup, which every other job depends on, so an
+    // unreadable base must degrade to "no version line moved" rather than
+    // failing the entire CI run.
+    it('returns null for a revision it cannot read', async () => {
+        assert.strictEqual(await defaultsAtRevision('deadbeefdeadbeefdeadbeefdeadbeefdeadbeef'), null);
+    });
+
+    it('selects on the affected set alone when there is no base to compare', () => {
+        assert.deepStrictEqual(buildMatrix([], DEFAULTS), []);
+        assert.deepStrictEqual(
+            buildMatrix(['@tryghost/portal'], DEFAULTS).map(entry => entry.package_name),
+            ['@tryghost/portal']
+        );
     });
 });
 
