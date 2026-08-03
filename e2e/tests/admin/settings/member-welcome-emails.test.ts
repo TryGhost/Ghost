@@ -79,6 +79,8 @@ async function restoreWelcomeEmail(page: Page, automatedEmail: AutomatedEmail): 
 }
 
 test.describe('Ghost Admin - Member Welcome Emails', () => {
+    test.use({mailgunEnabled: true});
+
     test('new sites do not send welcome emails by default', async ({page}) => {
         const emailClient = new MailPit();
         const {emailAddress} = await signupViaPortal(page);

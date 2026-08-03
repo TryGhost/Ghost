@@ -3,7 +3,7 @@ const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyL
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
-const mailService = require('../../../core/server/services/mail');
+const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
 const SingleUseTokenProvider = require('../../../core/server/services/members/single-use-token-provider');
 const emailAddressService = require('../../../core/server/services/email-address');
 const models = require('../../../core/server/models');
@@ -1242,7 +1242,7 @@ describe('Automated Emails API', function () {
         });
 
         beforeEach(async function () {
-            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
+            sinon.stub(MailgunClient.prototype, 'send').resolves({id: '<bulk-mailgun-message-id>'});
             await agent.loginAsOwner();
             const automatedEmail = await createAutomatedEmail({
                 status: 'active',
@@ -1290,8 +1290,8 @@ describe('Automated Emails API', function () {
                 })
                 .expectStatus(204);
 
-            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
-            sinon.assert.calledWithMatch(mailService.GhostMailer.prototype.send, {
+            sinon.assert.calledOnce(MailgunClient.prototype.send);
+            sinon.assert.calledWithMatch(MailgunClient.prototype.send, {
                 from: sinon.match(new RegExp(senderEmail)),
                 replyTo: senderReplyTo
             });

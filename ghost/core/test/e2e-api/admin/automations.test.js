@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const domainEvents = require('@tryghost/domain-events');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
-const mailService = require('../../../core/server/services/mail');
+const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
@@ -453,7 +453,7 @@ describe('Automations API', function () {
 
     describe('email test', function () {
         it('sends a test email without welcome email content rows', async function () {
-            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
+            sinon.stub(MailgunClient.prototype, 'send').resolves({id: '<bulk-mailgun-message-id>'});
 
             const {body: browseBody} = await agent
                 .get('automations')
@@ -474,7 +474,7 @@ describe('Automations API', function () {
                 .expectEmptyBody()
                 .expect(cacheInvalidateHeaderNotSet());
 
-            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            sinon.assert.calledOnce(MailgunClient.prototype.send);
         });
 
         it('cannot send a test email to an invalid email address', async function () {

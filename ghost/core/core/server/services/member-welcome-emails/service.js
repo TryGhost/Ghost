@@ -9,6 +9,8 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
+const MailgunClient = require('../lib/mailgun-client');
+const config = require('../../../shared/config');
 const labs = require('../../../shared/labs');
 const {Automation, EmailDesignSetting, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
@@ -47,6 +49,7 @@ const getSenderDetails = (designSettingsJson) => {
 
 class MemberWelcomeEmailService {
     #transactionalMailer;
+    #bulkMailer;
     #renderer;
     #magicLinkService;
     #memberWelcomeEmails = {free: null, paid: null};
@@ -55,6 +58,7 @@ class MemberWelcomeEmailService {
     constructor({t, dir, singleUseTokenProvider}) {
         emailAddressService.init();
         this.#transactionalMailer = new mail.GhostMailer();
+        this.#bulkMailer = new MailgunClient({config, settings: settingsCache});
         this.#renderer = new MemberWelcomeEmailRenderer({t, dir});
 
         const getSigninURL = (token) => {
@@ -407,11 +411,6 @@ class MemberWelcomeEmailService {
             getSenderDetails(email.designSettings)
         );
 
-        const headers = unsubscribe?.oneClickUrl ? {
-            'List-Unsubscribe': `<${unsubscribe.oneClickUrl}>`,
-            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
-        } : undefined;
-
         /** @type {string[]} */ let tags;
         switch (emailType) {
         case 'welcome':
@@ -428,17 +427,43 @@ class MemberWelcomeEmailService {
         }
         }
 
-        return await this.#transactionalMailer.send({
+        return await this.#sendBulkEmail({
             to: member.email,
             subject,
             html,
             text,
-            forceTextContent: true,
             tags,
-            ...(headers ? {headers} : {}),
-            ...(typeof trackOpens === 'boolean' ? {trackOpens} : {}),
+            trackOpens,
+            listUnsubscribe: unsubscribe?.oneClickUrl,
             ...senderOptions
         });
+    }
+
+    /**
+     * @param {object} options
+     * @param {string} options.to
+     * @param {string} options.subject
+     * @param {string} options.html
+     * @param {string} options.text
+     * @param {string} options.from
+     * @param {string} [options.replyTo]
+     * @param {string[]} [options.tags]
+     * @param {boolean} [options.trackOpens]
+     * @param {string} [options.listUnsubscribe]
+     * @returns {Promise<unknown>}
+     */
+    async #sendBulkEmail({to, subject, html, text, from, replyTo, tags, trackOpens, listUnsubscribe}) {
+        return await this.#bulkMailer.send({
+            subject,
+            html,
+            plaintext: text,
+            from,
+            replyTo,
+            tags,
+            ...(typeof trackOpens === 'boolean' ? {track_opens: trackOpens} : {})
+        }, {
+            [to]: listUnsubscribe ? {list_unsubscribe: listUnsubscribe} : {}
+        }, []);
     }
 
     async send({member, memberStatus}) {
@@ -647,12 +672,11 @@ class MemberWelcomeEmailService {
             getSenderDetails(designSettingsJson)
         );
 
-        await this.#transactionalMailer.send({
+        await this.#sendBulkEmail({
             to: email,
             subject: `[Test] ${renderedSubject}`,
             html,
             text,
-            forceTextContent: true,
             ...senderOptions
         });
     }
