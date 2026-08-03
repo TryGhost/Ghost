@@ -6,7 +6,7 @@ const PostLink = require('../../../../../core/server/services/link-tracking/post
 const RedirectEvent = require('../../../../../core/server/services/link-redirection/redirect-event');
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
-const {escapeNqlString} = require('../../../../../core/server/lib/nql-string');
+const {escapeNqlString} = require('@tryghost/nql-string');
 
 describe('LinkClickTrackingService', function () {
     it('exists', function () {

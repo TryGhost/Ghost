@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import nql from '@tryghost/nql';
-import {escapeNqlString} from '../../../../core/server/lib/nql-string';
+import {describe, it} from 'vitest';
+import {escapeNqlString} from '../src/index.ts';
 
 describe('escapeNqlString', function () {
     it('escapes single quotes', function () {
@@ -33,13 +34,18 @@ describe('escapeNqlString', function () {
         'x\\\',status:paid',
         '\'\'',
         '\\',
-        'https://example.com/foo-bar-baz/\''
+        'https://example.com/foo-bar-baz/\'',
+        'The "Best" Guide',
+        '25" monitor'
     ].forEach(function (value) {
         it(`round-trips ${JSON.stringify(value)} without injection`, function () {
             const parsed = nql(`post_id:'abc'+to:${escapeNqlString(value)}`).parse();
 
-            assert.deepEqual(parsed.$and.length, 2, 'no extra conditions');
-            assert.equal(parsed.$and[1].to, value, 'selects the exact value');
+            assert.ok(parsed.$and, 'parsed into a conjunction');
+            assert.equal(parsed.$and.length, 2, 'no extra conditions');
+
+            const [, toCondition] = parsed.$and;
+            assert.equal(toCondition?.to, value, 'selects the exact value');
         });
     });
 
