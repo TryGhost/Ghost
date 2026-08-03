@@ -509,7 +509,20 @@ export class FakeStripeServer extends FakeServer {
     }
 
     private getCheckoutPrice(session: RecordedStripeCheckoutSession): StripePrice | null {
-        const priceId = session.request.line_items?.[0]?.price ?? session.request.subscription_data?.items[0]?.plan;
+        const lineItem = session.request.line_items?.[0];
+        const inlinePrice = lineItem?.price_data;
+
+        if (inlinePrice) {
+            return buildPrice({
+                id: `price_inline_${session.response.id}`,
+                currency: inlinePrice.currency,
+                unit_amount: inlinePrice.unit_amount,
+                type: 'one_time',
+                recurring: null
+            });
+        }
+
+        const priceId = lineItem?.price ?? session.request.subscription_data?.items[0]?.plan;
 
         if (!priceId) {
             return null;
@@ -684,17 +697,40 @@ export class FakeStripeServer extends FakeServer {
 
         const lineItems = Array.isArray(value)
             ? value
-            : Object.values(value as Record<string, {price?: string; quantity?: number | string}>);
+            : Object.values(value as Record<string, {
+                price?: string;
+                price_data?: {
+                    currency?: string;
+                    unit_amount?: number | string;
+                };
+                quantity?: number | string;
+            }>);
 
         return lineItems
-            .filter((item): item is {price?: string; quantity?: number | string} => item !== null && typeof item === 'object')
+            .filter((item): item is {
+                price?: string;
+                price_data?: {
+                    currency?: string;
+                    unit_amount?: number | string;
+                };
+                quantity?: number | string;
+            } => item !== null && typeof item === 'object')
             .map((item) => {
+                const currency = this.parseString(item.price_data?.currency);
+                const unitAmount = this.parseNumber(item.price_data?.unit_amount);
+
                 return {
-                    price: this.parseString(item?.price) ?? '',
+                    price: this.parseString(item.price),
+                    ...(currency && unitAmount !== undefined ? {
+                        price_data: {
+                            currency,
+                            unit_amount: unitAmount
+                        }
+                    } : {}),
                     quantity: this.parseNumber(item?.quantity) ?? 1
                 };
             })
-            .filter(item => item.price);
+            .filter(item => item.price || item.price_data);
     }
 
     private parseSubscriptionItemsUpdate(value: unknown): Array<{id: string; price: string}> {

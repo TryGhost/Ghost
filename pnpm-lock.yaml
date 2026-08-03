@@ -1654,6 +1654,9 @@ importers:
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@types/react':
+        specifier: catalog:react17
+        version: 17.0.93
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2

@@ -28,6 +28,7 @@ Object {
       "explore": true,
       "featurebaseFeedback": true,
       "getHelperDeduplication": true,
+      "giftSubCustomization": true,
       "importMemberTier": true,
       "indexnow": true,
       "lexicalIndicators": true,

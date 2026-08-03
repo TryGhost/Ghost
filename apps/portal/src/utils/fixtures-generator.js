@@ -36,6 +36,7 @@ export function getSiteData({
     portalProducts = products.map(p => p.id),
     accentColor: accent_color = '#45C32E',
     portalPlans: portal_plans = ['free', 'monthly', 'yearly'],
+    portalDefaultPlan: portal_default_plan = '',
     membersSignupAccess: members_signup_access = 'all',
     freePriceName: free_price_name = 'Free',
     freePriceDescription: free_price_description = 'Free preview',
@@ -51,7 +52,8 @@ export function getSiteData({
     posts = getPostsData(),
     commentsEnabled,
     recommendations = [],
-    recommendationsEnabled
+    recommendationsEnabled,
+    labs = {}
 } = {}) {
     return {
         title,
@@ -70,6 +72,7 @@ export function getSiteData({
         portal_button,
         portal_name,
         portal_plans,
+        ...(portal_default_plan ? {portal_default_plan} : {}),
         portal_button_icon,
         portal_button_signup_text,
         portal_button_style,
@@ -78,6 +81,7 @@ export function getSiteData({
         newsletters,
         recommendations,
         recommendations_enabled: !!recommendationsEnabled,
+        labs,
         editor_default_email_recipients,
         posts
     };

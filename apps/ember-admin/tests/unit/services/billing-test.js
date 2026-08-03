@@ -184,6 +184,75 @@ describe('Unit: Service: billing', function () {
         expect(iframe.src).to.match(/^https:\/\/billing\.example\.test\/\?bmaAttemptId=/);
     });
 
+    it('posts a route update for a sub route when the billing app is loaded', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const postMessage = sinon.stub();
+        const iframe = {src: '', addEventListener: sinon.stub(), contentWindow: {postMessage}};
+        sinon.stub(service, 'getBillingIframe').returns(iframe);
+        service.billingAppLoaded = true;
+
+        service.navigateToSubRoute('/domain');
+
+        expect(postMessage.calledOnceWith({query: 'routeUpdate', response: '/domain'}, 'https://billing.example.test')).to.be.true;
+        expect(service.pendingSubRoute).to.be.null;
+    });
+
+    it('keeps a sub route pending when the billing app origin is unknown', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const postMessage = sinon.stub();
+        const iframe = {src: '', addEventListener: sinon.stub(), contentWindow: {postMessage}};
+        sinon.stub(service, 'getBillingIframe').returns(iframe);
+        service.billingAppLoaded = true;
+        this.owner.lookup('config:main').hostSettings = {};
+
+        service.navigateToSubRoute('/domain');
+
+        expect(postMessage.called).to.be.false;
+        expect(service.pendingSubRoute).to.equal('/domain');
+    });
+
+    it('keeps a sub route pending until the billing app reports ready', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const postMessage = sinon.stub();
+        const iframe = {src: '', addEventListener: sinon.stub(), contentWindow: {postMessage}};
+        sinon.stub(service, 'getBillingIframe').returns(iframe);
+
+        service.navigateToSubRoute('/domain');
+
+        expect(postMessage.called).to.be.false;
+        expect(service.pendingSubRoute).to.equal('/domain');
+
+        service.markBillingAppLoaded();
+
+        expect(postMessage.calledOnceWith({query: 'routeUpdate', response: '/domain'}, 'https://billing.example.test')).to.be.true;
+        expect(service.pendingSubRoute).to.be.null;
+    });
+
+    it('boots the billing iframe directly on a pending sub route when opened', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const iframe = {src: '', addEventListener: sinon.stub()};
+        sinon.stub(service, 'getBillingIframe').returns(iframe);
+
+        service.navigateToSubRoute('/domain');
+        service.toggleProWindow(true);
+
+        expect(iframe.src).to.match(/^https:\/\/billing\.example\.test\/domain\?bmaAttemptId=/);
+        expect(service.pendingSubRoute).to.be.null;
+        expect(service.billingAppIframeReloadReason).to.equal('visible_open_with_destination_route');
+    });
+
+    it('prefers a pending sub route over the URL hash for the iframe URL', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        service.pendingSubRoute = '/backups';
+
+        expect(service.getIframeURL({fetchOwner: false})).to.equal('https://billing.example.test/backups');
+    });
+
     it('reports to Sentry with diagnostics when the billing app does not become ready', async function () {
         const service = this.owner.lookup('service:billing');
         billingService = service;
@@ -393,7 +462,7 @@ describe('Unit: Service: billing', function () {
 
         const calls = limitUpdateCalls(postMessage);
         expect(calls).to.have.lengthOf(1);
-        expect(calls[0].args).to.deep.equal([{query: 'limitUpdate'}, '*']);
+        expect(calls[0].args).to.deep.equal([{query: 'limitUpdate'}, 'https://billing.example.test']);
     });
 
     it('does not send limitUpdate when the billing overlay is hidden', function () {

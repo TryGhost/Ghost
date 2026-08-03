@@ -25,8 +25,9 @@ describe('activation-bridge', function () {
 
         // Characterisation tests for the router-facing array output. Each item
         // carries its own `path`; routes use the domain `type`/`contentType`
-        // names; permalinks are already in `:slug` notation and `data` is still
-        // expanded to `{query, router}` (peeled off in later cleanup PRs).
+        // names; permalinks stay in domain `{slug}` notation (the routers convert
+        // to `:slug` via the permalink adapter) and `data` is still expanded to
+        // `{query, router}` (peeled off in later cleanup PRs).
         describe('produces the expected array output', function () {
             const cases: Array<{name: string; raw: unknown; expected: object}> = [
                 {
@@ -67,9 +68,9 @@ describe('activation-bridge', function () {
                     }
                 },
                 {
-                    name: 'collection with permalink converts {slug} to :slug',
+                    name: 'collection permalink stays in domain {slug} notation',
                     raw: {routes: {}, collections: {'/': {permalink: '/{slug}/', template: 'index'}}, taxonomies: {}},
-                    expected: {routes: [], collections: [{path: '/', permalink: '/:slug/', templates: ['index']}], taxonomies: []}
+                    expected: {routes: [], collections: [{path: '/', permalink: '/{slug}/', templates: ['index']}], taxonomies: []}
                 },
                 {
                     name: 'collection with filter and data',
@@ -78,7 +79,7 @@ describe('activation-bridge', function () {
                         routes: [],
                         collections: [{
                             path: '/podcast/',
-                            permalink: '/podcast/:slug/',
+                            permalink: '/podcast/{slug}/',
                             templates: ['podcast'],
                             data: {
                                 query: {tag: {controller: 'tagsPublic', type: 'read', resource: 'tags', options: {slug: 'podcast', visibility: 'public'}}},
@@ -90,9 +91,9 @@ describe('activation-bridge', function () {
                     }
                 },
                 {
-                    name: 'taxonomies become {key, permalink} entries in :slug notation',
+                    name: 'taxonomies become {key, permalink} entries in domain {slug} notation',
                     raw: {routes: {}, collections: {}, taxonomies: {tag: '/tag/{slug}/', author: '/author/{slug}/'}},
-                    expected: {routes: [], collections: [], taxonomies: [{key: 'tag', permalink: '/tag/:slug/'}, {key: 'author', permalink: '/author/:slug/'}]}
+                    expected: {routes: [], collections: [], taxonomies: [{key: 'tag', permalink: '/tag/{slug}/'}, {key: 'author', permalink: '/author/{slug}/'}]}
                 },
                 {
                     name: 'channel route copies order and limit',
@@ -102,7 +103,7 @@ describe('activation-bridge', function () {
                 {
                     name: 'collection copies order, limit and rss',
                     raw: {routes: {}, collections: {'/': {permalink: '/{slug}/', template: 'index', order: 'published_at asc', limit: 10, rss: false}}, taxonomies: {}},
-                    expected: {routes: [], collections: [{path: '/', permalink: '/:slug/', templates: ['index'], order: 'published_at asc', limit: 10, rss: false}], taxonomies: []}
+                    expected: {routes: [], collections: [{path: '/', permalink: '/{slug}/', templates: ['index'], order: 'published_at asc', limit: 10, rss: false}], taxonomies: []}
                 }
             ];
 

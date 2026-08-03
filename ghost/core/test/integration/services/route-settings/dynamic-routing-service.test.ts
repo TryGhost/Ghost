@@ -75,8 +75,8 @@ describe('Integration: DynamicRoutingService over a real FileStore', function ()
         const expanded = await service.loadRouteSettings();
 
         assert.deepEqual(expanded.routes, [{path: '/about/', type: 'template', templates: ['about']}]);
-        assert.deepEqual(expanded.collections, [{path: '/', permalink: '/:slug/', templates: ['index']}]);
-        assert.deepEqual(expanded.taxonomies, [{key: 'tag', permalink: '/tag/:slug/'}]);
+        assert.deepEqual(expanded.collections, [{path: '/', permalink: '/{slug}/', templates: ['index']}]);
+        assert.deepEqual(expanded.taxonomies, [{key: 'tag', permalink: '/tag/{slug}/'}]);
     });
 
     it('loadRouteSettings logs ROUTE_SETTINGS_VALIDATION_ERROR and rethrows when the file fails validation', async function () {

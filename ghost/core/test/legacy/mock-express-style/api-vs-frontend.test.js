@@ -358,19 +358,19 @@ describe('Frontend behavior tests', function () {
 
                     collections: {
                         '/podcast/': {
-                            permalink: '/podcast/:slug/',
+                            permalink: '/podcast/{slug}/',
                             filter: 'featured:true'
                         },
 
                         '/something/': {
-                            permalink: '/something/:slug/',
+                            permalink: '/something/{slug}/',
                             filter: 'featured:false'
                         }
                     },
 
                     taxonomies: {
-                        tag: '/categories/:slug/',
-                        author: '/authors/:slug/'
+                        tag: '/categories/{slug}/',
+                        author: '/authors/{slug}/'
                     }
                 }));
 
@@ -525,7 +525,7 @@ describe('Frontend behavior tests', function () {
                         },
 
                         '/': {
-                            permalink: '/:slug/'
+                            permalink: '/{slug}/'
                         }
                     },
 
@@ -617,7 +617,7 @@ describe('Frontend behavior tests', function () {
 
                     collections: {
                         '/something/': {
-                            permalink: '/:primary_author/:slug/'
+                            permalink: '/{primary_author}/{slug}/'
                         }
                     },
 
@@ -693,7 +693,7 @@ describe('Frontend behavior tests', function () {
 
                     collections: {
                         '/something/': {
-                            permalink: '/something/:primary_tag/:slug/'
+                            permalink: '/something/{primary_tag}/{slug}/'
                         }
                     },
 
@@ -802,7 +802,7 @@ describe('Frontend behavior tests', function () {
 
                     collections: {
                         '/food/': {
-                            permalink: '/food/:slug/',
+                            permalink: '/food/{slug}/',
                             filter: 'tag:bacon+tag:-chorizo',
                             data: {
                                 query: {
@@ -821,7 +821,7 @@ describe('Frontend behavior tests', function () {
                             }
                         },
                         '/sport/': {
-                            permalink: '/sport/:slug/',
+                            permalink: '/sport/{slug}/',
                             filter: 'tag:chorizo+tag:-bacon',
                             data: {
                                 query: {
@@ -842,8 +842,8 @@ describe('Frontend behavior tests', function () {
                     },
 
                     taxonomies: {
-                        tag: '/categories/:slug/',
-                        author: '/authors/:slug/'
+                        tag: '/categories/{slug}/',
+                        author: '/authors/{slug}/'
                     }
                 }));
 
@@ -943,11 +943,11 @@ describe('Frontend behavior tests', function () {
 
                     collections: {
                         '/': {
-                            permalink: '/:slug/',
+                            permalink: '/{slug}/',
                             templates: ['default']
                         },
                         '/magic/': {
-                            permalink: '/magic/:slug/'
+                            permalink: '/magic/{slug}/'
                         }
                     }
                 }));
@@ -1004,7 +1004,7 @@ describe('Frontend behavior tests', function () {
 
                     collections: {
                         '/': {
-                            permalink: '/:slug/',
+                            permalink: '/{slug}/',
                             templates: ['something', 'default']
                         }
                     }
@@ -1051,11 +1051,11 @@ describe('Frontend behavior tests', function () {
 
                     collections: {
                         '/': {
-                            permalink: '/:slug/',
+                            permalink: '/{slug}/',
                             templates: ['something', 'default']
                         },
                         '/magic/': {
-                            permalink: '/magic/:slug/',
+                            permalink: '/magic/{slug}/',
                             templates: ['something', 'default']
                         }
                     }
@@ -1228,13 +1228,13 @@ describe('Frontend behavior tests', function () {
 
                     collections: {
                         '/': {
-                            permalink: '/:slug/'
+                            permalink: '/{slug}/'
                         }
                     },
 
                     taxonomies: {
-                        tag: '/tag/:slug/',
-                        author: '/author/:slug/'
+                        tag: '/tag/{slug}/',
+                        author: '/author/{slug}/'
                     }
                 }));
 
@@ -1450,17 +1450,17 @@ describe('Frontend behavior tests', function () {
 
                 collections: {
                     '/podcast/': {
-                        permalink: '/:slug/',
+                        permalink: '/{slug}/',
                         filter: 'featured:true',
                         templates: ['home'],
                         rss: false
                     },
                     '/music/': {
-                        permalink: '/:slug/',
+                        permalink: '/{slug}/',
                         rss: false
                     },
                     '/': {
-                        permalink: '/:slug/'
+                        permalink: '/{slug}/'
                     }
                 },
 
