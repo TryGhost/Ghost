@@ -23,8 +23,8 @@ const SEARCH_MODE_RATE_LIMIT = isTesting ? 10_000 : 100;
 
 const STRIPE_API_VERSION = '2020-08-27';
 
-// Stripe's Managed Payments (merchant of record) does not support Connect, and
-// some Stripe accounts have it enabled by default for all Checkout Sessions.
+// Stripe's Managed Payments does not support Connect, and some Stripe
+// accounts have it enabled by default for all Checkout Sessions.
 // On those accounts, session creation fails with "Managed Payments cannot be
 // used with Connect" unless it is explicitly disabled per session.
 const MANAGED_PAYMENTS_DISABLED = {enabled: false};
