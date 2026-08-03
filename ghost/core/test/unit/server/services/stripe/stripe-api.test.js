@@ -236,7 +236,7 @@ describe('StripeAPI', function () {
         });
 
         it('createCheckoutSetupSession explicitly disables Managed Payments', async function () {
-            await api.createCheckoutSetupSession('priceId', {});
+            await api.createCheckoutSetupSession({id: mockCustomerId, email: mockCustomerEmail}, {});
 
             assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.managed_payments, {enabled: false});
         });
@@ -570,7 +570,7 @@ describe('StripeAPI', function () {
         });
 
         it('createDonationCheckoutSession explicitly disables Managed Payments', async function () {
-            await api.createDonationCheckoutSession('priceId', {});
+            await api.createDonationCheckoutSession({priceId: 'priceId', successUrl: '/success', cancelUrl: '/cancel', metadata: {}});
 
             assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.managed_payments, {enabled: false});
         });
