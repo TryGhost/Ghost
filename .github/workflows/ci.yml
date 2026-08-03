@@ -237,12 +237,14 @@ jobs:
             --json)
           echo "affected_playwright_projects=$PLAYWRIGHT_PROJECTS" >> "$GITHUB_OUTPUT"
 
-          # Build the publish matrix for affected public apps. Matrix context
-          # isn't available in a job-level `if:`, so the publish job can't filter
-          # itself per-app — instead we emit the matrix here and it skips when
-          # the result is `[]`. The publish job's own is_main / event gates keep
-          # tags and PRs from publishing regardless of what this lists.
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$AFFECTED_PROJECTS")
+          # Build the publish matrix for affected public apps, also comparing
+          # defaults.json with the Nx base so a version-line-only release selects
+          # its app. Matrix context isn't available in a job-level `if:`, so the
+          # publish job can't filter itself per-app — instead we emit the matrix
+          # here and it skips when the result is `[]`. The publish job's own
+          # is_main / event gates keep tags and PRs from publishing regardless of
+          # what this lists.
+          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$AFFECTED_PROJECTS" "$NX_BASE")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
     outputs:

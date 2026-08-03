@@ -28,6 +28,23 @@ describe('buildMatrix', () => {
         assert.strictEqual(matrix[0].package_path, 'apps/portal');
     });
 
+    it('includes an app when only its defaults.json version line changed', () => {
+        const previousDefaults = structuredClone(DEFAULTS);
+        previousDefaults.portal.version = '2.68';
+
+        const matrix = buildMatrix(['ghost', 'ghost-monorepo'], previousDefaults);
+
+        assert.strictEqual(matrix.length, 1);
+        assert.strictEqual(matrix[0].package_name, '@tryghost/portal');
+    });
+
+    it('ignores unrelated changes to an app defaults.json entry', () => {
+        const previousDefaults = structuredClone(DEFAULTS);
+        previousDefaults.portal.url = 'https://example.com/old-portal.js';
+
+        assert.deepStrictEqual(buildMatrix(['ghost', 'ghost-monorepo'], previousDefaults), []);
+    });
+
     it('preserves public-apps.json order regardless of affected order', () => {
         const matrix = buildMatrix([...allPackageNames].reverse());
         assert.deepStrictEqual(matrix.map(e => e.package_name), allPackageNames);
