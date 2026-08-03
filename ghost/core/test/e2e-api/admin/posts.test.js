@@ -782,6 +782,23 @@ describe('Posts API', function () {
                 status: 'published'
             });
 
+            // A long back-and-forth conversation, where each reply replies to the
+            // previous one, chains more levels than MySQL can cascade: InnoDB
+            // hard-limits nested foreign key cascades to 15 levels and fails the
+            // delete with error 3008 beyond that, so `in_reply_to_id` cannot use
+            // ON DELETE CASCADE and must be cleared in the delete transaction
+            // https://dev.mysql.com/doc/mysql-reslimits-excerpt/8.0/en/ansi-diff-foreign-keys.html
+            let previous = reply;
+            for (let i = 0; i < 20; i++) {
+                previous = await models.Comment.add({
+                    post_id: post.id,
+                    parent_id: root.id,
+                    in_reply_to_id: previous.id,
+                    html: `<p>Reply ${i} in a long conversation</p>`,
+                    status: 'published'
+                });
+            }
+
             await agent
                 .delete(`posts/${post.id}/`)
                 .expectStatus(204)
