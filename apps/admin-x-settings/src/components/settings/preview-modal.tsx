@@ -175,7 +175,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                         )}
                     </Inline>}
                 </Inline>}
-                <Inline align='center' className='grow text-muted-foreground' justify='center'>
+                <Inline align='center' className='relative grow text-muted-foreground' justify='center'>
                     {preview}
                 </Inline>
             </Box>

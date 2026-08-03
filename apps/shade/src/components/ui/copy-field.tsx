@@ -9,6 +9,7 @@ type CopyFieldContextValue = {
     copied: boolean;
     copy: () => Promise<void>;
     disabled: boolean;
+    labelId: string;
     value: string;
 };
 
@@ -31,6 +32,7 @@ interface CopyFieldProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const CopyField = React.forwardRef<HTMLDivElement, CopyFieldProps>(({children, className, disabled = false, value, ...props}, ref) => {
     const [copied, setCopied] = React.useState(false);
+    const labelId = React.useId();
     const resetTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
     React.useEffect(() => {
@@ -69,7 +71,7 @@ const CopyField = React.forwardRef<HTMLDivElement, CopyFieldProps>(({children, c
         }
     }, [disabled, value]);
 
-    const contextValue = React.useMemo(() => ({copied, copy, disabled, value}), [copied, copy, disabled, value]);
+    const contextValue = React.useMemo(() => ({copied, copy, disabled, labelId, value}), [copied, copy, disabled, labelId, value]);
 
     return (
         <CopyFieldContext.Provider value={contextValue}>
@@ -88,16 +90,21 @@ const CopyField = React.forwardRef<HTMLDivElement, CopyFieldProps>(({children, c
 });
 CopyField.displayName = 'CopyField';
 
-const CopyFieldLabel = React.forwardRef<HTMLElement, React.ComponentProps<typeof Text>>(({className, ...props}, ref) => (
-    <Text
-        ref={ref}
-        as="div"
-        className={cn('text-control! font-medium group-data-[disabled=true]/copy-field:opacity-50', className)}
-        data-slot="copy-field-label"
-        leading="snug"
-        {...props}
-    />
-));
+const CopyFieldLabel = React.forwardRef<HTMLElement, React.ComponentProps<typeof Text>>(({className, id, ...props}, ref) => {
+    const {labelId} = useCopyField();
+
+    return (
+        <Text
+            ref={ref}
+            as="div"
+            className={cn('text-control! font-medium group-data-[disabled=true]/copy-field:opacity-50', className)}
+            data-slot="copy-field-label"
+            id={id || labelId}
+            leading="snug"
+            {...props}
+        />
+    );
+});
 CopyFieldLabel.displayName = 'CopyFieldLabel';
 
 const CopyFieldContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({className, ...props}, ref) => (
@@ -115,15 +122,20 @@ const CopyFieldContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<H
 CopyFieldContent.displayName = 'CopyFieldContent';
 
 const CopyFieldValue = React.forwardRef<HTMLElement, React.ComponentProps<typeof Text>>(({children, className, ...props}, ref) => {
-    const {value} = useCopyField();
+    const {disabled, labelId, value} = useCopyField();
 
     return (
         <Text
             ref={ref}
+            aria-disabled={disabled || undefined}
+            aria-labelledby={props['aria-label'] || props['aria-labelledby'] ? props['aria-labelledby'] : labelId}
+            aria-readonly="true"
             as="div"
             className={cn('min-w-0 truncate pr-2 text-muted-foreground', className)}
             data-slot="copy-field-value"
             leading="snug"
+            role="textbox"
+            tabIndex={disabled ? undefined : 0}
             {...props}
         >
             {children ?? value}

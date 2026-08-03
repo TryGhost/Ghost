@@ -49,6 +49,23 @@ describe('CopyField Components', () => {
         assert.match(value.className, /text-muted-foreground/);
     });
 
+    it('associates its read-only value with its label', () => {
+        render(
+            <CopyField value='https://example.com'>
+                <CopyFieldLabel>Shareable link</CopyFieldLabel>
+                <CopyFieldContent>
+                    <CopyFieldValue />
+                </CopyFieldContent>
+            </CopyField>
+        );
+
+        const value = screen.getByRole('textbox', {name: 'Shareable link'});
+
+        assert.equal(value.textContent, 'https://example.com');
+        assert.equal(value.getAttribute('aria-readonly'), 'true');
+        assert.equal(value.getAttribute('tabindex'), '0');
+    });
+
     it('insets its actions by one pixel and uses compact button radii', () => {
         render(
             <CopyField value='https://example.com'>
