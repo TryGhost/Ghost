@@ -202,3 +202,24 @@ footer.gh-portal-account-footer {
         justify-content: flex-start;
     }
 }
+
+/* The gift entry point: its own card below the account list, so the offer
+   reads apart from the settings rows above it. */
+.gh-portal-gift-card {
+    margin-top: 16px;
+}
+
+.gh-portal-gift-card-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* No colour set: the icon strokes with currentColor, so it takes the
+   heading's own colour. The heavier stroke matches the title's weight at
+   this size — the shared gift.svg ships at 1.5. */
+.gh-portal-gift-card-title svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}

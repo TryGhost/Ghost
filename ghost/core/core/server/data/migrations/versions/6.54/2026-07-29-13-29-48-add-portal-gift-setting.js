@@ -1,8 +1,8 @@
 const {addSetting} = require('../../utils');
 
 module.exports = addSetting({
-    key: 'gift_subscriptions_enabled',
+    key: 'portal_gift',
     value: 'true',
     type: 'boolean',
-    group: 'members'
+    group: 'portal'
 });

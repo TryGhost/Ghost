@@ -430,27 +430,16 @@ describe('Settings Helpers', function () {
     });
 
     describe('areGiftSubscriptionsEnabled', function () {
-        function createHelpers({giftSetting}) {
+        // There is no global gift switch: gifting rides on paid membership.
+        // Surface visibility is governed by portal_gift/portal_account_gift.
+        it('returns true when paid members are enabled', function () {
             const fakeSettings = createSettingsMock({setDirect: true, setConnect: false});
-            fakeSettings.get.withArgs('gift_subscriptions_enabled').returns(giftSetting);
-            return new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
-        }
-
-        it('returns true when paid members are enabled and the setting is true', function () {
-            assert.equal(createHelpers({giftSetting: true}).areGiftSubscriptionsEnabled(), true);
+            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
+            assert.equal(settingsHelpers.areGiftSubscriptionsEnabled(), true);
         });
 
-        it('returns true when the setting is missing (defaults on)', function () {
-            assert.equal(createHelpers({giftSetting: undefined}).areGiftSubscriptionsEnabled(), true);
-        });
-
-        it('returns false when the setting is explicitly disabled', function () {
-            assert.equal(createHelpers({giftSetting: false}).areGiftSubscriptionsEnabled(), false);
-        });
-
-        it('returns false when paid members are disabled, regardless of the setting', function () {
+        it('returns false when paid members are disabled', function () {
             const fakeSettings = createSettingsMock({setDirect: false, setConnect: false});
-            fakeSettings.get.withArgs('gift_subscriptions_enabled').returns(true);
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils: {}, labs: {}, limitService});
             assert.equal(settingsHelpers.areGiftSubscriptionsEnabled(), false);
         });

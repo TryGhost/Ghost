@@ -369,14 +369,6 @@
             },
             "type": "boolean"
         },
-        "gift_subscriptions_enabled": {
-            "defaultValue": "true",
-            "validations": {
-                "isEmpty": false,
-                "isIn": [["true", "false"]]
-            },
-            "type": "boolean"
-        },
         "blocked_email_domains": {
             "defaultValue": "[]",
             "type": "array"
@@ -384,6 +376,22 @@
     },
     "portal": {
         "portal_name": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "portal_gift": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "portal_account_gift": {
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
@@ -696,10 +704,10 @@
             "flags": "PUBLIC"
         },
         "gift_durations": {
-            "defaultValue": "[1,12]",
+            "defaultValue": "[1,3,6,12]",
             "type": "array"
         },
-        "gift_tiers": {
+        "gift_tiers_disabled": {
             "defaultValue": "[]",
             "type": "array"
         }

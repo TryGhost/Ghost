@@ -27,6 +27,8 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
     const settingsParam = new URLSearchParams();
     settingsParam.append('button', getSettingValue(settings, 'portal_button') ? 'true' : 'false');
     settingsParam.append('name', getSettingValue(settings, 'portal_name') ? 'true' : 'false');
+    settingsParam.append('gift', getSettingValue(settings, 'portal_gift') ? 'true' : 'false');
+    settingsParam.append('accountGift', getSettingValue(settings, 'portal_account_gift') ? 'true' : 'false');
     settingsParam.append('isFree', portalPlans.includes('free') ? 'true' : 'false');
     settingsParam.append('isMonthly', checkStripeEnabled(settings, config) && portalPlans.includes('monthly') ? 'true' : 'false');
     settingsParam.append('isYearly', checkStripeEnabled(settings, config) && portalPlans.includes('yearly') ? 'true' : 'false');

@@ -7,7 +7,7 @@ import NewsletterSelectionPage from './newsletter-selection-page';
 import ProductsSection from '../common/products-section';
 import InputForm from '../common/input-form';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed, areGiftSubscriptionsEnabled, getAvailableProducts} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed, isPortalGiftOptionEnabled, hasGiftableOffering} from '../../utils/helpers';
 import InvitationIcon from '../../images/icons/invitation.svg?react';
 import {interceptAnchorClicks} from '../../utils/links';
 import {sanitizeHtml} from '../../utils/sanitize-html';
@@ -89,12 +89,23 @@ html[dir="rtl"] .gh-portal-back-sitetitle {
     margin-bottom: 40px;
 }
 
+/* Wraps because this row can carry two prompts — sign in and gift — and on a
+   narrow popup they won't sit on one line. With one prompt there's nothing to
+   wrap, so the row is unchanged everywhere else it's used. */
 .gh-portal-signup-message {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     color: var(--grey4);
     font-size: 1.5rem;
     margin: 4px 0 0;
+}
+
+/* Decorative, so it's hidden from screen readers — the two prompts either side
+   are already separate sentences. */
+.gh-portal-signup-message-separator {
+    margin: 0 8px;
+    color: var(--grey9);
 }
 
 .gh-portal-signup-message,
@@ -104,19 +115,6 @@ html[dir="rtl"] .gh-portal-back-sitetitle {
 
 .full-size .gh-portal-signup-message {
     margin: 24px 0 40px;
-}
-
-/* Stacked messages (sign in + gift) sit 16px apart. The leading one drops its
-   bottom margin because adjacent margins collapse to the larger of the two,
-   which would otherwise keep the single-message 40px. */
-.gh-portal-signup-message.stacked,
-.full-size .gh-portal-signup-message.stacked {
-    margin-bottom: 0;
-}
-
-.gh-portal-signup-message + .gh-portal-signup-message,
-.full-size .gh-portal-signup-message + .gh-portal-signup-message {
-    margin-top: 16px;
 }
 
 @media (max-width: 480px) {
@@ -416,6 +414,17 @@ class SignupPage extends React.Component {
         clearTimeout(this.timeoutId);
     }
 
+    // Gated on portal_gift — the "Display option to purchase gift" toggle in
+    // Portal's signup options — which governs this signup-page entry point
+    // specifically. portal_account_gift is the account area's own switch, so
+    // a publisher can keep the signup page clean without taking gifting away
+    // from members who already pay. The offering check is because the gift
+    // page dead-ends when nothing is giftable.
+    canGift() {
+        const {site} = this.context;
+        return isPortalGiftOptionEnabled({site}) && hasGiftableOffering({site});
+    }
+
     getFormErrors(state) {
         const checkboxRequired = this.context.site.portal_signup_checkbox_required && this.context.site.portal_signup_terms_html;
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
@@ -688,14 +697,18 @@ class SignupPage extends React.Component {
     }
 
     renderLoginMessage() {
-        const {brandColor, doAction, site} = this.context;
+        const {brandColor, doAction} = this.context;
         // A gift entry point, like Substack: only when gifting is enabled in
         // Portal and there's a purchasable paid tier (so it doesn't dead-end).
-        const canGift = areGiftSubscriptionsEnabled({site}) && getAvailableProducts({site}).some(product => product.type === 'paid');
+        // Shares the sign-in row rather than stacking under it — two footer
+        // lines gave the gift the same weight as the auth link, and it reads
+        // better as the second half of one line.
+        //
+        const canGift = this.canGift();
         return (
             <div>
                 {this.renderFreeTrialMessage()}
-                <div className={'gh-portal-signup-message' + (canGift ? ' stacked' : '')}>
+                <div className='gh-portal-signup-message'>
                     <div>{t('Already a member?')}</div>
                     <button
                         data-test-button='signin-switch'
@@ -706,21 +719,22 @@ class SignupPage extends React.Component {
                     >
                         <span>{t('Sign in')}</span>
                     </button>
+                    {canGift && (
+                        <>
+                            <span aria-hidden='true' className='gh-portal-signup-message-separator'>&middot;</span>
+                            <div>{t('Buying for someone else?')}</div>
+                            <button
+                                data-test-button='gift-switch'
+                                data-testid='gift-switch'
+                                className='gh-portal-btn gh-portal-btn-link'
+                                style={{color: brandColor}}
+                                onClick={() => doAction('switchPage', {page: 'gift'})}
+                            >
+                                <span>{t('Gift a membership')}</span>
+                            </button>
+                        </>
+                    )}
                 </div>
-                {canGift && (
-                    <div className='gh-portal-signup-message'>
-                        <div>{t('Buying for someone else?')}</div>
-                        <button
-                            data-test-button='gift-switch'
-                            data-testid='gift-switch'
-                            className='gh-portal-btn gh-portal-btn-link'
-                            style={{color: brandColor}}
-                            onClick={() => doAction('switchPage', {page: 'gift'})}
-                        >
-                            <span>{t('Gift a membership')}</span>
-                        </button>
-                    </div>
-                )}
             </div>
         );
     }

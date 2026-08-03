@@ -1175,6 +1175,76 @@ describe('RouterController', function () {
                 }
             });
 
+            it('rejects an enabled duration whose anchor plan is disabled in Portal', async function () {
+                settingsCache.get.withArgs('gift_durations').returns([1, 12]);
+                settingsCache.get.withArgs('portal_plans').returns(['yearly']);
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', duration: 1, metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.context, 'Gift duration "1" is not available');
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
+            });
+
+            it('still accepts a duration whose anchor plan is enabled in Portal', async function () {
+                settingsCache.get.withArgs('gift_durations').returns([1, 12]);
+                settingsCache.get.withArgs('portal_plans').returns(['yearly']);
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', duration: 12, metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({cadence: 'year', duration: 1}));
+            });
+
+            it('rejects a tier disabled in gift subscription settings', async function () {
+                settingsCache.get.withArgs('gift_tiers_disabled').returns(['tier_123']);
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.context, 'Tier "tier_123" is not available as a gift');
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
+            });
+
+            it('rejects a tier hidden from Portal', async function () {
+                const hiddenTierService = {
+                    api: {
+                        read: sinon.stub().resolves({
+                            id: {toHexString: () => 'tier_123'},
+                            status: 'active',
+                            visibility: 'none',
+                            getPrice: sinon.stub().returns(5000)
+                        })
+                    }
+                };
+                const controller = createGiftController({tiersService: hiddenTierService});
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.context, 'Tier "tier_123" is not available as a gift');
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
+            });
+
             it('rejects a non-integer duration', async function () {
                 const controller = createGiftController({tiersService: paidTierService()});
 

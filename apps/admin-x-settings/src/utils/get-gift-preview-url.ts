@@ -12,10 +12,11 @@ export type giftPreviewUrlTypes = {
 
 // Builds a Portal preview URL that renders the gift page (`page=gift`) with the
 // draft gift settings applied on top of the real site data — so heading,
-// description, image and offered durations update live as they're edited. Tiers
-// carry through from the members site API (see app.jsx fetchData), but unsaved
-// per-duration gift-price overrides are passed as `giftPrices` so the preview
-// reflects price edits live too.
+// description, image and offered durations update live as they're edited. Tier
+// records themselves carry through from the members site API (see app.jsx
+// fetchData) — only which ones Portal offers (`portalProducts`) and unsaved
+// per-duration gift-price overrides (`giftPrices`) are passed, so visibility and
+// price edits show in the preview too.
 export const getGiftPreviewUrl = ({settings, tiers, config, siteData}: giftPreviewUrlTypes): string | null => {
     if (!siteData?.url) {
         return null;
@@ -25,6 +26,11 @@ export const getGiftPreviewUrl = ({settings, tiers, config, siteData}: giftPrevi
     const portalBase = '/?v=modal-portal-settings#/portal/preview';
 
     const portalPlans: string[] = JSON.parse(getSettingValue<string>(settings, 'portal_plans') || '[]');
+    // Which tiers Portal itself offers. Without this the preview leaves
+    // portal_products unset, which Portal reads as "no restriction" and renders
+    // every paid tier — including ones hidden from Portal, which can't be
+    // gifted. Same list the Portal preview passes.
+    const portalTiers = (tiers || []).filter(tier => tier.visibility === 'public' && tier.type === 'paid').map(tier => tier.id);
 
     const params = new URLSearchParams();
     params.append('page', 'gift');
@@ -32,6 +38,7 @@ export const getGiftPreviewUrl = ({settings, tiers, config, siteData}: giftPrevi
     // enabled in Portal, so pass the plan flags through for the preview.
     params.append('isMonthly', checkStripeEnabled(settings, config) && portalPlans.includes('monthly') ? 'true' : 'false');
     params.append('isYearly', checkStripeEnabled(settings, config) && portalPlans.includes('yearly') ? 'true' : 'false');
+    params.append('portalProducts', portalTiers.join(','));
 
     const accentColor = getSettingValue(settings, 'accent_color');
     if (accentColor !== undefined && accentColor !== null) {
@@ -41,8 +48,8 @@ export const getGiftPreviewUrl = ({settings, tiers, config, siteData}: giftPrevi
     params.append('giftPageHeading', encodeURIComponent(getSettingValue(settings, 'gift_page_heading') || ''));
     params.append('giftPageDescription', encodeURIComponent(getSettingValue(settings, 'gift_page_description') || ''));
     params.append('giftPageImage', encodeURIComponent(getSettingValue(settings, 'gift_page_image') || ''));
-    params.append('giftDurations', encodeURIComponent(getSettingValue(settings, 'gift_durations') || '[1,12]'));
-    params.append('giftTiers', encodeURIComponent(getSettingValue(settings, 'gift_tiers') || '[]'));
+    params.append('giftDurations', encodeURIComponent(getSettingValue(settings, 'gift_durations') || '[1,3,6,12]'));
+    params.append('giftTiersDisabled', encodeURIComponent(getSettingValue(settings, 'gift_tiers_disabled') || '[]'));
 
     // Pass unsaved per-duration price overrides ({ tierId: { months: cents } })
     // for any tier that has them, so edits show in the preview before saving.

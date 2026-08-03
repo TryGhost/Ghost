@@ -1,10 +1,10 @@
 import {fireEvent, render} from '../../../../utils/test-utils';
-import GiveGiftAction from '../../../../../src/components/pages/AccountHomePage/components/give-gift-action';
+import GiveGiftCard from '../../../../../src/components/pages/AccountHomePage/components/give-gift-card';
 import {getMemberData, getSiteData, getProductsData, getSubscriptionData} from '../../../../../src/utils/fixtures-generator';
 
 const setup = (overrides) => {
     const {mockDoActionFn, ...utils} = render(
-        <GiveGiftAction />,
+        <GiveGiftCard />,
         {
             overrideContext: {
                 ...overrides
@@ -31,19 +31,19 @@ const paidMember = (overrides = {}) => {
     });
 };
 
-describe('GiveGiftAction', () => {
+describe('GiveGiftCard', () => {
     test('renders for paid members when paid members are enabled', () => {
         const {queryByText} = setup({site: paidSite(), member: paidMember()});
 
-        expect(queryByText('Gift a membership')).toBeInTheDocument();
+        expect(queryByText('Gift membership')).toBeInTheDocument();
         expect(queryByText('For a friend or colleague')).toBeInTheDocument();
         expect(queryByText('Buy')).toBeInTheDocument();
     });
 
     test('opens the gift page with account home as the previous page', () => {
-        const {queryByText, mockDoActionFn} = setup({site: paidSite(), member: paidMember()});
+        const {getByRole, mockDoActionFn} = setup({site: paidSite(), member: paidMember()});
 
-        fireEvent.click(queryByText('Gift a membership'));
+        fireEvent.click(getByRole('button'));
 
         expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {
             page: 'gift',
@@ -56,7 +56,7 @@ describe('GiveGiftAction', () => {
 
         const {queryByText} = setup({site: paidSite(), member});
 
-        expect(queryByText('Gift a membership')).toBeInTheDocument();
+        expect(queryByText('Gift membership')).toBeInTheDocument();
     });
 
     test('does not render for free members', () => {
@@ -64,7 +64,7 @@ describe('GiveGiftAction', () => {
 
         const {queryByText} = setup({site: paidSite(), member});
 
-        expect(queryByText('Gift a membership')).not.toBeInTheDocument();
+        expect(queryByText('Gift membership')).not.toBeInTheDocument();
     });
 
     test('does not render for gift members', () => {
@@ -72,21 +72,21 @@ describe('GiveGiftAction', () => {
 
         const {queryByText} = setup({site: paidSite(), member});
 
-        expect(queryByText('Gift a membership')).not.toBeInTheDocument();
+        expect(queryByText('Gift membership')).not.toBeInTheDocument();
     });
 
     test('does not render when paid members are disabled', () => {
         const {queryByText} = setup({site: paidSite({paidMembersEnabled: false}), member: paidMember()});
 
-        expect(queryByText('Gift a membership')).not.toBeInTheDocument();
+        expect(queryByText('Gift membership')).not.toBeInTheDocument();
     });
 
-    test('does not render when gift subscriptions are disabled', () => {
-        const site = {...paidSite(), gift_subscriptions_enabled: false};
+    test('does not render when the account page gift option is disabled', () => {
+        const site = {...paidSite(), portal_account_gift: false};
 
         const {queryByText} = setup({site, member: paidMember()});
 
-        expect(queryByText('Gift a membership')).not.toBeInTheDocument();
+        expect(queryByText('Gift membership')).not.toBeInTheDocument();
     });
 
     test('does not render when no paid tiers are available', () => {
@@ -94,6 +94,23 @@ describe('GiveGiftAction', () => {
 
         const {queryByText} = setup({site, member: paidMember()});
 
-        expect(queryByText('Gift a membership')).not.toBeInTheDocument();
+        expect(queryByText('Gift membership')).not.toBeInTheDocument();
+    });
+
+    test('does not render when every tier is disabled in gift settings', () => {
+        const site = paidSite();
+        site.gift_tiers_disabled = site.products.filter(p => p.type === 'paid').map(p => p.id);
+
+        const {queryByText} = setup({site, member: paidMember()});
+
+        expect(queryByText('Gift membership')).not.toBeInTheDocument();
+    });
+
+    test('does not render when no gift durations are offered', () => {
+        const site = {...paidSite(), gift_durations: []};
+
+        const {queryByText} = setup({site, member: paidMember()});
+
+        expect(queryByText('Gift membership')).not.toBeInTheDocument();
     });
 });

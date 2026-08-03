@@ -464,6 +464,10 @@ export default class App extends React.Component {
                 data.site.portal_button = JSON.parse(value);
             } else if (key === 'name') {
                 data.site.portal_name = JSON.parse(value);
+            } else if (key === 'gift') {
+                data.site.portal_gift = JSON.parse(value);
+            } else if (key === 'accountGift') {
+                data.site.portal_account_gift = JSON.parse(value);
             } else if (key === 'isFree' && JSON.parse(value)) {
                 allowedPlans.push('free');
             } else if (key === 'isMonthly' && JSON.parse(value)) {
@@ -521,9 +525,9 @@ export default class App extends React.Component {
                 } catch (e) {
                     // ignore malformed preview durations
                 }
-            } else if (key === 'giftTiers' && value) {
+            } else if (key === 'giftTiersDisabled' && value) {
                 try {
-                    data.site.gift_tiers = JSON.parse(value);
+                    data.site.gift_tiers_disabled = JSON.parse(value);
                 } catch (e) {
                     // ignore malformed preview tiers
                 }

@@ -713,7 +713,20 @@ module.exports = class RouterController {
         }
 
         const configuredDurations = this._settingsCache.get('gift_durations');
-        const offeredDurations = Array.isArray(configuredDurations) ? configuredDurations.map(Number) : [1, 12];
+        const enabledDurations = Array.isArray(configuredDurations) ? configuredDurations.map(Number) : [1, 12];
+
+        // Portal controls whether monthly/yearly anchored durations are
+        // purchasable at all: a duration is only offered while its anchor
+        // plan is enabled in Portal settings. The gift_durations selection is
+        // remembered independently, so re-enabling a plan restores it.
+        // Defensive: a missing portal_plans counts as both plans enabled,
+        // matching Portal's own default.
+        const portalPlansSetting = this._settingsCache.get('portal_plans');
+        const portalPlans = Array.isArray(portalPlansSetting) ? portalPlansSetting : ['monthly', 'yearly'];
+        const offeredDurations = enabledDurations.filter((duration) => {
+            const anchor = duration % 12 === 0 ? 'yearly' : 'monthly';
+            return portalPlans.includes(anchor);
+        });
 
         if (!Number.isInteger(months) || months <= 0 || !offeredDurations.includes(months)) {
             throw new BadRequestError({
@@ -889,6 +902,21 @@ module.exports = class RouterController {
 
             const {cadence, duration} = this._getGiftDuration(req.body);
             const data = await this._getSubscriptionCheckoutData({...req.body, cadence});
+
+            // A tier is only giftable while it's visible in Portal and not
+            // switched off in gift subscription settings. The disabled list
+            // is remembered independently of Portal visibility, so toggling
+            // a tier in Portal restores its previous gift setting.
+            const disabledGiftTiers = this._settingsCache.get('gift_tiers_disabled');
+            const tierIdString = data.tier?.id?.toHexString ? data.tier.id.toHexString() : String(data.tier?.id ?? '');
+            const isTierDisabledForGifts = Array.isArray(disabledGiftTiers) && disabledGiftTiers.includes(tierIdString);
+            if (isTierDisabledForGifts || data.tier?.visibility === 'none') {
+                throw new BadRequestError({
+                    message: tpl(messages.badRequest),
+                    context: `Tier "${req.body.tierId}" is not available as a gift`
+                });
+            }
+
             const giftOptions = parseGiftOptions(req.body, this._settingsCache.get('timezone'));
 
             response = await this._createGiftCheckoutSession({

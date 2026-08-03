@@ -281,12 +281,21 @@ export function canGiftSubscriptions({site}) {
     return arePaidMembersEnabled({site});
 }
 
-// Whether the gift option is surfaced inside Portal (e.g. the "Give a gift"
-// account action). This is what the `gift_subscriptions_enabled` setting now
-// controls — visibility only. Missing setting (older Ghost versions) counts as
-// visible: the feature shipped default-on and only an explicit opt-out hides it.
-export function areGiftSubscriptionsEnabled({site}) {
-    return canGiftSubscriptions({site}) && site?.gift_subscriptions_enabled !== false;
+// Whether paid members see the gift card on their account page — the
+// `portal_account_gift` setting on Portal's account page tab. Missing setting
+// (older Ghost versions) counts as visible: the surface ships default-on and
+// only an explicit opt-out hides it.
+export function isAccountGiftOptionEnabled({site}) {
+    return canGiftSubscriptions({site}) && site?.portal_account_gift !== false;
+}
+
+// Controls only the gift link in the signup page footer — the "Display option
+// to purchase gift" toggle in Portal's signup options. Separate from
+// isAccountGiftOptionEnabled on purpose: each surface is controlled where it
+// lives, and a publisher may want the plans page clean without taking gifting
+// away from members who already pay.
+export function isPortalGiftOptionEnabled({site}) {
+    return canGiftSubscriptions({site}) && site?.portal_gift !== false;
 }
 
 export function isSigninAllowed({site}) {
@@ -1080,6 +1089,25 @@ export function getOfferedGiftDurations({site}) {
         .sort((a, b) => a - b);
 }
 
+// Which paid tiers can actually be gifted: available in Portal (visibility,
+// prices, paid members enabled) and not switched off in gift subscription
+// settings. gift_tiers_disabled is a disabled-list — tiers are giftable by
+// default, and a tier hidden in Portal keeps its gift setting for when it
+// comes back.
+export function getGiftableProducts({site}) {
+    const disabledTiers = Array.isArray(site?.gift_tiers_disabled) ? site.gift_tiers_disabled : [];
+    return getAvailableProducts({site})
+        .filter(product => product.type === 'paid')
+        .filter(product => !disabledTiers.includes(product.id));
+}
+
+// The gift flow is only offered while there's something to sell: at least one
+// giftable tier and at least one offered duration. Every entry point hides on
+// this, and the gift page itself falls back to its unavailable state.
+export function hasGiftableOffering({site}) {
+    return getGiftableProducts({site}).length > 0 && getOfferedGiftDurations({site}).length > 0;
+}
+
 export function getGiftPrice(product, months) {
     const {cadence, duration} = getGiftCadenceParts(months);
     const basePrice = cadence === 'year' ? product?.yearlyPrice : product?.monthlyPrice;
@@ -1095,6 +1123,16 @@ export function getGiftPrice(product, months) {
     }
 
     return {...basePrice, amount: basePrice.amount * duration};
+}
+
+// The gift shown alongside the tiers follows the cadence switch: on Monthly it
+// offers the shortest monthly gift, on Yearly the shortest whole-year one. Falls
+// back to the page default when the publisher offers nothing in that cadence —
+// the durations a publisher enables are independent of the plans they sell.
+export function getGiftDurationForCadence({site, cadence}) {
+    const offered = getOfferedGiftDurations({site});
+    const match = offered.find(months => getGiftCadenceParts(months).cadence === cadence);
+    return match ?? getDefaultGiftDuration({site});
 }
 
 export function getDefaultGiftDuration({site}) {

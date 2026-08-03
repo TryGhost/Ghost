@@ -9,6 +9,7 @@ import {BackButtonStyles} from './common/back-button';
 import {SwitchStyles} from './common/switch';
 import AccountHomePageStyles from './pages/AccountHomePage/account-home-page.css?inline';
 import {AccountPlanPageStyles} from './pages/account-plan-page';
+import {DatePickerStyles} from './common/date-picker';
 import {InputFieldStyles} from './common/input-field';
 import {SignupPageStyles} from './pages/signup-page';
 import {ProductsSectionStyles} from './common/products-section';
@@ -1350,6 +1351,7 @@ export function getFrameStyles({site}) {
         AccountHomePageStyles +
         AccountPlanPageStyles +
         InputFieldStyles +
+        DatePickerStyles +
         ProductsSectionStyles({site}) +
         SwitchStyles +
         ActionButtonStyles +

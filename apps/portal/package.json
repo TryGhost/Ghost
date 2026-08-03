@@ -41,8 +41,6 @@
         ]
     },
     "devDependencies": {
-        "@typescript/native": "catalog:",
-        "typescript": "catalog:",
         "@doist/react-interpolate": "2.2.3",
         "@internal/cfg-eslint-react": "workspace:*",
         "@internal/cfg-vite-public-app": "workspace:*",
@@ -51,14 +49,19 @@
         "@testing-library/react": "catalog:react17",
         "@testing-library/user-event": "14.6.1",
         "@tryghost/i18n": "workspace:*",
+        "@typescript/native": "catalog:",
+        "@vitejs/plugin-react": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "cross-fetch": "catalog:",
         "dompurify": "catalog:",
         "eslint": "catalog:",
         "jsdom": "catalog:",
         "react": "catalog:react17",
+        "react-day-picker": "catalog:",
         "react-dom": "catalog:react17",
+        "typescript": "catalog:",
         "vite": "catalog:",
+        "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"
     },
     "dependencies": {

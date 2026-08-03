@@ -81,8 +81,13 @@ class SettingsHelpers {
         return this.isMembersEnabled() && this.isStripeConnected();
     }
 
+    // No global on/off switch: gifting is available whenever paid membership
+    // is. Which surfaces advertise it (the signup page link, the account page
+    // card) is controlled per surface by the portal_gift and
+    // portal_account_gift settings, and what's purchasable by the gift
+    // duration/tier settings.
     areGiftSubscriptionsEnabled() {
-        return this.arePaidMembersEnabled() && this.settingsCache.get('gift_subscriptions_enabled') !== false;
+        return this.arePaidMembersEnabled();
     }
 
     getFirstpromoterId() {

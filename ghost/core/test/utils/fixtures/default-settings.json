@@ -368,14 +368,6 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
-        },
-        "gift_subscriptions_enabled": {
-            "defaultValue": "true",
-            "validations": {
-                "isEmpty": false,
-                "isIn": [["true", "false"]]
-            },
-            "type": "boolean"
         }
     },
     "portal": {
@@ -655,10 +647,10 @@
             "flags": "PUBLIC"
         },
         "gift_durations": {
-            "defaultValue": "[1,12]",
+            "defaultValue": "[1,3,6,12]",
             "type": "array"
         },
-        "gift_tiers": {
+        "gift_tiers_disabled": {
             "defaultValue": "[]",
             "type": "array"
         }

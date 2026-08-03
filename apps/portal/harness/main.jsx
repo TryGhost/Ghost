@@ -30,12 +30,15 @@ const personas = {
 
 const searchParams = new URLSearchParams(window.location.search);
 const personaKey = searchParams.get('member') || 'paid';
-const member = personas[personaKey] ?? personas.paid;
+// `in` rather than `??`: the logged-out persona is deliberately null, and
+// coalescing would silently turn it back into the paid member.
+const member = personaKey in personas ? personas[personaKey] : personas.paid;
 
 const site = {
     ...FixtureSite.singleTier.basic,
     title: 'Grasslands',
-    ...(searchParams.get('gifts') === 'off' ? {gift_subscriptions_enabled: false} : {})
+    // No global gift switch anymore — turn off both surface settings.
+    ...(searchParams.get('gifts') === 'off' ? {portal_gift: false, portal_account_gift: false} : {})
 };
 
 const ghostApi = setupGhostApi({siteUrl: window.location.origin});

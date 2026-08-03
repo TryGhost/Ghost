@@ -42,27 +42,29 @@ const GiftSidebar: React.FC<{
         ['gift_page_heading', 'gift_page_description', 'gift_page_image']
     );
 
-    const [giftDurationsJson, portalPlansJson, giftTiersJson] = getSettingValues(localSettings, ['gift_durations', 'portal_plans', 'gift_tiers']);
-    const giftDurations = JSON.parse(giftDurationsJson?.toString() || '[1,12]') as number[];
+    const [giftDurationsJson, portalPlansJson, giftTiersDisabledJson] = getSettingValues(localSettings, ['gift_durations', 'portal_plans', 'gift_tiers_disabled']);
+    const giftDurations = JSON.parse(giftDurationsJson?.toString() || '[1,3,6,12]') as number[];
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
     const offeredDurations = DURATION_OPTIONS.filter(({months, anchor}) => giftDurations.includes(months) && portalPlans.includes(anchor));
 
+    // Only tiers enabled in Portal are available here at all — a tier hidden
+    // from Portal can't be gifted, so it isn't listed. Its gift setting is
+    // kept, though: gift_tiers_disabled is a disabled-list that's only ever
+    // edited per tier, so re-enabling a tier in Portal restores whatever it
+    // was set to before.
     const paidTiers = getPaidActiveTiers(localTiers || []);
-    const giftTiers = JSON.parse(giftTiersJson?.toString() || '[]') as string[];
-    // An empty gift_tiers list means "all paid tiers".
-    const isTierOffered = (tierId: string) => giftTiers.length === 0 || giftTiers.includes(tierId);
-    const offeredTiers = paidTiers.filter(tier => isTierOffered(tier.id));
+    const visibleTiers = paidTiers.filter(tier => tier.visibility === 'public');
+    const giftTiersDisabled = JSON.parse(giftTiersDisabledJson?.toString() || '[]') as string[];
+    // Disabled-list semantics: tiers are giftable by default, including
+    // tiers created later.
+    const isTierOffered = (tierId: string) => !giftTiersDisabled.includes(tierId);
+    const offeredTiers = visibleTiers.filter(tier => isTierOffered(tier.id));
 
     const toggleTier = (tierId: string, checked: boolean) => {
-        const nextIds = paidTiers
-            .filter(tier => (tier.id === tierId ? checked : isTierOffered(tier.id)))
-            .map(tier => tier.id);
-        // Must offer at least one tier; ignore an unchecking that empties the list.
-        if (nextIds.length === 0) {
-            return;
-        }
-        // Store the canonical "all" ([]) when every tier is offered.
-        updateSetting('gift_tiers', JSON.stringify(nextIds.length === paidTiers.length ? [] : nextIds));
+        const next = checked
+            ? giftTiersDisabled.filter(id => id !== tierId)
+            : [...new Set([...giftTiersDisabled, tierId])];
+        updateSetting('gift_tiers_disabled', JSON.stringify(next));
     };
 
     // Heading and description behave identically: the default is shown as a
@@ -108,12 +110,9 @@ const GiftSidebar: React.FC<{
         }
     };
 
+    // Every duration may be switched off — with none left the gift page shows
+    // its unavailable state, which the note under the list points out.
     const toggleDuration = (months: number, checked: boolean) => {
-        // Must always offer at least one duration; ignore an unchecking that would
-        // leave the gift page with none available to readers.
-        if (!checked && offeredDurations.length <= 1) {
-            return;
-        }
         const next = checked
             ? [...giftDurations, months]
             : giftDurations.filter(m => m !== months);
@@ -130,7 +129,11 @@ const GiftSidebar: React.FC<{
                     <ImageUpload className={`w-full ${giftPageImage ? 'h-[120px]' : 'h-[52px]'}`}>
                         {giftPageImage ? (
                             <ImageUploadPreview>
-                                <ImageUploadImage alt='Gift page image' src={giftPageImage} />
+                                {/* Contained rather than the pattern's default
+                                    cover: the gift page scales the image to fit
+                                    within its own bounds too, so cropping it to
+                                    fill here would misrepresent it. */}
+                                <ImageUploadImage alt='Gift page image' className='object-contain' src={giftPageImage} />
                                 <ImageUploadActions>
                                     <ImageUploadAction aria-label='Remove gift page image' className='!top-1 !right-1' type='button' onClick={() => updateSetting('gift_page_image', null)}>
                                         <Trash2 />
@@ -181,17 +184,13 @@ const GiftSidebar: React.FC<{
                         {DURATION_OPTIONS.map(({months, label, anchor}) => {
                             const anchorAvailable = portalPlans.includes(anchor);
                             const isChecked = giftDurations.includes(months) && anchorAvailable;
-                            // The last offered duration can't be unchecked — at least one is required.
-                            const isLastOffered = isChecked && offeredDurations.length === 1;
-                            // The last offered duration is disabled without a
-                            // callout — the disabled checkbox communicates it.
                             const hint = anchorAvailable ? undefined : `Requires the ${anchor} plan to be enabled in Portal settings`;
                             // 1 month and 1 year map straight onto the tier's own
                             // prices; 3 and 6 are multiplied out, so tag those.
                             const priceTag = anchorAvailable && months > 1 && anchor === 'monthly'
                                 ? `${months}× monthly tier price`
                                 : null;
-                            const disabled = !anchorAvailable || isLastOffered;
+                            const disabled = !anchorAvailable;
                             return (
                                 <Field key={String(months)} data-disabled={disabled || undefined} orientation='horizontal'>
                                     <Checkbox
@@ -218,31 +217,29 @@ const GiftSidebar: React.FC<{
                 )}
             </div>
 
-            {paidTiers.length > 1 && (
+            {visibleTiers.length > 0 && (
                 <div>
                     <Text as='h5' className='text-base' weight='semibold'>Tiers</Text>
                     <FieldSet className='mt-4'>
                         <FieldGroup data-slot='checkbox-group'>
-                            {paidTiers.map((tier) => {
-                                // The last offered tier can't be unchecked — at least one is required.
-                                const isLastOffered = isTierOffered(tier.id) && offeredTiers.length === 1;
-                                return (
-                                    <Field key={tier.id} data-disabled={isLastOffered || undefined} orientation='horizontal'>
-                                        <Checkbox
-                                            checked={isTierOffered(tier.id)}
-                                            disabled={isLastOffered}
-                                            id={`gift-tier-${tier.id}`}
-                                            value={tier.id}
-                                            onCheckedChange={checked => toggleTier(tier.id, checked === true)}
-                                        />
-                                        <FieldContent>
-                                            <FieldLabel htmlFor={`gift-tier-${tier.id}`}>{tier.name}</FieldLabel>
-                                        </FieldContent>
-                                    </Field>
-                                );
-                            })}
+                            {visibleTiers.map(tier => (
+                                <Field key={tier.id} orientation='horizontal'>
+                                    <Checkbox
+                                        checked={isTierOffered(tier.id)}
+                                        id={`gift-tier-${tier.id}`}
+                                        value={tier.id}
+                                        onCheckedChange={checked => toggleTier(tier.id, checked === true)}
+                                    />
+                                    <FieldContent>
+                                        <FieldLabel htmlFor={`gift-tier-${tier.id}`}>{tier.name}</FieldLabel>
+                                    </FieldContent>
+                                </Field>
+                            ))}
                         </FieldGroup>
                     </FieldSet>
+                    {offeredTiers.length === 0 && (
+                        <Text className='mt-1 text-muted-foreground' leading='normal' size='sm'>No tiers are available, so the gift page is currently unavailable to readers.</Text>
+                    )}
                 </div>
             )}
         </div>
@@ -260,7 +257,7 @@ const GiftModal: React.FC = () => {
         initialState: {
             settings: settings as Dirtyable<Setting>[],
             // Read-only here — used to list which tiers can be gifted. Only the
-            // gift_tiers setting changes; tier records themselves don't.
+            // gift_tiers_disabled setting changes; tier records themselves don't.
             tiers: (allTiers as Tier[]) || []
         },
         savingDelay: 500,

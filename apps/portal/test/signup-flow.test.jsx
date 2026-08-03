@@ -54,7 +54,7 @@ const offerSetup = async ({site, member = null, offer}) => {
         continueButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
         chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
         signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-        siteTitle = within(popupIframeDocument).queryByText(site.title);
+        siteTitle = within(popupIframeDocument).queryByTestId('site-title-text');
         offerName = within(popupIframeDocument).queryByText(offer.display_title);
         offerDescription = within(popupIframeDocument).queryByText(offer.display_description);
 
@@ -132,7 +132,7 @@ const setup = async ({site, member = null, checkoutPlanError = null}) => {
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
     const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
+    const siteTitle = within(popupIframeDocument).queryByTestId('site-title-text');
     const freePlanTitle = within(popupIframeDocument).queryByText('Free');
     const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
     const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
@@ -190,7 +190,7 @@ const multiTierSetup = async ({site, member = null}) => {
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
     const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
+    const siteTitle = within(popupIframeDocument).queryByTestId('site-title-text');
     const freePlanTitle = within(popupIframeDocument).queryAllByText(/free$/i);
     const freePlanDescription = within(popupIframeDocument).queryAllByText(freeTierDescription);
     const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');

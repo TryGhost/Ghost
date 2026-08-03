@@ -24,8 +24,8 @@ const SignupOptions: React.FC<{
     setError: (key: string, error: string | undefined) => void
 }> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError}) => {
     const {config} = useGlobalData();
-    const [membersSignupAccess, portalName, portalSignupTermsHtml, portalSignupCheckboxRequired, portalPlansJson, portalDefaultPlan] = getSettingValues(
-        localSettings, ['members_signup_access', 'portal_name', 'portal_signup_terms_html', 'portal_signup_checkbox_required', 'portal_plans', 'portal_default_plan']
+    const [membersSignupAccess, portalName, portalGift, portalSignupTermsHtml, portalSignupCheckboxRequired, portalPlansJson, portalDefaultPlan] = getSettingValues(
+        localSettings, ['members_signup_access', 'portal_name', 'portal_gift', 'portal_signup_terms_html', 'portal_signup_checkbox_required', 'portal_plans', 'portal_default_plan']
     );
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
 
@@ -126,10 +126,20 @@ const SignupOptions: React.FC<{
     const arePaidTiersVisible = isStripeEnabled && paidActiveTiers.length > 0 && paidActiveTiers.some(tier => tier.visibility === 'public');
 
     return <div className='mt-7'><Form>
-        <Field data-disabled={!isSignupAllowed || undefined} orientation='horizontal'>
-            <FieldLabel htmlFor='portal-display-name'>Display name in signup form</FieldLabel>
-            <Switch checked={Boolean(portalName)} disabled={!isSignupAllowed} id='portal-display-name' onCheckedChange={checked => updateSetting('portal_name', checked)} />
-        </Field>
+        {/* Grouped so the two switches sit closer to each other than to the
+            sections around them — the Form's own gap-8 still separates this
+            block from what follows. */}
+        <div className='flex flex-col gap-4'>
+            <Field data-disabled={!isSignupAllowed || undefined} orientation='horizontal'>
+                <FieldLabel htmlFor='portal-display-name'>Display name in signup form</FieldLabel>
+                <Switch checked={Boolean(portalName)} disabled={!isSignupAllowed} id='portal-display-name' onCheckedChange={checked => updateSetting('portal_name', checked)} />
+            </Field>
+
+            <Field data-disabled={!arePaidTiersVisible || undefined} orientation='horizontal'>
+                <FieldLabel htmlFor='portal-display-gift'>Display option to purchase gift</FieldLabel>
+                <Switch checked={Boolean(portalGift)} disabled={!arePaidTiersVisible} id='portal-display-gift' onCheckedChange={checked => updateSetting('portal_gift', checked)} />
+            </Field>
+        </div>
 
         <FieldSet>
             <FieldLegend variant='label'>Available tiers</FieldLegend>

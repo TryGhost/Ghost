@@ -1,8 +1,8 @@
-import {render} from '../../../utils/test-utils';
+import {fireEvent, render} from '../../../utils/test-utils';
 import GiftPage from '../../../../src/components/pages/gift-page';
-import {testSite} from '../../../../src/utils/fixtures';
+import {member, testSite} from '../../../../src/utils/fixtures';
 
-const renderGiftPage = (siteOverrides = {}) => {
+const renderGiftPage = (siteOverrides = {}, currentMember = null) => {
     return render(<GiftPage />, {
         overrideContext: {
             site: {
@@ -10,7 +10,7 @@ const renderGiftPage = (siteOverrides = {}) => {
                 url: 'https://example.com/',
                 ...siteOverrides
             },
-            member: null
+            member: currentMember
         }
     });
 };
@@ -84,5 +84,59 @@ describe('GiftPage', () => {
 
         expect(getByRole('heading', {level: 1, name: 'Gift a membership'})).toBeInTheDocument();
         expect(getByText(/Share a full membership to/)).toBeInTheDocument();
+    });
+
+    describe('when gifting is unavailable', () => {
+        // Switching every duration off leaves nothing to sell, so the page
+        // falls back to its unavailable state.
+        const noDurations = {gift_durations: []};
+
+        test('shows the site title and the unavailable message, not the checkout', () => {
+            const {getByRole, getByText, container} = renderGiftPage(noDurations);
+
+            expect(getByRole('heading', {level: 1, name: 'The Blueprint'})).toBeInTheDocument();
+            expect(getByText('Gift subscriptions are not available right now.')).toBeInTheDocument();
+            // The two-column checkout would leave an empty half here.
+            expect(container.querySelector('.gh-portal-gift-checkout')).toBeNull();
+        });
+
+        test('sends a signed-out visitor to signup, since gifting being off says nothing about it', () => {
+            const {getByRole, mockDoActionFn} = renderGiftPage(noDurations);
+
+            fireEvent.click(getByRole('button', {name: 'View plans'}));
+
+            expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {page: 'signup'});
+        });
+
+        test('sends a free member to their account plans, which signup would only bounce them to', () => {
+            const {getByRole, mockDoActionFn} = renderGiftPage(noDurations, member.free);
+
+            fireEvent.click(getByRole('button', {name: 'View plans'}));
+
+            expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {page: 'accountPlan'});
+        });
+
+        // Nobody is left without an action: with no plans to offer, closing
+        // still returns them to the site they were reading.
+        test('falls back to closing for a paying member, who has nothing to upgrade to', () => {
+            const {getByRole, queryByRole, mockDoActionFn} = renderGiftPage(noDurations, member.paid);
+
+            expect(queryByRole('button', {name: 'View plans'})).not.toBeInTheDocument();
+            fireEvent.click(getByRole('button', {name: 'Close'}));
+
+            expect(mockDoActionFn).toHaveBeenCalledWith('closePopup');
+        });
+
+        test('falls back to closing when the site is not accepting signups', () => {
+            const {getByRole, queryByRole, mockDoActionFn} = renderGiftPage({
+                ...noDurations,
+                members_signup_access: 'none'
+            });
+
+            expect(queryByRole('button', {name: 'View plans'})).not.toBeInTheDocument();
+            fireEvent.click(getByRole('button', {name: 'Close'}));
+
+            expect(mockDoActionFn).toHaveBeenCalledWith('closePopup');
+        });
     });
 });
