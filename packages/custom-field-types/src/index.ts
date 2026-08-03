@@ -89,9 +89,28 @@ export const AddressValue = z.object({
     city: z.string().trim().max(255).optional(),
     state: z.string().trim().max(255).optional(),
     postal_code: z.string().trim().max(32).optional(),
-    // Two characters only — the shape of an ISO 3166-1 alpha-2 code, not validated
-    // against the actual country list.
-    country: z.string().trim().length(2).optional()
+    /**
+     * The shape of an ISO 3166-1 alpha-2 code, deliberately not checked against the
+     * actual list of them. A closed list would put Ghost in the position of deciding
+     * whose country is real, which is not a judgement a publishing platform should be
+     * making of its members, and there is no defensible answer for Kosovo, Taiwan,
+     * Palestine or Western Sahara. Anything well-formed is stored, and the collection
+     * form offers a list to pick from without being the arbiter of it.
+     *
+     * Case is normalised, because that is a question about the same country rather than
+     * about which countries exist. Left alone, `gb` and `GB` are two values for one
+     * place: a filter for one silently misses the other, and nothing can tell them apart
+     * afterwards to repair it. Normalising on the way in is the only point at which that
+     * is cheap.
+     *
+     * Shape is two ASCII letters rather than any two characters, which is what alpha-2
+     * means. Counting characters instead would be wrong in both directions once case is
+     * normalised, because uppercasing does not preserve length: `ß` becomes `SS` and
+     * would pass a length-of-two rule from one character, while `aß` becomes `ASS` and
+     * would fail it from two. Checking the shape of the input settles both, and turns
+     * away the `12` and `!!` that a bare length check always allowed through.
+     */
+    country: z.string().trim().regex(/^[A-Za-z]{2}$/).toUpperCase().optional()
 }).refine(
     // Every sub-field is trimmed above, so whitespace has already become the empty
     // string by the time this runs. Trimming is what stops `{line1: '   '}` being

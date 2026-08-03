@@ -189,6 +189,19 @@ describe('Members import — custom fields', function () {
         );
     });
 
+    // Where messy country codes actually come from: a spreadsheet exported from something
+    // else, where the column was typed by hand over several years.
+    it('normalises the case of an imported country code', async function () {
+        const key = await createField('Shipping Address', 'address');
+        const email = 'cf-country-case@example.com';
+
+        const res = await importCSV(`email,custom_fields.${key}.country\n${email},gb\n`);
+        assert.equal(res.status, 201);
+        assert.equal(res.body.meta.stats.imported, 1);
+
+        assert.deepEqual((await findMember(email)).custom_fields?.[key], {country: 'GB'});
+    });
+
     // A stray space is not data. Read as a value it would make this address all-whitespace,
     // fail its "at least one part" rule, and take the member's name and email down with it.
     it('reads a whitespace-only address cell as blank rather than failing the row', async function () {
