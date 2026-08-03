@@ -210,16 +210,23 @@ const AutomationFloat: React.FC = () => {
     const workingText = saveState === 'saving' ? 'Saving…' : dirty ? 'Unsaved changes' : 'No changes';
 
     return (
-        <div className="fixed inset-0 z-50 bg-background" data-testid="float-detail">
-            {/* Canvas is full-bleed; the performance card + header float over its
-                top-left (below) and the lifecycle chrome over its top-right. */}
-            <div className="absolute inset-0 overflow-hidden bg-muted">
+        <div className="fixed inset-0 z-50 flex overflow-hidden bg-background" data-testid="float-detail">
+            {/* Left pane docked flush to the edge. On entering edit it slides off the
+                left (negative margin collapses its flex footprint to 0) and the canvas
+                grows leftward to fill. Always mounted so the transition can animate; the
+                canvas's ResizeObserver re-centres the flow as it grows. pt-16 clears the
+                title overlay that persists at the screen's top-left. */}
+            <aside className={cn('flex w-[480px] shrink-0 flex-col overflow-hidden bg-sidebar pt-16 transition-[margin] duration-300 ease-out', showEditCanvas ? '-ml-[480px]' : 'ml-0')}>
+                <CanvasSidePanel scenario={scenario} selectedMemberId={selectedMemberId} onSelectMember={setSelectedMemberId} />
+            </aside>
+
+            {/* Canvas fills the remaining viewport (bounded, not full-bleed), so the flow
+                centres within its own region — no left-inset hack needed. */}
+            <div className="relative min-w-0 flex-1 overflow-hidden bg-muted">
                 {showEditCanvas ? (
                     <FloatEditCanvas draft={activeDraft} onChange={handleDraftChange} />
                 ) : (
-                    // leftInset ≈ the floating card's footprint (left-4 + w-480 + gap)
-                    // so the flow centres beside it and panning can't tuck it under.
-                    <FloatFlowCanvas automation={automation} leftInset={512} selectedRun={selectedRun} />
+                    <FloatFlowCanvas automation={automation} selectedRun={selectedRun} />
                 )}
 
                 {/* Editing a live automation: you can explore/edit freely, but changes
@@ -272,12 +279,11 @@ const AutomationFloat: React.FC = () => {
                 </div>
             </div>
 
-            {/* Top-left — back arrow + automation title float over the canvas and stay
-                visible in edit mode; the performance card floats below them and hides
-                while editing. The column is pointer-events-none so its empty gaps pass
-                clicks through to the canvas; the header and card opt back in. */}
-            <div className="pointer-events-none absolute inset-y-4 left-4 z-20 flex w-[480px] flex-col gap-3">
-                <Inline align="center" className="pointer-events-auto shrink-0" gap="sm">
+            {/* Title — persistent overlay at the screen's top-left; stays put in edit
+                mode even though the pane hides. pointer-events-none container so empty
+                space passes clicks through; the title row opts back in. */}
+            <div className="pointer-events-none absolute top-4 left-4 z-30">
+                <Inline align="center" className="pointer-events-auto" gap="sm">
                     <RailButton icon={LucideIcon.ArrowLeft} label="Back to automations" onClick={goBack} />
                     <HoverCard closeDelay={150} open={switcherOpen} openDelay={150} onOpenChange={setSwitcherOpen}>
                         <HoverCardTrigger asChild>
@@ -309,11 +315,6 @@ const AutomationFloat: React.FC = () => {
                         </HoverCardContent>
                     </HoverCard>
                 </Inline>
-                {!showEditCanvas && (
-                    <div className="pointer-events-auto flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border-default bg-background shadow-lg">
-                        <CanvasSidePanel scenario={scenario} selectedMemberId={selectedMemberId} onSelectMember={setSelectedMemberId} />
-                    </div>
-                )}
             </div>
 
             {/* Stop — the high-friction confirm that unlocks editing. */}

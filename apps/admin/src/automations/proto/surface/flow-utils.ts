@@ -13,7 +13,10 @@ import {LucideIcon} from '@tryghost/shade/utils';
 // light and dark mode. Shared here (rather than defined per-canvas) so the two
 // canvases can't drift back apart the way flow-canvas's did before.
 export const EDGE_STROKE = 'var(--xy-edge-stroke)';
-export const REACT_FLOW_THEME = '[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-300)] dark:[--xy-background-color:var(--background)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]';
+// Canvas sits on the standard --background token (flips per theme); the left pane is
+// lifted to the lighter sidebar token so the two surfaces read apart. Dots: grey-500
+// in light, subtle white-alpha in dark.
+export const REACT_FLOW_THEME = '[--xy-background-color:var(--background)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-300)] dark:[--xy-background-pattern-color:#ffffff1a] dark:[--xy-edge-stroke:var(--color-grey-800)]';
 
 // Column layout — a single vertical stack of fixed-width nodes. Node y-positions
 // are derived from each node's *rendered height* plus a constant visible gap, so

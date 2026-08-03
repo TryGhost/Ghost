@@ -123,7 +123,7 @@ const SortHead: React.FC<{
         // panels). bg-background makes rows scroll under it; the border-collapse
         // table means the row's own border-b won't stick, so the bottom divider is
         // drawn as an inset box-shadow instead. z-10 sits under the bar's z-20.
-        <TableHead className={cn('sticky top-[var(--stick-top,80px)] z-10 bg-background px-4 shadow-[inset_0_-1px_0_var(--border-default)]', className)}>
+        <TableHead className={cn('sticky top-[var(--stick-top,80px)] z-10 bg-sidebar px-4 shadow-[inset_0_-1px_0_var(--border-default)]', className)}>
             <TableHeadButton
                 className="font-medium text-muted-foreground normal-case"
                 // type="button" is required: Shade's Button sets no default type, so
@@ -371,7 +371,7 @@ export const CanvasSidePanel: React.FC<CanvasSidePanelProps> = ({scenario, selec
                 {/* Sticky control bar — search always; once stuck (the 2x2 cards have
                     scrolled off) a one-line chip row expands here in their place, via the
                     grid-rows 0fr→1fr height trick so the collapse animates. */}
-                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-background px-6 py-4', stuck && 'border-b border-border-default')}>
+                <div ref={stickyBarRef} className={cn('sticky top-0 z-20 bg-sidebar px-6 py-4', stuck && 'border-b border-border-default')}>
                 <InputGroup className="w-full">
                     <InputGroupAddon>
                         <LucideIcon.Search />
