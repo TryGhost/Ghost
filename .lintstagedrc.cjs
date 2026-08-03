@@ -101,11 +101,8 @@ function buildBoundaryCommand(files) {
 function buildEmberTemplateLintCommand(files) {
     const workspace = 'apps/ember-admin';
     const base = path.join(ROOT, workspace);
-    const relativeFiles = files
-        .map(file => normalize(path.relative(base, file)))
-        .map(shellQuote)
-        .join(' ');
-    return `pnpm --dir ${shellQuote(workspace)} exec ember-template-lint ${relativeFiles}`;
+    const relativeFiles = files.map(file => normalize(path.relative(base, file)));
+    return `pnpm --dir ${shellQuote([workspace])} exec ember-template-lint ${shellQuote(relativeFiles)}`;
 }
 
 /**
