@@ -41,7 +41,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
 
     if (webhooks.length === 0) {
         return (
-            <Stack className='mt-8 -mb-6' gap='none'>
+            <Stack gap='none'>
                 <Separator />
                 <EmptyIndicator
                     actions={(
@@ -55,12 +55,11 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                 >
                     <LucideIcon.Webhook />
                 </EmptyIndicator>
-                <Separator className='relative z-[300]' />
             </Stack>
         );
     }
 
-    return (<Stack className='mt-8 -mb-6' gap='md'>
+    return (<Stack gap='md'>
         <Table>
             <TableHeader>
                 <TableRow>

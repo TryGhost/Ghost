@@ -24,8 +24,8 @@ describe('WebhooksTable', () => {
         expect(screen.getByRole('button', {name: 'Add webhook'})).toHaveClass('border-control-border');
         const separators = container.querySelectorAll('[data-orientation="horizontal"]');
 
-        expect(separators).toHaveLength(2);
-        expect(separators[1]).toHaveClass('relative', 'z-[300]');
+        expect(separators).toHaveLength(1);
+        expect(container.querySelector('[class*="z-[300]"]')).not.toBeInTheDocument();
         expect(screen.queryByRole('table')).not.toBeInTheDocument();
     });
 });

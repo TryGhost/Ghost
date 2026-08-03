@@ -5,12 +5,12 @@ import React, {useEffect, useState} from 'react';
 import WebhooksTable from './webhooks-table';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {type APIKey, useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
+import {Box, Stack} from '@tryghost/shade/primitives';
 import {Field, FieldError, FieldLabel, Input} from '@tryghost/shade/components';
 import {ImageUpload, ImageUploadAction, ImageUploadActions, ImageUploadDropzone, ImageUploadImage, ImageUploadPreview} from '@tryghost/shade/patterns';
 import {type Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {SettingsModal} from '@tryghost/shade/patterns';
-import {Stack} from '@tryghost/shade/primitives';
 import {Trash2} from 'lucide-react';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
@@ -88,6 +88,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         dirty={saveState === 'unsaved'}
+        footerClassName={!integration.webhooks?.length ? 'border-t border-border' : undefined}
         okLabel={okProps.label || 'Save'}
         okVariant={okProps.variant}
         size='md'
@@ -164,7 +165,9 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             </Stack>
         </Stack>
 
-        <WebhooksTable integration={integration} />
+        <Box className='mt-8 -mb-6'>
+            <WebhooksTable integration={integration} />
+        </Box>
     </SettingsModal>;
 };
 
