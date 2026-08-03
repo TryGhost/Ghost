@@ -1,19 +1,4 @@
 /**
- * @description Permalink Adapter — the anti-corruption layer between the routing
- * domain model and the Express / URL-service infrastructure.
- *
- * The domain model expresses permalinks in `{slug}` notation (the publisher's
- * language, as written in `routes.yaml`). Express route mounting, `path-match`
- * and the URL service's `replacePermalink` all require `:slug` notation. This
- * module is the single, named boundary where that translation happens — routers
- * call it when mounting routes and registering with the URL service, so the
- * conversion lives in exactly one place instead of scattered regex replacements.
- *
- * Both conversions are idempotent: passing an already-converted permalink back
- * through returns it unchanged.
- */
-
-/**
  * Convert a domain-model permalink into Express / URL-service notation.
  *
  * @example toExpressNotation('/{slug}/')               // => '/:slug/'
