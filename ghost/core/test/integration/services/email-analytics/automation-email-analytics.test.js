@@ -137,6 +137,7 @@ describe('Automation email analytics', function () {
         const member = await createMember();
         await automationsApi.recordEmailSent({
             automationActionRevisionId: revision.id,
+            automationRunStepId: null,
             mailgunMessageId,
             memberEmail: member.email,
             memberId: member.id,

@@ -103,6 +103,16 @@ export async function cleanupAutomationsFixture(): Promise<void> {
         .pluck('id');
 
     if (runIds.length > 0) {
+        const runStepIds: string[] = await db.knex('automation_run_steps')
+            .whereIn('automation_run_id', runIds)
+            .pluck('id');
+
+        if (runStepIds.length > 0) {
+            await db.knex('automated_email_recipients')
+                .whereIn('automation_run_step_id', runStepIds)
+                .del();
+        }
+
         await db.knex('automation_run_steps')
             .whereIn('automation_run_id', runIds)
             .del();

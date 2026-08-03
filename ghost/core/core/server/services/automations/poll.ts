@@ -210,6 +210,7 @@ const processStep = async ({
             try {
                 await automationsApi.recordEmailSent({
                     automationActionRevisionId: step.automation_action_revision_id,
+                    automationRunStepId: step.id,
                     ...(mailgunMessageId ? {mailgunMessageId} : {}),
                     memberEmail: member.get('email'),
                     memberId: step.member_id,
