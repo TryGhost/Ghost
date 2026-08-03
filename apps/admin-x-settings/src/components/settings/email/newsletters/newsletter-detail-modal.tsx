@@ -265,9 +265,9 @@ const Sidebar: React.FC<{
             title: 'General',
             contents:
             <>
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Name and description</FieldLegend>
-                    <FieldGroup className='gap-6'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Name and description</FieldLegend>
+                    <FieldGroup>
                     <Field data-invalid={Boolean(errors.name) || undefined}>
                         <FieldLabel htmlFor='newsletter-detail-name'>Name</FieldLabel>
                         <Input aria-invalid={Boolean(errors.name) || undefined} id='newsletter-detail-name' maxLength={191} placeholder='Weekly Roundup' value={newsletter.name || ''} onChange={e => updateNewsletter({name: e.target.value})} onKeyDown={() => clearError('name')} />
@@ -279,9 +279,9 @@ const Sidebar: React.FC<{
                     </Field>
                     </FieldGroup>
                 </FieldSet>
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Email info</FieldLegend>
-                    <FieldGroup className='gap-6'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Email info</FieldLegend>
+                    <FieldGroup>
                     <Field>
                         <FieldLabel htmlFor='newsletter-sender-name'>Sender name</FieldLabel>
                         <Input id='newsletter-sender-name' maxLength={191} placeholder={siteTitle} value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
@@ -290,9 +290,9 @@ const Sidebar: React.FC<{
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
                     </FieldGroup>
                 </FieldSet>
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Member settings</FieldLegend>
-                    <FieldGroup className='gap-6'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Member settings</FieldLegend>
+                    <FieldGroup>
                     <Field orientation='horizontal'>
                         <FieldLabel htmlFor='newsletter-subscribe-on-signup'>Subscribe new members on signup</FieldLabel>
                         <Switch checked={Boolean(newsletter.subscribe_on_signup)} id='newsletter-subscribe-on-signup' onCheckedChange={checked => updateNewsletter({subscribe_on_signup: checked})} />
@@ -309,9 +309,9 @@ const Sidebar: React.FC<{
             title: 'Content',
             contents:
             <>
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Header</FieldLegend>
-                    <FieldGroup className='gap-6'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Header</FieldLegend>
+                    <FieldGroup>
                     <div>
                         <div>
                             <Text as='h6' className="mb-2 text-base" weight='semibold'>Header image</Text>
@@ -360,9 +360,9 @@ const Sidebar: React.FC<{
                     </FieldGroup>
                 </FieldSet>
 
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Title section</FieldLegend>
-                    <FieldGroup className='gap-4'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Title section</FieldLegend>
+                    <FieldGroup>
                     <Field orientation='horizontal'>
                         <FieldLabel htmlFor='newsletter-show-post-title'>Post title</FieldLabel>
                         <Switch checked={Boolean(newsletter.show_post_title_section)} id='newsletter-show-post-title' onCheckedChange={checked => updateNewsletter({show_post_title_section: checked})} />
@@ -380,9 +380,9 @@ const Sidebar: React.FC<{
                     </FieldGroup>
                 </FieldSet>
 
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 text-md! leading-supertight font-bold md:text-lg!'>Footer</FieldLegend>
-                    <FieldGroup className='gap-6'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Footer</FieldLegend>
+                    <FieldGroup>
                     <Stack gap='lg'>
                         <Field orientation='horizontal'>
                             <FieldLabel htmlFor='newsletter-feedback-enabled'>Ask your readers for feedback</FieldLabel>
@@ -437,9 +437,9 @@ const Sidebar: React.FC<{
             title: 'Design',
             contents:
             <>
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 pb-2 text-md! leading-supertight font-bold md:text-lg!'>Global</FieldLegend>
-                    <FieldGroup className='gap-5'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Global</FieldLegend>
+                    <FieldGroup>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
@@ -494,9 +494,9 @@ const Sidebar: React.FC<{
                     </Inline>
                     </FieldGroup>
                 </FieldSet>
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 pb-2 text-md! leading-supertight font-bold md:text-lg!'>Header</FieldLegend>
-                    <FieldGroup className='gap-5'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Header</FieldLegend>
+                    <FieldGroup>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
@@ -549,9 +549,9 @@ const Sidebar: React.FC<{
                     </FieldGroup>
                 </FieldSet>
 
-                <FieldSet className='mt-8 gap-4'>
-                    <FieldLegend className='mb-0 pb-2 text-md! leading-supertight font-bold md:text-lg!'>Body</FieldLegend>
-                    <FieldGroup className='gap-5'>
+                <FieldSet className='mt-8'>
+                    <FieldLegend className='text-lg! font-semibold'>Body</FieldLegend>
+                    <FieldGroup>
                     <div className='mb-1'>
                         <ColorPickerField
                             direction='rtl'
