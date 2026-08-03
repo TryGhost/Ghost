@@ -1,3 +1,5 @@
+export const BILLING_SEARCH_GROUP_KEY = 'billing';
+
 export const SEARCHABLES = [
     {
         name: 'Staff',
@@ -16,6 +18,58 @@ export const SEARCHABLES = [
         index: ['name']
     },
     {
+        key: BILLING_SEARCH_GROUP_KEY,
+        model: 'pro-page',
+        idField: 'id',
+        titleField: 'title',
+        index: ['title', 'keywords'],
+        // the billing group is defined entirely in config (hostSettings.billing.search: {})
+        //
+        // Example:
+        // search: {
+        //   "groupName": "Ghost(Pro)",
+        //   "items": [
+        //      {"id": "change-plan", "title": "Change plan", "path": "/plans", "keywords": "billing subscription plan upgrade"},
+        //      {"id": "contact-support", "title": "Contact support", "path": "/support", "keywords": "support help contact"}
+        //   ]
+        // }
+        configure(hostSettings) {
+            const searchConfig = hostSettings?.billing?.search;
+
+            const groupName = typeof searchConfig?.groupName === 'string' ? searchConfig.groupName.trim() : '';
+            const staticItems = Array.isArray(searchConfig?.items)
+                ? searchConfig.items
+                    .filter(item => (
+                        typeof item?.id === 'string' && item.id
+                        && typeof item.title === 'string' && item.title
+                        && typeof item.path === 'string'
+                        && /^\/[^?#\s]*$/.test(item.path)
+                        && (item.path === '/' || !item.path.endsWith('/'))
+                    ))
+                    .map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        path: item.path,
+                        keywords: typeof item.keywords === 'string' ? item.keywords : ''
+                    }))
+                : [];
+
+            // a groupName colliding with a built-in group would route
+            // selections into the wrong openSelected branch and cross-match
+            // items between the two same-named groups
+            const groupNameIsReserved = SEARCHABLES.some(builtIn => builtIn.name === groupName);
+
+            if (!groupName || groupNameIsReserved || staticItems.length === 0) {
+                return null;
+            }
+
+            const searchable = {...this, name: groupName, staticItems};
+            delete searchable.configure;
+
+            return searchable;
+        }
+    },
+    {
         name: 'Posts',
         model: 'post',
         pathField: 'id',
@@ -32,6 +86,12 @@ export const SEARCHABLES = [
         index: ['title']
     }
 ];
+
+export function getSearchables(hostSettings) {
+    return SEARCHABLES
+        .map(searchable => (searchable.configure ? searchable.configure(hostSettings) : searchable))
+        .filter(Boolean);
+}
 
 const STATUS_PRIORITY = {
     scheduled: 1,
@@ -57,8 +117,11 @@ export function createSearchResult(searchable, item) {
     return {
         id: `${searchable.model}.${item[idField]}`,
         url: item.url,
+        path: item.path,
         title: item[searchable.titleField],
+        keywords: item.keywords,
         groupName: searchable.name,
+        groupKey: searchable.key,
         status: item.status,
         visibility: item.visibility,
         publishedAt: item.published_at
