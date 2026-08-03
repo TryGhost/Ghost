@@ -1,7 +1,7 @@
 # Gifts
 
-The existing `services/gifts` module owns the gift-subscription journey. Its interface is capability
-oriented; callers do not receive `Gift` entities, Bookshelf models,
+This module owns the gift-subscription journey. Its interface is
+capability-oriented; callers do not receive `Gift` entities, Bookshelf models,
 transactions, or Stripe objects.
 
 ## Interface
