@@ -21,7 +21,7 @@ export class PortalGiftPage extends PortalPage {
     }
 
     durationOption(label: string): Locator {
-        return this.portalFrame.getByRole('radio', {name: label, exact: true});
+        return this.portalFrame.getByRole('button', {name: label, exact: true});
     }
 
     tierOption(name: string): Locator {

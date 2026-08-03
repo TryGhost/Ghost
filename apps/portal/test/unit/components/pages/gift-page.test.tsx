@@ -38,7 +38,7 @@ describe('GiftPage', () => {
 
         expect(getByRole('button', {name: '1 month'})).toBeInTheDocument();
         expect(getByRole('button', {name: '1 year'})).toBeInTheDocument();
-        expect(queryByRole('radio', {name: '3 months'})).not.toBeInTheDocument();
+        expect(queryByRole('button', {name: '3 months'})).not.toBeInTheDocument();
 
         fireEvent.click(getByRole('button', {name: 'Continue'}));
 
@@ -56,15 +56,16 @@ describe('GiftPage', () => {
         });
         const {getAllByText, getByRole, mockDoActionFn} = setup(site);
 
-        expect(getByRole('radio', {name: '1 month'})).toBeChecked();
-        expect(getByRole('radio', {name: '3 months'})).toBeInTheDocument();
-        expect(getByRole('radio', {name: '6 months'})).toBeInTheDocument();
-        expect(getByRole('radio', {name: '12 months'})).toBeInTheDocument();
+        expect(getByRole('button', {name: '1 month'})).toHaveAttribute('aria-pressed', 'true');
+        expect(getByRole('button', {name: '3 months'})).toHaveAttribute('aria-pressed', 'false');
+        expect(getByRole('button', {name: '6 months'})).toBeInTheDocument();
+        expect(getByRole('button', {name: '12 months'})).toBeInTheDocument();
         expect(getAllByText('$5').length).toBeGreaterThan(0);
 
-        fireEvent.click(getByRole('radio', {name: '3 months'}));
+        fireEvent.click(getByRole('button', {name: '3 months'}));
 
-        expect(getByRole('radio', {name: '3 months'})).toBeChecked();
+        expect(getByRole('button', {name: '1 month'})).toHaveAttribute('aria-pressed', 'false');
+        expect(getByRole('button', {name: '3 months'})).toHaveAttribute('aria-pressed', 'true');
         expect(getAllByText('$15').length).toBeGreaterThan(0);
 
         fireEvent.click(getByRole('button', {name: 'Continue'}));
@@ -84,7 +85,7 @@ describe('GiftPage', () => {
         });
         const {getByRole, mockDoActionFn} = setup(site);
 
-        expect(getByRole('radio', {name: '12 months'})).toBeChecked();
+        expect(getByRole('button', {name: '12 months'})).toHaveAttribute('aria-pressed', 'true');
 
         fireEvent.click(getByRole('button', {name: 'Continue'}));
 
@@ -103,7 +104,7 @@ describe('GiftPage', () => {
         });
         const {getByRole, mockDoActionFn, queryByRole} = setup(site);
 
-        expect(queryByRole('radiogroup', {name: 'Plan'})).not.toBeInTheDocument();
+        expect(queryByRole('group', {name: 'Plan'})).not.toBeInTheDocument();
 
         fireEvent.click(getByRole('button', {name: 'Continue'}));
 
@@ -123,9 +124,9 @@ describe('GiftPage', () => {
         });
         const {getByRole, queryByRole} = setup(site);
 
-        expect(getByRole('radio', {name: '1 month'})).toBeChecked();
-        expect(getByRole('radio', {name: '3 months'})).toBeInTheDocument();
-        expect(getByRole('radio', {name: '6 months'})).toBeInTheDocument();
-        expect(queryByRole('radio', {name: '12 months'})).not.toBeInTheDocument();
+        expect(getByRole('button', {name: '1 month'})).toHaveAttribute('aria-pressed', 'true');
+        expect(getByRole('button', {name: '3 months'})).toBeInTheDocument();
+        expect(getByRole('button', {name: '6 months'})).toBeInTheDocument();
+        expect(queryByRole('button', {name: '12 months'})).not.toBeInTheDocument();
     });
 });

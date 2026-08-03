@@ -692,12 +692,11 @@ function GiftDurationSelector({availableDurations, selectedDuration, setSelected
     }
 
     return (
-        <div className='gh-portal-gift-duration-selector' role='radiogroup' aria-label={t('Plan')}>
+        <div className='gh-portal-gift-duration-selector' role='group' aria-label={t('Plan')}>
             {availableDurations.map(duration => (
                 <button
                     type='button'
-                    role='radio'
-                    aria-checked={duration === selectedDuration}
+                    aria-pressed={duration === selectedDuration}
                     className={'gh-portal-btn' + (duration === selectedDuration ? ' active' : '')}
                     data-test-gift-duration={duration}
                     key={duration}
