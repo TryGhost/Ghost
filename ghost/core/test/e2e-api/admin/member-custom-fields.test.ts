@@ -1085,6 +1085,15 @@ describe('Member Custom Fields Admin API', function () {
             assert.deepEqual(await readValues(memberId), {[field.key]: {city: 'Cork'}});
         });
 
+        it('stores a country code in one case whichever case it arrives in', async function () {
+            const field = await createField({name: 'Home address', type: 'address'});
+            const memberId = await createMember();
+
+            await setValues(memberId, {[field.key]: {city: 'Bristol', country: 'gb'}});
+
+            assert.deepEqual(await readValues(memberId), {[field.key]: {city: 'Bristol', country: 'GB'}});
+        });
+
         it('rejects an address with nothing in it', async function () {
             const field = await createField({name: 'Home address', type: 'address'});
             const memberId = await createMember();
