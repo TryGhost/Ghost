@@ -38,7 +38,6 @@ Object {
       "membersCustomFields": true,
       "paywallImprovements": true,
       "pictureImageFormats": true,
-      "previewByTier": true,
       "smarterCounts": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
