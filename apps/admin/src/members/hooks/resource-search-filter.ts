@@ -1,4 +1,4 @@
-import {escapeNqlString} from '@/shared/filters';
+import {escapeNqlString} from '@tryghost/nql-string';
 
 export function buildResourceFilter(baseFilter: string, search: string): string {
     if (!search) {
