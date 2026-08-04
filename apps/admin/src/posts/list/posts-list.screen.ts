@@ -16,7 +16,13 @@ export const postsListScreen = {
     page: (resource: "posts" | "pages") => page.getByTestId(`${resource}-page`),
     title: (resource: "posts" | "pages", name: string) =>
         page.getByTestId(`${resource}-page`).getByRole("heading", { name }),
+    // `exact` matters: the cold empty state also offers "Write a new post",
+    // which a substring match on "New post" would pick up too.
     newLink: (resource: "posts" | "pages", name: string) =>
-        page.getByTestId(`${resource}-page`).getByRole("link", { name }),
-    listItems: () => page.getByTestId("posts-list-item")
+        page.getByTestId(`${resource}-page`).getByRole("link", { name, exact: true }),
+    listItems: () => page.getByTestId("posts-list-item"),
+    featuredMarkers: () => page.getByTestId("post-featured"),
+    emptyCold: () => page.getByTestId("posts-empty-cold"),
+    emptyFiltered: () => page.getByTestId("posts-empty-filtered"),
+    showAllButton: (plural: string) => page.getByRole("button", { name: `Show all ${plural}` })
 };
