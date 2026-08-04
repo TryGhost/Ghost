@@ -284,9 +284,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({paidMembersEnabled, 
     const blocker = useBlocker(({currentLocation, nextLocation}) => !bypassGuardRef.current && hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname);
     // Native `<a href="#/…">` navigations (the sidebar, links into Ember
     // routes) never reach the react-router blocker above — see the hook.
-    // Ember's own guard (`trailing-hash.js`) can't cover this screen either:
-    // with `memberDetailsReact` on, the Ember member route aborts and never
-    // registers into the `unsaved-changes` service.
+    // Ember's own guard (`trailing-hash.js`) can't cover this screen either,
+    // since the screen has no Ember route to register into the
+    // `unsaved-changes` service.
     const anchorGuard = useHashLinkNavigationGuard(hasUnsavedChanges);
     const isBlocked = blocker.state === 'blocked' || anchorGuard.isBlocked;
 

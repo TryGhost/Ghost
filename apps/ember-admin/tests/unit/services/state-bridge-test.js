@@ -65,10 +65,10 @@ describe('Unit: Service: state-bridge', function () {
         it('exposes the same strict Labs state used by Ember routes', function () {
             settings.settingsModel = {};
             sinon.stub(feature, 'tagDetailsReact').get(() => true);
-            sinon.stub(feature, 'memberDetailsReact').get(() => 'true');
+            sinon.stub(feature, 'adminUIRefresh').get(() => 'true');
 
             expect(service.isFeatureEnabled('tagDetailsReact')).to.be.true;
-            expect(service.isFeatureEnabled('memberDetailsReact')).to.be.false;
+            expect(service.isFeatureEnabled('adminUIRefresh')).to.be.false;
             expect(service.isFeatureEnabled('missingFlag')).to.be.false;
         });
     });
