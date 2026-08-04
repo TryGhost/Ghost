@@ -1,29 +1,20 @@
 import React from 'react';
 
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuBadge,
-} from '@tryghost/shade/components';
-import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
-import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import { useMemberCount } from '@tryghost/admin-x-framework/api/members';
-import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
-import {
-  canManageAutomations,
-  canManageMembers,
-  canManageTags,
-} from '@tryghost/admin-x-framework/api/users';
-import { NavMenuItem } from './nav-menu-item';
-import { useNavigationExpanded } from './hooks/use-navigation-preferences';
-import { NavCustomViews } from './nav-custom-views';
-import { NavMemberViews } from './nav-member-views';
-import { useMemberSidebarViews } from './member-sidebar-views';
-import { useCustomSidebarViews } from './use-custom-sidebar-views';
-import { useIsActiveLink } from './use-is-active-link';
-import { useEmberRouting } from '@/ember-bridge';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
+import {formatNumber, LucideIcon} from "@tryghost/shade/utils"
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
+import { useMemberCount } from "@tryghost/admin-x-framework/api/members";
+import {getSettingValue, useBrowseSettings} from "@tryghost/admin-x-framework/api/settings";
+import { canManageAutomations, canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
+import { NavMenuItem } from "./nav-menu-item";
+import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
+import { NavSavedViews } from "./nav-saved-views";
+import { NavMemberViews } from "./nav-member-views";
+import { useMemberSidebarViews } from "./member-sidebar-views";
+import { usePostNavigation } from "./use-post-navigation";
+import { useIsActiveLink } from "./use-is-active-link";
+import { useEmberRouting } from "@/ember-bridge";
+import { useFeatureFlag } from "@tryghost/admin-x-framework/hooks";
 
 const LEGACY_MEMBERS_ACTIVE_ROUTES = ['members-activity'];
 
@@ -76,85 +67,64 @@ function MembersNavItemContent({
 }
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
-  const { data: currentUser } = useCurrentUser();
-  const { data: settingsData } = useBrowseSettings();
-  const [savedPostsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
-  const [savedMembersExpanded, setMembersExpanded] = useNavigationExpanded('members');
-  const postCustomViews = useCustomSidebarViews('posts');
-  const memberViews = useMemberSidebarViews();
-  const hasMemberViews = memberViews.length > 0;
-  const memberCount = useMemberCount();
-  const routing = useEmberRouting();
-  const automationsEnabled = useFeatureFlag('automations');
-  const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
+    const { data: currentUser } = useCurrentUser();
+    const {data: settingsData} = useBrowseSettings();
+    const [savedPostsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
+    const [savedMembersExpanded, setMembersExpanded] = useNavigationExpanded('members');
+    const postNavigation = usePostNavigation('posts');
+    const pageNavigation = usePostNavigation('pages');
+    const memberViews = useMemberSidebarViews();
+    const hasMemberViews = memberViews.length > 0;
+    const memberCount = useMemberCount();
+    const routing = useEmberRouting();
+    const automationsEnabled = useFeatureFlag('automations');
+    const isMembersRouteActive = useIsActiveLink({path: 'members', activeOnSubpath: true});
 
-  const showTags = currentUser && canManageTags(currentUser);
-  const showMembers = currentUser && canManageMembers(currentUser);
-  const showAutomations = currentUser && canManageAutomations(currentUser);
-  const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
-  const showComments = !!showMembers && commentsEnabled !== 'off';
-  const isDraftPostsRouteActive = routing.isRouteActive('posts', { type: 'draft' });
-  const isScheduledPostsRouteActive = routing.isRouteActive('posts', { type: 'scheduled' });
-  const isPublishedPostsRouteActive = routing.isRouteActive('posts', { type: 'published' });
-  const hasActivePostChild =
-    isDraftPostsRouteActive ||
-    isScheduledPostsRouteActive ||
-    isPublishedPostsRouteActive ||
-    postCustomViews.some((view) => view.isActive);
-  const postsExpanded = savedPostsExpanded;
-  const hasActiveMemberView = hasMemberViews && memberViews.some((view) => view.isActive);
-  const membersExpanded = savedMembersExpanded;
-  const membersNavActive = isMembersRouteActive
-    ? !hasActiveMemberView || !membersExpanded
-    : routing.isRouteActive(LEGACY_MEMBERS_ACTIVE_ROUTES);
-  const postsRoute = routing.getRouteUrl('posts');
-  const isPostsRouteActive = routing.isRouteActive('posts');
-  const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
-  return (
-    <SidebarGroup {...props}>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          <NavMenuItem.Collapsible
-            expanded={postsExpanded}
-            id="posts-submenu"
-            onExpandedChange={setPostsExpanded}
-          >
-            <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
-              <PostsNavItemContent isActive={postsNavActive} to={postsRoute} />
-            </NavMenuItem.CollapsibleItem>
+    const showTags = currentUser && canManageTags(currentUser);
+    const showMembers = currentUser && canManageMembers(currentUser);
+    const showAutomations = currentUser && canManageAutomations(currentUser);
+    const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
+    const showComments = !!showMembers && commentsEnabled !== 'off';
+    const postViews = [...postNavigation.defaultViews, ...postNavigation.customViews];
+    const hasActivePostChild = postViews.some(view => view.isActive);
+    const postsExpanded = savedPostsExpanded;
+    const hasActiveMemberView = hasMemberViews && memberViews.some(view => view.isActive);
+    const membersExpanded = savedMembersExpanded;
+    const membersNavActive = isMembersRouteActive
+        ? (!hasActiveMemberView || !membersExpanded)
+        : routing.isRouteActive(LEGACY_MEMBERS_ACTIVE_ROUTES);
+    const postsRoute = postNavigation.mainUrl;
+    const postsNavActive = postNavigation.isMainActive || (!postsExpanded && hasActivePostChild);
+    return (
+        <SidebarGroup {...props}>
+            <SidebarGroupContent>
+                <SidebarMenu>
+                    <NavMenuItem.Collapsible
+                        expanded={postsExpanded}
+                        id="posts-submenu"
+                        onExpandedChange={setPostsExpanded}
+                    >
+                        <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
+                            <PostsNavItemContent
+                                isActive={postsNavActive}
+                                to={postsRoute}
+                            />
+                        </NavMenuItem.CollapsibleItem>
 
-            <NavMenuItem.CollapsibleMenu>
-              <NavMenuItem.SubmenuItem isActive={isDraftPostsRouteActive} to="posts?type=draft">
-                <NavMenuItem.Label>Drafts</NavMenuItem.Label>
-              </NavMenuItem.SubmenuItem>
+                        <NavMenuItem.CollapsibleMenu>
+                            <NavSavedViews views={postViews} />
+                        </NavMenuItem.CollapsibleMenu>
+                    </NavMenuItem.Collapsible>
 
-              <NavMenuItem.SubmenuItem
-                isActive={isScheduledPostsRouteActive}
-                to="posts?type=scheduled"
-              >
-                <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
-              </NavMenuItem.SubmenuItem>
-
-              <NavMenuItem.SubmenuItem
-                isActive={isPublishedPostsRouteActive}
-                to="posts?type=published"
-              >
-                <NavMenuItem.Label>Published</NavMenuItem.Label>
-              </NavMenuItem.SubmenuItem>
-
-              <NavCustomViews />
-            </NavMenuItem.CollapsibleMenu>
-          </NavMenuItem.Collapsible>
-
-          <NavMenuItem>
-            <NavMenuItem.Link
-              isActive={routing.isRouteActive('pages')}
-              to={routing.getRouteUrl('pages')}
-            >
-              <LucideIcon.File />
-              <NavMenuItem.Label>Pages</NavMenuItem.Label>
-            </NavMenuItem.Link>
-          </NavMenuItem>
+                    <NavMenuItem>
+                        <NavMenuItem.Link
+                            isActive={pageNavigation.isMainActive}
+                            to={pageNavigation.mainUrl}
+                        >
+                            <LucideIcon.File />
+                            <NavMenuItem.Label>Pages</NavMenuItem.Label>
+                        </NavMenuItem.Link>
+                    </NavMenuItem>
 
           {showTags && (
             <NavMenuItem>
