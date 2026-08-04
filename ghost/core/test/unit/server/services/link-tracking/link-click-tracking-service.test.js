@@ -240,7 +240,7 @@ describe('LinkClickTrackingService', function () {
             }, {transacting});
         });
 
-        it('Saves legacy automation clicks without attributing recipient analytics', async function () {
+        it('Saves automation clicks without a step ID but skips recipient analytics', async function () {
             const event = createRedirectEvent({
                 automationActionRevisionId: 'revision-id',
                 automationRunStepId: null
