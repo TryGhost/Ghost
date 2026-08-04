@@ -29,6 +29,11 @@ export function PostsFilters({resource, filters, currentUser, onFiltersChange}: 
             <Filters
                 addButtonIcon={<LucideIcon.Filter className='size-4' />}
                 addButtonText='Filter'
+                // Shade defaults this to true. Each field here maps to one URL
+                // param holding one value, and the serializer keeps the last —
+                // so leaving it on would let someone sit looking at two "Post
+                // type" chips while only one was in the URL or a saved view.
+                allowMultiple={false}
                 fields={fields}
                 filters={filters}
                 keyboardShortcut='f'
