@@ -1,0 +1,69 @@
+import { describe, expect, it } from "vitest";
+
+import { renderAdminApp } from "@test-utils/acceptance";
+import { postsListScreen } from "./posts-list.screen";
+
+const FLAG_ON = { labs: { postsListReact: true } };
+const FLAG_OFF = { labs: { postsListReact: false } };
+
+/**
+ * Proves the `postsListReact` flag swap end-to-end in the real admin app: the
+ * React screen appears only when the flag is on, and the Ember side of the URL
+ * is delegated to otherwise.
+ *
+ * There is no Ember app in this harness, so "Ember serves it" shows up as the
+ * React screen being absent rather than as an Ember list being present — the
+ * Ember half of the handshake (PostsRoute aborting its transition) is covered
+ * in apps/ember-admin/tests/acceptance/posts-list-react-flag-test.js.
+ */
+describe("Posts and pages list flag", () => {
+    describe.each([
+        { resource: "posts", route: "/posts", title: "Posts", newLabel: "New post" },
+        { resource: "pages", route: "/pages", title: "Pages", newLabel: "New page" }
+    ] as const)("$route", ({ resource, route, title, newLabel }) => {
+        it("renders the React screen when the flag is on", async () => {
+            await renderAdminApp(route, FLAG_ON);
+
+            await expect.element(postsListScreen.page(resource)).toBeVisible();
+            await expect.element(postsListScreen.title(resource, title)).toBeVisible();
+        });
+
+        it("offers the primary create action", async () => {
+            await renderAdminApp(route, FLAG_ON);
+
+            await expect.element(postsListScreen.newLink(resource, newLabel)).toBeVisible();
+        });
+
+        // The Ember list must not exist alongside the React one, or the two
+        // trees fight over the same testids and Ember fetches for a screen
+        // nobody sees.
+        it("does not render the Ember list alongside it", async () => {
+            await renderAdminApp(route, FLAG_ON);
+
+            await expect.element(postsListScreen.page(resource)).toBeVisible();
+            await expect(postsListScreen.emberList()).toHaveCount(0);
+            await expect(postsListScreen.emberFilters()).toHaveCount(0);
+        });
+
+        it("defers to Ember when the flag is off", async () => {
+            await renderAdminApp(route, FLAG_OFF);
+
+            await expect(postsListScreen.page(resource)).toHaveCount(0);
+        });
+
+        it("defers to Ember when the flag is absent entirely", async () => {
+            await renderAdminApp(route);
+
+            await expect(postsListScreen.page(resource)).toHaveCount(0);
+        });
+    });
+
+    // The two routes share one gate implementation, so a copy-paste slip would
+    // silently serve the wrong screen.
+    it("serves each route its own resource", async () => {
+        await renderAdminApp("/pages", FLAG_ON);
+
+        await expect.element(postsListScreen.page("pages")).toBeVisible();
+        await expect(postsListScreen.page("posts")).toHaveCount(0);
+    });
+});
