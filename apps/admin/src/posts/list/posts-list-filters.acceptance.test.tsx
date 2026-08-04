@@ -14,10 +14,11 @@ import {
     tag
 } from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
+import type { StaffRoleName } from "@tryghost/test-data";
 
 const FLAG_ON = { labs: { postsListReact: true } };
 
-function asRole(name: Parameters<typeof staffRole>[0] extends { name: infer N } ? N : never) {
+function asRole(name: StaffRoleName) {
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name })];
     return { ...FLAG_ON, boot: { browseMe: { response: me } } };
@@ -58,23 +59,39 @@ describe("Posts list filters", () => {
         await expect.element(postsListScreen.filterBar()).toHaveTextContent("Engineering");
     });
 
+    // Isolated behind a slug-matching endpoint like the tag case: `fakeUsers`
+    // is passthrough, so serving Ada from the plain browse too would let this
+    // pass with hydration removed entirely.
     it("resolves an author slug in the URL to their name", async () => {
         fakePosts([post({ title: "Authored", status: "published" })]);
-        fakeUsers([staffUser({ name: "Ada Lovelace", slug: "ada" })]);
+        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, {
+            users: [staffUser({ name: "Ada Lovelace", slug: "ada" })]
+        });
         await renderAdminApp("/posts?author=ada", FLAG_ON);
 
         await expect.element(postsListScreen.filterBar()).toHaveTextContent("Ada Lovelace");
     });
 
     // A saved view can point at a tag that was later renamed or deleted.
-    // Dropping it would silently rewrite the user's URL.
-    it("keeps an unresolvable slug rather than dropping the filter", async () => {
+    // The chip has to say *something* — without a fallback option Shade shows
+    // "Select…", so the filter vanishes from the UI while staying in the URL
+    // and the list looks empty for no visible reason.
+    it("shows an unknown-value chip rather than an empty one", async () => {
         fakePosts([]);
         fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
         await renderAdminApp("/posts?tag=deleted-tag", FLAG_ON);
 
-        await expect.element(postsListScreen.filterBar()).toBeVisible();
+        await expect.element(postsListScreen.filterBar()).toHaveTextContent("Unknown tag");
+        await expect.element(postsListScreen.filterBar()).not.toHaveTextContent("Select");
         await expect.poll(currentRoute).toBe("/posts?tag=deleted-tag");
+    });
+
+    it("shows an unknown-value chip for an unrecognised type", async () => {
+        fakePosts([]);
+        await renderAdminApp("/posts?type=bogus", FLAG_ON);
+
+        await expect.element(postsListScreen.filterBar()).toHaveTextContent("Unknown type");
+        await expect.poll(currentRoute).toBe("/posts?type=bogus");
     });
 
     // Each field maps to one URL param, which holds one value. Shade defaults

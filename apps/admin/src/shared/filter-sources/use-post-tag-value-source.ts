@@ -38,6 +38,13 @@ const usePostTagBrowseValueSource = createGhostBrowseValueSource<Tag, TagsRespon
         filter: selectedFilter,
         order: 'name asc'
     }),
+    // Without this, a slug that resolves to nothing leaves the chip reading
+    // "Select…" — the value vanishes from the UI while staying in the URL, so
+    // the list looks empty for no visible reason. Ember shows "Unknown tag".
+    getMissingSelectedOption: value => ({
+        value,
+        label: 'Unknown tag'
+    }),
     selectItems: data => data?.tags,
     useQuery: ({enabled, searchParams}) => {
         // `useBrowseTags` builds its own comma-joined filter from the `filter`

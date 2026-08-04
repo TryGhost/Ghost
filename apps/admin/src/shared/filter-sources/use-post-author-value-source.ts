@@ -36,6 +36,12 @@ const usePostAuthorBrowseValueSource = createGhostBrowseValueSource<User, UsersR
         filter: selectedFilter,
         order: 'name asc'
     }),
+    // See the tag source: without this the chip reads "Select…" and the value
+    // disappears from the UI. Ember shows "Unknown author".
+    getMissingSelectedOption: value => ({
+        value,
+        label: 'Unknown author'
+    }),
     selectItems: data => data?.users,
     useQuery: ({enabled, searchParams}) => {
         return useBrowseUsers({

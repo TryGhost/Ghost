@@ -71,6 +71,7 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                             <PostsFilters
                                 currentUser={currentUser}
                                 filters={filters}
+                                params={params}
                                 resource={resource}
                                 onFiltersChange={setFilters}
                             />

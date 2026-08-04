@@ -1,4 +1,4 @@
-import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {DEFAULT_ORDER_LABEL, ORDER_OPTIONS, getOrderLabel} from '@/posts/list/post-filter-fields';
 import {LucideIcon} from '@tryghost/shade/utils';
 
@@ -20,27 +20,33 @@ export function PostsSortMenu({order, onOrderChange}: PostsSortMenuProps) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button aria-label='Sort' variant='outline'>
+                {/*
+                    The label names the control *and* its value: a bare
+                    aria-label of "Sort" would override the button text, so
+                    assistive tech would never hear which sort is active.
+                */}
+                <Button aria-label={`Sort: ${getOrderLabel(order)}`} data-testid='posts-sort' variant='outline'>
                     {getOrderLabel(order)}
                     <LucideIcon.ChevronDown className='size-4' />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
-                <DropdownMenuItem onSelect={() => {
-                    onOrderChange(null);
-                }}>
-                    {DEFAULT_ORDER_LABEL}
-                </DropdownMenuItem>
-                {ORDER_OPTIONS.map(option => (
-                    <DropdownMenuItem
-                        key={option.value}
-                        onSelect={() => {
-                            onOrderChange(option.value);
-                        }}
-                    >
-                        {option.label}
-                    </DropdownMenuItem>
-                ))}
+                {/* Radio items so the active sort is announced, and visible. */}
+                <DropdownMenuRadioGroup
+                    value={order ?? ''}
+                    onValueChange={value => {
+                        onOrderChange(value || null);
+                    }}
+                >
+                    <DropdownMenuRadioItem value=''>
+                        {DEFAULT_ORDER_LABEL}
+                    </DropdownMenuRadioItem>
+                    {ORDER_OPTIONS.map(option => (
+                        <DropdownMenuRadioItem key={option.value} value={option.value}>
+                            {option.label}
+                        </DropdownMenuRadioItem>
+                    ))}
+                </DropdownMenuRadioGroup>
             </DropdownMenuContent>
         </DropdownMenu>
     );
