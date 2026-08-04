@@ -7,9 +7,14 @@ import {FilterBar, PageHeader} from '@tryghost/shade/patterns';
 import {PostListRow} from './components/post-list-row';
 import {PostsEmptyState} from './components/posts-empty-state';
 import {PostsFilters} from './components/posts-filters';
+import {ManagePostViewPopover} from './components/manage-post-view-popover';
+import {POST_DEFAULT_VIEWS} from '@/layout/app-sidebar/post-sidebar-views';
 import {PostsSortMenu} from './components/posts-sort-menu';
+import {canSavePostView, findActivePostView} from './post-views';
+
+import {usePostViews} from './hooks/use-post-views';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {isAuthorOrContributor, isContributorUser} from '@tryghost/admin-x-framework/api/users';
+import {hasAdminAccess, isAuthorOrContributor, isContributorUser} from '@tryghost/admin-x-framework/api/users';
 import {type PostResource, getPostResourceCopy} from './post-resource';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {usePostsFilterState} from './hooks/use-posts-filter-state';
@@ -41,6 +46,21 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
     // Scheduled times read in the site's timezone, not the browser's.
     const timezone = getSettingValue<string>(settingsData?.settings, 'timezone') ?? undefined;
     const isContributor = Boolean(currentUser && isContributorUser(currentUser));
+
+    // The save/edit-view affordance: admins only, posts only, not while a
+    // default view is active, and only with something actually filtered.
+    const savedViews = usePostViews();
+    const activeView = findActivePostView(savedViews, params);
+    const isOnDefaultView = POST_DEFAULT_VIEWS.some(view => findActivePostView([{
+        ...view, route: 'posts'
+    }], params));
+    const canManageView = canSavePostView({
+        // hasAdminAccess, not isAdminUser: Ember's isAdmin includes the Owner.
+        isAdmin: Boolean(currentUser && hasAdminAccess(currentUser)),
+        resource,
+        params,
+        isDefaultView: isOnDefaultView
+    });
 
     // Authors and contributors only ever see their own posts, whatever the
     // `author` param says — matching PostsRoute#model in the Ember app.
@@ -86,6 +106,9 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                 onFiltersChange={setFilters}
                             />
                             <PostsSortMenu order={order} onOrderChange={setOrder} />
+                            {canManageView && (
+                                <ManagePostViewPopover activeView={activeView} params={params} />
+                            )}
                         </FilterBar>
                     </ListPage.Header>
                     <ListPage.Body>
