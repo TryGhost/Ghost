@@ -167,4 +167,49 @@ describe('FlagGatedRoute', () => {
       expect(screen.getByTestId('react-screen')).toBeInTheDocument();
     });
   });
+
+  describe('with a custom fallback', () => {
+        // The posts and pages lists need more than a bare EmberFallback while
+        // the flag is off: the Ember list's context menu opens the React
+        // gift-link modal over the state bridge, so that host has to stay
+        // mounted alongside Ember.
+        const customFallback = <div data-testid="custom-fallback" />;
+
+        it('renders the custom fallback instead of EmberFallback while the flag is off', () => {
+            mockUseBrowseConfig.mockReturnValue(withLabs({someFlag: false}));
+
+            render(<FlagGatedRoute component={ReactScreen} fallback={customFallback} flag="someFlag" />);
+
+            expect(screen.getByTestId('custom-fallback')).toBeInTheDocument();
+            expect(screen.queryByTestId('ember-fallback')).not.toBeInTheDocument();
+        });
+
+        it('renders the custom fallback when the config query fails', () => {
+            mockUseBrowseConfig.mockReturnValue(configResult({isError: true, data: undefined}));
+
+            render(<FlagGatedRoute component={ReactScreen} fallback={customFallback} flag="someFlag" />);
+
+            expect(screen.getByTestId('custom-fallback')).toBeInTheDocument();
+            expect(screen.queryByTestId('ember-fallback')).not.toBeInTheDocument();
+        });
+
+        it('still renders nothing while config is loading', () => {
+            mockUseBrowseConfig.mockReturnValue(configResult({isLoading: true}));
+
+            const {container} = render(<FlagGatedRoute component={ReactScreen} fallback={customFallback} flag="someFlag" />);
+
+            expect(container).toBeEmptyDOMElement();
+        });
+
+        it('still renders React while the flag is on', async () => {
+            mockUseBrowseConfig.mockReturnValue(withLabs({someFlag: true}));
+
+            render(<FlagGatedRoute component={ReactScreen} fallback={customFallback} flag="someFlag" />);
+
+            await waitFor(() => {
+                expect(screen.getByTestId('react-screen')).toBeInTheDocument();
+            });
+            expect(screen.queryByTestId('custom-fallback')).not.toBeInTheDocument();
+        });
+    });
 });

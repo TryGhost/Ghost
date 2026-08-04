@@ -70,6 +70,56 @@ export default class PostsRoute extends AuthenticatedRoute {
         });
     }
 
+    // React owns /posts and /pages when the flag is on. Aborting keeps the
+    // Ember subtree unrendered, so `data-testid` attributes exist in only one
+    // tree and none of the three infinity models below fire for a screen
+    // nobody sees. Inherited by PagesRoute, so this covers both URLs.
+    beforeModel(transition) {
+        super.beforeModel(...arguments);
+
+        if (!this.feature.postsListReact) {
+            return;
+        }
+
+        transition.abort();
+
+        // Ember and React share window.location.hash, and an aborted
+        // transition never reaches updateURL - so a navigation Ember itself
+        // started would be a silent no-op without writing the URL ourselves.
+        //
+        // The transition intent says which case we're in. A URL intent (cold
+        // load, hash change, React-driven navigation) already has the browser
+        // URL pointing here, so React renders and there is nothing to do -
+        // and leaving it alone is what keeps query params like ?type=draft,
+        // which is how saved views are addressed, intact. A named intent
+        // (`transitionTo('posts')` from the publish flow, or a
+        // `<LinkTo @route="posts">` breadcrumb) has no URL yet, so we supply
+        // one.
+        if (!transition.intent?.url) {
+            this._navigateToReactRoute(this._reactRouteUrl(transition));
+        }
+    }
+
+    // Built by hand rather than with `router.urlFor`, whose output depends on
+    // the configured location - it returns `/ghost/posts` under the `none`
+    // location used in tests but `#/posts/` under `trailing-hash` in the app.
+    // These routes have no dynamic segments, so the path is just the name.
+    _reactRouteUrl(transition) {
+        const queryParams = transition.to?.queryParams ?? {};
+        const search = Object.entries(queryParams)
+            .filter(([, value]) => value !== null && value !== undefined && value !== '')
+            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+            .join('&');
+
+        return search ? `/${this.routeName}?${search}` : `/${this.routeName}`;
+    }
+
+    // Seam so tests can assert the navigation without a real hash location -
+    // Ember acceptance tests run with `location: 'none'`.
+    _navigateToReactRoute(url) {
+        window.location.hash = url;
+    }
+
     model(params) {
         // Reset analytics cache every time we load the posts index to ensure fresh data
         if (this.settings.webAnalyticsEnabled || this.settings.membersTrackSources) {

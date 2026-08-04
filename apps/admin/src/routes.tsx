@@ -18,6 +18,7 @@ import MyProfileRedirect from './my-profile-redirect';
 import { EmberFallback, ForceUpgradeGuard } from './ember-bridge';
 import HomeRedirect from './home-redirect';
 import { EmberListWithGiftLinks } from './gift-link-modal-host';
+import { PagesListGate, PostsListGate } from './posts-list-gate';
 import { TagDetailGate } from './tag-detail-gate';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { OnboardingRedirect } from './onboarding/onboarding-redirect';
@@ -203,8 +204,11 @@ const appRoutes: RouteObject[] = [
       requiresAccess: canAccessSettingsRoute,
     } satisfies AdminRouteHandle & AccessRouteHandle,
   },
-  { path: '/posts', Component: EmberListWithGiftLinks, handle: emberFallbackHandle },
-  { path: '/pages', Component: EmberListWithGiftLinks, handle: emberFallbackHandle },
+  // Served by React or Ember depending on the `postsListReact` Labs flag.
+  // The handle stays emberFallbackHandle so force-upgrade behaves the same
+  // on both sides of the flag.
+  { path: '/posts', Component: PostsListGate, handle: emberFallbackHandle },
+  { path: '/pages', Component: PagesListGate, handle: emberFallbackHandle },
   // Ember-handled routes
   ...emberFallbackRoutes,
   {
@@ -238,12 +242,16 @@ const EMBER_ROUTE_COMPONENTS = new Set<unknown>([EmberFallback, EmberListWithGif
 
 export function useIsEmberOwnedRoute(pathname: string): boolean {
   const tagDetailOwner = useFlagGatedRouteOwner('tagDetailsReact');
+  const postsListOwner = useFlagGatedRouteOwner('postsListReact');
   const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
   if (!leaf) {
     return true;
   }
   if (leaf.Component === TagDetailGate) {
     return tagDetailOwner !== 'react';
+  }
+  if (leaf.Component === PostsListGate || leaf.Component === PagesListGate) {
+    return postsListOwner !== 'react';
   }
   return EMBER_ROUTE_COMPONENTS.has(leaf.Component);
 }
