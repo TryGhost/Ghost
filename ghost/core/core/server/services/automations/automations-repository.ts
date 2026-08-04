@@ -204,11 +204,12 @@ export interface AutomationsRepository {
         eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>
     ): Promise<void>;
     /**
-     * Track the first click for an automated email recipient.
+     * Record the first click timestamp for the automated email recipient identified by a run step.
      *
      */
     trackEmailClicked(options: {
         automationActionRevisionId: string;
+        automationRunStepId: string;
         memberId: string;
         clickedAt: Readonly<Date>;
     }, transactionOptions?: {
