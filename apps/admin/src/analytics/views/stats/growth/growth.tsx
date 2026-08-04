@@ -27,17 +27,17 @@ import type {TopPostStatItem} from '@tryghost/admin-x-framework/api/stats';
 interface UnifiedGrowthContentData {
     pathname?: string;
     attribution_url: string;
-    attribution_type: string;
-    attribution_id: string;
+    attribution_type: string | null;
+    attribution_id: string | null;
     title: string;
-    post_id?: string;
+    post_id: string | null;
     post_uuid?: string;
     free_members: number;
     paid_members: number;
     mrr: number;
     percentage?: number;
-    published_at: string;
-    url_exists?: boolean;
+    published_at: string | null;
+    url_exists: boolean;
 }
 
 type TopPostsOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc';
