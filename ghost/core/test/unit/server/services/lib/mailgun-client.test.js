@@ -259,7 +259,7 @@ describe('MailgunClient', function () {
                 replyTo: 'replyTo@example.com',
                 html: '<p>Test Content</p>',
                 plaintext: 'Test Content',
-                tags: ['automation-email']
+                tags: ['another-tag']
             };
             const recipientData = {
                 'test@example.com': {
@@ -279,9 +279,8 @@ describe('MailgunClient', function () {
                         /form-data; name="text"[^]*Test Content/m,
                         /form-data; name="to"[^]*test@example.com/m,
                         /form-data; name="recipient-variables"[^]*\{"test@example.com":\{"name":"Test User"\}\}/m,
-                        /form-data; name="o:tag"[^]*bulk-email/m,
                         /form-data; name="o:tag"[^]*ghost-email/m,
-                        /form-data; name="o:tag"[^]*automation-email/m
+                        /form-data; name="o:tag"[^]*another-tag/m
                     ];
                     return regexList.every(regex => regex.test(body));
                 })
@@ -471,7 +470,7 @@ describe('MailgunClient', function () {
                     apiKey: 'apiKey',
                     domain: 'domain.com',
                     baseUrl: 'https://api.mailgun.net/v3',
-                    tag: 'custom-tag'
+                    tag: 'ignored-tag'
                 },
                 batchSize: 1000
             });
@@ -480,7 +479,8 @@ describe('MailgunClient', function () {
                 from: 'from@example.com',
                 replyTo: 'replyTo@example.com',
                 html: '<p>Test Content</p>',
-                plaintext: 'Test Content'
+                plaintext: 'Test Content',
+                tags: ['custom-tag']
             };
             const recipientData = {
                 'test@example.com': {
@@ -497,7 +497,7 @@ describe('MailgunClient', function () {
                     const regexList = [
                         /form-data; name="o:tag"[^]*custom-tag/m
                     ];
-                    return regexList.every(regex => regex.test(body));
+                    return regexList.every(regex => regex.test(body)) && !body.includes('ignored-tag');
                 })
                 .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
                     'Content-Type': 'application/json'
