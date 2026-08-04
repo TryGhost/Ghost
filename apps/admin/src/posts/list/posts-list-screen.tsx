@@ -13,6 +13,9 @@ import {isAuthorOrContributor, isContributorUser} from '@tryghost/admin-x-framew
 import {type PostResource, getPostResourceCopy} from './post-resource';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {usePostsFilterState} from './hooks/use-posts-filter-state';
+import {rememberStickyPostFilters} from './posts-sticky-filters';
+import {useEffect} from 'react';
+import {useLocation} from '@tryghost/admin-x-framework';
 import {usePostsList} from './hooks/use-posts-list';
 
 /**
@@ -27,6 +30,13 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
     const {params, filters, order, setFilters, setOrder, hasFilters, clearFilters} = usePostsFilterState();
     const {data: currentUser} = useCurrentUser();
     const {data: settingsData} = useBrowseSettings();
+
+    // Report the current filters so the sidebar's Posts link can return here.
+    const location = useLocation();
+
+    useEffect(() => {
+        rememberStickyPostFilters(resource, location.search);
+    }, [resource, location.search]);
 
     // Scheduled times read in the site's timezone, not the browser's.
     const timezone = getSettingValue<string>(settingsData?.settings, 'timezone') ?? undefined;
