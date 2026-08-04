@@ -175,6 +175,39 @@ describe('Portal API gift checkout', () => {
         });
         expect(window.location.assign).toHaveBeenCalledWith('https://checkout.stripe.com/gift-session');
     });
+
+    test('sends duration without cadence for customized gift checkout', async () => {
+        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
+        const requestSpy = vi.spyOn(window, 'fetch').mockImplementation((url) => {
+            if (url.includes('/members/api/session/')) {
+                return Promise.resolve(new Response('identity-token', {status: 200}));
+            }
+
+            return Promise.resolve(new Response(JSON.stringify({
+                url: 'https://checkout.stripe.com/gift-session'
+            }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }));
+        });
+
+        await ghostApi.member.checkoutGift({
+            tierId: 'tier_123',
+            duration: 3
+        });
+
+        const [, request] = requestSpy.mock.calls.at(-1);
+        const body = JSON.parse(request.body);
+
+        expect(body).toMatchObject({
+            type: 'gift',
+            tierId: 'tier_123',
+            duration: 3
+        });
+        expect(body).not.toHaveProperty('cadence');
+    });
 });
 
 describe('Portal API member checkout', () => {

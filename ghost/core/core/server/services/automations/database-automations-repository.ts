@@ -69,6 +69,11 @@ type ActionStatsRow = {
     email_opened_count: number | null;
 };
 
+type ActionLinkRow = {
+    url: string;
+    clicked_count: string | number;
+};
+
 type ActionRevisionRow = {
     action_id: string;
     created_at: string;
@@ -163,6 +168,37 @@ export function createDatabaseAutomationsRepository({
 
                 return await buildAutomation(trx, automation);
             });
+        },
+
+        async getAutomationActionLinks(automationId, actionId) {
+            const action = await knex('automation_actions')
+                .select('id')
+                .where({
+                    id: actionId,
+                    automation_id: automationId
+                })
+                .whereNull('deleted_at')
+                .first();
+
+            if (!action) {
+                return null;
+            }
+
+            const rows = await knex('redirects as redirects')
+                .countDistinct({clicked_count: 'members_click_events.member_id'})
+                .select<ActionLinkRow[]>(knex.raw('MIN(??) as ??', ['redirects.to', 'url']))
+                .innerJoin('automation_action_revisions as revisions', 'revisions.id', 'redirects.automation_action_revision_id')
+                .leftJoin('members_click_events', 'members_click_events.redirect_id', 'redirects.id')
+                .where('revisions.action_id', actionId)
+                .whereNotNull('redirects.to_hash')
+                .groupBy('redirects.to_hash')
+                .orderBy('clicked_count', 'desc')
+                .orderBy('url', 'asc');
+
+            return rows.map(row => ({
+                url: urlUtils.transformReadyToAbsolute(row.url),
+                clicked_count: Number(row.clicked_count)
+            }));
         },
 
         async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
@@ -265,6 +301,15 @@ export function createDatabaseAutomationsRepository({
             }
 
             await knex.transaction(async (trx) => {
+                const revisionIds = new Set<string>();
+                for (const {openedAt, automationActionRevisionId} of eventsByAutomatedEmailRecipientId.values()) {
+                    if (openedAt) {
+                        revisionIds.add(automationActionRevisionId);
+                    }
+                }
+
+                const orderedRevisionIds = await lockActionRevisions(trx, revisionIds);
+
                 const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
                 const newOpensPerRevision = new Map<string, number>();
 
@@ -291,11 +336,11 @@ export function createDatabaseAutomationsRepository({
                     }
                 }
 
-                // Keep lock acquisition order consistent across concurrent transactions to avoid deadlocks.
-                const revisions = [...newOpensPerRevision.entries()]
-                    .sort(([left], [right]) => left.localeCompare(right));
-
-                for (const [id, opens] of revisions) {
+                for (const id of orderedRevisionIds) {
+                    const opens = newOpensPerRevision.get(id);
+                    if (!opens) {
+                        continue;
+                    }
                     await trx('automation_action_revisions')
                         .where({id})
                         .update({
@@ -303,8 +348,77 @@ export function createDatabaseAutomationsRepository({
                         });
                 }
             });
+        },
+
+        async trackEmailClicked({automationActionRevisionId, memberId, clickedAt}, {transacting} = {}) {
+            const trackClick = async (trx: Knex.Transaction) => {
+                await lockActionRevisions(trx, [automationActionRevisionId]);
+
+                const recipient = await trx('automated_email_recipients')
+                    .select('id', 'clicked_at')
+                    .where({
+                        automation_action_revision_id: automationActionRevisionId,
+                        member_id: memberId,
+                        track_clicks: true
+                    })
+                    .where('created_at', '<=', toDatabaseDate(clickedAt))
+                    .orderBy('created_at', 'desc')
+                    .orderBy('id', 'desc')
+                    .forUpdate()
+                    .first();
+
+                if (!recipient || recipient.clicked_at !== null) {
+                    return;
+                }
+
+                const updated = await trx('automated_email_recipients')
+                    .where({id: recipient.id})
+                    .whereNull('clicked_at')
+                    .update({clicked_at: clickedAt});
+
+                if (updated === 0) {
+                    return;
+                }
+
+                await trx('automation_action_revisions')
+                    .where({id: automationActionRevisionId})
+                    .update({
+                        email_clicked_count: trx.raw('COALESCE(email_clicked_count, 0) + 1')
+                    });
+
+            };
+
+            if (transacting) {
+                await trackClick(transacting);
+                return;
+            }
+
+            await knex.transaction(trackClick);
         }
     };
+}
+
+/**
+ * Lock revisions before recipients because inserting a recipient takes a shared
+ * foreign-key lock on its revision. Updating that revision later can deadlock
+ * with another transaction that has already locked the revision and is waiting
+ * for the recipient. Keep multi-revision lock acquisition deterministic.
+ */
+async function lockActionRevisions(
+    trx: Knex.Transaction,
+    revisionIds: Iterable<string>
+): Promise<string[]> {
+    const sortedRevisionIds = [...new Set(revisionIds)]
+        .sort((left, right) => left.localeCompare(right));
+
+    if (sortedRevisionIds.length > 0) {
+        await trx('automation_action_revisions')
+            .select('id')
+            .whereIn('id', sortedRevisionIds)
+            .forUpdate();
+    }
+
+    return sortedRevisionIds;
 }
 
 /**

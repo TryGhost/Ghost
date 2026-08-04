@@ -2,6 +2,8 @@ const assert = require('node:assert/strict');
 const nock = require('nock');
 const got = require('got').default;
 const sinon = require('sinon');
+const sharp = require('sharp');
+const zlib = require('zlib');
 
 const OembedService = require('../../../../../core/server/services/oembed/oembed-service');
 
@@ -806,6 +808,139 @@ describe('oembed-service', function () {
                 () => service.processImageFromUrl('https://example.com/broken.png', 'thumbnail'),
                 {message: 'Network error'}
             );
+        });
+
+        describe('SVG bookmark images', function () {
+            const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+            const SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="7" fill="red"/></svg>';
+
+            const buildService = (saveRaw, bytes) => new OembedService({
+                config: {
+                    getContentPath() {
+                        return '/tmp/content/images';
+                    }
+                },
+                imageStore: {
+                    getSanitizedFileName: sinon.stub().returns('favicon'),
+                    saveRaw
+                },
+                externalRequest() {
+                    return {
+                        buffer: async () => Buffer.from(bytes)
+                    };
+                }
+            });
+
+            it('stores an SVG icon as a PNG', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+
+                await buildService(saveRaw, SVG).processImageFromUrl('https://example.com/favicon.svg', 'icon');
+
+                sinon.assert.calledOnce(saveRaw);
+                assert.match(saveRaw.firstCall.args[1], new RegExp(`^icon/favicon-${UUID_RE.source}\\.png$`));
+                assert.deepEqual(saveRaw.firstCall.args[0].subarray(0, 8), PNG_MAGIC);
+            });
+
+            it('bounds the output in both dimensions', async function () {
+                // Given only a width the height follows the source, so a few
+                // hundred bytes of extreme aspect ratio become tens of megabytes.
+                const saveRaw = sinon.stub().resolves('/stored');
+                const tall = '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="8000"><rect width="1000" height="8000"/></svg>';
+
+                await buildService(saveRaw, tall).processImageFromUrl('https://example.com/favicon.svg', 'thumbnail');
+
+                const {width, height} = await sharp(saveRaw.firstCall.args[0]).metadata();
+                assert.equal(width, 256);
+                assert.equal(height, 256);
+            });
+
+            it('renders up to the target size rather than the source size', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+
+                await buildService(saveRaw, SVG).processImageFromUrl('https://example.com/favicon.svg', 'icon');
+
+                const {width} = await sharp(saveRaw.firstCall.args[0]).metadata();
+                assert.equal(width, 256);
+            });
+
+            it('converts an SVG served under a misleading name', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+
+                await buildService(saveRaw, SVG).processImageFromUrl('https://example.com/favicon.ico', 'icon');
+
+                assert.match(saveRaw.firstCall.args[1], /\.png$/);
+            });
+
+            it('converts a namespace-prefixed <svg:svg> root', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+                const prefixed = '<svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="16" height="16"><svg:circle cx="8" cy="8" r="7"/></svg:svg>';
+
+                await buildService(saveRaw, prefixed).processImageFromUrl('https://example.com/favicon.ico', 'icon');
+
+                assert.match(saveRaw.firstCall.args[1], /\.png$/);
+            });
+
+            it('converts anything served under an .svg name, whatever its case', async function () {
+                // Padding defeats the content sniff, so the extension is what
+                // guarantees nothing is stored as an SVG document.
+                const saveRaw = sinon.stub().resolves('/stored');
+                const padded = `<!--${'x'.repeat(2000)}-->${SVG}`;
+
+                await buildService(saveRaw, padded).processImageFromUrl('https://example.com/favicon.SVG', 'icon');
+
+                assert.match(saveRaw.firstCall.args[1], /\.png$/);
+            });
+
+            it('rejects a gzipped SVG rather than inflating it', async function () {
+                // libvips inflates these internally, so the byte cap cannot see
+                // their real size: 10KB on the wire took 47s to render.
+                const saveRaw = sinon.stub().resolves('/stored');
+
+                await assert.rejects(
+                    () => buildService(saveRaw, zlib.gzipSync(Buffer.from(SVG)))
+                        .processImageFromUrl('https://example.com/favicon.svgz', 'icon'),
+                    {message: /too large or compressed/}
+                );
+                sinon.assert.notCalled(saveRaw);
+            });
+
+            it('rejects an SVG too large to convert', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+                const huge = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><!--${'x'.repeat(64 * 1024)}--><circle r="8"/></svg>`;
+
+                await assert.rejects(
+                    () => buildService(saveRaw, huge).processImageFromUrl('https://example.com/favicon.svg', 'icon'),
+                    {message: /too large or compressed/}
+                );
+                sinon.assert.notCalled(saveRaw);
+            });
+
+            it('rejects markup that is not a convertible image', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+                const service = buildService(saveRaw, '<!doctype html><html><body><svg><h1>404</h1></body></html>');
+
+                await assert.rejects(() => service.processImageFromUrl('https://example.com/favicon.svg', 'icon'));
+                sinon.assert.notCalled(saveRaw);
+            });
+
+            it('leaves raster images untouched', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+
+                await buildService(saveRaw, PNG_MAGIC).processImageFromUrl('https://example.com/favicon.PNG', 'icon');
+
+                assert.deepEqual(saveRaw.firstCall.args[0], PNG_MAGIC);
+                // extension case is preserved, so existing URLs do not change
+                assert.match(saveRaw.firstCall.args[1], /\.PNG$/);
+            });
+
+            it('does not convert a raster file containing the text <svg', async function () {
+                const saveRaw = sinon.stub().resolves('/stored');
+                const png = Buffer.concat([PNG_MAGIC, Buffer.from('<svg width="1">')]);
+
+                await buildService(saveRaw, png).processImageFromUrl('https://example.com/favicon.png', 'icon');
+
+                assert.deepEqual(saveRaw.firstCall.args[0], png);
+            });
         });
     });
 

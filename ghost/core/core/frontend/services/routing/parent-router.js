@@ -13,6 +13,7 @@ const express = require('../../../shared/express');
 const _ = require('lodash');
 const url = require('url');
 const security = require('@tryghost/security');
+const {resolveResourceRead} = require('./api-adapter');
 const urlUtils = require('../../../shared/url-utils').default;
 const registry = require('./registry');
 
@@ -197,6 +198,11 @@ class ParentRouter {
 
     /**
      * @description Figure out if the router has a redirect enabled.
+     *
+     * A route claims a resource by reading it: `data: tag.bacon` on this router
+     * means /tag/bacon/ should redirect here from wherever else it lives. Only
+     * `read` entries claim a slug, and an entry can opt out with `redirect: false`.
+     *
      * @param {string} routerType
      * @param {string} slug
      * @returns {boolean}
@@ -204,14 +210,21 @@ class ParentRouter {
     isRedirectEnabled(routerType, slug) {
         debug('isRedirectEnabled', this.name, this.route && this.route.value, routerType, slug);
 
-        if (!this.data || !Object.keys(this.data.router)) {
+        if (!this.data) {
             return false;
         }
 
-        return _.find(this.data.router, function (entries, type) {
-            if (routerType === type) {
-                return _.find(entries, {redirect: true, slug: slug});
+        // Top-level shorthand (`data: tag.bacon`) is a single unnamed entry.
+        const entries = typeof this.data === 'string' ? [this.data] : Object.values(this.data);
+
+        return entries.some((entry) => {
+            if (typeof entry !== 'string' && entry.redirect === false) {
+                return false;
             }
+
+            const read = resolveResourceRead(entry);
+
+            return !!read && read.resource === routerType && read.slug === slug;
         });
     }
 

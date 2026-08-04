@@ -1,7 +1,7 @@
 import BrandIcon from '../../../icons/brand-icon';
 import IntegrationHeader from './integration-header';
 import NiceModal from '@ebay/nice-modal-react';
-import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet, Input, Switch} from '@tryghost/shade/components';
+import {Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldSet, Input, Switch} from '@tryghost/shade/components';
 import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SettingsModal} from '@tryghost/shade/patterns';
 import {useEffect, useState} from 'react';
@@ -80,10 +80,8 @@ const FirstPromoterModal = NiceModal.create(() => {
                 icon={<BrandIcon className='-mt-2' name='firstpromoter' size={56} />}
                 title='FirstPromoter'
             />
-            <div className='mt-7'>
-                <FieldSet className='gap-0'>
-                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>FirstPromoter configuration</FieldLegend>
-                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+            <FieldSet className='gap-0'>
+                <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7'>
                     <Field orientation='horizontal'>
                         <FieldContent>
                             <FieldLabel htmlFor='firstpromoter-enabled'>Enable FirstPromoter</FieldLabel>
@@ -105,9 +103,8 @@ const FirstPromoterModal = NiceModal.create(() => {
                             </></FieldDescription>
                         </Field>
                     )}
-                    </FieldGroup>
-                </FieldSet>
-            </div>
+                </FieldGroup>
+            </FieldSet>
         </SettingsModal>
     );
 });

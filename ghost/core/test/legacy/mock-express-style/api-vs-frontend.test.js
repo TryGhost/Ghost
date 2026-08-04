@@ -10,13 +10,14 @@ const urlUtils = require('../../utils/url-utils');
 const routeSettingsService = require('../../../core/server/services/route-settings');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
 
-// `loadRouteSettings` returns the router-facing array shape: each route and
-// collection carries its own `path`, and taxonomies are `{key, permalink}`
-// entries. These fixtures are authored as the legacy path-keyed maps, so reshape
-// them in one place rather than rewriting every stub. The shape mirrors what
-// buildRouterSettings() really emits — routes always carry `type` (defaulting to
-// `template`) and a `templates` array, and a string value is the shorthand form.
-function asRouterSettings({routes = {}, collections = {}, taxonomies = {}}) {
+// `loadRouteSettings` returns the `RouteSettings` domain model: routes and
+// collections are arrays whose items carry their own `path`, and taxonomies stay
+// a `{tag, author}` map. These fixtures are authored as the legacy path-keyed
+// maps, so reshape them in one place rather than rewriting every stub. The shape
+// mirrors what parseRouteSettings() really emits — routes always carry `type`
+// (defaulting to `template`) and a `templates` array, and a string value is the
+// shorthand form.
+function asRouteSettings({routes = {}, collections = {}, taxonomies = {}}) {
     const toRoute = ([path, value]) => {
         if (typeof value === 'string') {
             return {path, type: 'template', templates: [value]};
@@ -28,7 +29,7 @@ function asRouterSettings({routes = {}, collections = {}, taxonomies = {}}) {
     return {
         routes: Object.entries(routes).map(toRoute),
         collections: Object.entries(collections).map(toCollection),
-        taxonomies: Object.entries(taxonomies).map(([key, permalink]) => ({key, permalink}))
+        taxonomies
     };
 }
 
@@ -351,26 +352,26 @@ describe('Frontend behavior tests', function () {
     describe('extended routes.yaml: collections', function () {
         describe('2 collections', function () {
             beforeAll(async function () {
-                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouterSettings({
+                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouteSettings({
                     routes: {
                         '/': {templates: ['home']}
                     },
 
                     collections: {
                         '/podcast/': {
-                            permalink: '/podcast/:slug/',
+                            permalink: '/podcast/{slug}/',
                             filter: 'featured:true'
                         },
 
                         '/something/': {
-                            permalink: '/something/:slug/',
+                            permalink: '/something/{slug}/',
                             filter: 'featured:false'
                         }
                     },
 
                     taxonomies: {
-                        tag: '/categories/:slug/',
-                        author: '/authors/:slug/'
+                        tag: '/categories/{slug}/',
+                        author: '/authors/{slug}/'
                     }
                 }));
 
@@ -469,7 +470,7 @@ describe('Frontend behavior tests', function () {
 
         describe('no collections', function () {
             beforeAll(async function () {
-                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouterSettings({
+                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouteSettings({
                     routes: {
                         '/something/': {
                             templates: ['something']
@@ -515,7 +516,7 @@ describe('Frontend behavior tests', function () {
 
         describe('static permalink route', function () {
             beforeAll(async function () {
-                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouterSettings({
+                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouteSettings({
                     routes: {},
 
                     collections: {
@@ -525,7 +526,7 @@ describe('Frontend behavior tests', function () {
                         },
 
                         '/': {
-                            permalink: '/:slug/'
+                            permalink: '/{slug}/'
                         }
                     },
 
@@ -612,12 +613,12 @@ describe('Frontend behavior tests', function () {
 
         describe('primary author permalink', function () {
             beforeAll(async function () {
-                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouterSettings({
+                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouteSettings({
                     routes: {},
 
                     collections: {
                         '/something/': {
-                            permalink: '/:primary_author/:slug/'
+                            permalink: '/{primary_author}/{slug}/'
                         }
                     },
 
@@ -688,12 +689,12 @@ describe('Frontend behavior tests', function () {
 
         describe('primary tag permalink', function () {
             beforeAll(async function () {
-                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouterSettings({
+                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouteSettings({
                     routes: {},
 
                     collections: {
                         '/something/': {
-                            permalink: '/something/:primary_tag/:slug/'
+                            permalink: '/something/{primary_tag}/{slug}/'
                         }
                     },
 
@@ -778,23 +779,11 @@ describe('Frontend behavior tests', function () {
 
         describe('collection/routes with data key', function () {
             beforeAll(async function () {
-                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouterSettings({
+                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouteSettings({
                     routes: {
                         '/my-page/': {
                             data: {
-                                query: {
-                                    page: {
-                                        controller: 'pagesPublic',
-                                        resource: 'pages',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'static-page-test'
-                                        }
-                                    }
-                                },
-                                router: {
-                                    pages: [{redirect: true, slug: 'static-page-test'}]
-                                }
+                                page: {type: 'read', resource: 'pages', slug: 'static-page-test'}
                             },
                             templates: ['page']
                         }
@@ -802,48 +791,24 @@ describe('Frontend behavior tests', function () {
 
                     collections: {
                         '/food/': {
-                            permalink: '/food/:slug/',
+                            permalink: '/food/{slug}/',
                             filter: 'tag:bacon+tag:-chorizo',
                             data: {
-                                query: {
-                                    tag: {
-                                        controller: 'tagsPublic',
-                                        resource: 'tags',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'bacon'
-                                        }
-                                    }
-                                },
-                                router: {
-                                    tags: [{redirect: true, slug: 'bacon'}]
-                                }
+                                tag: {type: 'read', resource: 'tags', slug: 'bacon'}
                             }
                         },
                         '/sport/': {
-                            permalink: '/sport/:slug/',
+                            permalink: '/sport/{slug}/',
                             filter: 'tag:chorizo+tag:-bacon',
                             data: {
-                                query: {
-                                    apollo: {
-                                        controller: 'tagsPublic',
-                                        resource: 'tags',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'chorizo'
-                                        }
-                                    }
-                                },
-                                router: {
-                                    tags: [{redirect: false, slug: 'chorizo'}]
-                                }
+                                apollo: {type: 'read', resource: 'tags', slug: 'chorizo', redirect: false}
                             }
                         }
                     },
 
                     taxonomies: {
-                        tag: '/categories/:slug/',
-                        author: '/authors/:slug/'
+                        tag: '/categories/{slug}/',
+                        author: '/authors/{slug}/'
                     }
                 }));
 
@@ -938,16 +903,16 @@ describe('Frontend behavior tests', function () {
     describe('extended routes.yaml: templates', function () {
         describe('default template, no template', function () {
             beforeAll(async function () {
-                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouterSettings({
+                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouteSettings({
                     routes: {},
 
                     collections: {
                         '/': {
-                            permalink: '/:slug/',
+                            permalink: '/{slug}/',
                             templates: ['default']
                         },
                         '/magic/': {
-                            permalink: '/magic/:slug/'
+                            permalink: '/magic/{slug}/'
                         }
                     }
                 }));
@@ -999,12 +964,12 @@ describe('Frontend behavior tests', function () {
 
         describe('two templates', function () {
             beforeAll(async function () {
-                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouterSettings({
+                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouteSettings({
                     routes: {},
 
                     collections: {
                         '/': {
-                            permalink: '/:slug/',
+                            permalink: '/{slug}/',
                             templates: ['something', 'default']
                         }
                     }
@@ -1046,16 +1011,16 @@ describe('Frontend behavior tests', function () {
 
         describe('home.hbs priority', function () {
             beforeAll(async function () {
-                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouterSettings({
+                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouteSettings({
                     routes: {},
 
                     collections: {
                         '/': {
-                            permalink: '/:slug/',
+                            permalink: '/{slug}/',
                             templates: ['something', 'default']
                         },
                         '/magic/': {
-                            permalink: '/magic/:slug/',
+                            permalink: '/magic/{slug}/',
                             templates: ['something', 'default']
                         }
                     }
@@ -1116,25 +1081,13 @@ describe('Frontend behavior tests', function () {
             beforeAll(async function () {
                 localUtils.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
-                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouterSettings({
+                sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouteSettings({
                     routes: {
                         '/channel1/': {
                             type: 'channel',
                             filter: 'tag:kitchen-sink',
                             data: {
-                                query: {
-                                    tag: {
-                                        controller: 'tagsPublic',
-                                        resource: 'tags',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'kitchen-sink'
-                                        }
-                                    }
-                                },
-                                router: {
-                                    tags: [{redirect: true, slug: 'kitchen-sink'}]
-                                }
+                                tag: {type: 'read', resource: 'tags', slug: 'kitchen-sink'}
                             }
                         },
 
@@ -1142,19 +1095,7 @@ describe('Frontend behavior tests', function () {
                             type: 'channel',
                             filter: 'tag:bacon',
                             data: {
-                                query: {
-                                    tag: {
-                                        controller: 'tagsPublic',
-                                        resource: 'tags',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'bacon'
-                                        }
-                                    }
-                                },
-                                router: {
-                                    tags: [{redirect: true, slug: 'bacon'}]
-                                }
+                                tag: {type: 'read', resource: 'tags', slug: 'bacon'}
                             },
                             templates: ['default']
                         },
@@ -1163,20 +1104,7 @@ describe('Frontend behavior tests', function () {
                             type: 'channel',
                             filter: 'author:joe-bloggs',
                             data: {
-                                query: {
-                                    joe: {
-                                        controller: 'authorsPublic',
-                                        resource: 'authors',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'joe-bloggs',
-                                            redirect: false
-                                        }
-                                    }
-                                },
-                                router: {
-                                    authors: [{redirect: false, slug: 'joe-bloggs'}]
-                                }
+                                joe: {type: 'read', resource: 'authors', slug: 'joe-bloggs', redirect: false}
                             }
                         },
 
@@ -1188,53 +1116,27 @@ describe('Frontend behavior tests', function () {
                         '/channel5/': {
                             type: 'channel',
                             data: {
-                                query: {
-                                    tag: {
-                                        controller: 'authorsPublic',
-                                        resource: 'authors',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'joe-bloggs',
-                                            redirect: false
-                                        }
-                                    }
-                                },
-                                router: {
-                                    authors: [{redirect: false, slug: 'joe-bloggs'}]
-                                }
+                                tag: {type: 'read', resource: 'authors', slug: 'joe-bloggs', redirect: false}
                             }
                         },
 
                         '/channel6/': {
                             type: 'channel',
                             data: {
-                                query: {
-                                    post: {
-                                        controller: 'postsPublic',
-                                        resource: 'posts',
-                                        type: 'read',
-                                        options: {
-                                            slug: 'html-ipsum',
-                                            redirect: true
-                                        }
-                                    }
-                                },
-                                router: {
-                                    posts: [{redirect: true, slug: 'html-ipsum'}]
-                                }
+                                post: {type: 'read', resource: 'posts', slug: 'html-ipsum'}
                             }
                         }
                     },
 
                     collections: {
                         '/': {
-                            permalink: '/:slug/'
+                            permalink: '/{slug}/'
                         }
                     },
 
                     taxonomies: {
-                        tag: '/tag/:slug/',
-                        author: '/author/:slug/'
+                        tag: '/tag/{slug}/',
+                        author: '/author/{slug}/'
                     }
                 }));
 
@@ -1433,7 +1335,7 @@ describe('Frontend behavior tests', function () {
 
     describe('extended routes.yaml (5): rss override', function () {
         beforeAll(async function () {
-            sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouterSettings({
+            sinon.stub(routeSettingsService.service, 'loadRouteSettings').resolves(asRouteSettings({
                 routes: {
                     '/podcast/rss/': {
                         templates: ['podcast/rss'],
@@ -1450,17 +1352,17 @@ describe('Frontend behavior tests', function () {
 
                 collections: {
                     '/podcast/': {
-                        permalink: '/:slug/',
+                        permalink: '/{slug}/',
                         filter: 'featured:true',
                         templates: ['home'],
                         rss: false
                     },
                     '/music/': {
-                        permalink: '/:slug/',
+                        permalink: '/{slug}/',
                         rss: false
                     },
                     '/': {
-                        permalink: '/:slug/'
+                        permalink: '/{slug}/'
                     }
                 },
 

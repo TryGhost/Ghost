@@ -1,7 +1,7 @@
 import Component from '@glimmer/component';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
-import {escapeNqlString} from '../utils/escape-nql-string';
+import {escapeNqlString} from '@tryghost/nql-string';
 import {inject as service} from '@ember/service';
 
 const SEARCH_DEBOUNCE_MS = 250;

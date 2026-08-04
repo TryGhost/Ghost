@@ -10,6 +10,7 @@ import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
 import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
+import {getActiveGiftDuration, getAvailableGiftDurations, getGiftPrice, getGiftProducts} from '../../utils/gift-subscriptions';
 import {ValidateInputForm} from '../../utils/form';
 import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
@@ -121,6 +122,33 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-checkout .gh-portal-products-pricetoggle {
     margin: 0;
+}
+
+.gh-portal-gift-duration-selector {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    min-height: 44px;
+    border-radius: 999px;
+    background: #F3F3F3;
+}
+
+.gh-portal-gift-duration-selector .gh-portal-btn {
+    flex: 1;
+    height: 36px !important;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--grey5);
+    font-size: 1.4rem;
+    white-space: nowrap;
+}
+
+.gh-portal-gift-duration-selector .gh-portal-btn.active {
+    color: var(--grey0);
+    background: var(--white);
+    box-shadow: 0 1px 3px rgba(var(--blackrgb), 0.08);
 }
 
 .gh-portal-gift-checkout-email .gh-portal-input-labelcontainer {
@@ -658,6 +686,29 @@ function GiftPriceSwitch({selectedInterval, setSelectedInterval}) {
     );
 }
 
+function GiftDurationSelector({availableDurations, selectedDuration, setSelectedDuration}) {
+    if (availableDurations.length <= 1) {
+        return null;
+    }
+
+    return (
+        <div className='gh-portal-gift-duration-selector' role='group' aria-label={t('Plan')}>
+            {availableDurations.map(duration => (
+                <button
+                    type='button'
+                    aria-pressed={duration === selectedDuration}
+                    className={'gh-portal-btn' + (duration === selectedDuration ? ' active' : '')}
+                    data-test-gift-duration={duration}
+                    key={duration}
+                    onClick={() => setSelectedDuration(duration)}
+                >
+                    {getGiftDurationLabel({cadence: 'month', duration})}
+                </button>
+            ))}
+        </div>
+    );
+}
+
 export function formatGiftValue(price) {
     const {amount, currency} = price ?? {};
     if (amount === null || amount === undefined || !currency) {
@@ -674,6 +725,7 @@ function getTierPriceLabel(product, selectedInterval) {
 const GiftPage = () => {
     const {site, member, brandColor, action, doAction} = useContext(AppContext);
     const [selectedInterval, setSelectedInterval] = useState(null);
+    const [selectedDuration, setSelectedDuration] = useState(null);
     const [selectedProductId, setSelectedProductId] = useState(null);
     const [email, setEmail] = useState('');
     const [errors, setErrors] = useState({});
@@ -745,8 +797,17 @@ const GiftPage = () => {
     }
 
     const {portal_plans: portalPlans, portal_default_plan: portalDefaultPlan} = site;
+    const hasGiftCustomization = !!site.labs?.giftSubCustomization;
     const activeInterval = getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval});
-    const products = getAvailableProducts({site}).filter(p => p.type === 'paid');
+    const availableDurations = hasGiftCustomization ? getAvailableGiftDurations({site}) : [];
+    const activeDuration = hasGiftCustomization ? getActiveGiftDuration({
+        availableDurations,
+        portalDefaultPlan,
+        selectedDuration
+    }) : null;
+    const products = hasGiftCustomization
+        ? getGiftProducts({site, duration: activeDuration})
+        : getAvailableProducts({site}).filter(p => p.type === 'paid');
 
     const siteIcon = site.icon;
     const siteTitle = site.title || '';
@@ -828,7 +889,7 @@ const GiftPage = () => {
 
         doAction('checkoutGift', {
             tierId: activeProduct.id,
-            cadence: activeInterval,
+            ...(hasGiftCustomization ? {duration: activeDuration} : {cadence: activeInterval}),
             ...(!isLoggedIn ? {email: customerEmail} : {})
         });
     };
@@ -860,10 +921,18 @@ const GiftPage = () => {
 
                             <div className='gh-portal-gift-checkout-section'>
                                 <div className='gh-portal-gift-checkout-label'>{isSingleTier ? t('Membership details') : t('Tier')}</div>
-                                <GiftPriceSwitch
-                                    selectedInterval={activeInterval}
-                                    setSelectedInterval={setSelectedInterval}
-                                />
+                                {hasGiftCustomization ? (
+                                    <GiftDurationSelector
+                                        availableDurations={availableDurations}
+                                        selectedDuration={activeDuration}
+                                        setSelectedDuration={setSelectedDuration}
+                                    />
+                                ) : (
+                                    <GiftPriceSwitch
+                                        selectedInterval={activeInterval}
+                                        setSelectedInterval={setSelectedInterval}
+                                    />
+                                )}
                             </div>
 
                             <div className='gh-portal-gift-checkout-section'>
@@ -894,7 +963,11 @@ const GiftPage = () => {
                                                     <div className='gh-portal-gift-checkout-tier-content'>
                                                         <div className='gh-portal-gift-checkout-tier-heading'>
                                                             <span className='gh-portal-gift-checkout-tier-name'>{product.name}</span>
-                                                            <span className='gh-portal-gift-checkout-tier-price'>{getTierPriceLabel(product, activeInterval)}</span>
+                                                            <span className='gh-portal-gift-checkout-tier-price'>
+                                                                {hasGiftCustomization
+                                                                    ? formatGiftValue(getGiftPrice(product, activeDuration))
+                                                                    : getTierPriceLabel(product, activeInterval)}
+                                                            </span>
                                                         </div>
                                                         {product.description && (
                                                             <p className='gh-portal-gift-checkout-tier-description'>{product.description}</p>
@@ -948,9 +1021,13 @@ const GiftPage = () => {
                             <div className='gh-portal-gift-checkout-card-stack'>
                                 <GiftCard
                                     cardRef={cardRef}
-                                    duration={getGiftDurationLabel({cadence: activeInterval, duration: 1})}
+                                    duration={hasGiftCustomization
+                                        ? getGiftDurationLabel({cadence: 'month', duration: activeDuration})
+                                        : getGiftDurationLabel({cadence: activeInterval, duration: 1})}
                                     tierName={activeProduct.name}
-                                    giftValue={getTierPriceLabel(activeProduct, activeInterval)}
+                                    giftValue={hasGiftCustomization
+                                        ? formatGiftValue(getGiftPrice(activeProduct, activeDuration))
+                                        : getTierPriceLabel(activeProduct, activeInterval)}
                                     siteIcon={siteIcon}
                                     siteTitle={siteTitle}
                                 />

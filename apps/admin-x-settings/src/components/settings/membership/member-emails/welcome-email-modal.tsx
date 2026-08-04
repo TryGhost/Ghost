@@ -234,7 +234,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                 className='dark:bg-[#151719]'
                 headerActions={
                     <>
-                        <Button className='font-semibold' type='button' variant='ghost' onClick={handleClose}>Close</Button>
+                        <Button type='button' variant='outline' onClick={handleClose}>Close</Button>
                         <Button
                             disabled={okProps.disabled}
                             type='button'
@@ -280,7 +280,6 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                     <div className='w-20 shrink-0 font-semibold'>Subject:</div>
                                     <div className='grow'>
                                         <Input
-                                            className='w-full border-transparent bg-muted'
                                             data-testid='welcome-email-preview-subject'
                                             value={previewSubjectOverride ?? formState.subject}
                                             onChange={(e) => {

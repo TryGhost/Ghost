@@ -288,75 +288,85 @@ describe('UNIT - services/routing/ParentRouter', function () {
             assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), false);
         });
 
-        it('data keys are undefined', function () {
+        it('data is empty', function () {
             const parentRouter = new ParentRouter();
-            parentRouter.data = {query: {}, router: {}};
-            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), undefined);
+            parentRouter.data = {};
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), false);
         });
 
-        it('no redirect when unspecified slug', function () {
+        it('no redirect for a browse entry', function () {
             const parentRouter = new ParentRouter();
 
-            parentRouter.data = {
-                query: {},
-                router: {
-                    tags: [{redirect: true}]
-                }
-            };
+            parentRouter.data = {featured: {type: 'browse', resource: 'tags'}};
 
-            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), undefined);
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), false);
         });
 
         it('no redirect when wrong slug', function () {
             const parentRouter = new ParentRouter();
 
-            parentRouter.data = {
-                query: {},
-                router: {
-                    tags: [{redirect: true, slug: 'cheese'}]
-                }
-            };
+            parentRouter.data = {tag: {type: 'read', resource: 'tags', slug: 'cheese'}};
 
-            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), undefined);
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), false);
         });
 
-        it('no redirect when tag redirect=false', function () {
+        it('no redirect when wrong resource', function () {
             const parentRouter = new ParentRouter();
 
-            parentRouter.data = {
-                query: {},
-                router: {
-                    tags: [{redirect: false, slug: 'bacon'}]
-                }
-            };
+            parentRouter.data = {page: {type: 'read', resource: 'pages', slug: 'bacon'}};
 
-            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), undefined);
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), false);
+        });
+
+        it('no redirect when the entry opts out', function () {
+            const parentRouter = new ParentRouter();
+
+            parentRouter.data = {tag: {type: 'read', resource: 'tags', slug: 'bacon', redirect: false}};
+
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), false);
         });
 
         it('redirect (tags)', function () {
             const parentRouter = new ParentRouter();
 
-            parentRouter.data = {
-                query: {},
-                router: {
-                    tags: [{redirect: true, slug: 'bacon'}]
-                }
-            };
+            parentRouter.data = {tag: {type: 'read', resource: 'tags', slug: 'bacon'}};
 
-            assertExists(parentRouter.isRedirectEnabled('tags', 'bacon'));
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), true);
         });
 
         it('redirect (pages)', function () {
             const parentRouter = new ParentRouter();
 
+            parentRouter.data = {home: {type: 'read', resource: 'pages', slug: 'home'}};
+
+            assert.equal(parentRouter.isRedirectEnabled('pages', 'home'), true);
+        });
+
+        it('redirect from a named shorthand entry', function () {
+            const parentRouter = new ParentRouter();
+
+            parentRouter.data = {'my-tag': 'tag.bacon'};
+
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), true);
+        });
+
+        it('redirect from top-level shorthand', function () {
+            const parentRouter = new ParentRouter();
+
+            parentRouter.data = 'tag.bacon';
+
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), true);
+        });
+
+        it('redirect when one of several entries matches', function () {
+            const parentRouter = new ParentRouter();
+
             parentRouter.data = {
-                query: {},
-                router: {
-                    pages: [{redirect: true, slug: 'home'}]
-                }
+                featured: {type: 'browse', resource: 'posts', filter: 'featured:true'},
+                tag: 'tag.bacon'
             };
 
-            assertExists(parentRouter.isRedirectEnabled('pages', 'home'));
+            assert.equal(parentRouter.isRedirectEnabled('tags', 'bacon'), true);
         });
     });
 });

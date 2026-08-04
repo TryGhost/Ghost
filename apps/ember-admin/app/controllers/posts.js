@@ -2,7 +2,7 @@ import Controller from '@ember/controller';
 import SelectionList from 'ghost-admin/components/posts-list/selection-list';
 import {DEFAULT_QUERY_PARAMS} from 'ghost-admin/helpers/reset-query-params';
 import {action} from '@ember/object';
-import {escapeNqlString} from 'ghost-admin/utils/escape-nql-string';
+import {escapeNqlString} from '@tryghost/nql-string';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';

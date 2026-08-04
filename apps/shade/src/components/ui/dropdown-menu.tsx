@@ -3,8 +3,8 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import {Check, ChevronRight, Circle} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
+import {consumeOverlayEscape} from '@/lib/overlay-escape';
 import {SHADE_APP_NAMESPACES} from '@/shade-app';
-
 const DropdownMenu = DropdownMenuPrimitive.Root;
 
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
@@ -42,7 +42,7 @@ DropdownMenuSubTrigger.displayName =
 const DropdownMenuSubContent = React.forwardRef<
     React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
     React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
->(({className, ...props}, ref) => (
+>(({className, onEscapeKeyDown, ...props}, ref) => (
     <div className={SHADE_APP_NAMESPACES}>
         <DropdownMenuPrimitive.SubContent
             ref={ref}
@@ -50,6 +50,7 @@ const DropdownMenuSubContent = React.forwardRef<
                 'z-50 min-w-[8rem] overflow-hidden rounded-md border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-lg data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
                 className
             )}
+            onEscapeKeyDown={event => consumeOverlayEscape(event, onEscapeKeyDown)}
             {...props}
         />
     </div>
@@ -60,7 +61,7 @@ DropdownMenuSubContent.displayName =
 const DropdownMenuContent = React.forwardRef<
     React.ElementRef<typeof DropdownMenuPrimitive.Content>,
     React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
->(({className, sideOffset = 4, ...props}, ref) => (
+>(({className, onEscapeKeyDown, sideOffset = 4, ...props}, ref) => (
     <DropdownMenuPrimitive.Portal>
         <div className={SHADE_APP_NAMESPACES}>
             <DropdownMenuPrimitive.Content
@@ -71,6 +72,7 @@ const DropdownMenuContent = React.forwardRef<
                     className
                 )}
                 sideOffset={sideOffset}
+                onEscapeKeyDown={event => consumeOverlayEscape(event, onEscapeKeyDown)}
                 {...props}
             />
         </div>

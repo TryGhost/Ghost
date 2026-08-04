@@ -122,6 +122,31 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         blank: '',
         canAddNewItem: item => !!item
     });
+    const modalRef = useRef<HTMLElement>(null);
+    const newBenefitInputRef = useRef<HTMLInputElement>(null);
+
+    const addBenefit = () => {
+        if (!benefits.newItem) {
+            return;
+        }
+
+        const previousInputTop = newBenefitInputRef.current?.getBoundingClientRect().top;
+        benefits.addItem();
+
+        window.requestAnimationFrame(() => {
+            const input = newBenefitInputRef.current;
+            const modalElement = modalRef.current;
+            if (!input || !modalElement || previousInputTop === undefined) {
+                return;
+            }
+
+            input.focus({preventScroll: true});
+            modalElement.scrollBy({
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+                top: input.getBoundingClientRect().top - previousInputTop
+            });
+        });
+    };
 
     const toggleFreeTrial = (checked: boolean) => {
         if (checked) {
@@ -180,6 +205,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     }
 
     return <SettingsModal
+        ref={modalRef}
         afterClose={() => {
             updateRoute('tiers');
         }}
@@ -199,9 +225,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     >
         <div className='mt-8 -mb-8 flex items-start gap-8'>
             <div className='flex grow flex-col gap-8'>
-                <FieldSet className='gap-0'>
-                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Basic</FieldLegend>
-                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                <FieldSet>
+                    <FieldLegend>Basic</FieldLegend>
+                    <FieldGroup className='gap-8 rounded-sm border border-border-default p-4 md:p-7'>
                     <Field data-invalid={Boolean(errors.name) || undefined}>
                         <FieldLabel htmlFor='tier-name'>Name</FieldLabel>
                         <Input aria-invalid={Boolean(errors.name) || undefined} autoComplete='off' id='tier-name' maxLength={191} placeholder={isFreeTier ? 'Free' : 'Bronze'} value={formState.name || ''} autoFocus onChange={e => updateForm(state => ({...state, name: e.target.value}))} onKeyDown={() => clearError('name')} />
@@ -248,7 +274,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 <div className='flex flex-col gap-2'>
                                     <Field data-invalid={Boolean(errors.monthly_price) || undefined}>
                                         <FieldLabel className='sr-only' htmlFor='tier-monthly-price'>Monthly price</FieldLabel>
-                                        <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.monthly_price) || undefined}>
+                                        <InputGroup data-invalid={Boolean(errors.monthly_price) || undefined}>
                                             <InputGroupInput
                                                 aria-invalid={Boolean(errors.monthly_price) || undefined}
                                                 id='tier-monthly-price'
@@ -270,7 +296,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     </Field>
                                     <Field data-invalid={Boolean(errors.yearly_price) || undefined}>
                                         <FieldLabel className='sr-only' htmlFor='tier-yearly-price'>Yearly price</FieldLabel>
-                                        <InputGroup className='h-[var(--control-height)] border-transparent bg-muted' data-invalid={Boolean(errors.yearly_price) || undefined}>
+                                        <InputGroup data-invalid={Boolean(errors.yearly_price) || undefined}>
                                             <InputGroupInput
                                                 aria-invalid={Boolean(errors.yearly_price) || undefined}
                                                 id='tier-yearly-price'
@@ -301,7 +327,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 </div>
                                 <Field data-disabled={!hasFreeTrial || undefined}>
                                     <FieldLabel className='sr-only' htmlFor='tier-trial-days'>Trial days</FieldLabel>
-                                    <InputGroup className='h-[var(--control-height)] border-transparent bg-muted'>
+                                    <InputGroup>
                                         <InputGroupInput disabled={!hasFreeTrial} id='tier-trial-days' placeholder='0' value={formState.trial_days} onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/[^\d]/, '')}))} />
                                         <InputGroupAddon align='inline-end'><InputGroupText>days</InputGroupText></InputGroupAddon>
                                     </InputGroup>
@@ -315,7 +341,6 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     <Field>
                         <FieldLabel htmlFor='tier-welcome-page'>Welcome page</FieldLabel>
                         <Input
-                            className='border-transparent bg-muted'
                             id='tier-welcome-page'
                             maxLength={2000}
                             placeholder={siteData?.url}
@@ -330,9 +355,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     </FieldGroup>
                 </FieldSet>
 
-                <FieldSet className='gap-0'>
-                    <FieldLegend className='mb-3 text-md! leading-supertight font-bold md:text-lg!'>Benefits</FieldLegend>
-                    <FieldGroup className='mb-10 gap-0 rounded-sm border border-border-default p-4 md:p-7 [&_:where(input)]:h-[var(--control-height)] [&_:where(input)]:border-transparent [&_:where(input)]:bg-muted'>
+                <FieldSet>
+                    <FieldLegend>Benefits</FieldLegend>
+                    <FieldGroup className='mb-10 gap-0 rounded-sm border border-border-default p-4 md:p-7'>
                         <SortableList
                             getDragHandleLabel={({item}) => `Reorder benefit${item ? `: ${item}` : ''}`}
                             items={benefits.items}
@@ -351,6 +376,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             <Field className='w-100'>
                                 <FieldLabel className='sr-only' htmlFor='new-tier-benefit'>New benefit</FieldLabel>
                                 <Input
+                                    ref={newBenefitInputRef}
                                     className='grow'
                                     id='new-tier-benefit'
                                     maxLength={191}
@@ -359,7 +385,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     onChange={e => benefits.setNewItem(e.target.value)}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
-                                            benefits.addItem();
+                                            e.preventDefault();
+                                            addBenefit();
                                         }
                                     }} />
                             </Field>
@@ -368,7 +395,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 className='absolute top-1/2 right-1 z-10 size-[22px]! -translate-y-1/2 p-0!'
                                 size='icon'
                                 type='button'
-                                onClick={() => benefits.addItem()}
+                                onClick={addBenefit}
                             >
                                 <LucideIcon.Plus />
                             </Button>
