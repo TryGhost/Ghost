@@ -1,6 +1,6 @@
 import {Button} from '@tryghost/shade/components';
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {cn, LucideIcon} from '@tryghost/shade/utils';
 import {
     didPostEmailFail,
     getPostDateTooltip,
@@ -11,6 +11,7 @@ import {
 import {hasPostAnalyticsPage, type PostMetricsSettings} from '@/posts/list/post-metrics';
 import {PostMetricsCells} from '@/posts/list/components/post-metrics-cells';
 import {useState} from 'react';
+import type {MouseEvent as ReactMouseEvent} from 'react';
 import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
 import type {PostResource} from '@/posts/list/post-resource';
 
@@ -26,6 +27,10 @@ interface PostListRowProps {
     /** Owner or Administrator — the roles Ember's `isAdmin` covers. */
     hasAdminAccess?: boolean;
     paidMembersEnabled?: boolean;
+    isSelected?: boolean;
+    /** Capture-phase, so it beats the row's own link. */
+    onSelectMouseDown?: (event: ReactMouseEvent, id: string) => void;
+    onSelectClick?: (event: ReactMouseEvent) => void;
     metricsSettings: PostMetricsSettings;
     visitorCounts?: Record<string, number>;
     memberCounts?: Record<string, {free: number; paid: number}>;
@@ -83,6 +88,7 @@ function FeatureImage({post}: {post: PostListItem}) {
 
 export function PostListRow({
     post, resource, timezone, isContributor, hasAdminAccess, paidMembersEnabled,
+    isSelected, onSelectMouseDown, onSelectClick,
     metricsSettings, visitorCounts, memberCounts
 }: PostListRowProps) {
     const [isHovered, setIsHovered] = useState(false);
@@ -111,8 +117,19 @@ export function PostListRow({
 
     return (
         <li
-            className='group border-b border-border-default'
+            className={cn(
+                'group border-b border-border-default',
+                // `bg-muted` is Shade's own selected-row treatment (see
+                // TableRow's `data-[state=selected]`). Ember paints a 10%
+                // indigo overlay, which has no semantic token here.
+                // `select-none` matches Ember: a modifier-drag across rows
+                // shouldn't leave text highlighted behind the selection.
+                isSelected && 'bg-muted select-none'
+            )}
+            data-selected={isSelected ? 'true' : undefined}
             data-testid='posts-list-item'
+            onClickCapture={onSelectClick}
+            onMouseDownCapture={event => onSelectMouseDown?.(event, post.id)}
             onMouseEnter={() => {
                 setIsHovered(true);
             }}
