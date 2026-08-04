@@ -154,6 +154,7 @@ const createDatabase = async (): Promise<Knex> => {
     await database.schema.createTable('automated_email_recipients', (table) => {
         table.text('id').primary();
         table.text('automation_action_revision_id').references('id').inTable('automation_action_revisions');
+        table.text('automation_run_step_id').references('id').inTable('automation_run_steps');
         table.text('member_id');
         table.text('member_uuid');
         table.text('member_email');
@@ -512,6 +513,17 @@ describe('automations repository', function () {
         await knex('automation_run_steps').insert(step);
 
         return step;
+    };
+
+    const insertStepForRevision = async (revisionId: string) => {
+        const action = await knex('automation_action_revisions as revisions')
+            .select('actions.automation_id')
+            .innerJoin('automation_actions as actions', 'actions.id', 'revisions.action_id')
+            .where('revisions.id', revisionId)
+            .first();
+        assert(action, 'Expected action revision to exist');
+        const run = await insertRun(action.automation_id);
+        return await insertStep(run.id, revisionId);
     };
 
     const getStepById = async (id: string) => {
@@ -2069,9 +2081,11 @@ describe('automations repository', function () {
         it('records the recipient and increments the action revision count', async function () {
             const revision = await knex('automation_action_revisions').select('id').first();
             assert(revision);
+            const step = await insertStepForRevision(revision.id);
 
             await repo.recordEmailSent({
                 automationActionRevisionId: revision.id,
+                automationRunStepId: step.id,
                 mailgunMessageId: 'mailgun-message-id',
                 memberEmail: 'member@example.com',
                 memberId: 'member-id',
@@ -2085,6 +2099,7 @@ describe('automations repository', function () {
             assert.deepEqual(recipient, {
                 id: recipient.id,
                 automation_action_revision_id: revision.id,
+                automation_run_step_id: step.id,
                 member_id: 'member-id',
                 member_uuid: '00000000-0000-4000-8000-000000000001',
                 member_email: 'member@example.com',
@@ -2112,6 +2127,7 @@ describe('automations repository', function () {
         it('updates the action revision before inserting the recipient', async function () {
             const revision = await knex('automation_action_revisions').select('id').first();
             assert(revision);
+            const step = await insertStepForRevision(revision.id);
 
             const queries: string[] = [];
             const recordQuery = ({sql}: {sql: string}) => queries.push(sql);
@@ -2120,6 +2136,7 @@ describe('automations repository', function () {
             try {
                 await repo.recordEmailSent({
                     automationActionRevisionId: revision.id,
+                    automationRunStepId: step.id,
                     memberEmail: 'member@example.com',
                     memberId: 'member-id',
                     memberName: 'Test Member',
@@ -2146,9 +2163,11 @@ describe('automations repository', function () {
         it('supports recipients without a Mailgun message ID', async function () {
             const revision = await knex('automation_action_revisions').select('id').first();
             assert(revision);
+            const step = await insertStepForRevision(revision.id);
 
             await repo.recordEmailSent({
                 automationActionRevisionId: revision.id,
+                automationRunStepId: step.id,
                 memberEmail: 'member@example.com',
                 memberId: 'member-id',
                 memberName: null,
