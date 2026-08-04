@@ -48,6 +48,13 @@ describe('buildAllFilter', () => {
             .toBe('status:[draft,scheduled,published,sent]');
     });
 
+    // Ember's isBlank counts whitespace-only strings, so `?tag=%20%20` has to
+    // produce no clause here too or the strings stop matching.
+    it('treats a whitespace-only value as blank, like Ember', () => {
+        expect(buildAllFilter({tag: '   ', author: ' '}))
+            .toBe('status:[draft,scheduled,published,sent]');
+    });
+
     // Key order is load-bearing only in that it must stay stable; this locks
     // the order Ember produced so filters compare equal across the two apps.
     it('orders clauses tag, visibility, status, featured, authors', () => {

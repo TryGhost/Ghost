@@ -31,16 +31,38 @@ describe('composePostBuckets', () => {
         expect(result.isLoading).toBe(false);
     });
 
-    // Until every bucket's first page has landed we can't know which are
-    // visible - showing what we have would flash drafts in above scheduled.
-    it('reports loading while any bucket is still on its first page', () => {
+    it('reports loading only while nothing can be shown yet', () => {
         const result = composePostBuckets<Item>([
-            bucketResult({bucket: 'scheduled', items: [item('a')]}),
+            bucketResult({bucket: 'scheduled', isLoading: true}),
             bucketResult({bucket: 'draft', isLoading: true})
         ]);
 
         expect(result.isLoading).toBe(true);
         expect(result.items).toEqual([]);
+    });
+
+    // Only *later* buckets depend on earlier ones. Holding the whole list until
+    // every bucket has answered would let one slow query hide everything.
+    it('shows an earlier bucket while a later one is still loading', () => {
+        const result = composePostBuckets<Item>([
+            bucketResult({bucket: 'scheduled', items: [item('s1')], total: 1}),
+            bucketResult({bucket: 'draft', isLoading: true})
+        ]);
+
+        expect(result.isLoading).toBe(false);
+        expect(result.items.map(entry => entry.id)).toEqual(['s1']);
+    });
+
+    // ...but a later bucket must never jump ahead of one that hasn't answered,
+    // or drafts flash in above scheduled.
+    it('hides a later bucket while an earlier one is still loading', () => {
+        const result = composePostBuckets<Item>([
+            bucketResult({bucket: 'scheduled', isLoading: true}),
+            bucketResult({bucket: 'draft', items: [item('d1')], total: 1})
+        ]);
+
+        expect(result.items).toEqual([]);
+        expect(result.isLoading).toBe(true);
     });
 
     it('concatenates buckets in order once everything has loaded', () => {
@@ -157,5 +179,16 @@ describe('composePostBuckets', () => {
         ]);
 
         expect(result.isError).toBe(true);
+    });
+
+    // A failed bucket never drained, so treating it as exhausted would let the
+    // next one silently take its place in the list.
+    it('does not open a later bucket behind a failed one', () => {
+        const result = composePostBuckets<Item>([
+            bucketResult({bucket: 'scheduled', isError: true}),
+            bucketResult({bucket: 'draft', items: [item('d1')], total: 1})
+        ]);
+
+        expect(result.items).toEqual([]);
     });
 });

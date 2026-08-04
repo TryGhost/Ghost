@@ -1,9 +1,17 @@
 import { describe, expect, it } from "vitest";
 
-import { fakePages, fakePosts, post, renderAdminApp } from "@test-utils/acceptance";
+import { currentUserResponse, fakePages, fakePosts, post, renderAdminApp, staffRole } from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
+import type { StaffRoleName } from "@tryghost/test-data";
 
 const FLAG_ON = { labs: { postsListReact: true } };
+
+function asRole(name: StaffRoleName, slug: string) {
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name })];
+    me.users[0].slug = slug;
+    return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+}
 
 /**
  * The list is three queries, not one — scheduled, then drafts, then
@@ -126,6 +134,47 @@ describe("Posts list data", () => {
         expect(window.location.hash).toContain("type=draft");
         expect(window.location.hash).toContain("tag=news");
         expect(window.location.hash).toContain("order=updated_at");
+    });
+
+    // Ember forces authors and contributors onto their own posts regardless of
+    // the author param. Without this they'd see everyone's.
+    describe.each([
+        { role: "Author" as const },
+        { role: "Contributor" as const }
+    ])("as $role", ({ role }) => {
+        it("scopes every bucket to the signed-in user's own posts", async () => {
+            const postsApi = fakePosts(query => byBucket(query.filter));
+            await renderAdminApp("/posts", asRole(role, "just-me"));
+
+            await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+            postsApi.requests.forEach((request) => {
+                expect(request.filter).toContain("authors:just-me");
+            });
+        });
+
+        it("ignores an author param pointing at someone else", async () => {
+            const postsApi = fakePosts(query => byBucket(query.filter));
+            await renderAdminApp("/posts?author=someone-else", asRole(role, "just-me"));
+
+            await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+            postsApi.requests.forEach((request) => {
+                expect(request.filter).toContain("authors:just-me");
+                expect(request.filter).not.toContain("someone-else");
+            });
+        });
+    });
+
+    it("honours the author param for roles that see everything", async () => {
+        const postsApi = fakePosts(query => byBucket(query.filter));
+        await renderAdminApp("/posts?author=someone-else", asRole("Administrator", "admin-user"));
+
+        await expect.element(postsListScreen.listItems().first()).toBeVisible();
+
+        postsApi.requests.forEach((request) => {
+            expect(request.filter).toContain("authors:someone-else");
+        });
     });
 
     it("queries the pages endpoint for the pages screen", async () => {
