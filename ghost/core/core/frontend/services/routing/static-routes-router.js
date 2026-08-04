@@ -131,7 +131,7 @@ class StaticRoutesRouter extends ParentRouter {
      * @returns {boolean}
      */
     isChannel(object) {
-        // buildRouterSettings always sets `type` ('channel' | 'template') on
+        // parseRouteSettings always sets `type` ('channel' | 'template') on
         // every route, so a channel is simply `type === 'channel'`.
         return object?.type === 'channel';
     }
