@@ -55,11 +55,12 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                 >
                     <LucideIcon.Webhook />
                 </EmptyIndicator>
+                <Separator />
             </Stack>
         );
     }
 
-    return (<Stack gap='md'>
+    return (<Stack gap='none'>
         <Table>
             <TableHeader>
                 <TableRow>
@@ -108,7 +109,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                 ))}
             </TableBody>
         </Table>
-        <Inline justify='center'>
+        <Inline className='py-4' justify='center'>
             <Button
                 size='sm'
                 type='button'
@@ -118,6 +119,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                 <LucideIcon.Plus /> Add webhook
             </Button>
         </Inline>
+        <Separator />
     </Stack>);
 };
 
