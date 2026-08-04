@@ -48,4 +48,13 @@ describe('Settings Content API', function () {
             assert.equal(settingsLabs[key], value, `Expected labs.${key} to be ${value} in Content API settings`);
         }
     });
+
+    it('Includes gift page customization settings', async function () {
+        const {body} = await agent.get('settings/')
+            .expectStatus(200);
+
+        assert.equal(body.settings.gift_page_image, null);
+        assert.equal(body.settings.gift_page_heading, null);
+        assert.equal(body.settings.gift_page_description, null);
+    });
 });

@@ -48,6 +48,9 @@ const _ = require('lodash');
  * @property {string|null} portal_button_style - Portal button style
  * @property {string|null} portal_button_signup_text - Portal signup button text
  * @property {string|null} portal_button_icon - Portal button icon
+ * @property {string|null} gift_page_image - Gift page image URL
+ * @property {string|null} gift_page_heading - Gift page heading
+ * @property {string|null} gift_page_description - Gift page description
  * @property {string|null} portal_signup_terms_html - Portal signup terms HTML
  * @property {boolean|null} portal_signup_checkbox_required - Whether signup checkbox is required
  * @property {string|null} portal_plans - JSON string of available portal plans

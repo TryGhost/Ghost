@@ -430,6 +430,18 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "gift_page_image": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "gift_page_heading": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "gift_page_description": {
+            "defaultValue": null,
+            "type": "string"
         }
     },
     "email": {

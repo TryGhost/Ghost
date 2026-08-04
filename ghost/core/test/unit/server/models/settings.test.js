@@ -95,6 +95,9 @@ describe('Unit: models/settings', function () {
             returns = setting.formatOnWrite({key: 'portal_button_icon', value: `${siteUrl}/portal_button_icon.png`, type: 'string'});
             assert.equal(returns.value, '__GHOST_URL__/portal_button_icon.png');
 
+            returns = setting.formatOnWrite({key: 'gift_page_image', value: `${siteUrl}/gift_page_image.png`, type: 'string'});
+            assert.equal(returns.value, '__GHOST_URL__/gift_page_image.png');
+
             returns = setting.formatOnWrite({key: 'og_image', value: `${siteUrl}/og_image.png`, type: 'string'});
             assert.equal(returns.value, '__GHOST_URL__/og_image.png');
 
@@ -140,6 +143,9 @@ describe('Unit: models/settings', function () {
 
             returns = setting.parse({key: 'portal_button_icon', value: '__GHOST_URL__/portal_button_icon.png', type: 'string'});
             assert.equal(returns.value, `${siteUrl}/portal_button_icon.png`);
+
+            returns = setting.parse({key: 'gift_page_image', value: '__GHOST_URL__/gift_page_image.png', type: 'string'});
+            assert.equal(returns.value, `${siteUrl}/gift_page_image.png`);
 
             returns = setting.parse({key: 'og_image', value: '__GHOST_URL__/og_image.png', type: 'string'});
             assert.equal(returns.value, `${siteUrl}/og_image.png`);

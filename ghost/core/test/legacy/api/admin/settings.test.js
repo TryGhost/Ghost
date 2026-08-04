@@ -169,6 +169,7 @@ describe('Settings API', function () {
                     {key: 'logo', value: `${config.get('url')}/content/images/logo.png`},
                     {key: 'icon', value: `${config.get('url')}/content/images/icon.png`},
                     {key: 'portal_button_icon', value: `${config.get('url')}/content/images/portal_button_icon.png`},
+                    {key: 'gift_page_image', value: `${config.get('url')}/content/images/gift_page_image.png`},
                     {key: 'og_image', value: `${config.get('url')}/content/images/og_image.png`},
                     {key: 'twitter_image', value: `${config.get('url')}/content/images/twitter_image.png`}
                 ]
@@ -190,12 +191,13 @@ describe('Settings API', function () {
             assert.equal(responseSettings.logo, `${config.get('url')}/content/images/logo.png`);
             assert.equal(responseSettings.icon, `${config.get('url')}/content/images/size/w256h256/icon.png`);
             assert.equal(responseSettings.portal_button_icon, `${config.get('url')}/content/images/portal_button_icon.png`);
+            assert.equal(responseSettings.gift_page_image, `${config.get('url')}/content/images/gift_page_image.png`);
             assert.equal(responseSettings.og_image, `${config.get('url')}/content/images/og_image.png`);
             assert.equal(responseSettings.twitter_image, `${config.get('url')}/content/images/twitter_image.png`);
 
             const dbSettingsRows = await db.knex('settings')
                 .select('key', 'value')
-                .whereIn('key', ['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image']);
+                .whereIn('key', ['cover_image', 'logo', 'icon', 'portal_button_icon', 'gift_page_image', 'og_image', 'twitter_image']);
 
             const dbSettings = dbSettingsRows.reduce((acc, setting) => {
                 acc[setting.key] = setting.value;
@@ -206,6 +208,7 @@ describe('Settings API', function () {
             assert.equal(dbSettings.logo, '__GHOST_URL__/content/images/logo.png');
             assert.equal(dbSettings.icon, '__GHOST_URL__/content/images/icon.png');
             assert.equal(dbSettings.portal_button_icon, '__GHOST_URL__/content/images/portal_button_icon.png');
+            assert.equal(dbSettings.gift_page_image, '__GHOST_URL__/content/images/gift_page_image.png');
             assert.equal(dbSettings.og_image, '__GHOST_URL__/content/images/og_image.png');
             assert.equal(dbSettings.twitter_image, '__GHOST_URL__/content/images/twitter_image.png');
         });
