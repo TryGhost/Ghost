@@ -1,27 +1,17 @@
 import errors from '@tryghost/errors';
 
-// How a value becomes rows, and rows become values again.
+// A value is a tree; the database stores one row per leaf, under the path addressing it.
+// A value with no parts is a single leaf at the root, a part is a leaf under its key, and
+// a nested part is addressed with a dotted path.
 //
-// A value is a tree and the database stores its leaves: one string per leaf, under the
-// path that addresses it. A value with no parts is a single leaf at the root; a value
-// with parts is one leaf per part, under that part's key; a part that is itself a record
-// nests, and its leaves are addressed with a dotted path. A part a member left out gets
-// no leaf, so "not set" is the absence of a row rather than a row saying nothing.
-//
-// Keeping the leaves apart rather than as one blob is what lets a segment filter reach a
-// part directly: `path = 'country' AND value_text = 'GB'` is an ordinary predicate over
-// indexed columns, where reaching inside a JSON column is not. A dotted path is the same
-// vocabulary a filter is written in, so `shipping_address.line1` is the layout rather
-// than a translation of it.
-//
-// Nothing here consults a field type. A value arrives already parsed against its own, so
-// a record's keys are exactly the parts that type declares; and a row read back is
-// rebuilt as what it was written as rather than as whatever the type says today.
+// Nothing here may consult a field type. Values arrive already parsed against their own,
+// and rows are rebuilt as what they were written as rather than as what the type says
+// today, so a type that changes shape does not rewrite what members already have.
 
-/** Separates the segments of a path, and the notation a filter addresses a part by. */
+/** Also the notation a segment filter addresses a part by, so the two cannot drift. */
 const SEPARATOR = '.';
 
-/** The path of a value's root — the whole value, for one that has no parts. Empty rather than null: a unique index does not constrain nulls, so nulls would let the same leaf be stored twice. */
+/** Empty rather than null: a unique index does not constrain nulls, which would let the same leaf be stored twice. */
 export const ROOT_PATH = '';
 
 export interface Leaf {
@@ -29,7 +19,6 @@ export interface Leaf {
     value_text: string;
 }
 
-/** A leaf as it comes back from the database, still carrying who and what it belongs to. */
 export interface StoredLeaf extends Leaf {
     member_id: string;
     key: string;
@@ -40,45 +29,31 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Whether a path segment can be a key of a plain object and mean only itself.
- *
- * A rebuilt value is an ordinary object, so a segment naming something every object
- * already has — `__proto__` above all — would reach the prototype instead of the value,
- * and writing through `__proto__` reaches every object in the process. No path written
- * here can contain one, because a path is built from catalog part names; this makes that
- * a property of the codec rather than of its callers, since the paths it rebuilds from
- * come out of the database and only have to get there once.
- *
- * The same rule guards field keys in the definitions service, for the same reason.
+ * Values are rebuilt into plain objects, so a segment naming something every object
+ * already has would reach the prototype instead of the value — and a write through
+ * `__proto__` reaches every object in the process. Paths come out of the database, so
+ * this holds here rather than trusting whatever put them there.
  */
 function isSafeSegment(segment: string): boolean {
     return !(segment in Object.prototype);
 }
 
-/**
- * Every leaf a value names, at any depth, including the ones it names as empty.
- *
- * Naming is the unit of a write: a path a value does not mention is left alone, and one
- * it mentions as empty is being cleared. Both readings are needed, so this reports what
- * was named and leaves the caller to say what to do about it — `leavesToWrite` splits
- * them. A stored leaf is never empty, because an empty one is a deletion.
- */
+/** Every leaf a value names, at any depth, including the ones it names as empty. */
 export function leavesFor(value: unknown, path: string = ROOT_PATH): Leaf[] {
     if (typeof value === 'string') {
         return [{path, value_text: value}];
     }
 
-    // Anything that is neither a string nor a record has no leaves to be made of. Saying
-    // so here rather than storing it: a row whose value is not a string is one the read
-    // path rejects and drops, so writing one loses the value silently and for good.
+    // Thrown rather than stored: the read path rejects a non-string row, so writing one
+    // loses the value with nothing to say it ever arrived.
     if (!isRecord(value)) {
         throw new errors.IncorrectUsageError({
             message: `A custom field value must be a string or a record of them, not ${value === null ? 'null' : typeof value}.`
         });
     }
 
-    // An undefined part is one the value does not name at all, which is not the same as
-    // naming it empty: the first leaves the stored part alone, the second removes it.
+    // Undefined means the value does not name the part, which is not the same as naming
+    // it empty: the first leaves what is stored alone, the second clears it.
     return Object.entries(value)
         .filter(([, part]) => part !== undefined)
         .flatMap(([key, part]) => leavesFor(part, path === ROOT_PATH ? key : `${path}${SEPARATOR}${key}`));
@@ -109,13 +84,9 @@ export function valueFromLeaves(leaves: readonly Leaf[]): unknown {
         }
 
         const last = segments.pop() as string;
-        // Walk to the record this leaf hangs off, creating the ones in between. A path
-        // of one segment leaves this loop untouched and assigns straight onto the value.
-        //
-        // A segment already holding a string is replaced rather than descended into.
-        // Only a path that both is and contains another can produce that, which no
-        // value written through here does; rebuilding what the rows describe still
-        // beats throwing, because this runs over every member in a list response.
+        // A segment already holding a string is replaced rather than descended into: this
+        // runs over every member of a list response, so a contradictory pair of paths
+        // should cost one odd value rather than the whole response.
         const parent = segments.reduce<Record<string, unknown>>((target, segment) => {
             if (!isRecord(target[segment])) {
                 target[segment] = {};
@@ -128,13 +99,7 @@ export function valueFromLeaves(leaves: readonly Leaf[]): unknown {
     return value;
 }
 
-/**
- * Every member's values, keyed by member and then by field key.
- *
- * The other half of reading: a value is spread across as many rows as it has leaves, so
- * they have to be gathered back together before any of them means anything. A member with
- * no rows is absent from the result rather than present and empty.
- */
+/** Every member's values, keyed by member and then field key; a member with no rows is absent. */
 export function valuesFromLeaves(leaves: readonly StoredLeaf[]): Map<string, Record<string, unknown>> {
     const byMemberAndField = new Map<string, Map<string, Leaf[]>>();
 

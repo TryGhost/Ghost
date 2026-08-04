@@ -11,31 +11,19 @@ import {leavesToWrite, valuesFromLeaves, type StoredLeaf} from './storage';
 const FIELDS_TABLE = 'members_custom_fields';
 const VALUES_TABLE = 'members_custom_field_values';
 
-// Matches the `members_custom_fields.key` column (schema.js), so no key a site
-// could actually have minted is ever refused by it.
+/** Matches the `members_custom_fields.key` column, so no key a site could hold is refused. */
 const MAX_KEY_LENGTH = 191;
 
-// Rows per upsert. A member can be written up to the field limit at once and a record
-// type has a row per part, so one statement can carry several hundred: SQLite compiles a
-// multi-row upsert into a compound SELECT and stops at 500 terms.
+/** SQLite compiles a multi-row upsert into a compound SELECT and stops at 500 terms. */
 const UPSERT_CHUNK = 400;
 
-/**
- * A leaf as it is written: the table's own row, derived rather than restated so a column
- * that changes shape in `schema.ts` changes here too instead of drifting quietly.
- */
+/** Derived, not restated, so a column changing shape in `schema.ts` changes here too. */
 type DbLeafRow = z.infer<typeof DbCustomFieldValue>;
 
-// Values arrive keyed by field key. Each value stays `unknown` here: it is
-// validated by its own field type's schema, which isn't known until the key is
-// resolved to a definition.
+// Values stay `unknown`: each is validated by its own field type, which is not known
+// until the key is resolved to a definition.
 const ValuesInput = z.record(z.string().max(MAX_KEY_LENGTH), z.unknown());
 
-// The field facts the value path needs: the id to write the FK, the key to match
-// input against, the name for error messages, and the type to pick the validator
-// and storage column. All columns on members_custom_fields, so a value operation
-// resolves them with a direct query rather than routing through the definitions
-// service — the same way the read path already joins the table directly.
 interface ActiveField {
     id: string;
     key: string;
@@ -43,30 +31,20 @@ interface ActiveField {
     type: FieldType;
 }
 
-// A resolved, validated write. `value` absent means clear (delete the row).
+/** An absent `value` means clear the field. */
 interface PlannedWrite {
     field: ActiveField;
     value?: unknown;
 }
 
 /**
- * The value half of member custom fields: reading and writing what a member holds
- * for each defined field. It belongs to the member aggregate — a value is data
- * about a member — while field definitions belong to the site's settings; that
- * aggregate boundary, not a technical layer, is why this is a separate service.
- *
- * It owns the `members_custom_field_values` table and reads `members_custom_fields`
- * directly for the reference data it needs (which fields are active, and how they
- * validate), rather than calling the definitions service — the same way the other
- * knex services here talk to the database.
+ * What a member holds for each defined field. Separate from the definitions service
+ * because a value belongs to the member and a definition belongs to the site's settings,
+ * which are different aggregates rather than different layers.
  */
 export class CustomFieldValuesService {
     private knex: Knex;
-    /**
-     * @private
-     * A getter rather than a number: the ceiling is an operator setting that can
-     * change between requests.
-     */
+    /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
     private getMaxDefinitions: () => number;
 
     constructor({knex, getMaxDefinitions}: {knex: Knex, getMaxDefinitions: () => number}) {
@@ -74,11 +52,6 @@ export class CustomFieldValuesService {
         this.getMaxDefinitions = getMaxDefinitions;
     }
 
-    /**
-     * The active fields for a set of keys, keyed by key, for resolving a write.
-     * Scoped to the keys the caller is actually writing rather than every active
-     * field, since a publisher may have defined many and an edit touches few.
-     */
     private async activeFieldsByKey(keys: string[]): Promise<Map<string, ActiveField>> {
         if (keys.length === 0) {
             return new Map();
@@ -90,20 +63,11 @@ export class CustomFieldValuesService {
     }
 
     /**
-     * Members' values for every active field, keyed by member id, then by field
-     * key. A member with no values is absent from the outer map; a field a member
-     * has no value for is absent from the inner one — "not set" is the absence of
-     * a key, told apart from a value by not being there. Archived fields are
-     * excluded to match the definitions `browse`: their values stay in the
-     * database, they just stop being addressable.
+     * Members' values, keyed by member id then field key; anything absent is unset.
      *
-     * One query for the whole set, so a member list can't turn into an N+1. Putting the
-     * rows back together is storage's business; this reads them and decides which ones
-     * count.
-     *
-     * Reading is best-effort per row: one that doesn't parse is dropped and logged
-     * rather than failing the whole read. Stored data outlives the catalog, so a single
-     * stale row must not take down a member's payload.
+     * Archived fields are excluded to match the definitions browse: their values stay in
+     * the database and stop being addressable. A row that will not parse is dropped and
+     * logged rather than failing the read, so one stale row cannot take down a member.
      */
     async getValuesForMembers(memberIds: string[]): Promise<Map<string, Record<string, unknown>>> {
         if (memberIds.length === 0) {
@@ -113,8 +77,6 @@ export class CustomFieldValuesService {
         const rows = await this.knex(VALUES_TABLE)
             .join(FIELDS_TABLE, `${VALUES_TABLE}.custom_field_id`, `${FIELDS_TABLE}.id`)
             .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
-            // Read join, so the status filter is qualified and lives inline — it
-            // shares the invariant's vocabulary with queries.ts, not its builder.
             .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
             .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')
             .orderBy(`${FIELDS_TABLE}.id`, 'asc')
@@ -133,12 +95,7 @@ export class CustomFieldValuesService {
         return valuesFromLeaves(leaves);
     }
 
-    /**
-     * @private
-     * Input as the values object it claims to be, rejecting anything that isn't
-     * one. Shared by every caller so they cannot disagree on what a values object
-     * is, or on the error when it isn't one.
-     */
+    /** Shared by every caller so they cannot disagree on what a values object is. */
     private parseValues(input: unknown): Record<string, unknown> {
         const parsed = ValuesInput.safeParse(input);
         if (!parsed.success) {
@@ -149,12 +106,8 @@ export class CustomFieldValuesService {
     }
 
     /**
-     * Whether input names any values. An absent key names none; anything present
-     * that isn't a values object throws, with the same error resolving it would
-     * have raised.
-     *
-     * Answers the shape question alone, with no catalog lookup, so it can be asked
-     * before a write is known to be permitted.
+     * Whether input names any values. Asks the shape question alone, with no catalog
+     * lookup, so it can be asked before a write is known to be permitted.
      */
     namesValues(input: unknown): boolean {
         if (input === undefined) {
@@ -165,20 +118,16 @@ export class CustomFieldValuesService {
     }
 
     /**
-     * Resolve input into the writes it implies, rejecting anything invalid, and
-     * writing nothing. Returned so a caller can validate before it commits to a
-     * change it would have to unwind (the member edit and the importer both validate
-     * up front, before opening a transaction), then apply the same plan without
-     * re-resolving or re-validating.
+     * Resolve input into the writes it implies, writing nothing. Returned so a caller can
+     * validate before opening a transaction it would otherwise have to unwind, then apply
+     * the same plan without re-resolving it.
      */
     async planWrite(input: unknown): Promise<PlannedWrite[]> {
         const values = this.parseValues(input);
         const keys = Object.keys(values);
 
-        // A write cannot name more fields than the site may define, so the
-        // definitions ceiling bounds it. This also holds the lookup below within the
-        // database driver's bound-parameter limit, which one key per parameter would
-        // otherwise exceed.
+        // Bounded by the definitions ceiling, which also holds the lookup below inside
+        // the driver's bound-parameter limit.
         const maxKeys = this.getMaxDefinitions();
         if (keys.length > maxKeys) {
             throw new errors.ValidationError({
@@ -193,25 +142,22 @@ export class CustomFieldValuesService {
         for (const [key, raw] of Object.entries(values)) {
             const field = byKey.get(key);
             if (!field) {
-                // Unknown (or archived) key. Rejected rather than ignored: a typo
-                // that silently drops a value is worse than a failed save.
-                // Refused rather than ignored: a typo that silently drops what somebody
-                // typed is worse than a save that fails. The catalog applies the same rule
-                // one level down, to the parts of a composite value.
+                // Unknown or archived. Refused rather than ignored: a typo that silently
+                // drops what somebody typed is worse than a save that fails. The catalog
+                // applies the same rule to the parts of a composite value.
                 throw new errors.ValidationError({message: `Unknown custom field: ${key}`, property: `custom_fields.${key}`});
             }
 
-            // `null` clears any field. An empty string clears a scalar — an emptied
-            // input — but for a value with parts '' is not a value at all, so it is
-            // left to fail validation rather than being read as a silent delete.
+            // `null` clears any field, and `''` clears one with no parts. For a value
+            // with parts `''` names nothing, so it is left to fail validation rather than
+            // being read as a silent delete.
             if (raw === null || (raw === '' && subFieldsOf(field.type) === null)) {
                 writes.push({field});
                 continue;
             }
 
-            // The field type owns what a valid value is — core just runs it. For a
-            // composite the issue path points at the offending sub-field, so the
-            // property reads `custom_fields.home_address.postal_code`.
+            // The issue path names the offending part, so `property` reads
+            // `custom_fields.home_address.postal_code`.
             const value = FIELD_TYPES[field.type].value.safeParse(raw);
             if (!value.success) {
                 const issue = value.error.issues[0];
@@ -230,19 +176,13 @@ export class CustomFieldValuesService {
     /**
      * Apply a plan from `planWrite`.
      *
-     * Merge, not replace: only the fields in the plan are touched, so a caller
-     * that doesn't know about a field can't erase it.
+     * A write touches the paths it names and nothing else, at every level: naming a path
+     * with an empty value clears that part, naming the field with `null` clears all of
+     * them, and saying nothing about a path leaves it alone. There is no whole-value
+     * replace, so a caller that does not know about a field cannot erase it.
      *
-     * That rule holds at every level, because a part of a value is a field too: a write
-     * touches the paths it names and nothing else. Naming a path with an empty value
-     * clears that one leaf; naming the field itself with `null` clears all of them.
-     *
-     * There is no whole-value replace, and there was never a reason for one beyond a blob
-     * only being writable whole. A caller that means to empty a part says so.
-     *
-     * Always transactional, so a mid-batch failure rolls the batch back. Given an
-     * executor it joins that transaction -- the importer passes its per-member one, so a
-     * failed value write takes the member with it; given none it opens its own.
+     * Always transactional. Given an executor it joins that transaction, so the importer's
+     * failed value write takes its member with it; given none it opens its own.
      */
     async applyWrite(
         memberId: string,
@@ -254,10 +194,9 @@ export class CustomFieldValuesService {
         }
 
         const apply = async (trx: Knex) => {
-            // The plan already describes everything this member is having written, so it
-            // is turned into rows first and sent as whole statements — a handful per
-            // member rather than one per part. One timestamp for the lot, too: a write
-            // happened once, however many rows record it.
+            // Built first, then sent as whole statements: a handful per member rather
+            // than one per part, under one timestamp, because a write happened once
+            // however many rows record it.
             const now = new Date();
             const clearedFields: string[] = [];
             const clearedPaths: Array<{fieldId: string, paths: string[]}> = [];
@@ -290,8 +229,7 @@ export class CustomFieldValuesService {
             }
 
             if (clearedPaths.length > 0) {
-                // Each field clears its own paths, so the pairs go in one statement as a
-                // group per field rather than a statement per field.
+                // One statement with a group per field, rather than a statement per field.
                 await trx(VALUES_TABLE).where('member_id', memberId).where((builder) => {
                     for (const {fieldId, paths} of clearedPaths) {
                         builder.orWhere(pair => pair.where('custom_field_id', fieldId).whereIn('path', paths));
@@ -300,22 +238,19 @@ export class CustomFieldValuesService {
             }
 
             for (let from = 0; from < rows.length; from += UPSERT_CHUNK) {
-                // Typed as the plain row rather than through the registered table type:
-                // `merge` takes its column list as `keyof` the builder's record, and for a
-                // composite registration that is the scope names rather than the columns.
+                // Typed as the plain row because `merge` takes its columns as `keyof` the
+                // builder's record, which for a composite table registration is the scope
+                // names rather than the columns.
                 await trx<DbLeafRow>(VALUES_TABLE)
                     .insert(rows.slice(from, from + UPSERT_CHUNK))
-                    // The unique index on (member_id, custom_field_id, path) is what makes
-                    // this an upsert per part rather than a read-then-write race. Naming
-                    // the columns rather than giving values takes each from the row that
-                    // lost the conflict, so every part still updates to its own value.
+                    // Naming the columns rather than giving values takes each from the row
+                    // that lost the conflict, so every part updates to its own value.
                     .onConflict(['member_id', 'custom_field_id', 'path'])
                     .merge(['value_text', 'updated_at']);
             }
         };
 
-        // isTransaction is knex's marker for a transactor: join an existing transaction
-        // rather than nesting a savepoint under it, otherwise open one.
+        // knex's marker for a transactor: join it rather than nesting a savepoint under it.
         if (executor.isTransaction) {
             await apply(executor);
         } else {
