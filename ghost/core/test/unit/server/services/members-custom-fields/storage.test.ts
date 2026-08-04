@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {describe, it} from 'vitest';
-import {ROOT_PATH, leavesFor, valueFromLeaves, valuesFromLeaves} from '../../../../../core/server/services/members-custom-fields/storage';
+import {ROOT_PATH, leavesFor, leavesToWrite, valueFromLeaves, valuesFromLeaves} from '../../../../../core/server/services/members-custom-fields/storage';
 
 // Every edge of the row model lives in these three functions, and they are pure, so this
 // is the one place a unit test is cheaper than driving the HTTP boundary. The behaviour
@@ -19,11 +19,10 @@ describe('custom field value storage', function () {
             ]);
         });
 
-        it('gives an empty part no leaf at all', function () {
-            // The row model has no way to say "this part is empty" apart from "this part
-            // is unset", and it does not need one: they are the same state.
+        it('names an empty part too, because naming is what a write acts on', function () {
             assert.deepEqual(leavesFor({line1: '1 High St', city: ''}), [
-                {path: 'line1', value_text: '1 High St'}
+                {path: 'line1', value_text: '1 High St'},
+                {path: 'city', value_text: ''}
             ]);
         });
 
@@ -35,6 +34,15 @@ describe('custom field value storage', function () {
             for (const value of [null, 42, true]) {
                 assert.throws(() => leavesFor(value), /must be a string or a record/);
             }
+        });
+
+        it('splits what a value names into what it sets and what it clears', function () {
+            // A path not mentioned appears in neither list, which is how "leave it alone"
+            // is expressed: by saying nothing about it.
+            assert.deepEqual(leavesToWrite({line1: '1 High St', city: ''}), {
+                set: [{path: 'line1', value_text: '1 High St'}],
+                cleared: ['city']
+            });
         });
     });
 

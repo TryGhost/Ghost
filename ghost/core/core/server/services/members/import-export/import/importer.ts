@@ -99,8 +99,7 @@ type CustomFieldPlan = unknown;
 // The custom fields collaborator as the import needs it. activeFields is the field set a
 // custom_fields.* column is read against, empty when the feature is off; planWrite
 // validates a row's values (throwing so the row fails whole) and applyWrite persists
-// them, merging a composite's sub-fields into whatever is already stored, both on the
-// row's transaction.
+// them, touching only the parts the row named, both on the row's transaction.
 export interface CustomFieldsImport {
     activeFields(): Promise<CsvField[]>;
     planWrite(values: Record<string, unknown>): Promise<CustomFieldPlan[]>;

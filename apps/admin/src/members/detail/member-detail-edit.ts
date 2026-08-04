@@ -90,6 +90,25 @@ export function getEditableCustomFieldValues(customFields: Record<string, unknow
 }
 
 /**
+ * An address as the save should send it: every part the editor showed, trimmed, keeping
+ * the empty ones.
+ *
+ * A write touches the parts it names, so a part the person emptied has to be named — sent
+ * as empty rather than left out, which would read as "no change". An address with nothing
+ * left in it is a cleared field, which the caller says with `null` instead.
+ */
+function addressToSave(value: Record<string, unknown>): EditableAddressValue | undefined {
+    const address: EditableAddressValue = {};
+    for (const subfield of ADDRESS_SUBFIELD_KEYS) {
+        const subvalue = value[subfield];
+        if (typeof subvalue === 'string') {
+            address[subfield] = subvalue.trim();
+        }
+    }
+    return Object.values(address).some(part => part !== '') ? address : undefined;
+}
+
+/**
  * An address value reduced to its known sub-fields, trimmed, with empty
  * sub-fields dropped. Undefined when nothing remains, so an all-blank address
  * normalizes to "no value" exactly like an empty string does.
@@ -248,6 +267,18 @@ export function buildMemberFieldEditPayload(
 }
 
 /**
+ * A value exactly as the save will send it, or undefined for one that clears the field.
+ *
+ * One statement of that, because validating anything else is validating a value nobody
+ * sends: the editor keeps an emptied address part so the save can name it, while the
+ * display form drops it, and a check run against the second cannot see what the first
+ * would be told about.
+ */
+function customFieldValueToSave(value: EditableCustomFieldValue): EditableCustomFieldValue | undefined {
+    return typeof value === 'string' ? (value.trim() || undefined) : addressToSave(value);
+}
+
+/**
  * The save payload for ONE custom field, from the per-field editor. Merge
  * semantics do the rest: only this key is touched, `null` clears it, and an
  * address is sent whole (the merge is per field, not per sub-field).
@@ -257,10 +288,7 @@ export function buildCustomFieldSavePayload(
     fieldKey: string,
     value: EditableCustomFieldValue
 ): EditMemberData {
-    const normalized = typeof value === 'string'
-        ? (value.trim() || undefined)
-        : normalizeAddressValue(value);
-    return {id: memberId, custom_fields: {[fieldKey]: normalized ?? null}};
+    return {id: memberId, custom_fields: {[fieldKey]: customFieldValueToSave(value) ?? null}};
 }
 
 // What to do about a malformed address sub-field, in plain words. Schema messages
@@ -309,9 +337,12 @@ export function getCustomFieldValidationErrors(
     fields: MemberCustomField[]
 ): Record<string, string> {
     const errors: Record<string, string> = {};
-    const values = getEditableCustomFieldValues(draftCustomFields);
     for (const field of fields) {
-        const value = values[field.key];
+        const draft = draftCustomFields[field.key];
+        // Checked as the save would send it, so what passes here is what the server is
+        // asked to accept. A value that clears the field is always valid: no field is
+        // required, and a clear says nothing for a rule to be about.
+        const value = draft === undefined ? undefined : customFieldValueToSave(draft);
         if (value === undefined) {
             continue;
         }
