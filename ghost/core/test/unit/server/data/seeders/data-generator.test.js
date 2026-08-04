@@ -141,6 +141,71 @@ describe('Data Generator', function () {
         assert.equal(redemptions.length, 10);
         assert.equal(new Set(redemptions.map(redemption => `${redemption.subscription_id}:${redemption.offer_id}`)).size, 10);
     });
+
+    it('Can import automated email recipients for both email types', async function () {
+        const dataGenerator = new DataGenerator({
+            knex: db,
+            schema,
+            schemaTables,
+            logger: {
+                info: () => {},
+                ok: () => {},
+                warn: () => {}
+            },
+            tables: [{
+                name: 'automated_email_recipients',
+                quantity: 10
+            }],
+            quantities: {
+                members: 4
+            },
+            seed: 123
+        });
+
+        await dataGenerator.importData();
+
+        const recipients = await db.select('automated_email_id', 'automation_action_revision_id', 'automation_run_step_id')
+            .from('automated_email_recipients');
+        const recipientsWithRunSteps = recipients.filter(recipient => recipient.automation_run_step_id);
+
+        assert.equal(recipients.length, 10);
+        assert.equal(recipients.filter(recipient => recipient.automated_email_id).length, 5);
+        assert.equal(recipients.filter(recipient => recipient.automation_action_revision_id).length, 5);
+        assert.equal(recipientsWithRunSteps.length, 2);
+        assert(recipients.filter(recipient => recipient.automated_email_id).every(recipient => recipient.automation_run_step_id === null));
+
+        const runSteps = await db.select('id', 'automation_action_revision_id').from('automation_run_steps');
+        const runStepsById = new Map(runSteps.map(step => [step.id, step]));
+        assert(recipientsWithRunSteps.every((recipient) => {
+            return runStepsById.get(recipient.automation_run_step_id)?.automation_action_revision_id === recipient.automation_action_revision_id;
+        }));
+    });
+
+    it('Skips automated email recipients when generating an empty member dataset', async function () {
+        const dataGenerator = new DataGenerator({
+            knex: db,
+            schema,
+            schemaTables,
+            logger: {
+                info: () => {},
+                ok: () => {},
+                warn: () => {}
+            },
+            tables: [{
+                name: 'automated_email_recipients',
+                quantity: 10
+            }],
+            quantities: {
+                members: 0
+            },
+            seed: 123
+        });
+
+        await dataGenerator.importData();
+
+        const [{count}] = await db('automated_email_recipients').count('* as count');
+        assert.equal(count, 0);
+    });
 });
 
 describe('Importer', function () {
