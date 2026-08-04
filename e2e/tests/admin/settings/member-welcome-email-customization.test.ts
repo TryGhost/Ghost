@@ -39,8 +39,6 @@ async function retrieveLatestEmailMessage(emailClient: EmailClient, emailAddress
 }
 
 test.describe('Ghost Admin - Welcome Email Customize Button', () => {
-    test.use({mailgunEnabled: true});
-
     test('customize button - opens modal', async ({page}) => {
         const welcomeEmailsSection = new MemberWelcomeEmailsSection(page);
 
