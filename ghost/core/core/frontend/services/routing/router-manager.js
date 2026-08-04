@@ -180,7 +180,7 @@ module.exports = RouterManager;
 
 /**
  * @typedef {Object} RouterConfig
- * @property {RouteSettings} [routeSettings] - JSON config representing routes
+ * @property {RouteSettings} [routeSettings] - parsed route settings domain model
  * @property {URLServiceFacade} urlService - resource-based URL service facade
  */
 

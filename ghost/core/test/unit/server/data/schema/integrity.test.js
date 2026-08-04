@@ -47,7 +47,7 @@ describe('DB version integrity', function () {
         const defaultRoutesSource = fs.readFileSync(routesPath, 'utf-8');
         // `yamlSource` is the verbatim file text, so hashing it would trip this
         // canary on comment and whitespace edits that change no route at all.
-        // Hash the parsed model only, exactly as the bridge output did.
+        // The bridge output this used to hash carried no such field either.
         const defaultRoutes = _.omit(parseRouteSettings(parseYaml(defaultRoutesSource), defaultRoutesSource), 'yamlSource');
 
         const tablesNoValidation = _.cloneDeep(schema);

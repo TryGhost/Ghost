@@ -52,10 +52,9 @@ describe('UNIT: DynamicRoutingService (store-backed)', function () {
 
         const settings = await service.loadRouteSettings();
 
+        // Deep-equal against what went in: nothing is reshaped on the way out,
+        // down to `yamlSource` and the `{tag, author}` taxonomies map.
         assert.deepEqual(settings, stored);
-        // Taxonomies stay the domain `{tag, author}` map rather than the
-        // `{key, permalink}` entries the activation bridge used to build.
-        assert.deepEqual(settings.taxonomies, {tag: '/tag/{slug}/'});
     });
 
     describe('loadRouteSettings validation failure', function () {
