@@ -1,8 +1,10 @@
 const path = require('path');
 const fs = require('fs');
 const {quote: shellQuote} = require('shell-quote');
+const pm = require('picomatch');
 
 const ROOT = process.cwd();
+const ESLINT_FILES = new Set(['.js', '.ts', '.tsx', '.jsx', '.cjs']);
 
 function normalize(p) {
     return p.split(path.sep).join('/');
@@ -61,9 +63,7 @@ function expandPattern(pattern) {
     return candidates;
 }
 
-const WORKSPACES = new Set(
-    loadWorkspacePatterns().flatMap(expandPattern)
-);
+const WORKSPACES = new Set(loadWorkspacePatterns().flatMap(expandPattern));
 
 function findWorkspace(file) {
     let dir = path.dirname(path.resolve(file));
@@ -77,37 +77,82 @@ function findWorkspace(file) {
     return null;
 }
 
-function buildCommand(workspace, files) {
+/**
+ * @param {ReadonlyArray<string>} files
+ * @returns {string}
+ */
+function buildOxfmtCommand(files) {
+    const relativeFiles = files.map(file => normalize(path.relative(ROOT, file)));
+    return `pnpm exec oxfmt --no-error-on-unmatched-pattern -- ${shellQuote(relativeFiles)}`;
+}
+
+function buildEslintCommand(workspace, files) {
     const base = workspace ? path.join(ROOT, workspace) : ROOT;
-    const relativeFiles = files
-        .map(file => normalize(path.relative(base, file)));
+    const relativeFiles = files.map(file => normalize(path.relative(base, file)));
     const dirArg = workspace ? `--dir ${shellQuote([workspace])} ` : '';
     return `pnpm ${dirArg}exec eslint --cache -- ${shellQuote(relativeFiles)}`;
 }
 
 function buildBoundaryCommand(files) {
-    const relativeFiles = files
-        .map(file => normalize(path.relative(ROOT, file)));
+    const relativeFiles = files.map(file => normalize(path.relative(ROOT, file)));
     return `pnpm exec depcruise --config .dependency-cruiser.cjs -- ${shellQuote(relativeFiles)}`;
 }
 
-module.exports = {
-    '*.{js,ts,tsx,jsx,cjs}': (files) => {
-        const groups = new Map();
-        for (const file of files) {
+function buildEmberTemplateLintCommand(files) {
+    const workspace = 'apps/ember-admin';
+    const base = path.join(ROOT, workspace);
+    const relativeFiles = files.map(file => normalize(path.relative(base, file)));
+    return `pnpm --dir ${shellQuote([workspace])} exec ember-template-lint ${shellQuote(relativeFiles)}`;
+}
+
+/**
+ * @param {string[]} files
+ * @returns {string[]}
+ */
+module.exports = files => {
+    /** @type {Map<null | string, Set<string>>} */ const workspaceFiles = new Map();
+    /** @type {Set<string>} */ const boundaries = new Set();
+    /** @type {Set<string>} */ const emberAdminTemplates = new Set();
+
+    for (const file of files) {
+        const extension = path.extname(file);
+        if (ESLINT_FILES.has(extension)) {
             const workspace = findWorkspace(file);
-            const key = workspace ?? '';
-            if (!groups.has(key)) {
-                groups.set(key, []);
-            }
-            groups.get(key).push(file);
+            const filesForWorkspace = workspaceFiles.get(workspace) ?? new Set();
+            filesForWorkspace.add(file);
+            workspaceFiles.set(workspace, filesForWorkspace);
         }
-        return [...groups.entries()].map(([workspace, wsFiles]) =>
-            buildCommand(workspace || null, wsFiles)
-        );
-    },
-    'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': (files) =>
-        buildBoundaryCommand(files),
-    'apps/{shade,admin-x-framework,activitypub,admin-x-settings,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}': (files) =>
-        buildBoundaryCommand(files)
+        const isBoundary = pm.isMatch(file, [
+            'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}',
+            'apps/{shade,admin-x-framework,activitypub,admin-x-settings,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}'
+        ]);
+        if (isBoundary) {
+            boundaries.add(file);
+        }
+
+        const isEmberAdminTemplate = pm.isMatch(file, 'apps/ember-admin/**/*.hbs');
+        if (isEmberAdminTemplate) {
+            emberAdminTemplates.add(file);
+        }
+    }
+
+    /** @type {string[]} */ const result = [];
+
+    if (files.length) {
+        result.push(buildOxfmtCommand(files));
+    }
+
+    for (const [workspace, filesForWorkspace] of workspaceFiles.entries()) {
+        result.push(buildEslintCommand(workspace, Array.from(filesForWorkspace)));
+    }
+
+    if (boundaries.size > 0) {
+        result.push(buildBoundaryCommand(Array.from(boundaries)));
+    }
+
+    if (emberAdminTemplates.size > 0) {
+        result.push(buildEmberTemplateLintCommand(Array.from(emberAdminTemplates)));
+    }
+
+    return result;
 };

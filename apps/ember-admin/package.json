@@ -167,10 +167,6 @@
     "ember": {
         "edition": "octane"
     },
-    "lint-staged": {
-        "*.hbs": "ember-template-lint",
-        "*.js": "eslint"
-    },
     "dependencies": {
         "dompurify": "catalog:",
         "lodash": "catalog:",
