@@ -15,7 +15,7 @@ class StaticRoutesRouter extends ParentRouter {
 
         this.route = {value: mainRoute};
         this.templates = object.templates || [];
-        this.data = object.data || {query: {}, router: {}};
+        this.data = object.data || {};
         this.routerName = mainRoute === '/' ? 'index' : mainRoute.replace(/\//g, '');
         this.routerCreated = routerCreated;
 
@@ -80,7 +80,7 @@ class StaticRoutesRouter extends ParentRouter {
             filter: this.filter,
             limit: this.limit,
             order: this.order,
-            data: this.data.query,
+            data: this.data,
             templates: this.templates
         };
 
@@ -117,7 +117,7 @@ class StaticRoutesRouter extends ParentRouter {
                     message: `Missing template ${res.routerOptions.templates.map(x => `${x}.hbs`).join(', ')} for route "${req.originalUrl}".`
                 });
             },
-            data: this.data.query,
+            data: this.data,
             context: [this.routerName],
             contentType: this.contentType
         };

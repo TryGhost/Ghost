@@ -1,172 +1,46 @@
-import _ from 'lodash';
-import errors from '@tryghost/errors';
-import {QUERY} from '../../../frontend/services/routing/config';
 import type {
     RouteSettings,
     Route,
     ChannelRoute,
     TemplateRoute,
-    CollectionConfig,
-    RouteData,
-    DataShortForm,
-    DataShortFormResource,
-    DataReadEntry,
-    DataBrowseEntry
+    CollectionConfig
 } from '@tryghost/adapter-base-route-settings';
 
-interface ExpandedData {
-    query: Record<string, any>;
-    router: Record<string, any[]>;
-}
-
-function expandShortFormData(shortForm: DataShortForm, resourceKey?: string): ExpandedData {
-
-    const [key, slug] = shortForm.split('.') as [DataShortFormResource, string];
-    const queryConfig = QUERY[key];
-
-    const data: ExpandedData = {
-        query: {},
-        router: {}
-    };
-
-    const effectiveKey = resourceKey || key;
-    data.query[effectiveKey] = _.cloneDeep(queryConfig);
-    data.query[effectiveKey].options.slug = slug;
-
-    const routerKey = queryConfig.resource;
-    data.router[routerKey] = [{slug, redirect: true}];
-
-    return data;
-}
-
-function expandLongFormEntry(key: string, entry: DataReadEntry | DataBrowseEntry): ExpandedData {
-    const defaultResource = Object.values(QUERY).find(item => item.resource === entry.resource);
-
-    if (!defaultResource) {
-        throw new errors.IncorrectUsageError({message: `Unknown route data resource: ${entry.resource}`});
-    }
-
-    const data: ExpandedData = {
-        query: {},
-        router: {}
-    };
-
-    data.query[key] = {
-        type: entry.type,
-        resource: defaultResource.resource
-    };
-
-    data.query[key] = _.defaults(data.query[key], _.omit(defaultResource, 'options'));
-
-    const allowedQueryOptions = ['limit', 'order', 'filter', 'include', 'slug', 'visibility', 'status', 'page'];
-    data.query[key].options = _.pick(entry, allowedQueryOptions);
-
-    if (entry.type === 'read') {
-        const defaultOptions = 'options' in defaultResource ? defaultResource.options : undefined;
-        data.query[key].options = _.defaults(data.query[key].options, defaultOptions);
-    }
-
-    const routerKey = defaultResource.resource;
-    if (!data.router[routerKey]) {
-        data.router[routerKey] = [];
-    }
-
-    if (entry.type === 'read') {
-        const allowedRouterOptions = ['redirect', 'slug'];
-        let routerEntry = _.pick(entry, allowedRouterOptions);
-        routerEntry = _.defaults(routerEntry, {redirect: true});
-        data.router[routerKey].push(routerEntry);
-    } else {
-        data.router[routerKey].push({redirect: true});
-    }
-
-    return data;
-}
-
-function expandRouteData(routeData: RouteData | undefined): ExpandedData {
-    if (!routeData) {
-        return {query: {}, router: {}};
-    }
-
-    if (typeof routeData === 'string') {
-        return expandShortFormData(routeData);
-    }
-
-    const merged: ExpandedData = {query: {}, router: {}};
-
-    for (const [key, entry] of Object.entries(routeData)) {
-        let expanded: ExpandedData;
-
-        if (typeof entry === 'string') {
-            expanded = expandShortFormData(entry, key);
-        } else {
-            expanded = expandLongFormEntry(key, entry);
-        }
-
-        _.merge(merged.query, expanded.query);
-
-        for (const [routerKey, routerEntries] of Object.entries(expanded.router)) {
-            if (merged.router[routerKey]) {
-                merged.router[routerKey] = merged.router[routerKey].concat(routerEntries);
-            } else {
-                merged.router[routerKey] = routerEntries;
-            }
-        }
-    }
-
-    return merged;
-}
-
 /**
- * Router-facing shapes. RouterManager consumes the domain model after the one
- * conversion the bridge still applies: `data` expanded to `{query, router}`.
- * Collection/taxonomy permalinks are left in domain `{slug}` form — the routers
- * translate them to `:slug` at their boundary via the permalink adapter.
+ * Routes and collections now reach RouterManager as their domain types —
+ * `data` is passed through untouched and resolved to API calls at the request
+ * boundary by the api adapter, and permalinks stay in `{slug}` form for the
+ * permalink adapter to convert at mount time.
  *
- * Routes and collections are written as their domain counterpart with just
- * `data` overridden to the expanded shape — `Omit<…, 'data'> & {data?}` rather
- * than `extends`, because the override changes `data`'s type (interface
- * extension can only add fields, not retype them). That keeps the delta from
- * the domain model explicit: `data` is the only structural difference. When the
- * bridge is removed (HKG-1898) the override falls away and these collapse back
- * to `Route` / `CollectionConfig`. The remaining `data` conversion peels off in
- * HKG-1897.
+ * All that is left of the bridge is flattening the taxonomies map into entries
+ * that carry their own key. It goes away entirely in HKG-1898.
  */
-type RouterChannelRoute = Omit<ChannelRoute, 'data'> & {data?: ExpandedData};
-type RouterTemplateRoute = Omit<TemplateRoute, 'data'> & {data?: ExpandedData};
-type RouterRoute = RouterChannelRoute | RouterTemplateRoute;
 
-type RouterCollection = Omit<CollectionConfig, 'data'> & {data?: ExpandedData};
-
-// Taxonomies and RouteSettings have no direct domain counterpart to derive from:
-// the domain stores taxonomies as a `{tag, author}` map, which the bridge
-// flattens into these `{key, permalink}` entries, and RouterSettings drops
-// `yamlSource` and swaps all three array element types (routes, collections,
-// taxonomies) — so they stay standalone.
+// Taxonomies have no direct domain counterpart to derive from: the domain stores
+// them as a `{tag, author}` map, which the bridge flattens into these
+// `{key, permalink}` entries.
 interface RouterTaxonomy {
     key: string;
     permalink: string;
 }
 
 export interface RouterSettings {
-    routes: RouterRoute[];
-    collections: RouterCollection[];
+    routes: Route[];
+    collections: CollectionConfig[];
     taxonomies: RouterTaxonomy[];
 }
 
-function buildRouterRoute(route: Route): RouterRoute {
-    const data = route.data !== undefined ? expandRouteData(route.data) : undefined;
-
-    // Build per branch: RouterRoute is a discriminated union, so each member is
+function buildRouterRoute(route: Route): Route {
+    // Build per branch: Route is a discriminated union, so each member is
     // constructed as its concrete type. `route` is narrowed by the check.
     if (route.type === 'channel') {
-        const result: RouterChannelRoute = {
+        const result: ChannelRoute = {
             path: route.path,
             type: 'channel',
             templates: route.templates || []
         };
-        if (data !== undefined) {
-            result.data = data;
+        if (route.data !== undefined) {
+            result.data = route.data;
         }
         if (route.filter !== undefined) {
             result.filter = route.filter;
@@ -183,13 +57,13 @@ function buildRouterRoute(route: Route): RouterRoute {
         return result;
     }
 
-    const result: RouterTemplateRoute = {
+    const result: TemplateRoute = {
         path: route.path,
         type: 'template',
         templates: route.templates || []
     };
-    if (data !== undefined) {
-        result.data = data;
+    if (route.data !== undefined) {
+        result.data = route.data;
     }
     if (route.contentType !== undefined) {
         result.contentType = route.contentType;
@@ -197,15 +71,15 @@ function buildRouterRoute(route: Route): RouterRoute {
     return result;
 }
 
-function buildRouterCollection(collection: CollectionConfig): RouterCollection {
-    const result: RouterCollection = {
+function buildRouterCollection(collection: CollectionConfig): CollectionConfig {
+    const result: CollectionConfig = {
         path: collection.path,
         permalink: collection.permalink,
         templates: collection.templates || []
     };
 
     if (collection.data !== undefined) {
-        result.data = expandRouteData(collection.data);
+        result.data = collection.data;
     }
     if (collection.filter !== undefined) {
         result.filter = collection.filter;
@@ -225,9 +99,8 @@ function buildRouterCollection(collection: CollectionConfig): RouterCollection {
 
 /**
  * Converts a RouteSettings domain model into the array shape that
- * RouterManager.start() iterates. Each route/collection carries its own `path`,
- * and taxonomies become `{key, permalink}` entries, so the routing layer no
- * longer reads paths from map keys.
+ * RouterManager.start() iterates. Taxonomies become `{key, permalink}` entries
+ * so the routing layer no longer reads keys from a map.
  *
  * Temporary adapter: removed in HKG-1898 once the routers consume the domain
  * model directly.
