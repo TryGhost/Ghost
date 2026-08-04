@@ -88,7 +88,6 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         dirty={saveState === 'unsaved'}
-        footerClassName={!integration.webhooks?.length ? 'border-t border-border' : undefined}
         okLabel={okProps.label || 'Save'}
         okVariant={okProps.variant}
         size='md'
@@ -165,7 +164,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             </Stack>
         </Stack>
 
-        <Box className='mt-8 -mb-6'>
+        <Box className='mt-8'>
             <WebhooksTable integration={integration} />
         </Box>
     </SettingsModal>;
