@@ -14,7 +14,7 @@ export interface GiftEventBrowseOptions {
     page?: number;
 }
 
-export interface GiftEventPagination {
+export interface Pagination {
     page: number;
     pages: number;
     limit: number | 'all';
@@ -41,7 +41,7 @@ export interface GiftEventPage {
         data: GiftEventData;
     }>;
     meta: {
-        pagination?: GiftEventPagination;
+        pagination?: Pagination;
     };
 }
 
