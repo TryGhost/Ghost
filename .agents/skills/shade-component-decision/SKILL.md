@@ -58,7 +58,7 @@ Each layer can use anything **below** it. The reverse is forbidden.
 | Tempting | Actually | Why |
 |---|---|---|
 | Add a `variant="kpi"` to `Card` | New Pattern `KpiCard` | Product-specific shape, generic Component shouldn't know about it |
-| Add `<MembersFilterBar>` to patterns | Keep local in `apps/admin-x-settings` | Single-surface name |
+| Add `<MembersFilterBar>` to patterns | Keep local in `apps/admin/src/settings` | Single-surface name |
 | Add a one-off class string as a recipe | Inline it in the one component | Recipes are for shared rules across ≥ 2 components |
 | Add a `useQuery`-driven `<MembersList>` to patterns | Keep local — patterns are state-free | Bring-your-own state |
 | Wrap a `<div className="flex gap-3">` as a new primitive | Use `Inline gap="md"` | Already covered |

@@ -1,6 +1,6 @@
 /**
  * Settings screen selector strings, consumed by Admin acceptance helpers.
- * Source of truth: apps/admin-x-settings/src.
+ * Source of truth: apps/admin/src/settings/app.
  */
 
 // testids
