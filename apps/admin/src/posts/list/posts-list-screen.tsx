@@ -4,7 +4,10 @@ import {ListPage} from '@tryghost/shade/page-templates';
 import {LoadMoreButton} from '@/shared/virtual-list';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {PageHeader} from '@tryghost/shade/patterns';
-import {isAuthorOrContributor} from '@tryghost/admin-x-framework/api/users';
+import {PostListRow} from './components/post-list-row';
+import {PostsEmptyState} from './components/posts-empty-state';
+import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import {isAuthorOrContributor, isContributorUser} from '@tryghost/admin-x-framework/api/users';
 import {type PostResource, getPostResourceCopy} from './post-resource';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {usePostsFilterState} from './hooks/use-posts-filter-state';
@@ -19,8 +22,13 @@ import {usePostsList} from './hooks/use-posts-list';
  */
 export function PostsListScreen({resource}: {resource: PostResource}) {
     const copy = getPostResourceCopy(resource);
-    const {params} = usePostsFilterState();
+    const {params, hasFilters, clearAll} = usePostsFilterState();
     const {data: currentUser} = useCurrentUser();
+    const {data: settingsData} = useBrowseSettings();
+
+    // Scheduled times read in the site's timezone, not the browser's.
+    const timezone = getSettingValue<string>(settingsData?.settings, 'timezone') ?? undefined;
+    const isContributor = Boolean(currentUser && isContributorUser(currentUser));
 
     // Authors and contributors only ever see their own posts, whatever the
     // `author` param says — matching PostsRoute#model in the Ember app.
@@ -67,35 +75,43 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                             <Stack align='center' className='flex-1' justify='center'>
                                 <Text tone='secondary'>Error loading {copy.title.toLowerCase()}</Text>
                             </Stack>
+                        ) : items.length === 0 ? (
+                            <Stack align='center' className='flex-1' justify='center'>
+                                <PostsEmptyState
+                                    hasFilters={hasFilters}
+                                    resource={resource}
+                                    onClearFilters={clearAll}
+                                />
+                            </Stack>
                         ) : (
                             // Deliberately the same testids the Ember list
                             // uses — including on pages, which shares the
                             // Ember component — so the e2e page objects can
-                            // eventually target both implementations. They
-                            // can never collide: the Ember route aborts when
-                            // this screen renders.
+                            // eventually target both implementations. They can
+                            // never collide: the Ember route aborts when this
+                            // screen renders.
                             //
-                            // Not yet interchangeable, though: PostsPage's
-                            // getPostByTitle matches an h3 inside the row, and
-                            // waitForPageToFullyLoad expects `posts-list` to
-                            // exist in the empty state too (Ember renders it
-                            // unconditionally). Phase 2 brings the real row
-                            // markup; Phase 10 reconciles the page object and
-                            // re-baselines the visual-regression shots.
+                            // Ember renders `posts-list` even when empty, and
+                            // its rows are still richer than these; Phase 10
+                            // reconciles the page object and re-baselines the
+                            // visual-regression shots.
                             <Stack gap='md'>
                                 <ul data-testid='posts-list'>
                                     {items.map(item => (
-                                        <li key={item.id} data-testid='posts-list-item'>
-                                            {item.title}
-                                        </li>
+                                        <PostListRow
+                                            key={item.id}
+                                            isContributor={isContributor}
+                                            post={item}
+                                            resource={resource}
+                                            timezone={timezone}
+                                        />
                                     ))}
                                 </ul>
-                                {/* Placeholder pager. Phase 2 replaces this
-                                    with the virtualised infinite scroll the
-                                    members list uses; without something here
-                                    a site with 30+ scheduled posts would show
-                                    only the first page and never reach its
-                                    drafts. */}
+                                {/* Plain pager for now. Phase 5 adds the
+                                    metrics columns and Phase 10 checks
+                                    performance on large sites; the virtualised
+                                    scroll the members list uses lands with
+                                    whichever of those needs it first. */}
                                 {hasNextPage && (
                                     <LoadMoreButton
                                         isLoading={isFetchingNextPage}
