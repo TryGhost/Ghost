@@ -21,6 +21,17 @@ export const postsListScreen = {
     newLink: (resource: "posts" | "pages", name: string) =>
         page.getByTestId(`${resource}-page`).getByRole("link", { name, exact: true }),
     listItems: () => page.getByTestId("posts-list-item"),
+    /** The <ul>. Carries `data-selection` so an inverted selection is observable. */
+    listRoot: () => page.getByTestId("posts-list").element(),
+    /**
+     * Titles of the currently selected rows, keyed off the same `data-selected`
+     * attribute Ember sets. Read as elements rather than as a locator because
+     * Vitest's locators have no attribute selector; pair it with `expect.poll`
+     * so it still retries while React settles.
+     */
+    selectedTitles: () => postsListScreen.listItems().elements()
+        .filter(element => element.getAttribute("data-selected") === "true")
+        .map(element => element.querySelector("h3")?.textContent ?? ""),
     /** The row's main link — the image and title region. */
     rowLink: () => page.getByTestId("post-list-item-link"),
     /** A metric column, found by its label ("Opens", "Members", …). */

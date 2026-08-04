@@ -2,7 +2,7 @@ import {Box, Container, Stack, Text} from '@tryghost/shade/primitives';
 import {Button, LoadingIndicator} from '@tryghost/shade/components';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {LoadMoreButton} from '@/shared/virtual-list';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {cn, LucideIcon} from '@tryghost/shade/utils';
 import {FilterBar, PageHeader} from '@tryghost/shade/patterns';
 import {PostListRow} from './components/post-list-row';
 import {PostsEmptyState} from './components/posts-empty-state';
@@ -10,11 +10,13 @@ import {PostsFilters} from './components/posts-filters';
 import {ManagePostViewPopover} from './components/manage-post-view-popover';
 import {POST_DEFAULT_VIEWS} from '@/layout/app-sidebar/post-sidebar-views';
 import {PostsSortMenu} from './components/posts-sort-menu';
+import {buildAllFilter} from './post-query-params';
 import {canSavePostView, findActivePostView} from './post-views';
 
 import {usePostViews} from './hooks/use-post-views';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {hasAdminAccess, isAuthorOrContributor, isContributorUser} from '@tryghost/admin-x-framework/api/users';
+import {usePostSelection} from './hooks/use-post-selection';
 import {type PostResource, getPostResourceCopy} from './post-resource';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {usePostsFilterState} from './hooks/use-posts-filter-state';
@@ -81,9 +83,8 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
 
     // Authors and contributors only ever see their own posts, whatever the
     // `author` param says — matching PostsRoute#model in the Ember app.
-    const ownAuthorSlug = currentUser && isAuthorOrContributor(currentUser)
-        ? currentUser.slug
-        : null;
+    const isRestrictedAuthor = Boolean(currentUser && isAuthorOrContributor(currentUser));
+    const ownAuthorSlug = currentUser && isRestrictedAuthor ? currentUser.slug : null;
 
     const {
         items,
@@ -93,6 +94,16 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
         isFetchingNextPage,
         fetchNextPage
     } = usePostsList({resource, params, context: {ownAuthorSlug}});
+
+    // Selection is a bulk-edit affordance, and authors and contributors have no
+    // bulk actions — Ember disables the whole SelectionList for them.
+    const selection = usePostSelection({
+        orderedIds: items.map(item => item.id),
+        // Bounds an inverted selection: after Cmd+A a bulk action sends this
+        // filter rather than every id, so it covers rows never loaded.
+        allFilter: buildAllFilter(params, {ownAuthorSlug}),
+        enabled: Boolean(currentUser) && !isRestrictedAuthor
+    });
 
     const {visitorCounts, memberCounts} = usePostAnalyticsCounts({
         items,
@@ -164,12 +175,36 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                             // reconciles the page object and re-baselines the
                             // visual-regression shots.
                             <Stack gap='md'>
-                                <ul data-testid='posts-list'>
+                                <ul
+                                    // While a modifier is held the list stops
+                                    // behaving like a list of links: no pointer
+                                    // cursor, and children take no pointer
+                                    // events, so a click lands on the row
+                                    // rather than the anchor inside it. That is
+                                    // how Ember's `[data-ctrl]` rules work, and
+                                    // it makes select mode visible before the
+                                    // click. Anything opted out of selection
+                                    // stays clickable.
+                                    className={cn(selection.modifierHeld && [
+                                        'cursor-default',
+                                        '[&_li_*]:pointer-events-none [&_li_*]:cursor-default',
+                                        '[&_li_[data-ignore-select]]:pointer-events-auto',
+                                        '[&_li_[data-ignore-select]]:cursor-pointer'
+                                    ])}
+                                    data-ctrl={selection.modifierHeld ? 'true' : undefined}
+                                    // Observable so tests can tell "all four
+                                    // rows selected" from "inverted", which
+                                    // look identical on a loaded page but mean
+                                    // very different things to a bulk action.
+                                    data-selection={selection.state.inverted ? 'inverted' : undefined}
+                                    data-testid='posts-list'
+                                >
                                     {items.map(item => (
                                         <PostListRow
                                             key={item.id}
                                             hasAdminAccess={isAdmin}
                                             isContributor={isContributor}
+                                            isSelected={selection.isSelected(item.id)}
                                             memberCounts={memberCounts}
                                             metricsSettings={metricsSettings}
                                             paidMembersEnabled={paidMembersEnabled}
@@ -177,6 +212,8 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                             resource={resource}
                                             timezone={timezone}
                                             visitorCounts={visitorCounts}
+                                            onSelectClick={selection.onRowClick}
+                                            onSelectMouseDown={selection.onRowMouseDown}
                                         />
                                     ))}
                                 </ul>
