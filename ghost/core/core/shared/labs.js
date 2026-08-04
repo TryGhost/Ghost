@@ -34,7 +34,8 @@ const GA_FEATURES = [
     'featurebaseFeedback',
     'dangerZoneResetAuth',
     'indexnow',
-    'llmsTxt'
+    'llmsTxt',
+    'memberDetailsReact'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -62,7 +63,6 @@ const PRIVATE_FEATURES = [
     'pictureImageFormats',
     'smarterCounts',
     'getHelperDeduplication',
-    'memberDetailsReact',
     'membersCustomFields',
     'paywallImprovements',
     'giftSubCustomization',
