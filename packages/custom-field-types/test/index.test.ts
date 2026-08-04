@@ -19,6 +19,26 @@ describe('custom-field-types catalog', function () {
         });
     });
 
+    describe('text is trimmed, whatever type it belongs to', function () {
+        // Trimming decides whether a value is stored at all: a value that trims to
+        // nothing is a clear. Two text types disagreeing about that would mean the same
+        // keystrokes emptying one field and filling another.
+        it('trims every text type alike', function () {
+            for (const type of ['short_text', 'long_text'] as const) {
+                const padded = FIELD_TYPES[type].value.safeParse('  Ghosts  ');
+                assert.equal(padded.success && padded.data, 'Ghosts', type);
+
+                const blank = FIELD_TYPES[type].value.safeParse('   ');
+                assert.equal(blank.success && blank.data, '', type);
+            }
+        });
+
+        it('measures a bound against the value rather than its padding', function () {
+            assert.equal(FIELD_TYPES.short_text.value.safeParse(`  ${'x'.repeat(255)}  `).success, true);
+            assert.equal(FIELD_TYPES.short_text.value.safeParse('x'.repeat(256)).success, false);
+        });
+    });
+
     // The one piece of real logic in here, and the one an end-to-end test can't
     // pin precisely: the bound is counted in bytes, because the column it routes
     // to is sized in bytes. A character-based bound would accept a multibyte
@@ -126,6 +146,16 @@ describe('custom-field-types catalog', function () {
 
             // A value that reaches the limit exactly still fits once its padding is gone.
             assert.equal(FIELD_TYPES.address.value.safeParse({line1: `  ${'x'.repeat(255)}  `}).success, true);
+        });
+
+        it('bounds each part by what that part is, not by the record holding it', function () {
+            // A postal code is its own kind of thing rather than a short text that happens
+            // to be in an address: no country writes one longer than this, and a street
+            // address needs the room a postal code does not.
+            assert.equal(parse({postal_code: 'x'.repeat(32)}), true);
+            assert.equal(parse({postal_code: 'x'.repeat(33)}), false);
+            assert.equal(parse({line1: 'x'.repeat(255)}), true);
+            assert.equal(parse({line1: 'x'.repeat(256)}), false);
         });
 
         it('reads a part of nothing but whitespace as empty, so it clears', function () {
