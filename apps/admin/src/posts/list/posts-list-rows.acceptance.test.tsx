@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { currentRoute, fakePages, fakePosts, post, renderAdminApp, tag } from "@test-utils/acceptance";
+import { currentRoute, currentUserResponse, fakePages, fakePosts, post, renderAdminApp, staffRole, tag } from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
 
 const FLAG_ON = { labs: { postsListReact: true } };
@@ -60,10 +60,12 @@ describe("Posts list rows", () => {
             status: "sent",
             email: { status: "failed", email_count: 10, opened_count: 0 }
         })]);
-        await renderAdminApp("/posts", FLAG_ON);
+        await renderAdminApp("/posts?type=sent", FLAG_ON);
 
-        await expect.element(postsListScreen.listItems().first())
-            .toHaveTextContent("Failed to send newsletter");
+        const row = postsListScreen.listItems().first();
+        await expect.element(row).toHaveTextContent("Failed to send newsletter");
+        // A substring check alone would pass against "Sent - Failed to ...".
+        await expect.element(row).not.toHaveTextContent(/(^|[^-])\bSent\b/);
     });
 
     it("links a row to the editor", async () => {
@@ -73,6 +75,49 @@ describe("Posts list rows", () => {
 
         await expect.element(postsListScreen.listItems().first().getByRole("link"))
             .toHaveAttribute("href", `#/editor/post/${target.id}`);
+    });
+
+    describe("as a Contributor", () => {
+        const asContributor = () => {
+            const me = currentUserResponse();
+            me.users[0].roles = [staffRole({ name: "Contributor" })];
+            me.users[0].slug = "contrib";
+            return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+        };
+
+        it("links a published post out to the site instead of the editor", async () => {
+            const target = post({
+                title: "Live post",
+                status: "published",
+                url: "https://example.com/live-post/"
+            });
+            fakePosts([target]);
+            await renderAdminApp("/posts?type=published", asContributor());
+
+            const link = postsListScreen.listItems().first().getByRole("link");
+            await expect.element(link).toHaveAttribute("href", "https://example.com/live-post/");
+            await expect.element(link).toHaveAttribute("target", "_blank");
+        });
+
+        // Ember's isPublished is strictly status === 'published', so an
+        // email-only post still opens in the editor.
+        it("still links an email-only post to the editor", async () => {
+            const target = post({ title: "Email only", status: "sent" });
+            fakePosts([target]);
+            await renderAdminApp("/posts?type=sent", asContributor());
+
+            await expect.element(postsListScreen.listItems().first().getByRole("link"))
+                .toHaveAttribute("href", `#/editor/post/${target.id}`);
+        });
+
+        it("links a draft to the editor", async () => {
+            const target = post({ title: "My draft", status: "draft" });
+            fakePosts([target]);
+            await renderAdminApp("/posts?type=draft", asContributor());
+
+            await expect.element(postsListScreen.listItems().first().getByRole("link"))
+                .toHaveAttribute("href", `#/editor/post/${target.id}`);
+        });
     });
 
     it("links a page row to the page editor", async () => {
@@ -110,13 +155,15 @@ describe("Posts list empty states", () => {
             .toHaveTextContent("No posts match the current filter");
     });
 
-    it("clears every filter from the URL when taking that way back", async () => {
+    // Ember's "Show all posts" resets the filters but deliberately not the
+    // sort, so a chosen order survives.
+    it("clears the filters but keeps the sort when taking that way back", async () => {
         fakePosts([]);
         await renderAdminApp("/posts?type=draft&tag=news&order=published_at+asc", FLAG_ON);
 
         await postsListScreen.showAllButton("posts").click();
 
-        await expect.poll(currentRoute).toBe("/posts");
+        await expect.poll(currentRoute).toBe("/posts?order=published_at+asc");
     });
 
     // Sorting is not filtering: Ember excludes `order` from this check, so

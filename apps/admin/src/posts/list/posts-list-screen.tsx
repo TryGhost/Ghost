@@ -22,7 +22,7 @@ import {usePostsList} from './hooks/use-posts-list';
  */
 export function PostsListScreen({resource}: {resource: PostResource}) {
     const copy = getPostResourceCopy(resource);
-    const {params, hasFilters, clearAll} = usePostsFilterState();
+    const {params, hasFilters, clearFilters} = usePostsFilterState();
     const {data: currentUser} = useCurrentUser();
     const {data: settingsData} = useBrowseSettings();
 
@@ -80,7 +80,7 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                 <PostsEmptyState
                                     hasFilters={hasFilters}
                                     resource={resource}
-                                    onClearFilters={clearAll}
+                                    onClearFilters={clearFilters}
                                 />
                             </Stack>
                         ) : (

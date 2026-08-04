@@ -2,9 +2,11 @@ import {describe, expect, it} from 'vitest';
 import {
     getPostAuthorNames,
     getPostDateField,
-    getPostStatusLabel,
+    getPostDateTooltip,
+    getPostMetaLine,
+    getPostMetaParts,
     getPostStatusDetail,
-    getPostMetaLine
+    getPostStatusLabel
 } from './post-row-copy';
 import type {PostListItem} from './hooks/use-posts-list';
 
@@ -70,6 +72,53 @@ describe('getPostMetaLine', () => {
 
     it('omits the byline entirely when there are no authors', () => {
         expect(getPostMetaLine(post()).byline).toBeNull();
+    });
+});
+
+describe('getPostMetaParts', () => {
+    // Joined by the row, so a missing piece must drop its separator too -
+    // otherwise a post with no authors reads " - 13 Jul 2026".
+    it('joins byline, tag and date', () => {
+        expect(getPostMetaParts(post({
+            authors: [{id: '1', name: 'Ada'}],
+            primary_tag: {id: 't1', name: 'News'},
+            published_at: '2026-07-13T09:00:00.000Z'
+        }), {timezone: 'UTC', now: new Date('2026-08-04T09:00:00.000Z')}))
+            .toEqual(['By Ada', 'in News', '13 Jul 2026']);
+    });
+
+    it('drops the byline and its separator when there are no authors', () => {
+        expect(getPostMetaParts(post({
+            published_at: '2026-07-13T09:00:00.000Z'
+        }), {timezone: 'UTC', now: new Date('2026-08-04T09:00:00.000Z')}))
+            .toEqual(['13 Jul 2026']);
+    });
+
+    it('is empty when there is nothing to say', () => {
+        expect(getPostMetaParts(post({status: 'draft'}), {timezone: 'UTC'})).toEqual([]);
+    });
+});
+
+describe('getPostDateTooltip', () => {
+    // Ember prefixes the title attribute so the date has context.
+    it('says "Updated" for a draft', () => {
+        expect(getPostDateTooltip(post({
+            status: 'draft',
+            updated_at: '2026-07-13T09:00:00.000Z'
+        }), {timezone: 'UTC', now: new Date('2026-08-04T09:00:00.000Z')}))
+            .toBe('Updated 09:00 (UTC) 13 Jul 2026');
+    });
+
+    it('says "Published" for a published post', () => {
+        expect(getPostDateTooltip(post({
+            status: 'published',
+            published_at: '2026-07-13T09:00:00.000Z'
+        }), {timezone: 'UTC', now: new Date('2026-08-04T09:00:00.000Z')}))
+            .toContain('Published ');
+    });
+
+    it('is undefined with no date', () => {
+        expect(getPostDateTooltip(post({status: 'draft'}), {timezone: 'UTC'})).toBeUndefined();
     });
 });
 

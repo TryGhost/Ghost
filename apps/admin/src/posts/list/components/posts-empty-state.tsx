@@ -45,7 +45,6 @@ export function PostsEmptyState({resource, hasFilters, onClearFilters}: PostsEmp
                 </Button>
             }
             data-testid='posts-empty-cold'
-            description={copy.emptyDescription}
             title={copy.emptyTitle}
         >
             <LucideIcon.PenLine />
