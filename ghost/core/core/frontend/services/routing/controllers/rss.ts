@@ -64,5 +64,3 @@ export function rssController(req: Request, res: RSSResponse, next: NextFunction
         })
         .catch(renderer.handleError(next));
 }
-
-export default rssController;
