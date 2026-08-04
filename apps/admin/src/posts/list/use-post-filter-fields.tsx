@@ -1,5 +1,5 @@
 import {LucideIcon} from '@tryghost/shade/utils';
-import {VISIBILITY_OPTIONS, getTypeOptions} from '@/posts/list/post-filter-fields';
+import {type PostFilterOption, VISIBILITY_OPTIONS, getTypeOptions} from '@/posts/list/post-filter-fields';
 import {isAuthorOrContributor, isContributorUser} from '@tryghost/admin-x-framework/api/users';
 import {usePostAuthorValueSource} from '@/shared/filter-sources/use-post-author-value-source';
 import {usePostTagValueSource} from '@/shared/filter-sources/use-post-tag-value-source';
@@ -26,16 +26,36 @@ export interface BuildPostFilterFieldsOptions {
     isContributor?: boolean;
     /** Authors are scoped to themselves, so the author filter is meaningless. */
     isAuthorOrContributor?: boolean;
+    /**
+     * The params currently in the URL. A value that isn't a known option gets
+     * an "Unknown" entry so the chip still shows something — otherwise Shade
+     * falls back to "Select…" and the filter vanishes from the UI while
+     * staying in the URL. Ember shows a red "Unknown type" for the same case.
+     */
+    params?: Partial<Record<'type' | 'visibility', string | null>>;
 }
 
 const IS_ONLY = [{value: 'is', label: 'is'}];
+
+function withUnknownOption(
+    options: PostFilterOption[],
+    value: string | null | undefined,
+    noun: string
+): PostFilterOption[] {
+    if (!value || options.some(option => option.value === value)) {
+        return options;
+    }
+
+    return [...options, {value, label: `Unknown ${noun}`}];
+}
 
 export function buildPostFilterFields({
     resource,
     authorValueSource,
     tagValueSource,
     isContributor = false,
-    isAuthorOrContributor: authorScoped = false
+    isAuthorOrContributor: authorScoped = false,
+    params = {}
 }: BuildPostFilterFieldsOptions): FilterFieldConfig<string>[] {
     const noun = resource === 'pages' ? 'Page' : 'Post';
 
@@ -45,7 +65,7 @@ export function buildPostFilterFields({
         type: 'select',
         icon: <LucideIcon.FileText className='size-4' />,
         operators: IS_ONLY,
-        options: getTypeOptions(resource)
+        options: withUnknownOption(getTypeOptions(resource), params.type, 'type')
     };
 
     if (isContributor) {
@@ -60,7 +80,7 @@ export function buildPostFilterFields({
             type: 'select',
             icon: <LucideIcon.Lock className='size-4' />,
             operators: IS_ONLY,
-            options: VISIBILITY_OPTIONS
+            options: withUnknownOption(VISIBILITY_OPTIONS, params.visibility, 'access')
         }
     ];
 
@@ -93,7 +113,8 @@ export function buildPostFilterFields({
 
 export function usePostFilterFields(
     resource: PostResource,
-    currentUser?: User
+    currentUser?: User,
+    params?: BuildPostFilterFieldsOptions['params']
 ): FilterFieldConfig<string>[] {
     const authorValueSource = usePostAuthorValueSource();
     const tagValueSource = usePostTagValueSource();
@@ -103,6 +124,7 @@ export function usePostFilterFields(
         authorValueSource,
         tagValueSource,
         isContributor: Boolean(currentUser && isContributorUser(currentUser)),
-        isAuthorOrContributor: Boolean(currentUser && isAuthorOrContributor(currentUser))
+        isAuthorOrContributor: Boolean(currentUser && isAuthorOrContributor(currentUser)),
+        params
     });
 }

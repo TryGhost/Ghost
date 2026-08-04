@@ -7,9 +7,10 @@ import type {User} from '@tryghost/admin-x-framework/api/users';
 
 interface PostsFiltersProps {
     resource: PostResource;
-    filters: Filter[];
+    filters: Filter<string>[];
+    params?: Parameters<typeof usePostFilterFields>[2];
     currentUser?: User;
-    onFiltersChange: (filters: Filter[]) => void;
+    onFiltersChange: (filters: Filter<string>[]) => void;
 }
 
 /**
@@ -19,8 +20,8 @@ interface PostsFiltersProps {
  * one value, so a second chip on the same field would be unrepresentable — and
  * saved views compare those params verbatim across both implementations.
  */
-export function PostsFilters({resource, filters, currentUser, onFiltersChange}: PostsFiltersProps) {
-    const fields = usePostFilterFields(resource, currentUser);
+export function PostsFilters({resource, filters, params, currentUser, onFiltersChange}: PostsFiltersProps) {
+    const fields = usePostFilterFields(resource, currentUser, params);
 
     return (
         // The testid sits on the wrapper, as it does in Ember (on the

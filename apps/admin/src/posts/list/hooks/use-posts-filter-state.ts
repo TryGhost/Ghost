@@ -27,11 +27,11 @@ interface SetOptions {
 
 export interface UsePostsFilterStateReturn {
     /** Chip model for the Shade `Filters` component. */
-    filters: Filter[];
+    filters: Filter<string>[];
     /** The raw param record, for building API queries and matching saved views. */
     params: PostListParams;
     order: string | null;
-    setFilters: (filters: Filter[], options?: SetOptions) => void;
+    setFilters: (filters: Filter<string>[], options?: SetOptions) => void;
     setOrder: (order: string | null, options?: SetOptions) => void;
     /** Clears the filters but keeps the sort, matching Ember. */
     clearFilters: (options?: SetOptions) => void;
@@ -83,7 +83,7 @@ export function usePostsFilterState(): UsePostsFilterStateReturn {
         setSearchParams(current => writeParams(current, values), {replace});
     }, [setSearchParams]);
 
-    const setFilters = useCallback((nextFilters: Filter[], options?: SetOptions) => {
+    const setFilters = useCallback((nextFilters: Filter<string>[], options?: SetOptions) => {
         apply(serializePostFilters(nextFilters), options);
     }, [apply]);
 
@@ -96,11 +96,14 @@ export function usePostsFilterState(): UsePostsFilterStateReturn {
      * link resets `type`, `author`, `tag` and `visibility` but deliberately
      * not `order` (`templates/posts.hbs:51`), so a chosen sort survives.
      *
-     * Pushes a history entry rather than replacing, so back returns to the
-     * filtered view the way Ember's `LinkTo` does.
+     * Replaces rather than pushes, like every other filter change here: the
+     * Ember route forces `transition.method('replace')` for any posts→posts
+     * transition (`routes/posts.js:60-70`, added for TryGhost/Ghost#11057) so
+     * filter changes don't pile up history entries — and "Show all posts" is
+     * one of those transitions.
      */
     const clearFilters = useCallback((options?: SetOptions) => {
-        apply(serializePostFilters([]), {replace: false, ...options});
+        apply(serializePostFilters([]), options);
     }, [apply]);
 
     const hasFilters = POST_FILTER_PARAMS.some(param => Boolean(params[param]));

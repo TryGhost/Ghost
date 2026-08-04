@@ -1,4 +1,3 @@
-import {stampPredicates} from '@/shared/filters';
 import type {Filter} from '@tryghost/shade/patterns';
 import type {PostListParams} from './post-query-params';
 
@@ -41,18 +40,18 @@ function isFilterParam(field: string): field is PostFilterParam {
  * saved view may point at a since-renamed tag, or at a value only a newer
  * build understands. Dropping it would silently rewrite the user's URL.
  */
-export function parsePostFilters(params: PostListParams): Filter[] {
-    const predicates = POST_FILTER_PARAMS.flatMap((param) => {
+export function parsePostFilters(params: PostListParams): Filter<string>[] {
+    return POST_FILTER_PARAMS.flatMap((param, index) => {
         const value = params[param];
 
         if (value === null || value === undefined || value === '') {
             return [];
         }
 
-        return [{field: param, operator: OPERATOR, values: [value]}];
+        // Ids only have to be unique and stable for a given params record;
+        // the param name already is.
+        return [{id: `${param}:${index + 1}`, field: param, operator: OPERATOR, values: [value]}];
     });
-
-    return stampPredicates(predicates);
 }
 
 /**
@@ -76,7 +75,7 @@ function toParamValue(value: unknown): string | null {
  * The inverse. A filter with no value yet - Shade creates one as soon as a
  * field is picked - clears its param rather than writing an empty one.
  */
-export function serializePostFilters(filters: Filter[]): PostFilterParamValues {
+export function serializePostFilters(filters: Filter<string>[]): PostFilterParamValues {
     const params: PostFilterParamValues = {...EMPTY_PARAMS};
 
     filters.forEach((filter) => {

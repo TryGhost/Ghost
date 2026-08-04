@@ -48,6 +48,8 @@ export interface Post {
     reading_time: number;
     url?: string;
     tags?: Tag[];
+    /** The API returns this alongside `tags`; the list screens render it. */
+    primary_tag?: Tag | null;
     tiers?: unknown[];
     authors?: unknown[];
     count?: {clicks: number; positive_feedback: number; negative_feedback: number};
