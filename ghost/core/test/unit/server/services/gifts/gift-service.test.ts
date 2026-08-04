@@ -1002,6 +1002,43 @@ describe('GiftService', function () {
             assert.deepEqual(redemption.consumes_at, redeemed.consumesAt);
         });
 
+        it('serializes the redemption inside the service-owned transaction', async function () {
+            const gift = buildGift();
+            let inTransaction = false;
+            let transactionRejected = false;
+
+            giftRepository.getByToken.resolves(gift);
+            giftRepository.transaction.callsFake(async (callback) => {
+                inTransaction = true;
+                try {
+                    return await callback(transacting);
+                } catch (err) {
+                    transactionRejected = true;
+                    throw err;
+                } finally {
+                    inTransaction = false;
+                }
+            });
+            tiersService.api.read.callsFake(async () => {
+                assert.equal(inTransaction, true);
+                return null;
+            });
+
+            const service = createService();
+
+            await assert.rejects(
+                () => service.redeem({token: 'gift-token', memberId: 'member_1'}),
+                (err: any) => {
+                    assert.equal(err.errorType, 'InternalServerError');
+                    return true;
+                }
+            );
+
+            assert.equal(transactionRejected, true);
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
+            sinon.assert.notCalled(giftReminderScheduler.scheduleFor);
+        });
+
         it('does not fail redemption when staff notification email throws', async function () {
             const gift = buildGift();
             const memberGet = sinon.stub();

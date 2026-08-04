@@ -496,57 +496,18 @@ export class GiftService {
         transacting?: Knex.Transaction;
         newMember?: boolean;
     }): Promise<GiftRedemption> {
-        const gift = await this.redeemGift(input.token, input.memberId, {
-            transacting: input.transacting,
-            newMember: input.newMember
-        });
-
-        return this.serializeRedemption(gift);
-    }
-
-    private async redeemGift(token: string, memberId: string, options: {transacting?: Knex.Transaction; newMember?: boolean} = {}): Promise<Gift> {
         const run = async (transacting: Knex.Transaction) => {
-            const member = await this.deps.memberRepository.get({id: memberId}, {transacting, forUpdate: true});
-            if (!member) {
-                throw new errors.NotFoundError({message: `Member not found: ${memberId}`});
-            }
+            const {redeemed, member} = await this.redeemGift(input.token, input.memberId, {
+                transacting,
+                newMember: input.newMember
+            });
+            const redemption = await this.serializeRedemption(redeemed);
 
-            const gift = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
-            if (!gift) {
-                throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
-            }
-
-            if (options.newMember) {
-                this.assertRedeemable(gift, null);
-            } else {
-                this.assertRedeemable(gift, member.get('status'));
-            }
-
-            const redeemed = gift.redeem({memberId});
-
-            await this.deps.memberRepository.update({
-                products: [{
-                    id: redeemed.tierId,
-                    expiry_at: redeemed.consumesAt
-                }],
-                status: 'gift'
-            }, {id: memberId, transacting});
-
-            await this.deps.giftRepository.update(redeemed, {transacting});
-
-            // Gift members receive the paid welcome email, as they receive access to paid content
-            await this.deps.memberRepository.triggerMemberSignupAutomation(
-                memberId,
-                member.get('email'),
-                'paid',
-                {transacting}
-            );
-
-            return {redeemed, member};
+            return {redeemed, member, redemption};
         };
 
-        const {redeemed, member} = options.transacting
-            ? await run(options.transacting)
+        const {redeemed, member, redemption} = input.transacting
+            ? await run(input.transacting)
             : await this.deps.giftRepository.transaction(run);
 
         const notify = async () => {
@@ -573,14 +534,55 @@ export class GiftService {
             await this.deps.giftReminderScheduler.scheduleFor(redeemed);
         };
 
-        if (options.transacting) {
+        if (input.transacting) {
             // Only notify once the transaction has finished
-            options.transacting.executionPromise.then(notify, () => {});
+            input.transacting.executionPromise.then(notify, () => {});
         } else {
             await notify();
         }
 
-        return redeemed;
+        return redemption;
+    }
+
+    private async redeemGift(token: string, memberId: string, options: {transacting: Knex.Transaction; newMember?: boolean}): Promise<{redeemed: Gift; member: MemberModel}> {
+        const {transacting} = options;
+        const member = await this.deps.memberRepository.get({id: memberId}, {transacting, forUpdate: true});
+        if (!member) {
+            throw new errors.NotFoundError({message: `Member not found: ${memberId}`});
+        }
+
+        const gift = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
+        if (!gift) {
+            throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
+        }
+
+        if (options.newMember) {
+            this.assertRedeemable(gift, null);
+        } else {
+            this.assertRedeemable(gift, member.get('status'));
+        }
+
+        const redeemed = gift.redeem({memberId});
+
+        await this.deps.memberRepository.update({
+            products: [{
+                id: redeemed.tierId,
+                expiry_at: redeemed.consumesAt
+            }],
+            status: 'gift'
+        }, {id: memberId, transacting});
+
+        await this.deps.giftRepository.update(redeemed, {transacting});
+
+        // Gift members receive the paid welcome email, as they receive access to paid content
+        await this.deps.memberRepository.triggerMemberSignupAutomation(
+            memberId,
+            member.get('email'),
+            'paid',
+            {transacting}
+        );
+
+        return {redeemed, member};
     }
 
     private async getActiveByMember(memberId: string, options: {transacting?: Knex.Transaction} = {}): Promise<Gift | null> {
