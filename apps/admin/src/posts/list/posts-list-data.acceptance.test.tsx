@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
-import { currentUserResponse, fakePages, fakePosts, post, renderAdminApp, staffRole } from "@test-utils/acceptance";
+import { currentUserResponse, fakeAdminEndpoint, fakePages, fakePosts, fakeTags, fakeUsers, post, renderAdminApp, staffRole } from "@test-utils/acceptance";
 import { postsListScreen } from "./posts-list.screen";
 import type { StaffRoleName } from "@tryghost/test-data";
 
@@ -38,6 +38,15 @@ function byBucket(filter: string | undefined) {
 }
 
 describe("Posts list data", () => {
+    // The filter bar mounts with the screen and probes these to resolve any
+    // author/tag slug in the URL into a name.
+    beforeEach(() => {
+        fakeTags([]);
+        fakeUsers([]);
+        fakeAdminEndpoint("GET", /^\/tags\/\?.*slug/, { tags: [] });
+        fakeAdminEndpoint("GET", /^\/users\/\?.*slug/, { users: [] });
+    });
+
     it("runs one query per status bucket", async () => {
         const postsApi = fakePosts(query => byBucket(query.filter));
         await renderAdminApp("/posts", FLAG_ON);

@@ -3,9 +3,11 @@ import {Button, LoadingIndicator} from '@tryghost/shade/components';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {LoadMoreButton} from '@/shared/virtual-list';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {PageHeader} from '@tryghost/shade/patterns';
+import {FilterBar, PageHeader} from '@tryghost/shade/patterns';
 import {PostListRow} from './components/post-list-row';
 import {PostsEmptyState} from './components/posts-empty-state';
+import {PostsFilters} from './components/posts-filters';
+import {PostsSortMenu} from './components/posts-sort-menu';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {isAuthorOrContributor, isContributorUser} from '@tryghost/admin-x-framework/api/users';
 import {type PostResource, getPostResourceCopy} from './post-resource';
@@ -22,7 +24,7 @@ import {usePostsList} from './hooks/use-posts-list';
  */
 export function PostsListScreen({resource}: {resource: PostResource}) {
     const copy = getPostResourceCopy(resource);
-    const {params, hasFilters, clearFilters} = usePostsFilterState();
+    const {params, filters, order, setFilters, setOrder, hasFilters, clearFilters} = usePostsFilterState();
     const {data: currentUser} = useCurrentUser();
     const {data: settingsData} = useBrowseSettings();
 
@@ -65,6 +67,15 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                                 </PageHeader.ActionGroup>
                             </PageHeader.Actions>
                         </PageHeader>
+                        <FilterBar>
+                            <PostsFilters
+                                currentUser={currentUser}
+                                filters={filters}
+                                resource={resource}
+                                onFiltersChange={setFilters}
+                            />
+                            <PostsSortMenu order={order} onOrderChange={setOrder} />
+                        </FilterBar>
                     </ListPage.Header>
                     <ListPage.Body>
                         {isLoading ? (
