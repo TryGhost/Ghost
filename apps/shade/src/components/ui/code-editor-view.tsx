@@ -76,7 +76,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 setResolvedExtensions([]);
             }
         });
-        setBasicSetup(setup => ({setup, searchKeymap: false}));
+        setBasicSetup(setup => ({...setup, searchKeymap: false}));
 
         return () => {
             cancelled = true;
