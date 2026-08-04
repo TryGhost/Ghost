@@ -205,4 +205,21 @@ describe('Unit - frontend/data/fetch-data', function () {
 
         assert.deepEqual(routeData, {post: {type: 'browse', resource: 'posts'}});
     });
+
+    it('should apply the per-name query defaults without losing the resolved resource', async function () {
+        // `post` is one of the names that carries default options, so the
+        // defaults are merged in on top of what the adapter resolved.
+        const routerOptions = {
+            data: {post: {type: 'browse', resource: 'posts'}}
+        };
+
+        const result = await data.fetchData({}, routerOptions, locals);
+
+        sinon.assert.calledTwice(browsePostsStub);
+        assert.equal(browsePostsStub.secondCall.args[0].include, 'authors,tags,tiers');
+
+        // The response is still keyed off the resolved `posts` resource
+        assert.equal(result.data.post.length, posts.length);
+        assert.deepEqual(result.data.post.meta, {pagination: {pages: 2}});
+    });
 });

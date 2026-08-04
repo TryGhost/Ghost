@@ -98,7 +98,9 @@ async function fetchData(pathOptions, routerOptions, locals) {
 
     // CASE: fetch more data defined by the router e.g. tags, authors - see TaxonomyRouter
     _.each(apiCalls, function (apiCall, name) {
-        const dataQueryOptions = _.merge(apiCall, defaultDataQueryOptions[name]);
+        // Merge into a fresh object: the resolved spec is read again below to
+        // shape the response, so it must stay as the adapter resolved it.
+        const dataQueryOptions = _.merge({}, apiCall, defaultDataQueryOptions[name]);
         promises.push(processQuery(dataQueryOptions, pathOptions.slug, locals));
     });
 
