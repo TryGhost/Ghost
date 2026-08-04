@@ -33,7 +33,8 @@ export interface UsePostsFilterStateReturn {
     order: string | null;
     setFilters: (filters: Filter[], options?: SetOptions) => void;
     setOrder: (order: string | null, options?: SetOptions) => void;
-    clearAll: (options?: SetOptions) => void;
+    /** Clears the filters but keeps the sort, matching Ember. */
+    clearFilters: (options?: SetOptions) => void;
     /** Whether any *filter* is active. Sorting deliberately doesn't count. */
     hasFilters: boolean;
 }
@@ -90,11 +91,19 @@ export function usePostsFilterState(): UsePostsFilterStateReturn {
         apply({[ORDER_PARAM]: nextOrder}, options);
     }, [apply]);
 
-    const clearAll = useCallback((options?: SetOptions) => {
-        apply({...serializePostFilters([]), [ORDER_PARAM]: null}, options);
+    /**
+     * Clears the filters and leaves the sort alone — Ember's "Show all posts"
+     * link resets `type`, `author`, `tag` and `visibility` but deliberately
+     * not `order` (`templates/posts.hbs:51`), so a chosen sort survives.
+     *
+     * Pushes a history entry rather than replacing, so back returns to the
+     * filtered view the way Ember's `LinkTo` does.
+     */
+    const clearFilters = useCallback((options?: SetOptions) => {
+        apply(serializePostFilters([]), {replace: false, ...options});
     }, [apply]);
 
     const hasFilters = POST_FILTER_PARAMS.some(param => Boolean(params[param]));
 
-    return {filters, params, order, setFilters, setOrder, clearAll, hasFilters};
+    return {filters, params, order, setFilters, setOrder, clearFilters, hasFilters};
 }

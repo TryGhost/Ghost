@@ -129,19 +129,21 @@ describe('usePostsFilterState', () => {
         });
     });
 
-    // "Show all posts" in the filtered empty state.
-    it('clears filters and sort together', async () => {
+    // "Show all posts" in the filtered empty state. Ember's link resets
+    // type/author/tag/visibility but deliberately NOT order, so a chosen sort
+    // survives clearing the filters.
+    it('clears the filters but keeps the sort', async () => {
         const {result} = renderState('/posts?type=draft&tag=news&order=published_at+asc');
 
         act(() => {
-            result.current.clearAll();
+            result.current.clearFilters();
         });
 
         await waitFor(() => {
-            expect(result.current.query).toBe('');
+            expect(result.current.filters).toEqual([]);
         });
-        expect(result.current.filters).toEqual([]);
-        expect(result.current.order).toBeNull();
+        expect(result.current.query).toBe('order=published_at+asc');
+        expect(result.current.order).toBe('published_at asc');
     });
 
     it('leaves unrelated query params alone', async () => {

@@ -139,6 +139,29 @@ describe('Acceptance: posts/pages React flag', function () {
             expect(navigate.firstCall.args[0], 'target url').to.equal('/pages');
         });
 
+        // Aborting means the route we came FROM never deactivates, so any UI
+        // state its teardown would have cleared stays set. The editor's
+        // teardown is the one that shows: it clears full-screen mode, which is
+        // what the React shell reads to decide whether to show the sidebar.
+        // Without this, returning from the editor leaves you with no sidebar.
+        it('leaves full-screen mode when it aborts', async function () {
+            const ui = this.owner.lookup('service:ui');
+            ui.set('isFullScreen', true);
+
+            await visitExpectingAbort('/posts');
+
+            expect(ui.isFullScreen, 'isFullScreen after aborting into posts').to.be.false;
+        });
+
+        it('leaves full-screen mode when it aborts into pages', async function () {
+            const ui = this.owner.lookup('service:ui');
+            ui.set('isFullScreen', true);
+
+            await visitExpectingAbort('/pages');
+
+            expect(ui.isFullScreen, 'isFullScreen after aborting into pages').to.be.false;
+        });
+
         // Query params are how saved views are addressed, so a URL that already
         // points at this route must be left exactly as it is.
         it('does not rewrite a URL-initiated navigation', async function () {

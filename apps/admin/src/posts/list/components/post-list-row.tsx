@@ -1,12 +1,13 @@
 import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {
-    getPostDate,
-    getPostMetaLine,
+    didPostEmailFail,
+    getPostDateTooltip,
+    getPostMetaParts,
     getPostStatusDetail,
     getPostStatusLabel
 } from '@/posts/list/post-row-copy';
-import {formatPostTime} from '@/posts/list/post-time';
+import {useState} from 'react';
 import type {PostListItem} from '@/posts/list/hooks/use-posts-list';
 import type {PostResource} from '@/posts/list/post-resource';
 
@@ -22,20 +23,31 @@ interface PostListRowProps {
 }
 
 /**
- * Status colour follows Ember (`app/styles/layouts/content.css`): drafts pink,
- * everything live green, failures red.
+ * Status colour, following `app/styles/layouts/content.css`. Only three states
+ * are coloured there — `.draft` pink (985), `.scheduled` green (992), `.error`
+ * red (1017). Published and sent have **no** rule, so they inherit the muted
+ * grey of `.gh-content-entry-status` (#99a3ad, ≈ `muted-foreground`). That is
+ * most rows on a real site, so colouring them would change the whole feel of
+ * the screen.
  *
- * Green and red go through Shade's semantic state tokens. Draft-pink has no
- * semantic equivalent — it isn't success, warning or danger — so it uses the
- * `pink` alias, which resolves to the same `pink-500` Ember's `var(--pink)`
- * does.
+ * Red uses Shade's semantic danger token; pink and green have no semantic
+ * equivalent (a draft is not a warning, a schedule is not a success) so they
+ * use the aliases that resolve to the same values Ember's `var(--pink)` and
+ * `var(--green)` do.
  */
-function statusTone(post: PostListItem): string {
-    if (post.email?.status === 'failed') {
+function statusTone(post: PostListItem, isFailed: boolean): string {
+    if (isFailed) {
         return 'text-state-danger';
     }
 
-    return post.status === 'draft' ? 'text-pink' : 'text-state-success';
+    switch (post.status) {
+    case 'draft':
+        return 'text-pink';
+    case 'scheduled':
+        return 'text-green';
+    default:
+        return 'text-muted-foreground';
+    }
 }
 
 function FeatureImage({post}: {post: PostListItem}) {
@@ -61,24 +73,37 @@ function FeatureImage({post}: {post: PostListItem}) {
 }
 
 export function PostListRow({post, resource, timezone, isContributor}: PostListRowProps) {
-    const {byline, primaryTagName} = getPostMetaLine(post);
-    const date = getPostDate(post);
-    const statusLabel = getPostStatusLabel(post);
-    const statusDetail = getPostStatusDetail(post, {timezone});
+    const [isHovered, setIsHovered] = useState(false);
 
-    const isPublished = post.status === 'published' || post.status === 'sent';
+    const metaParts = getPostMetaParts(post, {timezone});
+    const dateTooltip = getPostDateTooltip(post, {timezone});
+    const statusLabel = getPostStatusLabel(post, resource);
+    const statusDetail = getPostStatusDetail(post, {timezone, resource});
+    const isFailed = didPostEmailFail(post, resource);
+
+    // Strictly `published`, matching Ember's `isPublished`. An email-only
+    // `sent` post still opens in the editor for a contributor.
+    const isPublished = post.status === 'published';
     const editorType = resource === 'pages' ? 'page' : 'post';
-    const href = isContributor && isPublished
-        ? post.url
-        : `#/editor/${editorType}/${post.id}`;
+    const linksOffsite = Boolean(isContributor && isPublished);
+    const href = linksOffsite ? post.url : `#/editor/${editorType}/${post.id}`;
 
     return (
-        <li className='group border-b border-border-default' data-testid='posts-list-item'>
+        <li
+            className='group border-b border-border-default'
+            data-testid='posts-list-item'
+            onMouseEnter={() => {
+                setIsHovered(true);
+            }}
+            onMouseLeave={() => {
+                setIsHovered(false);
+            }}
+        >
             <a
                 className='flex items-start gap-4 px-2 py-4 no-underline transition-colors hover:bg-surface-elevated'
                 href={href}
-                rel={isContributor && isPublished ? 'noopener noreferrer' : undefined}
-                target={isContributor && isPublished ? '_blank' : undefined}
+                rel={linksOffsite ? 'noopener noreferrer' : undefined}
+                target={linksOffsite ? '_blank' : undefined}
             >
                 <FeatureImage post={post} />
                 <Stack className='min-w-0 flex-1' gap='xs'>
@@ -86,7 +111,7 @@ export function PostListRow({post, resource, timezone, isContributor}: PostListR
                         {post.featured && (
                             <LucideIcon.Star
                                 aria-label='Featured'
-                                className='size-4 shrink-0 fill-yellow text-yellow'
+                                className='size-4 shrink-0 fill-state-warning text-state-warning'
                                 data-testid='post-featured'
                             />
                         )}
@@ -95,25 +120,21 @@ export function PostListRow({post, resource, timezone, isContributor}: PostListR
                         </Text>
                     </Inline>
 
-                    <Text size='sm' tone='secondary'>
-                        {byline && <span>{byline}</span>}
-                        {primaryTagName && <span> in <span className='font-medium'>{primaryTagName}</span></span>}
-                        {date && (
-                            <span
-                                title={formatPostTime(date, {timezone, absolute: true})}
-                            > – {formatPostTime(date, {timezone, absolute: true, short: true})}</span>
-                        )}
-                    </Text>
+                    {metaParts.length > 0 && (
+                        // Joined from parts so a missing piece takes its
+                        // separator with it — no dangling " – date".
+                        <Text size='sm' title={dateTooltip} tone='secondary'>
+                            {metaParts.join(' - ')}
+                        </Text>
+                    )}
 
-                    <Text className={statusTone(post)} size='sm'>
+                    <Text className={statusTone(post, isFailed)} size='sm'>
                         {statusLabel}
-                        {/* Ember reveals this on hover; same idea, done with a
-                            group-hover so it needs no JS state. */}
-                        {statusDetail && (
-                            <span className='opacity-0 transition-opacity group-hover:opacity-100'>
-                                {' '}{statusDetail}
-                            </span>
-                        )}
+                        {/* Mounted only while hovered, as Ember does. A CSS
+                            opacity fade would keep it in the DOM, so a screen
+                            reader would read every scheduled row's full
+                            dispatch details aloud, always. */}
+                        {isHovered && statusDetail && <span> {statusDetail}</span>}
                     </Text>
                 </Stack>
             </a>

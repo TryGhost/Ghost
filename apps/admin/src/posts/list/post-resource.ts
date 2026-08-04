@@ -14,9 +14,12 @@ interface PostResourceCopy {
     /** Label and href for the primary "new" action in the page header. */
     newLabel: string;
     newHref: string;
-    /** Cold-start empty state, from the Ember templates. */
+    /**
+     * Cold-start empty state. Wording is verbatim from the Ember templates,
+     * terminal full stops included — Ember shows a heading and a button with
+     * no supporting description.
+     */
     emptyTitle: string;
-    emptyDescription: string;
     emptyAction: string;
 }
 
@@ -26,8 +29,7 @@ const COPY: Record<PostResource, PostResourceCopy> = {
         plural: 'posts',
         newLabel: 'New post',
         newHref: '#/editor/post',
-        emptyTitle: 'Start creating content',
-        emptyDescription: 'Get started by writing your first post.',
+        emptyTitle: 'Start creating content.',
         emptyAction: 'Write a new post'
     },
     pages: {
@@ -35,8 +37,7 @@ const COPY: Record<PostResource, PostResourceCopy> = {
         plural: 'pages',
         newLabel: 'New page',
         newHref: '#/editor/page',
-        emptyTitle: 'Tell the world about yourself',
-        emptyDescription: 'Create a page to share more about your publication.',
+        emptyTitle: 'Tell the world about yourself.',
         emptyAction: 'Create a new page'
     }
 };

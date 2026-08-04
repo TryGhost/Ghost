@@ -41,6 +41,7 @@ export default class PostsRoute extends AuthenticatedRoute {
     @service feature;
     @service postAnalytics;
     @service settings;
+    @service ui;
 
     queryParams = {
         type: {refreshModel: true},
@@ -82,6 +83,13 @@ export default class PostsRoute extends AuthenticatedRoute {
         }
 
         transition.abort();
+
+        // Aborting means the route we came FROM never deactivates, so any UI
+        // state its teardown would have cleared stays set. The editor's
+        // `deactivate` clears full-screen mode, and the React shell reads that
+        // to decide whether to show the sidebar - so without this, returning
+        // from the editor leaves you looking at a sidebar-less screen.
+        this.ui.set('isFullScreen', false);
 
         // Ember and React share window.location.hash, and an aborted
         // transition never reaches updateURL - so a navigation Ember itself
