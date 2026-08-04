@@ -1,6 +1,9 @@
 import { InfiniteData } from '@tanstack/react-query';
 import { Meta, createInfiniteQuery, createQuery } from '../utils/api/hooks';
+import type { Email, PostListFields } from './posts';
 
+// A page is a post with `displayName: 'page'` server-side, so the list screens
+// read the same fields off both.
 export type Page = {
   id: string;
   title: string;
@@ -10,7 +13,12 @@ export type Page = {
   published_at?: string;
   visibility?: string;
   uuid?: string;
-};
+  feature_image?: string;
+  email?: Email;
+  count?: {
+    clicks?: number;
+  };
+} & PostListFields;
 
 export interface PagesResponseType {
   meta?: Meta;

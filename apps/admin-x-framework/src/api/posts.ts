@@ -8,35 +8,69 @@ import {
 } from '../utils/api/hooks';
 
 export type Email = {
-  opened_count: number;
-  email_count: number;
-  status?: string;
+    opened_count: number;
+    email_count: number;
+    status?: string;
+    track_opens?: boolean;
+    track_clicks?: boolean;
+};
+
+export type PostAuthor = {
+    id: string;
+    name?: string;
+    email?: string;
+    slug?: string;
+};
+
+export type PostTag = {
+    id: string;
+    name?: string;
+    slug?: string;
+    visibility?: string;
+};
+
+/**
+ * Fields the list screens need on top of the analytics-shaped core. All
+ * optional: the analytics endpoints don't return them, and the list gets them
+ * from the server's default relations rather than an explicit `include`.
+ */
+export type PostListFields = {
+    featured?: boolean;
+    updated_at?: string;
+    created_at?: string;
+    excerpt?: string;
+    custom_excerpt?: string;
+    authors?: PostAuthor[];
+    primary_author?: PostAuthor | null;
+    tags?: PostTag[];
+    primary_tag?: PostTag | null;
+    tiers?: Array<{id: string; name?: string}>;
 };
 
 export type Post = {
-  id: string;
-  url: string;
-  slug: string;
-  title: string;
-  visibility?: string;
-  uuid: string;
-  feature_image?: string;
-  count?: {
-    clicks?: number;
-    positive_feedback?: number;
-    negative_feedback?: number;
-  };
-  email?: Email;
-  status?: string;
-  published_at?: string;
-  newsletter_id?: string;
-  newsletter?: object;
-  email_only?: boolean;
-  email_segment?: string;
-  email_recipient_filter?: string;
-  send_email_when_published?: boolean;
-  email_stats?: object;
-};
+    id: string;
+    url: string;
+    slug: string;
+    title: string;
+    visibility?: string;
+    uuid: string;
+    feature_image?: string;
+    count?: {
+        clicks?: number;
+        positive_feedback?: number;
+        negative_feedback?: number;
+    };
+    email?: Email;
+    status?: string;
+    published_at?: string;
+    newsletter_id?: string;
+    newsletter?: object;
+    email_only?: boolean;
+    email_segment?: string;
+    email_recipient_filter?: string;
+    send_email_when_published?: boolean;
+    email_stats?: object;
+} & PostListFields;
 
 export interface PostsResponseType {
   meta?: Meta;

@@ -232,6 +232,14 @@ export const fakePosts = defineResource<Post>({
   semantics: { kind: 'passthrough' },
 });
 
+/**
+ * Pages list fake (passthrough). The pages list screen browses this endpoint
+ * once per status bucket, exactly as the posts one does — declare the response
+ * (a function of the query, if a test needs each bucket to differ) and assert
+ * the outgoing filters.
+ */
+export const fakePages = defineResource<Post>({ resource: "pages", semantics: { kind: "passthrough" } });
+
 /** Tiers list fake (passthrough): serves the declared tiers and captures every browse request. */
 export const fakeTiers = defineResource<Tier>({
   resource: 'tiers',
