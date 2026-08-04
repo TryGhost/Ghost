@@ -24,5 +24,11 @@ export const postsListScreen = {
     featuredMarkers: () => page.getByTestId("post-featured"),
     emptyCold: () => page.getByTestId("posts-empty-cold"),
     emptyFiltered: () => page.getByTestId("posts-empty-filtered"),
-    showAllButton: (plural: string) => page.getByRole("button", { name: `Show all ${plural}` })
+    showAllButton: (plural: string) => page.getByRole("button", { name: `Show all ${plural}` }),
+    filterBar: () => page.getByTestId("posts-filters"),
+    addFilterButton: () => page.getByTestId("posts-filters").getByRole("button", { name: "Filter" }),
+    /** A field in the add-filter popover, which renders into a portal. */
+    filterFieldOption: (label: string) => page.getByRole("option", { name: label, exact: true }),
+    sortButton: () => page.getByRole("button", { name: "Sort" }),
+    sortOption: (label: string) => page.getByRole("menuitem", { name: label, exact: true })
 };
