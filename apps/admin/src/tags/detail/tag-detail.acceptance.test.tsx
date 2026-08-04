@@ -142,7 +142,10 @@ describe('Tag detail (tagDetailsReact on)', () => {
         await renderAdminApp('/tags/new', FLAGS);
 
         await expect.element(page.getByTestId('tag-detail-title')).toHaveTextContent('New tag');
+        // The form waits on the site query; `.element()` doesn't retry, so
+        // settle the form first or a slow query fails the lookup.
         const nameInput = page.getByLabelText('Name', {exact: true});
+        await expect.element(nameInput).toBeVisible();
         await userEvent.type(nameInput.element(), 'Weekly News');
         await expect.element(page.getByLabelText('Slug', {exact: true})).toHaveValue('weekly-news');
 
