@@ -153,4 +153,16 @@ describe('{{concat}} helper', function () {
         const expected = '[object Object] | my-post';
         shouldCompileToExpected(templateString, {post: {title: 'My Post', slug: 'my-post'}}, expected);
     });
+
+    it('escapes unsafe HTML in plain string arguments', function () {
+        let templateString = '{{concat "Post title: " title}}';
+        let expected = 'Post title: How to use the &lt;script&gt; tag';
+        shouldCompileToExpected(templateString, {title: 'How to use the <script> tag'}, expected);
+    });
+
+    it('does not escape SafeString arguments', function () {
+        let templateString = '{{concat safe}}';
+        let expected = '<b>bold</b>';
+        shouldCompileToExpected(templateString, {safe: new SafeString('<b>bold</b>')}, expected);
+    });
 });

@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const {SafeString} = require('../services/handlebars');
 
 module.exports = function concat(...args) {
@@ -7,5 +8,7 @@ module.exports = function concat(...args) {
     // Flatten arrays - if an argument is an array, spread its elements
     const flattenedArgs = args.flat();
 
-    return new SafeString(flattenedArgs.join(separator));
+    const escapedArgs = flattenedArgs.map(arg => (arg instanceof SafeString ? arg.toString() : _.escape(arg)));
+
+    return new SafeString(escapedArgs.join(separator));
 };
