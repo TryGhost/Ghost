@@ -93,7 +93,7 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
                     aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
                     aria-pressed={data.selected}
                     className={cn(
-                        'flex w-64 flex-col rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
+                        'flex w-80 flex-col rounded-lg border border-transparent bg-surface-elevated p-6 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
                         !data.selected && 'hover:border-border-strong',
                         data.selected && !data.errorMessage && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
                         data.errorMessage && 'border-destructive',
@@ -215,12 +215,12 @@ const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
         data.onPick(type, data.anchor);
     };
 
-    const triggerClassName = 'flex h-12 w-64 items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none';
+    const triggerClassName = 'flex h-12 w-80 items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none';
 
     if (data.disabled) {
         return (
             <div
-                className='flex h-12 w-64 items-center justify-center rounded-lg border border-border-default bg-[repeating-linear-gradient(135deg,var(--color-white)_0,var(--color-white)_12px,var(--color-gray-100)_12px,var(--color-gray-100)_24px)] text-sm font-medium text-text-secondary'
+                className='flex h-12 w-80 items-center justify-center rounded-lg border border-border-default bg-[repeating-linear-gradient(135deg,var(--color-white)_0,var(--color-white)_12px,var(--color-gray-100)_12px,var(--color-gray-100)_24px)] text-sm font-medium text-text-secondary'
                 data-testid='step-limit-tail-node'
             >
                 <HiddenHandle position={Position.Top} type='target' />
