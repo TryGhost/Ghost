@@ -195,6 +195,9 @@ export class CustomFieldValuesService {
             if (!field) {
                 // Unknown (or archived) key. Rejected rather than ignored: a typo
                 // that silently drops a value is worse than a failed save.
+                // Refused rather than ignored: a typo that silently drops what somebody
+                // typed is worse than a save that fails. The catalog applies the same rule
+                // one level down, to the parts of a composite value.
                 throw new errors.ValidationError({message: `Unknown custom field: ${key}`, property: `custom_fields.${key}`});
             }
 

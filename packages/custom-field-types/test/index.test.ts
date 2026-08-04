@@ -148,6 +148,14 @@ describe('custom-field-types catalog', function () {
             assert.equal(FIELD_TYPES.address.value.safeParse({line1: `  ${'x'.repeat(255)}  `}).success, true);
         });
 
+        it('refuses a part it does not recognise, rather than dropping it', function () {
+            // The parts of a type are declared in one place, so a name that is not one of
+            // them is a mistake worth saying out loud. Dropping it silently would store a
+            // value missing whatever the typo was meant to fill in.
+            assert.equal(parse({line1: '62 Ghost Lane', citty: 'Dublin'}), false);
+            assert.equal(parse({line1: '62 Ghost Lane', city: 'Dublin'}), true);
+        });
+
         it('bounds each part by what that part is, not by the record holding it', function () {
             // A postal code is its own kind of thing rather than a short text that happens
             // to be in an address: no country writes one longer than this, and a street
