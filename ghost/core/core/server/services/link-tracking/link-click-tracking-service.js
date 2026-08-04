@@ -276,13 +276,8 @@ class LinkClickTrackingService {
             });
 
             const automationActionRevisionId = event.data.link.automationActionRevisionId;
-            if (!automationActionRevisionId) {
-                await this.#linkClickRepository.save(click);
-                return;
-            }
-
             const automationRunStepId = event.data.url.searchParams.get('step');
-            if (!automationRunStepId) {
+            if (!automationActionRevisionId || !automationRunStepId) {
                 await this.#linkClickRepository.save(click);
                 return;
             }
