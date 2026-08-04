@@ -49,8 +49,8 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
     return errors;
 };
 
-const AutomationEditor: React.FC<{id: string}> = ({id}) => {
-    const {automation, isError: isReadError} = useAutomationForEditing(id);
+const AutomationEditorContent: React.FC<{automationId: string}> = ({automationId}) => {
+    const {automation, isError: isReadError} = useAutomationForEditing(automationId);
 
     const editMutation = useEditAutomation();
     const [editState, setEditState] = React.useState<AutomationEditState>({phase: 'idle'});
@@ -542,10 +542,10 @@ const AutomationEditor: React.FC<{id: string}> = ({id}) => {
     );
 };
 
-const AutomationEditorRoute: React.FC = () => {
-    const {id = ''} = useParams<{id: string}>();
+const AutomationEditor: React.FC = () => {
+    const {id: automationId = ''} = useParams<{id: string}>();
 
-    return <AutomationEditor key={id} id={id} />;
+    return <AutomationEditorContent key={automationId} automationId={automationId} />;
 };
 
-export default AutomationEditorRoute;
+export default AutomationEditor;
