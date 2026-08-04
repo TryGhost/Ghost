@@ -68,12 +68,17 @@ function statusClause(statuses: PostStatus[]): string {
  * Joins `key:value` pairs with `+`, dropping blanks. Values are interpolated
  * verbatim - `visibility=[paid,tiers]` is an opaque option value, not
  * structure to be parsed.
+ *
+ * "Blank" matches Ember's `isBlank`, which counts whitespace-only strings, so
+ * `?tag=%20%20` produces no clause in either implementation. These strings are
+ * compared against saved views and run server-side by bulk delete, so they have
+ * to agree exactly.
  */
 function toFilterString(clauses: Array<[string, string | null | undefined]>): string {
     return clauses
         .filter((entry): entry is [string, string] => {
             const value = entry[1];
-            return value !== null && value !== undefined && value !== '';
+            return value !== null && value !== undefined && value.trim() !== '';
         })
         .map(([key, value]) => `${key}:${value}`)
         .join('+');

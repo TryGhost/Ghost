@@ -1,9 +1,12 @@
 import {Box, Container, Stack, Text} from '@tryghost/shade/primitives';
 import {Button, LoadingIndicator} from '@tryghost/shade/components';
 import {ListPage} from '@tryghost/shade/page-templates';
+import {LoadMoreButton} from '@/shared/virtual-list';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {PageHeader} from '@tryghost/shade/patterns';
+import {isAuthorOrContributor} from '@tryghost/admin-x-framework/api/users';
 import {type PostResource, getPostResourceCopy} from './post-resource';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {usePostsFilterState} from './hooks/use-posts-filter-state';
 import {usePostsList} from './hooks/use-posts-list';
 
@@ -17,7 +20,22 @@ import {usePostsList} from './hooks/use-posts-list';
 export function PostsListScreen({resource}: {resource: PostResource}) {
     const copy = getPostResourceCopy(resource);
     const {params} = usePostsFilterState();
-    const {items, isLoading, isError} = usePostsList({resource, params});
+    const {data: currentUser} = useCurrentUser();
+
+    // Authors and contributors only ever see their own posts, whatever the
+    // `author` param says — matching PostsRoute#model in the Ember app.
+    const ownAuthorSlug = currentUser && isAuthorOrContributor(currentUser)
+        ? currentUser.slug
+        : null;
+
+    const {
+        items,
+        isLoading,
+        isError,
+        hasNextPage,
+        isFetchingNextPage,
+        fetchNextPage
+    } = usePostsList({resource, params, context: {ownAuthorSlug}});
 
     return (
         <Box className='size-full'>
@@ -56,13 +74,27 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                             // visual-regression baselines work against both
                             // implementations. They can never collide: the
                             // Ember route aborts when this screen renders.
-                            <ul data-testid='posts-list'>
-                                {items.map(item => (
-                                    <li key={item.id} data-testid='posts-list-item'>
-                                        {item.title}
-                                    </li>
-                                ))}
-                            </ul>
+                            <Stack gap='md'>
+                                <ul data-testid='posts-list'>
+                                    {items.map(item => (
+                                        <li key={item.id} data-testid='posts-list-item'>
+                                            {item.title}
+                                        </li>
+                                    ))}
+                                </ul>
+                                {/* Placeholder pager. Phase 2 replaces this
+                                    with the virtualised infinite scroll the
+                                    members list uses; without something here
+                                    a site with 30+ scheduled posts would show
+                                    only the first page and never reach its
+                                    drafts. */}
+                                {hasNextPage && (
+                                    <LoadMoreButton
+                                        isLoading={isFetchingNextPage}
+                                        onClick={fetchNextPage}
+                                    />
+                                )}
+                            </Stack>
                         )}
                     </ListPage.Body>
                 </ListPage>
