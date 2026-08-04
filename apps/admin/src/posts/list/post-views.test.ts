@@ -30,17 +30,24 @@ describe('canSavePostView', () => {
     });
 
     // Ember's `isAdmin` is `or(isOwnerOnly, isAdminOnly)`, so the Owner counts.
-    // The framework's `isAdminUser` is Administrator *only* — using it here
-    // hid the button from the site owner, who is the most likely person to be
-    // saving views.
-    it('is satisfied by hasAdminAccess, which includes the Owner', () => {
-        const owner = {roles: [{name: 'Owner'}]} as const;
-        const administrator = {roles: [{name: 'Administrator'}]} as const;
-        const editor = {roles: [{name: 'Editor'}]} as const;
+    // The framework's `isAdminUser` is Administrator *only*, and using it here
+    // hid the button from the site owner — the person most likely to be saving
+    // views. Asserted through the same call the screen makes, so swapping the
+    // helper back would fail this rather than quietly pass.
+    it.each([
+        {role: 'Owner', expected: true},
+        {role: 'Administrator', expected: true},
+        {role: 'Editor', expected: false},
+        {role: 'Author', expected: false}
+    ])('lets a $role save a view: $expected', ({role, expected}) => {
+        const user = {roles: [{name: role as 'Owner'}]};
 
-        expect(hasAdminAccess(owner)).toBe(true);
-        expect(hasAdminAccess(administrator)).toBe(true);
-        expect(hasAdminAccess(editor)).toBe(false);
+        expect(canSavePostView({
+            isAdmin: hasAdminAccess(user),
+            resource: 'posts',
+            params: {type: 'draft'},
+            isDefaultView: false
+        })).toBe(expected);
     });
 
     // The button is hardcoded to `currentRouteName === 'posts'` in Ember, so

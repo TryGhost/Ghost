@@ -55,6 +55,15 @@ describe('sticky post filters', () => {
         expect(getStickyPostFilterUrl('pages', '/members', NO_VIEWS)).toBe('pages');
     });
 
+    // Every default view is `route: 'posts'` in Ember, so they must not
+    // suppress a pages filter. Passing the posts defaults in here broke sticky
+    // filters on Pages for the three commonest filters.
+    it('does not let posts views suppress a pages filter', () => {
+        rememberStickyPostFilters('pages', '?type=draft');
+
+        expect(getStickyPostFilterUrl('pages', '/members', NO_VIEWS)).toBe('pages?type=draft');
+    });
+
     it('ignores params that are not part of a view', () => {
         rememberStickyPostFilters('posts', '?tag=news&somethingElse=x');
 

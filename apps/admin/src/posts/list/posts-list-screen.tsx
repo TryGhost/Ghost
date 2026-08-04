@@ -61,7 +61,9 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
     // The save/edit-view affordance: admins only, posts only, not while a
     // default view is active, and only with something actually filtered.
     const savedViews = usePostViews();
-    const activeView = findActivePostView(savedViews, params);
+    // Posts only: the saved views are posts views, and matching is filter-only,
+    // so on /pages this could otherwise resolve to a posts view.
+    const activeView = resource === 'posts' ? findActivePostView(savedViews, params) : undefined;
     const isOnDefaultView = POST_DEFAULT_VIEWS.some(view => findActivePostView([{
         ...view, route: 'posts'
     }], params));
@@ -118,7 +120,7 @@ export function PostsListScreen({resource}: {resource: PostResource}) {
                             />
                             <PostsSortMenu order={order} onOrderChange={setOrder} />
                             {canManageView && (
-                                <ManagePostViewPopover activeView={activeView} params={params} />
+                                <ManagePostViewPopover activeView={activeView} params={params} resource={resource} />
                             )}
                         </FilterBar>
                     </ListPage.Header>

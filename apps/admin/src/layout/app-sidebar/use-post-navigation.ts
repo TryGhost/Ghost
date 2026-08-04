@@ -35,19 +35,33 @@ function useReactPostNavigation(route: PostResource): PostNavigation {
 
     return useMemo(() => {
         const toNavView = (name: string, filter: Record<string, string | null>, color?: string): NavSavedView => ({
-            key: buildPostViewUrl(route, filter),
+            // Name included: a saved view whose filter equals a default
+            // view's would otherwise collide with it.
+            key: `${name}:${buildPostViewUrl(route, filter)}`,
             name,
             to: buildPostViewUrl(route, filter),
             isActive: isPostViewActive(location, route, filter),
             color
         });
 
-        // Pages have no default views in Ember, only posts.
+        // Posts only, for both. Ember's sidebar shows no views under Pages —
+        // its save button is hardcoded to the posts route, so `forPages` is
+        // permanently empty. Surfacing them here would diverge, and worse,
+        // would let a view nobody can see suppress the Pages highlight.
+        const viewFilters = route === 'posts'
+            ? [
+                ...getDefaultPostViews(isContributor).map(view => view.filter),
+                ...sharedViews.map(view => view.filter)
+            ]
+            : [];
+
         const defaultViews = route === 'posts'
             ? getDefaultPostViews(isContributor).map(view => toNavView(view.name, view.filter))
             : [];
 
-        const customViews = sharedViews.map(view => toNavView(view.name, view.filter, view.color));
+        const customViews = route === 'posts'
+            ? sharedViews.map(view => toNavView(view.name, view.filter, view.color))
+            : [];
 
         const allViews = [...defaultViews, ...customViews];
 
@@ -57,10 +71,7 @@ function useReactPostNavigation(route: PostResource): PostNavigation {
             mainUrl: getStickyPostFilterUrl(
                 route,
                 location.pathname,
-                [
-                    ...getDefaultPostViews(isContributor).map(view => view.filter),
-                    ...sharedViews.map(view => view.filter)
-                ]
+                viewFilters
             ),
             // Ember highlights the parent only when no view underneath is.
             isMainActive: location.pathname === `/${route}`
