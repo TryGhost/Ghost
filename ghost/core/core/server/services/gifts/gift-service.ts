@@ -6,12 +6,12 @@ import {z} from 'zod';
 import {Gift} from './gift';
 import type {GiftEventBrowseOptions, GiftEventPage, GiftRepository} from './gift-bookshelf-repository';
 import type {GiftReminderScheduler} from './gift-reminder-scheduler';
+import {GiftCadenceSchema, type GiftCadence} from './gift-schema';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
 import {
     resolveGiftDuration,
     validateGiftCheckoutOffer,
-    type GiftCadence,
     type GiftCheckoutTier,
     type ResolvedGiftDuration
 } from './gift-checkout-offer';
@@ -80,7 +80,7 @@ interface GiftEmailService {
         buyerEmail: string;
         token: string;
         tierName: string;
-        cadence: 'month' | 'year';
+        cadence: GiftCadence;
         duration: number;
         expiresAt: Date;
     }): Promise<void>;
@@ -100,7 +100,7 @@ interface StaffServiceEmails {
         amount: number;
         currency: string;
         tierName: string;
-        cadence: 'month' | 'year';
+        cadence: GiftCadence;
         duration: number;
     }): Promise<void>;
     notifyGiftSubscriptionStarted(data: {
@@ -108,7 +108,7 @@ interface StaffServiceEmails {
         memberEmail: string;
         memberName: string | null;
         tierName: string;
-        cadence: 'month' | 'year';
+        cadence: GiftCadence;
         duration: number;
         buyerEmail: string;
     }): Promise<void>;
@@ -119,7 +119,7 @@ const GiftPurchaseDataSchema = z.object({
     buyerEmail: z.string().min(1),
     stripeCustomerId: z.string().min(1).nullable(),
     tierId: z.string().min(1),
-    cadence: z.enum(['month', 'year']),
+    cadence: GiftCadenceSchema,
     duration: z.number().int().positive(),
     currency: z.string().min(1),
     amount: z.number().int().nonnegative(),
@@ -251,17 +251,12 @@ export class GiftService {
             resolvedDuration = resolveGiftDuration(input);
             cadence = resolvedDuration.cadence;
         } else {
-            if (!input.cadence) {
-                throw new errors.BadRequestError({
-                    message: 'Bad Request.',
-                    context: `Expected cadence to be "month" or "year", received ${input.cadence}`
-                });
-            }
-
             if (input.cadence !== 'month' && input.cadence !== 'year') {
+                const receivedCadence = input.cadence ? `"${input.cadence}"` : input.cadence;
+
                 throw new errors.BadRequestError({
                     message: 'Bad Request.',
-                    context: `Expected cadence to be "month" or "year", received "${input.cadence}"`
+                    context: `Expected cadence to be "month" or "year", received ${receivedCadence}`
                 });
             }
 
@@ -273,10 +268,7 @@ export class GiftService {
             tier = await this.deps.tiersService.api.read(input.tierId);
         } catch (err) {
             logging.error(err);
-            throw new errors.BadRequestError({
-                message: 'This tier does not exist.',
-                context: `Tier with id "${input.tierId}" not found`
-            });
+            tier = null;
         }
 
         if (!tier) {

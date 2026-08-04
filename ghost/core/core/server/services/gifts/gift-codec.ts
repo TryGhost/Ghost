@@ -54,5 +54,9 @@ export function decodeGiftRow(input: unknown): Gift {
 }
 
 export function encodeGift(gift: Gift): z.output<typeof DbGift> {
-    return DbGift.parse(z.encode(giftCodec, gift));
+    const row = z.encode(giftCodec, gift);
+
+    // DbGift's input permits database-native date values; parse the encoded row
+    // to retain the normalized Date-based GiftRow contract.
+    return DbGift.parse(row);
 }

@@ -1,6 +1,6 @@
 # Gift Subscriptions
 
-Gift Subscriptions covers prepaid, fixed-duration membership access intended to be shared and claimed. Its language spans purchase, redemption, and the end or replacement of gifted access.
+Gift Subscriptions covers prepaid, fixed-duration membership access intended to be shared and claimed. Its language spans gift purchase, gift redemption, gift expiration, gift consumption, and gift continuation into a paid subscription.
 
 ## Language
 

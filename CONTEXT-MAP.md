@@ -12,7 +12,7 @@ Portal is the visitor-facing membership widget embedded on a Ghost site — the 
 
 Path: `ghost/core/core/server/services/gifts/CONTEXT.md`
 
-Gift Subscriptions covers prepaid, fixed-duration membership access from purchase through redemption and the end or replacement of gifted access.
+Gift Subscriptions covers prepaid, fixed-duration membership access from gift purchase through gift redemption, gift expiration, gift consumption, and gift continuation into a paid subscription.
 
 ### Gift Links
 

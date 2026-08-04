@@ -1,6 +1,7 @@
 import errors from '@tryghost/errors';
+import type {GiftCadence} from './gift-schema';
 
-export type GiftCadence = 'month' | 'year';
+export type {GiftCadence} from './gift-schema';
 
 export interface GiftCheckoutTier {
     status: string;
@@ -66,7 +67,7 @@ export function resolveGiftDuration({
         }
     }
 
-    if (typeof totalMonths !== 'number' || !Number.isInteger(totalMonths) || !GIFT_DURATION_CATALOGUE.has(totalMonths)) {
+    if (typeof totalMonths !== 'number' || !Number.isInteger(totalMonths)) {
         throw invalidGiftOffer(`Unsupported gift duration "${totalMonths}"`);
     }
 
