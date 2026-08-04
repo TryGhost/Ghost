@@ -419,6 +419,58 @@ describe('AutomationEditor', () => {
         expect(screen.queryByText('Welcome to The Blueprint')).not.toBeInTheDocument();
     });
 
+    it('does not reuse an old draft when navigating from A to B and back to A', async () => {
+        const withSubject = (automation: AutomationDetail, emailSubject: string): AutomationDetail => ({
+            ...automation,
+            actions: automation.actions.map(action => action.type === 'send_email'
+                ? {...action, data: {...action.data, email_subject: emailSubject}}
+                : action)
+        });
+        const initialA = withSubject(automationDetail, 'Initial A subject');
+        const freshA = withSubject(automationDetail, 'Fresh A subject');
+        const automationB = {
+            ...withSubject(automationDetail, 'Automation B subject'),
+            id: 'automation-id-2',
+            name: 'Paid member welcome flow',
+            slug: 'member-welcome-email-paid'
+        };
+        let aResponse: 'initial' | 'fetching' | 'fresh' = 'initial';
+
+        mockUseReadAutomation.mockImplementation((automationId) => {
+            if (automationId === 'automation-id-2') {
+                return {
+                    data: {automations: [automationB]},
+                    isLoading: false,
+                    isFetching: true,
+                    isError: false
+                };
+            }
+
+            return {
+                data: {automations: [aResponse === 'fresh' ? freshA : initialA]},
+                isLoading: false,
+                isFetching: aResponse === 'fetching',
+                isError: false
+            };
+        });
+
+        const {router} = renderEditor();
+        expect(screen.getByRole('button', {name: 'Send email: Initial A subject'})).toBeInTheDocument();
+
+        await act(async () => router.navigate('/automations/automation-id-2'));
+        expect(screen.getByTestId('automation-canvas-loading')).toBeInTheDocument();
+
+        aResponse = 'fetching';
+        await act(async () => router.navigate('/automations/automation-id-1'));
+        expect(screen.getByTestId('automation-canvas-loading')).toBeInTheDocument();
+        expect(screen.queryByText('Initial A subject')).not.toBeInTheDocument();
+
+        aResponse = 'fresh';
+        await rerenderEditorRoute(router);
+        expect(screen.getByRole('button', {name: 'Send email: Fresh A subject'})).toBeInTheDocument();
+        expect(screen.queryByText('Initial A subject')).not.toBeInTheDocument();
+    });
+
     it('renders the error banner when the read query fails', () => {
         mockUseReadAutomation.mockReturnValue({
             data: undefined,

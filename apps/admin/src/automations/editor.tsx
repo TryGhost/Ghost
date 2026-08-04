@@ -48,14 +48,13 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
     return errors;
 };
 
-const AutomationEditor: React.FC = () => {
-    const {id = ''} = useParams<{id: string}>();
-
-    const {data, isLoading: isLoadingAutomation, isFetching: isFetchingAutomation, isError} = useReadAutomation(id, {
+const AutomationEditor: React.FC<{id: string}> = ({id}) => {
+    const {data, isFetching: isFetchingAutomation, isError} = useReadAutomation(id, {
         defaultErrorHandler: false,
         refetchOnMount: 'always'
     });
     const automation = data?.automations[0];
+    const freshAutomation = !isFetchingAutomation && !isError && automation?.id === id ? automation : undefined;
 
     const editMutation = useEditAutomation();
     const [editState, setEditState] = React.useState<AutomationEditState>({phase: 'idle'});
@@ -67,17 +66,15 @@ const AutomationEditor: React.FC = () => {
 
     // Draft is the user-facing, locally mutable copy. Wait for the mount refetch to finish before
     // seeding it so cached automation data can never become an editable stale draft.
-    const [draftState, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
+    const [draft, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
     React.useEffect(() => {
-        if (automation && !isFetchingAutomation && !isError) {
-            setDraft((oldDraft) => {
-                return oldDraft?.id === automation.id ? oldDraft : automation;
-            });
+        if (!freshAutomation) {
+            return;
         }
-    }, [automation, isError, isFetchingAutomation]);
-    const draft = draftState?.id === id ? draftState : undefined;
-    const isInitializingDraft = !draft && !isError && (isLoadingAutomation || isFetchingAutomation || !!automation);
-    const isEditorLoading = isLoadingAutomation || isInitializingDraft;
+
+        setDraft(currentDraft => currentDraft ?? freshAutomation);
+    }, [freshAutomation]);
+    const isEditorLoading = !draft && !isError;
 
     // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
     // otherwise flip the dirty flag immediately after every successful publish.
@@ -544,4 +541,10 @@ const AutomationEditor: React.FC = () => {
     );
 };
 
-export default AutomationEditor;
+const AutomationEditorRoute: React.FC = () => {
+    const {id = ''} = useParams<{id: string}>();
+
+    return <AutomationEditor key={id} id={id} />;
+};
+
+export default AutomationEditorRoute;
