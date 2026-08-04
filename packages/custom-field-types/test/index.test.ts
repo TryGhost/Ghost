@@ -50,7 +50,7 @@ describe('custom-field-types catalog', function () {
     // The rule that replaced per-sub-field requiredness. An end-to-end test can't
     // pin it: the CSV and admin paths both strip blank sub-fields before a value
     // reaches the catalog, so neither ever presents the empty case this rejects.
-    describe('an address must have at least one sub-field filled in', function () {
+    describe('an address must name at least one part', function () {
         const parse = (value: unknown) => FIELD_TYPES.address.value.safeParse(value).success;
 
         it('accepts a partial address', function () {
@@ -60,16 +60,28 @@ describe('custom-field-types catalog', function () {
             assert.equal(parse({line1: 'Cloonlara', state: 'Co. Clare', country: 'IE'}), true);
         });
 
-        it('rejects an address with nothing in it', function () {
+        it('rejects an address that names nothing', function () {
             assert.equal(parse({}), false);
-            // A key present but explicitly undefined survives parsing, so it reaches the
-            // rule as a value and has to be turned away as one.
+            // A key present but explicitly undefined names nothing either: undefined is
+            // how a value says it has no opinion about a part.
             assert.equal(parse({line1: undefined}), false);
             assert.equal(parse({line1: undefined, country: undefined}), false);
         });
 
-        it('rejects an address whose every sub-field is blank', function () {
-            assert.equal(parse({line1: '', city: '', postal_code: ''}), false);
+        it('accepts an address that names parts as empty, which is how they are cleared', function () {
+            assert.equal(parse({line1: '', city: ''}), true);
+        });
+
+        it('lets a sub-field whose rule is a format be emptied too', function () {
+            // Empty is a statement about the write, not about the sub-field, so every
+            // sub-field takes it alike. A bound admits the empty string on its own; a
+            // pattern does not, which would leave a country the one part of an address
+            // that could be set but never removed.
+            assert.equal(parse({line1: '62 Ghost Lane', city: 'Dublin', country: ''}), true);
+            assert.equal(parse({country: ''}), true);
+
+            // Emptying it is still the only thing that gets in for free.
+            assert.equal(parse({country: 'DEU'}), false);
         });
 
         it('normalises the case of a country code, so one country is one value', function () {
@@ -116,13 +128,12 @@ describe('custom-field-types catalog', function () {
             assert.equal(FIELD_TYPES.address.value.safeParse({line1: `  ${'x'.repeat(255)}  `}).success, true);
         });
 
-        it('rejects an address whose every sub-field is only whitespace', function () {
-            // Admin trims a sub-field away before rendering it, so an address of
-            // spaces is one no screen could show, and none could clear either.
-            assert.equal(parse({line1: '   ', city: '\t'}), false);
-            // Two spaces satisfy country's own two-character rule, so only the
-            // composite rule can reject this one.
-            assert.equal(parse({country: '  '}), false);
+        it('reads a part of nothing but whitespace as empty, so it clears', function () {
+            // Trimming happens per part above, so whitespace has already become the empty
+            // string by the time the rule runs — and empty is an instruction, not a value.
+            const result = FIELD_TYPES.address.value.safeParse({line1: '   ', city: '\t'});
+            assert.equal(result.success, true);
+            assert.deepEqual(result.data, {line1: '', city: ''});
         });
     });
 });

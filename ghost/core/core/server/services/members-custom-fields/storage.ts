@@ -56,14 +56,16 @@ function isSafeSegment(segment: string): boolean {
 }
 
 /**
- * The leaves a value occupies, at any depth.
+ * Every leaf a value names, at any depth, including the ones it names as empty.
  *
- * A part with nothing in it contributes no leaf, which is what keeps "not set" and "set
- * to nothing" one state in storage instead of two that read alike.
+ * Naming is the unit of a write: a path a value does not mention is left alone, and one
+ * it mentions as empty is being cleared. Both readings are needed, so this reports what
+ * was named and leaves the caller to say what to do about it — `leavesToWrite` splits
+ * them. A stored leaf is never empty, because an empty one is a deletion.
  */
 export function leavesFor(value: unknown, path: string = ROOT_PATH): Leaf[] {
     if (typeof value === 'string') {
-        return value === '' ? [] : [{path, value_text: value}];
+        return [{path, value_text: value}];
     }
 
     // Anything that is neither a string nor a record has no leaves to be made of. Saying
@@ -75,9 +77,21 @@ export function leavesFor(value: unknown, path: string = ROOT_PATH): Leaf[] {
         });
     }
 
-    return Object.entries(value).flatMap(([key, part]) => {
-        return leavesFor(part, path === ROOT_PATH ? key : `${path}${SEPARATOR}${key}`);
-    });
+    // An undefined part is one the value does not name at all, which is not the same as
+    // naming it empty: the first leaves the stored part alone, the second removes it.
+    return Object.entries(value)
+        .filter(([, part]) => part !== undefined)
+        .flatMap(([key, part]) => leavesFor(part, path === ROOT_PATH ? key : `${path}${SEPARATOR}${key}`));
+}
+
+/** A value split into the leaves it sets and the paths it clears. */
+export function leavesToWrite(value: unknown): {set: Leaf[], cleared: string[]} {
+    const named = leavesFor(value);
+
+    return {
+        set: named.filter(leaf => leaf.value_text !== ''),
+        cleared: named.filter(leaf => leaf.value_text === '').map(leaf => leaf.path)
+    };
 }
 
 /** The value a set of leaves adds up to, rebuilt to whatever depth their paths describe. */

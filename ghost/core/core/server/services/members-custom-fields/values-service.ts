@@ -4,9 +4,9 @@ import logging from '@tryghost/logging';
 import type {Knex} from 'knex';
 import {z} from 'zod';
 import {FIELD_TYPES, subFieldsOf, type FieldType} from '@tryghost/custom-field-types';
-import {DbCustomFieldLeaf, FIELD_STATUS} from './schema';
+import {DbCustomFieldLeaf, DbCustomFieldValue, FIELD_STATUS} from './schema';
 import {activeFields} from './queries';
-import {leavesFor, valuesFromLeaves, type StoredLeaf} from './storage';
+import {leavesToWrite, valuesFromLeaves, type StoredLeaf} from './storage';
 
 const FIELDS_TABLE = 'members_custom_fields';
 const VALUES_TABLE = 'members_custom_field_values';
@@ -14,6 +14,17 @@ const VALUES_TABLE = 'members_custom_field_values';
 // Matches the `members_custom_fields.key` column (schema.js), so no key a site
 // could actually have minted is ever refused by it.
 const MAX_KEY_LENGTH = 191;
+
+// Rows per upsert. A member can be written up to the field limit at once and a record
+// type has a row per part, so one statement can carry several hundred: SQLite compiles a
+// multi-row upsert into a compound SELECT and stops at 500 terms.
+const UPSERT_CHUNK = 400;
+
+/**
+ * A leaf as it is written: the table's own row, derived rather than restated so a column
+ * that changes shape in `schema.ts` changes here too instead of drifting quietly.
+ */
+type DbLeafRow = z.infer<typeof DbCustomFieldValue>;
 
 // Values arrive keyed by field key. Each value stays `unknown` here: it is
 // validated by its own field type's schema, which isn't known until the key is
@@ -219,18 +230,12 @@ export class CustomFieldValuesService {
      * Merge, not replace: only the fields in the plan are touched, so a caller
      * that doesn't know about a field can't erase it.
      *
-     * `mergeComposites` extends that same rule from a field to a composite's parts,
-     * because a part is a field: a row writes the parts it fills and leaves the rest
-     * alone, exactly as a blank `name` column leaves a member's name alone. The CSV
-     * import needs it — without it a file naming one address column would clear five
-     * parts it never mentioned. The API does not merge: a request there sends a whole
-     * address, so what it sends is what should be stored.
+     * That rule holds at every level, because a part of a value is a field too: a write
+     * touches the paths it names and nothing else. Naming a path with an empty value
+     * clears that one leaf; naming the field itself with `null` clears all of them.
      *
-     * It is asked for here rather than at plan time only because that is where it has
-     * always been asked for. It used to have to be: merging read the stored value and
-     * wrote it back under a lock that exists only inside the transaction. Neither branch
-     * reads anything now, so this could move to `planWrite` alongside the rest of what a
-     * caller is asking for, and probably should when something else touches it.
+     * There is no whole-value replace, and there was never a reason for one beyond a blob
+     * only being writable whole. A caller that means to empty a part says so.
      *
      * Always transactional, so a mid-batch failure rolls the batch back. Given an
      * executor it joins that transaction -- the importer passes its per-member one, so a
@@ -239,45 +244,70 @@ export class CustomFieldValuesService {
     async applyWrite(
         memberId: string,
         writes: PlannedWrite[],
-        {executor = this.knex, mergeComposites = false}: {executor?: Knex, mergeComposites?: boolean} = {}
+        {executor = this.knex}: {executor?: Knex} = {}
     ): Promise<void> {
         if (writes.length === 0) {
             return;
         }
 
         const apply = async (trx: Knex) => {
-            for (const {field, value} of writes) {
-                const target = {member_id: memberId, custom_field_id: field.id};
+            // The plan already describes everything this member is having written, so it
+            // is turned into rows first and sent as whole statements — a handful per
+            // member rather than one per part. One timestamp for the lot, too: a write
+            // happened once, however many rows record it.
+            const now = new Date();
+            const clearedFields: string[] = [];
+            const clearedPaths: Array<{fieldId: string, paths: string[]}> = [];
+            const rows: DbLeafRow[] = [];
 
+            for (const {field, value} of writes) {
                 if (value === undefined) {
-                    await trx(VALUES_TABLE).where(target).del();
+                    clearedFields.push(field.id);
                     continue;
                 }
 
-                const leaves = leavesFor(value);
-
-                if (!mergeComposites) {
-                    // Replacing: the parts this value does not fill should not survive it.
-                    // Scoped to the paths being written so the upsert below still owns the
-                    // rows it is about to touch.
-                    await trx(VALUES_TABLE)
-                        .where(target)
-                        .whereNotIn('path', leaves.map(leaf => leaf.path))
-                        .del();
+                const {set, cleared} = leavesToWrite(value);
+                if (cleared.length > 0) {
+                    clearedPaths.push({fieldId: field.id, paths: cleared});
                 }
 
-                // One statement per part. Batching them would mean naming the columns to
-                // take from the row that lost the conflict, and each part needs its own
-                // value, so the merge could not be written as one object — a part at a
-                // time keeps the write plain and the timestamps right.
-                for (const leaf of leaves) {
-                    await trx(VALUES_TABLE)
-                        .insert({id: new ObjectID().toHexString(), ...target, ...leaf, created_at: new Date()})
-                        // The unique index on (member_id, custom_field_id, path) is what
-                        // makes this an upsert per part rather than a read-then-write race.
-                        .onConflict(['member_id', 'custom_field_id', 'path'])
-                        .merge({value_text: leaf.value_text, updated_at: new Date()});
-                }
+                rows.push(...set.map(leaf => ({
+                    id: new ObjectID().toHexString(),
+                    member_id: memberId,
+                    custom_field_id: field.id,
+                    path: leaf.path,
+                    value_text: leaf.value_text,
+                    created_at: now,
+                    updated_at: now
+                })));
+            }
+
+            if (clearedFields.length > 0) {
+                await trx(VALUES_TABLE).where('member_id', memberId).whereIn('custom_field_id', clearedFields).del();
+            }
+
+            if (clearedPaths.length > 0) {
+                // Each field clears its own paths, so the pairs go in one statement as a
+                // group per field rather than a statement per field.
+                await trx(VALUES_TABLE).where('member_id', memberId).where((builder) => {
+                    for (const {fieldId, paths} of clearedPaths) {
+                        builder.orWhere(pair => pair.where('custom_field_id', fieldId).whereIn('path', paths));
+                    }
+                }).del();
+            }
+
+            for (let from = 0; from < rows.length; from += UPSERT_CHUNK) {
+                // Typed as the plain row rather than through the registered table type:
+                // `merge` takes its column list as `keyof` the builder's record, and for a
+                // composite registration that is the scope names rather than the columns.
+                await trx<DbLeafRow>(VALUES_TABLE)
+                    .insert(rows.slice(from, from + UPSERT_CHUNK))
+                    // The unique index on (member_id, custom_field_id, path) is what makes
+                    // this an upsert per part rather than a read-then-write race. Naming
+                    // the columns rather than giving values takes each from the row that
+                    // lost the conflict, so every part still updates to its own value.
+                    .onConflict(['member_id', 'custom_field_id', 'path'])
+                    .merge(['value_text', 'updated_at']);
             }
         };
 

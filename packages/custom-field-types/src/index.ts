@@ -56,6 +56,21 @@ export const MAX_LONG_TEXT_BYTES = 65535;
 const byteLength = (value: string): number => new TextEncoder().encode(value).length;
 
 /**
+ * A sub-field as a write may name it: absent, meaning it is not being spoken about;
+ * empty, meaning clear it; or a value of its own kind.
+ *
+ * Emptying is a statement about the write rather than about the sub-field, so it belongs
+ * here rather than inside each rule. A rule that is a bound admits the empty string on
+ * its own and would not have needed this; one that is a format does not, and would
+ * otherwise leave the sub-field with no way of being emptied at all — which is how a
+ * country code became the one part of an address a person could set but never remove.
+ *
+ * Trimming before the choice rather than after is what keeps a sub-field of spaces the
+ * same as an empty one for every rule alike.
+ */
+const clearable = <T extends z.ZodType<unknown, string>>(subField: T) => z.string().trim().pipe(z.union([z.literal(''), subField])).optional();
+
+/**
  * The address value — a composite type, modelled on Stripe's Address object.
  * Because it is one zod object, invalid sub-fields surface per path (the caller
  * can point at `postal_code` specifically) with no bespoke composite handling.
@@ -75,11 +90,11 @@ const byteLength = (value: string): number => new TextEncoder().encode(value).le
  * composite with unbounded members is a composite with no bound at all.
  */
 export const AddressValue = z.object({
-    line1: z.string().trim().max(255).optional(),
-    line2: z.string().trim().max(255).optional(),
-    city: z.string().trim().max(255).optional(),
-    state: z.string().trim().max(255).optional(),
-    postal_code: z.string().trim().max(32).optional(),
+    line1: clearable(z.string().trim().max(255)),
+    line2: clearable(z.string().trim().max(255)),
+    city: clearable(z.string().trim().max(255)),
+    state: clearable(z.string().trim().max(255)),
+    postal_code: clearable(z.string().trim().max(32)),
     /**
      * The shape of an ISO 3166-1 alpha-2 code, deliberately not checked against the
      * actual list of them. A closed list would put Ghost in the position of deciding
@@ -101,19 +116,20 @@ export const AddressValue = z.object({
      * would fail it from two. Checking the shape of the input settles both, and turns
      * away the `12` and `!!` that a bare length check always allowed through.
      */
-    country: z.string().trim().regex(/^[A-Za-z]{2}$/).toUpperCase().optional()
+    country: clearable(z.string().trim().regex(/^[A-Za-z]{2}$/).toUpperCase())
 }).refine(
-    // Every sub-field is trimmed above, so whitespace has already become the empty
-    // string by the time this runs. Trimming is what stops `{line1: '   '}` being
-    // stored: admin trims a sub-field away before rendering it, so an address of
-    // spaces would be one no screen could show, and none could clear either.
+    // An address has to name a part. What it says about that part is up to it: a value
+    // sets the part, and an empty one clears it, because a write acts on the parts it
+    // names and an address naming nothing asks for nothing.
     //
-    // The type check is load-bearing, not defensive. A sub-field that is optional
-    // and explicitly undefined survives parsing as a key holding undefined, and
-    // `undefined !== ''` on its own would let `{line1: undefined}` satisfy a rule
-    // whose whole purpose is to reject an address with nothing in it.
-    address => Object.values(address).some(value => typeof value === 'string' && value !== ''),
-    {message: 'An address must have at least one part filled in.'}
+    // Storing an address with nothing in it is not something this has to prevent — a
+    // part with no value gets no row, so an address of empties leaves none behind.
+    //
+    // The type check is load-bearing rather than defensive. An optional sub-field that
+    // is explicitly undefined survives parsing as a key holding undefined, and a bare
+    // presence check would let `{line1: undefined}` through as if it named something.
+    address => Object.values(address).some(value => typeof value === 'string'),
+    {message: 'An address must name at least one part.'}
 );
 export type Address = z.infer<typeof AddressValue>;
 
